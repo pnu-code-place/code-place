@@ -10,6 +10,7 @@ from django.utils.decorators import method_decorator
 from django.utils.timezone import now
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
 from otpauth import OtpAuth
+from django.core.cache import cache
 
 from problem.models import Problem
 from utils.constants import ContestRuleType
@@ -206,6 +207,48 @@ class UsernameOrEmailCheck(APIView):
         return self.success(result)
 
 
+class ApplyUserEmailValidCheckAPI(APIView):
+    def post(self, request):
+        data = request.data
+        if not data.get("email"):
+            return self.error('no email in request data')
+
+        email = data["email"]
+
+        code = rand_str(6)
+        # key: 이메일, value: 코드값(6자리), timeout=5분
+        cache.set(email, code, timeout=60*5)
+
+        email_html = render_to_string("email_valid_email.html", {'code': code})
+        send_email_async(from_name=SysOptions.website_name_shortcut,
+                         to_email=email,
+                         to_name=email,
+                         subject="[PNU Online Judge] 이메일 확인 인증번호입니다.",
+                         content=email_html)
+        return self.success('email validation code sent')
+
+
+class UserEmailValidCheckAPI(APIView):
+    def post(self, request):
+        data = request.data
+        if not data.get('email'):
+            return self.error('no email in request data')
+        if not data.get('code'):
+            return self.error('no code in request data')
+        email = data["email"]
+        code = data["code"]
+        if not cache.get(email):
+            return self.error('code expired or invalid email')
+
+        validCode = cache.get(email)
+        cache.delete(email)
+        if code == validCode:
+            print("code validation complete")
+            return self.success('user email validation complete')
+        else:
+            return self.error('validation code mismatch')
+
+
 class UserRegisterAPI(APIView):
     @validate_serializer(UserRegisterSerializer)
     def post(self, request):
@@ -218,13 +261,11 @@ class UserRegisterAPI(APIView):
         data = request.data
         data["username"] = data["username"].lower()
         data["email"] = data["email"].lower()
-        captcha = Captcha(request)
-        if not captcha.check(data["captcha"]):
-            return self.error("Invalid captcha")
+
         if User.objects.filter(username=data["username"]).exists():
-            return self.error("Username already exists")
+            return self.error("username already exists")
         if User.objects.filter(email=data["email"]).exists():
-            return self.error("Email already exists")
+            return self.error("email already exists")
         user = User.objects.create(username=data["username"], email=data["email"])
         user.set_password(data["password"])
         user.save()
