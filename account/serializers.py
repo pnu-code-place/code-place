@@ -5,6 +5,17 @@ from utils.api import serializers, UsernameSerializer
 from .models import AdminType, ProblemPermission, User, UserProfile
 
 
+class CollegeListSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    college_name = serializers.CharField()
+
+
+class DepartmentSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    department_name = serializers.CharField()
+    college_id = serializers.IntegerField()
+
+
 class UserLoginSerializer(serializers.Serializer):
     username = serializers.CharField()
     password = serializers.CharField()

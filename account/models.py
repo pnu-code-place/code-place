@@ -16,6 +16,15 @@ class ProblemPermission(object):
     ALL = "All"
 
 
+class College(models.Model):
+    college_name = models.CharField(max_length=255)
+
+
+class Department(models.Model):
+    college = models.ForeignKey(College, null=True, on_delete=models.SET_NULL)
+    department_name = models.CharField(max_length=255)
+
+
 class UserManager(models.Manager):
     use_in_migrations = True
 
