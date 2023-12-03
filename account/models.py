@@ -35,6 +35,8 @@ class UserManager(models.Manager):
 class User(AbstractBaseUser):
     username = models.TextField(unique=True)
     email = models.TextField(null=True)
+    college = models.ForeignKey(College, null=True, on_delete=models.SET_NULL)
+    department = models.ForeignKey(Department, null=True, on_delete=models.SET_NULL)
     create_time = models.DateTimeField(auto_now_add=True, null=True)
     # One of UserType
     admin_type = models.TextField(default=AdminType.REGULAR_USER)
