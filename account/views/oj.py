@@ -262,8 +262,8 @@ class UserEmailValidCheckAPI(APIView):
             return self.error('code expired or invalid email')
 
         validCode = cache.get(email)
-        cache.delete(email)
         if code == validCode:
+            cache.delete(email)
             print("code validation complete")
             return self.success('user email validation complete')
         else:
