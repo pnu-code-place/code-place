@@ -1,47 +1,57 @@
 <template>
   <div id="header">
-    <Menu theme="light" mode="horizontal" @on-select="handleRoute" :active-name="activeMenu" class="oj-menu">
-      <div class="logo"><span>{{website.website_name}}</span></div>
-      <Menu-item name="/">
-        <Icon type="home"></Icon>
+    <Menu theme="default" mode="horizontal" @on-select="handleRoute" :active-name="activeMenu" class="oj-menu">
+      <div class="logo"><img src="@/assets/ojLogo.png" width="120px"/></div>
+
+      <Menu-item class="menuItemText first" name="/">
         {{$t('m.Home')}}
       </Menu-item>
-      <Menu-item name="/problem">
-        <Icon type="ios-keypad"></Icon>
+      <Menu-item class="menuItemText" name="/notice">
+        {{$t('m.Notice')}}
+      </Menu-item>
+      <Menu-item class="menuItemText" name="/problem">
         {{$t('m.NavProblems')}}
       </Menu-item>
-      <Menu-item name="/contest">
-        <Icon type="trophy"></Icon>
+      <Menu-item class="menuItemText" name="/status">
+        {{$t('m.Community')}}
+      </Menu-item>
+      <Menu-item class="menuItemText" name="/contest">
         {{$t('m.Contests')}}
       </Menu-item>
-      <Menu-item name="/status">
-        <Icon type="ios-pulse-strong"></Icon>
-        {{$t('m.NavStatus')}}
+<!--      <Menu-item class="menuItemText" name="/status"> //TODO 채점현황-->
+<!--        {{$t('m.NavStatus')}}-->
+<!--      </Menu-item>-->
+      <Menu-item class="menuItemText" name="/status">
+        {{$t('m.Rank')}}
       </Menu-item>
-      <Submenu name="rank">
-        <template slot="title">
-          <Icon type="podium"></Icon>
-          {{$t('m.Rank')}}
-        </template>
-        <Menu-item name="/acm-rank">
-          {{$t('m.ACM_Rank')}}
+        <Menu-item class="menuItemText" name="/status">
+            {{$t('m.About')}}
         </Menu-item>
-        <Menu-item name="/oi-rank">
-          {{$t('m.OI_Rank')}}
-        </Menu-item>
-      </Submenu>
-      <Submenu name="about">
-        <template slot="title">
-          <Icon type="information-circled"></Icon>
-          {{$t('m.About')}}
-        </template>
-        <Menu-item name="/about">
-          {{$t('m.Judger')}}
-        </Menu-item>
-        <Menu-item name="/FAQ">
-          {{$t('m.FAQ')}}
-        </Menu-item>
-      </Submenu>
+<!--      <Menu-item class="menuItemText" name="/status">-->
+<!--        {{$t('m.NavStatus')}}-->
+<!--      </Menu-item>-->
+<!--      <Submenu name="rank">-->
+<!--        <template slot="title">-->
+<!--          {{$t('m.Rank')}}-->
+<!--        </template>-->
+<!--        <Menu-item name="/acm-rank">-->
+<!--          {{$t('m.ACM_Rank')}}-->
+<!--        </Menu-item>-->
+<!--        <Menu-item name="/oi-rank">-->
+<!--          {{$t('m.OI_Rank')}}-->
+<!--        </Menu-item>-->
+<!--      </Submenu>-->
+<!--      <Submenu name="about">-->
+<!--        <template  slot="title">-->
+<!--            {{$t('m.About')}}-->
+<!--        </template>-->
+<!--        <Menu-item name="/about">-->
+<!--          {{$t('m.Judger')}}-->
+<!--        </Menu-item>-->
+<!--        <Menu-item name="/FAQ">-->
+<!--          {{$t('m.FAQ')}}-->
+<!--        </Menu-item>-->
+<!--      </Submenu>-->
       <template v-if="!isAuthenticated">
         <div class="btn-menu">
           <Button type="ghost"
@@ -49,12 +59,12 @@
                   shape="circle"
                   @click="handleBtnClick('login')">{{$t('m.Login')}}
           </Button>
-          <Button v-if="website.allow_register"
-                  type="ghost"
-                  shape="circle"
-                  @click="handleBtnClick('register')"
-                  style="margin-left: 5px;">{{$t('m.Register')}}
-          </Button>
+<!--          <Button v-if="website.allow_register"-->
+<!--                  type="ghost"-->
+<!--                  shape="circle"-->
+<!--                  @click="handleBtnClick('register')"-->
+<!--                  style="margin-left: 5px;">{{$t('m.Register')}}-->
+<!--          </Button>-->
         </div>
       </template>
       <template v-else>
@@ -72,8 +82,8 @@
         </Dropdown>
       </template>
     </Menu>
-    <Modal v-model="modalVisible" :width="400">
-      <div slot="header" class="modal-title">{{$t('m.Welcome_to')}} {{website.website_name_shortcut}}</div>
+    <Modal v-model="modalVisible" :width="400" :styles="{'top': modalStatus.mode == 'login' ? '10%' : '5%'}">
+      <div slot="header" class="modal-title" style="text-align: center">{{modalStatus.mode == 'login' ? $t('m.LoginModalHeader') : $t('m.RegisterModalHeader') }}</div>
       <component :is="modalStatus.mode" v-if="modalVisible"></component>
       <div slot="footer" style="display: none"></div>
     </Modal>
@@ -103,6 +113,7 @@
         }
       },
       handleBtnClick (mode) {
+        console.log("setting complete!")
         this.changeModalStatus({
           visible: true,
           mode: mode
@@ -138,6 +149,7 @@
     z-index: 1000;
     background-color: #fff;
     box-shadow: 0 1px 5px 0 rgba(0, 0, 0, 0.1);
+
     .oj-menu {
       background: #fdfdfd;
     }
@@ -145,7 +157,6 @@
     .logo {
       margin-left: 2%;
       margin-right: 2%;
-      font-size: 20px;
       float: left;
       line-height: 60px;
     }
@@ -171,5 +182,18 @@
       font-size: 18px;
       font-weight: 600;
     }
+  }
+
+  .menuItemText{
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  .first{
+    margin-left: 60px;
+  }
+
+  .menuItemText:hover{
+    color: #4A86C0;
   }
 </style>

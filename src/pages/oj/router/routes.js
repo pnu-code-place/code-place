@@ -19,13 +19,19 @@ import {
 
 import * as Contest from '@oj/views/contest'
 import * as Setting from '@oj/views/setting'
-
+import Notice from "../views/notice/Notice.vue"
 export default [
   {
     name: 'home',
     path: '/',
     meta: {title: 'Home'},
     component: Home
+  },
+  {
+    name: 'notice',
+    path: '/notice',
+    meta: {title: 'notice'},
+    component: Notice
   },
   {
     name: 'logout',

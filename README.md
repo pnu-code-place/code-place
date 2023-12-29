@@ -26,7 +26,7 @@ Install nodejs **v8.12.0** first.
 npm install
 # we use webpack DllReference to decrease the build time,
 # this command only needs execute once unless you upgrade the package in build/webpack.dll.conf.js
-export NODE_ENV=development 
+export NODE_ENV=development
 npm run build:dll
 
 # the dev-server will set proxy table to your backend
@@ -41,7 +41,7 @@ npm run dev
 npm install
 # we use webpack DllReference to decrease the build time,
 # this command only needs execute once unless you upgrade the package in build/webpack.dll.conf.js
-set NODE_ENV=development 
+set NODE_ENV=development
 npm run build:dll
 
 # the dev-server will set proxy table to your backend

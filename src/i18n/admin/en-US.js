@@ -3,7 +3,7 @@ export const m = {
   Dashboard: 'Dashboard',
   General: 'General',
   User: 'User',
-  Announcement: 'Announcement',
+  Announcement: '공지사항',
   System_Config: 'System Config',
   Judge_Server: 'Judge Server',
   Prune_Test_Case: 'Prune Test Case',
@@ -11,7 +11,7 @@ export const m = {
   FromFile: 'From File',
   ToFile: 'To File',
   ShareSubmission: 'Share Submission',
-  Problem_List: 'Problem List',
+  Problem_List: '문제 리스트',
   Create_Problem: 'Create Problem',
   Export_Import_Problem: 'Export Or Import Problem',
   Contest: 'Contest',
@@ -32,7 +32,7 @@ export const m = {
   Two_Factor_Auth: 'Two Factor Auth',
   Is_Disabled: 'Is Disabled',
   // Announcement.vue
-  General_Announcement: 'Announcement',
+  General_Announcement: '공지사항',
   Announcement_Title: 'Title',
   Announcement_Content: 'Content',
   Announcement_visible: 'Visible',
@@ -61,13 +61,13 @@ export const m = {
   Test_Case_Prune_Test_Case: 'Prune Test Case',
   // Problem.vue
   Display_ID: 'Display ID',
-  Title: 'Title',
-  Description: 'Description',
+  Title: '문제 타이틀',
+  Description: '문제 설명',
   Input_Description: 'Input Description',
   Output_Description: 'Output Description',
-  Time_Limit: 'Time Limit',
-  Memory_limit: 'Memory limit',
-  Difficulty: 'Difficulty',
+  Time_Limit: '시간 제한',
+  Memory_limit: '메모리 제한',
+  Difficulty: '난이도',
   Visible: 'Visible',
   Languages: 'Languages',
   Input_Samples: 'Input Samples',
@@ -95,7 +95,7 @@ export const m = {
   Mid: 'Mid',
   Low: 'Low',
   Tag: 'Tag',
-  New_Tag: 'New Tag',
+  New_Tag: '새 태그',
    // ProblemList.vue
   Contest_Problem_List: 'Contest Problem List',
   // Contest.vue
@@ -117,8 +117,8 @@ export const m = {
   Force_HTTPS: 'Force HTTPS',
   CDN_HOST: 'CDN HOST',
   // Login.vue
-  Welcome_to_Login: 'Welcome to Login',
+  Welcome_to_Login: '로그인',
   GO: 'GO',
   username: 'username',
-  password: 'password'
+  password: '비밀번호'
 }

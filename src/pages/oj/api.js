@@ -1,275 +1,283 @@
-import Vue from 'vue'
-import store from '@/store'
-import axios from 'axios'
+import Vue from "vue";
+import store from "@/store";
+import axios from "axios";
 
-Vue.prototype.$http = axios
-axios.defaults.baseURL = '/api'
-axios.defaults.xsrfHeaderName = 'X-CSRFToken'
-axios.defaults.xsrfCookieName = 'csrftoken'
+Vue.prototype.$http = axios;
+axios.defaults.baseURL = "/api";
+axios.defaults.xsrfHeaderName = "X-CSRFToken";
+axios.defaults.xsrfCookieName = "csrftoken";
 
 export default {
-  getWebsiteConf (params) {
-    return ajax('website', 'get', {
+  getWebsiteConf(params) {
+    return ajax("website", "get", {
       params
-    })
+    });
   },
-  getAnnouncementList (offset, limit) {
+  getAnnouncementList(offset, limit) {
     let params = {
       offset: offset,
       limit: limit
-    }
-    return ajax('announcement', 'get', {
+    };
+    return ajax("announcement", "get", {
       params
-    })
+    });
   },
-  login (data) {
-    return ajax('login', 'post', {
+  login(data) {
+    return ajax("login", "post", {
       data
-    })
+    });
   },
-  checkUsernameOrEmail (username, email) {
-    return ajax('check_username_or_email', 'post', {
+  checkUsernameOrEmail(username, email) {
+    return ajax("check_username_or_email", "post", {
       data: {
         username,
         email
       }
-    })
+    });
+  },
+  applyUserEmailValidCheck(email) {
+    console.log("applyUserEmailValidCheck email: ", email);
+    return ajax("apply_user_email_valid_check", "post", {
+      data: {
+        email
+      }
+    });
   },
   // 注册
-  register (data) {
-    return ajax('register', 'post', {
+  register(data) {
+    return ajax("register", "post", {
       data
-    })
+    });
   },
-  logout () {
-    return ajax('logout', 'get')
+  logout() {
+    return ajax("logout", "get");
   },
-  getCaptcha () {
-    return ajax('captcha', 'get')
+  getCaptcha() {
+    return ajax("captcha", "get");
   },
-  getUserInfo (username = undefined) {
-    return ajax('profile', 'get', {
+  getUserInfo(username = undefined) {
+    return ajax("profile", "get", {
       params: {
         username
       }
-    })
+    });
   },
-  updateProfile (profile) {
-    return ajax('profile', 'put', {
+  updateProfile(profile) {
+    return ajax("profile", "put", {
       data: profile
-    })
+    });
   },
-  freshDisplayID (userID) {
-    return ajax('profile/fresh_display_id', 'get', {
+  freshDisplayID(userID) {
+    return ajax("profile/fresh_display_id", "get", {
       params: {
         user_id: userID
       }
-    })
+    });
   },
-  twoFactorAuth (method, data) {
-    return ajax('two_factor_auth', method, {
+  twoFactorAuth(method, data) {
+    return ajax("two_factor_auth", method, {
       data
-    })
+    });
   },
-  tfaRequiredCheck (username) {
-    return ajax('tfa_required', 'post', {
+  tfaRequiredCheck(username) {
+    return ajax("tfa_required", "post", {
       data: {
         username
       }
-    })
+    });
   },
-  getSessions () {
-    return ajax('sessions', 'get')
+  getSessions() {
+    return ajax("sessions", "get");
   },
-  deleteSession (sessionKey) {
-    return ajax('sessions', 'delete', {
+  deleteSession(sessionKey) {
+    return ajax("sessions", "delete", {
       params: {
         session_key: sessionKey
       }
-    })
+    });
   },
-  applyResetPassword (data) {
-    return ajax('apply_reset_password', 'post', {
+  applyResetPassword(data) {
+    return ajax("apply_reset_password", "post", {
       data
-    })
+    });
   },
-  resetPassword (data) {
-    return ajax('reset_password', 'post', {
+  resetPassword(data) {
+    return ajax("reset_password", "post", {
       data
-    })
+    });
   },
-  changePassword (data) {
-    return ajax('change_password', 'post', {
+  changePassword(data) {
+    return ajax("change_password", "post", {
       data
-    })
+    });
   },
-  changeEmail (data) {
-    return ajax('change_email', 'post', {
+  changeEmail(data) {
+    return ajax("change_email", "post", {
       data
-    })
+    });
   },
-  getLanguages () {
-    return ajax('languages', 'get')
+  getLanguages() {
+    return ajax("languages", "get");
   },
-  getProblemTagList () {
-    return ajax('problem/tags', 'get')
+  getProblemTagList() {
+    return ajax("problem/tags", "get");
   },
-  getProblemList (offset, limit, searchParams) {
+  getProblemList(offset, limit, searchParams) {
     let params = {
       paging: true,
       offset,
       limit
-    }
-    Object.keys(searchParams).forEach((element) => {
+    };
+    Object.keys(searchParams).forEach(element => {
       if (searchParams[element]) {
-        params[element] = searchParams[element]
+        params[element] = searchParams[element];
       }
-    })
-    return ajax('problem', 'get', {
+    });
+    return ajax("problem", "get", {
       params: params
-    })
+    });
   },
-  pickone () {
-    return ajax('pickone', 'get')
+  pickone() {
+    return ajax("pickone", "get");
   },
-  getProblem (problemID) {
-    return ajax('problem', 'get', {
+  getProblem(problemID) {
+    return ajax("problem", "get", {
       params: {
         problem_id: problemID
       }
-    })
+    });
   },
-  getContestList (offset, limit, searchParams) {
+  getContestList(offset, limit, searchParams) {
     let params = {
       offset,
       limit
-    }
+    };
     if (searchParams !== undefined) {
-      Object.keys(searchParams).forEach((element) => {
+      Object.keys(searchParams).forEach(element => {
         if (searchParams[element]) {
-          params[element] = searchParams[element]
+          params[element] = searchParams[element];
         }
-      })
+      });
     }
-    return ajax('contests', 'get', {
+    return ajax("contests", "get", {
       params
-    })
+    });
   },
-  getContest (id) {
-    return ajax('contest', 'get', {
+  getContest(id) {
+    return ajax("contest", "get", {
       params: {
         id
       }
-    })
+    });
   },
-  getContestAccess (contestID) {
-    return ajax('contest/access', 'get', {
+  getContestAccess(contestID) {
+    return ajax("contest/access", "get", {
       params: {
         contest_id: contestID
       }
-    })
+    });
   },
-  checkContestPassword (contestID, password) {
-    return ajax('contest/password', 'post', {
+  checkContestPassword(contestID, password) {
+    return ajax("contest/password", "post", {
       data: {
         contest_id: contestID,
         password
       }
-    })
+    });
   },
-  getContestAnnouncementList (contestId) {
-    return ajax('contest/announcement', 'get', {
+  getContestAnnouncementList(contestId) {
+    return ajax("contest/announcement", "get", {
       params: {
         contest_id: contestId
       }
-    })
+    });
   },
-  getContestProblemList (contestId) {
-    return ajax('contest/problem', 'get', {
+  getContestProblemList(contestId) {
+    return ajax("contest/problem", "get", {
       params: {
         contest_id: contestId
       }
-    })
+    });
   },
-  getContestProblem (problemID, contestID) {
-    return ajax('contest/problem', 'get', {
+  getContestProblem(problemID, contestID) {
+    return ajax("contest/problem", "get", {
       params: {
         contest_id: contestID,
         problem_id: problemID
       }
-    })
+    });
   },
-  submitCode (data) {
-    return ajax('submission', 'post', {
+  submitCode(data) {
+    return ajax("submission", "post", {
       data
-    })
+    });
   },
-  getSubmissionList (offset, limit, params) {
-    params.limit = limit
-    params.offset = offset
-    return ajax('submissions', 'get', {
+  getSubmissionList(offset, limit, params) {
+    params.limit = limit;
+    params.offset = offset;
+    return ajax("submissions", "get", {
       params
-    })
+    });
   },
-  getContestSubmissionList (offset, limit, params) {
-    params.limit = limit
-    params.offset = offset
-    return ajax('contest_submissions', 'get', {
+  getContestSubmissionList(offset, limit, params) {
+    params.limit = limit;
+    params.offset = offset;
+    return ajax("contest_submissions", "get", {
       params
-    })
+    });
   },
-  getSubmission (id) {
-    return ajax('submission', 'get', {
+  getSubmission(id) {
+    return ajax("submission", "get", {
       params: {
         id
       }
-    })
+    });
   },
-  submissionExists (problemID) {
-    return ajax('submission_exists', 'get', {
+  submissionExists(problemID) {
+    return ajax("submission_exists", "get", {
       params: {
         problem_id: problemID
       }
-    })
+    });
   },
-  submissionRejudge (id) {
-    return ajax('admin/submission/rejudge', 'get', {
+  submissionRejudge(id) {
+    return ajax("admin/submission/rejudge", "get", {
       params: {
         id
       }
-    })
+    });
   },
-  updateSubmission (data) {
-    return ajax('submission', 'put', {
+  updateSubmission(data) {
+    return ajax("submission", "put", {
       data
-    })
+    });
   },
-  getUserRank (offset, limit, rule = 'acm') {
+  getUserRank(offset, limit, rule = "acm") {
     let params = {
       offset,
       limit,
       rule
-    }
-    return ajax('user_rank', 'get', {
+    };
+    return ajax("user_rank", "get", {
       params
-    })
+    });
   },
-  getContestRank (params) {
-    return ajax('contest_rank', 'get', {
+  getContestRank(params) {
+    return ajax("contest_rank", "get", {
       params
-    })
+    });
   },
-  getACMACInfo (params) {
-    return ajax('admin/contest/acm_helper', 'get', {
+  getACMACInfo(params) {
+    return ajax("admin/contest/acm_helper", "get", {
       params
-    })
+    });
   },
-  updateACInfoCheckedStatus (data) {
-    return ajax('admin/contest/acm_helper', 'put', {
+  updateACInfoCheckedStatus(data) {
+    return ajax("admin/contest/acm_helper", "put", {
       data
-    })
+    });
   }
-}
+};
 
 /**
  * @param url
@@ -278,11 +286,11 @@ export default {
  * @param data post data, use for method put|post
  * @returns {Promise}
  */
-function ajax (url, method, options) {
+function ajax(url, method, options) {
   if (options !== undefined) {
-    var {params = {}, data = {}} = options
+    var { params = {}, data = {} } = options;
   } else {
-    params = data = {}
+    params = data = {};
   }
   return new Promise((resolve, reject) => {
     axios({
@@ -290,25 +298,31 @@ function ajax (url, method, options) {
       method,
       params,
       data
-    }).then(res => {
-      // API正常返回(status=20x), 是否错误通过有无error判断
-      if (res.data.error !== null) {
-        Vue.prototype.$error(res.data.data)
-        reject(res)
-        // 若后端返回为登录，则为session失效，应退出当前登录用户
-        if (res.data.data.startsWith('Please login')) {
-          store.dispatch('changeModalStatus', {'mode': 'login', 'visible': true})
+    }).then(
+      res => {
+        // API正常返回(status=20x), 是否错误通过有无error判断
+        if (res.data.error !== null) {
+          Vue.prototype.$error(res.data.data);
+          reject(res);
+          // 若后端返回为登录，则为session失效，应退出当前登录用户
+          if (res.data.data.startsWith("Please login")) {
+            store.dispatch("changeModalStatus", {
+              mode: "login",
+              visible: true
+            });
+          }
+        } else {
+          resolve(res);
+          // if (method !== 'get') {
+          //   Vue.prototype.$success('Succeeded')
+          // }
         }
-      } else {
-        resolve(res)
-        // if (method !== 'get') {
-        //   Vue.prototype.$success('Succeeded')
-        // }
+      },
+      res => {
+        // API请求异常，一般为Server error 或 network error
+        reject(res);
+        Vue.prototype.$error(res.data.data);
       }
-    }, res => {
-      // API请求异常，一般为Server error 或 network error
-      reject(res)
-      Vue.prototype.$error(res.data.data)
-    })
-  })
+    );
+  });
 }
