@@ -28,7 +28,8 @@ class PostAPI(APIView):
             posts = posts.filter(related_problem__id=related_problem_id)
         keyword = request.GET.get("keyword", "").strip()
         if keyword:
-            posts = posts.filter(Q(title__icontains=keyword) | Q(id__icontains=keyword) | Q(author__username__icontains=keyword))
+            posts = posts.filter(Q(title__icontains=keyword) | Q(id__icontains=keyword) |
+                                 Q(author__username__icontains=keyword))
 
         data = self.paginate_data(request, posts, PostSerializer)
         return self.success(data)
