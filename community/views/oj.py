@@ -19,14 +19,23 @@ class PostAPI(APIView):
             except Post.DoesNotExist:
                 return self.error("Post does not exist")
 
-        posts = Post.objects.all()
+        try:
+            posts = Post.objects.all()
+        except Post.DoesNotExist:
+            return self.error("Post does not exist")
+
         category = request.GET.get("category")
-        if category:
-            posts = posts.filter(category=category)
         related_problem_id = request.GET.get("related_problem")
+        keyword = request.GET.get("keyword", "").strip()
+
+        if category:
+            if category not in list(zip(*Post.POST_CATEGORIES))[0]:
+                return self.error("invalid category")
+            posts = posts.filter(category=category)
+
         if related_problem_id:
             posts = posts.filter(related_problem__id=related_problem_id)
-        keyword = request.GET.get("keyword", "").strip()
+
         if keyword:
             posts = posts.filter(Q(title__icontains=keyword) | Q(id__icontains=keyword) |
                                  Q(author__username__icontains=keyword))
@@ -42,6 +51,7 @@ class PostAPI(APIView):
             return self.error("invalid category")
 
         data["author"] = request.user
+
         related_problem_id = data.get("related_problem_id", None)
         if related_problem_id:
             data["related_problem"] = Problem.objects.get(id=related_problem_id)
