@@ -81,7 +81,7 @@ class PostAPI(APIView):
     @login_required
     def put(self, request):
         data = request.data
-        post_id = data.pop("id")
+        post_id = data.pop("post_id")
 
         try:
             post = Post.objects.get(id=post_id)
@@ -95,3 +95,8 @@ class PostAPI(APIView):
             setattr(post, k, v)
         post.save()
         return self.success("update complete")
+
+
+class DetailPostAPI(APIView):
+    def get(self, request):
+        post_id = request.GET.get("post_id")

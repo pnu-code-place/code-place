@@ -12,6 +12,7 @@ from django.utils.timezone import now
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
 from otpauth import OtpAuth
 from django.core.cache import cache
+from django.http import HttpResponseBadRequest, HttpResponseNotFound, HttpResponseForbidden, HttpResponseServerError
 
 from problem.models import Problem
 from utils.constants import ContestRuleType
@@ -232,7 +233,7 @@ class ApplyUserEmailValidCheckAPI(APIView):
     def post(self, request):
         data = request.data
         if not data.get("email"):
-            return self.error('no email in request data')
+            return HttpResponseBadRequest("no email in body")
 
         email = data["email"]
 
@@ -253,21 +254,21 @@ class UserEmailValidCheckAPI(APIView):
     def post(self, request):
         data = request.data
         if not data.get('email'):
-            return self.error('no email in request data')
+            return HttpResponseBadRequest('no email in request data')
         if not data.get('code'):
-            return self.error('no code in request data')
+            return HttpResponseBadRequest('no code in request data')
         email = data["email"]
         code = data["code"]
         if not cache.get(email):
-            return self.error('code expired or invalid email')
+            return HttpResponseServerError("code expired or invalid email")
 
-        validCode = cache.get(email)
-        if code == validCode:
+        valid_code = cache.get(email)
+        if code == valid_code:
             cache.delete(email)
             print("code validation complete")
             return self.success('user email validation complete')
         else:
-            return self.error('validation code mismatch')
+            return HttpResponseServerError("validation code mismatch")
 
 
 class UserRegisterAPI(APIView):
