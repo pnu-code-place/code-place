@@ -62,6 +62,7 @@ export default {
   mixins: [FormMixin],
   data() {
     const CheckRequiredTFA = (rule, value, callback) => {
+      console.log(value)
       if (value !== "") {
         api.tfaRequiredCheck(value).then(res => {
           this.tfaRequired = res.data.data.result;
@@ -99,6 +100,7 @@ export default {
       this.validateForm("formLogin").then(valid => {
         this.btnLoginLoading = true;
         let formData = Object.assign({}, this.formLogin);
+        console.log(formData)
         if (!this.tfaRequired) {
           delete formData["tfa_code"];
         }

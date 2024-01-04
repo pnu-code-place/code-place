@@ -7,7 +7,7 @@
       <img src="@/assets/chevron-down.png" class="bx bx-chevron-down"/>
     </div>
     <ul class="options" v-if="openState == true">
-      <li v-for="(item, index) in items" class="option" @click="handleClickItem(item.name)">
+      <li v-for="(item, index) in items" class="option" @click="handleClickItem(item.id, item.name)">
         <span class="option-text">{{ item.name }}</span>
       </li>
     </ul>
@@ -32,10 +32,14 @@ export default {
     };
   },
   methods:{
-    handleClickItem(itemName){
+    handleClickItem(itemId, itemName){
       this.openState = false
       this.selectedOption = itemName
-
+      const dto = {
+        "id": itemId,
+        "dropdownType": this.dropdownType
+      }
+      this.$emit('handleDropDownChange', dto)
     },
     handleOpenState(){
       if(this.openState === true){

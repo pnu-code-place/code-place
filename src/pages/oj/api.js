@@ -43,6 +43,15 @@ export default {
       }
     });
   },
+    userEmailValidCheck(email, code) {
+        console.log("applyUserEmailValidCheck email: ", email, code);
+        return ajax("user_email_valid_check", "post", {
+            data: {
+                email,
+                code
+            }
+        });
+    },
   // 注册
   register(data) {
     return ajax("register", "post", {
@@ -79,10 +88,10 @@ export default {
       data
     });
   },
-  tfaRequiredCheck(username) {
+  tfaRequiredCheck(email) {
     return ajax("tfa_required", "post", {
       data: {
-        username
+        email
       }
     });
   },

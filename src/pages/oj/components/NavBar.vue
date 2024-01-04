@@ -1,14 +1,20 @@
 <template>
   <div id="header">
     <Menu theme="default" mode="horizontal" @on-select="handleRoute" :active-name="activeMenu" class="oj-menu">
-      <div class="logo"><img src="@/assets/ojLogo.png" width="120px"/></div>
+      <div class="logo" @click="handleRoute('/')">
+        <img src="@/assets/pnu.png" width="70" height="70"/>
+        <div class="headerIcon">
+          <p class="pnuName">부산대학교</p>
+          <p class="systemTitle">온라인 저지 시스템</p>
+        </div>
+      </div>
 
       <Menu-item class="menuItemText first" name="/">
         {{$t('m.Home')}}
       </Menu-item>
-      <Menu-item class="menuItemText" name="/notice">
-        {{$t('m.Notice')}}
-      </Menu-item>
+<!--      <Menu-item class="menuItemText" name="/notice">-->
+<!--        {{$t('m.Notice')}}-->
+<!--      </Menu-item>-->
       <Menu-item class="menuItemText" name="/problem">
         {{$t('m.NavProblems')}}
       </Menu-item>
@@ -24,9 +30,9 @@
       <Menu-item class="menuItemText" name="/status">
         {{$t('m.Rank')}}
       </Menu-item>
-        <Menu-item class="menuItemText" name="/status">
-            {{$t('m.About')}}
-        </Menu-item>
+<!--        <Menu-item class="menuItemText" name="/status">-->
+<!--            {{$t('m.About')}}-->
+<!--        </Menu-item>-->
 <!--      <Menu-item class="menuItemText" name="/status">-->
 <!--        {{$t('m.NavStatus')}}-->
 <!--      </Menu-item>-->
@@ -52,24 +58,10 @@
 <!--          {{$t('m.FAQ')}}-->
 <!--        </Menu-item>-->
 <!--      </Submenu>-->
-      <template v-if="!isAuthenticated">
-        <div class="btn-menu">
-          <Button type="ghost"
-                  ref="loginBtn"
-                  shape="circle"
-                  @click="handleBtnClick('login')">{{$t('m.Login')}}
-          </Button>
-<!--          <Button v-if="website.allow_register"-->
-<!--                  type="ghost"-->
-<!--                  shape="circle"-->
-<!--                  @click="handleBtnClick('register')"-->
-<!--                  style="margin-left: 5px;">{{$t('m.Register')}}-->
-<!--          </Button>-->
-        </div>
-      </template>
-      <template v-else>
+
+      <template v-if="isAuthenticated">
         <Dropdown class="drop-menu" @on-click="handleRoute" placement="bottom" trigger="click">
-          <Button type="text" class="drop-menu-title">{{ user.username }}
+          <Button type="text" class="drop-menu-title">{{ user.username+' 님' }}
             <Icon type="arrow-down-b"></Icon>
           </Button>
           <Dropdown-menu slot="list">
@@ -82,7 +74,7 @@
         </Dropdown>
       </template>
     </Menu>
-    <Modal v-model="modalVisible" :width="400" :styles="{'top': modalStatus.mode == 'login' ? '10%' : '5%'}">
+    <Modal v-model="modalVisible" :width="400" :styles="{'top': modalStatus.mode == 'login' ? '10%' : '10%'}">
       <div slot="header" class="modal-title" style="text-align: center">{{modalStatus.mode == 'login' ? $t('m.LoginModalHeader') : $t('m.RegisterModalHeader') }}</div>
       <component :is="modalStatus.mode" v-if="modalVisible"></component>
       <div slot="footer" style="display: none"></div>
@@ -142,55 +134,75 @@
   #header {
     min-width: 300px;
     position: fixed;
+    padding-left: 10%;
+    padding-right: 10%;
     top: 0;
     left: 0;
-    height: auto;
+    height: 8%;
     width: 100%;
     z-index: 1000;
     background-color: #fff;
-    box-shadow: 0 1px 5px 0 rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 1.5px 0 rgba(0, 0, 0, 0.1);
 
     .oj-menu {
       background: #fdfdfd;
+      height: auto;
     }
 
     .logo {
-      margin-left: 2%;
-      margin-right: 2%;
+      cursor: pointer;
+      text-align: left;
       float: left;
-      line-height: 60px;
+      height: auto;
+      display: flex;
+      line-height: normal;
+      .pnuName{
+        font-size: 14px;
+        font-weight: normal;
+      }
+      .systemTitle{
+        font-size: 18px;
+        font-weight: bold;
+        color: #255AA4;
+      }
+    }
+
+    .headerIcon{
+      width: auto;
+      margin-top: 6%;
     }
 
     .drop-menu {
       float: right;
-      margin-right: 30px;
-      position: absolute;
-      right: 10px;
+      right: 0px;
       &-title {
         font-size: 18px;
       }
     }
-    .btn-menu {
-      font-size: 16px;
-      float: right;
-      margin-right: 10px;
-    }
+
+  }
+  .btn-menu {
+    font-size: 30px;
+    height: auto;
+    float: right;
   }
 
   .modal {
     &-title {
       font-size: 18px;
-      font-weight: 600;
+      font-weight: 1000;
     }
   }
 
   .menuItemText{
-    font-size: 15px;
+    font-size: 18px;
     font-weight: 600;
+    line-height: 70px;
+    margin-right: 30px;
   }
 
   .first{
-    margin-left: 60px;
+    margin-left: 100px;
   }
 
   .menuItemText:hover{

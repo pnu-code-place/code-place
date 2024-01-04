@@ -94,7 +94,7 @@
     font-weight: 400;
     height: 100%;
     -webkit-font-smoothing: antialiased;
-    background-color: #EDECEC;
+    background-color: #ffffff;
     overflow-y: scroll;
     min-width: 1000px;
   }
@@ -147,7 +147,4 @@
     margin-right: 5px;
     /*font-size: 18px;*/
   }
-
-
-
 </style>

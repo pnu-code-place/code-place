@@ -72,7 +72,6 @@
     }
   }
 
-
   @media screen and (max-width: 1200px) {
   .content-app {
     margin-top: 160px;
@@ -82,7 +81,7 @@
 
 @media screen and (min-width: 1200px) {
   .content-app {
-    margin-top: 80px;
+    margin-top: 90px;
     padding: 0 2%;
   }
 }

@@ -4,9 +4,9 @@
       <div class="inputName">
         부산대학교 웹메일
       </div>
-      <FormItem prop="email">
+      <FormItem prop="pnuWebMail">
         <Input
-          v-model="formRegister.pnuWebMail"
+          v-model="formRegister.email"
           :placeholder="$t('m.Email_Address')"
           size="large"
           @on-enter="handleRegister"
@@ -18,20 +18,24 @@
         <Button
           type="primary"
           class="emailAuthBtn"
+          :disabled="this.emailAuthCodeInputState"
           @click="handleClickEmailAuthBtn"
           >인증</Button
         >
       </FormItem>
       <FormItem prop="emailAuthCode" v-if="emailAuthCodeInputState">
         <Input
-          v-model="formRegister.pnuAuthCode"
+          v-model="pnuAuthCode"
           :placeholder="$t('m.Email_Auth_Code')"
           size="large"
           @on-enter="handleRegister"
           class="emailCodeInput"
         >
         </Input>
-        <Button type="primary" class="emailAuthBtn emailCodeBtn" @click=""
+        <Button type="primary"
+                class="emailAuthBtn emailCodeBtn"
+                @click="handleClickAuthCodeVerificationBtn"
+                :disabled="emailAuthCodeVerifyCompletedState"
           >인증완료</Button
         >
       </FormItem>
@@ -41,7 +45,7 @@
       <FormItem prop="nickname">
         <Input
           type="text"
-          v-model="formRegister.nickname"
+          v-model="formRegister.username"
           :placeholder="$t('m.RegisterNickname')"
           size="large"
           @on-enter="handleRegister"
@@ -51,11 +55,11 @@
       <div class="inputName">
         단과대학 선택
       </div>
-      <CustomDropDown :dropdownType="DropDownType.COLLEGE" />
+      <CustomDropDown :dropdownType="DropDownType.COLLEGE" @handleDropDownChange="handleCustomDropdownChange"/>
       <div class="inputName">
         학과선택
       </div>
-      <CustomDropDown :dropdownType="DropDownType.MAJOR" />
+      <CustomDropDown :dropdownType="DropDownType.MAJOR" @handleDropDownChange="handleCustomDropdownChange"/>
       <div class="inputName">
         비밀번호
       </div>
@@ -98,12 +102,6 @@
           $t("m.UserLogin")
         }}</a>
       </div>
-      <!--      <Button-->
-      <!--        type="ghost"-->
-      <!--        @click="switchMode('login')"-->
-      <!--        class="btn" long>-->
-      <!--        {{$t('m.Already_Registed')}}-->
-      <!--      </Button>-->
     </div>
   </div>
 </template>
@@ -151,7 +149,6 @@ export default {
     };
     const CheckPassword = (rule, value, callback) => {
       if (this.formRegister.password !== "") {
-        // 对第二个密码框再次验证
         this.$refs.formRegister.validateField("passwordAgain");
       }
       callback();
@@ -167,28 +164,24 @@ export default {
     return {
       btnRegisterLoading: false,
       emailAuthCodeInputState: false,
+      emailAuthCodeVerifyCompletedState: false,
       name1: "단과대학 선택",
       name2: "학과 선택",
+      pnuAuthCode: "",
       formRegister: {
-        pnuWebMail: "",
-        pnuAuthCode: "",
-        nickname: "",
-        college: "",
-        major: "",
+        email: "",
         username: "",
+        collegeId: "",
+        departmentId: "",
         password: "",
         passwordAgain: "",
         captcha: ""
       },
       ruleRegister: {
-        username: [
-          { required: true, trigger: "blur" },
-          { validator: CheckUsernameNotExist, trigger: "blur" }
-        ],
-        email: [
-          { required: true, type: "email", trigger: "blur" },
-          { validator: CheckEmailNotExist, trigger: "blur" }
-        ],
+        // pnuWebMail: [
+        //   { required: true, type: "email", trigger: "blur" },
+        //   { validator: CheckEmailNotExist, trigger: "blur" }
+        // ],
         password: [
           { required: true, trigger: "blur", min: 6, max: 20 },
           { validator: CheckPassword, trigger: "blur" }
@@ -196,16 +189,24 @@ export default {
         passwordAgain: [
           { required: true, validator: CheckAgainPassword, trigger: "change" }
         ],
-        captcha: [{ required: true, trigger: "blur", min: 1, max: 10 }]
+        // captcha: [{ required: true, trigger: "blur", min: 1, max: 10 }]
       }
     };
   },
   methods: {
     ...mapActions(["changeModalStatus", "getProfile"]),
     handleClickEmailAuthBtn() {
-      this.$success("인증메일이 성공적으로 전송되었습니다.");
+      api.applyUserEmailValidCheck(this.formRegister.email);
+      this.$success("인증 메일이 성공적으로 전송되었습니다.");
       this.emailAuthCodeInputState = true;
-      api.applyUserEmailValidCheck(this.formRegister.pnuWebMail);
+    },
+    async handleClickAuthCodeVerificationBtn() {
+      let res = await api.userEmailValidCheck(this.formRegister.email, this.pnuAuthCode)
+      if (res.status === 200) {
+        this.emailAuthCodeVerifyCompletedState = true
+        this.$success("인증 완료되었습니다.");
+      }
+      console.log(res)
     },
     switchMode(mode) {
       this.changeModalStatus({
@@ -214,6 +215,10 @@ export default {
       });
     },
     handleRegister() {
+      if(!this.emailAuthCodeVerifyCompletedState){
+        this.$error("웹메일 인증이 완료되지 않았습니다.")
+        return
+      }
       this.validateForm("formRegister").then(valid => {
         let formData = Object.assign({}, this.formRegister);
         delete formData["passwordAgain"];
@@ -225,12 +230,19 @@ export default {
             this.btnRegisterLoading = false;
           },
           _ => {
-            this.getCaptchaSrc();
-            this.formRegister.captcha = "";
+            // this.getCaptchaSrc();
+            // this.formRegister.captcha = "";
             this.btnRegisterLoading = false;
           }
         );
       });
+    },
+    handleCustomDropdownChange(data){
+      if(data.dropdownType === DropDownType.COLLEGE){
+        this.formRegister.collegeId = data.id
+        return
+      }
+      this.formRegister.departmentId = data.id
     }
   },
   computed: {
