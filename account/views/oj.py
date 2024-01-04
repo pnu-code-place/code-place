@@ -281,6 +281,7 @@ class UserRegisterAPI(APIView):
             return self.error("Register function has been disabled by admin")
 
         data = request.data
+        print(data)
         data["username"] = data["username"].lower()
         data["email"] = data["email"].lower()
 
@@ -288,9 +289,9 @@ class UserRegisterAPI(APIView):
             return self.error("username already exists")
         if User.objects.filter(email=data["email"]).exists():
             return self.error("email already exists")
-
-        college = College.objects.get(id=data['college'])
-        department = Department.objects.get(id=data['department'])
+        print(data)
+        college = College.objects.get(id=data['collegeId'])
+        department = Department.objects.get(id=data['departmentId'])
         user = User.objects.create(username=data["username"], email=data["email"],
                                    college=college, department=department)
         user.set_password(data["password"])

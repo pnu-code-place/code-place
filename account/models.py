@@ -28,8 +28,8 @@ class Department(models.Model):
 class UserManager(models.Manager):
     use_in_migrations = True
 
-    def get_by_natural_key(self, username):
-        return self.get(**{f"{self.model.USERNAME_FIELD}__iexact": username})
+    def get_by_natural_key(self, email):
+        return self.get(**{f"{self.model.EMAIL_FIELD}__iexact": email})
 
 
 class User(AbstractBaseUser):
@@ -54,6 +54,7 @@ class User(AbstractBaseUser):
     is_disabled = models.BooleanField(default=False)
 
     USERNAME_FIELD = "username"
+    EMAIL_FIELD = "email"
     REQUIRED_FIELDS = []
 
     objects = UserManager()
