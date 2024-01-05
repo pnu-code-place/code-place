@@ -1,11 +1,12 @@
 from ..models import Post, Comment, CommentComment
 from problem.models import Problem
-from ..serializers import PostSerializer
+from ..serializers import SimplePostSerializer, CommentSerializer, CommentCommentSerializer, DetailPostSerializer
 from utils.api import APIView
 from django.db.models import Q
 from django.utils.decorators import method_decorator
 from account.decorators import login_required
 import json
+from django.http import HttpResponseBadRequest, HttpResponseNotFound
 
 
 class PostAPI(APIView):
@@ -14,7 +15,7 @@ class PostAPI(APIView):
         if post_id:
             try:
                 post = Post.objects.get(id=post_id)
-                post_data = PostSerializer(post).data
+                post_data = SimplePostSerializer(post).data
                 return self.success(post_data)
             except Post.DoesNotExist:
                 return self.error("Post does not exist")
@@ -40,7 +41,7 @@ class PostAPI(APIView):
             posts = posts.filter(Q(title__icontains=keyword) | Q(id__icontains=keyword) |
                                  Q(author__username__icontains=keyword))
 
-        data = self.paginate_data(request, posts, PostSerializer)
+        data = self.paginate_data(request, posts, SimplePostSerializer)
         return self.success(data)
 
     @login_required
@@ -100,3 +101,13 @@ class PostAPI(APIView):
 class DetailPostAPI(APIView):
     def get(self, request):
         post_id = request.GET.get("post_id")
+        if not post_id:
+            return HttpResponseBadRequest("no post_id in query string")
+
+        try:
+            post = Post.objects.get(id=post_id)
+        except Post.DoesNotExist:
+            return HttpResponseNotFound("no post that have input post_id")
+
+        post_data = DetailPostSerializer(post).data
+        return self.success(post_data)

@@ -19,18 +19,19 @@ class Post(models.Model):
     title = models.TextField()
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     create_time = models.DateTimeField(auto_now_add=True)
-    body = models.TextField()
+    body = models.TextField(default='')
     related_problem = models.ForeignKey(Problem, null=True, on_delete=models.SET_NULL)
 
 
 class Comment(models.Model):
-    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    parent_post = models.ForeignKey(Post, on_delete=models.CASCADE)
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     create_time = models.DateTimeField(auto_now_add=True)
-    body = models.TextField()
+    body = models.TextField(default='')
 
 
 class CommentComment(models.Model):
-    comment = models.ForeignKey(Comment, on_delete=models.CASCADE)
+    parent_comment = models.ForeignKey(Comment, on_delete=models.CASCADE)
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     create_time = models.DateTimeField(auto_now_add=True)
+    body = models.TextField(default='')
