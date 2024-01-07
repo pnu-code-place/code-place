@@ -138,7 +138,6 @@
     padding-right: 10%;
     top: 0;
     left: 0;
-    height: 8%;
     width: 100%;
     z-index: 1000;
     background-color: #fff;
