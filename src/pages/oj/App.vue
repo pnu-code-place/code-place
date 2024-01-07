@@ -57,7 +57,9 @@
 </script>
 
 <style lang="less">
-
+  li {
+    list-style: none;
+  }
   * {
     -webkit-box-sizing: border-box;
     -moz-box-sizing: border-box;
