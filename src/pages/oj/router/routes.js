@@ -135,7 +135,24 @@ export default [
     name: 'user-home',
     path: '/user-home',
     component: UserHome,
-    meta: {requiresAuth: true, title: 'User Home'}
+    meta: {requiresAuth: true, title: 'User Home'},
+    children: [
+      {
+        name: 'problems',
+        path: 'problems',
+        meta: {requiresAuth: true, title: 'User Problems'},
+      },
+      {
+        name: 'community',
+        path: 'community',
+        meta: {requiresAuth: true, title: 'Community'},
+      },
+      {
+        name: 'user-info',
+        path: 'user-info',
+        meta: {requiresAuth: true, title: 'User Info'},
+      }
+    ]
   },
   {
     path: '/setting',
