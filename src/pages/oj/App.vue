@@ -17,64 +17,66 @@
 </template>
 
 <script>
-  import { mapActions, mapState } from 'vuex'
-  import NavBar from '@oj/components/NavBar.vue'
+import {mapActions, mapState} from 'vuex'
+import NavBar from '@oj/components/NavBar.vue'
 
-  export default {
-    name: 'app',
-    components: {
-      NavBar
+export default {
+  name: 'app',
+  components: {
+    NavBar
+  },
+  data() {
+    return {
+      version: process.env.VERSION
+    }
+  },
+  created() {
+    try {
+      document.body.removeChild(document.getElementById('app-loader'))
+    } catch (e) {
+    }
+  },
+  mounted() {
+    this.getWebsiteConfig()
+  },
+  methods: {
+    ...mapActions(['getWebsiteConfig', 'changeDomTitle'])
+  },
+  computed: {
+    ...mapState(['website'])
+  },
+  watch: {
+    'website'() {
+      this.changeDomTitle()
     },
-    data () {
-      return {
-        version: process.env.VERSION
-      }
-    },
-    created () {
-      try {
-        document.body.removeChild(document.getElementById('app-loader'))
-      } catch (e) {
-      }
-    },
-    mounted () {
-      this.getWebsiteConfig()
-    },
-    methods: {
-      ...mapActions(['getWebsiteConfig', 'changeDomTitle'])
-    },
-    computed: {
-      ...mapState(['website'])
-    },
-    watch: {
-      'website' () {
-        this.changeDomTitle()
-      },
-      '$route' () {
-        this.changeDomTitle()
-      }
+    '$route'() {
+      this.changeDomTitle()
     }
   }
+}
 </script>
 
 <style lang="less">
-  li {
-    list-style: none;
-  }
-  * {
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    box-sizing: border-box;
-  }
+li {
+  list-style: none;
+}
 
-  a {
-    text-decoration: none;
-    background-color: transparent;
-    &:active, &:hover {
-      outline-width: 0;
-    }
-  }
+* {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
 
-  @media screen and (max-width: 1200px) {
+a {
+  text-decoration: none;
+  background-color: transparent;
+
+  &:active, &:hover {
+    outline-width: 0;
+  }
+}
+
+@media screen and (max-width: 1200px) {
   .content-app {
     margin-top: 160px;
     padding: 0 2%;
@@ -88,16 +90,32 @@
   }
 }
 
-  .footer {
-    margin-top: 20px;
-    margin-bottom: 10px;
-    text-align: center;
-    font-size: small;
+@media screen and (max-width: 1200px) {
+  .sticky {
+    margin-top: 160px;
+    top: 160px;
+    position: sticky;
   }
+}
 
-  .fadeInUp-enter-active {
-    animation: fadeInUp .8s;
+@media screen and (min-width: 1200px) {
+  .sticky {
+    margin-top: 90px;
+    top: 90px;
+    position: sticky;
   }
+}
+
+.footer {
+  margin-top: 20px;
+  margin-bottom: 10px;
+  text-align: center;
+  font-size: small;
+}
+
+.fadeInUp-enter-active {
+  animation: fadeInUp .8s;
+}
 
 
 </style>
