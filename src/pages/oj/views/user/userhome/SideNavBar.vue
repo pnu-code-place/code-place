@@ -22,7 +22,14 @@ export default {
   },
   methods: {
     gotoSection(name) {
+      // 같은 페이지 내에서 이동하는 경우 이동하지 않음
       if (this.$route.name === name) return
+      // 현재 페이지가 user-home인 경우 user-home/section-name으로 이동
+      if (this.$route.name === 'user-home') {
+        this.$router.push(`${this.$route.path}/${name}`)
+        return
+      }
+      // 현재 페이지가 user-home이 아닌 경우 name으로 이동
       this.$router.push(`${name}`)
     }
   }

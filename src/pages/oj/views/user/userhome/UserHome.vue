@@ -34,9 +34,6 @@ export default {
     this.init()
   },
   methods: {
-    logRouter() {
-      console.log(this.currentSection)
-    },
     ...mapActions(['changeDomTitle']),
     init() {
       this.username = this.$route.query.username
@@ -74,9 +71,10 @@ export default {
   computed: {
     current() {
       if (this.$route.name === 'user-home') {
-        this.$router.push({name: 'problems'})
+        return 'problems'
+      } else {
+        return this.$route.name
       }
-      return this.$route.name || 'problems';
     },
     currentSection() {
       return myPageSections[this.current].component
