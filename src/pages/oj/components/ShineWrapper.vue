@@ -28,8 +28,8 @@
     position: absolute;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
+    width: 200%;
+    height: 200%;
     background-image: linear-gradient(
       to bottom right,
       rgba(255,255,255,0) 0%,
@@ -42,7 +42,7 @@
 }
 
 @keyframes shine {
-  0% {transform:translateX(-100%);}
-  100% {transform:translateX(100%);}
+  0% {transform:translate(-100%, -100%);}
+  100% {transform:translate(100%, 100%);}
 }
 </style>
