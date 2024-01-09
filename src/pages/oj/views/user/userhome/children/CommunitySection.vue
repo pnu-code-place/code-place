@@ -6,7 +6,8 @@ export default {
 
 <template>
   <section>
-    <h2>커뮤니티 통계</h2>
+    <h1>커뮤니티</h1>
+    <section class="subsection">njj</section>
   </section>
 </template>
 

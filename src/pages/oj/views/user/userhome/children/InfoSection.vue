@@ -6,7 +6,7 @@ export default {
 
 <template>
   <section>
-    <h2>개인 정보</h2>
+    <h1>개인 정보</h1>
   </section>
 </template>
 

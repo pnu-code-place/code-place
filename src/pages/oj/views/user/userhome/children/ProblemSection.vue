@@ -1,6 +1,6 @@
 <template>
   <section id="problem-section">
-    <h2>내 문제 통계</h2>
+    <h1>내 문제 통계</h1>
     <div v-if="problems.length">{{ $t('m.List_Solved_Problems') }}
       <Poptip v-if="refreshVisible" trigger="hover" placement="right-start">
         <Icon type="ios-help-outline"></Icon>

@@ -72,8 +72,11 @@ export default {
     }
   },
   computed: {
-    current () {
-      return this.$route.name || 'problems'
+    current() {
+      if (this.$route.name === 'user-home') {
+        this.$router.push({name: 'problems'})
+      }
+      return this.$route.name || 'problems';
     },
     currentSection() {
       return myPageSections[this.current].component
@@ -92,6 +95,7 @@ export default {
 </script>
 
 <style lang="less" scoped>
+
 .container {
   position: relative;
   width: 75%;
@@ -101,6 +105,9 @@ export default {
 
   main {
     width: 80%;
+    gap: 10px;
+    display: flex;
+    flex-direction: column;
   }
 
   p {
