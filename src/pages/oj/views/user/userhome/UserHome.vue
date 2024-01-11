@@ -82,9 +82,6 @@ export default {
     currentProps() {
       return myPageSections[this.current].propsData
     },
-    myPageSections() {
-      return myPageSections
-    },
     router() {
       return this.$route.params
     }
