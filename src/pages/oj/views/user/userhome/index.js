@@ -1,4 +1,4 @@
-import {userProblemData} from "./children/dummies";
+import {userProblemData} from "./dummies";
 
 export const myPageSections = {
   "problems": {component: "problem-section", propsData: {userProblemData: userProblemData}},

@@ -16,9 +16,9 @@ import api from '@oj/api'
 import SideNavBar from "./SideNavBar.vue";
 import UserCard from "./UserCard.vue";
 import {myPageSections} from "./index";
-import CommunitySection from "./children/CommunitySection.vue";
-import InfoSection from "./children/InfoSection.vue";
-import ProblemSection from "./children/ProblemSection.vue";
+import CommunitySection from "./sections/CommunitySection.vue";
+import InfoSection from "./sections/InfoSection.vue";
+import ProblemSection from "./sections/problemSection/ProblemSection.vue";
 
 export default {
 

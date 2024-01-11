@@ -22,7 +22,7 @@
 
 <script>
 import api from '@oj/api'
-import {failedProblems, solvedProblems} from "../dummies";
+import {failedProblems, solvedProblems} from "../../dummies";
 export default {
   name: 'ProblemSection',
   data() {
