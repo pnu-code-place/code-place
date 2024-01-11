@@ -5,12 +5,16 @@ export default {
   components: {ShineWrapper},
   props: {profile: Object},
   methods: {
+    logProps() {
+      console.log(this.$props);
+    }
   }
 };
 </script>
 
 <template>
   <div class="user-card" :padding="0">
+<!--    <button @click="logProps">props 확인하기</button>-->
     <div>
       <div class="avatar-container">
         <img class="avatar" :src="profile.avatar"/>
@@ -64,8 +68,9 @@ export default {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  border: 1px solid #eee;
-  border-radius: 5px;
+  border : 1px solid #dedede;
+  border-radius: 7px;
+  transition : all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 
   div {
     display: flex;
