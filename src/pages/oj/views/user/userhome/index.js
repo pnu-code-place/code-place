@@ -1,5 +1,7 @@
+import {userProblemData} from "./children/dummies";
+
 export const myPageSections = {
-  "problems": {component: "problem-section", propsData: {problems: []}},
+  "problems": {component: "problem-section", propsData: {userProblemData: userProblemData}},
   "community": {component: "community-section", propsData: {posts: []}},
   "user-info": {component: "info-section", propsData: {user: {}}},
 }
