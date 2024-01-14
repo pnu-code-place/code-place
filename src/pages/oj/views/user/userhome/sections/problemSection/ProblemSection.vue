@@ -1,30 +1,32 @@
 <template>
   <section id="problem-section">
-<!--    <button @click="logProps">prop 확인하기</button>-->
     <h1>내 문제 통계</h1>
-    <div v-if="problems.length">{{ $t('m.List_Solved_Problems') }}
-      <Poptip v-if="refreshVisible" trigger="hover" placement="right-start">
-        <Icon type="ios-help-outline"></Icon>
-        <div slot="content">
-          <p>If you find the following problem id does not exist,<br> try to click the button.</p>
-          <Button type="info" @click="freshProblemDisplayID">regenerate</Button>
-        </div>
-      </Poptip>
-    </div>
-    <p v-else>{{ $t('m.UserHomeIntro') }}</p>
-    <div class="btns">
-      <div class="problem-btn" v-for="problemID of problems" :key="problemID">
-        <Button type="ghost" @click="goProblem(problemID)">{{ problemID }}</Button>
-      </div>
-    </div>
+<!--    <div v-if="problems.length">{{ $t('m.List_Solved_Problems') }}-->
+<!--      <Poptip v-if="refreshVisible" trigger="hover" placement="right-start">-->
+<!--        <Icon type="ios-help-outline"></Icon>-->
+<!--        <div slot="content">-->
+<!--          <p>If you find the following problem id does not exist,<br> try to click the button.</p>-->
+<!--          <Button type="info" @click="freshProblemDisplayID">regenerate</Button>-->
+<!--        </div>-->
+<!--      </Poptip>-->
+<!--    </div>-->
+<!--    <p v-else>{{ $t('m.UserHomeIntro') }}</p>-->
+<!--    <div class="btns">-->
+<!--      <div class="problem-btn" v-for="problemID of problems" :key="problemID">-->
+<!--        <Button type="ghost" @click="goProblem(problemID)">{{ problemID }}</Button>-->
+<!--      </div>-->
+<!--    </div>-->
+    <my-problem-list title="해결한 문제" :problems="this.userProblemData.solved"></my-problem-list>
+    <my-problem-list title="해결하지 못한 문제" :problems="this.userProblemData.failed"></my-problem-list>
   </section>
 </template>
 
 <script>
 import api from '@oj/api'
-import {failedProblems, solvedProblems} from "../../dummies";
+import MyProblemList from "./MyProblemList.vue";
 export default {
   name: 'ProblemSection',
+  components: {MyProblemList},
   data() {
     return {
     }
@@ -32,7 +34,13 @@ export default {
   props :{
     userProblemData: {
       type: Object,
-      required: true
+      required : true,
+      default: () => {
+        return {
+          solved : [],
+          failed : [],
+        }
+      }
     },
     statistics: {
 
@@ -48,9 +56,6 @@ export default {
         this.init()
       })
     },
-    // logProps() {
-    //   console.log(this.$props)
-    // }
   },
   computed: {
     refreshVisible() {

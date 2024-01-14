@@ -4,7 +4,7 @@
     <main>
       <user-card :profile="profile"></user-card>
       <keep-alive>
-        <component :is="currentSection" :propsData="currentProps"></component>
+        <component :is="currentSection" :userProblemData="userProblemData"></component>
       </keep-alive>
     </main>
   </div>
@@ -20,6 +20,9 @@ import CommunitySection from "./sections/CommunitySection.vue";
 import InfoSection from "./sections/InfoSection.vue";
 import ProblemSection from "./sections/problemSection/ProblemSection.vue";
 
+//TODO : 해당 부분은 http 통신으로 구현되어야 함
+import {userProblemData} from "./dummies";
+
 export default {
 
   components: {UserCard, SideNavBar, ProblemSection, InfoSection, CommunitySection},
@@ -27,7 +30,7 @@ export default {
     return {
       username: '',
       profile: {},
-      problems: [],
+      userProblemData : userProblemData
     }
   },
   mounted() {

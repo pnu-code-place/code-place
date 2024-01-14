@@ -103,8 +103,8 @@ const problemTitles10 = [
 
 
 const makeProblem = (title) => {
-  const field = toString(Math.floor(Math.random() * 5) + 1);
-  const difficulty = toString(Math.floor(Math.random() * 5) + 1);
+  const field = (Math.floor(Math.random() * 5) + 1).toString();
+  const difficulty = (Math.floor(Math.random() * 5) + 1).toString();
   problemId += 1
   // 시간은 오늘로부터 1년 이내의 랜덤한 시간으로 설정
   const submitTime = new Date(Date.now() - Math.floor(Math.random() * 31536000000));

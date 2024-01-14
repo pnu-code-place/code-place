@@ -3,9 +3,9 @@ export default {
   props: ['problem'],
   name : 'MyProblemItem',
   computed: {
-    submitDate() {
+    submitTime() {
       // 2021-07-02T08:25:49.443682Z -> 2021-07-02 08:25:49
-      const date = new Date(this.problem.submitDate);
+      const date = new Date(this.problem.submitTime);
       const year = date.getFullYear();
       const month = date.getMonth() + 1;
       const day = date.getDate();
@@ -14,18 +14,24 @@ export default {
       const second = date.getSeconds();
       return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
     }
+  },
+  methods: {
+    logDate() {
+      console.log(this.problem.submitTime);
+    }
   }
 }
 </script>
 
 <template>
   <li class="problem-item">
+    <button @click="logDate">log date</button>
     <router-link :to="{ name: 'ProblemDetail', params: { problemId: problem.id } }">
       <div class="id">{{problem.id}}</div>
       <div class="field">필드아이콘</div>
       <div class="title">{{problem.title}}</div>
       <div class="difficulty">난이도뱃지</div>
-      <div class="submit-date">{{}}</div>
+      <div class="submit-date">{{problem.submitTime}}</div>
     </router-link>
   </li>
 </template>
