@@ -16,6 +16,11 @@ export default {
       required: true,
     }
   },
+  methods : {
+    logging() {
+      console.log(this.problems)
+    }
+  }
 }
 
 </script>
@@ -24,8 +29,9 @@ export default {
 <div class="problem-list">
   <h2>{{title}}</h2>
   <div class="problem-items">
-    <my-problem-item v-for="problem in problems" :key="problem.id" :problem="problem" />
+    <my-problem-item v-for="problem in problems.problems" :key="problem.id" :problem="problem" />
   </div>
+  <button @click="logging">loggin</button>
 </div>
 </template>
 
