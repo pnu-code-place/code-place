@@ -2,7 +2,7 @@
   <nav class="side-nav sticky">
     <ul class="nav-content">
       <li v-for="section in myPageNavItems" @click="gotoSection(section.name)">
-        {{ section.title }}
+        <router-link :to="section.path">{{ section.title }}</router-link>
       </li>
     </ul>
   </nav>
@@ -39,27 +39,33 @@ export default {
 <style scoped lang="less">
 
 
-
 .side-nav {
   width: 20%;
   height: fit-content;
   margin-right: 20px;
   border: 1px solid #dedede;
   border-radius: 7px;
+  padding: 10px;
+
 
   .nav-content {
-    padding: 0;
+    padding: 4px;
     margin: 0;
 
 
     li {
+      text-decoration: none;
       padding: 10px 0;
-      font-size: 20px;
+      font-size: 16px;
       cursor: pointer;
       font-weight: bold;
 
       &:hover {
         background-color: #eee;
+      }
+
+      a {
+        color: #495060;
       }
     }
   }

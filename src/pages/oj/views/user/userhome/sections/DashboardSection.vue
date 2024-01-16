@@ -1,18 +1,12 @@
 <script>
 export default {
-  name : 'community-section',
-  props: {
-    actions: {
-      type : Object,
-      required : true
-    }
-  }
+  name: "dashboard-section"
 }
 </script>
 
 <template>
   <section>
-    <h1>커뮤니티</h1>
+    <h1>OJ 통계</h1>
   </section>
 </template>
 

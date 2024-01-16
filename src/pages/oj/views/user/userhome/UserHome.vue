@@ -22,10 +22,11 @@ import ProblemSection from "./sections/problemSection/ProblemSection.vue";
 
 //TODO : 해당 부분은 http 통신으로 구현되어야 함
 import {userProblemData} from "./dummies";
+import DashboardSection from "./sections/DashboardSection.vue";
 
 export default {
 
-  components: {UserCard, SideNavBar, ProblemSection, InfoSection, CommunitySection},
+  components: {UserCard, SideNavBar, ProblemSection, InfoSection, CommunitySection, DashboardSection},
   data() {
     return {
       username: '',
@@ -62,7 +63,7 @@ export default {
       }
       ACProblems.sort()
       this.problems = ACProblems
-    }
+    },
   },
   watch: {
     '$route'(newVal, oldVal) {
@@ -74,16 +75,13 @@ export default {
   computed: {
     current() {
       if (this.$route.name === 'user-home') {
-        return 'problems'
+        return 'main'
       } else {
         return this.$route.name
       }
     },
     currentSection() {
       return myPageSections[this.current].component
-    },
-    currentProps() {
-      return myPageSections[this.current].propsData
     },
     router() {
       return this.$route.params

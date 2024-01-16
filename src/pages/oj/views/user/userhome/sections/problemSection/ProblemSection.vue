@@ -25,7 +25,7 @@
 import api from '@oj/api'
 import MyProblemList from "./MyProblemList.vue";
 export default {
-  name: 'ProblemSection',
+  name: 'problem-section',
   components: {MyProblemList},
   data() {
     return {

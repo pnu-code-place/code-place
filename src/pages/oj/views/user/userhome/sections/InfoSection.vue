@@ -1,24 +1,18 @@
 <script>
 export default {
-  name : 'InfoSection',
+  name : 'info-section',
   props: {
     profile :{
       type : Object,
       required : true
     }
   },
-  methods : {
-    // logProps() {
-    //   console.log(this.$props);
-    // }
-}
 }
 </script>
 
 <template>
   <section>
     <h1>개인 정보</h1>
-<!--    <button @click="logProps">prop확인하기</button>-->
   </section>
 </template>
 

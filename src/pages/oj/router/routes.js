@@ -138,6 +138,11 @@ export default [
     meta: {requiresAuth: true, title: 'User Home'},
     children: [
       {
+        name: 'main',
+        path: 'main',
+        meta: {requiresAuth: true, title: 'Main'}
+      },
+      {
         name: 'problems',
         path: 'problems',
         meta: {requiresAuth: true, title: 'User Problems'},
