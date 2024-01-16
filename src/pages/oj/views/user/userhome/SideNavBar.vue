@@ -42,7 +42,10 @@ export default {
 
 .side-nav {
   width: 20%;
+  height: fit-content;
   margin-right: 20px;
+  border: 1px solid #dedede;
+  border-radius: 7px;
 
   .nav-content {
     padding: 0;
