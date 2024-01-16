@@ -136,7 +136,9 @@ export default [
     path: '/user-home',
     component: UserHome,
     meta: {requiresAuth: true, title: 'User Home'},
+    redirect: 'user-home/main',
     children: [
+      // TODO: component 등록하는 영리한 방법 찾기
       {
         name: 'main',
         path: 'main',
