@@ -1,6 +1,6 @@
 <template>
-  <nav class="side-nav">
-    <ul class="nav-content sticky">
+  <nav class="side-nav sticky">
+    <ul class="nav-content">
       <li v-for="section in myPageNavItems" @click="gotoSection(section.name)">
         {{ section.title }}
       </li>

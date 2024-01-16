@@ -92,7 +92,6 @@ a {
 
 @media screen and (max-width: 1200px) {
   .sticky {
-    margin-top: 160px;
     top: 160px;
     position: sticky;
   }
@@ -100,7 +99,6 @@ a {
 
 @media screen and (min-width: 1200px) {
   .sticky {
-    margin-top: 90px;
     top: 90px;
     position: sticky;
   }
