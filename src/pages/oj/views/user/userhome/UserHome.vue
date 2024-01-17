@@ -4,7 +4,7 @@
     <main>
       <user-card :profile="profile"></user-card>
       <keep-alive>
-        <component :is="currentSection" :userProblemData="userProblemData"></component>
+        <router-view></router-view>
       </keep-alive>
     </main>
   </div>
@@ -15,18 +15,12 @@ import time from '@/utils/time'
 import api from '@oj/api'
 import SideNavBar from "./SideNavBar.vue";
 import UserCard from "./UserCard.vue";
-import {myPageSections} from "./index";
-import CommunitySection from "./sections/CommunitySection.vue";
-import InfoSection from "./sections/InfoSection.vue";
-import ProblemSection from "./sections/problemSection/ProblemSection.vue";
 
-//TODO : 해당 부분은 http 통신으로 구현되어야 함
 import {userProblemData} from "./dummies";
-import DashboardSection from "./sections/DashboardSection.vue";
 
 export default {
 
-  components: {UserCard, SideNavBar, ProblemSection, InfoSection, CommunitySection, DashboardSection},
+  components: {UserCard, SideNavBar},
   data() {
     return {
       username: '',
@@ -65,28 +59,6 @@ export default {
       this.problems = ACProblems
     },
   },
-  watch: {
-    '$route'(newVal, oldVal) {
-      if (newVal !== oldVal) {
-        this.init()
-      }
-    }
-  },
-  computed: {
-    current() {
-      if (this.$route.name === 'user-home') {
-        return 'main'
-      } else {
-        return this.$route.name
-      }
-    },
-    currentSection() {
-      return myPageSections[this.current].component
-    },
-    router() {
-      return this.$route.params
-    }
-  }
 }
 </script>
 

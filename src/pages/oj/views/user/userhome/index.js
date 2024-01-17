@@ -1,31 +1,19 @@
-import {userProblemData} from "./dummies";
-
-export const myPageSections = {
-  "main": {component: "dashboard-section"},
-  "problems": {component: "problem-section"},
-  "community": {component: "community-section"},
-  "user-info": {component: "info-section"},
-}
-
 export const myPageNavItems = [
   {
     "title" : "OJ통계",
-    "name":"main",
-    "path":"./main"
+    "name":"user-home",
   },
   {
     "title": "문제풀이",
-    "name": "problems",
-    "path":"./problems"
+    "name": "user-home-problems",
   },
   {
     "title": "커뮤니티",
-    "name": "community",
-    "path": "./community"
+    "name": "user-home-community",
   },
   {
     "title": "회원정보",
-    "name": "user-info",
-    "path": "./user-info"
+    "name": "user-home-info",
   }
+  // 추가적인 nav 요소를 추가하고 싶다면, 요소 이름과, route name을 기입하십시오
 ]

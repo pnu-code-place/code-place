@@ -20,6 +20,10 @@ import {
 import * as Contest from '@oj/views/contest'
 import * as Setting from '@oj/views/setting'
 import Notice from "../views/notice/Notice.vue"
+import DashboardSection from "../views/user/userhome/sections/DashboardSection.vue";
+import ProblemSection from "../views/user/userhome/sections/problemSection/ProblemSection.vue";
+import communitySection from "../views/user/userhome/sections/CommunitySection.vue";
+import InfoSection from "../views/user/userhome/sections/InfoSection.vue";
 export default [
   {
     name: 'home',
@@ -132,31 +136,33 @@ export default [
     component: OIRank
   },
   {
-    name: 'user-home',
     path: '/user-home',
     component: UserHome,
     meta: {requiresAuth: true, title: 'User Home'},
-    redirect: 'user-home/main',
     children: [
       // TODO: component 등록하는 영리한 방법 찾기
       {
-        name: 'main',
-        path: 'main',
+        name: 'user-home',
+        path: '',
+        component: DashboardSection,
         meta: {requiresAuth: true, title: 'Main'}
       },
       {
-        name: 'problems',
+        name: 'user-home-problems',
         path: 'problems',
+        component: ProblemSection,
         meta: {requiresAuth: true, title: 'User Problems'},
       },
       {
-        name: 'community',
+        name: 'user-home-community',
         path: 'community',
+        component: communitySection,
         meta: {requiresAuth: true, title: 'Community'},
       },
       {
-        name: 'user-info',
-        path: 'user-info',
+        name: 'user-home-info',
+        path: 'info',
+        component: InfoSection,
         meta: {requiresAuth: true, title: 'User Info'},
       }
     ]
