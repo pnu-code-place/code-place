@@ -1,51 +1,43 @@
 <script>
 import ShineWrapper from "@oj/components/ShineWrapper.vue";
 
+// const profile = {
+//   avatar: "https://avatars.githubusercontent.com/u/48755175?v=4",
+//   user: {
+//     username: "minmunui",
+//     email: "ehdwls1638@pusan.ac.kr",
+//     school: "공과대학",
+//     major: "전기컴퓨터공학부 정보컴퓨터공학전공",
+//     create_time: "2021-09-01T15:00:00.000Z",
+//     admin_type: 0,
+//     _id: "6130b4b0e7c9d9b4e8b3f7b5",
+//   },
+//   github: "",
+//   blog: "",
+// }
+
 export default {
   components: {ShineWrapper},
   props: {profile: Object},
-  methods: {
-    logProps() {
-      console.log(this.$props);
-    }
-  }
 };
 </script>
 
 <template>
-  <div class="user-card" :padding="0">
-<!--    <button @click="logProps">props 확인하기</button>-->
-    <div>
-      <div class="avatar-container">
-        <img class="avatar" :src="profile.avatar"/>
-      </div>
-      <div class="user-info">
-        <div class="user-info__top">
-          <div class="username">{{ profile.user.username }}</div>
-          <div class="user-description">{{ profile.school || "단과대" }}</div>
-          <div class="user-description">{{ profile.major || "전공 없음" }}</div>
-        </div>
-        <!--      <button @click="logProfile">logging</button>-->
-      </div>
-      <div class="user-rank">
-        <shine-wrapper>
-          <img src="https://cdn-icons-png.flaticon.com/512/473/473406.png" class="rank-mark"/>
-        </shine-wrapper>
-      </div>
+  <div class="user-card">
+    <div class="avatar-container">
+      <img class="avatar" :src="profile.avatar"/>
     </div>
-    <div class="flex-container">
-      <div class="left">
-        <p>{{ $t('m.UserHomeSolved') }}</p>
-        <p class="emphasis">{{ profile.accepted_number }}</p>
+    <div class="user-info">
+      <div class="username">{{ profile.user.username }}
+        <div class="user-rank">
+          <shine-wrapper>
+            <img src="https://cdn-icons-png.flaticon.com/512/473/473406.png" class="rank-mark"/>
+          </shine-wrapper>
+        </div>
       </div>
-      <div class="middle">
-        <p>{{ $t('m.UserHomeserSubmissions') }}</p>
-        <p class="emphasis">{{ profile.submission_number }}</p>
-      </div>
-      <div class="right">
-        <p>{{ $t('m.UserHomeScore') }}</p>
-        <p class="emphasis">{{ profile.total_score }}</p>
-      </div>
+      <div class="user-description">{{ profile.user.email || "ehdwls1638@pusan.ac.kr" }}</div>
+      <div class="user-description">{{ profile.user.school || "공과대학" }}</div>
+      <div class="user-description">{{ profile.user.major || "전기컴퓨터공학부 정보컴퓨터공학전공" }}</div>
     </div>
     <div id="icons">
       <a :href="profile.github">
@@ -64,104 +56,71 @@ export default {
 <style scoped lang="less">
 .user-card {
   width: 100%;
-  padding: 10px;
+  padding: 20px;
+  gap: 20px;
   display: flex;
-  flex-direction: column;
   justify-content: space-between;
-  border : 1px solid #dedede;
+  border: 1px solid #dedede;
   border-radius: 7px;
-  transition : all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 
-  div {
+  .avatar-container {
+    z-index: 1;
+    width: 25%;
+    padding: 0px 20px;
+
+    .avatar {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      border-radius: 50%;
+      box-shadow: 0 1px 1px 0;
+    }
+  }
+
+  .user-info {
+    width: 50%;
     display: flex;
+    flex-direction: column;
+    align-items: flex-start;
     justify-content: center;
-    align-items: center;
+    z-index: 1;
 
-
-    .avatar-container {
-      z-index: 1;
-
-      .avatar {
-        width: 140px;
-        height: 140px;
-        border-radius: 50%;
-        box-shadow: 0 1px 1px 0;
-      }
-    }
-
-    .user-rank {
-      height: 140px;
-      position: relative;
-    }
-
-    .user-info {
-      flex: 1 1;
-      margin-left: 20px;
+    .username {
+      font-size: 24px;
+      font-weight: 700;
       display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      z-index: 1;
 
-      .user-info__top {
-        flex: 1 1;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: flex-start;
+      .user-rank {
+        width: 30px;
+        height: 30px;
+        position: relative;
+      }
 
-        .username {
-          font-size: 26px;
-          font-weight: 700;
-        }
-
-        .user-description {
-          font-size: 16px;
-          font-weight: 500;
-        }
+      .rank-mark {
+        width: 100%;
+        height: auto;
+        position: absolute;
+        top: 0;
+        left: 0;
       }
     }
 
-    .rank-mark {
-      height: 100%;
-      z-index: 0;
+    .user-description {
+      font-size: 18px;
+      font-weight: 500;
     }
   }
-  .flex-container {
-    padding: 20px;
-    text-align: center;
+}
 
-    p {
-      margin-top: 8px;
-      margin-bottom: 8px;
-    }
-    .emphasis {
-      font-size: 20px;
-      font-weight: 600;
-    }
-    .left {
-      flex: 1 1;
-      gap: 10px;
-    }
-    .middle {
-      flex: 1 1;
-      border-left: 1px solid #999;
-      border-right: 1px solid #999;
-      gap: 10px;
-    }
-    .right {
-      flex: 1 1;
-      gap: 10px;
-    }
-  }
-  #icons {
-    display: flex;
-    bottom: 20px;
-    left: 50%;
-
-    .icon {
-      padding-left: 20px;
-    }
-  }
+#icons {
+  width: 25%;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: end;
+  gap: 20px;
+  padding: 10px;
 }
 
 
