@@ -78,15 +78,15 @@ a {
 
 @media screen and (max-width: 1200px) {
   .content-app {
-    margin-top: 160px;
-    padding: 0 2%;
+    width : 1280px;
+    margin: 160px auto auto;
   }
 }
 
 @media screen and (min-width: 1200px) {
   .content-app {
-    margin-top: 90px;
-    padding: 0 2%;
+    width : 1280px;
+    margin: 90px auto auto;
   }
 }
 
