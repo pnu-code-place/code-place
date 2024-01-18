@@ -19,6 +19,9 @@
   border-radius: 5px;
   transition: all 0.3s ease-out;
   cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 
   &:hover {
     transform: scale(1.05);
