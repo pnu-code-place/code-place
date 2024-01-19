@@ -67,7 +67,7 @@ export default {
   .avatar-container {
     z-index: 1;
     width: 25%;
-    padding: 0 20px;
+    padding: 0 40px;
 
     .avatar {
       width: 100%;

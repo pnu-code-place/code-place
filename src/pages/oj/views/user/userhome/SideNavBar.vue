@@ -40,14 +40,15 @@ export default {
       cursor: pointer;
       font-weight: bold;
       color: #495060;
-      border-radius: 20px;
+      border-radius: 5px;
 
       &:hover {
-        background-color: #eee;
+        background-color: #f5f5f5;
       }
     }
     .router-link-exact-active {
-      background-color: #44ccff;
+      background-color: #e6f2ff;
+      color: #0078ff;
     }
   }
 }
