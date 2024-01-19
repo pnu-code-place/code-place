@@ -35,7 +35,7 @@ export default {
           </shine-wrapper>
         </div>
       </div>
-      <div class="user-description">{{ profile.user.email || "ehdwls1638@pusan.ac.kr" }}</div>
+      <div class="user-description">{{ profile.user.email }}</div>
       <div class="user-description">{{ profile.user.school || "공과대학" }}</div>
       <div class="user-description">{{ profile.user.major || "전기컴퓨터공학부 정보컴퓨터공학전공" }}</div>
     </div>
