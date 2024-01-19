@@ -71,13 +71,18 @@ class Problem(models.Model):
     spj_compile_ok = models.BooleanField(default=False)
     rule_type = models.TextField()
     visible = models.BooleanField(default=True)
+    source = models.TextField(null=True)
+
+    # for distribute Problem
+    field = models.BigIntegerField(default=0)
     difficulty = models.TextField()
     tags = models.ManyToManyField(ProblemTag)
-    source = models.TextField(null=True)
+
     # for OI mode
     total_score = models.IntegerField(default=0)
     submission_number = models.BigIntegerField(default=0)
     accepted_number = models.BigIntegerField(default=0)
+
     # {JudgeStatus.ACCEPTED: 3, JudgeStaus.WRONG_ANSWER: 11}, the number means count
     statistic_info = JSONField(default=dict)
     share_submission = models.BooleanField(default=False)

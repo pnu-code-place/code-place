@@ -2,6 +2,7 @@ import ipaddress
 
 from account.decorators import login_required, check_contest_permission
 from contest.models import ContestStatus, ContestRuleType
+from judge.dispatcher import JudgeDispatcher
 from judge.tasks import judge_task
 from options.options import SysOptions
 # from judge.dispatcher import JudgeDispatcher
@@ -22,6 +23,8 @@ class SubmissionAPI(APIView):
         auth_method = getattr(request, "auth_method", "")
         if auth_method == "api_key":
             return
+
+
         user_bucket = TokenBucket(key=str(request.user.id),
                                   redis_conn=cache, **SysOptions.throttling["user"])
         can_consume, wait = user_bucket.consume()
@@ -80,7 +83,9 @@ class SubmissionAPI(APIView):
                                                contest_id=data.get("contest_id"))
         # use this for debug
         # JudgeDispatcher(submission.id, problem.id).judge()
-        judge_task.send(submission.id, problem.id)
+
+        judge_task(submission.id, problem.id)
+
         if hide_id:
             return self.success()
         else:
@@ -97,13 +102,13 @@ class SubmissionAPI(APIView):
             return self.error("Submission doesn't exist")
         if not submission.check_user_permission(request.user):
             return self.error("No permission for this submission")
-
         if submission.problem.rule_type == ProblemRuleType.OI or request.user.is_admin_role():
             submission_data = SubmissionModelSerializer(submission).data
         else:
             submission_data = SubmissionSafeModelSerializer(submission).data
         # 是否有权限取消共享
         submission_data["can_unshare"] = submission.check_user_permission(request.user, check_share=False)
+        print(submission_data)
         return self.success(submission_data)
 
     @validate_serializer(ShareSubmissionSerializer)

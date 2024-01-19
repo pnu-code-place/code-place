@@ -26,6 +26,7 @@ def process_pending_task():
         # 防止循环引入
         from judge.tasks import judge_task
         tmp_data = cache.rpop(CacheKey.waiting_queue)
+        print("process_pending_task tmp: ", tmp_data)
         if tmp_data:
             data = json.loads(tmp_data.decode("utf-8"))
             judge_task.send(**data)
@@ -61,6 +62,7 @@ class DispatcherBase(object):
         if data:
             kwargs["json"] = data
         try:
+            print("_request:",url)
             return requests.post(url, **kwargs).json()
         except Exception as e:
             logger.exception(e)
@@ -126,6 +128,7 @@ class JudgeDispatcher(DispatcherBase):
         language = self.submission.language
         sub_config = list(filter(lambda item: language == item["name"], SysOptions.languages))[0]
         spj_config = {}
+
         if self.problem.spj_code:
             for lang in SysOptions.spj_languages:
                 if lang["name"] == self.problem.spj_language:
@@ -157,6 +160,7 @@ class JudgeDispatcher(DispatcherBase):
                 data = {"submission_id": self.submission.id, "problem_id": self.problem.id}
                 cache.lpush(CacheKey.waiting_queue, json.dumps(data))
                 return
+            print("ChooseJudgeServer: ",data)
             Submission.objects.filter(id=self.submission.id).update(result=JudgeStatus.JUDGING)
             resp = self._request(urljoin(server.service_url, "/judge"), data=data)
 

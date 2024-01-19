@@ -201,6 +201,7 @@ class ProblemAPI(ProblemBase):
     @validate_serializer(CreateProblemSerializer)
     def post(self, request):
         data = request.data
+        print(data)
         _id = data["_id"]
         if not _id:
             return self.error("Display ID is required")
