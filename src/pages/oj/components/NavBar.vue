@@ -118,7 +118,7 @@
 
     .oj-menu {
       background: #fdfdfd;
-      //height: auto;
+      height: 100%;
       width: 1200px;
       overflow-x: hidden;
     }
