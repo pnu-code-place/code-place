@@ -30,34 +30,6 @@
       <Menu-item class="menuItemText" name="/status">
         {{$t('m.Rank')}}
       </Menu-item>
-<!--        <Menu-item class="menuItemText" name="/status">-->
-<!--            {{$t('m.About')}}-->
-<!--        </Menu-item>-->
-<!--      <Menu-item class="menuItemText" name="/status">-->
-<!--        {{$t('m.NavStatus')}}-->
-<!--      </Menu-item>-->
-<!--      <Submenu name="rank">-->
-<!--        <template slot="title">-->
-<!--          {{$t('m.Rank')}}-->
-<!--        </template>-->
-<!--        <Menu-item name="/acm-rank">-->
-<!--          {{$t('m.ACM_Rank')}}-->
-<!--        </Menu-item>-->
-<!--        <Menu-item name="/oi-rank">-->
-<!--          {{$t('m.OI_Rank')}}-->
-<!--        </Menu-item>-->
-<!--      </Submenu>-->
-<!--      <Submenu name="about">-->
-<!--        <template  slot="title">-->
-<!--            {{$t('m.About')}}-->
-<!--        </template>-->
-<!--        <Menu-item name="/about">-->
-<!--          {{$t('m.Judger')}}-->
-<!--        </Menu-item>-->
-<!--        <Menu-item name="/FAQ">-->
-<!--          {{$t('m.FAQ')}}-->
-<!--        </Menu-item>-->
-<!--      </Submenu>-->
 
       <template v-if="isAuthenticated">
         <Dropdown class="drop-menu" @on-click="handleRoute" placement="bottom" trigger="click">
@@ -138,7 +110,7 @@
     padding-right: 10%;
     top: 0;
     left: 0;
-    height: 8%;
+    height: 70px;
     width: 100%;
     z-index: 1000;
     background-color: #fff;
@@ -146,7 +118,9 @@
 
     .oj-menu {
       background: #fdfdfd;
-      height: auto;
+      //height: auto;
+      width: 1200px;
+      overflow-x: hidden;
     }
 
     .logo {
@@ -174,9 +148,10 @@
 
     .drop-menu {
       float: right;
+      z-index: 1000;
       right: 0px;
       &-title {
-        font-size: 18px;
+        font-size: 13px;
       }
     }
 

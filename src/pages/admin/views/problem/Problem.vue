@@ -49,9 +49,11 @@
           <el-col :span="8">
             <el-form-item :label="$t('m.Difficulty')">
               <el-select class="difficulty-select" size="small" :placeholder="$t('m.Difficulty')" v-model="problem.difficulty">
+                <el-option :label="$t('m.VeryLow')" value="VeryLow"></el-option>
                 <el-option :label="$t('m.Low')" value="Low"></el-option>
                 <el-option :label="$t('m.Mid')" value="Mid"></el-option>
                 <el-option :label="$t('m.High')" value="High"></el-option>
+                <el-option :label="$t('m.VeryHigh')" value="VeryHigh"></el-option>
               </el-select>
             </el-form-item>
           </el-col>
@@ -76,7 +78,16 @@
             </el-form-item>
           </el-col>
           <el-col :span="8">
-            <el-form-item :label="$t('m.Tag')" :error="error.tags" required>
+            <el-form-item :label="$t('m.Field')" :error="error.tags" required>
+              <el-select class="difficulty-select" size="small" :placeholder="$t('m.Field')" v-model="problem.field">
+                <el-option :label="$t('m.Field_Math')" value="0"></el-option>
+                <el-option :label="$t('m.Field_Impl')" value="1"></el-option>
+                <el-option :label="$t('m.Field_DataStructure')" value="2"></el-option>
+                <el-option :label="$t('m.Field_Search')" value="3"></el-option>
+                <el-option :label="$t('m.Field_Sorting')" value="4"></el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item :label="$t('m.Tag')" :error="error.tags" required> <!-- 카테고리 -->
               <span class="tags">
                 <el-tag
                   v-for="tag in problem.tags"
@@ -290,6 +301,7 @@
         mode: '',
         contest: {},
         problem: {
+          field: '',
           languages: [],
           io_mode: {'io_mode': 'Standard IO', 'input': 'input.txt', 'output': 'output.txt'}
         },
@@ -508,6 +520,11 @@
         })
       },
       submit () {
+        console.log(this.problem)
+        if(!this.problem.field){
+          this.$error('Field is required')
+          return;
+        }
         if (!this.problem.samples.length) {
           this.$error('Sample is required')
           return
@@ -519,7 +536,7 @@
           }
         }
         if (!this.problem.tags.length) {
-          this.error.tags = 'Please add at least one tag'
+          this.error.tags = 'Please add at least one Category'
           this.$error(this.error.tags)
           return
         }

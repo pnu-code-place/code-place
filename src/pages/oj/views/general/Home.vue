@@ -3,7 +3,7 @@
     <div class="boxWrapper">
       <div class="left-container">
         <div class="bannerBox">
-          <Carousel v-model="value1" autoplay loop arrow="never" radius-dot="true">
+          <Carousel v-model="value1" autoplay loop arrow="never" radius-dot="true" autoplaySpeed="3000">
             <CarouselItem>
               <div class="demo-carousel">Banner 1</div>
             </CarouselItem>
@@ -258,14 +258,12 @@ export default {
         this.changeModalStatus({visible: value})
       }
     }
-  }
+  },
 };
 </script>
 
 <style lang="less" scoped>
 .mainBox {
-  padding-left: 8.5%;
-  padding-right: 8.5%;
 }
 
 .boxWrapper {
@@ -274,12 +272,12 @@ export default {
 }
 
 .left-container {
-  width: 65%;
+  width: 67%;
   height: 100%;
 }
 
 .right-container {
-  width: 33%;
+  width: 30%;
   height: auto;
 }
 
@@ -441,6 +439,8 @@ export default {
     }
   }
 }
+
+
 
 .authenticatedBox{
 

@@ -1,3 +1,5 @@
+import echarts from "echarts/lib/export";
+
 const pieColorMap = {
   'AC': {color: '#19be6b'},
   'WA': {color: '#ed3f14'},
@@ -45,6 +47,7 @@ const pie = {
     }
   ]
 }
+
 
 const largePie = {
   legend: {
@@ -106,4 +109,57 @@ const largePie = {
   ]
 }
 
-export { pie, largePie }
+const radarGraph = {
+    color: ['#FF917C'],
+    legend: {},
+    tooltip: {
+      trigger: 'axis'
+    },
+    radar: {
+      indicator: [
+        { text: '자료구조', max: 30000, color: '#000000', },
+        { text: '구현', max: 65000, color: '#000000', },
+        { text: '수학', max: 16000, color: '#000000', },
+        { text: '탐색', max: 38000, color: '#000000', },
+        { text: '정렬', max: 52000, color: '#000000', },
+      ],
+      center: ['50%', '50%'],
+      axisName:{
+        fontWeight: 'bold'
+      },
+      splitArea: {
+        areaStyle: {
+          color: ['rgba(255,255,255,0)', 'rgba(255,255,255,0)', 'rgba(255,255,255,0)', 'rgba(255,255,255,0)'],
+        }
+      },
+      splitNumber: 4,
+    },
+    series: [
+      {
+        name: 'ACM Score',
+        type: 'radar',
+        emphasis:{
+          areaStyle:{
+            color: '#FF917C',
+            shadowColor: '#FF917C'
+          },
+        },
+        data: [
+          {
+            value: [20000, 3000, 4200, 35000, 50000, 18000],
+            tooltip: {
+              trigger: 'item',
+              backgroundColor: 'rgba(255,145,124,0.22)',
+              textStyle: {
+                color: '#1C1C1C',
+                fontWeight: 'bold'
+              }
+
+            },
+          },
+        ],
+      }
+    ]
+}
+
+export { pie, largePie, radarGraph }

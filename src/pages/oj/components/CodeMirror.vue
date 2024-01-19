@@ -1,35 +1,32 @@
 <template>
-  <div style="margin: 0px 0px 15px 0px">
+  <div>
     <Row type="flex" justify="space-between" class="header">
       <Col :span=12>
       <div>
-        <span>{{$t('m.Language')}}:</span>
-        <Select :value="language" @on-change="onLangChange" class="adjust">
-          <Option v-for="item in languages" :key="item" :value="item">{{item}}
-          </Option>
-        </Select>
+<!--        <Select :value="language" @on-change="onLangChange" class="adjust">-->
+<!--          <Option v-for="item in languages" :key="item" :value="item">{{item}}-->
+<!--          </Option>-->
+<!--        </Select>-->
 
-        <Tooltip :content="this.$i18n.t('m.Reset_to_default_code_definition')" placement="top" style="margin-left: 10px">
-          <Button icon="refresh" @click="onResetClick"></Button>
-        </Tooltip>
+<!--        <Tooltip :content="this.$i18n.t('m.Reset_to_default_code_definition')" placement="top" style="margin-left: 10px">-->
+<!--          <Button icon="refresh" @click="onResetClick"></Button>-->
+<!--        </Tooltip>-->
 
-        <Tooltip :content="this.$i18n.t('m.Upload_file')" placement="top" style="margin-left: 10px">
-          <Button icon="upload" @click="onUploadFile"></Button>
-        </Tooltip>
-
-        <input type="file" id="file-uploader" style="display: none" @change="onUploadFileDone">
-
+<!--        <Tooltip :content="this.$i18n.t('m.Upload_file')" placement="top" style="margin-left: 10px">-->
+<!--          <Button icon="upload" @click="onUploadFile"></Button>-->
+<!--        </Tooltip>-->
+<!--        <input type="file" id="file-uploader" style="display: none" @change="onUploadFileDone">-->
       </div>
       </Col>
-      <Col :span=12>
-      <div class="fl-right">
-        <span>{{$t('m.Theme')}}:</span>
-        <Select :value="theme" @on-change="onThemeChange" class="adjust">
-          <Option v-for="item in themes" :key="item.label" :value="item.value">{{item.label}}
-          </Option>
-        </Select>
-      </div>
-      </Col>
+<!--      <Col :span=12>-->
+<!--      <div class="fl-right">-->
+<!--        <span>{{$t('m.Theme')}}:</span>-->
+<!--        <Select :value="theme" @on-change="onThemeChange" class="adjust">-->
+<!--          <Option v-for="item in themes" :key="item.label" :value="item.value">{{item.label}}-->
+<!--          </Option>-->
+<!--        </Select>-->
+<!--      </div>-->
+<!--      </Col>-->
     </Row>
     <codemirror :value="value" :options="options" @change="onEditorCodeChange" ref="myEditor">
     </codemirror>
@@ -43,7 +40,7 @@
   import 'codemirror/theme/monokai.css'
   import 'codemirror/theme/solarized.css'
   import 'codemirror/theme/material.css'
-
+  import 'codemirror/theme/paraiso-light.css'
   // mode
   import 'codemirror/mode/clike/clike.js'
   import 'codemirror/mode/python/python.js'
@@ -58,6 +55,7 @@
   import 'codemirror/addon/fold/foldgutter.js'
   import 'codemirror/addon/fold/brace-fold.js'
   import 'codemirror/addon/fold/indent-fold.js'
+  import 'codemirror/addon/edit/closebrackets.js'
 
   export default {
     name: 'CodeMirror',
@@ -81,24 +79,28 @@
       },
       theme: {
         type: String,
-        default: 'solarized'
+        default: 'default'
       }
     },
     data () {
       return {
         options: {
-          // codemirror options
           tabSize: 4,
           mode: 'text/x-csrc',
-          theme: 'solarized',
+          theme: 'default',
           lineNumbers: true,
           line: true,
-          // 代码折叠
+          smartIndent: true,
+          autofocus: true,
           foldGutter: true,
+          autocorrect: true,
+          autoResize:true,
           gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter'],
-          // 选中文本自动高亮，及高亮方式
+          autocomplete: true,
           styleSelectedText: true,
           lineWrapping: true,
+          scrollbarStyle: 'native',
+          autoCloseBrackets: true,
           highlightSelectionMatches: {showToken: /\w/, annotateScrollbar: true}
         },
         mode: {
@@ -168,7 +170,6 @@
 
 <style lang="less" scoped>
   .header {
-    margin: 5px 5px 15px 5px;
     .adjust {
       width: 150px;
       margin-left: 10px;
@@ -182,9 +183,11 @@
 <style>
   .CodeMirror {
     height: auto !important;
+    border: 1px solid #eee;
   }
   .CodeMirror-scroll {
-    min-height: 300px;
-    max-height: 1000px;
+    min-height: 400px;
+    max-height: fit-content;
+    //max-height: 1000px;
   }
 </style>
