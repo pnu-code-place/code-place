@@ -2,10 +2,6 @@
 export default {
   name : 'community-section',
   props: {
-    actions: {
-      type : Object,
-      required : true
-    }
   }
 }
 </script>
