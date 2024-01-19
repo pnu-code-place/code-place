@@ -100,8 +100,6 @@ const problemTitles10 = [
   "숫자의 자릿수 합 구하기 (Sum of Digits)"
 ];
 
-
-
 const makeProblem = (title) => {
   const field = (Math.floor(Math.random() * 5) + 1).toString();
   const difficulty = (Math.floor(Math.random() * 5) + 1).toString();
@@ -130,5 +128,4 @@ export const userProblemData = {
     amount: 20,
     problems: failedProblems
   }
-
 }
