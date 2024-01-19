@@ -12,7 +12,7 @@
         prop="id">
       </el-table-column>
       <el-table-column
-        label="DisplayID"
+        label="문제 번호"
         width="200"
         prop="_id">
       </el-table-column>

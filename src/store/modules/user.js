@@ -5,12 +5,14 @@ import i18n from '@/i18n'
 import { STORAGE_KEY, USER_TYPE, PROBLEM_PERMISSION } from '@/utils/constants'
 
 const state = {
-  profile: {}
+  profile: {},
+  isProblemSolving: false
 }
 
 const getters = {
   user: state => state.profile.user || {},
   profile: state => state.profile,
+  isProblemSolving: state => state.isProblemSolving,
   isAuthenticated: (state, getters) => {
     return !!getters.user.id
   },
@@ -33,7 +35,7 @@ const mutations = {
       i18n.locale = profile.language
     }
     storage.set(STORAGE_KEY.AUTHED, !!profile.user)
-  }
+  },
 }
 
 const actions = {
@@ -49,7 +51,10 @@ const actions = {
       profile: {}
     })
     storage.clear()
-  }
+  },
+  changeProblemSolvingState({commit,state}, payload){
+    state.isProblemSolving = payload
+  },
 }
 
 export default {
