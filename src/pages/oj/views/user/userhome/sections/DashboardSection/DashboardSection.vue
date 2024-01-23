@@ -2,6 +2,7 @@
 import OjSummary from "./OJSummary.vue";
 import CategorySummary from "./CategorySummary.vue";
 import DifficultySummary from "./DifficultySummary.vue";
+import ChallengeSummary from "./ChallengeSummary.vue";
 
 export default {
   name: "dashboard-section",
@@ -16,11 +17,11 @@ export default {
         total_score: 56000, // 현재 점수
         rank_next: 60000, // 다음 랭킹의 허들
         rank_current: 50000, // 이전 랭킹의 허들
-        miracle_current : 10, // 현재 연속 코딩일수
-        miracle_record : 20 // 최고 연속 코딩일수
+        miracle_current: 10, // 현재 연속 코딩일수
+        miracle_record: 20 // 최고 연속 코딩일수
       },
 
-      category_info : {
+      category_info: {
         data_structure: {
           solve_number: 33,
           ranking: 60,
@@ -48,7 +49,7 @@ export default {
         }
       },
 
-      difficulty_info : {
+      difficulty_info: {
         very_easy: {
           solve_number: 33,
           ranking: 60,
@@ -74,10 +75,14 @@ export default {
           ranking: 190,
           ranking_percent: 0.95,
         }
-      }
+      },
+
+      challenges: [
+        0, 2, 3, 4, 1,2 ,3,5,3,2,6,7,2,1,4,5,6,4
+      ]
     }
   },
-  components: {DifficultySummary, OjSummary, CategorySummary},
+  components: {ChallengeSummary, DifficultySummary, OjSummary, CategorySummary},
 }
 </script>
 
@@ -93,6 +98,7 @@ export default {
     <DifficultySummary :difficulty_info="difficulty_info"></DifficultySummary>
     <hr/>
     <h1>도전과제</h1>
+    <ChallengeSummary :challenges_achieved="this.challenges"></ChallengeSummary>
   </section>
 </template>
 
@@ -103,13 +109,14 @@ section {
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   padding: 20px;
   gap: 10px;
-  display : flex;
+  display: flex;
   flex-direction: column;
 
   hr {
     border: 1px solid #dedede;
     margin: 10px 40px 10px 0;
   }
+
   * {
     margin: 0 10px;
   }
