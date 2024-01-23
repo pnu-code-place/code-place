@@ -24,6 +24,7 @@ import DashboardSection from "../views/user/userhome/sections/DashboardSection/D
 import ProblemSection from "../views/user/userhome/sections/problemSection/ProblemSection.vue";
 import communitySection from "../views/user/userhome/sections/CommunitySection.vue";
 import InfoSection from "../views/user/userhome/sections/InfoSection.vue";
+import ChallengeSection from "../views/user/userhome/sections/ChallengeSection/ChallengeSection.vue";
 
 export default [
   {
@@ -165,6 +166,12 @@ export default [
         path: 'info',
         component: InfoSection,
         meta: {requiresAuth: true, title: 'User Info'},
+      },
+      {
+        name: 'challenges',
+        path: 'challenges',
+        component: ChallengeSection,
+        meta: {requiresAuth: true, title: 'Challenges'},
       }
     ]
   },

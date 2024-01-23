@@ -14,6 +14,10 @@ export const myPageNavItems = [
   {
     "title": "회원정보",
     "name": "user-home-info",
+  },
+  {
+    "title": "도전과제",
+    "name": "challenges",
   }
   // 추가적인 nav 요소를 추가하고 싶다면, 요소 이름과, route name을 기입하십시오
 ]
