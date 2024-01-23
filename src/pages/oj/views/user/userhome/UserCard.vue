@@ -87,7 +87,7 @@ export default {
     z-index: 1;
 
     .username {
-      font-size: 24px;
+      font-size: 20px;
       font-weight: 700;
       display: flex;
 
@@ -107,7 +107,7 @@ export default {
     }
 
     .user-description {
-      font-size: 18px;
+      font-size: 14px;
       font-weight: 500;
     }
   }

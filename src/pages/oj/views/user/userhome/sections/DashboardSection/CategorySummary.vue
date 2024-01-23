@@ -53,7 +53,7 @@ export default {
         <thead>
         <tr>
           <th>영역</th>
-          <th>푼 문제</th>
+          <th>점수</th>
           <th><span class="ranking">랭킹</span><span class="ranking-percent">(백분율)</span></th>
         </tr>
         </thead>
@@ -93,13 +93,18 @@ export default {
     height: 100%;
 
     table {
+      border-collapse: collapse;
+
+      thead tr {
+        border-top : none;
+      }
 
       tr {
 
+        border-top: 1px solid #dedede;
         th {
           text-align: center;
-          font-size: 20px;
-          border-bottom: 1px solid #dedede;
+          font-size: 16px;
         }
 
         th:first-child {
@@ -115,13 +120,12 @@ export default {
           }
 
           .ranking-percent {
-            font-size: 16px;
+            font-size: 13px;
           }
         }
 
         td {
-          font-size: 18px;
-          border-bottom: 1px solid #dedede;
+          font-size: 15px;
           padding: 7px 0;
         }
 
@@ -136,7 +140,7 @@ export default {
           }
 
           .ranking-percent {
-            font-size: 16px;
+            font-size: 13px;
           }
         }
       }

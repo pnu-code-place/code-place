@@ -31,11 +31,14 @@ export default {
   .nav-content {
     padding: 4px;
     margin: 0;
+    display : flex;
+    flex-direction: column;
+    gap: 10px;
 
     a {
       display: block;
       text-decoration: none;
-      padding: 10px 0;
+      padding: 10px;
       font-size: 16px;
       cursor: pointer;
       font-weight: bold;

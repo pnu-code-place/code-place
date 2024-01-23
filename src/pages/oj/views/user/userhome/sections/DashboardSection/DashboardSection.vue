@@ -85,10 +85,14 @@ export default {
   <section>
     <h1>OJ 랭크</h1>
     <OjSummary :ojStatus="ojStatus"></OjSummary>
+    <hr/>
     <h1>영역별 분포</h1>
     <CategorySummary :category_info="category_info"></CategorySummary>
+    <hr/>
     <h1>난이도 분포</h1>
     <DifficultySummary :difficulty_info="difficulty_info"></DifficultySummary>
+    <hr/>
+    <h1>도전과제</h1>
   </section>
 </template>
 
@@ -102,7 +106,16 @@ section {
   display : flex;
   flex-direction: column;
 
+  hr {
+    border: 1px solid #dedede;
+    margin: 10px 40px 10px 0;
+  }
+  * {
+    margin: 0 10px;
+  }
+
   h1 {
+    font-size: 20px;
     text-align: left;
     margin-bottom: 10px;
   }

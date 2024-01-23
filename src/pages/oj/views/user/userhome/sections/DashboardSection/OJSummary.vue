@@ -37,7 +37,7 @@ export default {
     <div class="rank-mark-wrapper">
       <shine-wrapper>
         <!--          <img src="https://cdn-icons-png.flaticon.com/512/473/473406.png" class="rank-mark"/>-->
-        <img src="https://picsum.photos/300/250" class="rank-mark"/>
+<!--        <img src="https://picsum.photos/300/250" class="rank-mark"/>-->
       </shine-wrapper>
     </div>
     <div class="rank-info">
@@ -112,7 +112,7 @@ export default {
       flex-direction: column;
       justify-content: space-between;
       align-items: flex-start;
-      font-size: 18px;
+      font-size: 15px;
 
 
       .rank-info-elem {
@@ -122,7 +122,6 @@ export default {
         justify-content: space-between;
         align-items: center;
         margin-bottom: 10px;
-        font-size: 18px;
 
         .header {
           font-weight: 700;
@@ -135,7 +134,7 @@ export default {
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      font-size: 18px;
+      font-size: 15px;
 
       .progress-info {
         font-weight: 700;
@@ -164,17 +163,17 @@ export default {
     border-radius: 10px;
 
     .miracle-title {
-      font-size: 18px;
+      font-size: 15px;
       font-weight: 700;
     }
 
     .miracle-current {
-      font-size: 20px;
+      font-size: 18px;
       font-weight: 900;
     }
 
     .miracle-record {
-      font-size: 16px;
+      font-size: 12px;
     }
   }
 }

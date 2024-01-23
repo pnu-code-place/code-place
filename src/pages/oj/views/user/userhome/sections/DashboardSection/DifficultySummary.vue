@@ -28,7 +28,7 @@ export default {
         <tr>
           <th>난이도</th>
           <th>푼 문제</th>
-          <th><span class="ranking">랭킹</span><span class="ranking-percent">(백분율)</span></th>
+          <th><span class="ranking">점수 비율</span><span class="ranking-percent"></span></th>
         </tr>
         </thead>
         <tbody>
@@ -36,8 +36,7 @@ export default {
           <td class="part-name" :style="{color:difficulty_label[key].color}">{{ difficulty_label[key].label }}</td>
           <td class="solve-number">{{ difficulty.solve_number }}</td>
           <td class="solve-ranking">
-            <span class="ranking">{{ difficulty.ranking }}</span>
-            <span class="ranking-percent">({{ (difficulty.ranking_percent * 100).toFixed(1) }}%)</span>
+            <span class="ranking-percent">{{ (difficulty.ranking_percent * 100).toFixed(1) }}%</span>
           </td>
         </tr>
         </tbody>
@@ -66,13 +65,20 @@ export default {
     width: 75%;
 
     table {
+      border-collapse: collapse;
+
+      thead {
+        tr {
+          border-top: none;
+        }
+      }
 
       tr {
+        border-top: 1px solid #dedede;
 
         th {
           text-align: center;
-          font-size: 20px;
-          border-bottom: 2px solid #dedede;
+          font-size: 16px;
         }
 
         th:first-child {
@@ -90,18 +96,18 @@ export default {
           }
 
           .ranking-percent {
-            font-size: 16px;
+            font-size: 13px;
           }
         }
 
         td {
-          font-size: 18px;
-          border-bottom: 1px solid #dedede;
+          font-size: 16px;
+          border-top: 1px solid #dedede;
           padding: 7px 0;
         }
 
         .part-name {
-          font-weight: 500;
+          font-weight: 600;
           text-align: left
         }
 
@@ -111,7 +117,7 @@ export default {
           }
 
           .ranking-percent {
-            font-size: 16px;
+            font-size: 13px;
           }
         }
       }
