@@ -17,7 +17,7 @@ section {
   border : 1px solid #dedede;
   border-radius: 7px;
   transition : all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  padding : 10px;
+  padding : 20px;
   h1 {
     text-align : left;
     margin-bottom: 10px;
