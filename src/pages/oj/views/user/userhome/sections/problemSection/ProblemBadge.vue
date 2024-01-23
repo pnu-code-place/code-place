@@ -23,19 +23,26 @@ export default {
     }
   },
   methods : {
-    // goProblem() {
-    //   this.$router.push({name : 'problem-details', params : {problemId : problem.id}})
-    // }
   }
 }
 </script>
 
 <template>
+  <Tooltip delay=0 :content="problem.title">
     <router-link :to="{name : 'problem-details', params : {problemId:problem.id}}">
       {{problem.id}}
     </router-link>
-<!--    <span @click="goProblem">{{problem.title}}</span>-->
+  </Tooltip>
 </template>
 
 <style scoped lang="less">
+a {
+  padding: 8px;
+  border: 1px solid #bebebe;
+  border-radius: 5px;
+}
+
+a:hover {
+  background-color: #e6f2ff;
+}
 </style>
