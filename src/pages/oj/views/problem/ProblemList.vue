@@ -60,9 +60,7 @@
             <div class="moreOptionSelector">
               <Icon type="ios-more" size="20" color="#7a7a7a"></Icon>
             </div>
-
           </div>
-
         </div>
         <table>
           <thead>
@@ -509,6 +507,7 @@ export default {
       this.pushRouter()
     },
     filterByKeyword(keyword) {
+      // this.query.keyword = keyword
       this.query.page = 1
       this.pushRouter()
     },
