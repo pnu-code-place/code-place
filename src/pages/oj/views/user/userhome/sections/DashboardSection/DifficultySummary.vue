@@ -1,7 +1,7 @@
 <script>
 export default {
   name: 'difficulty-summary',
-  props: ['difficulty_info'],
+  props: ['difficultyInfo'],
   data() {
     return {
       difficulty_label: {
@@ -32,7 +32,7 @@ export default {
         </tr>
         </thead>
         <tbody>
-        <tr v-for="(difficulty, key, index) in difficulty_info" :key="index">
+        <tr v-for="(difficulty, key, index) in difficultyInfo" :key="index">
           <td class="part-name" :style="{color:difficulty_label[key].color}">{{ difficulty_label[key].label }}</td>
           <td class="solve-number">{{ difficulty.solve_number }}</td>
           <td class="solve-ranking">

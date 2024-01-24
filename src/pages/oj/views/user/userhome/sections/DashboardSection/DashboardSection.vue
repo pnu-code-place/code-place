@@ -21,7 +21,7 @@ export default {
         miracle_record: 20 // 최고 연속 코딩일수
       },
 
-      category_info: {
+      categoryInfo: {
         data_structure: {
           solve_number: 33,
           ranking: 60,
@@ -49,7 +49,7 @@ export default {
         }
       },
 
-      difficulty_info: {
+      difficultyInfo: {
         very_easy: {
           solve_number: 33,
           ranking: 60,
@@ -76,7 +76,7 @@ export default {
           ranking_percent: 0.95,
         }
       },
-
+      //challenges에는 달성한 도전과제의 id가 들어감
       challenges: [
         0, 2, 3, 4, 1,2 ,3,5,3,2,6,7,2,1,4,5,6,4
       ]
@@ -92,13 +92,13 @@ export default {
     <OjSummary :ojStatus="ojStatus"></OjSummary>
     <hr/>
     <h1>영역별 분포</h1>
-    <CategorySummary :category_info="category_info"></CategorySummary>
+    <CategorySummary :categoryInfo="categoryInfo"></CategorySummary>
     <hr/>
     <h1>난이도 분포</h1>
-    <DifficultySummary :difficulty_info="difficulty_info"></DifficultySummary>
+    <DifficultySummary :difficultyInfo="difficultyInfo"></DifficultySummary>
     <hr/>
     <h1>도전과제</h1>
-    <ChallengeSummary :challenges_achieved="this.challenges"></ChallengeSummary>
+    <ChallengeSummary :achievedChallenges="this.challenges"></ChallengeSummary>
   </section>
 </template>
 

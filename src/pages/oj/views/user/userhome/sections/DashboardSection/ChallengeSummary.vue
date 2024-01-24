@@ -8,7 +8,7 @@ export default {
     ChallengeBadge,
   },
   props: {
-    challenges_achieved: {
+    achievedChallenges: {
       type: Array,
       default() {
         return [];
@@ -17,7 +17,7 @@ export default {
   },
   computed: {
     challenges() {
-      return this.challenges_achieved.map(chID => CHALLENGES[chID])
+      return this.achievedChallenges.map(chID => CHALLENGES[chID])
     },
     testImage() {
       return require("@/assets/challenges/on_error_image.png")
