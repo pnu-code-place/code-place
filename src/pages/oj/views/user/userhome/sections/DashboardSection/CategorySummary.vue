@@ -134,7 +134,7 @@ export default {
         </tr>
         </thead>
         <tbody>
-        <tr class="part-row" v-for="(category, category_name, index) in categoryInfo">
+        <tr class="part-row" v-for="(category, category_name) in categoryInfo">
           <td class="part-name">{{ category_label[category_name] }}</td>
           <td class="solve-number">{{ category.solve_number }}</td>
           <td class="solve-ranking">
