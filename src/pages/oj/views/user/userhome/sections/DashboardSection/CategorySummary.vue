@@ -65,7 +65,6 @@ export default {
         backgroundColor: 'rgba(0,0,0,0.7)',
         textStyle: {
           color: '#ffffff',
-          fontWeight: 'bold'
         }
       }
     },
@@ -130,16 +129,16 @@ export default {
         <tr>
           <th>영역</th>
           <th>점수</th>
-          <th><span class="ranking">랭킹</span><span class="ranking-percent">(백분율)</span></th>
+          <th><span class="score">랭킹</span><span class="score-ratio">(백분율)</span></th>
         </tr>
         </thead>
         <tbody>
         <tr class="part-row" v-for="(category, category_name) in categoryInfo">
           <td class="part-name">{{ category_label[category_name] }}</td>
           <td class="solve-number">{{ category.solve_number }}</td>
-          <td class="solve-ranking">
-            <span class="ranking">{{ category.ranking }}</span>
-            <span class="ranking-percent">({{ (category.ranking_percent * 100).toFixed(1) }}%)</span>
+          <td class="difficulty-score">
+            <span class="score">{{ category.ranking }}</span>
+            <span class="score-ratio">({{ (category.ranking_percent * 100).toFixed(1) }}%)</span>
           </td>
         </tr>
         </tbody>
@@ -194,11 +193,11 @@ export default {
         }
 
         th:nth-child(3) {
-          .ranking {
+          .score {
             font-weight: 700;
           }
 
-          .ranking-percent {
+          .score-ratio {
             font-size: 13px;
           }
         }
@@ -213,12 +212,12 @@ export default {
           text-align: left
         }
 
-        .solve-ranking {
+        .difficulty-score {
 
-          .ranking {
+          .score {
           }
 
-          .ranking-percent {
+          .score-ratio {
             font-size: 13px;
           }
         }

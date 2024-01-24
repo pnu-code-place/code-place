@@ -15,7 +15,7 @@
         <span class="value">{{ problem_info.failed.count }}</span>
       </div>
       <div class="status-item">
-        <span class="ranking-percent">상위 {{ ranking_percent }}%</span>
+        <span class="score-ratio">상위 {{ ranking_percent }}%</span>
       </div>
     </div>
     <hr/>
@@ -174,7 +174,7 @@ section {
         font-weight: 700;
       }
 
-      .ranking-percent {
+      .score-ratio {
         font-size: 14px;
         font-weight: 600;
         color : #99bbee;
