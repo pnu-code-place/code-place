@@ -52,28 +52,23 @@ export default {
       difficultyInfo: {
         very_easy: {
           solve_number: 33,
-          ranking: 60,
-          ranking_percent: 0.3,
+          totalScore: 330,
         },
         easy: {
           solve_number: 20,
-          ranking: 101,
-          ranking_percent: 0.505,
+          totalScore: 400,
         },
         medium: {
-          solve_number: 45,
-          ranking: 34,
-          ranking_percent: 0.17,
+          solve_number: 10,
+          totalScore: 800,
         },
         hard: {
-          solve_number: 61,
-          ranking: 20,
-          ranking_percent: 0.101,
+          solve_number: 4,
+          totalScore: 640,
         },
         very_hard: {
-          solve_number: 3,
-          ranking: 190,
-          ranking_percent: 0.95,
+          solve_number: 1,
+          totalScore: 320,
         }
       },
       //challenges에는 달성한 도전과제의 id가 들어감
