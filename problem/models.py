@@ -20,9 +20,19 @@ class ProblemRuleType(Choices):
 
 
 class ProblemDifficulty(object):
-    High = "High"
-    Mid = "Mid"
-    Low = "Low"
+    VERYLOW = "VeryLow"
+    LOW = "Low"
+    MID = "Mid"
+    HIGH = "High"
+    VERYHIGH = "VeryHigh"
+
+
+class ProblemScore(object):
+    VeryLow = 10
+    Low = 20
+    Mid = 80
+    High = 320
+    VeryHigh = 1280
 
 
 class ProblemIOMode(Choices):

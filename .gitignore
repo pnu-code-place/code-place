@@ -78,4 +78,4 @@ https_locations.conf
 
 venv/
 #test docker-compose
-docker-compose.yml
+conf/docker-compose.yml

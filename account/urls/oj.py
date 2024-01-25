@@ -1,6 +1,6 @@
 from django.conf.urls import url
 
-from ..views.oj import (ApplyResetPasswordAPI, ResetPasswordAPI,
+from ..views.oj import (ApplyResetPasswordAPI, ResetPasswordAPI, GetRankingAPI,
                         UserChangePasswordAPI, UserRegisterAPI, UserChangeEmailAPI,
                         UserLoginAPI, UserLogoutAPI, UsernameOrEmailCheck,
                         AvatarUploadAPI, TwoFactorAuthAPI, UserProfileAPI,
@@ -14,6 +14,7 @@ from utils.captcha.views import CaptchaAPIView
 urlpatterns = [
     url(r"^college_list/?$", GetCollegeListAPI.as_view(), name="college_list"),
     url(r"^department_list/?$", GetDepartmentListAPI.as_view(), name="department_list"),
+    url(r"^ranking/?$", GetRankingAPI.as_view(), name="ranking"),
     url(r"^login/?$", UserLoginAPI.as_view(), name="user_login_api"),
     url(r"^logout/?$", UserLogoutAPI.as_view(), name="user_logout_api"),
     url(r"^apply_user_email_valid_check/?$", ApplyUserEmailValidCheckAPI.as_view(), name="apply_user_email_valid_check"),

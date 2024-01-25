@@ -21,12 +21,12 @@ from utils.api import APIView, validate_serializer, CSRFExemptAPIView
 from utils.captcha import Captcha
 from utils.shortcuts import rand_str, img2base64, datetime2str
 from ..decorators import login_required
-from ..models import User, UserProfile, AdminType, College, Department
+from ..models import User, UserProfile, AdminType, College, Department, Score
 from ..serializers import (ApplyResetPasswordSerializer, ResetPasswordSerializer,
                            UserChangePasswordSerializer, UserLoginSerializer,
                            UserRegisterSerializer, UsernameOrEmailCheckSerializer,
                            RankInfoSerializer, UserChangeEmailSerializer, SSOSerializer,
-                           CollegeListSerializer, DepartmentSerializer)
+                           CollegeListSerializer, DepartmentSerializer, RankingSerializer)
 from ..serializers import (TwoFactorAuthCodeSerializer, UserProfileSerializer,
                            EditUserProfileSerializer, ImageUploadForm)
 from ..tasks import send_email_async
@@ -36,7 +36,7 @@ class GetCollegeListAPI(APIView):
     def get(self, request):
         try:
             college_list = College.objects.all()
-        except:
+        except College.DoesNotExist:
             return self.error("failed to get college list")
         return self.success(CollegeListSerializer(college_list, many=True).data)
 
@@ -46,9 +46,22 @@ class GetDepartmentListAPI(APIView):
         try:
             college_id = json.loads(request.body).get('college_id')
             department_list = Department.objects.filter(college=college_id).order_by('id')
-        except:
+        except Department.DoesNotExist:
             return self.error("failed to get department list")
         return self.success(DepartmentSerializer(department_list, many=True).data)
+
+
+class GetRankingAPI(APIView):
+    def get(self, request):
+        try:
+            limit = request.GET.get("limit")
+            if limit:
+                ranking = Score.objects.all().order_by('score')[:limit]
+            else:
+                ranking = Score.objects.all().order_by('score')
+            return self.success(RankingSerializer(ranking, many=True).data)
+        except Score.DoesNotExist:
+            return HttpResponseNotFound("no ranking table")
 
 
 class UserProfileAPI(APIView):
@@ -239,14 +252,14 @@ class ApplyUserEmailValidCheckAPI(APIView):
 
         code = rand_str(6)
         # key: 이메일, value: 코드값(6자리), timeout=5분
-        cache.set(email, code, timeout=60*5)
+        cache.set(email, code, timeout=60 * 5)
 
         email_html = render_to_string("email_valid_email.html", {'code': code})
-        send_email_async(from_name=SysOptions.website_name_shortcut,
-                         to_email=email,
-                         to_name=email,
-                         subject="[PNU Online Judge] 이메일 확인 인증번호입니다.",
-                         content=email_html)
+        send_email_async.send(from_name=SysOptions.website_name_shortcut,
+                              to_email=email,
+                              to_name=email,
+                              subject="[PNU Online Judge] 이메일 확인 인증번호입니다.",
+                              content=email_html)
         return self.success('email validation code sent')
 
 
@@ -297,6 +310,7 @@ class UserRegisterAPI(APIView):
         user.set_password(data["password"])
         user.save()
         UserProfile.objects.create(user=user)
+        Score.objects.create(user=user)
         return self.success("Succeeded")
 
 
@@ -502,4 +516,5 @@ class SSOAPI(CSRFExemptAPIView):
             user = User.objects.get(auth_token=request.data["token"])
         except User.DoesNotExist:
             return self.error("User does not exist")
-        return self.success({"username": user.username, "avatar": user.userprofile.avatar, "admin_type": user.admin_type})
+        return self.success(
+            {"username": user.username, "avatar": user.userprofile.avatar, "admin_type": user.admin_type})

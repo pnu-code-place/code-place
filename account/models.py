@@ -1,6 +1,6 @@
 from django.contrib.auth.models import AbstractBaseUser
 from django.conf import settings
-from django.db import models
+from django.db import models, transaction
 from utils.models import JSONField
 
 
@@ -129,3 +129,30 @@ class UserProfile(models.Model):
 
     class Meta:
         db_table = "user_profile"
+
+
+class Score(models.Model):
+    user = models.OneToOneField(User, primary_key=True, unique=True, on_delete=models.CASCADE)
+    basis = models.IntegerField(default=0)
+    score = models.IntegerField(default=0)
+    fluctuation = models.IntegerField(default=0)
+
+    @classmethod
+    def calculate_basis(cls):
+        with transaction.atomic():
+            scores = cls.objects.select_for_update().all()
+            for user_score in scores:
+                user_score.basis = user_score.score
+                user_score.fluctuation = 0
+                user_score.save()
+
+    @classmethod
+    def calculate_fluctuation(cls):
+        with transaction.atomic():
+            scores = cls.objects.select_for_update().all()
+            for user_score in scores:
+                user_score.fluctuation = user_score.score - user_score.basis
+                user_score.save()
+
+    class Meta:
+        db_table = "user_score"

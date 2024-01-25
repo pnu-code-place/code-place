@@ -84,7 +84,7 @@ class SubmissionAPI(APIView):
         # use this for debug
         # JudgeDispatcher(submission.id, problem.id).judge()
 
-        judge_task(submission.id, problem.id)
+        judge_task.send(submission.id, problem.id)
 
         if hide_id:
             return self.success()
@@ -108,7 +108,7 @@ class SubmissionAPI(APIView):
             submission_data = SubmissionSafeModelSerializer(submission).data
         # 是否有权限取消共享
         submission_data["can_unshare"] = submission.check_user_permission(request.user, check_share=False)
-        print(submission_data)
+        # print(submission_data)
         return self.success(submission_data)
 
     @validate_serializer(ShareSubmissionSerializer)

@@ -2,7 +2,7 @@ from django import forms
 
 from utils.api import serializers, UsernameSerializer
 
-from .models import AdminType, ProblemPermission, User, UserProfile
+from .models import AdminType, ProblemPermission, User, UserProfile, Score
 
 
 class CollegeListSerializer(serializers.Serializer):
@@ -14,6 +14,14 @@ class DepartmentSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     department_name = serializers.CharField()
     college_id = serializers.IntegerField()
+
+
+class RankingSerializer(serializers.ModelSerializer):
+    class Meta:
+        user = serializers.ReadOnlyField(source="User.id")
+
+        model = Score
+        fields = ["score", "fluctuation", "user", "basis"]
 
 
 class UserLoginSerializer(serializers.Serializer):
