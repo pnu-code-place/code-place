@@ -20,7 +20,7 @@ import {
 import * as Contest from '@oj/views/contest'
 import * as Setting from '@oj/views/setting'
 import Notice from "../views/notice/Notice.vue"
-import DashboardSection from "../views/user/userhome/sections/DashboardSection/DashboardSection.vue";
+import DashboardSection from "../views/user/userhome/sections/dashboardSection/DashboardSection.vue";
 import ProblemSection from "../views/user/userhome/sections/problemSection/ProblemSection.vue";
 import communitySection from "../views/user/userhome/sections/CommunitySection.vue";
 import InfoSection from "../views/user/userhome/sections/InfoSection.vue";

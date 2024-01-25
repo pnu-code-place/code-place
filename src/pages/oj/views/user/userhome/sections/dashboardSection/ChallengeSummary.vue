@@ -1,6 +1,6 @@
 <script>
 import ChallengeBadge from "./ChallengeBadge.vue";
-import {CHALLENGES} from "../ChallengeSection/challenges";
+import {CHALLENGES} from "../challengeSection/challenges";
 
 export default {
   name: "challenge-summary",
