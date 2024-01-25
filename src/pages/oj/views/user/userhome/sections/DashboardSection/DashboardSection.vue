@@ -112,14 +112,8 @@ section {
     margin: 10px 40px 10px 0;
   }
 
-  * {
-    margin: 0 10px;
-  }
-
   h1 {
-    font-size: 20px;
     text-align: left;
-    margin-bottom: 10px;
   }
 }
 </style>
