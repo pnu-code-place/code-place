@@ -28,11 +28,11 @@ export default {
   data() {
     return {
       DIFFICULTY_LABEL: {
-        very_easy: {label: 'Very Easy', color: '#82CDC8'},
-        easy: {label: 'Easy', color: '#1AA9ff'},
-        medium: {label: 'Medium', color: '#1AA931'},
-        hard: {label: 'Hard', color: '#FFA800'},
-        very_hard: {label: 'Very Hard', color: '#FF4D4D'},
+        very_easy: {label: 'Very Low', color: '#95ef4c'},
+        easy: {label: 'Low', color: '#B5EAB0'},
+        medium: {label: 'Mid', color: '#7c7878'},
+        hard: {label: 'High', color: '#ff8828'},
+        very_hard: {label: 'Very High', color: '#c02b2b'},
       }
     }
   },
@@ -41,7 +41,9 @@ export default {
       return (value / this.totalScore * 100).toFixed(1);
     },
     chartLabel(params) {
-      return params.percent >= 10 ? `${params.percent.toFixed(1)}%` : ''
+      // 이니셜을 표시해주는 함수
+      const initial = params.name.split(' ').map((word) => word[0]).join('')
+      return params.percent >= 10 ? initial : ''
     }
   },
   computed: {
@@ -71,7 +73,7 @@ export default {
           {
             name: '문제 난이도',
             type: 'pie',
-            radius: ['10%', '90%'],
+            radius: ['15%', '90%'],
             data: this.pieChartData,
             itemStyle: {
               normal: {
@@ -90,6 +92,11 @@ export default {
                   show: false
                 }
               }
+            },
+            animationType: 'scale',
+            animationEasing: 'cubicOut',
+            animationDelay: function (idx) {
+              return Math.random() * 200;
             }
           }
         ],
