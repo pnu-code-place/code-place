@@ -64,8 +64,6 @@
 
     <div class="section-title">{{$t('m.Profile_Setting')}}</div>
     <Form ref="formProfile" :model="formProfile">
-      <Row type="flex" :gutter="30" justify="space-around">
-        <Col :span="11">
           <FormItem label="Real Name">
             <Input v-model="formProfile.real_name"/>
           </FormItem>
@@ -83,9 +81,7 @@
           <Form-item>
             <Button type="primary" @click="updateProfile" :loading="loadingSaveBtn">Save All</Button>
           </Form-item>
-        </Col>
 
-        <Col :span="11">
           <Form-item label="Mood">
             <Input v-model="formProfile.mood"/>
           </Form-item>
@@ -95,8 +91,6 @@
           <Form-item label="Github">
             <Input v-model="formProfile.github"/>
           </Form-item>
-        </Col>
-      </Row>
     </Form>
   </div>
 </template>

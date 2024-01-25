@@ -76,7 +76,7 @@ export const m = {
   Check_It: "Check It",
   // ACMRank.vue
   ACM_Ranklist: "ACM Ranklist",
-  mood: "mood",
+  mood: "소개",
   AC: "AC",
   Rating: "Rating",
   // Announcements.vue
@@ -197,12 +197,12 @@ export const m = {
   Account: "Account",
   Security: "Security",
   // AccoutSetting.vue
-  ChangePassword: "Change Password",
+  ChangePassword: "비밀번호 변경",
   ChangeEmail: "Change Email",
-  Update_Password: "Update Password",
+  Update_Password: "비밀번호 변경",
   // ProfileSetting.vue
-  Avatar_Setting: "Avatar Setting",
-  Profile_Setting: "Profile Setting",
+  Avatar_Setting: "아바타 변경",
+  Profile_Setting: "회원정보 변경",
   // SecuritySettig
   Sessions: "Sessions",
   Two_Factor_Authentication: "Two Factor Authentication",
@@ -291,5 +291,8 @@ export const m = {
   UserHomeserSubmissions: "Submissions",
   UserHomeScore: "Score",
   List_Solved_Problems: "List of solved problems",
-  UserHomeIntro: "The guy is so lazy that has not solved any problem yet."
+  UserHomeIntro: "The guy is so lazy that has not solved any problem yet.",
+  Current_Password: "현재 비밀번호",
+    New_Password: "새 비밀번호",
+    Confirm_Password: "비밀번호 확인",
 };
