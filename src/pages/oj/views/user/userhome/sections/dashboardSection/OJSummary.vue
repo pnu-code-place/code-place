@@ -90,7 +90,7 @@ export default {
   gap: 20px;
 
   .rank-mark-wrapper {
-    width: 25%;
+    width: 30%;
     display: flex;
     justify-content: center;
     align-items: center;

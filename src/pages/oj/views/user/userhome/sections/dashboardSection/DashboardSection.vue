@@ -109,7 +109,7 @@ section {
 
   hr {
     border: 1px solid #dedede;
-    margin: 10px 40px 10px 0;
+    margin: 10px 10px 10px 0;
   }
 
   h1 {
