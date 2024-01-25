@@ -32,13 +32,14 @@ export default {
   props: ['categoryInfo'],
   data() {
     return {
-      category_label: {
-        data_structure: '자료구조',
-        mathematics: '수학',
-        sorting: '정렬',
-        implementation: '구현',
-        searching: '탐색'
+      CATEGORY_LABEL: {
+        data_structure: {label : '자료구조', color : '#F8B193'},
+        mathematics: {label : '수학', color : '#B5EAB0'},
+        sorting: {label : '정렬', color : '#F8D093'},
+        implementation: {label : '구현', color : '#F8D093'},
+        searching: {label : '탐색', color : '#90B8E7'}
       },
+
     }
   },
   methods: {
@@ -134,7 +135,7 @@ export default {
         </thead>
         <tbody>
         <tr class="part-row" v-for="(category, category_name) in categoryInfo">
-          <td class="part-name">{{ category_label[category_name] }}</td>
+          <td class="part-name" ><span :style="{backgroundColor:CATEGORY_LABEL[category_name].color}">{{ CATEGORY_LABEL[category_name].label }}</span></td>
           <td class="solve-number">{{ category.solve_number }}</td>
           <td class="difficulty-score">
             <span class="score">{{ category.ranking }}</span>
@@ -208,8 +209,13 @@ export default {
         }
 
         .part-name {
-          font-weight: 400;
-          text-align: left
+          font-weight: 700;
+          text-align: left;
+          color: #fff;
+          span {
+            padding: 2px 5px;
+            border-radius: 5px;
+          }
         }
 
         .difficulty-score {
