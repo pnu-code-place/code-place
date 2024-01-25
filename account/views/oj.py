@@ -54,11 +54,11 @@ class GetDepartmentListAPI(APIView):
 class GetRankingAPI(APIView):
     def get(self, request):
         try:
-            limit = request.GET.get("limit")
+            limit = int(request.GET.get("limit", None))
             if limit:
-                ranking = Score.objects.all().order_by('score')[:limit]
+                ranking = Score.objects.all().order_by('-score')[:limit]
             else:
-                ranking = Score.objects.all().order_by('score')
+                ranking = Score.objects.all().order_by('-score')
             return self.success(RankingSerializer(ranking, many=True).data)
         except Score.DoesNotExist:
             return HttpResponseNotFound("no ranking table")
