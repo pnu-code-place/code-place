@@ -10,7 +10,7 @@
       </div>
 
       <template v-if="isAuthenticated">
-        <div class="userAvatarWrapper" @click="this.$router.push('user-home')">
+        <div class="userAvatarWrapper" @click="handleRoute('/user-home')">
           <img class="avatar" :src="profile.avatar"/>
         </div>
 <!--        <Dropdown class="drop-menu" @on-click="handleRoute" placement="bottom" trigger="click">-->
@@ -163,6 +163,7 @@ export default {
   max-width: 100%;
   display: block;
   border-radius: @avatar-radius;
+  border: 1px solid #7a7a7a;
   box-shadow: 0px 0px 1px 0px;
 }
 </style>
