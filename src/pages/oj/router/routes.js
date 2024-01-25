@@ -23,7 +23,7 @@ import Notice from "../views/notice/Notice.vue"
 import DashboardSection from "../views/user/userhome/sections/dashboardSection/DashboardSection.vue";
 import ProblemSection from "../views/user/userhome/sections/problemSection/ProblemSection.vue";
 import communitySection from "../views/user/userhome/sections/CommunitySection.vue";
-import InfoSection from "../views/user/userhome/sections/InfoSection.vue";
+import InfoSection from "../views/user/userhome/sections/infoSection/InfoSection.vue";
 import ChallengeSection from "../views/user/userhome/sections/ChallengeSection/ChallengeSection.vue";
 
 export default [
