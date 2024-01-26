@@ -163,7 +163,6 @@ class JudgeDispatcher(DispatcherBase):
             Submission.objects.filter(id=self.submission.id).update(result=JudgeStatus.JUDGING)
             resp = self._request(urljoin(server.service_url, "/judge"), data=data)
 
-
         if not resp:
             Submission.objects.filter(id=self.submission.id).update(result=JudgeStatus.SYSTEM_ERROR)
             return
