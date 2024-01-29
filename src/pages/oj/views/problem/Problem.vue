@@ -4,7 +4,9 @@
       <pane min-size="30" size="45">
         <div class="container problemDetailContainer">
           <Panel :padding="45" style="border: none" dis-hover>
-            <div slot="title">{{ problem._id + '. ' + problem.title }}</div>
+            <div slot="title" style="border-bottom: 1px solid #e7e7e7; padding-bottom: 14px">
+              {{ problem._id + '. ' + problem.title }}
+            </div>
             <div id="problem-content" class="markdown-body" v-katex>
               <p class="title">{{ $t('m.Description') }}</p>
               <p class="content" v-html=problem.description></p>
@@ -20,7 +22,7 @@
               <div v-for="(sample, index) of problem.samples" :key="index">
                 <div class="flex-container sample">
                   <div class="sample-input">
-                    <p class="title">{{ $t('m.Sample_Input') }} {{ index + 1 }}
+                    <p class="title" style="text-decoration: none; margin-bottom: 0px">{{ $t('m.Sample_Input') }} {{ index + 1 }}
                       <a class="copy"
                          v-clipboard:copy="sample.input"
                          v-clipboard:success="onCopy"
@@ -31,24 +33,53 @@
                     <pre>{{ sample.input }}</pre>
                   </div>
                   <div class="sample-output">
-                    <p class="title">{{ $t('m.Sample_Output') }} {{ index + 1 }}</p>
+                    <p class="title" style="text-decoration: none; margin-bottom: 0px">{{ $t('m.Sample_Output') }} {{ index + 1 }}</p>
                     <pre>{{ sample.output }}</pre>
                   </div>
                 </div>
               </div>
-              <div v-if="problem.hint">
-                <p class="title">{{ $t('m.Hint') }}</p>
-                <Card dis-hover>
-                  <div class="content" v-html=problem.hint></div>
-                </Card>
-              </div>
+              <p class="title" style="text-decoration: none">제약사항</p>
+              <li style="padding-left: 20px">
+                <code>
+                  {{$t('m.Time_Limit') + "   " + problem.time_limit + 'ms'}}
+                </code>
+              </li>
+              <li style="padding-left: 20px">
+                <code>
+                  {{$t('m.Memory_Limit') + "   " + problem.memory_limit + 'mb'}}
+                </code>
+              </li>
+<!--                <p>{{ $t('m.Time_Limit') }}</p>-->
+<!--                <p>{{ problem.time_limit }}MS</p>-->
+<!--                <p>{{ $t('m.Memory_Limit') }}</p>-->
+<!--                <p>{{ problem.memory_limit }}MB</p>-->
+<!--              <li>-->
+<!--                <li>-->
+<!--                  <p>{{ $t('m.IOMode') }}</p>-->
+<!--                  <p>{{ problem.io_mode.io_mode }}</p>-->
+<!--                </li>-->
+<!--                <li>-->
+<!--                  <p>{{ $t('m.Created') }}</p>-->
+<!--                  <p>{{ problem.created_by.username }}</p></li>-->
+<!--                <li v-if="problem.total_score">&ndash;&gt;-->
+<!--                                <p>{{$t('m.Score')}}</p>-->
+<!--                                <p>{{problem.total_score}}</p>-->
+<!--                              </li>-->
 
-              <div v-if="problem.source">
-                <p class="title">{{ $t('m.Source') }}</p>
-                <p class="content">{{ problem.source }}</p>
-              </div>
+                <div v-if="problem.hint">
+                  <p class="title">{{ $t('m.Hint') }}</p>
+                  <Card dis-hover>
+                    <div class="content" v-html=problem.hint></div>
+                  </Card>
+                </div>
 
+                <div v-if="problem.source">
+                  <p class="title">{{ $t('m.Source') }}</p>
+                  <p class="content">{{ problem.source }}</p>
+                </div>
+<!--              <hr style="height:1px; background: #e7e7e7"/>-->
             </div>
+
           </Panel>
         </div>
       </pane>
@@ -667,6 +698,7 @@ export default {
 
   .container {
     border-radius: 7px;
+    border: 1px solid #e6e6e6;
     background-color: white;
     margin-left: 10px;
     margin-right: 10px;
@@ -706,7 +738,7 @@ export default {
   }
 
   .problemDetailContainer {
-    height: 90vh;
+    //height: calc(100% - 50px);
     overflow: auto;
   }
 
@@ -725,9 +757,13 @@ export default {
 
   .title {
     font-size: 15px;
-    font-weight: 600;
+    font-weight: 750;
     margin: 25px 0 8px 0;
     color: #444444;
+    text-decoration: underline;
+    text-decoration-color: rgba(96, 113, 185, 0.55);
+    text-decoration-thickness: 2px;
+    text-underline-offset : 6px;
 
     .copy {
       padding-left: 8px;
@@ -735,9 +771,8 @@ export default {
   }
 
   p.content {
-    margin-left: 25px;
-    margin-right: 20px;
-    font-size: 15px
+    font-size: 15px;
+    font-weight: 600;
   }
 
   .sample {
@@ -752,7 +787,6 @@ export default {
     }
 
     pre {
-      //flex: 1 1 auto;
       align-self: stretch;
       border-style: solid;
       background: transparent;

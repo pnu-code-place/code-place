@@ -2,22 +2,20 @@
   <div id="header">
     <Menu theme="default" mode="horizontal" @on-select="handleRoute" :active-name="activeMenu" class="oj-menu">
       <div class="logo" @click="handleRoute('/')">
-<!--        <img src="@/assets/pnu.png" width="70" height="70"/>-->
+        <div>
+          <img src="@/assets/pojLogo.png" width="39" style="vertical-align:middle;margin-right: 10px"/>
+        </div>
         <div class="headerIcon">
           <p class="pnuName">문제 풀이</p>
-          <p class="systemTitle">온라인 저지 시스템</p>
         </div>
       </div>
+
+      <ProblemTimer/>
 
       <template v-if="isAuthenticated">
         <div class="userAvatarWrapper" @click="handleRoute('/user-home')">
           <img class="avatar" :src="profile.avatar"/>
         </div>
-<!--        <Dropdown class="drop-menu" @on-click="handleRoute" placement="bottom" trigger="click">-->
-<!--          <Button type="text" class="drop-menu-title">{{ user.username+' 님' }}-->
-<!--            <Icon type="arrow-down-b"></Icon>-->
-<!--          </Button>-->
-<!--        </Dropdown>-->
       </template>
     </Menu>
   </div>
@@ -27,9 +25,11 @@
 import { mapGetters, mapActions } from 'vuex'
 import login from '@oj/views/user/Login'
 import register from '@oj/views/user/Register'
+import ProblemTimer from "./ProblemTimer.vue";
 
 export default {
   components: {
+    ProblemTimer,
     login,
     register
   },
@@ -74,7 +74,6 @@ export default {
 
 <style lang="less" scoped>
 #header {
-  min-width: 300px;
   position: fixed;
   top: 0;
   left: 0;
@@ -91,20 +90,18 @@ export default {
     justify-content: space-between;
     align-items: center;
     background: #fdfdfd;
-    height: auto;
+    height: 50px;
     overflow-x: hidden;
   }
 
   .logo {
     cursor: pointer;
-    text-align: left;
-    float: left;
-    height: auto;
+    height: 50px;
     display: flex;
-    line-height: normal;
+    align-items: center;
     .pnuName{
       font-size: 14px;
-      font-weight: normal;
+      font-weight: bold;
     }
     .systemTitle{
       font-size: 18px;

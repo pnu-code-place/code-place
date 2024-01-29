@@ -1,9 +1,11 @@
 <template>
   <div class="logo" @click="handleRoute('/')">
-    <img src="@/assets/pnu.png" width="70" height="70"/>
+    <div>
+      <img src="@/assets/pojLogo.png" width="48" style="vertical-align:middle;margin-right: 10px"/>
+    </div>
     <div class="headerIcon">
       <p class="pnuName">부산대학교</p>
-      <p class="systemTitle">온라인 저지 시스템</p>
+      <p class="systemTitle">코딩역량강화플랫폼</p>
     </div>
   </div>
 </template>
@@ -27,9 +29,11 @@ export default {
 .logo {
   cursor: pointer;
   float: left;
+  height: 70px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+
   .headerIcon{
     line-height: normal;
     width: auto;

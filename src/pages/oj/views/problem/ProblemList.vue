@@ -3,7 +3,7 @@
     <div class="boxWrapper">
       <div class="left-container">
         <div class="problemListTableHeader">
-          <p @click="test">문제</p>
+          <p>문제리스트</p>
           <div style="display: flex; align-items: center; justify-content: center">
             <li style="list-style-type: none; margin-left: 3px;">
               <Input v-model="query.keyword"
@@ -45,15 +45,15 @@
             </Dropdown>
             <Dropdown @on-click="filterByTag" trigger="click" class="dropdown difficultyDropdown">
                           <span style="font-weight: bold; font-size: 15px; padding-right: 10px">{{
-                              query.tag === '' ? this.$i18n.t('m.Category') : this.$i18n.t('m.' + query.tag)
+                              query.tag === '' ? this.$i18n.t('m.Category') : this.$i18n.t(query.tag)
                             }}
                           </span>
               <Icon type="arrow-down-b"></Icon>
               <Dropdown-menu slot="list">
-                <Dropdown-item name="All">{{ $t('m.All') }}</Dropdown-item>
+                <Dropdown-item name="">{{ $t('m.All') }}</Dropdown-item>
                 <template v-for="(problem, idx) in this.problemList">
                   <template v-for="(problemTag, idx) in problem.tags">
-                    <Dropdown-item name="" >{{ problemTag }}</Dropdown-item>
+                    <Dropdown-item :name=problemTag >{{ problemTag }}</Dropdown-item>
                   </template>
                 </template>
               </Dropdown-menu>
@@ -316,7 +316,7 @@ export default {
         },
         '4': {
           'value': '정렬',
-          'boxColor': '#F8D093'
+          'boxColor': '#EDC3C3'
         }
       },
       difficultyMap: {
@@ -435,10 +435,6 @@ export default {
   },
   methods: {
     ...mapActions(['changeDomTitle','changeProblemSolvingState']),
-    test(){
-      console.log("문제리스트객체: ", this.problemList)
-      console.log("문제리스트길이: ", this.problemList.length)
-    },
     init(simulate = false) {
       this.routeName = this.$route.name
       let query = this.$route.query
@@ -493,14 +489,15 @@ export default {
     },
     filterByTag(tagName) {
       this.query.tag = tagName
+      console.log(tagName)
       this.query.page = 1
       this.pushRouter()
     },
-    filterByCategory(categoryName) {
-      this.query.tag = categoryName
-      this.query.page = 1
-      this.pushRouter()
-    },
+    // filterByCategory(categoryName) {
+    //   this.query.tag = categoryName
+    //   this.query.page = 1
+    //   this.pushRouter()
+    // },
     filterByDifficulty(difficulty) {
       this.query.difficulty = difficulty
       this.query.page = 1
@@ -513,7 +510,6 @@ export default {
     },
     filterByKeyword(keyword) {
       // this.query.keyword = keyword
-      console.log("검색: ",keyword)
       this.query.page = 1
       this.pushRouter()
     },
@@ -570,6 +566,8 @@ export default {
 <style scoped lang="less">
 .mainBox{
   width: 1200px;
+  //min-width: 1200px;
+  overflow-x: hidden;
 }
 
 .taglist-title {
@@ -862,47 +860,4 @@ td:nth-child(2) {
   cursor: pointer;
 }
 
-@media all and (max-width: 768px) {
-
-  table, thead, tbody, th, td, tr {
-    display: block;
-  }
-
-  th {
-    text-align: right;
-  }
-
-  table {
-    position: relative;
-    padding-bottom: 0;
-    border: none;
-    box-shadow: 0 0 10px rgba(0, 0, 0, .2);
-  }
-
-  thead {
-    float: left;
-    white-space: nowrap;
-  }
-
-  tbody {
-    overflow-x: auto;
-    overflow-y: hidden;
-    position: relative;
-    white-space: nowrap;
-  }
-
-  tr {
-    display: inline-block;
-    vertical-align: top;
-  }
-
-  th {
-    border-bottom: 1px solid #a39485;
-  }
-
-  td {
-    border-bottom: 1px solid #e5e5e5;
-  }
-
-}
 </style>

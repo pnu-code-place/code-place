@@ -124,6 +124,9 @@
         this.editor.setOption('mode', this.mode[this.language])
       })
       this.editor.focus()
+      this.editor.on("beforeChange", function(_, change) { // block paste
+        if (change.origin == "paste") change.cancel()
+      })
     },
     methods: {
       onEditorCodeChange (newCode) {

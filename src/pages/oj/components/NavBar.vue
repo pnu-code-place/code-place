@@ -19,8 +19,8 @@
         </Menu-item>
 
       <template v-if="isAuthenticated">
-          <Dropdown class="drop-menu" @on-click="handleRoute" placement="top-end" trigger="click">
-            <div style="display: flex; align-items: center">
+          <Dropdown class="drop-menu" @on-click="handleRoute" placement="bottom" trigger="click">
+            <div style="display: flex; align-items: center; height: 70px">
               <div>
                 <img class="avatar" :src="profile.avatar"/>
               </div>
@@ -115,13 +115,8 @@
     box-shadow: 0 1px 1.5px 0 rgba(0, 0, 0, 0.1);
 
     .drop-menu {
-
       float: right;
       z-index: 1000;
-      &-title {
-        border: none;
-        font-size: 13px;
-      }
     }
   }
 
