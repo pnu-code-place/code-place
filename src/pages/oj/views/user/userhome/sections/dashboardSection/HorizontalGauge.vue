@@ -90,7 +90,7 @@ export default {
   }
   @keyframes shine {
     0% {
-      transform: translate(-50%, 0%);
+      transform: translate(-60%, 0%);
     }
     100% {
       transform: translate(0%, 0%);
