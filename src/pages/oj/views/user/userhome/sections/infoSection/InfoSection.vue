@@ -3,17 +3,17 @@
     <h1>회원 정보</h1>
     <ProfileSetting></ProfileSetting>
     <h2>{{ $t('m.ChangePassword') }}</h2>
-    <ChangePasswordForm></ChangePasswordForm>
+    <AccountSetting></AccountSetting>
   </section>
 </template>
 
 <script>
 import {defineComponent} from "vue";
-import ChangePasswordForm from "./ChangePasswordForm.vue";
 import ProfileSetting from "../../../../setting/children/ProfileSetting.vue";
+import AccountSetting from "../../../../setting/children/AccountSetting.vue";
 
 export default defineComponent({
-  components: {ProfileSetting, ChangePasswordForm}
+  components: {ProfileSetting, AccountSetting}
 })
 </script>
 

@@ -64,13 +64,13 @@
 
     <div class="section-title">{{$t('m.Profile_Setting')}}</div>
     <Form ref="formProfile" :model="formProfile">
-          <FormItem label="Real Name">
+          <FormItem :label="$t('m.Real_Name')">
             <Input v-model="formProfile.real_name"/>
           </FormItem>
-          <Form-item label="School">
+          <Form-item :label="$t('m.School')">
             <Input v-model="formProfile.school"/>
           </Form-item>
-          <Form-item label="Major">
+          <Form-item :label="$t('m.Major')">
             <Input v-model="formProfile.major"/>
           </Form-item>
           <FormItem label="Language">
@@ -79,13 +79,13 @@
             </Select>
           </FormItem>
           <Form-item>
-            <Button type="primary" @click="updateProfile" :loading="loadingSaveBtn">Save All</Button>
+            <Button type="primary" @click="updateProfile" :loading="loadingSaveBtn">{{$t('m.Save')}}</Button>
           </Form-item>
 
-          <Form-item label="Mood">
+          <Form-item :label="$t('m.Mood')">
             <Input v-model="formProfile.mood"/>
           </Form-item>
-          <Form-item label="Blog">
+          <Form-item :label="$t('m.Blog')">
             <Input v-model="formProfile.blog"/>
           </Form-item>
           <Form-item label="Github">

@@ -4,13 +4,13 @@
       <div class="left">
         <p class="section-title">{{$t('m.ChangePassword')}}</p>
         <Form class="setting-content" ref="formPassword" :model="formPassword" :rules="rulePassword">
-          <FormItem label="Old Password" prop="old_password">
+          <FormItem :label="$t('m.Current_Password')" prop="old_password">
             <Input v-model="formPassword.old_password" type="password"/>
           </FormItem>
-          <FormItem label="New Password" prop="new_password">
+          <FormItem :label="$t('m.New_Password')" prop="new_password">
             <Input v-model="formPassword.new_password" type="password"/>
           </FormItem>
-          <FormItem label="Confirm New Password" prop="again_password">
+          <FormItem :label="$t('m.Confirm_Password')" prop="again_password">
             <Input v-model="formPassword.again_password" type="password"/>
           </FormItem>
           <FormItem v-if="visible.tfaRequired" label="Two Factor Auth" prop="tfa_code">
@@ -22,19 +22,16 @@
           <Button type="primary" @click="changePassword">{{$t('m.Update_Password')}}</Button>
         </Form>
       </div>
-
-      <div class="middle separator"></div>
-
       <div class="right">
         <p class="section-title">{{$t('m.ChangeEmail')}}</p>
         <Form class="setting-content" ref="formEmail" :model="formEmail" :rules="ruleEmail">
-          <FormItem label="Current Password" prop="password">
+          <FormItem :label="$t('m.LoginPassword')" prop="password">
             <Input v-model="formEmail.password" type="password"/>
           </FormItem>
-          <FormItem label="Old Email">
-            <Input v-model="formEmail.old_email" disabled/>
-          </FormItem>
-          <FormItem label="New Email" prop="new_email">
+<!--          <FormItem :label="$t('m.Old_Email')">-->
+<!--            <Input v-model="formEmail.old_email" disabled/>-->
+<!--          </FormItem>-->
+          <FormItem :label="$t('m.New_Email')" prop="new_email">
             <Input v-model="formEmail.new_email"/>
           </FormItem>
           <FormItem v-if="visible.tfaRequired" label="Two Factor Auth" prop="tfa_code">

@@ -198,7 +198,7 @@ export const m = {
   Security: "Security",
   // AccoutSetting.vue
   ChangePassword: "비밀번호 변경",
-  ChangeEmail: "Change Email",
+  ChangeEmail: "이메일 변경",
   Update_Password: "비밀번호 변경",
   // ProfileSetting.vue
   Avatar_Setting: "아바타 변경",
@@ -257,7 +257,7 @@ export const m = {
   Send_Password_Reset_Email: "Send Password Reset Email",
   Your_password_has_been_reset: "Your password has been reset.",
   // Save.vue
-  Save: "Save",
+  Save: "저장",
   // Simditor.vue
   Uploading_is_in_progress:
     "Uploading is in progress, are you sure to leave this page?",
@@ -287,12 +287,20 @@ export const m = {
   Compile_Error: "Compile Error",
   Rejudge: "Rejudge",
   // UserHome.vue
-  UserHomeSolved: "Solved",
+  UserHomeSolved: "해결한 문제",
+  UserHomeFailed: "시도랬으나 해결하지 못한 문제",
   UserHomeserSubmissions: "Submissions",
   UserHomeScore: "Score",
   List_Solved_Problems: "List of solved problems",
   UserHomeIntro: "The guy is so lazy that has not solved any problem yet.",
+
+  // ProfileSetting.vue
   Current_Password: "현재 비밀번호",
-    New_Password: "새 비밀번호",
-    Confirm_Password: "비밀번호 확인",
+  New_Password: "새 비밀번호",
+  Confirm_Password: "비밀번호 확인",
+  New_Email: "새 이메일",
+  Real_Name: "이름",
+  School: "단과대학",
+  Mood: "소개",
+  Blog: "소개페이지"
 };
