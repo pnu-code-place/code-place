@@ -287,6 +287,12 @@ export const m = {
   Compile_Error: "Compile Error",
   Rejudge: "Rejudge",
 
+  // SideNavBar.vue
+  OJ_Status: "OJ통계",
+  Problem_Status: "문제풀이",
+  Archive: "업적",
+  User_Setting: "정보수정",
+
   // UserHome.vue
   UserHomeSolved: "해결한 문제",
   UserHomeFailed: "시도랬으나 해결하지 못한 문제",

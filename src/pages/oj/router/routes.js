@@ -150,25 +150,25 @@ export default [
         meta: {requiresAuth: true, title: 'Main'}
       },
       {
-        name: 'user-home-problems',
+        name: 'user-problems',
         path: 'problems',
         component: ProblemSection,
         meta: {requiresAuth: true, title: 'User Problems'},
       },
       {
-        name: 'user-home-community',
+        name: 'user-community',
         path: 'community',
         component: communitySection,
         meta: {requiresAuth: true, title: 'Community'},
       },
       {
-        name: 'user-home-info',
+        name: 'user-setting',
         path: 'info',
         component: InfoSection,
         meta: {requiresAuth: true, title: 'User Info'},
       },
       {
-        name: 'challenges',
+        name: 'user-challenges',
         path: 'challenges',
         component: ChallengeSection,
         meta: {requiresAuth: true, title: 'Challenges'},

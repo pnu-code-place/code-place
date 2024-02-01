@@ -1,20 +1,17 @@
 <template>
   <nav class="side-nav sticky">
     <ul class="nav-content">
-        <router-link v-for="section in myPageNavItems" :to="{name:section.name}" :key="section.name" testProps="I am props">{{ section.title }}</router-link>
+      <router-link :to="{name:'user-home'}">{{ $t('m.OJ_Status') }}</router-link>
+      <router-link :to="{name:'user-problems'}">{{ $t('m.Problem_Status') }}</router-link>
+      <router-link :to="{name:'user-community'}">{{ $t('m.Community') }}</router-link>
+      <router-link :to="{name:'user-setting'}">{{ $t('m.User_Setting') }}</router-link>
+      <router-link :to="{name:'user-challenges'}">{{ $t('m.Archive') }}</router-link>
     </ul>
   </nav>
 </template>
 
 <script>
-import {myPageNavItems} from "./index";
-
 export default {
-  computed: {
-    myPageNavItems() {
-      return myPageNavItems
-    }
-  },
 }
 </script>
 
