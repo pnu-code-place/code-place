@@ -2,27 +2,27 @@
 
 // const category_info = {
 //   data_structure: {
-//     solve_number: 33,
+//     score: 33,
 //     ranking: 60,
 //     ranking_percent: 0.3,
 //   },
 //   mathematics: {
-//     solve_number: 20,
+//     score: 20,
 //     ranking: 101,
 //     ranking_percent: 0.505,
 //   },
 //   sorting: {
-//     solve_number: 45,
+//     score: 45,
 //     ranking: 34,
 //     ranking_percent: 0.17,
 //   },
 //   implementation: {
-//     solve_number: 61,
+//     score: 61,
 //     ranking: 20,
 //     ranking_percent: 0.1012,
 //   },
 //   searching: {
-//     solve_number: 3,
+//     score: 3,
 //     ranking: 190,
 //     ranking_percent: 0.95,
 //   }
@@ -136,7 +136,7 @@ export default {
         <tbody>
         <tr class="part-row" v-for="(category, category_name) in categoryInfo">
           <td class="part-name" ><span :style="{backgroundColor:CATEGORY_LABEL[category_name].color}">{{ CATEGORY_LABEL[category_name].label }}</span></td>
-          <td class="solve-number">{{ category.solve_number }}</td>
+          <td class="solve-number">{{ category.score }}</td>
           <td class="difficulty-score">
             <span class="score">{{ category.ranking }}</span>
             <span class="score-ratio">({{ (category.ranking_percent * 100).toFixed(1) }}%)</span>

@@ -23,27 +23,27 @@ export default {
 
       categoryInfo: {
         data_structure: {
-          solve_number: 33,
+          score: 33,
           ranking: 60,
           ranking_percent: 0.3,
         },
         mathematics: {
-          solve_number: 20,
+          score: 20,
           ranking: 101,
           ranking_percent: 0.505,
         },
         sorting: {
-          solve_number: 45,
+          score: 45,
           ranking: 34,
           ranking_percent: 0.17,
         },
         implementation: {
-          solve_number: 61,
+          score: 61,
           ranking: 20,
           ranking_percent: 0.101,
         },
         searching: {
-          solve_number: 3,
+          score: 3,
           ranking: 190,
           ranking_percent: 0.95,
         }
@@ -73,7 +73,7 @@ export default {
       },
       //challenges에는 달성한 도전과제의 id가 들어감
       challenges: [
-        0, 2, 3, 4, 1,2 ,3,5,3,2,6,7,2,1,4,5,6,4
+        0, 2, 3, 4, 1, 2, 3, 5, 3, 2, 6, 7, 2, 1, 4, 5, 6, 4
       ]
     }
   },

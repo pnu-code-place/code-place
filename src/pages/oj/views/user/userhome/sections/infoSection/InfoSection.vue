@@ -1,8 +1,7 @@
 <template>
   <section>
-    <h1>회원 정보</h1>
+    <h1>정보 변경</h1>
     <ProfileSetting></ProfileSetting>
-    <h2>{{ $t('m.ChangePassword') }}</h2>
     <AccountSetting></AccountSetting>
   </section>
 </template>
@@ -25,12 +24,10 @@ section {
   padding: 20px;
 
   h1 {
-    text-align: left;
     margin-bottom: 10px;
   }
 
   h2 {
-    text-align: left;
     margin-bottom: 10px;
   }
 }

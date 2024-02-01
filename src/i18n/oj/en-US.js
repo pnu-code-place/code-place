@@ -286,6 +286,7 @@ export const m = {
   Partial_Accepted: "Partial Accepted",
   Compile_Error: "Compile Error",
   Rejudge: "Rejudge",
+
   // UserHome.vue
   UserHomeSolved: "해결한 문제",
   UserHomeFailed: "시도랬으나 해결하지 못한 문제",
@@ -294,13 +295,19 @@ export const m = {
   List_Solved_Problems: "List of solved problems",
   UserHomeIntro: "The guy is so lazy that has not solved any problem yet.",
 
+  //DashboardSection.vue
+
+
   // ProfileSetting.vue
   Current_Password: "현재 비밀번호",
   New_Password: "새 비밀번호",
-  Confirm_Password: "비밀번호 확인",
   New_Email: "새 이메일",
   Real_Name: "이름",
   School: "단과대학",
   Mood: "소개",
-  Blog: "소개페이지"
+  Blog: "블로그",
+
+  // 아바타
+  Upload_Image: "이미지를 끌어다 놓거나, 클릭하여 선택하세요",
+  Avatar_Preview: "프로필이 다음과 같이 보입니다."
 };
