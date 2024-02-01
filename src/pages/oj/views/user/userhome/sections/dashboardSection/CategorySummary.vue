@@ -1,32 +1,4 @@
 <script>
-
-// const category_info = {
-//   data_structure: {
-//     score: 33,
-//     ranking: 60,
-//     ranking_percent: 0.3,
-//   },
-//   mathematics: {
-//     score: 20,
-//     ranking: 101,
-//     ranking_percent: 0.505,
-//   },
-//   sorting: {
-//     score: 45,
-//     ranking: 34,
-//     ranking_percent: 0.17,
-//   },
-//   implementation: {
-//     score: 61,
-//     ranking: 20,
-//     ranking_percent: 0.1012,
-//   },
-//   searching: {
-//     score: 3,
-//     ranking: 190,
-//     ranking_percent: 0.95,
-//   }
-// }
 export default {
   name: "category-summary",
   props: ['categoryInfo'],
@@ -39,13 +11,12 @@ export default {
         implementation: {label : '구현', color : '#F8D093'},
         searching: {label : '탐색', color : '#90B8E7'}
       },
-
     }
   },
   methods: {
     percentageToScoreElement(label, percentage) {
       return `<div style="display:flex; width:100%; justify-content: space-between"><span>${label}</span><span>${((1 - percentage) * 100).toFixed(1)}</span></div>`
-    }
+    },
   },
   computed: {
     graphRankData() {
@@ -124,6 +95,7 @@ export default {
     <div class="graph-column">
       <ECharts :options="chartOption" style="width: 100%; height: 100%"/>
     </div>
+
     <div class="table-wrapper">
       <table>
         <thead>

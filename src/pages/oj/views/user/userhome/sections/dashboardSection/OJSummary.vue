@@ -1,17 +1,17 @@
 <script>
 
-const ojStatus = {
-  rank: 1, // 랭킹
-  rank_percent: 0.1, // 랭킹 퍼센트 ( 상위 10% )
-  score: 100,
-  submission_number: 100,
-  accepted_number: 100,
-  total_score: 56000, // 현재 점수
-  rank_next: 60000, // 다음 랭킹의 허들
-  rank_current: 50000, // 현재 랭킹의 허들
-  miracle_current: 10, // 현재 연속 코딩일수
-  miracle_record: 20 // 최고 연속 코딩일수
-}
+// const ojStatus = {
+//   rank: 1, // 랭킹
+//   rank_percent: 0.1, // 랭킹 퍼센트 ( 상위 10% )
+//   score: 100,
+//   submission_number: 100,
+//   accepted_number: 100,
+//   total_score: 56000, // 현재 점수
+//   rank_next: 60000, // 다음 랭킹의 허들
+//   rank_current: 50000, // 현재 랭킹의 허들
+//   miracle_current: 10, // 현재 연속 코딩일수
+//   miracle_record: 20 // 최고 연속 코딩일수
+// }
 
 import HorizontalGauge from "./HorizontalGauge.vue";
 import ShineWrapper from "../../../../../components/ShineWrapper.vue";
@@ -36,8 +36,7 @@ export default {
   <div class="oj-summary">
     <div class="rank-mark-wrapper">
       <shine-wrapper>
-        <!--          <img src="https://cdn-icons-png.flaticon.com/512/473/473406.png" class="rank-mark"/>-->
-<!--        <img src="https://picsum.photos/300/250" class="rank-mark"/>-->
+        <img :src="ojStatus.rank_image" class="rank-mark" alt="rank emblem"/>
       </shine-wrapper>
     </div>
     <div class="rank-info">

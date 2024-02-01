@@ -1,27 +1,4 @@
 <script>
-// difficultyInfo: {
-//   very_easy: {
-//     solve_number: 33,
-//         total_score: 330,
-//   },
-//   easy: {
-//     solve_number: 20,
-//         total_score: 400,
-//   },
-//   medium: {
-//     solve_number: 10,
-//         total_score: 800,
-//   },
-//   hard: {
-//     solve_number: 4,
-//         total_score: 640,
-//   },
-//   very_hard: {
-//     solve_number: 1,
-//         total_score: 320,
-//   }
-// },
-
 export default {
   name: 'difficulty-summary',
   props: ['difficultyInfo'],

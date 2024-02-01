@@ -8,20 +8,12 @@ export default {
     ChallengeBadge,
   },
   props: {
-    achievedChallenges: {
+    achieves: {
       type: Array,
       default() {
         return [];
       },
     },
-  },
-  computed: {
-    challenges() {
-      return this.achievedChallenges.map(chID => CHALLENGES[chID])
-    },
-    testImage() {
-      return require("@/assets/challenges/on_error_image.png")
-    }
   },
   data() {
     return {}
@@ -32,10 +24,10 @@ export default {
 
 <template>
   <div class="challenge-summary">
-    <div class="badge-wrapper" v-for="challenge in challenges">
+    <div class="badge-wrapper" v-for="challenge in achieves">
       <ChallengeBadge
           :image="challenge.image"
-          :tooltip="challenge.description"
+          :description="challenge.description"
           :title="challenge.title"
           :key="challenge.id"
       ></ChallengeBadge>

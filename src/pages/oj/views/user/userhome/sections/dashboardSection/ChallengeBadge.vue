@@ -1,9 +1,11 @@
 <script>
-// TODO : static하게 이미지를 처리하기 위해 다음과 같이 적용했습니다. 실제 프로젝트에서는 서버에 이미지를 저장하고, 해당 이미지를 불러오는 방식으로 구현해야 합니다.
-
 export default {
   props: {
-    tooltip: {
+    title: {
+      type: String,
+      required: true
+    },
+    description: {
       type: String,
       required: true
     },
@@ -11,6 +13,10 @@ export default {
       type: String,
       required: true
     },
+    date: {
+      type: String,
+      required: true
+    }
   },
   data() {
     return {
@@ -18,6 +24,9 @@ export default {
     }
   },
   computed: {
+    tooltip() {
+      return `${this.title} : ${this.description}`
+    },
     fallbackMedal() {
       return require("@/assets/challenges/on_error_image.png")
     }
@@ -32,7 +41,7 @@ export default {
 
 <template>
   <Tooltip :content="tooltip" placement="bottom" class="tooltip">
-    <img :src="displayImage" alt="badge" @error="onMedalError"/>
+    <img :src="image" alt="badge" @error="onMedalError"/>
   </Tooltip>
 </template>
 

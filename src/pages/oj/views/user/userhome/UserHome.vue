@@ -4,38 +4,47 @@
     <main>
       <user-card :profile="profile"></user-card>
       <keep-alive>
-        <router-view></router-view>
+        <router-view :dashboardInfo="dashboardInfo"></router-view>
       </keep-alive>
     </main>
   </div>
 </template>
 <script>
-import {mapActions} from 'vuex'
 import time from '@/utils/time'
 import api from '@oj/api'
 import SideNavBar from "./SideNavBar.vue";
 import UserCard from "./UserCard.vue";
+import {DashboardSectionProp} from "./sections/dashboardSection/prop";
 
 export default {
-
   components: {UserCard, SideNavBar},
+  name: "user-home",
   data() {
     return {
       username: '',
       profile: {},
+      dashboardInfo: {},
     }
   },
   mounted() {
     this.init()
   },
   methods: {
-    ...mapActions(['changeDomTitle']),
+    // init() {
+    //   this.username = this.$route.query.username
+    //   api.getUserInfo(this.username).then(res => {
+    //     this.changeDomTitle({title: res.data.data.user.username})
+    //     this.profile = res.data.data
+    //     this.getSolvedProblems()
+    //     let registerTime = time.utcToLocal(this.profile.user.create_time, 'YYYY-MM-D')
+    //     console.log('The guy registered at ' + registerTime + '.')
+    //   })
+    // },
     init() {
-      this.username = this.$route.query.username
       api.getUserInfo(this.username).then(res => {
-        this.changeDomTitle({title: res.data.data.user.username})
         this.profile = res.data.data
-        this.getSolvedProblems()
+        this.getSolvedProblems();
+        this.getDashboardInfo();
         let registerTime = time.utcToLocal(this.profile.user.create_time, 'YYYY-MM-D')
         console.log('The guy registered at ' + registerTime + '.')
       })
@@ -55,6 +64,9 @@ export default {
       ACProblems.sort()
       this.problems = ACProblems
     },
+    getDashboardInfo() {
+      this.dashboardInfo = this.profile.dashboardInfo || DashboardSectionProp
+    }
   },
 }
 </script>

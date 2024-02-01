@@ -17,8 +17,9 @@ import ShineWrapper from "@oj/components/ShineWrapper.vue";
 // }
 
 export default {
+  name: "user-card",
   components: {ShineWrapper},
-  props: {profile: Object},
+  props: ['profile'],
 };
 </script>
 
@@ -28,7 +29,8 @@ export default {
       <img class="avatar" :src="profile.avatar"/>
     </div>
     <div class="user-info">
-      <div class="username">{{ profile.user.username }}
+      <div class="username">
+        {{ profile.user.username }}
         <div class="user-rank">
           <shine-wrapper>
             <img src="https://cdn-icons-png.flaticon.com/512/473/473406.png" class="rank-mark"/>
