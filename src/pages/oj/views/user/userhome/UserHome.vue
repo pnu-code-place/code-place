@@ -16,8 +16,6 @@ import api from '@oj/api'
 import SideNavBar from "./SideNavBar.vue";
 import UserCard from "./UserCard.vue";
 
-import {userProblemData} from "./dummies";
-
 export default {
 
   components: {UserCard, SideNavBar},
@@ -25,7 +23,6 @@ export default {
     return {
       username: '',
       profile: {},
-      userProblemData : userProblemData
     }
   },
   mounted() {
