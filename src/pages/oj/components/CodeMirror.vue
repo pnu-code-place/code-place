@@ -1,8 +1,8 @@
 <template>
   <div>
-    <Row type="flex" justify="space-between" class="header">
-      <Col :span=12>
-      <div>
+<!--    <Row type="flex" justify="space-between" class="header">-->
+<!--      <Col :span=12>-->
+<!--      <div>-->
 <!--        <Select :value="language" @on-change="onLangChange" class="adjust">-->
 <!--          <Option v-for="item in languages" :key="item" :value="item">{{item}}-->
 <!--          </Option>-->
@@ -16,8 +16,8 @@
 <!--          <Button icon="upload" @click="onUploadFile"></Button>-->
 <!--        </Tooltip>-->
 <!--        <input type="file" id="file-uploader" style="display: none" @change="onUploadFileDone">-->
-      </div>
-      </Col>
+<!--      </div>-->
+<!--      </Col>-->
 <!--      <Col :span=12>-->
 <!--      <div class="fl-right">-->
 <!--        <span>{{$t('m.Theme')}}:</span>-->
@@ -27,7 +27,7 @@
 <!--        </Select>-->
 <!--      </div>-->
 <!--      </Col>-->
-    </Row>
+<!--    </Row>-->
     <codemirror :value="value" :options="options" @change="onEditorCodeChange" ref="myEditor">
     </codemirror>
   </div>
@@ -41,6 +41,7 @@
   import 'codemirror/theme/solarized.css'
   import 'codemirror/theme/material.css'
   import 'codemirror/theme/paraiso-light.css'
+
   // mode
   import 'codemirror/mode/clike/clike.js'
   import 'codemirror/mode/python/python.js'
@@ -90,7 +91,7 @@
           theme: 'default',
           lineNumbers: true,
           line: true,
-          smartIndent: true,
+          smartIndent: false,
           autofocus: true,
           foldGutter: true,
           autocorrect: true,
@@ -187,7 +188,7 @@
   }
   .CodeMirror-scroll {
     min-height: 400px;
-    max-height: fit-content;
+    //max-height: fit-content;
     //max-height: 1000px;
   }
 </style>

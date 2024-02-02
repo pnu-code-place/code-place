@@ -264,6 +264,7 @@ export default {
 
 <style lang="less" scoped>
 .mainBox {
+  width: 1200px;
 }
 
 .boxWrapper {

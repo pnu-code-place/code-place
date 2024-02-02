@@ -3,8 +3,8 @@
     <splitpanes>
       <pane min-size="30" size="45">
         <div class="container problemDetailContainer">
-          <Panel :padding="45" shadow>
-            <div slot="title">{{ problem._id+'. '+problem.title }}</div>
+          <Panel :padding="45" style="border: none" dis-hover>
+            <div slot="title">{{ problem._id + '. ' + problem.title }}</div>
             <div id="problem-content" class="markdown-body" v-katex>
               <p class="title">{{ $t('m.Description') }}</p>
               <p class="content" v-html=problem.description></p>
@@ -17,7 +17,6 @@
                 v-if="problem.io_mode.io_mode=='File IO'">({{ $t('m.ToFile') }}: {{ problem.io_mode.output }})</span>
               </p>
               <p class="content" v-html=problem.output_description></p>
-
               <div v-for="(sample, index) of problem.samples" :key="index">
                 <div class="flex-container sample">
                   <div class="sample-input">
@@ -64,8 +63,20 @@
                   코드 작성
                 </span>
                 </div>
-                <div>
-                  <div class="submitBtn">
+                <div style="display: flex; justify-content: space-between; align-items: center">
+                  <Dropdown @on-click="changeLanguage" trigger="click" class="dropdown">
+                          <span style="font-size: 10px; padding-right: 2px">
+                            {{ language }}
+                          </span>
+                    <Icon type="arrow-down-b"></Icon>
+                    <Dropdown-menu slot="list">
+                      <Dropdown-item :name="item" v-for="item in problem.languages" :key="item">{{
+                          item
+                        }}
+                      </Dropdown-item>
+                    </Dropdown-menu>
+                  </Dropdown>
+                  <div class="submitBtn" @click="submitCode">
                     <Icon type="ios-paper"></Icon>
                     <span style="font-size: small;margin-left: 4px;">제출</span>
                   </div>
@@ -90,6 +101,16 @@
                   실행 결과
                 </span>
                 </div>
+              </div>
+              <div class="status" v-if="statusVisible">
+                <template v-if="!this.contestID || (this.contestID && OIContestRealTimePermission)">
+                  <Tag type="dot" :color="submissionStatus.color" @click.native="handleRoute('/status/'+submissionId)">
+                    {{ $t('m.' + submissionStatus.text.replace(/ /g, "_")) }}
+                  </Tag>
+                </template>
+                <template v-else-if="this.contestID && !OIContestRealTimePermission">
+                  <Alert type="success" show-icon>{{ $t('m.Submitted_successfully') }}</Alert>
+                </template>
               </div>
             </div>
           </pane>
@@ -334,7 +355,7 @@ export default {
       languages: {
         type: Array,
         default: () => {
-          return ['C', 'C++', 'Java', 'Python2']
+          return ['C', 'C++', 'Java', 'Python3']
         }
       },
       theme: 'solarized',
@@ -458,6 +479,9 @@ export default {
     handleRoute(route) {
       this.$router.push(route)
     },
+    changeLanguage(lang) {
+      this.language = lang
+    },
     onChangeLang(newLang) {
       if (this.problem.template[newLang]) {
         if (this.code.trim() === '') {
@@ -466,6 +490,7 @@ export default {
       }
       this.language = newLang
     },
+
     onChangeTheme(newTheme) {
       this.theme = newTheme
     },
@@ -627,7 +652,6 @@ export default {
 }
 
 .flex-container {
-  height: 100vh;
   display: flex;
   flex-direction: column;
 
@@ -647,6 +671,7 @@ export default {
     margin-left: 10px;
     margin-right: 10px;
     margin-top: 15px;
+    margin-bottom: 15px;
   }
 
   .container-header {
@@ -665,7 +690,7 @@ export default {
       font-weight: bold;
     }
 
-    .submitBtn{
+    .submitBtn {
       padding-left: 10px;
       padding-right: 10px;
       padding-top: 5px;
@@ -674,8 +699,9 @@ export default {
       border-radius: 7px;
       cursor: pointer;
     }
-    .submitBtn:hover{
-      background-color: #dcdcdc;
+
+    .submitBtn:hover {
+      background-color: #eaeaea;
     }
   }
 
@@ -685,11 +711,12 @@ export default {
   }
 
   .editorContainer {
-    height: fit-content;
+    //height: auto;
   }
 
   .resultContainer {
-
+    margin-top: 0px;
+    height: 270px;
   }
 }
 
@@ -718,7 +745,6 @@ export default {
 
     &-input, &-output {
       width: 100%;
-      height: 20px;
       flex: 1 1 auto;
       display: flex;
       flex-direction: column;
@@ -726,7 +752,7 @@ export default {
     }
 
     pre {
-      flex: 1 1 auto;
+      //flex: 1 1 auto;
       align-self: stretch;
       border-style: solid;
       background: transparent;
@@ -807,18 +833,13 @@ export default {
   height: 480px;
 }
 
-.splitpanes__pane {
-
+.dropdown {
+  cursor: pointer;
+  padding-left: 15px;
+  padding-right: 15px;
+  border-radius: 7px;
+  margin-right: 10px;
 }
 
-.splitpanes--vertical > .splitpanes__splitter {
-  min-width: 6px;
-  background: linear-gradient(90deg, #ccc, #111);
-}
-
-.splitpanes--horizontal > .splitpanes__splitter {
-  min-height: 6px;
-  background: linear-gradient(0deg, #ccc, #111);
-}
 </style>
 

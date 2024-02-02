@@ -1,49 +1,41 @@
 <template>
   <div id="header">
-    <Menu theme="default" mode="horizontal" @on-select="handleRoute" :active-name="activeMenu" class="oj-menu">
-      <div class="logo" @click="handleRoute('/')">
-        <img src="@/assets/pnu.png" width="70" height="70"/>
-        <div class="headerIcon">
-          <p class="pnuName">부산대학교</p>
-          <p class="systemTitle">온라인 저지 시스템</p>
-        </div>
-      </div>
-
-      <Menu-item class="menuItemText first" name="/">
-        {{$t('m.Home')}}
-      </Menu-item>
-<!--      <Menu-item class="menuItemText" name="/notice">-->
-<!--        {{$t('m.Notice')}}-->
-<!--      </Menu-item>-->
-      <Menu-item class="menuItemText" name="/problem">
-        {{$t('m.NavProblems')}}
-      </Menu-item>
-      <Menu-item class="menuItemText" name="/status">
-        {{$t('m.Community')}}
-      </Menu-item>
-      <Menu-item class="menuItemText" name="/contest">
-        {{$t('m.Contests')}}
-      </Menu-item>
-<!--      <Menu-item class="menuItemText" name="/status"> //TODO 채점현황-->
-<!--        {{$t('m.NavStatus')}}-->
-<!--      </Menu-item>-->
-      <Menu-item class="menuItemText" name="/status">
-        {{$t('m.Rank')}}
-      </Menu-item>
+    <Menu theme="default" mode="horizontal" @on-select="handleRoute" :active-name="activeMenu">
+        <LogoButton/>
+        <Menu-item class="menuItemText first" name="/">
+          {{$t('m.Home')}}
+        </Menu-item>
+        <Menu-item class="menuItemText" name="/problem">
+          {{$t('m.NavProblems')}}
+        </Menu-item>
+        <Menu-item class="menuItemText" name="/status">
+          {{$t('m.Community')}}
+        </Menu-item>
+        <Menu-item class="menuItemText" name="/contest">
+          {{$t('m.Contests')}}
+        </Menu-item>
+        <Menu-item class="menuItemText" name="/acm-rank">
+          {{$t('m.Rank')}}
+        </Menu-item>
 
       <template v-if="isAuthenticated">
-        <Dropdown class="drop-menu" @on-click="handleRoute" placement="bottom" trigger="click">
-          <Button type="text" class="drop-menu-title">{{ user.username+' 님' }}
-            <Icon type="arrow-down-b"></Icon>
-          </Button>
-          <Dropdown-menu slot="list">
-            <Dropdown-item name="/user-home">{{$t('m.MyHome')}}</Dropdown-item>
-            <Dropdown-item name="/status?myself=1">{{$t('m.MySubmissions')}}</Dropdown-item>
-            <Dropdown-item name="/setting/profile">{{$t('m.Settings')}}</Dropdown-item>
-            <Dropdown-item v-if="isAdminRole" name="/admin">{{$t('m.Management')}}</Dropdown-item>
-            <Dropdown-item divided name="/logout">{{$t('m.Logout')}}</Dropdown-item>
-          </Dropdown-menu>
-        </Dropdown>
+          <Dropdown class="drop-menu" @on-click="handleRoute" placement="top-end" trigger="click">
+            <div style="display: flex; align-items: center">
+              <div>
+                <img class="avatar" :src="profile.avatar"/>
+              </div>
+              <div style="margin-left: 10px">
+                <Icon type="arrow-down-b" style="cursor: pointer"></Icon>
+              </div>
+            </div>
+            <Dropdown-menu slot="list">
+              <Dropdown-item name="/user-home">{{$t('m.MyHome')}}</Dropdown-item>
+              <Dropdown-item name="/status?myself=1">{{$t('m.MySubmissions')}}</Dropdown-item>
+              <Dropdown-item name="/setting/profile">{{$t('m.Settings')}}</Dropdown-item>
+              <Dropdown-item v-if="isAdminRole" name="/admin">{{$t('m.Management')}}</Dropdown-item>
+              <Dropdown-item divided name="/logout">{{$t('m.Logout')}}</Dropdown-item>
+            </Dropdown-menu>
+          </Dropdown>
       </template>
     </Menu>
     <Modal v-model="modalVisible" :width="400" :styles="{'top': modalStatus.mode == 'login' ? '10%' : '10%'}">
@@ -58,9 +50,11 @@
   import { mapGetters, mapActions } from 'vuex'
   import login from '@oj/views/user/Login'
   import register from '@oj/views/user/Register'
+  import LogoButton from "./LogoButton.vue";
 
   export default {
     components: {
+      LogoButton,
       login,
       register
     },
@@ -86,6 +80,7 @@
     },
     computed: {
       ...mapGetters(['website', 'modalStatus', 'user', 'isAuthenticated', 'isAdminRole']),
+      ...mapGetters(['profile']),
       // 跟随路由变化
       activeMenu () {
         return '/' + this.$route.path.split('/')[1]
@@ -104,62 +99,30 @@
 
 <style lang="less" scoped>
   #header {
-    min-width: 300px;
+    //min-width: 800px;
+    //overflow-x: hidden;
+    //overflow-y: visible;
     position: fixed;
-    padding-left: 10%;
-    padding-right: 10%;
+    padding-left: 5%;
+    padding-right: 4%;
+
     top: 0;
     left: 0;
     height: 70px;
     width: 100%;
-    z-index: 1000;
     background-color: #fff;
+    z-index: 999;
     box-shadow: 0 1px 1.5px 0 rgba(0, 0, 0, 0.1);
 
-    .oj-menu {
-      background: #fdfdfd;
-      height: 100%;
-      width: 1200px;
-      overflow-x: hidden;
-    }
-
-    .logo {
-      cursor: pointer;
-      text-align: left;
-      float: left;
-      height: auto;
-      display: flex;
-      line-height: normal;
-      .pnuName{
-        font-size: 14px;
-        font-weight: normal;
-      }
-      .systemTitle{
-        font-size: 18px;
-        font-weight: bold;
-        color: #255AA4;
-      }
-    }
-
-    .headerIcon{
-      width: auto;
-      margin-top: 6%;
-    }
-
     .drop-menu {
+
       float: right;
       z-index: 1000;
-      right: 0px;
       &-title {
+        border: none;
         font-size: 13px;
       }
     }
-
-  }
-  .btn-menu {
-    font-size: 30px;
-    height: auto;
-    float: right;
   }
 
   .modal {
@@ -182,5 +145,17 @@
 
   .menuItemText:hover{
     color: #4A86C0;
+  }
+
+  @avatar-radius: 50%;
+  .avatar {
+    cursor: pointer;
+    width: 35px;
+    height: auto;
+    max-width: 100%;
+    display: block;
+    border-radius: @avatar-radius;
+    border: 1px solid #7a7a7a;
+    box-shadow: 0px 0px 1px 0px;
   }
 </style>

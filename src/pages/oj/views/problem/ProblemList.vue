@@ -3,13 +3,14 @@
     <div class="boxWrapper">
       <div class="left-container">
         <div class="problemListTableHeader">
-          <p>문제</p>
+          <p @click="test">문제</p>
           <div style="display: flex; align-items: center; justify-content: center">
             <li style="list-style-type: none; margin-left: 3px;">
               <Input v-model="query.keyword"
                      @on-enter="filterByKeyword"
                      @on-click="filterByKeyword"
-                     placeholder="문제 제목 검색"
+                     @input="filterByKeyword"
+                     placeholder="문제 제목 / 번호 검색"
                      icon="ios-search-strong"/>
             </li>
             <Dropdown @on-click="filterByDifficulty" trigger="click" class="dropdown difficultyDropdown">
@@ -50,7 +51,7 @@
               <Icon type="arrow-down-b"></Icon>
               <Dropdown-menu slot="list">
                 <Dropdown-item name="All">{{ $t('m.All') }}</Dropdown-item>
-                <template v-for="(problem, idx) in problemList">
+                <template v-for="(problem, idx) in this.problemList">
                   <template v-for="(problemTag, idx) in problem.tags">
                     <Dropdown-item name="" >{{ problemTag }}</Dropdown-item>
                   </template>
@@ -60,9 +61,7 @@
             <div class="moreOptionSelector">
               <Icon type="ios-more" size="20" color="#7a7a7a"></Icon>
             </div>
-
           </div>
-
         </div>
         <table>
           <thead>
@@ -74,10 +73,9 @@
             <th class="th-fifth">정답률</th>
           </tr>
           </thead>
-
-          <template v-if="problemList.length !== 0">
+          <template v-if="this.problemList.length !== 0">
             <tbody>
-            <tr v-for="(problem, idx) in this.problemList">
+            <tr v-for="problem in this.problemList">
               <td class="td-first">{{ problem._id }}</td>
               <td class="td-second" @click="enterProblemDetail(problem._id)">
                 <span class="problemTitle">
@@ -101,11 +99,10 @@
             </tr>
             </tbody>
           </template>
-
         </table>
-        <template v-if="problemList.length === 0">
+        <template v-if="this.problemList.length == 0">
           <div class="noProblemListBox">
-            문제가 존재하지 않습니다.
+            찾으시는 문제가 존재하지 않습니다.
           </div>
         </template>
         <Pagination
@@ -122,15 +119,15 @@
           <div class="hardProblemRecommendationBoxBody">
             <div class="hardProblemFieldCategory">
               <!--              더미 데이터로 문제들 중 첫번째 것 뽑아서 우선 배치해놓겠음.-->
-              <FieldCategoryBox :boxType="true" :value="fieldMap[this.problemList[1].field].value"
-                                :boxColor="fieldMap[this.problemList[1].field].boxColor"/>
-              <template v-for="(category, idx) in this.problemList[1].tags">
-                <FieldCategoryBox :boxType="false" :value="'#' + category" :boxColor="white"/>
-              </template>
+              <FieldCategoryBox :boxType="true" :value="'자료구조'"
+                                :boxColor="'#F8B193'"/>
+<!--              <template v-for="(category, idx) in this.problemList[1].tags">-->
+                <FieldCategoryBox :boxType="false" :value="'#스택'" :boxColor="'white'"/>
+<!--              </template>-->
             </div>
             <div class="hardProblemFieldCategory" style="justify-content: space-between; margin-top: 2px">
-              <span style="font-weight: bold;font-size: medium">{{ this.problemList[1].title }}</span>
-              <a style="color: #7a7a7a; text-decoration: underline" @click="enterProblemDetail(this.problemList[1]._id)">도전하기</a>
+              <span style="font-weight: bold;font-size: medium"> 부분 팰린드롬 </span>
+              <a style="color: #7a7a7a; text-decoration: underline" >도전하기</a>
             </div>
             <div class="hardProblemInfo" style="margin-top: 15px">
               <div style="display: flex; justify-content: space-between; width: 50%; float: right">
@@ -438,6 +435,10 @@ export default {
   },
   methods: {
     ...mapActions(['changeDomTitle','changeProblemSolvingState']),
+    test(){
+      console.log("문제리스트객체: ", this.problemList)
+      console.log("문제리스트길이: ", this.problemList.length)
+    },
     init(simulate = false) {
       this.routeName = this.$route.name
       let query = this.$route.query
@@ -461,17 +462,19 @@ export default {
         query: utils.filterEmptyValue(this.query)
       })
     },
-    getProblemList() {
+    async getProblemList() {
       let offset = (this.query.page - 1) * this.query.limit
+      console.log("offset: ",offset)
       this.loadings.table = true
-      api.getProblemList(offset, this.limit, this.query).then(res => {
-        this.loadings.table = false
+      await api.getProblemList(offset, this.limit, this.query).then(res => {
+        this.loadings.table = true
         this.total = res.data.data.total
         this.problemList = res.data.data.results
-        console.log(this.problemList)
-        if (this.isAuthenticated) {
-          this.addStatusColumn(this.problemTableColumns, res.data.data.results)
-        }
+        console.log("가져온 리스트 ",this.problemList)
+        console.log("가져온 리스트 길이 ",this.problemList.length)
+        // if (this.isAuthenticated) {
+        //   this.addStatusColumn(this.problemTableColumns, res.data.data.results)
+        // }
       }, res => {
         this.loadings.table = false
       })
@@ -509,6 +512,8 @@ export default {
       this.pushRouter()
     },
     filterByKeyword(keyword) {
+      // this.query.keyword = keyword
+      console.log("검색: ",keyword)
       this.query.page = 1
       this.pushRouter()
     },
@@ -563,6 +568,10 @@ export default {
 </script>
 
 <style scoped lang="less">
+.mainBox{
+  width: 1200px;
+}
+
 .taglist-title {
   margin-left: -10px;
   margin-bottom: -10px;

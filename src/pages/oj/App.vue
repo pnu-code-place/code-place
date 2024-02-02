@@ -10,15 +10,15 @@
       <transition name="fadeInUp" mode="out-in">
         <router-view></router-view>
       </transition>
-      <template v-if="!isProblemSolving">
-        <div class="footer">
-          <p v-html="website.website_footer"></p>
-          <p>Powered by <a href="https://github.com/QingdaoU/OnlineJudge">OnlineJudge</a>
-            <span v-if="version">&nbsp; Version: {{ version }}</span>
-          </p>
-        </div>
-      </template>
     </div>
+    <template v-if="!isProblemSolving">
+      <div class="footer">
+        <p v-html="website.website_footer"></p>
+        <p>Powered by <a href="https://github.com/QingdaoU/OnlineJudge">OnlineJudge</a>
+          <span v-if="version">&nbsp; Version: {{ version }}</span>
+        </p>
+      </div>
+    </template>
     <BackTop></BackTop>
   </div>
 </template>
@@ -88,18 +88,24 @@ a {
   margin: 90px auto auto;
 }
 
-.ps {
-  margin-top: 50px;
-  padding: 0 1%;
-  background-color: #F8F8F8;
+@media screen and (min-width: 1200px) {
+  .content-app {
+    margin-top: 90px;
+    display: flex;
+    justify-content: center;
+  }
 }
-
-.footer {
-  //margin-top: 400px;
-  //margin-bottom: 10px;
-  text-align: center;
-  font-size: small;
-}
+  .ps{
+    margin-top: 50px;
+    padding: 0 1%;
+    background-color: #F8F8F8;
+  }
+  .footer {
+    margin-top: 400px;
+    //margin-bottom: 10px;
+    text-align: center;
+    font-size: small;
+  }
 
 .fadeInUp-enter-active {
   animation: fadeInUp .8s;
