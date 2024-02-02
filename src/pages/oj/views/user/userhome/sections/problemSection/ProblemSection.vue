@@ -1,7 +1,7 @@
 <template>
   <section id="problem-section">
     <h1>문제풀이</h1>
-    <div class="status">
+    <div class="status" v-if="problem_info">
       <div class="status-item">
         <span class="label">도전한 문제</span>
         <span class="value">{{ tried }}</span>
@@ -17,6 +17,11 @@
       <div class="status-item">
         <span class="score-ratio">상위 {{ ranking_percent }}%</span>
       </div>
+    </div>
+    <div class="status" v-else-if="isLoading">
+      Loading...
+    </div>
+    <div class="status" v-else>
     </div>
     <hr/>
     <div class="problem-tab solved">
@@ -42,88 +47,31 @@
 </template>
 
 <script>
-const problem_info = {
-  ranking_percent: 0.3,
-  solved: { // 해결한 문제들을 표시합니다.
-    count: 4,
-    problems: [
-      {
-        id: 1001,
-        title: 'A+B',
-        submitTime: '2021-07-02T08:25:49.443682Z',
-        difficulty: 'easy',
-      },
-      {
-        id: 1002,
-        title:
-            'A-B',
-        submitTime:
-            '2021-07-02T08:25:49.443682Z',
-        difficulty:
-            'easy',
-      },
-      {
-        id: 1003,
-        title:
-            'A*B',
-        submitTime:
-            '2021-07-02T08:25:49.443682Z',
-        difficulty:
-            'easy',
-      },
-      {
-        id: 1004,
-        title:
-            'A/B',
-        submitTime:
-            '2021-07-02T08:25:49.443682Z',
-        difficulty:
-            'easy',
-      },
-    ],
-  },
-  failed: { // 시도했으나 풀지 못한 문제들을 표시합니다.
-    count: 4,
-    problems: [
-      {
-        id: 1001,
-        title: 'A+B',
-        submitTime: '2021-07-02T08:25:49.443682Z',
-        difficulty: 'easy',
-      },
-      {
-        id: 1002,
-        title: 'A-B',
-        submitTime: '2021-07-02T08:25:49.443682Z',
-        difficulty: 'easy',
-      },
-      {
-        id: 1003,
-        title: 'A*B',
-        submitTime: '2021-07-02T08:25:49.443682Z',
-        difficulty: 'easy',
-      },
-      {
-        id: 1004,
-        title: 'A/B',
-        submitTime: '2021-07-02T08:25:49.443682Z',
-        difficulty: 'easy',
-      },
-    ],
-  }
-}
 
 import ProblemBadge from "./ProblemBadge.vue";
+import api from "@oj/api";
 
 export default {
   name: 'problem-section',
   components: {ProblemBadge},
   data() {
     return {
-      problem_info: problem_info,
+      problem_info: {},
+      isLoading : true
     }
   },
-  methods: {},
+  methods: {
+    init() {
+      this.isLoading = true
+      api.getUserProblemInfo().then(res => {
+        this.problem_info = res.data.data
+        this.isLoading = false
+      })
+    }
+  },
+  mounted() {
+    this.init()
+  },
   computed: {
     tried() {
       return this.problem_info.failed.count + this.problem_info.solved.count

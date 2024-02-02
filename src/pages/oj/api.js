@@ -1,6 +1,7 @@
 import Vue from "vue";
 import store from "@/store";
 import axios from "axios";
+import {DashboardSectionProp, ProblemSectionProp} from "./views/user/userhome/sections/prop";
 
 Vue.prototype.$http = axios;
 axios.defaults.baseURL = "/api";
@@ -70,6 +71,22 @@ export default {
         username
       }
     });
+  },
+  getDashboardInfo() {
+    // return ajax("profile/dashboard", "get");
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve({data: {data: DashboardSectionProp}})
+      }, 300)
+    })
+  },
+  getUserProblemInfo() {
+    // return ajax("profile/problem_info", "get");
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve({data: {data: ProblemSectionProp}})
+      }, 3000)
+    })
   },
   updateProfile(profile) {
     return ajax("profile", "put", {

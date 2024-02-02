@@ -4,7 +4,7 @@
     <main>
       <user-card :profile="profile"></user-card>
       <keep-alive>
-        <router-view :dashboardInfo="dashboardInfo"></router-view>
+        <router-view></router-view>
       </keep-alive>
     </main>
   </div>
@@ -14,7 +14,6 @@ import time from '@/utils/time'
 import api from '@oj/api'
 import SideNavBar from "./SideNavBar.vue";
 import UserCard from "./UserCard.vue";
-import {DashboardSectionProp} from "./sections/dashboardSection/prop";
 
 export default {
   components: {UserCard, SideNavBar},
@@ -23,30 +22,21 @@ export default {
     return {
       username: '',
       profile: {},
-      dashboardInfo: {},
+      problems: [],
     }
   },
   mounted() {
     this.init()
   },
   methods: {
-    // init() {
-    //   this.username = this.$route.query.username
-    //   api.getUserInfo(this.username).then(res => {
-    //     this.changeDomTitle({title: res.data.data.user.username})
-    //     this.profile = res.data.data
-    //     this.getSolvedProblems()
-    //     let registerTime = time.utcToLocal(this.profile.user.create_time, 'YYYY-MM-D')
-    //     console.log('The guy registered at ' + registerTime + '.')
-    //   })
-    // },
     init() {
+      // this.username = this.$route.query.username
       api.getUserInfo(this.username).then(res => {
+        // this.changeDomTitle({title: res.data.data.user.username})
         this.profile = res.data.data
-        this.getSolvedProblems();
-        this.getDashboardInfo();
+        // this.getSolvedProblems()
         let registerTime = time.utcToLocal(this.profile.user.create_time, 'YYYY-MM-D')
-        console.log('The guy registered at ' + registerTime + '.')
+        // console.log('The guy registered at ' + registerTime + '.')
       })
     },
     getSolvedProblems() {
@@ -64,9 +54,6 @@ export default {
       ACProblems.sort()
       this.problems = ACProblems
     },
-    getDashboardInfo() {
-      this.dashboardInfo = this.profile.dashboardInfo || DashboardSectionProp
-    }
   },
 }
 </script>

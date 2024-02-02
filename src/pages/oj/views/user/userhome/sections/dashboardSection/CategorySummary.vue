@@ -192,9 +192,6 @@ export default {
 
         .difficulty-score {
 
-          .score {
-          }
-
           .score-ratio {
             font-size: 13px;
           }

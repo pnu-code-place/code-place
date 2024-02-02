@@ -84,3 +84,65 @@ export const DashboardSectionProp = {
     ]
   }
 }
+
+export const ProblemSectionProp = {
+  ranking_percent: 0.3,
+  solved: { // 해결한 문제들을 표시합니다.
+    count: 4,
+    problems: [
+      {
+        id: 1001,
+        title: 'A+B',
+        submitTime: '2021-07-02T08:25:49.443682Z',
+        difficulty: 'easy',
+      },
+      {
+        id: 1002,
+        title: 'A-B',
+        submitTime: '2021-07-02T08:25:49.443682Z',
+        difficulty: 'easy',
+      },
+      {
+        id: 1003,
+        title: 'A*B',
+        submitTime: '2021-07-02T08:25:49.443682Z',
+        difficulty: 'easy',
+      },
+      {
+        id: 1004,
+        title: 'A/B',
+        submitTime: '2021-07-02T08:25:49.443682Z',
+        difficulty: 'easy',
+      },
+    ],
+  },
+  failed: { // 시도했으나 풀지 못한 문제들을 표시합니다.
+    count: 4,
+    problems: [
+      {
+        id: 1001,
+        title: 'A+B',
+        submitTime: '2021-07-02T08:25:49.443682Z',
+        difficulty: 'easy',
+      },
+      {
+        id: 1002,
+        title: 'A-B',
+        submitTime: '2021-07-02T08:25:49.443682Z',
+        difficulty: 'easy',
+      },
+      {
+        id: 1003,
+        title: 'A*B',
+        submitTime: '2021-07-02T08:25:49.443682Z',
+        difficulty: 'easy',
+      },
+      {
+        id: 1004,
+        title: 'A/B',
+        submitTime: '2021-07-02T08:25:49.443682Z',
+        difficulty: 'easy',
+      },
+    ],
+  }
+}

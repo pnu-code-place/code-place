@@ -3,23 +3,27 @@ import OjSummary from "./OJSummary.vue";
 import CategorySummary from "./CategorySummary.vue";
 import DifficultySummary from "./DifficultySummary.vue";
 import ChallengeSummary from "./ChallengeSummary.vue";
+import api from "@oj/api";
 
 export default {
   name: "dashboard-section",
   data() {
     return {
+      isLoading : true,
       dashboardInfo: {}
     }
   },
   components: {ChallengeSummary, DifficultySummary, OjSummary, CategorySummary},
-  watch: {
-    '$attrs.dashboardInfo': {
-      handler: function (val, oldVal) {
-        this.dashboardInfo = val
-      },
-      deep: true
-
+  methods: {
+    init() {
+      api.getDashboardInfo().then(res => {
+        this.dashboardInfo = res.data.data
+        this.isLoading = false
+      })
     }
+  },
+  mounted() {
+    this.init()
   }
 }
 </script>

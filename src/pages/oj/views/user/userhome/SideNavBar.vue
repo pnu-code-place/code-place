@@ -19,7 +19,7 @@ export default {
 <style scoped lang="less">
 
 .side-nav {
-  width: 20%;
+  width: 18%;
   height: fit-content;
   margin-right: 20px;
   border: 1px solid #dedede;
