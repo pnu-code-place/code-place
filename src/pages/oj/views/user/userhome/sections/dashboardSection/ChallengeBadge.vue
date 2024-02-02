@@ -1,5 +1,8 @@
 <script>
+import ShineWrapper from "../../../../../components/ShineWrapper.vue";
+
 export default {
+  components: {ShineWrapper},
   props: {
     title: {
       type: String,
@@ -20,13 +23,10 @@ export default {
   },
   data() {
     return {
-      displayImage : this.image
+      displayImage: this.image
     }
   },
   computed: {
-    tooltip() {
-      return `${this.title} : ${this.description}`
-    },
     fallbackMedal() {
       return require("@/assets/challenges/on_error_image.png")
     }
@@ -40,8 +40,15 @@ export default {
 </script>
 
 <template>
-  <Tooltip :content="tooltip" placement="bottom" class="tooltip">
-    <img :src="image" alt="badge" @error="onMedalError"/>
+  <Tooltip placement="bottom" class="tooltip">
+    <shine-wrapper class="image">
+      <img :src="image" alt="badge" @error="onMedalError"/>
+    </shine-wrapper>
+    <template #content>
+      <h3>{{ title }}</h3>
+      <p>{{ description }}</p>
+      <div>{{$t('m.Date')}} : {{ date }}</div>
+    </template>
   </Tooltip>
 </template>
 
@@ -50,13 +57,27 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
+  text-align: center;
+
+  h3 {
+    text-align: center;
+  }
+
+  p {
+    text-align: center;
+  }
+
+  div {
+    text-align: center;
+  }
 }
 
 img {
-  width:100%;
-  height:auto;
+  width: 100%;
+  height: auto;
 }
-img:hover {
+
+.image:hover {
   transform: scale(1.1);
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }

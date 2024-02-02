@@ -302,7 +302,7 @@ export const m = {
   UserHomeIntro: "The guy is so lazy that has not solved any problem yet.",
 
   //DashboardSection.vue
-
+  Date: "일자",
 
   // ProfileSetting.vue
   Current_Password: "현재 비밀번호",

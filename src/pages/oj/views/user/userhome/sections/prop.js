@@ -68,7 +68,14 @@ export const DashboardSectionProp = {
       {
         id: 1,
         title: "업적",
-        badge_image: "https://cdn-icons-png.flaticon.com/512/473/473406.png",
+        image: "https://cdn-icons-png.flaticon.com/512/473/473406.png",
+        description: "업적은 아래와 같이 표시됩니다.",
+        date: "2019-01-01",
+      },
+      {
+        id: 2,
+        title: "업적",
+        image: "https://cdn-icons-png.flaticon.com/512/473/473406.png",
         description: "업적은 아래와 같이 표시됩니다.",
         date: "2019-01-01",
       }
@@ -77,7 +84,7 @@ export const DashboardSectionProp = {
       {
         id: 2,
         title: "업적",
-        badge_image: "https://cdn-icons-png.flaticon.com/512/473/473406.png",
+        image: "https://cdn-icons-png.flaticon.com/512/473/473406.png",
         description: "업적은 아래와 같이 표시됩니다.",
         date: "2019-01-01",
       }

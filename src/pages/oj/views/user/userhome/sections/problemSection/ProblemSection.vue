@@ -1,47 +1,46 @@
 <template>
   <section id="problem-section">
     <h1>문제풀이</h1>
-    <div class="status" v-if="problem_info">
-      <div class="status-item">
-        <span class="label">도전한 문제</span>
-        <span class="value">{{ tried }}</span>
+    <div v-if="isLoading" class="loading">Loading...</div>
+    <div v-if="error" class="error">{{error}}</div>
+    <div v-if="!isLoading && !error" class="contents">
+      <div class="status" v-if="!isLoading && !error">
+        <div class="status-item">
+          <span class="label">도전한 문제</span>
+          <span class="value">{{ tried }}</span>
+        </div>
+        <div class="status-item">
+          <span class="label">해결한 문제</span>
+          <span class="value">{{ problem_info.solved.count }}</span>
+        </div>
+        <div class="status-item">
+          <span class="label">못 푼 문제</span>
+          <span class="value">{{ problem_info.failed.count }}</span>
+        </div>
+        <div class="status-item">
+          <span class="score-ratio">상위 {{ ranking_percent }}%</span>
+        </div>
       </div>
-      <div class="status-item">
-        <span class="label">해결한 문제</span>
-        <span class="value">{{ problem_info.solved.count }}</span>
+      <hr/>
+      <div class="problem-tab solved">
+        <h2>푼 문제</h2>
+        <ul v-if="problem_info.solved.count > 0" class="solved-problems">
+          <li v-for="problem in problem_info.solved.problems" :key="problem.id">
+            <problem-badge :problem="problem"></problem-badge>
+          </li>
+        </ul>
+        <p v-else>맞춘 문제가 없습니다. 한 번 시작해 볼까요?</p>
       </div>
-      <div class="status-item">
-        <span class="label">못 푼 문제</span>
-        <span class="value">{{ problem_info.failed.count }}</span>
+      <hr/>
+      <div class="problem-tab tried">
+        <h2>시도했으나 풀지 못한 문제</h2>
+        <ul v-if="problem_info.failed.count > 0" class="tried-problems">
+          <li v-for="problem in problem_info.failed.problems" :key="problem.id">
+            <problem-badge :problem="problem"></problem-badge>
+          </li>
+        </ul>
+        <p v-else>시도한 문제가 없습니다. 한 번 시작해 볼까요?</p>
       </div>
-      <div class="status-item">
-        <span class="score-ratio">상위 {{ ranking_percent }}%</span>
-      </div>
-    </div>
-    <div class="status" v-else-if="isLoading">
-      Loading...
-    </div>
-    <div class="status" v-else>
-    </div>
-    <hr/>
-    <div class="problem-tab solved">
-      <h2>푼 문제</h2>
-      <ul v-if="problem_info.solved.count > 0" class="solved-problems">
-        <li v-for="problem in problem_info.solved.problems" :key="problem.id">
-          <problem-badge :problem="problem"></problem-badge>
-        </li>
-      </ul>
-      <p v-else>맞춘 문제가 없습니다. 한 번 시작해 볼까요?</p>
-    </div>
-    <hr/>
-    <div class="problem-tab tried">
-      <h2>시도했으나 풀지 못한 문제</h2>
-      <ul v-if="problem_info.failed.count > 0" class="tried-problems">
-        <li v-for="problem in problem_info.failed.problems" :key="problem.id">
-          <problem-badge :problem="problem"></problem-badge>
-        </li>
-      </ul>
-      <p v-else>시도한 문제가 없습니다. 한 번 시작해 볼까요?</p>
     </div>
   </section>
 </template>
@@ -57,7 +56,8 @@ export default {
   data() {
     return {
       problem_info: {},
-      isLoading : true
+      isLoading: true,
+      error: null
     }
   },
   methods: {
@@ -65,8 +65,11 @@ export default {
       this.isLoading = true
       api.getUserProblemInfo().then(res => {
         this.problem_info = res.data.data
+      }).catch(error =>
+        this.error = error
+      ).finally(() =>
         this.isLoading = false
-      })
+      )
     }
   },
   mounted() {
@@ -77,7 +80,7 @@ export default {
       return this.problem_info.failed.count + this.problem_info.solved.count
     },
     ranking_percent() {
-      return (this.problem_info.ranking_percent*100).toFixed(1)
+      return (this.problem_info.ranking_percent * 100).toFixed(1)
     }
   }
 }
@@ -125,7 +128,7 @@ section {
       .score-ratio {
         font-size: 14px;
         font-weight: 600;
-        color : #99bbee;
+        color: #99bbee;
       }
     }
   }

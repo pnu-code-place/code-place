@@ -29,6 +29,7 @@ export default {
           :image="challenge.image"
           :description="challenge.description"
           :title="challenge.title"
+          :date="challenge.date"
           :key="challenge.id"
       ></ChallengeBadge>
     </div>
@@ -42,7 +43,7 @@ export default {
   flex-wrap: wrap;
   height: 100%;
   .badge-wrapper {
-    width: 50px;
+    width: 70px;
     display: flex;
   }
 }
