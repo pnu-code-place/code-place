@@ -63,33 +63,22 @@ export const DashboardSectionProp = {
       total_score: 320,
     }
   },
-  archives: {
-    acquired: [
-      {
-        id: 1,
-        title: "업적",
-        image: "https://cdn-icons-png.flaticon.com/512/473/473406.png",
-        description: "업적은 아래와 같이 표시됩니다.",
-        date: "2019-01-01",
-      },
-      {
-        id: 2,
-        title: "업적",
-        image: "https://cdn-icons-png.flaticon.com/512/473/473406.png",
-        description: "업적은 아래와 같이 표시됩니다.",
-        date: "2019-01-01",
-      }
-    ],
-    not_acquired: [
-      {
-        id: 2,
-        title: "업적",
-        image: "https://cdn-icons-png.flaticon.com/512/473/473406.png",
-        description: "업적은 아래와 같이 표시됩니다.",
-        date: "2019-01-01",
-      }
-    ]
-  }
+  achievements: [
+    {
+      id: 1,
+      title: "업적",
+      image: "https://cdn-icons-png.flaticon.com/512/473/473406.png",
+      description: "업적은 아래와 같이 표시됩니다.",
+      date: "2019-01-01",
+    },
+    {
+      id: 2,
+      title: "업적",
+      image: "https://cdn-icons-png.flaticon.com/512/473/473406.png",
+      description: "업적은 아래와 같이 표시됩니다.",
+      date: "2019-01-01",
+    }
+  ]
 }
 
 export const ProblemSectionProp = {

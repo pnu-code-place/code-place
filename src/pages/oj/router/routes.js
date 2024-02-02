@@ -24,7 +24,7 @@ import DashboardSection from "../views/user/userhome/sections/dashboardSection/D
 import ProblemSection from "../views/user/userhome/sections/problemSection/ProblemSection.vue";
 import communitySection from "../views/user/userhome/sections/communitySection/CommunitySection.vue";
 import InfoSection from "../views/user/userhome/sections/infoSection/InfoSection.vue";
-import ChallengeSection from "../views/user/userhome/sections/ChallengeSection/ChallengeSection.vue";
+import AchievementSection from "../views/user/userhome/sections/achievementSection/AchievementSection.vue";
 
 export default [
   {
@@ -142,7 +142,6 @@ export default [
     component: UserHome,
     meta: {requiresAuth: true, title: 'User Home'},
     children: [
-      // TODO: component 등록하는 영리한 방법 찾기
       {
         name: 'user-home',
         path: '',
@@ -168,9 +167,9 @@ export default [
         meta: {requiresAuth: true, title: 'User Info'},
       },
       {
-        name: 'user-challenges',
-        path: 'challenges',
-        component: ChallengeSection,
+        name: 'user-achievements',
+        path: 'achievements',
+        component: AchievementSection,
         meta: {requiresAuth: true, title: 'Challenges'},
       }
     ]

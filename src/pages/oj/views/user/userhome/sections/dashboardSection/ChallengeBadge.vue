@@ -28,12 +28,12 @@ export default {
   },
   computed: {
     fallbackMedal() {
-      return require("@/assets/challenges/on_error_image.png")
+      return require("@/assets/challenges/errorMedal.png")
     }
   },
   methods: {
-    onMedalError() {
-      this.displayImage = this.fallbackMedal
+    onMedalError(e) {
+      e.target.src = this.fallbackMedal;
     }
   }
 }

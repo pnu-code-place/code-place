@@ -2,7 +2,7 @@
 import OjSummary from "./OJSummary.vue";
 import CategorySummary from "./CategorySummary.vue";
 import DifficultySummary from "./DifficultySummary.vue";
-import ChallengeSummary from "./ChallengeSummary.vue";
+import ChallengeSummary from "./AchievementSummary.vue";
 import api from "@oj/api";
 
 export default {
@@ -40,7 +40,7 @@ export default {
     <DifficultySummary v-if="this.dashboardInfo.difficultyInfo" :difficultyInfo="this.dashboardInfo.difficultyInfo"></DifficultySummary>
     <hr/>
     <h1>도전과제</h1>
-    <ChallengeSummary v-if="this.dashboardInfo.archives" :achieves="this.dashboardInfo.archives.acquired"></ChallengeSummary>
+    <ChallengeSummary v-if="this.dashboardInfo.achievements" :achievements="this.dashboardInfo.achievements"></ChallengeSummary>
   </section>
 </template>
 

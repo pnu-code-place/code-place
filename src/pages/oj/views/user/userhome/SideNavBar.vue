@@ -5,7 +5,7 @@
       <router-link :to="{name:'user-problems'}">{{ $t('m.Problem_Status') }}</router-link>
       <router-link :to="{name:'user-community'}">{{ $t('m.Community') }}</router-link>
       <router-link :to="{name:'user-setting'}">{{ $t('m.User_Setting') }}</router-link>
-      <router-link :to="{name:'user-challenges'}">{{ $t('m.Archive') }}</router-link>
+      <router-link :to="{name:'user-achievements'}">{{ $t('m.Archive') }}</router-link>
     </ul>
   </nav>
 </template>

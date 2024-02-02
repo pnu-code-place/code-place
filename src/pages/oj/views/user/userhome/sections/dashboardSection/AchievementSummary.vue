@@ -1,6 +1,5 @@
 <script>
 import ChallengeBadge from "./ChallengeBadge.vue";
-import {CHALLENGES} from "../challengeSection/challenges";
 
 export default {
   name: "challenge-summary",
@@ -8,7 +7,7 @@ export default {
     ChallengeBadge,
   },
   props: {
-    achieves: {
+    achievements: {
       type: Array,
       default() {
         return [];
@@ -24,13 +23,13 @@ export default {
 
 <template>
   <div class="challenge-summary">
-    <div class="badge-wrapper" v-for="challenge in achieves">
+    <div class="badge-wrapper" v-for="medal in achievements">
       <ChallengeBadge
-          :image="challenge.image"
-          :description="challenge.description"
-          :title="challenge.title"
-          :date="challenge.date"
-          :key="challenge.id"
+          :image="medal.image"
+          :description="medal.description"
+          :title="medal.title"
+          :date="medal.date"
+          :key="medal.id"
       ></ChallengeBadge>
     </div>
   </div>
