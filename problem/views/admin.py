@@ -202,11 +202,6 @@ class ProblemAPI(ProblemBase):
     def post(self, request):
         data = request.data
         print(data)
-        _id = data["_id"]
-        if not _id:
-            return self.error("Display ID is required")
-        if Problem.objects.filter(_id=_id, contest_id__isnull=True).exists():
-            return self.error("Display ID already exists")
 
         error_info = self.common_checks(request)
         if error_info:
@@ -216,6 +211,8 @@ class ProblemAPI(ProblemBase):
         tags = data.pop("tags")
         data["created_by"] = request.user
         problem = Problem.objects.create(**data)
+        problem._id = str(problem.id)
+        problem.save()
 
         for item in tags:
             try:
@@ -263,12 +260,6 @@ class ProblemAPI(ProblemBase):
             ensure_created_by(problem, request.user)
         except Problem.DoesNotExist:
             return self.error("Problem does not exist")
-
-        _id = data["_id"]
-        if not _id:
-            return self.error("Display ID is required")
-        if Problem.objects.exclude(id=problem_id).filter(_id=_id, contest_id__isnull=True).exists():
-            return self.error("Display ID already exists")
 
         error_info = self.common_checks(request)
         if error_info:

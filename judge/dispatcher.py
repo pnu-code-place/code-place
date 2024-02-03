@@ -6,12 +6,13 @@ from urllib.parse import urljoin
 import requests
 from django.db import transaction, IntegrityError
 from django.db.models import F
+from django.http import HttpResponseNotFound
 
 from account.models import User, Score
 from conf.models import JudgeServer
 from contest.models import ContestRuleType, ACMContestRank, OIContestRank, ContestStatus
 from options.options import SysOptions
-from problem.models import Problem, ProblemRuleType, ProblemScore
+from problem.models import Problem, ProblemRuleType
 from problem.utils import parse_problem_template
 from submission.models import JudgeStatus, Submission
 from utils.cache import cache
@@ -71,7 +72,8 @@ class DispatcherBase(object):
 class SPJCompiler(DispatcherBase):
     def __init__(self, spj_code, spj_version, spj_language):
         super().__init__()
-        spj_compile_config = list(filter(lambda config: spj_language == config["name"], SysOptions.spj_languages))[0]["spj"][
+        spj_compile_config = \
+        list(filter(lambda config: spj_language == config["name"], SysOptions.spj_languages))[0]["spj"][
             "compile"]
         self.data = {
             "src": spj_code,
@@ -190,7 +192,7 @@ class JudgeDispatcher(DispatcherBase):
         """아래 코드는 채점 결과 상관없이 무조건 ACCEPTED 처리하는 코드"""
         print("resp:", resp)
         self.submission.info = resp
-        self._compute_statistic_info(resp["data"])
+        # self._compute_statistic_info(resp["data"])
         self.submission.result = JudgeStatus.ACCEPTED
 
         self.submission.save()
@@ -209,7 +211,6 @@ class JudgeDispatcher(DispatcherBase):
                 self.update_problem_status_rejudge()
             else:
                 self.update_problem_status()
-        self.update_user_score()
 
         # 문제 채점 끝, 작업 대기열에 남아 있는 작업 처리
         process_pending_task()
@@ -234,6 +235,7 @@ class JudgeDispatcher(DispatcherBase):
                     acm_problems_status[problem_id]["status"] = self.submission.result
                     if self.submission.result == JudgeStatus.ACCEPTED:
                         profile.accepted_number += 1
+                        self.update_user_score()
                 profile.acm_problems_status["problems"] = acm_problems_status
                 profile.save(update_fields=["accepted_number", "acm_problems_status"])
 
@@ -274,10 +276,12 @@ class JudgeDispatcher(DispatcherBase):
                     acm_problems_status[problem_id] = {"status": self.submission.result, "_id": self.problem._id}
                     if self.submission.result == JudgeStatus.ACCEPTED:
                         user_profile.accepted_number += 1
+                        self.update_user_score()
                 elif acm_problems_status[problem_id]["status"] != JudgeStatus.ACCEPTED:
                     acm_problems_status[problem_id]["status"] = self.submission.result
                     if self.submission.result == JudgeStatus.ACCEPTED:
                         user_profile.accepted_number += 1
+                        self.update_user_score()
                 user_profile.acm_problems_status["problems"] = acm_problems_status
                 user_profile.save(update_fields=["submission_number", "accepted_number", "acm_problems_status"])
 
@@ -416,11 +420,6 @@ class JudgeDispatcher(DispatcherBase):
         rank.save()
 
     def update_user_score(self):
-        """
-        judgeserver에서 response를 받아올 수 없으므로 acm_problem_status에도 이전 결과가 저장이 안됨.
-        현재 최초 Accepted 이외에 여러번 Accepted 되도 점수가 계속 올라감.
-        update_user_score judgeserver 설치 후 재확인 필요 !!!
-        """
         problem_score = {
             "VeryLow": 10,
             "Low": 20,
@@ -428,11 +427,19 @@ class JudgeDispatcher(DispatcherBase):
             "High": 320,
             "VeryHigh": 1280
         }
+
         with transaction.atomic():
-            user_score = Score.objects.select_for_update().get(user_id=self.submission.user_id)
-            problem = Problem.objects.get(id=self.problem.id)
-            profile = User.objects.get(id=self.submission.user_id).userprofile
-            acm_problems_status = profile.acm_problems_status.get("problems", {})
+            try:
+                if not Score.objects.filter(user_id=self.submission.user_id).exists():
+                    user = User.objects.get(id=self.submission.user_id)
+                    Score.objects.create(user=user)
+                user_score = Score.objects.select_for_update().get(user_id=self.submission.user_id)
+                problem = Problem.objects.get(id=self.problem.id)
+                profile = User.objects.get(id=self.submission.user_id).userprofile
+                acm_problems_status = profile.acm_problems_status.get("problems", {})
+            except (Score.DoesNotExist, Problem.DoesNotExist, User.DoesNotExist):
+                return HttpResponseNotFound("user_score | problem | profile doesn't exist")
+
             if self.last_result:
                 if acm_problems_status[self.problem.id]["status"] != JudgeStatus.ACCEPTED and \
                         self.submission.result == JudgeStatus.ACCEPTED:
