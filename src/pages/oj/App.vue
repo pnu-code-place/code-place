@@ -25,7 +25,7 @@
 
 <script>
 import {mapActions, mapGetters, mapState} from 'vuex'
-  import NavBar from '@oj/components/NavBar.vue'
+  import NavBar from './components/NavBar.vue'
   import NavBar_Problem from "./components/NavBar_Problem.vue";
 
   export default {
@@ -98,12 +98,10 @@ import {mapActions, mapGetters, mapState} from 'vuex'
 }
   .ps{
     margin-top: 50px;
-    padding: 0 1%;
     background-color: #F8F8F8;
   }
   .footer {
     margin-top: 400px;
-    //margin-bottom: 10px;
     text-align: center;
     font-size: small;
   }

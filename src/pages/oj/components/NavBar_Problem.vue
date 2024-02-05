@@ -1,22 +1,26 @@
 <template>
   <div id="header">
-    <Menu theme="default" mode="horizontal" @on-select="handleRoute" :active-name="activeMenu" class="oj-menu">
-      <div class="logo" @click="handleRoute('/')">
+    <Menu mode="horizontal" @on-select="handleRoute" :active-name="activeMenu" class="oj-menu">
+      <div class="logo" @click="handleRoute('/problem')">
         <div>
-          <img src="@/assets/pojLogo.png" width="39" style="vertical-align:middle;margin-right: 10px"/>
+          <img src="@/assets/pojLogo.png" width="39" style="vertical-align:middle; margin-right: 10px"/>
         </div>
-        <div class="headerIcon">
-          <p class="pnuName">문제 풀이</p>
-        </div>
+          <p class="pnuName">{{ this.$route.params.problemID + '번' }}</p>
       </div>
-
+      <Tooltip :content="'문제 랜덤 선택'" placement="bottom" style="margin-left: 5px">
+        <CustomIconBtn @click="pickOne" iconClass="fas fa-random"/>
+      </Tooltip>
       <ProblemTimer/>
-
-      <template v-if="isAuthenticated">
-        <div class="userAvatarWrapper" @click="handleRoute('/user-home')">
-          <img class="avatar" :src="profile.avatar"/>
-        </div>
-      </template>
+      <div style="display: flex; height: 100%; align-items: center">
+        <Tooltip :content="'어두운 테마'" placement="bottom"  style="margin-right: 15px">
+          <CustomIconBtn iconClass="fas fa-adjust"/>
+        </Tooltip>
+        <template v-if="isAuthenticated">
+          <div class="userAvatarWrapper" @click="handleRoute('/user-home')">
+            <img class="avatar" :src="profile.avatar"/>
+          </div>
+        </template>
+      </div>
     </Menu>
   </div>
 </template>
@@ -26,9 +30,12 @@ import { mapGetters, mapActions } from 'vuex'
 import login from '@oj/views/user/Login'
 import register from '@oj/views/user/Register'
 import ProblemTimer from "./ProblemTimer.vue";
+import CustomIconBtn from "./buttons/CustomIconBtn.vue";
+import api from '@oj/api'
 
 export default {
   components: {
+    CustomIconBtn,
     ProblemTimer,
     login,
     register
@@ -51,12 +58,17 @@ export default {
         visible: true,
         mode: mode
       })
-    }
+    },
+    pickOne() {
+      api.pickone().then(res => {
+        // this.$success('')
+        this.$router.push({name: 'problem-details', params: {problemID: res.data.data}})
+      })
+    },
   },
   computed: {
     ...mapGetters(['website', 'modalStatus', 'user', 'isAuthenticated', 'isAdminRole']),
     ...mapGetters(['profile']),
-    // 跟随路由变化
     activeMenu () {
       return '/' + this.$route.path.split('/')[1]
     },
@@ -80,87 +92,35 @@ export default {
   height: 50px;
   width: 100%;
   z-index: 1000;
-  padding-left: 30px;
-  padding-right: 30px;
   background-color: #fff;
-  box-shadow: 0 1px 1.5px 0 rgba(0, 0, 0, 0.1);
 
   .oj-menu {
     display: flex;
+    padding-left: 30px;
+    padding-right: 30px;
     justify-content: space-between;
     align-items: center;
-    background: #fdfdfd;
-    height: 50px;
-    overflow-x: hidden;
+    height: 100%;
   }
 
   .logo {
     cursor: pointer;
-    height: 50px;
     display: flex;
     align-items: center;
     .pnuName{
       font-size: 14px;
       font-weight: bold;
     }
-    .systemTitle{
-      font-size: 18px;
-      font-weight: bold;
-      color: #255AA4;
-    }
   }
-
-  .headerIcon{
-    width: auto;
-    margin-top: 6%;
-  }
-
-  .drop-menu {
-    float: right;
-    right: 0px;
-    &-title {
-      font-size: 13px;
-    }
-  }
-
-}
-.btn-menu {
-  font-size: 30px;
-  height: auto;
-  float: right;
-}
-
-.modal {
-  &-title {
-    font-size: 18px;
-    font-weight: 1000;
-  }
-}
-
-.menuItemText{
-  font-size: 18px;
-  font-weight: 600;
-  line-height: 70px;
-  margin-right: 30px;
-}
-
-.first{
-  margin-left: 100px;
-}
-
-.menuItemText:hover{
-  color: #4A86C0;
 }
 
 @avatar-radius: 50%;
 .avatar {
   cursor: pointer;
   width: 35px;
-  height: auto;
   max-width: 100%;
   display: block;
   border-radius: @avatar-radius;
   border: 1px solid #7a7a7a;
-  box-shadow: 0px 0px 1px 0px;
 }
 </style>

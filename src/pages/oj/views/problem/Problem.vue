@@ -1,14 +1,34 @@
 <template>
   <div class="flex-container">
     <splitpanes>
-      <pane min-size="30" size="45">
+      <pane :size="40" style="border:none; padding-right: 5px">
         <div class="container problemDetailContainer">
           <Panel :padding="45" style="border: none" dis-hover>
-            <div slot="title" style="border-bottom: 1px solid #e7e7e7; padding-bottom: 14px">
-              {{ problem._id + '. ' + problem.title }}
+            <div slot="title"
+                 style="border-bottom: 1px solid #e7e7e7; padding-bottom: 14px; padding-left: 18px; font-weight: bold">
+              {{ problem.title }}
             </div>
             <div id="problem-content" class="markdown-body" v-katex>
-              <p class="title">{{ $t('m.Description') }}</p>
+              <div style="display: flex; justify-content: space-between;">
+                <div style="display: flex">
+                  <div class="headerDetailBtn" style="background-color: rgba(226,242,255,0.63)">
+                    {{ difficultyMap[problem.difficulty].value }}
+                  </div>
+                  <div class="headerDetailBtn" @click="scrollField">
+                    <Icon type="ios-pie" color="#F8B193"/>
+                    영역
+                  </div>
+                  <div class="headerDetailBtn" @click="scrollCategory">
+                    <Icon type="ios-pricetag" color="#FF9F9F"/>
+                    카테고리
+                  </div>
+                </div>
+                <div class="headerDetailBtn">
+                  <i class="fas fa-comments" style="color: #90B8E7"></i>
+                  토론하기 (24)
+                </div>
+              </div>
+              <p class="title" style="margin-top: 25px">{{ $t('m.Description') }}</p>
               <p class="content" v-html=problem.description></p>
               <p class="title">{{ $t('m.Input') }} <span
                 v-if="problem.io_mode.io_mode=='File IO'">({{ $t('m.FromFile') }}: {{ problem.io_mode.input }})</span>
@@ -20,9 +40,10 @@
               </p>
               <p class="content" v-html=problem.output_description></p>
               <div v-for="(sample, index) of problem.samples" :key="index">
-                <div class="flex-container sample">
+                <div class="sample">
                   <div class="sample-input">
-                    <p class="title" style="text-decoration: none; margin-bottom: 0px">{{ $t('m.Sample_Input') }} {{ index + 1 }}
+                    <p class="title" style="text-decoration: none; margin-bottom: 0px">{{ $t('m.Sample_Input') }}
+                      {{ index + 1 }}
                       <a class="copy"
                          v-clipboard:copy="sample.input"
                          v-clipboard:success="onCopy"
@@ -33,7 +54,8 @@
                     <pre>{{ sample.input }}</pre>
                   </div>
                   <div class="sample-output">
-                    <p class="title" style="text-decoration: none; margin-bottom: 0px">{{ $t('m.Sample_Output') }} {{ index + 1 }}</p>
+                    <p class="title" style="text-decoration: none; margin-bottom: 0px">{{ $t('m.Sample_Output') }}
+                      {{ index + 1 }}</p>
                     <pre>{{ sample.output }}</pre>
                   </div>
                 </div>
@@ -41,65 +63,97 @@
               <p class="title" style="text-decoration: none">제약사항</p>
               <li style="padding-left: 20px">
                 <code>
-                  {{$t('m.Time_Limit') + "   " + problem.time_limit + 'ms'}}
+                  {{ $t('m.Time_Limit') + "   " + problem.time_limit + 'ms' }}
                 </code>
               </li>
               <li style="padding-left: 20px">
                 <code>
-                  {{$t('m.Memory_Limit') + "   " + problem.memory_limit + 'mb'}}
+                  {{ $t('m.Memory_Limit') + "   " + problem.memory_limit + 'mb' }}
                 </code>
               </li>
-<!--                <p>{{ $t('m.Time_Limit') }}</p>-->
-<!--                <p>{{ problem.time_limit }}MS</p>-->
-<!--                <p>{{ $t('m.Memory_Limit') }}</p>-->
-<!--                <p>{{ problem.memory_limit }}MB</p>-->
-<!--              <li>-->
-<!--                <li>-->
-<!--                  <p>{{ $t('m.IOMode') }}</p>-->
-<!--                  <p>{{ problem.io_mode.io_mode }}</p>-->
-<!--                </li>-->
-<!--                <li>-->
-<!--                  <p>{{ $t('m.Created') }}</p>-->
-<!--                  <p>{{ problem.created_by.username }}</p></li>-->
-<!--                <li v-if="problem.total_score">&ndash;&gt;-->
-<!--                                <p>{{$t('m.Score')}}</p>-->
-<!--                                <p>{{problem.total_score}}</p>-->
-<!--                              </li>-->
+<!--              <i class="far fa-lightbulb" style="color: #FFD43B;"></i>-->
+              <div v-if="problem.hint">
+                <p class="title">{{ $t('m.Hint') }}</p>
+                <Card dis-hover>
+                  <div class="content" v-html=problem.hint></div>
+                </Card>
+              </div>
+              <div class="detailInfoBox">
+                <div class="detailInfoBoxHeader" @click="toggleDropdown('field')">
+                  <p class="title" style="text-decoration: none; margin-top: 0px" ref="field">
+                    <Icon type="ios-pie" color="#F8B193" style="margin-right: 5px"/>
+                    영역
+                  </p>
+                  <i class="fas fa-chevron-down" v-if="!dropdown.openFieldDropdown"></i>
+                  <i class="fas fa-chevron-up" v-else></i>
+                </div>
+                <div class="detailInfoBoxHeader" v-if="dropdown.openFieldDropdown">
+                  <FieldCategoryBox :boxType="true" :value="fieldMap[problem.field].value"
+                                    :boxColor="fieldMap[problem.field].boxColor"/>
+                </div>
+              </div>
 
-                <div v-if="problem.hint">
-                  <p class="title">{{ $t('m.Hint') }}</p>
-                  <Card dis-hover>
-                    <div class="content" v-html=problem.hint></div>
-                  </Card>
+              <div class="detailInfoBox">
+                <div class="detailInfoBoxHeader" @click="toggleDropdown('category')">
+                  <p class="title" style="text-decoration: none; margin-top: 0px;">
+                    <Icon type="ios-pricetag" color="#FF9F9F" style="margin-right: 5px"/>
+                    카테고리
+                  </p>
+                  <i class="fas fa-chevron-down" v-if="!dropdown.openCategoryDropdown"></i>
+                  <i class="fas fa-chevron-up" v-else></i>
                 </div>
 
-                <div v-if="problem.source">
-                  <p class="title">{{ $t('m.Source') }}</p>
-                  <p class="content">{{ problem.source }}</p>
+                <div v-if="dropdown.openCategoryDropdown" style="display: flex" ref="category">
+                  <template v-for="(category, idx) in problem.tags">
+                    <FieldCategoryBox :boxType="false" :value="'#' + category" :boxColor="'#FFFFFF'"/>
+                  </template>
                 </div>
-<!--              <hr style="height:1px; background: #e7e7e7"/>-->
+              </div>
+
+              <div class="detailInfoBox">
+                <div class="detailInfoBoxHeader">
+                  <p class="title" style="text-decoration: none; margin-top: 0px;">
+                    <Icon type="ios-contact" color="#90B8E7" style="margin-right: 5px"/>
+                    문제를 등록한 사람
+                  </p>
+                  <p class="title" style="text-decoration: none; margin-top: 0px;">
+                    {{ problem.created_by.username + '님' }}
+                  </p>
+                </div>
+              </div>
+
+              <div class="detailInfoBox" v-if="problem.source">
+                <div class="detailInfoBoxHeader">
+                  <p class="title" style="text-decoration: none; margin-top: 0px;">
+                    <i class="fas fa-paperclip" style="margin-right: 5px; color: #424f66"></i>
+                    출처
+                  </p>
+                  <p class="title" style="text-decoration: none; margin-top: 0px;">
+                    {{ problem.source }}
+                  </p>
+                </div>
+              </div>
             </div>
-
           </Panel>
         </div>
       </pane>
-      <pane>
-        <splitpanes horizontal>
-          <pane min-size="30">
-            <div class="container editorContainer">
-              <div class="container-header">
-                <div>
-                  <Icon type="code"></Icon>
-                  <span>
-                  코드 작성
-                </span>
-                </div>
-                <div style="display: flex; justify-content: space-between; align-items: center">
+      <pane style="border: none; padding-left: 5px" min-size="30" :size="60">
+        <splitpanes horizontal style="height: calc(100vh - 80px)">
+          <pane min-size="30" :size="75" style="margin-bottom: 5px">
+            <div class="container-header">
+              <div>
+                <Icon type="code"></Icon>
+                <span>
+                    코드 작성
+                  </span>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center">
+                <Tooltip :content="'언어 선택'" placement="bottom">
                   <Dropdown @on-click="changeLanguage" trigger="click" class="dropdown">
-                          <span style="font-size: 10px; padding-right: 2px">
+                          <span style="font-size: 13px; padding-right: 3px; font-weight: 450">
                             {{ language }}
                           </span>
-                    <Icon type="arrow-down-b"></Icon>
+                    <i class="fas fa-chevron-down"></i>
                     <Dropdown-menu slot="list">
                       <Dropdown-item :name="item" v-for="item in problem.languages" :key="item">{{
                           item
@@ -107,32 +161,36 @@
                       </Dropdown-item>
                     </Dropdown-menu>
                   </Dropdown>
-                  <div class="submitBtn" @click="submitCode">
-                    <Icon type="ios-paper"></Icon>
-                    <span style="font-size: small;margin-left: 4px;">제출</span>
-                  </div>
-                </div>
+                </Tooltip>
+                <Tooltip :content="this.$i18n.t('m.Reset_to_default_code_definition')" placement="bottom-end">
+                  <CustomIconBtn @click="onResetToTemplate" :wrapperSize="30" iconClass="fas fa-undo"/>
+                </Tooltip>
               </div>
-              <CodeMirror :value.sync="code"
-                          :languages="problem.languages"
-                          :language="language"
-                          :theme="theme"
-                          @resetCode="onResetToTemplate"
-                          @changeTheme="onChangeTheme"
-                          @changeLang="onChangeLang">
-              </CodeMirror>
             </div>
+            <CodeMirrorTest :value.sync="code"
+                            :languages="problem.languages"
+                            :language="language"
+                            :cursorPos.sync="cursorPos"
+                            ref="myCm"/>
+            <div class="sticky_ln_col">Ln {{this.cursorPos.ln}}, Col {{this.cursorPos.ch}}</div>
           </pane>
-          <pane min-size="25">
-            <div class="container resultContainer">
-              <div class="container-header">
-                <div>
-                  <Icon type="ios-pulse"></Icon>
-                  <span>
+          <pane min-size="20" :size="25" style="margin-top: 5px; padding-bottom: 10px">
+            <div class="container-header">
+              <div>
+                <Icon type="ios-pulse"></Icon>
+                <span>
                   실행 결과
                 </span>
-                </div>
+                  <i class="fas fa-circle-notch fa-spin" style="margin-left: 7px;color: #e39530"></i>
+                <i class="far fa-check-circle" style="color: #38c27b;"></i>
+                <i class="far fa-times-circle" style="color: #dd3131;"></i>
               </div>
+              <div class="submitBtn" @click="submitCode">
+                <i class="fas fa-file-upload"></i>
+                <span style="font-size: small;margin-left: 4px;">제출하기</span>
+              </div>
+            </div>
+            <div style="height: 100%; overflow-y: scroll;">{{problem}}
               <div class="status" v-if="statusVisible">
                 <template v-if="!this.contestID || (this.contestID && OIContestRealTimePermission)">
                   <Tag type="dot" :color="submissionStatus.color" @click.native="handleRoute('/status/'+submissionId)">
@@ -144,6 +202,7 @@
                 </template>
               </div>
             </div>
+
           </pane>
         </splitpanes>
       </pane>
@@ -350,7 +409,6 @@
 <script>
 import {mapGetters, mapActions} from 'vuex'
 import {types} from '../../../../store'
-import CodeMirror from '@oj/components/CodeMirror.vue'
 import storage from '@/utils/storage'
 import {FormMixin} from '@oj/components/mixins'
 import {JUDGE_STATUS, CONTEST_STATUS, buildProblemCodeKey} from '@/utils/constants'
@@ -358,20 +416,28 @@ import api from '@oj/api'
 import {pie, largePie} from './chartData'
 import {Pane, Splitpanes} from "splitpanes";
 import 'splitpanes/dist/splitpanes.css'
+import FieldCategoryBox from "../../components/FieldCategoryBox.vue";
+import CodeMirrorTest from "../../components/CodeMirrorTest.vue";
+import CustomIconBtn from "../../components/buttons/CustomIconBtn.vue";
 
-// 只显示这些状态的图形占用
 const filtedStatus = ['-1', '-2', '0', '1', '2', '3', '4', '8']
 
 export default {
   name: 'Problem',
   components: {
-    CodeMirror,
+    CustomIconBtn,
+    CodeMirrorTest,
+    FieldCategoryBox,
     Splitpanes,
     Pane
   },
   mixins: [FormMixin],
   data() {
     return {
+      cursorPos: {
+        ln:0,
+        ch:0
+      },
       statusVisible: false,
       captchaRequired: false,
       graphVisible: false,
@@ -405,15 +471,74 @@ export default {
         created_by: {
           username: ''
         },
+        difficulty: '',
         tags: [],
         io_mode: {'io_mode': 'Standard IO'}
       },
+      submission: {
+        result: '0',
+        code: '',
+        info: {
+          data: []
+        },
+        statistic_info: {
+          time_cost: '',
+          memory_cost: ''
+        }
+      },
       pie: pie,
       largePie: largePie,
-      // echarts 无法获取隐藏dom的大小，需手动指定
       largePieInitOpts: {
         width: '500',
         height: '480'
+      },
+      difficultyMap: {
+        'VeryLow': {
+          'value': '매우 쉬움',
+          'textColor': '#95ef4c'
+        },
+        'Low': {
+          'value': '쉬움',
+          'textColor': '#B5EAB0'
+        },
+        'Mid': {
+          'value': '보통',
+          'textColor': '#7c7878'
+        },
+        'High': {
+          'value': '어려움',
+          'textColor': '#ff8828'
+        },
+        'VeryHigh': {
+          'value': '매우 어려움',
+          'textColor': '#c02b2b'
+        }
+      },
+      fieldMap: {
+        '0': {
+          'value': '구현',
+          'boxColor': '#F8D093'
+        },
+        '1': {
+          'value': '수학',
+          'boxColor': '#B5EAB0'
+        },
+        '2': {
+          'value': '자료구조',
+          'boxColor': '#F8B193'
+        },
+        '3': {
+          'value': '탐색',
+          'boxColor': '#90B8E7'
+        },
+        '4': {
+          'value': '정렬',
+          'boxColor': '#EDC3C3'
+        }
+      },
+      dropdown: {
+        openFieldDropdown: false,
+        openCategoryDropdown: false
       }
     }
   },
@@ -467,6 +592,7 @@ export default {
         if (template && template[this.language]) {
           this.code = template[this.language]
         }
+        this.problem.difficulty = problem.difficulty
       }, () => {
         this.$Loading.error()
       })
@@ -496,7 +622,6 @@ export default {
       }
       this.largePie.legend.data = legend
 
-      // 把ac的数据提取出来放在最后
       let acCount = problemData.statistic_info['0']
       delete problemData.statistic_info['0']
 
@@ -510,18 +635,22 @@ export default {
     handleRoute(route) {
       this.$router.push(route)
     },
-    changeLanguage(lang) {
-      this.language = lang
+    scrollField() {
+      this.$refs.field.scrollIntoView({behavior: 'smooth'})
     },
-    onChangeLang(newLang) {
+    scrollCategory() {
+      this.$refs.category.scrollIntoView({behavior: 'smooth'})
+    },
+    changeLanguage(newLang) {
+      console.log("newLang : ", newLang)
       if (this.problem.template[newLang]) {
         if (this.code.trim() === '') {
           this.code = this.problem.template[newLang]
         }
       }
       this.language = newLang
+      this.$refs.myCm.onLangChange(newLang)
     },
-
     onChangeTheme(newTheme) {
       this.theme = newTheme
     },
@@ -535,6 +664,7 @@ export default {
           } else {
             this.code = ''
           }
+          this.$refs.myCm.resetCM()
         }
       })
     },
@@ -633,6 +763,13 @@ export default {
     },
     onCopyError(e) {
       this.$error('Failed to copy code')
+    },
+    toggleDropdown(type) {
+      if (type === 'field') {
+        this.dropdown.openFieldDropdown = !this.dropdown.openFieldDropdown
+        return
+      }
+      this.dropdown.openCategoryDropdown = !this.dropdown.openCategoryDropdown
     }
   },
   computed: {
@@ -677,14 +814,14 @@ export default {
 }
 </script>
 
-<style lang="less" scoped>
+<style lang="less">
 .card-title {
   margin-left: 8px;
 }
 
 .flex-container {
   display: flex;
-  flex-direction: column;
+  //flex-direction: column;
 
   #problem-main {
     flex: auto;
@@ -696,26 +833,17 @@ export default {
     width: 220px;
   }
 
-  .container {
-    border-radius: 7px;
-    border: 1px solid #e6e6e6;
-    background-color: white;
-    margin-left: 10px;
-    margin-right: 10px;
-    margin-top: 15px;
-    margin-bottom: 15px;
-  }
-
   .container-header {
     display: flex;
     justify-content: space-between;
     height: 40px;
     width: 100%;
     align-items: center;
-    border-bottom: 1px solid #F2F2F2;
-    padding-right: 20px;
+    border: 1px solid #e7e7e7;
+    padding-right: 10px;
     padding-left: 20px;
-
+    border-radius: 7px;
+    margin-bottom: 10px;
     span {
       margin-left: 10px;
       font-size: medium;
@@ -738,18 +866,42 @@ export default {
   }
 
   .problemDetailContainer {
-    //height: calc(100% - 50px);
-    overflow: auto;
+    border: 1px solid #e7e7e7;
+    border-radius: 7px;
+    height: calc(100vh - 80px);
+    overflow: scroll;
+    min-width: 32vw;
+    overflow-x: hidden;
   }
 
   .editorContainer {
-    //height: auto;
+    height: auto;
   }
 
+
   .resultContainer {
-    margin-top: 0px;
-    height: 270px;
+    overflow: scroll;
   }
+}
+
+.headerDetailBtn {
+  background-color: rgba(246, 246, 246, 0.45);
+  cursor: pointer;
+  font-weight: 550;
+  padding-left: 8px;
+  padding-right: 8px;
+  padding-top: 3px;
+  padding-bottom: 3px;
+  margin-right: 10px;
+  border-radius: 8px;
+
+  i {
+    margin-right: 5px;
+  }
+}
+
+.headerDetailBtn:hover {
+  background-color: rgba(236, 236, 236, 0.45);
 }
 
 #problem-content {
@@ -763,7 +915,7 @@ export default {
     text-decoration: underline;
     text-decoration-color: rgba(96, 113, 185, 0.55);
     text-decoration-thickness: 2px;
-    text-underline-offset : 6px;
+    text-underline-offset: 6px;
 
     .copy {
       padding-left: 8px;
@@ -776,6 +928,8 @@ export default {
   }
 
   .sample {
+    display: flex;
+    justify-content: space-around;
     align-items: stretch;
 
     &-input, &-output {
@@ -787,6 +941,7 @@ export default {
     }
 
     pre {
+      border-radius: 7px;
       align-self: stretch;
       border-style: solid;
       background: transparent;
@@ -873,6 +1028,64 @@ export default {
   padding-right: 15px;
   border-radius: 7px;
   margin-right: 10px;
+}
+
+.detailInfoBox {
+  margin-top: 30px;
+  height: 30px;
+  padding-left: 20px;
+  padding-right: 30px;
+  padding-top: 15px;
+  cursor: pointer;
+  border-top: 1px solid #e7e7e7;
+
+  .detailInfoBoxHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+.splitpanes {
+  background: #ffffff
+}
+
+.splitpanes__pane {
+  padding: 10px;
+  border: 1px solid #e7e7e7;
+  border-radius: 7px;
+}
+
+.sticky_ln_col{
+  position: sticky;
+  float: right;
+  right: 10px;
+  bottom: 2px;
+}
+
+.splitpanes--vertical > .splitpanes__splitter {
+  min-width: 4px;
+  margin-top: 44vh;
+  margin-bottom: 44vh;
+  border-radius: 10px;
+  background-color: #e7e7e7;
+}
+
+.splitpanes--horizontal > .splitpanes__splitter {
+  min-height: 4px;
+  padding-left: 47%;
+  padding-right: 47%;
+  border-radius: 10px;
+  background-color: #e7e7e7;
+  background-clip: content-box;
+}
+
+.splitpanes--vertical > .splitpanes__splitter:hover {
+  background-color: #b6b6b6;
+}
+
+.splitpanes--horizontal > .splitpanes__splitter:hover {
+  background-color: #b6b6b6;
 }
 
 </style>

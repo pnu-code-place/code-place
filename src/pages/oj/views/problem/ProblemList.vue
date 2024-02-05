@@ -58,9 +58,12 @@
                 </template>
               </Dropdown-menu>
             </Dropdown>
-            <div class="moreOptionSelector">
-              <Icon type="ios-more" size="20" color="#7a7a7a"></Icon>
-            </div>
+            <Tooltip :content="'문제 랜덤 선택'" placement="bottom" style="margin-left: 5px">
+              <CustomIconBtn @click="pickone" iconClass="fas fa-random"/>
+            </Tooltip>
+            <Tooltip :content="'기타 설정'" placement="bottom" style="margin-left: 5px">
+              <CustomIconBtn iconClass="fas fa-ellipsis-h"/>
+            </Tooltip>
           </div>
         </div>
         <table>
@@ -122,7 +125,7 @@
               <FieldCategoryBox :boxType="true" :value="'자료구조'"
                                 :boxColor="'#F8B193'"/>
 <!--              <template v-for="(category, idx) in this.problemList[1].tags">-->
-                <FieldCategoryBox :boxType="false" :value="'#스택'" :boxColor="'white'"/>
+                <FieldCategoryBox :boxType="false" :value="'#스택'" :boxColor="'#FFFFFF'"/>
 <!--              </template>-->
             </div>
             <div class="hardProblemFieldCategory" style="justify-content: space-between; margin-top: 2px">
@@ -280,12 +283,14 @@ import Pagination from '@oj/components/Pagination'
 import FieldCategoryBox from "../../components/FieldCategoryBox.vue";
 import {radarGraph} from "./chartData";
 import "echarts"
+import CustomIconBtn from "../../components/buttons/CustomIconBtn.vue";
 
 
 export default {
   name: 'ProblemList',
   mixins: [ProblemMixin],
   components: {
+    CustomIconBtn,
     FieldCategoryBox,
     Pagination,
   },
@@ -540,7 +545,6 @@ export default {
     },
     pickone() {
       api.pickone().then(res => {
-        this.$success('Good Luck')
         this.$router.push({name: 'problem-details', params: {problemID: res.data.data}})
       })
     }

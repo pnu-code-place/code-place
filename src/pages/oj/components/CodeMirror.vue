@@ -34,13 +34,13 @@
 </template>
 <script>
   import utils from '@/utils/utils'
-  import { codemirror } from 'vue-codemirror-lite'
+  import { codemirror } from 'vue-codemirror'
 
-  // theme
-  import 'codemirror/theme/monokai.css'
-  import 'codemirror/theme/solarized.css'
-  import 'codemirror/theme/material.css'
-  import 'codemirror/theme/paraiso-light.css'
+  // // theme
+  // import 'codemirror/theme/monokai.css'
+  // import 'codemirror/theme/solarized.css'
+  // import 'codemirror/theme/material.css'
+  // import 'codemirror/theme/paraiso-light.css'
 
   // mode
   import 'codemirror/mode/clike/clike.js'
@@ -95,11 +95,12 @@
           autofocus: true,
           foldGutter: true,
           autocorrect: true,
-          autoResize:true,
+          autoResize: true,
           gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter'],
           autocomplete: true,
           styleSelectedText: true,
           lineWrapping: true,
+          viewportMargin: Infinity,
           scrollbarStyle: 'native',
           autoCloseBrackets: true,
           highlightSelectionMatches: {showToken: /\w/, annotateScrollbar: true}
@@ -186,12 +187,11 @@
 
 <style>
   .CodeMirror {
-    height: auto !important;
+    height: auto;
     border: 1px solid #eee;
   }
   .CodeMirror-scroll {
-    min-height: 400px;
-    //max-height: fit-content;
-    //max-height: 1000px;
+    overflow-y: hidden;
+    overflow-x: auto;
   }
 </style>

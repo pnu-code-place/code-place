@@ -28,8 +28,8 @@ export const m = {
   Close: "Close",
   View_Contest: "View Contest",
   Are_you_sure_you_want_to_reset_your_code:
-    "Are you sure you want to reset your code?",
-  Code_can_not_be_empty: "Code can not be empty",
+    "코드를 리셋하시겠습니까?",
+  Code_can_not_be_empty: "코드를 입력해주세요.",
   Submit_code_successfully: "Submit code successfully",
   You_have_solved_the_problem: "You have solved the problem",
   Submitted_successfully: "Submitted successfully",
@@ -158,7 +158,7 @@ export const m = {
   // CodeMirror.vue
   Language: "언어",
   Theme: "Theme",
-  Reset_to_default_code_definition: "Reset to default code definition",
+  Reset_to_default_code_definition: "기존 코드로 되돌리기",
   Upload_file: "Upload file",
   Monokai: "Monokai",
   Solarized_Light: "Solarized Light",
