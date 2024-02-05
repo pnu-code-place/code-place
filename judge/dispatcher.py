@@ -193,7 +193,7 @@ class JudgeDispatcher(DispatcherBase):
         print("resp:", resp)
         self.submission.info = resp
         # self._compute_statistic_info(resp["data"])
-        self.submission.result = JudgeStatus.ACCEPTED
+        self.submission.result = JudgeStatus.COMPILE_ERROR
 
         self.submission.save()
 
@@ -223,10 +223,12 @@ class JudgeDispatcher(DispatcherBase):
             problem = Problem.objects.select_for_update().get(contest_id=self.contest_id, id=self.problem.id)
             if self.last_result != JudgeStatus.ACCEPTED and self.submission.result == JudgeStatus.ACCEPTED:
                 problem.accepted_number += 1
+                problem.weekly_accepted_number += 1
             problem_info = problem.statistic_info
             problem_info[self.last_result] = problem_info.get(self.last_result, 1) - 1
             problem_info[result] = problem_info.get(result, 0) + 1
             problem.save(update_fields=["accepted_number", "statistic_info"])
+            problem.calculate_weekly_success_rate()
 
             profile = User.objects.select_for_update().get(id=self.submission.user_id).userprofile
             if problem.rule_type == ProblemRuleType.ACM:
@@ -254,17 +256,22 @@ class JudgeDispatcher(DispatcherBase):
                 profile.save(update_fields=["accepted_number", "oi_problems_status"])
 
     def update_problem_status(self):
+        print("in update_problem_status")
         result = str(self.submission.result)
         problem_id = str(self.problem.id)
         with transaction.atomic():
             # update problem status
             problem = Problem.objects.select_for_update().get(contest_id=self.contest_id, id=self.problem.id)
             problem.submission_number += 1
+            problem.weekly_submission_number += 1
             if self.submission.result == JudgeStatus.ACCEPTED:
                 problem.accepted_number += 1
+                problem.weekly_accepted_number += 1
             problem_info = problem.statistic_info
             problem_info[result] = problem_info.get(result, 0) + 1
-            problem.save(update_fields=["accepted_number", "submission_number", "statistic_info"])
+            problem.save(update_fields=["accepted_number", "submission_number", "statistic_info",
+                                        "weekly_submission_number", "weekly_accepted_number"])
+            problem.calculate_weekly_success_rate()
 
             # update_userprofile
             user = User.objects.select_for_update().get(id=self.submission.user_id)
@@ -444,7 +451,12 @@ class JudgeDispatcher(DispatcherBase):
                 if acm_problems_status[self.problem.id]["status"] != JudgeStatus.ACCEPTED and \
                         self.submission.result == JudgeStatus.ACCEPTED:
                     user_score.score += problem_score[problem.difficulty]
+                    if user not in problem.solvers.all():
+                        problem.weekly_solvers.add(user)
+
             else:
                 if self.submission.result == JudgeStatus.ACCEPTED:
                     user_score.score += problem_score[problem.difficulty]
+                    if user not in problem.solvers.all():
+                        problem.weekly_solvers.add(user)
             user_score.save()

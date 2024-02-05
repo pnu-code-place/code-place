@@ -97,6 +97,12 @@ class Problem(models.Model):
     statistic_info = JSONField(default=dict)
     share_submission = models.BooleanField(default=False)
 
+    # 지난 일주일동안 가장 어려웠던 문제 판별을 위한 field
+    weekly_submission_number = models.BigIntegerField(default=0)
+    weekly_accepted_number = models.BigIntegerField(default=0)
+    weekly_success_rate = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    weekly_solvers = models.ManyToManyField(User, related_name='solvers', blank=True)
+
     class Meta:
         db_table = "problem"
         unique_together = (("_id", "contest"),)
@@ -113,3 +119,7 @@ class Problem(models.Model):
     def add_ac_number(self):
         self.accepted_number = models.F("accepted_number") + 1
         self.save(update_fields=["accepted_number"])
+
+    def calculate_weekly_success_rate(self):
+        self.weekly_success_rate = (self.weekly_accepted_number / self.weekly_submission_number) * 100
+        self.save(update_fields=["weekly_success_rate"])

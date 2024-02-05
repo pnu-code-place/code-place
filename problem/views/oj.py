@@ -1,10 +1,12 @@
-import random
+import random, json
 from django.db.models import Q, Count
 from utils.api import APIView
 from account.decorators import check_contest_permission
 from ..models import ProblemTag, Problem, ProblemRuleType
 from ..serializers import ProblemSerializer, TagSerializer, ProblemSafeSerializer
 from contest.models import ContestRuleType
+from django.core.cache import cache
+from ..utils import update_weekly_stats
 
 
 class ProblemTagAPI(APIView):
@@ -124,3 +126,10 @@ class ContestProblemAPI(APIView):
         else:
             data = ProblemSafeSerializer(contest_problems, many=True).data
         return self.success(data)
+
+
+class MostDifficultProblemAPI(APIView):
+    def get(self, request):
+        most_difficult_problem = json.loads(cache.get('most_difficult_problem'))
+
+        return self.success(most_difficult_problem)

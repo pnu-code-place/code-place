@@ -3,14 +3,7 @@ import dramatiq
 
 from options.options import SysOptions
 from utils.shortcuts import send_email, DRAMATIQ_WORKER_ARGS
-from apscheduler.schedulers.background import BackgroundScheduler
-from .models import Score
 
-# 점수 변동폭을 계산하는 위한 Scheduler 실행
-scheduler = BackgroundScheduler()
-scheduler.add_job(Score.calculate_basis, 'cron', hour=0)
-scheduler.add_job(Score.calculate_fluctuation, 'interval', minutes=1)
-scheduler.start()
 
 logger = logging.getLogger(__name__)
 
