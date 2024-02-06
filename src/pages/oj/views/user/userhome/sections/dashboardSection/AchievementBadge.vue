@@ -20,7 +20,13 @@ export default {
       type: String,
       required: true
     },
-    disabled: {
+    tooltipDisabled: {
+      type: Boolean,
+      default() {
+        return false
+      }
+    },
+    greyscale: {
       type: Boolean,
       default() {
         return false
@@ -46,9 +52,9 @@ export default {
 </script>
 
 <template>
-  <Tooltip placement="bottom" class="tooltip" :disabled="this.disabled">
-    <shine-wrapper class="image">
-      <img :src="image" alt="badge" @error="onMedalError"/>
+  <Tooltip placement="bottom" class="tooltip" :disabled="this.tooltipDisabled">
+    <shine-wrapper class="image" :disabled="greyscale">
+      <img :src="image" alt="badge" @error="onMedalError" :class="{grey:this.greyscale}"/>
     </shine-wrapper>
     <template #content>
       <h3>{{ title }}</h3>
@@ -81,6 +87,10 @@ export default {
 img {
   width: 100%;
   height: auto;
+}
+
+.grey {
+  filter: grayscale(100%);
 }
 
 .image:hover {

@@ -1,11 +1,21 @@
-<script setup>
-
+<script>
+export default {
+  name: 'ShineWrapper',
+  props: {
+    disabled: {
+      type: Boolean,
+      default() {
+        return false
+      }
+    }
+  }
+}
 </script>
 
 <template>
   <div class="shine-wrapper">
     <slot></slot>
-    <div class="overlay-wrapper">
+    <div class="overlay-wrapper" v-if="!disabled">
       <div class="overlay"></div>
     </div>
   </div>
