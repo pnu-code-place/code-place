@@ -3,9 +3,9 @@
     <ul class="nav-content">
       <router-link :to="{name:'user-home'}">{{ $t('m.OJ_Status') }}</router-link>
       <router-link :to="{name:'user-problems'}">{{ $t('m.Problem_Status') }}</router-link>
-      <router-link :to="{name:'user-community'}">{{ $t('m.Community') }}</router-link>
+      <router-link :to="{name:'user-community'}" :disabled="true" class="disabled">{{ $t('m.Community') }}</router-link>
       <router-link :to="{name:'user-setting'}">{{ $t('m.User_Setting') }}</router-link>
-      <router-link :to="{name:'user-achievements'}">{{ $t('m.Archive') }}</router-link>
+      <router-link :to="{name:'user-achievements'}">{{ $t('m.Achievement') }}</router-link>
     </ul>
   </nav>
 </template>
@@ -46,6 +46,11 @@ export default {
       &:hover {
         background-color: #f5f5f5;
       }
+    }
+
+    a.disabled {
+      color: #b3b3b3;
+      cursor: not-allowed;
     }
     .router-link-exact-active {
       background-color: #e6f2ff;
