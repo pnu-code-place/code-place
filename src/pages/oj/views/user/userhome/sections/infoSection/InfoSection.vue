@@ -1,6 +1,6 @@
 <template>
   <section>
-    <h1>정보 변경</h1>
+    <h1>정보수정</h1>
     <ProfileSetting></ProfileSetting>
     <AccountSetting></AccountSetting>
   </section>
@@ -25,6 +25,7 @@ section {
 
   h1 {
     margin-bottom: 10px;
+    text-align: left;
   }
 
   h2 {
