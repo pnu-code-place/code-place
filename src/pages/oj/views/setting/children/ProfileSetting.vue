@@ -63,29 +63,36 @@
       <div class="form">
         <div class="form-top">
           <div class="form-column">
-            <FormItem :label="$t('m.Real_Name')">
+            <label>{{$t('m.Real_Name')}}</label>
+            <FormItem>
               <Input v-model="formProfile.real_name"/>
             </FormItem>
-            <Form-item :label="$t('m.Mood')">
+            <label>{{$t('m.Mood')}}</label>
+            <Form-item>
               <Input v-model="formProfile.mood"/>
             </Form-item>
-            <Form-item :label="$t('m.Blog')">
+            <label>{{$t('m.Blog')}}</label>
+            <Form-item>
               <Input v-model="formProfile.blog"/>
             </Form-item>
           </div>
           <div class="form-column">
-            <Form-item :label="$t('m.School')">
+            <label>{{$t('m.School')}}</label>
+            <Form-item>
               <Input v-model="formProfile.school"/>
             </Form-item>
-            <Form-item :label="$t('m.Major')">
+            <label>{{$t('m.Major')}}</label>
+            <Form-item>
               <Input v-model="formProfile.major"/>
             </Form-item>
-            <Form-item label="Github">
+            <label>Github</label>
+            <Form-item >
               <Input v-model="formProfile.github"/>
             </Form-item>
           </div>
         </div>
-        <FormItem label="Language">
+        <label>language</label>
+        <FormItem>
           <Select v-model="formProfile.language">
             <Option v-for="lang in languages" :key="lang.value" :value="lang.value">{{ lang.label }}</Option>
           </Select>
@@ -246,6 +253,14 @@ export default {
 </script>
 
 <style lang="less" scoped>
+
+label {
+  font-size : 13px;
+  font-weight: bold;
+  margin-bottom: 5px;
+  margin-left: 1px;
+  text-align: left;
+}
 
 .inline {
   display: inline-block;
