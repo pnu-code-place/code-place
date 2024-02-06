@@ -16,16 +16,16 @@
       <div class="flex-container">
         <div class="cropper-main inline">
           <vueCropper
-            ref="cropper"
-            autoCrop
-            fixed
-            :autoCropWidth="200"
-            :autoCropHeight="200"
-            :img="avatarOption.imgSrc"
-            :outputSize="avatarOption.size"
-            :outputType="avatarOption.outputType"
-            :info="true"
-            @realTime="realTime">
+              ref="cropper"
+              autoCrop
+              fixed
+              :autoCropWidth="200"
+              :autoCropHeight="200"
+              :img="avatarOption.imgSrc"
+              :outputSize="avatarOption.size"
+              :outputType="avatarOption.outputType"
+              :info="true"
+              @realTime="realTime">
           </vueCropper>
         </div>
         <ButtonGroup vertical class="cropper-btn">
@@ -63,30 +63,30 @@
       <div class="form">
         <div class="form-top">
           <div class="form-column">
-            <label>{{$t('m.Real_Name')}}</label>
+            <label>{{ $t('m.Real_Name') }}</label>
             <FormItem>
               <Input v-model="formProfile.real_name"/>
             </FormItem>
-            <label>{{$t('m.Mood')}}</label>
+            <label>{{ $t('m.Mood') }}</label>
             <Form-item>
               <Input v-model="formProfile.mood"/>
             </Form-item>
-            <label>{{$t('m.Blog')}}</label>
+            <label>{{ $t('m.Blog') }}</label>
             <Form-item>
               <Input v-model="formProfile.blog"/>
             </Form-item>
           </div>
           <div class="form-column">
-            <label>{{$t('m.School')}}</label>
+            <label>{{ $t('m.School') }}</label>
             <Form-item>
               <Input v-model="formProfile.school"/>
             </Form-item>
-            <label>{{$t('m.Major')}}</label>
+            <label>{{ $t('m.Major') }}</label>
             <Form-item>
               <Input v-model="formProfile.major"/>
             </Form-item>
             <label>Github</label>
-            <Form-item >
+            <Form-item>
               <Input v-model="formProfile.github"/>
             </Form-item>
           </div>
@@ -97,9 +97,7 @@
             <Option v-for="lang in languages" :key="lang.value" :value="lang.value">{{ lang.label }}</Option>
           </Select>
         </FormItem>
-        <Form-item>
-          <Button type="primary" @click="updateProfile" :loading="loadingSaveBtn">{{ $t('m.Save') }}</Button>
-        </Form-item>
+        <Button type="primary" @click="updateProfile" :loading="loadingSaveBtn">{{ $t('m.Save') }}</Button>
       </div>
     </Form>
   </div>
@@ -255,7 +253,7 @@ export default {
 <style lang="less" scoped>
 
 label {
-  font-size : 13px;
+  font-size: 13px;
   font-weight: bold;
   margin-bottom: 5px;
   margin-left: 1px;
@@ -329,9 +327,14 @@ label {
       justify-content: space-between;
 
       .ivu-form-item {
+        display: block;
         width: 100%;
       }
     }
+  }
+
+  button {
+    align-self: flex-end;
   }
 }
 </style>

@@ -1,51 +1,49 @@
 <template>
-  <div class="setting-main">
-    <div class="flex-container">
-      <div class="left">
-        <h2>{{ $t('m.ChangePassword') }}</h2>
-        <Form class="setting-content" ref="formPassword" :model="formPassword" :rules="rulePassword">
-          <label>{{ $t('m.Current_Password') }}</label>
-          <FormItem  prop="old_password">
-            <Input v-model="formPassword.old_password" type="password"/>
-          </FormItem>
-          <label>{{ $t('m.New_Password') }}</label>
-          <FormItem  prop="new_password">
-            <Input v-model="formPassword.new_password" type="password"/>
-          </FormItem>
-          <label>{{ $t('m.Password_Again') }}</label>
-          <FormItem  prop="again_password">
-            <Input v-model="formPassword.again_password" type="password"/>
-          </FormItem>
-          <FormItem v-if="visible.tfaRequired" label="Two Factor Auth" prop="tfa_code">
-            <Input v-model="formPassword.tfa_code"/>
-          </FormItem>
-          <FormItem v-if="visible.passwordAlert">
-            <Alert type="success">You will need to login again after 5 seconds..</Alert>
-          </FormItem>
-          <Button type="primary" @click="changePassword">{{ $t('m.Update_Password') }}</Button>
-        </Form>
-      </div>
-<!--      <div class="right">-->
-<!--        <h2>{{ $t('m.ChangeEmail') }}</h2>-->
-<!--        <Form class="setting-content" ref="formEmail" :model="formEmail" :rules="ruleEmail">-->
-<!--          <label>{{ $t('m.LoginPassword') }}</label>-->
-<!--          <FormItem  prop="password">-->
-<!--            <Input v-model="formEmail.password" type="password"/>-->
-<!--          </FormItem>-->
-<!--          &lt;!&ndash;          <FormItem :label="$t('m.Old_Email')">&ndash;&gt;-->
-<!--          &lt;!&ndash;            <Input v-model="formEmail.old_email" disabled/>&ndash;&gt;-->
-<!--          &lt;!&ndash;          </FormItem>&ndash;&gt;-->
-<!--          <label>{{ $t('m.New_Email') }}</label>-->
-<!--          <FormItem  prop="new_email">-->
-<!--            <Input v-model="formEmail.new_email"/>-->
-<!--          </FormItem>-->
-<!--          <FormItem v-if="visible.tfaRequired" label="Two Factor Auth" prop="tfa_code">-->
-<!--            <Input v-model="formEmail.tfa_code"/>-->
-<!--          </FormItem>-->
-<!--          <Button type="primary" @click="changeEmail">{{ $t('m.ChangeEmail') }}</Button>-->
-<!--        </Form>-->
-<!--      </div>-->
+  <div class="flex-container">
+    <h1>{{ $t('m.ChangePassword') }}</h1>
+    <div>
+      <Form class="setting-content" ref="formPassword" :model="formPassword" :rules="rulePassword">
+        <label>{{ $t('m.Current_Password') }}</label>
+        <FormItem prop="old_password">
+          <Input v-model="formPassword.old_password" type="password"/>
+        </FormItem>
+        <label>{{ $t('m.New_Password') }}</label>
+        <FormItem prop="new_password">
+          <Input v-model="formPassword.new_password" type="password"/>
+        </FormItem>
+        <label>{{ $t('m.Password_Again') }}</label>
+        <FormItem prop="again_password">
+          <Input v-model="formPassword.again_password" type="password"/>
+        </FormItem>
+        <FormItem v-if="visible.tfaRequired" label="Two Factor Auth" prop="tfa_code">
+          <Input v-model="formPassword.tfa_code"/>
+        </FormItem>
+        <FormItem v-if="visible.passwordAlert">
+          <Alert type="success">You will need to login again after 5 seconds..</Alert>
+        </FormItem>
+        <Button type="primary" @click="changePassword">{{ $t('m.Update_Password') }}</Button>
+      </Form>
     </div>
+    <!--      <div class="right">-->
+    <!--        <h2>{{ $t('m.ChangeEmail') }}</h2>-->
+    <!--        <Form class="setting-content" ref="formEmail" :model="formEmail" :rules="ruleEmail">-->
+    <!--          <label>{{ $t('m.LoginPassword') }}</label>-->
+    <!--          <FormItem  prop="password">-->
+    <!--            <Input v-model="formEmail.password" type="password"/>-->
+    <!--          </FormItem>-->
+    <!--          &lt;!&ndash;          <FormItem :label="$t('m.Old_Email')">&ndash;&gt;-->
+    <!--          &lt;!&ndash;            <Input v-model="formEmail.old_email" disabled/>&ndash;&gt;-->
+    <!--          &lt;!&ndash;          </FormItem>&ndash;&gt;-->
+    <!--          <label>{{ $t('m.New_Email') }}</label>-->
+    <!--          <FormItem  prop="new_email">-->
+    <!--            <Input v-model="formEmail.new_email"/>-->
+    <!--          </FormItem>-->
+    <!--          <FormItem v-if="visible.tfaRequired" label="Two Factor Auth" prop="tfa_code">-->
+    <!--            <Input v-model="formEmail.tfa_code"/>-->
+    <!--          </FormItem>-->
+    <!--          <Button type="primary" @click="changeEmail">{{ $t('m.ChangeEmail') }}</Button>-->
+    <!--        </Form>-->
+    <!--      </div>-->
   </div>
 </template>
 
@@ -179,20 +177,34 @@ label {
 
 .flex-container {
   justify-content: flex-start;
+  display: flex;
+  flex-direction: column;
 
-  .left {
-    flex: 1 0;
-    width: 250px;
+  h1 {
+    margin-bottom: 20px;
+    text-align: left;
+    width: 100%;
+  }
+  div {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    form {
+      display: flex;
+      flex-direction: column;
+      align-items: end;
+      div {
+        width: 100%;
+      }
+
+      button {
+        display: block;
+        align-self: end;
+      }
+    }
   }
 
-  > .middle {
-    flex: none;
-  }
-
-  .right {
-    flex: 1 0;
-    width: 250px;
-  }
 }
+
 </style>
 
