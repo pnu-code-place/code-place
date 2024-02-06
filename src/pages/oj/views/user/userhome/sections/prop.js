@@ -1,4 +1,13 @@
+// Description: OJ 페이지의 섹션들의 prop을 정의합니다.
+// 기존 계획은 상위 router-page에서 데이터를 받아와서 하위 컴포넌트에게 전달하는 방식이었으나,
+// vue2에서는 inject, provide의 업데이트가 router-view를 따라 적용되지 않는 문제가 있었습니다.
+// 때문에 기존에 하나였던 api를 tab의 각각의 섹션으로 나누어서 4개의 api를 호출하는 방식으로 변경하였습니다.
+
+
+// OJ 대시보드의 섹션들의 prop을 정의합니다.
+// /api/profile/dashboard GET
 export const DashboardSectionProp = {
+
   ojStatus: {
     rank_image: "https://cdn-icons-png.flaticon.com/512/473/473406.png", // 랭킹 이미지
     rank: 1, // 랭킹
@@ -13,11 +22,11 @@ export const DashboardSectionProp = {
     miracle_record: 20 // 최고 연속 코딩일수
   },
 
-  categoryInfo: {
+  categoryInfo: { // 카테고리별 정보를 표시합니다.
     data_structure: {
-      score: 34,
-      ranking: 60,
-      ranking_percent: 0.3,
+      score: 34, // 점수
+      ranking: 60, // 랭킹
+      ranking_percent: 0.3, // 랭킹 퍼센트 - 상위 30%
     },
     mathematics: {
       score: 20,
@@ -41,10 +50,10 @@ export const DashboardSectionProp = {
     }
   },
 
-  difficultyInfo: {
+  difficultyInfo: { // 난이도별 정보를 표시합니다.
     very_easy: {
-      solve_number: 33,
-      total_score: 330,
+      solve_number: 33,  // 해결한 문제 수
+      total_score: 330,  // 총 점수
     },
     easy: {
       solve_number: 20,
@@ -63,34 +72,38 @@ export const DashboardSectionProp = {
       total_score: 320,
     }
   },
-  achievements: [
+  achievements: [ // 달성한 업적을 표시합니다.
     {
-      id: 1,
-      title: "업적",
-      image: "https://cdn-icons-png.flaticon.com/512/473/473406.png",
-      description: "업적은 아래와 같이 표시됩니다.",
-      date: "2019-01-01",
+      id: 1, // 업적의 id
+      title: "업적", // 업적의 제목
+      image: "https://cdn-icons-png.flaticon.com/512/473/473406.png", // 업적 뱃지 이미지
+      description: "10문제 이상 풀이하십시오.", // 업적의 설명 ( 달성 목표 )
+      digression: "업적을 달성하였습니다.", // 업적을 달성한 경우의 설명
+      date: "2019-01-01", // 달성한 날짜
     },
     {
       id: 2,
       title: "업적",
       image: "https://cdn-icons-png.flaticon.com/512/473/473406.png",
       description: "업적은 아래와 같이 표시됩니다.",
+      digression: "업적을 달성하였습니다.",
       date: "2019-01-01",
     }
   ]
 }
 
+// 유저가 푼 문제들의 섹션의 prop을 정의합니다.
+// /api/profile/problem GET
 export const ProblemSectionProp = {
   ranking_percent: 0.3,
   solved: { // 해결한 문제들을 표시합니다.
     count: 4,
     problems: [
       {
-        id: 1001,
-        title: 'A+B',
-        submitTime: '2021-07-02T08:25:49.443682Z',
-        difficulty: 'easy',
+        id: 1001, // 문제의 id
+        title: 'A+B', // 문제의 제목
+        submitTime: '2021-07-02T08:25:49.443682Z', // 제출 시간
+        difficulty: 'easy',   // 난이도
       },
       {
         id: 1002,
@@ -141,4 +154,29 @@ export const ProblemSectionProp = {
       },
     ],
   }
+}
+
+export const archiveSectionProp = {
+  achievements: {
+    acquired: [
+      {
+        id: 1, // 업적의 id
+        title: "업적", // 업적의 제목
+        image: "https://cdn-icons-png.flaticon.com/512/473/473406.png", // 업적 뱃지 이미지
+        description: "10문제 이상 풀이하십시오.", // 업적의 설명 ( 달성 목표 )
+        digression: "업적을 달성하였습니다.", // 업적을 달성한 경우의 설명
+        date: "2019-01-01", // 달성한 날짜
+      },
+    ],
+    not_acquired: [
+      {
+        id: 1,
+        title: "달성하지 못한 업적", // 업적의 제목
+        image: "https://cdn-icons-png.flaticon.com/512/473/473406.png", // 업적 뱃지 이미지
+        description: "업적은 아래와 같이 표시됩니다.", // 업적의 설명 ( 달성 목표 )
+        goal: 100, // 달성 목표
+        current: 50 // 현재 달성도
+      }
+    ]
+  },
 }
