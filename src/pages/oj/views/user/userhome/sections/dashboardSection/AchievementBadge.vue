@@ -19,6 +19,12 @@ export default {
     date: {
       type: String,
       required: true
+    },
+    disabled: {
+      type: Boolean,
+      default() {
+        return false
+      }
     }
   },
   data() {
@@ -40,7 +46,7 @@ export default {
 </script>
 
 <template>
-  <Tooltip placement="bottom" class="tooltip">
+  <Tooltip placement="bottom" class="tooltip" :disabled="this.disabled">
     <shine-wrapper class="image">
       <img :src="image" alt="badge" @error="onMedalError"/>
     </shine-wrapper>
