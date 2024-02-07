@@ -1,12 +1,12 @@
 import json
 import re
 import dramatiq
-from utils.shortcuts import DRAMATIQ_WORKER_ARGS
 from functools import lru_cache
 
-from django.core.cache import cache
+from django.db import transaction
+from django.db.models import Min, F
 
-from .models import Problem
+from .models import Problem, get_default_week_info
 
 TEMPLATE_BASE = """//PREPEND BEGIN
 {}
@@ -42,24 +42,22 @@ def call_update_weekly_stats():
 
 @dramatiq.actor()
 def update_weekly_stats():
-    problems = Problem.objects.all().order_by("weekly_success_rate")
-    most_difficult_problem = problems[0] if problems else None
+    print("start update_weekly_stats")
+
+    problems = Problem.objects.all()
+
+    with transaction.atomic():
+        for problem in problems:
+            problem.last_week_info = problem.curr_week_info
+            problem.curr_week_info = get_default_week_info()
+            problem.is_most_difficult = False
+            problem.save(update_fields=['last_week_info', 'curr_week_info', 'is_most_difficult'])
+
+    most_difficult_problem = Problem.objects.annotate(
+        min_success_rate=F('last_week_info__success_rate')
+    ).order_by('min_success_rate').first()
 
     if most_difficult_problem:
-        problem_info = {
-            'id': most_difficult_problem.id,
-            'success_rate': float(most_difficult_problem.weekly_success_rate),
-            'solvers_number': most_difficult_problem.weekly_solvers.count(),
-            'difficulty': most_difficult_problem.difficulty,
-            'field': most_difficult_problem.field,
-            'tags': list(most_difficult_problem.tags.values_list('name', flat=True))
-        }
-        cache.set('most_difficult_problem', json.dumps(problem_info))
-
-    for problem in problems:
-        problem.weekly_success_rate = 0
-        problem.weekly_accepted_number = 0
-        problem.weekly_submission_number = 0
-        problem.weekly_solvers.clear()
-        problem.save(update_fields=['weekly_success_rate', 'weekly_accepted_number',
-                                    'weekly_submission_number'])
+        most_difficult_problem.is_most_difficult = True
+        most_difficult_problem.save(update_fields=['is_most_difficult'])
+        print(most_difficult_problem.id, " is set to most_difficult problem", sep='')

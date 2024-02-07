@@ -40,8 +40,18 @@ class ProblemIOMode(Choices):
     file = "File IO"
 
 
+class ProblemType(object):
+    general = 'General'
+    most_difficult = "Most_difficult"
+    bonus = "Bonus"
+
+
 def _default_io_mode():
     return {"io_mode": ProblemIOMode.standard, "input": "input.txt", "output": "output.txt"}
+
+
+def get_default_week_info():
+    return {'submission': 0, 'accepted': 0, 'success_rate': 0.0, 'solver': []}
 
 
 class Problem(models.Model):
@@ -97,11 +107,14 @@ class Problem(models.Model):
     statistic_info = JSONField(default=dict)
     share_submission = models.BooleanField(default=False)
 
-    # 지난 일주일동안 가장 어려웠던 문제 판별을 위한 field
-    weekly_submission_number = models.BigIntegerField(default=0)
-    weekly_accepted_number = models.BigIntegerField(default=0)
-    weekly_success_rate = models.DecimalField(max_digits=5, decimal_places=2, default=0)
-    weekly_solvers = models.ManyToManyField(User, related_name='solvers', blank=True)
+    # 지난 주 정보
+    last_week_info = models.JSONField(default=get_default_week_info)
+
+    # 이번 주 정보
+    curr_week_info = models.JSONField(default=get_default_week_info)
+
+    is_most_difficult = models.BooleanField(default=False)
+    is_bonus = models.BooleanField(default=False)
 
     class Meta:
         db_table = "problem"
@@ -120,6 +133,8 @@ class Problem(models.Model):
         self.accepted_number = models.F("accepted_number") + 1
         self.save(update_fields=["accepted_number"])
 
-    def calculate_weekly_success_rate(self):
-        self.weekly_success_rate = (self.weekly_accepted_number / self.weekly_submission_number) * 100
-        self.save(update_fields=["weekly_success_rate"])
+    def calculate_success_rate(self):
+        if self.curr_week_info['submission'] != 0:
+            self.curr_week_info['success_rate'] = (self.curr_week_info['accepted'] / self.curr_week_info['submission'])\
+                                                  * 100
+            self.save(update_fields=["curr_week_info"])
