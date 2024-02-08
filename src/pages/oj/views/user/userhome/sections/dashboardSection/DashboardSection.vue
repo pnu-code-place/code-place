@@ -50,7 +50,7 @@ section {
   border-radius: 7px;
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   padding: 20px;
-  gap: 10px;
+  gap: 30px;
   display: flex;
   flex-direction: column;
 

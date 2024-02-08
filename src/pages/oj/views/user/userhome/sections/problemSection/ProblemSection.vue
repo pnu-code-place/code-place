@@ -2,7 +2,7 @@
   <section id="problem-section">
     <h1>문제풀이</h1>
     <div v-if="isLoading" class="loading">Loading...</div>
-    <div v-if="error" class="error">{{error}}</div>
+    <div v-if="error" class="error">{{ error }}</div>
     <div v-if="!isLoading && !error" class="contents">
       <div class="status" v-if="!isLoading && !error">
         <div class="status-item">
@@ -66,9 +66,9 @@ export default {
       api.getUserProblemInfo().then(res => {
         this.problem_info = res.data.data
       }).catch(error =>
-        this.error = error
+          this.error = error
       ).finally(() =>
-        this.isLoading = false
+          this.isLoading = false
       )
     }
   },
@@ -88,6 +88,8 @@ export default {
 
 <style scoped lang="less">
 section {
+  display: flex;
+  flex-direction: column;
   border: 1px solid #dedede;
   border-radius: 7px;
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
@@ -98,59 +100,65 @@ section {
   }
 
   hr {
-    margin-top: 10px;
-    border: 1px solid #dedede;
+    border: 0.5px solid #dedede;
+    margin: 10px 10px 10px 0;
   }
 
-  .status {
+  .contents {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 50px 25%;
+    flex-direction: column;
+    gap: 10px;
 
-    .status-item {
+    .status {
       display: flex;
-      flex-direction: column;
+      justify-content: space-between;
       align-items: center;
-      justify-content: center;
+      padding: 50px 25%;
 
-      .label {
-        font-size: 14px;
-        font-weight: 500;
-        text-decoration: underline;
-      }
+      .status-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
 
-      .value {
-        font-size: 14px;
-        font-weight: 700;
-      }
+        .label {
+          font-size: 14px;
+          font-weight: 500;
+          text-decoration: underline;
+        }
 
-      .score-ratio {
-        font-size: 14px;
-        font-weight: 600;
-        color: #99bbee;
+        .value {
+          font-size: 14px;
+          font-weight: 700;
+        }
+
+        .score-ratio {
+          font-size: 14px;
+          font-weight: 600;
+          color: #99bbee;
+        }
       }
     }
-  }
 
-  .problem-tab {
-    padding: 10px;
+    .problem-tab {
+      padding: 10px;
 
-    h2 {
-      text-align: left;
-      margin-bottom: 10px;
-    }
+      h2 {
+        text-align: left;
+        margin-bottom: 20px;
+      }
 
-    ul {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      padding: 0;
-      margin: 0;
-      list-style: none;
+      ul {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        padding: 0;
+        margin: 0;
+        list-style: none;
 
-      li {
-        font-size: 14px;
+        li {
+          font-size: 14px;
+        }
       }
     }
   }

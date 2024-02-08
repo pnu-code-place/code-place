@@ -38,8 +38,6 @@ export default {
 <style scoped lang="less">
 a {
   padding: 8px;
-  border: 1px solid #bebebe;
-  border-radius: 5px;
 }
 
 a:hover {

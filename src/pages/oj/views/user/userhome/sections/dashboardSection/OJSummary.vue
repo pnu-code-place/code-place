@@ -59,15 +59,15 @@ export default {
         </div>
       </div>
       <div class="progress">
-          <span class="progress-info">
-            {{ ojStatus.total_score }} / {{ ojStatus.rank_next }}
-          </span>
+        <span class="progress-info">
+          {{ ojStatus.total_score }} / {{ ojStatus.rank_next }}
+        </span>
         <div class="gauge-wrapper">
           <horizontal-gauge :progress="gaugeWidth"></horizontal-gauge>
         </div>
         <span class="progress-next">
-            승급까지 <span class="progress-next-number">{{ ojStatus.rank_next - ojStatus.total_score }}점</span> 남았습니다.
-          </span>
+          승급까지 <span class="progress-next-number">{{ ojStatus.rank_next - ojStatus.total_score }}점</span> 남았습니다.
+        </span>
       </div>
     </div>
     <div class="miracle">
@@ -93,6 +93,7 @@ export default {
     display: flex;
     justify-content: center;
     align-items: center;
+    padding : 20px;
 
     .rank-mark {
       width: 100%;
