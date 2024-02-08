@@ -445,7 +445,10 @@ class JudgeDispatcher(DispatcherBase):
             except (Score.DoesNotExist, Problem.DoesNotExist, User.DoesNotExist):
                 return HttpResponseNotFound("user_score | problem | profile doesn't exist")
 
-            user_score.score += problem_score[problem.difficulty]
+            if problem.is_bonus:
+                user_score.score += problem_score[problem.difficulty] * 2
+            else:
+                user_score.score += problem_score[problem.difficulty]
             user_score.save()
 
         if self.submission.user_id not in problem.curr_week_info['solver']:

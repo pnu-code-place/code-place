@@ -1,4 +1,5 @@
 import json
+import random
 import re
 import dramatiq
 from functools import lru_cache
@@ -42,8 +43,6 @@ def call_update_weekly_stats():
 
 @dramatiq.actor()
 def update_weekly_stats():
-    print("start update_weekly_stats")
-
     problems = Problem.objects.all()
 
     with transaction.atomic():
@@ -60,4 +59,33 @@ def update_weekly_stats():
     if most_difficult_problem:
         most_difficult_problem.is_most_difficult = True
         most_difficult_problem.save(update_fields=['is_most_difficult'])
-        print(most_difficult_problem.id, " is set to most_difficult problem", sep='')
+
+
+def call_update_bonus_problem():
+    update_bonus_problem.send()
+
+
+@dramatiq.actor()
+def update_bonus_problem():
+    problems = Problem.objects.all()
+
+    for problem in problems:
+        problem.is_bonus = False
+        problem.save(update_fields=['is_bonus'])
+
+    low_problems = problems.filter(difficulty__in=['VeryLow', 'Low'])
+    mid_problems = problems.filter(difficulty='Mid')
+    high_problems = problems.filter(difficulty__in=['High', 'VeryHigh'])
+
+    selected_problems = []
+
+    if low_problems.exists():
+        selected_problems.append(random.choice(low_problems))
+    if mid_problems.exists():
+        selected_problems.append(random.choice(mid_problems))
+    if high_problems.exists():
+        selected_problems.append(random.choice(high_problems))
+
+    for problem in selected_problems:
+        problem.is_bonus = True
+        problem.save(update_fields=['is_bonus'])
