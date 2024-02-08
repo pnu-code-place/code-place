@@ -25,68 +25,67 @@
 
 <script>
 import {mapActions, mapGetters, mapState} from 'vuex'
-  import NavBar from '@oj/components/NavBar.vue'
-  import NavBar_Problem from "./components/NavBar_Problem.vue";
+import NavBar from '@oj/components/NavBar.vue'
+import NavBar_Problem from "./components/NavBar_Problem.vue";
 
-  export default {
-    name: 'app',
-    components: {
-      NavBar_Problem,
-      NavBar
+export default {
+  name: 'app',
+  components: {
+    NavBar_Problem,
+    NavBar
+  },
+  data() {
+    return {
+      version: process.env.VERSION
+    }
+  },
+  created() {
+    try {
+      document.body.removeChild(document.getElementById('app-loader'))
+    } catch (e) {
+    }
+  },
+  mounted() {
+    this.getWebsiteConfig()
+  },
+  methods: {
+    ...mapActions(['getWebsiteConfig', 'changeDomTitle'])
+  },
+  computed: {
+    ...mapState(['website']),
+    ...mapGetters(['isProblemSolving']),
+  },
+  watch: {
+    'website'() {
+      this.changeDomTitle()
     },
-    data () {
-      return {
-        version: process.env.VERSION
-      }
-    },
-    created () {
-      try {
-        document.body.removeChild(document.getElementById('app-loader'))
-      } catch (e) {
-      }
-    },
-    mounted () {
-      this.getWebsiteConfig()
-    },
-    methods: {
-      ...mapActions(['getWebsiteConfig', 'changeDomTitle'])
-    },
-    computed: {
-      ...mapState(['website']),
-      ...mapGetters(['isProblemSolving']),
-    },
-    watch: {
-      'website' () {
-        this.changeDomTitle()
-      },
-      '$route' () {
-        this.changeDomTitle()
-      }
+    '$route'() {
+      this.changeDomTitle()
     }
   }
+}
 </script>
 
 <style lang="less">
 
-  * {
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    box-sizing: border-box;
-  }
+* {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
 
-  a {
-    text-decoration: none;
-    background-color: transparent;
-    &:active, &:hover {
-      outline-width: 0;
-    }
-  }
+a {
+  text-decoration: none;
+  background-color: transparent;
 
-  @media screen and (max-width: 1200px) {
-  .content-app {
-    margin-top: 160px;
-    padding: 0 2%;
+  &:active, &:hover {
+    outline-width: 0;
   }
+}
+
+.content-app {
+  width: 1130px;
+  margin: 90px auto auto;
 }
 
 @media screen and (min-width: 1200px) {
@@ -108,9 +107,9 @@ import {mapActions, mapGetters, mapState} from 'vuex'
     font-size: small;
   }
 
-  .fadeInUp-enter-active {
-    animation: fadeInUp .8s;
-  }
+.fadeInUp-enter-active {
+  animation: fadeInUp .8s;
+}
 
 
 </style>
