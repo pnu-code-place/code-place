@@ -50,7 +50,7 @@ section {
   border-radius: 7px;
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   padding: 20px;
-  gap: 30px;
+  gap: 15px;
   display: flex;
   flex-direction: column;
 
@@ -61,6 +61,8 @@ section {
 
   h1 {
     text-align: left;
+    margin-left: 10px;
+    margin-bottom: 15px;
   }
 }
 </style>
