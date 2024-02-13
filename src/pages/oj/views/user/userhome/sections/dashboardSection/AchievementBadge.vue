@@ -16,7 +16,7 @@ export default {
       type: String,
       required: true
     },
-    date: {
+    acquireTime: {
       type: String,
       required: true
     },
@@ -41,6 +41,9 @@ export default {
   computed: {
     fallbackMedal() {
       return require("@/assets/challenges/errorMedal.png")
+    },
+    acquireDate() {
+      return this.acquireTime.split("T")[0];
     }
   },
   methods: {
@@ -59,7 +62,7 @@ export default {
     <template #content>
       <h3>{{ title }}</h3>
       <p>{{ description }}</p>
-      <div>{{$t('m.Date')}} : {{ date }}</div>
+      <div>{{ $t('m.Date') }} : {{ acquireDate }}</div>
     </template>
   </Tooltip>
 </template>

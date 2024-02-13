@@ -16,20 +16,20 @@ export default {
   },
   data() {
     return {}
-  }
+  },
 }
 
 </script>
 
 <template>
   <div class="challenge-summary">
-    <div class="badge-wrapper" v-for="medal in achievements">
+    <div class="badge-wrapper" v-for="achievement in achievements">
       <ChallengeBadge
-          :image="medal.image"
-          :description="medal.description"
-          :title="medal.title"
-          :date="medal.date"
-          :key="medal.id"
+          :image="achievement.image"
+          :description="achievement.description"
+          :title="achievement.title"
+          :acquireTime="achievement.acquireTime"
+          :key="achievement.id"
       ></ChallengeBadge>
     </div>
   </div>

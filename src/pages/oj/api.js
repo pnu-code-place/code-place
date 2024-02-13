@@ -1,7 +1,7 @@
 import Vue from "vue";
 import store from "@/store";
 import axios from "axios";
-import {DashboardSectionProp, ProblemSectionProp} from "./views/user/userhome/sections/prop";
+import {achievementSectionProp, DashboardSectionProp, ProblemSectionProp} from "./views/user/userhome/sections/prop";
 
 Vue.prototype.$http = axios;
 axios.defaults.baseURL = "/api";
@@ -88,6 +88,15 @@ export default {
       }, 3000)
     })
   },
+  getUserAchievement() {
+    // return ajax("profile/achievement", "get");
+    return new Promise ((resolve) => {
+      setTimeout(() => {
+        resolve({data: {data: achievementSectionProp}})
+      }, 3000)
+    })
+  },
+
   updateProfile(profile) {
     return ajax("profile", "put", {
       data: profile

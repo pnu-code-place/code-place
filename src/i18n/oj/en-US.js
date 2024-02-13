@@ -290,7 +290,7 @@ export const m = {
   // SideNavBar.vue
   OJ_Status: "OJ통계",
   Problem_Status: "문제풀이",
-  Archive: "업적",
+  Achievement: "업적",
   User_Setting: "정보수정",
 
   // UserHome.vue
@@ -304,6 +304,10 @@ export const m = {
   //DashboardSection.vue
   Date: "일자",
 
+  //AchievementSection.vue
+  Achieved : "달성",
+  NotAchieved : "미달성",
+
   // ProfileSetting.vue
   Current_Password: "현재 비밀번호",
   New_Password: "새 비밀번호",
@@ -316,4 +320,6 @@ export const m = {
   // 아바타
   Upload_Image: "이미지를 끌어다 놓거나, 클릭하여 선택하세요",
   Avatar_Preview: "프로필이 다음과 같이 보입니다."
+
+  //
 };

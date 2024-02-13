@@ -1,57 +1,50 @@
 <script>
+import GoalCard from "./AchievementCard.vue";
+import api from "@oj/api";
+
 export default {
   name: 'challenge-section',
+  components: {GoalCard},
   data() {
     return {
-      errorMedal : "@/assets/challenges/errorMedal.png",
-      achievements: {
-        acquired: [
-          {
-            id: 1,
-            title: "업적",
-            image: "https://cdn-icons-png.flaticon.com/512/473/473406.png",
-            description: "업적은 아래와 같이 표시됩니다.",
-            date: "2019-01-01",
-          },
-        ],
-        not_acquired: [
-          {
-            id: 1,
-            title: "달성하지 못한 업적",
-            image: "https://cdn-icons-png.flaticon.com/512/473/473406.png",
-            description: "업적은 아래와 같이 표시됩니다.",
-            progress : 0.8,
-          }
-        ]
+      value : 0,
+      errorMedal: "@/assets/challenges/errorMedal.png",
+      achievements : {
+        acquired: [],
+        not_acquired: []
       },
-      image : "https://cdn-icons-png.flaticon.com/512/473/47340.png"
+      image: "https://cdn-icons-png.flaticon.com/512/473/47340.png",
+      loading : true,
+      error : null
     }
   },
   methods: {
-    replaceDefaultImage(e) {
-      e.target.src = this.errorRequired
-    },
     init() {
-
+      api.getUserAchievement().then(res => {
+        this.achievements = res.data.data
+      })
     }
   },
   mounted() {
     this.init();
   },
-  computed : {
-    errorRequired() {
-      return require('@/assets/challenges/errorMedal.png')
-    }
+  computed: {
   }
 }
 </script>
 
 <template>
   <section class="challenge-section">
-    <h1>업적</h1>
-    <img :src="image" @error="replaceDefaultImage" alt="for test image">
-    <div class="challenge-list">
-    </div>
+    <h1>{{ $t('m.Achieved') }}</h1>
+    <ul>
+      <GoalCard v-for="goal in achievements.acquired" :key="goal.id" :achievement="goal"
+                :acquired="true"></GoalCard>
+    </ul>
+    <h1>{{ $t('m.NotAchieved') }}</h1>
+    <ul>
+      <GoalCard v-for="goal in achievements.not_acquired" :key="goal.id" :achievement="goal"
+                :acquired="false"></GoalCard>
+    </ul>
   </section>
 </template>
 
@@ -67,8 +60,13 @@ section {
     text-align: left;
   }
 
-  h2 {
-    margin-bottom: 10px;
+  ul {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    padding: 0;
+    margin: 0;
+    list-style: none;
   }
 }
 </style>

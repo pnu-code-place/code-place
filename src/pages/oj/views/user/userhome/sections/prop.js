@@ -83,16 +83,14 @@ export const DashboardSectionProp = {
       title: "업적", // 업적의 제목
       image: "https://cdn-icons-png.flaticon.com/512/473/473406.png", // 업적 뱃지 이미지
       description: "10문제 이상 풀이하십시오.", // 업적의 설명 ( 달성 목표 )
-      digression: "업적을 달성하였습니다.", // 업적을 달성한 경우의 설명
-      date: "2019-01-01", // 달성한 날짜
+      acquireTime: "2024-01-07T08:34:09.209734Z", // 달성한 날짜
     },
     {
       id: 2,
       title: "업적",
       image: "https://cdn-icons-png.flaticon.com/512/473/473406.png",
       description: "업적은 아래와 같이 표시됩니다.",
-      digression: "업적을 달성하였습니다.",
-      date: "2019-01-01",
+      acquireTime: "2024-01-07T08:34:09.209734Z",
     }
   ]
 }
@@ -161,27 +159,32 @@ export const ProblemSectionProp = {
   }
 }
 
-export const archiveSectionProp = {
-  achievements: {
-    acquired: [
-      {
-        id: 1, // 업적의 id
-        title: "업적", // 업적의 제목
-        image: "https://cdn-icons-png.flaticon.com/512/473/473406.png", // 업적 뱃지 이미지
-        description: "10문제 이상 풀이하십시오.", // 업적의 설명 ( 달성 목표 )
-        digression: "업적을 달성하였습니다.", // 업적을 달성한 경우의 설명
-        date: "2019-01-01", // 달성한 날짜
-      },
-    ],
-    not_acquired: [
-      {
-        id: 1,
-        title: "달성하지 못한 업적", // 업적의 제목
-        image: "https://cdn-icons-png.flaticon.com/512/473/473406.png", // 업적 뱃지 이미지
-        description: "업적은 아래와 같이 표시됩니다.", // 업적의 설명 ( 달성 목표 )
-        goal: 100, // 달성 목표
-        current: 50 // 현재 달성도
-      }
-    ]
-  },
+// 유저의 업적 정보들을 조회합니다.
+// /api/profile/achievement GET
+export const achievementSectionProp = {
+  acquired: [
+    {
+      id: 1, // 업적의 id
+      title: "수학자 Step1", // 업적의 제목
+      image: "https://cdn-icons-png.flaticon.com/512/473/473406.png", // 업적 뱃지 이미지
+      description: "수학 카테고리에서 10문제 이상 풀이하십시오.", // 업적의 설명 ( 달성 목표 )
+      acquireTime: '2021-07-02T08:25:49.443682Z', // 달성한 날짜
+    }, {
+      id: 2,
+      title: "업적의 제목이 제법 길 수도 있겠죠!!!!",
+      image: "https://cdn-icons-png.flaticon.com/512/473/473406.png",
+      description: "업적은 아래와 같이 표시됩니다. 업적의 설명이 아주 길 수도 있겠죠 아주아주아주 길수도 있겠죠",
+      acquireTime: '2021-07-02T08:25:49.443682Z',
+    },
+  ],
+  not_acquired: [
+    {
+      id: 2,
+      title: "달성하지 못한 업적",
+      image: "https://cdn-icons-png.flaticon.com/512/473/473406.png",
+      description: "업적은 아래와 같이 표시됩니다.",
+      goal: 100, // 목표
+      current: 50 // 현재 달성
+    }
+  ]
 }
