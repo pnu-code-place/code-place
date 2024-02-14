@@ -2,7 +2,7 @@ import random
 from django.db.models import Q, Count
 from utils.api import APIView
 from account.decorators import check_contest_permission, login_required
-from ..models import ProblemTag, Problem, ProblemRuleType, ProblemScore
+from ..models import ProblemTag, Problem, ProblemRuleType, ProblemScore, ProblemDifficulty
 from ..serializers import ProblemSerializer, TagSerializer, ProblemSafeSerializer, RecommendProblemSerializer
 from contest.models import ContestRuleType
 from account.models import UserProfile
@@ -85,7 +85,6 @@ class ProblemAPI(APIView):
         if field:
             problems = problems.filter(field=field)
 
-
         # 根据profile 为做过的题目添加标记
         data = self.paginate_data(request, problems, ProblemSerializer)
         self._add_problem_status(request, data)
@@ -151,8 +150,8 @@ class AIRecommendProblemAPI(APIView):
 
             # remove if the user has solved the problem
             unresolved_problems = Problem.objects.filter(field=weak_field, visible=True)\
-                .exclude(_id__in=get_user_solved_problems(request.user))[:3]
-
+                .exclude(_id__in=get_user_solved_problems(request.user))
+            unresolved_problems = random.sample(list(unresolved_problems), min(3, unresolved_problems.count()))
             recommend_problems = RecommendProblemSerializer(unresolved_problems, many=True).data
 
             return self.success({"field_score": field_score, "recommend_problems": recommend_problems})
