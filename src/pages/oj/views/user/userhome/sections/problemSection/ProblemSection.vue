@@ -1,7 +1,7 @@
 <template>
   <section id="problem-section">
     <h1>문제풀이</h1>
-    <div v-if="isLoading" class="loading">Loading...</div>
+    <ProblemSkeleton v-if="isLoading" class="loading">Loading...</ProblemSkeleton>
     <div v-if="error" class="error">{{ error }}</div>
     <div v-if="!isLoading && !error" class="contents">
       <div class="status" v-if="!isLoading && !error">
@@ -49,10 +49,11 @@
 
 import ProblemBadge from "./ProblemBadge.vue";
 import api from "@oj/api";
+import ProblemSkeleton from "./ProblemSkeleton.vue";
 
 export default {
   name: 'problem-section',
-  components: {ProblemBadge},
+  components: {ProblemSkeleton, ProblemBadge},
   data() {
     return {
       problem_info: {},
