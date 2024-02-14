@@ -1,7 +1,6 @@
 from django.db import models
 from utils.models import JSONField
-
-from account.models import User
+from account.models import User, UserProfile
 from contest.models import Contest
 from utils.models import RichTextField
 from utils.constants import Choices
@@ -27,23 +26,19 @@ class ProblemDifficulty(object):
     VERYHIGH = "VeryHigh"
 
 
-class ProblemScore(object):
-    VeryLow = 10
-    Low = 20
-    Mid = 80
-    High = 320
-    VeryHigh = 1280
+class ProblemScore:
+    score = {
+        'VeryLow': 10,      # VeryLow
+        'Low': 20,      # Low
+        'Mid': 80,      # Mid
+        'High': 320,     # High
+        'VeryHigh': 1280,    # VeryHigh
+    }
 
 
 class ProblemIOMode(Choices):
     standard = "Standard IO"
     file = "File IO"
-
-
-class ProblemType(object):
-    general = 'General'
-    most_difficult = "Most_difficult"
-    bonus = "Bonus"
 
 
 def _default_io_mode():
@@ -77,6 +72,7 @@ class Problem(models.Model):
     # we can not use auto_now here
     last_update_time = models.DateTimeField(null=True)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    solved_by = models.ManyToManyField(User, related_name='problem_solved_by', blank=True)
     # ms
     time_limit = models.IntegerField()
     # MB
@@ -94,7 +90,7 @@ class Problem(models.Model):
     source = models.TextField(null=True)
 
     # for distribute Problem
-    field = models.BigIntegerField(default=0)
+    field = models.IntegerField(default=0)
     difficulty = models.TextField()
     tags = models.ManyToManyField(ProblemTag)
 
@@ -135,6 +131,6 @@ class Problem(models.Model):
 
     def calculate_success_rate(self):
         if self.curr_week_info['submission'] != 0:
-            self.curr_week_info['success_rate'] = (self.curr_week_info['accepted'] / self.curr_week_info['submission'])\
+            self.curr_week_info['success_rate'] = (self.curr_week_info['accepted'] / self.curr_week_info['submission']) \
                                                   * 100
             self.save(update_fields=["curr_week_info"])

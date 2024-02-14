@@ -1,12 +1,13 @@
-import random, json
+import random
 from django.db.models import Q, Count
 from utils.api import APIView
-from account.decorators import check_contest_permission
-from ..models import ProblemTag, Problem, ProblemRuleType
-from ..serializers import ProblemSerializer, TagSerializer, ProblemSafeSerializer
+from account.decorators import check_contest_permission, login_required
+from ..models import ProblemTag, Problem, ProblemRuleType, ProblemScore
+from ..serializers import ProblemSerializer, TagSerializer, ProblemSafeSerializer, RecommendProblemSerializer
 from contest.models import ContestRuleType
-from django.core.cache import cache
-from ..utils import update_weekly_stats
+from account.models import UserProfile
+from submission.models import JudgeStatus
+from django.http import HttpResponseNotFound
 
 
 class ProblemTagAPI(APIView):
@@ -128,8 +129,32 @@ class ContestProblemAPI(APIView):
         return self.success(data)
 
 
-class MostDifficultProblemAPI(APIView):
-    def get(self, request):
-        most_difficult_problem = json.loads(cache.get('most_difficult_problem'))
+def get_user_solved_problems(user):
+    solved_problems = UserProfile.objects.get(user=user).acm_problems_status.get("problems", {})
+    return [v['_id'] for k, v in solved_problems.items() if v['status'] == JudgeStatus.ACCEPTED]
 
-        return self.success(most_difficult_problem)
+
+class AIRecommendProblemAPI(APIView):
+    @login_required
+    def get(self, request):
+        try:
+            field_score = UserProfile.objects.get(user=request.user).field_score
+            field_score['max_score'] = ProblemScore.score['VeryHigh'] * 20
+
+            weak_field = 0
+            weak_field_score = field_score['0']
+            for k, v in field_score.items():
+                field_score[k] = min(v, field_score['max_score'])
+                if field_score[k] < weak_field_score:
+                    weak_field = k
+                    weak_field_score = field_score[k]
+
+            # remove if the user has solved the problem
+            unresolved_problems = Problem.objects.filter(field=weak_field, visible=True)\
+                .exclude(_id__in=get_user_solved_problems(request.user))[:3]
+
+            recommend_problems = RecommendProblemSerializer(unresolved_problems, many=True).data
+
+            return self.success({"field_score": field_score, "recommend_problems": recommend_problems})
+        except UserProfile.DoesNotExist:
+            return HttpResponseNotFound("User does not exist")

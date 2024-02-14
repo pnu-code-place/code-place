@@ -78,6 +78,16 @@ class User(AbstractBaseUser):
         db_table = "user"
 
 
+def get_default_field_score():
+    return {
+        "0": 0,     # "Math"
+        "1": 0,     # "Implementation"
+        "2": 0,     # "Datastructure"
+        "3": 0,     # "Search"
+        "4": 0,     # "Sorting"
+    }
+
+
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     # acm_problems_status examples:
@@ -111,6 +121,7 @@ class UserProfile(models.Model):
     accepted_number = models.IntegerField(default=0)
     # for OI
     total_score = models.BigIntegerField(default=0)
+    field_score = models.JSONField(default=get_default_field_score)
     submission_number = models.IntegerField(default=0)
 
     def add_accepted_problem_number(self):

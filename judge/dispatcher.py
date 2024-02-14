@@ -8,11 +8,11 @@ from django.db import transaction, IntegrityError
 from django.db.models import F
 from django.http import HttpResponseNotFound
 
-from account.models import User, Score
+from account.models import User, Score, UserProfile
 from conf.models import JudgeServer
 from contest.models import ContestRuleType, ACMContestRank, OIContestRank, ContestStatus
 from options.options import SysOptions
-from problem.models import Problem, ProblemRuleType
+from problem.models import Problem, ProblemRuleType, ProblemScore
 from problem.utils import parse_problem_template
 from submission.models import JudgeStatus, Submission
 from utils.cache import cache
@@ -427,29 +427,25 @@ class JudgeDispatcher(DispatcherBase):
         rank.save()
 
     def update_user_score(self):
-        problem_score = {
-            "VeryLow": 10,
-            "Low": 20,
-            "Mid": 80,
-            "High": 320,
-            "VeryHigh": 1280
-        }
-
         with transaction.atomic():
             try:
                 if not Score.objects.filter(user_id=self.submission.user_id).exists():
                     user = User.objects.get(id=self.submission.user_id)
                     Score.objects.create(user=user)
                 user_score = Score.objects.select_for_update().get(user_id=self.submission.user_id)
+                user_profile = UserProfile.objects.select_for_update().get(user_id=self.submission.user_id)
                 problem = Problem.objects.get(id=self.problem.id)
             except (Score.DoesNotExist, Problem.DoesNotExist, User.DoesNotExist):
                 return HttpResponseNotFound("user_score | problem | profile doesn't exist")
 
             if problem.is_bonus:
-                user_score.score += problem_score[problem.difficulty] * 2
+                user_score.score += ProblemScore.score[problem.difficulty] * 2
+                user_profile.field_score[str(problem.field)] += ProblemScore.score[problem.difficulty] * 2
             else:
-                user_score.score += problem_score[problem.difficulty]
+                user_score.score += ProblemScore.score[problem.difficulty]
+                user_profile.field_score[str(problem.field)] += ProblemScore.score[problem.difficulty]
             user_score.save()
+            user_profile.save()
 
         if self.submission.user_id not in problem.curr_week_info['solver']:
             problem.curr_week_info['solver'].append(self.submission.user_id)
