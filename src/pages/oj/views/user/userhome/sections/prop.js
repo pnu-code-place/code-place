@@ -126,6 +126,99 @@ export const ProblemSectionProp = {
         submitTime: '2021-07-02T08:25:49.443682Z',
         difficulty: 'easy',
       },
+      {
+        id: 1001, // 문제의 id
+        title: 'A+B', // 문제의 제목
+        submitTime: '2021-07-02T08:25:49.443682Z', // 제출 시간
+        difficulty: 'easy',   // 난이도
+      },
+      {
+        id: 1002,
+        title: 'A-B',
+        submitTime: '2021-07-02T08:25:49.443682Z',
+        difficulty: 'easy',
+      },
+      {
+        id: 1003,
+        title: 'A*B',
+        submitTime: '2021-07-02T08:25:49.443682Z',
+        difficulty: 'easy',
+      },
+      {
+        id: 1004,
+        title: 'A/B',
+        submitTime: '2021-07-02T08:25:49.443682Z',
+        difficulty: 'easy',
+      },      {
+        id: 1001, // 문제의 id
+        title: 'A+B', // 문제의 제목
+        submitTime: '2021-07-02T08:25:49.443682Z', // 제출 시간
+        difficulty: 'easy',   // 난이도
+      },
+      {
+        id: 1002,
+        title: 'A-B',
+        submitTime: '2021-07-02T08:25:49.443682Z',
+        difficulty: 'easy',
+      },
+      {
+        id: 1003,
+        title: 'A*B',
+        submitTime: '2021-07-02T08:25:49.443682Z',
+        difficulty: 'easy',
+      },
+      {
+        id: 1004,
+        title: 'A/B',
+        submitTime: '2021-07-02T08:25:49.443682Z',
+        difficulty: 'easy',
+      },      {
+        id: 1001, // 문제의 id
+        title: 'A+B', // 문제의 제목
+        submitTime: '2021-07-02T08:25:49.443682Z', // 제출 시간
+        difficulty: 'easy',   // 난이도
+      },
+      {
+        id: 1002,
+        title: 'A-B',
+        submitTime: '2021-07-02T08:25:49.443682Z',
+        difficulty: 'easy',
+      },
+      {
+        id: 1003,
+        title: 'A*B',
+        submitTime: '2021-07-02T08:25:49.443682Z',
+        difficulty: 'easy',
+      },
+      {
+        id: 1004,
+        title: 'A/B',
+        submitTime: '2021-07-02T08:25:49.443682Z',
+        difficulty: 'easy',
+      },      {
+        id: 1001, // 문제의 id
+        title: 'A+B', // 문제의 제목
+        submitTime: '2021-07-02T08:25:49.443682Z', // 제출 시간
+        difficulty: 'easy',   // 난이도
+      },
+      {
+        id: 1002,
+        title: 'A-B',
+        submitTime: '2021-07-02T08:25:49.443682Z',
+        difficulty: 'easy',
+      },
+      {
+        id: 1003,
+        title: 'A*B',
+        submitTime: '2021-07-02T08:25:49.443682Z',
+        difficulty: 'easy',
+      },
+      {
+        id: 1004,
+        title: 'A/B',
+        submitTime: '2021-07-02T08:25:49.443682Z',
+        difficulty: 'easy',
+      },
     ],
   },
   failed: { // 시도했으나 풀지 못한 문제들을 표시합니다.
@@ -164,6 +257,91 @@ export const ProblemSectionProp = {
 export const achievementSectionProp = {
   acquired: [
     {
+      id: 1, // 업적의 id
+      title: "수학자 Step1", // 업적의 제목
+      image: "https://cdn-icons-png.flaticon.com/512/473/473406.png", // 업적 뱃지 이미지
+      description: "수학 카테고리에서 10문제 이상 풀이하십시오.", // 업적의 설명 ( 달성 목표 )
+      acquireTime: '2021-07-02T08:25:49.443682Z', // 달성한 날짜
+    }, {
+      id: 2,
+      title: "업적의 제목이 제법 길 수도 있겠죠!!!!",
+      image: "https://cdn-icons-png.flaticon.com/512/473/473406.png",
+      description: "업적은 아래와 같이 표시됩니다. 업적의 설명이 아주 길 수도 있겠죠 아주아주아주 길수도 있겠죠",
+      acquireTime: '2021-07-02T08:25:49.443682Z',
+    },
+    {
+      id: 1, // 업적의 id
+      title: "수학자 Step1", // 업적의 제목
+      image: "https://cdn-icons-png.flaticon.com/512/473/473406.png", // 업적 뱃지 이미지
+      description: "수학 카테고리에서 10문제 이상 풀이하십시오.", // 업적의 설명 ( 달성 목표 )
+      acquireTime: '2021-07-02T08:25:49.443682Z', // 달성한 날짜
+    }, {
+      id: 2,
+      title: "업적의 제목이 제법 길 수도 있겠죠!!!!",
+      image: "https://cdn-icons-png.flaticon.com/512/473/473406.png",
+      description: "업적은 아래와 같이 표시됩니다. 업적의 설명이 아주 길 수도 있겠죠 아주아주아주 길수도 있겠죠",
+      acquireTime: '2021-07-02T08:25:49.443682Z',
+    },    {
+      id: 1, // 업적의 id
+      title: "수학자 Step1", // 업적의 제목
+      image: "https://cdn-icons-png.flaticon.com/512/473/473406.png", // 업적 뱃지 이미지
+      description: "수학 카테고리에서 10문제 이상 풀이하십시오.", // 업적의 설명 ( 달성 목표 )
+      acquireTime: '2021-07-02T08:25:49.443682Z', // 달성한 날짜
+    }, {
+      id: 2,
+      title: "업적의 제목이 제법 길 수도 있겠죠!!!!",
+      image: "https://cdn-icons-png.flaticon.com/512/473/473406.png",
+      description: "업적은 아래와 같이 표시됩니다. 업적의 설명이 아주 길 수도 있겠죠 아주아주아주 길수도 있겠죠",
+      acquireTime: '2021-07-02T08:25:49.443682Z',
+    },    {
+      id: 1, // 업적의 id
+      title: "수학자 Step1", // 업적의 제목
+      image: "https://cdn-icons-png.flaticon.com/512/473/473406.png", // 업적 뱃지 이미지
+      description: "수학 카테고리에서 10문제 이상 풀이하십시오.", // 업적의 설명 ( 달성 목표 )
+      acquireTime: '2021-07-02T08:25:49.443682Z', // 달성한 날짜
+    }, {
+      id: 2,
+      title: "업적의 제목이 제법 길 수도 있겠죠!!!!",
+      image: "https://cdn-icons-png.flaticon.com/512/473/473406.png",
+      description: "업적은 아래와 같이 표시됩니다. 업적의 설명이 아주 길 수도 있겠죠 아주아주아주 길수도 있겠죠",
+      acquireTime: '2021-07-02T08:25:49.443682Z',
+    },    {
+      id: 1, // 업적의 id
+      title: "수학자 Step1", // 업적의 제목
+      image: "https://cdn-icons-png.flaticon.com/512/473/473406.png", // 업적 뱃지 이미지
+      description: "수학 카테고리에서 10문제 이상 풀이하십시오.", // 업적의 설명 ( 달성 목표 )
+      acquireTime: '2021-07-02T08:25:49.443682Z', // 달성한 날짜
+    }, {
+      id: 2,
+      title: "업적의 제목이 제법 길 수도 있겠죠!!!!",
+      image: "https://cdn-icons-png.flaticon.com/512/473/473406.png",
+      description: "업적은 아래와 같이 표시됩니다. 업적의 설명이 아주 길 수도 있겠죠 아주아주아주 길수도 있겠죠",
+      acquireTime: '2021-07-02T08:25:49.443682Z',
+    },    {
+      id: 1, // 업적의 id
+      title: "수학자 Step1", // 업적의 제목
+      image: "https://cdn-icons-png.flaticon.com/512/473/473406.png", // 업적 뱃지 이미지
+      description: "수학 카테고리에서 10문제 이상 풀이하십시오.", // 업적의 설명 ( 달성 목표 )
+      acquireTime: '2021-07-02T08:25:49.443682Z', // 달성한 날짜
+    }, {
+      id: 2,
+      title: "업적의 제목이 제법 길 수도 있겠죠!!!!",
+      image: "https://cdn-icons-png.flaticon.com/512/473/473406.png",
+      description: "업적은 아래와 같이 표시됩니다. 업적의 설명이 아주 길 수도 있겠죠 아주아주아주 길수도 있겠죠",
+      acquireTime: '2021-07-02T08:25:49.443682Z',
+    },    {
+      id: 1, // 업적의 id
+      title: "수학자 Step1", // 업적의 제목
+      image: "https://cdn-icons-png.flaticon.com/512/473/473406.png", // 업적 뱃지 이미지
+      description: "수학 카테고리에서 10문제 이상 풀이하십시오.", // 업적의 설명 ( 달성 목표 )
+      acquireTime: '2021-07-02T08:25:49.443682Z', // 달성한 날짜
+    }, {
+      id: 2,
+      title: "업적의 제목이 제법 길 수도 있겠죠!!!!",
+      image: "https://cdn-icons-png.flaticon.com/512/473/473406.png",
+      description: "업적은 아래와 같이 표시됩니다. 업적의 설명이 아주 길 수도 있겠죠 아주아주아주 길수도 있겠죠",
+      acquireTime: '2021-07-02T08:25:49.443682Z',
+    },    {
       id: 1, // 업적의 id
       title: "수학자 Step1", // 업적의 제목
       image: "https://cdn-icons-png.flaticon.com/512/473/473406.png", // 업적 뱃지 이미지

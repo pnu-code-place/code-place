@@ -193,9 +193,10 @@ export const m = {
   Back: "뒤로가기",
   No_Announcements: "공지사항이 없습니다",
   // Setting.vue
-  Profile: "Profile",
-  Account: "Account",
-  Security: "Security",
+  Profile: "프로필",
+  Account: "계정",
+
+  Security: "보안",
   // AccoutSetting.vue
   ChangePassword: "비밀번호 변경",
   ChangeEmail: "이메일 변경",

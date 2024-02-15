@@ -23,7 +23,6 @@ import Notice from "../views/notice/Notice.vue"
 import DashboardSection from "../views/user/userhome/sections/dashboardSection/DashboardSection.vue";
 import ProblemSection from "../views/user/userhome/sections/problemSection/ProblemSection.vue";
 import communitySection from "../views/user/userhome/sections/communitySection/CommunitySection.vue";
-import InfoSection from "../views/user/userhome/sections/infoSection/InfoSection.vue";
 import AchievementSection from "../views/user/userhome/sections/achievementSection/AchievementSection.vue";
 
 export default [
@@ -161,12 +160,6 @@ export default [
         path: 'community/:username?',
         component: communitySection,
         meta: {requiresAuth: true, title: 'Community'},
-      },
-      {
-        name: 'user-setting',
-        path: 'setting',
-        component: InfoSection,
-        meta: {requiresAuth: true, title: 'User Info'},
       },
       {
         name: 'user-achievements',

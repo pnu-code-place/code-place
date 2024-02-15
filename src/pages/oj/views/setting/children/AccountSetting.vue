@@ -1,6 +1,6 @@
 <template>
   <div class="flex-container">
-    <h1>{{ $t('m.ChangePassword') }}</h1>
+    <h3>{{ $t('m.ChangePassword') }}</h3>
     <div>
       <Form class="setting-content" ref="formPassword" :model="formPassword" :rules="rulePassword">
         <label>{{ $t('m.Current_Password') }}</label>
@@ -179,8 +179,9 @@ label {
   justify-content: flex-start;
   display: flex;
   flex-direction: column;
+  padding: 10px 40px;
 
-  h1 {
+  h3 {
     margin-bottom: 20px;
     text-align: left;
     width: 100%;
