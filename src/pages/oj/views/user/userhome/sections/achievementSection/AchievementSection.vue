@@ -41,13 +41,17 @@ export default {
     <h1>{{ $t('m.Achieved') }}</h1>
     <AchievementsSkeleton v-if="loading"></AchievementsSkeleton>
     <ul v-else-if="!error">
-      <GoalCard v-for="goal in achievements.acquired" :key="goal.id" :achievement="goal"
+      <GoalCard v-for="goal in achievements.acquired"
+                :key="goal.id"
+                :achievement="goal"
                 :acquired="true"></GoalCard>
     </ul>
     <h1>{{ $t('m.NotAchieved') }}</h1>
     <AchievementsSkeleton v-if="loading"></AchievementsSkeleton>
     <ul v-else-if="!error">
-      <GoalCard v-for="goal in achievements.not_acquired" :key="goal.id" :achievement="goal"
+      <GoalCard v-for="goal in achievements.not_acquired"
+                :key="goal.id"
+                :achievement="goal"
                 :acquired="false"></GoalCard>
     </ul>
   </section>
@@ -71,7 +75,7 @@ section {
     list-style: none;
     flex-wrap: wrap;
     gap: 1px;
-    margin-bottom : 55px;
+    margin-bottom: 55px;
   }
 }
 </style>
