@@ -1,9 +1,10 @@
 <script>
 import AchievementBadge from "../dashboardSection/AchievementBadge.vue";
+import HorizontalGauge from "../dashboardSection/HorizontalGauge.vue";
 
 export default {
   name: 'GoalCard',
-  components: {AchievementBadge},
+  components: {AchievementBadge, HorizontalGauge},
   data() {
     return {
       extended: false
@@ -45,7 +46,13 @@ export default {
   },
   computed: {
     acquireDate() {
-      return this.achievement.acquireTime.split("T")[0];
+      return this.acquired ? this.achievement.acquireTime.split("T")[0] : "";
+    },
+    progress() {
+      return (this.achievement.current / this.achievement.goal).toFixed(1);
+    },
+    progressPercent() {
+      return `${this.progress * 100}%`;
     }
   }
 }
@@ -54,7 +61,8 @@ export default {
 <template>
   <li class="goal-card" @mouseover="extend" @mouseleave="retract">
     <div class="goal-card__image">
-      <AchievementBadge :title="achievement.title" :acquireTime="achievement.acquireTime" :image="achievement.image" :description="achievement.description"
+      <AchievementBadge :title="achievement.title" :acquireTime="achievement.acquireTime" :image="achievement.image"
+                        :description="achievement.description"
                         :greyscale="!acquired" :tooltip-disabled="true"/>
     </div>
     <div class="goal-card__extend">
@@ -66,7 +74,10 @@ export default {
         </div>
         <div v-else class="goal-card__progress goal-card__additional">
           <p>{{ achievement.current }} / {{ achievement.goal }}</p>
-          <progress :value="achievement.current" :max="achievement.goal"></progress>
+          <div class="progress-wrapper">
+            <HorizontalGauge :progress="progress"></HorizontalGauge>
+          </div>
+          <p>{{progressPercent}}</p>
         </div>
       </div>
     </div>
@@ -150,6 +161,11 @@ export default {
     .goal-card__info {
       transform: translateX(0);
       transition: all 0.2s ease;
+
+      .progress-wrapper {
+        width: 100%;
+        height: 8px;
+      }
     }
   }
 }
