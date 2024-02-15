@@ -125,5 +125,10 @@ export default {
   padding: 10px;
 }
 
+a:hover {
+  scale: 1.20;
+  transition: scale 0.3s ease;
+}
+
 
 </style>
