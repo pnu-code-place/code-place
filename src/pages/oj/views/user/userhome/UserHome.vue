@@ -18,9 +18,9 @@ import UserCard from "./UserCard.vue";
 export default {
   components: {UserCard, SideNavBar},
   name: "user-home",
+
   data() {
     return {
-      username: '',
       profile: {},
       problems: [],
     }
@@ -30,7 +30,6 @@ export default {
   },
   methods: {
     init() {
-      // this.username = this.$route.query.username
       api.getUserInfo(this.username).then(res => {
         // this.changeDomTitle({title: res.data.data.user.username})
         this.profile = res.data.data
@@ -39,22 +38,26 @@ export default {
         // console.log('The guy registered at ' + registerTime + '.')
       })
     },
-    getSolvedProblems() {
-      let ACMProblems = this.profile.acm_problems_status.problems || {}
-      let OIProblems = this.profile.oi_problems_status.problems || {}
-      // todo oi problems
-      let ACProblems = []
-      for (let problems of [ACMProblems, OIProblems]) {
-        Object.keys(problems).forEach(problemID => {
-          if (problems[problemID]['status'] === 0) {
-            ACProblems.push(problems[problemID]['_id'])
-          }
-        })
-      }
-      ACProblems.sort()
-      this.problems = ACProblems
-    },
   },
+  computed: {
+    username() {
+      let username = '';
+      if (this.$route && this.$route.params && typeof this.$route.params.username === 'string') {
+        username = this.$route.params.username;
+      }
+      if (!username && this.$store && this.$store.state.user && this.$store.state.user.profile && this.$store.state.user.profile.user && typeof this.$store.state.user.profile.user.username === 'string') {
+        username = this.$store.state.user.profile.user.username;
+      }
+      return username;
+    }
+  },
+  watch: {
+    '$route' (newVal, oldVal) {
+      if (newVal !== oldVal) {
+        this.init()
+      }
+    }
+  }
 }
 </script>
 
