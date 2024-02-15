@@ -167,7 +167,7 @@ export default {
         }
 
         td {
-          font-size: 16px;
+          font-size: 14px;
           border-top: 1px solid #dedede;
           padding: 7px 0;
         }
@@ -178,10 +178,10 @@ export default {
         }
 
         .difficulty-score {
-          font-size: 16px;
+          font-size: 14px;
 
           .score-ratio {
-            font-size: 13px;
+            font-size: 12px;
           }
         }
       }

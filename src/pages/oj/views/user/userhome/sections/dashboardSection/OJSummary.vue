@@ -134,7 +134,7 @@ export default {
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      font-size: 15px;
+      font-size: 14px;
       gap: 5px;
 
       .progress-info {
