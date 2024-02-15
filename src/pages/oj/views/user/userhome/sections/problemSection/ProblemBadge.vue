@@ -38,6 +38,9 @@ export default {
 <style scoped lang="less">
 a {
   padding: 8px;
+  font-size: 13px;
+  border : 1px solid #cfe2ff;
+  border-radius: 5px;
 }
 
 a:hover {

@@ -152,13 +152,14 @@ section {
       ul {
         display: flex;
         flex-wrap: wrap;
-        gap: 5px;
+        gap: 13px;
         padding: 0;
         margin: 0;
         list-style: none;
 
         li {
           font-size: 14px;
+          margin-bottom: 10px;
         }
       }
     }

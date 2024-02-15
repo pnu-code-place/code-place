@@ -71,11 +71,15 @@ section {
 
   ul {
     display: flex;
-    padding: 0;
+    padding: 3px;
     list-style: none;
     flex-wrap: wrap;
-    gap: 1px;
+    gap: 2px;
     margin-bottom: 55px;
+  }
+
+  li {
+    margin-bottom : 5px;
   }
 }
 </style>
