@@ -18,7 +18,7 @@ export default {
   components: {AchievementsSkeleton, DashboardSkeleton, ChallengeSummary, DifficultySummary, OjSummary, CategorySummary},
   methods: {
     init() {
-      api.getDashboardInfo().then(res => {
+      api.getDashboardInfo(this.username).then(res => {
         this.dashboardInfo = res.data.data
         this.isLoading = false
       })
@@ -26,6 +26,21 @@ export default {
   },
   mounted() {
     this.init()
+  },
+  computed: {
+    username() {
+      let username = '';
+
+      if (this.$route && this.$route.params && typeof this.$route.params.username === 'string') {
+        username = this.$route.params.username;
+      }
+
+      if (!username && this.$store && this.$store.state.user && this.$store.state.user.profile && this.$store.state.user.profile.user && typeof this.$store.state.user.profile.user.username === 'string') {
+        username = this.$store.state.user.profile.user.username;
+      }
+
+      return username;
+    }
   }
 }
 </script>

@@ -72,8 +72,12 @@ export default {
       }
     });
   },
-  getDashboardInfo() {
-    // return ajax("profile/dashboard", "get");
+  getDashboardInfo(username) {
+    // return ajax("profile/dashboard", "get", {
+    //   params: {
+    //     username
+    //   }
+    // });
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve({data: {data: DashboardSectionProp}})
@@ -81,7 +85,11 @@ export default {
     })
   },
   getUserProblemInfo() {
-    // return ajax("profile/problem_info", "get");
+    // return ajax("profile/problem_info", "get", {
+    //       params: {
+    //         username
+    //       }
+    //     });
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve({data: {data: ProblemSectionProp}})
@@ -89,7 +97,11 @@ export default {
     })
   },
   getUserAchievement() {
-    // return ajax("profile/achievement", "get");
+    // return ajax("profile/achievement", "get", {
+    //       params: {
+    //         username
+    //       }
+    //     });
     return new Promise ((resolve) => {
       setTimeout(() => {
         resolve({data: {data: achievementSectionProp}})

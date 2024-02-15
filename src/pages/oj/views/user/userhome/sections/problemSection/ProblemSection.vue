@@ -64,7 +64,7 @@ export default {
   methods: {
     init() {
       this.isLoading = true
-      api.getUserProblemInfo().then(res => {
+      api.getUserProblemInfo(this.username).then(res => {
         this.problem_info = res.data.data
       }).catch(error =>
           this.error = error
@@ -82,6 +82,19 @@ export default {
     },
     ranking_percent() {
       return (this.problem_info.ranking_percent * 100).toFixed(1)
+    },
+    username() {
+      let username = '';
+
+      if (this.$route && this.$route.params && typeof this.$route.params.username === 'string') {
+        username = this.$route.params.username;
+      }
+
+      if (!username && this.$store && this.$store.state.user && this.$store.state.user.profile && this.$store.state.user.profile.user && typeof this.$store.state.user.profile.user.username === 'string') {
+        username = this.$store.state.user.profile.user.username;
+      }
+
+      return username;
     }
   }
 }

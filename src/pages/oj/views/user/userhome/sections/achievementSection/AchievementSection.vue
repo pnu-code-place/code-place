@@ -21,18 +21,32 @@ export default {
   },
   methods: {
     init() {
-      api.getUserAchievement()
-        .then(res => {
-          this.loading = false;
-          this.achievements = res.data.data
-        })
-        .catch(error => this.error = error)
+      api.getUserAchievement(this.username)
+          .then(res => {
+            this.loading = false;
+            this.achievements = res.data.data
+          })
+          .catch(error => this.error = error)
     }
   },
   mounted() {
     this.init();
   },
-  computed: {}
+  computed: {
+    username() {
+      let username = '';
+
+      if (this.$route && this.$route.params && typeof this.$route.params.username === 'string') {
+        username = this.$route.params.username;
+      }
+
+      if (!username && this.$store && this.$store.state.user && this.$store.state.user.profile && this.$store.state.user.profile.user && typeof this.$store.state.user.profile.user.username === 'string') {
+        username = this.$store.state.user.profile.user.username;
+      }
+
+      return username;
+    }
+  }
 }
 </script>
 
@@ -79,7 +93,7 @@ section {
   }
 
   li {
-    margin-bottom : 5px;
+    margin-bottom: 5px;
   }
 }
 </style>
