@@ -146,31 +146,32 @@ export default [
     children: [
       {
         name: 'user-dashboard',
-        path: 'dashboard',
+        path: 'dashboard/:username?',
         component: DashboardSection,
         meta: {requiresAuth: true, title: 'Main'}
       },
       {
         name: 'user-problems',
-        path: 'problems',
+        path: 'problems/:username?',
         component: ProblemSection,
         meta: {requiresAuth: true, title: 'User Problems'},
       },
       {
         name: 'user-community',
-        path: 'community',
+        path: 'community/:username?',
         component: communitySection,
         meta: {requiresAuth: true, title: 'Community'},
       },
       {
         name: 'user-setting',
-        path: 'info',
+        path: 'setting',
         component: InfoSection,
         meta: {requiresAuth: true, title: 'User Info'},
       },
       {
         name: 'user-achievements',
-        path: 'achievements',
+        path: 'achievements/:username?',
+        props: true,
         component: AchievementSection,
         meta: {requiresAuth: true, title: 'Challenges'},
       }

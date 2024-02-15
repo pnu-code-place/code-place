@@ -1,18 +1,23 @@
 <template>
   <nav class="side-nav sticky">
     <ul class="nav-content">
-      <router-link :to="{name:'user-dashboard'}">{{ $t('m.OJ_Status') }}</router-link>
-      <router-link :to="{name:'user-problems'}">{{ $t('m.Problem_Status') }}</router-link>
-      <router-link :to="{name:'user-community'}" :disabled="true" class="disabled">{{ $t('m.Community') }}</router-link>
-      <router-link :to="{name:'user-setting'}">{{ $t('m.User_Setting') }}</router-link>
-      <router-link :to="{name:'user-achievements'}">{{ $t('m.Achievement') }}</router-link>
+      <router-link :to="{name:'user-dashboard', params: {username:username}}">{{ $t('m.OJ_Status') }}</router-link>
+      <router-link :to="{name:'user-problems', params: {username:username}}">{{ $t('m.Problem_Status') }}</router-link>
+      <router-link :to="{name:'user-community', params: {username:username}}" :disabled="true" class="disabled">{{ $t('m.Community') }}</router-link>
+<!--      <router-link :to="{name:'user-setting'}">{{ $t('m.User_Setting') }}</router-link>-->
+      <router-link :to="{name:'user-achievements', params: {username:username}}">{{ $t('m.Achievement') }}</router-link>
     </ul>
   </nav>
 </template>
 
 <script>
 export default {
-  name: "side-nav-bar"
+  name: "side-nav-bar",
+  computed: {
+    username () {
+      return this.$route.params.username? this.$route.params.username : this.$store.state.user.profile.user.username
+    }
+  }
 }
 </script>
 
