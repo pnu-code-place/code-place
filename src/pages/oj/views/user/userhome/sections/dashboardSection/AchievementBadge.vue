@@ -18,7 +18,7 @@ export default {
     },
     acquireTime: {
       type: String,
-      required: true
+      required: false
     },
     tooltipDisabled: {
       type: Boolean,
@@ -43,7 +43,11 @@ export default {
       return require("@/assets/challenges/errorMedal.png")
     },
     acquireDate() {
-      return this.acquireTime.split("T")[0];
+      if (this.acquireTime) {
+        return this.acquireTime.split("T")[0];
+      } else {
+        return "";
+      }
     }
   },
   methods: {
