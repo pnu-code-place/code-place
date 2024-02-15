@@ -28,7 +28,7 @@ export default {
 </script>
 
 <template>
-  <Tooltip delay=0 :content="problem.title">
+  <Tooltip :content="problem.title">
     <router-link :to="{name : 'problem-details', params : {problemId:problem.id}}">
       {{problem.id}}
     </router-link>
