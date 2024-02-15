@@ -116,9 +116,8 @@ export default {
     top: -15%;
     overflow: hidden;
     z-index: 10;
-    border: 1px solid rgba(222, 222, 222, 0);
     border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
     background: white;
 
     .goal-card__info {
