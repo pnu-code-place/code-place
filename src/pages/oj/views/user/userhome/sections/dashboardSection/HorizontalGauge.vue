@@ -50,11 +50,11 @@ export default {
 
   .gauge-background {
     width: 100%;
-    height: 80%;
+    height: 90%;
     background-color: #dedede;
     position: absolute;
     left: 0;
-    top: 10%;
+    top: 5%;
     border-radius: 20px;
   }
   .gauge-bar {
@@ -71,7 +71,7 @@ export default {
       position: absolute;
       top: 0;
       left: 0;
-      width: 200%;
+      width: 300%;
       height: 100%;
       background-image: linear-gradient(to right,
       rgba(255, 255, 255, 0) 0%,
