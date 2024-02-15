@@ -184,7 +184,8 @@ export const achievementSectionProp = {
       image: "https://cdn-icons-png.flaticon.com/512/473/473406.png",
       description: "업적은 아래와 같이 표시됩니다.",
       goal: 100, // 목표
-      current: 50 // 현재 달성
+      current: 50, // 현재 달성
+      acquireTime: ""
     }
   ]
 }
