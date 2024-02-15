@@ -5,7 +5,7 @@
 
 
 // OJ 대시보드의 섹션들의 prop을 정의합니다.
-// /api/profile/dashboard GET
+// /api/profile/dashboard?username=<username> GET
 export const DashboardSectionProp = {
 
   ojStatus: {
@@ -96,7 +96,7 @@ export const DashboardSectionProp = {
 }
 
 // 유저가 푼 문제들의 섹션의 prop을 정의합니다.
-// /api/profile/problem GET
+// /api/profile/problem?username=<username> GET
 export const ProblemSectionProp = {
   ranking_percent: 0.3,
   solved: { // 해결한 문제들을 표시합니다.
@@ -253,7 +253,7 @@ export const ProblemSectionProp = {
 }
 
 // 유저의 업적 정보들을 조회합니다.
-// /api/profile/achievement GET
+// /api/profile/achievement?username=<username> GET
 export const achievementSectionProp = {
   acquired: [
     {
