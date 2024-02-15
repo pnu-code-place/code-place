@@ -1,7 +1,7 @@
 <template>
   <nav class="side-nav sticky">
     <ul class="nav-content">
-      <router-link :to="{name:'user-home'}">{{ $t('m.OJ_Status') }}</router-link>
+      <router-link :to="{name:'user-dashboard'}">{{ $t('m.OJ_Status') }}</router-link>
       <router-link :to="{name:'user-problems'}">{{ $t('m.Problem_Status') }}</router-link>
       <router-link :to="{name:'user-community'}" :disabled="true" class="disabled">{{ $t('m.Community') }}</router-link>
       <router-link :to="{name:'user-setting'}">{{ $t('m.User_Setting') }}</router-link>
@@ -29,7 +29,7 @@ export default {
   .nav-content {
     padding: 4px;
     margin: 0;
-    display : flex;
+    display: flex;
     flex-direction: column;
     gap: 10px;
 
@@ -44,7 +44,10 @@ export default {
       border-radius: 5px;
 
       &:hover {
-        background-color: #f5f5f5;
+        // #e6f2ff 보다는 조금 더 진한 색상을 찾아줘
+        background-color: #f2f8ff;
+        scale: 1.05;
+        transition: scale 0.3s ease;
       }
     }
 
@@ -52,6 +55,7 @@ export default {
       color: #b3b3b3;
       cursor: not-allowed;
     }
+
     .router-link-exact-active {
       background-color: #e6f2ff;
       color: #0078ff;

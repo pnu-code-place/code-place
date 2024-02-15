@@ -139,12 +139,14 @@ export default [
   },
   {
     path: '/user-home',
+    name: 'user-home',
+    redirect: {name: 'user-dashboard'},
     component: UserHome,
     meta: {requiresAuth: true, title: 'User Home'},
     children: [
       {
-        name: 'user-home',
-        path: '',
+        name: 'user-dashboard',
+        path: 'dashboard',
         component: DashboardSection,
         meta: {requiresAuth: true, title: 'Main'}
       },
