@@ -3,8 +3,10 @@
     <ul class="nav-content">
       <router-link :to="{name:'user-dashboard', params: {username:username}}">{{ $t('m.OJ_Status') }}</router-link>
       <router-link :to="{name:'user-problems', params: {username:username}}">{{ $t('m.Problem_Status') }}</router-link>
-      <router-link :to="{name:'user-community', params: {username:username}}" :disabled="true" class="disabled">{{ $t('m.Community') }}</router-link>
-<!--      <router-link :to="{name:'user-setting'}">{{ $t('m.User_Setting') }}</router-link>-->
+      <router-link :to="{name:'user-community', params: {username:username}}" :disabled="true" class="disabled">
+        {{ $t('m.Community') }}
+      </router-link>
+      <!--      <router-link :to="{name:'user-setting'}">{{ $t('m.User_Setting') }}</router-link>-->
       <router-link :to="{name:'user-achievements', params: {username:username}}">{{ $t('m.Achievement') }}</router-link>
     </ul>
   </nav>
@@ -14,8 +16,23 @@
 export default {
   name: "side-nav-bar",
   computed: {
-    username () {
-      return this.$route.params.username? this.$route.params.username : this.$store.state.user.profile.user.username
+    username() {
+      let username = '';
+
+      if (this.$route && this.$route.params && typeof this.$route.params.username === 'string') {
+        username = this.$route.params.username;
+      }
+
+      if (!username && this.$store && this.$store.state.user && this.$store.state.user.profile && this.$store.state.user.profile.user && typeof this.$store.state.user.profile.user.username === 'string') {
+        username = this.$store.state.user.profile.user.username;
+      }
+
+      return username;
+    }
+  },
+  methods: {
+    logUsername() {
+      console.log(this.username)
     }
   }
 }
