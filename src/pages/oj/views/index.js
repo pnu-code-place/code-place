@@ -1,6 +1,6 @@
 import ProblemList from './problem/ProblemList.vue'
 import Logout from './user/Logout.vue'
-import UserHome from './user/UserHome.vue'
+import UserHome from './user/userhome/UserHome.vue'
 import About from './help/About.vue'
 import FAQ from './help/FAQ.vue'
 import NotFound from './general/404.vue'

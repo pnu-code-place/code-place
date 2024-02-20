@@ -20,17 +20,17 @@
           prop="id"
           label="ID">
         </el-table-column>
-        <el-table-column
-          width="150"
-          label="Display ID">
-          <template slot-scope="{row}">
-            <span v-show="!row.isEditing">{{row._id}}</span>
-            <el-input v-show="row.isEditing" v-model="row._id"
-                      @keyup.enter.native="handleInlineEdit(row)">
+<!--        <el-table-column-->
+<!--          width="150"-->
+<!--          label="Display ID">-->
+<!--          <template slot-scope="{row}">-->
+<!--            <span v-show="!row.isEditing">{{row._id}}</span>-->
+<!--            <el-input v-show="row.isEditing" v-model="row._id"-->
+<!--                      @keyup.enter.native="handleInlineEdit(row)">-->
 
-            </el-input>
-          </template>
-        </el-table-column>
+<!--            </el-input>-->
+<!--          </template>-->
+<!--        </el-table-column>-->
         <el-table-column
           prop="title"
           label="Title">
@@ -46,7 +46,7 @@
           label="Author">
         </el-table-column>
         <el-table-column
-          width="200"
+          width="250"
           prop="create_time"
           label="Create Time">
           <template slot-scope="scope">
@@ -54,7 +54,7 @@
           </template>
         </el-table-column>
         <el-table-column
-          width="100"
+          width="150"
           prop="visible"
           label="Visible">
           <template slot-scope="scope">
