@@ -1,5 +1,6 @@
 <template>
-  <div class="container">
+  <error404 v-if="error"></error404>
+  <div v-else class="container">
     <side-nav-bar></side-nav-bar>
     <main>
       <user-card :profile="profile"></user-card>
@@ -14,15 +15,18 @@ import time from '@/utils/time'
 import api from '@oj/api'
 import SideNavBar from "./SideNavBar.vue";
 import UserCard from "./UserCard.vue";
+import router from "../../../router";
+import Error404 from "../../general/404.vue";
 
 export default {
-  components: {UserCard, SideNavBar},
+  components: {Error404, UserCard, SideNavBar},
   name: "user-home",
 
   data() {
     return {
       profile: {},
       problems: [],
+      error: null
     }
   },
   mounted() {
@@ -30,29 +34,33 @@ export default {
   },
   methods: {
     init() {
-      api.getUserInfo(this.username).then(res => {
-        // this.changeDomTitle({title: res.data.data.user.username})
-        this.profile = res.data.data
-        // this.getSolvedProblems()
-        let registerTime = time.utcToLocal(this.profile.user.create_time, 'YYYY-MM-D')
-        // console.log('The guy registered at ' + registerTime + '.')
-      })
+      api.getUserInfo(this.username)
+          .then(res => {
+            this.profile = res.data.data
+          })
+          .catch(error => {
+            this.error = error
+          })
     },
   },
   computed: {
     username() {
       let username = '';
       if (this.$route && this.$route.params && typeof this.$route.params.username === 'string') {
+        //본인의 username이 아닌 다른 사람의 username을 가져오는 경우
         username = this.$route.params.username;
-      }
-      if (!username && this.$store && this.$store.state.user && this.$store.state.user.profile && this.$store.state.user.profile.user && typeof this.$store.state.user.profile.user.username === 'string') {
-        username = this.$store.state.user.profile.user.username;
+      } else if (!username && this.$store && this.$store.state.user && this.$store.state.user.profile && this.$store.state.user.profile.user && typeof this.$store.state.user.profile.user.username === 'string') {
+        //본인의 username을 가져오는 경우 리디렉션
+        router.push({name: 'user-home', params: {username: this.$store.state.user.profile.user.username}})
+      } else {
+        //로그인이 되어있지 않은 경우
+        router.push({name: 'login'})
       }
       return username;
     }
   },
   watch: {
-    '$route' (newVal, oldVal) {
+    '$route'(newVal, oldVal) {
       if (newVal !== oldVal) {
         this.init()
       }
