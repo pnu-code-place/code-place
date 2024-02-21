@@ -1,45 +1,49 @@
 <template>
   <section id="problem-section">
-    <h1>문제풀이</h1>
-    <ProblemSkeleton v-if="isLoading" class="loading">Loading...</ProblemSkeleton>
+    <h1>{{ $t('m.Problem_Status') }}</h1>
+    <ProblemSkeleton v-if="isLoading" class="loading"></ProblemSkeleton>
     <div v-if="error" class="error">{{ error }}</div>
     <div v-if="!isLoading && !error" class="contents">
       <div class="status" v-if="!isLoading && !error">
         <div class="status-item">
-          <span class="label">도전한 문제</span>
+          <span class="label">{{ $t('m.Tried_Problems') }}</span>
           <span class="value">{{ tried }}</span>
         </div>
         <div class="status-item">
-          <span class="label">해결한 문제</span>
+          <span class="label">{{ $t('m.Solved_Problems') }}</span>
           <span class="value">{{ problem_info.solved.count }}</span>
         </div>
         <div class="status-item">
-          <span class="label">못 푼 문제</span>
+          <span class="label">{{ $t('m.Failed_Problems') }}</span>
           <span class="value">{{ problem_info.failed.count }}</span>
         </div>
         <div class="status-item">
-          <span class="score-ratio">상위 {{ ranking_percent }}%</span>
+          <span class="score-ratio">{{ $t('m.TOP') }} {{ ranking_percent }}%</span>
         </div>
       </div>
       <hr/>
       <div class="problem-tab solved">
-        <h2>푼 문제</h2>
+        <h2>{{ $t('m.Solved_Problems') }}</h2>
         <ul v-if="problem_info.solved.count > 0" class="solved-problems">
           <li v-for="problem in problem_info.solved.problems" :key="problem.id">
             <problem-badge :problem="problem"></problem-badge>
           </li>
         </ul>
-        <p v-else>맞춘 문제가 없습니다. 한 번 시작해 볼까요?</p>
+        <p v-else>{{ $t('m.There_Is_No_Problem_You_Solved') }}
+          <router-link :to="{name:'problem-list'}">{{ $t('m.Lets_Get_Started') }}</router-link>
+        </p>
       </div>
       <hr/>
       <div class="problem-tab tried">
-        <h2>시도했으나 풀지 못한 문제</h2>
+        <h2>{{ $t('m.Failed_Problems') }}</h2>
         <ul v-if="problem_info.failed.count > 0" class="tried-problems">
           <li v-for="problem in problem_info.failed.problems" :key="problem.id">
             <problem-badge :problem="problem"></problem-badge>
           </li>
         </ul>
-        <p v-else>시도한 문제가 없습니다. 한 번 시작해 볼까요?</p>
+        <p v-else>{{ $t('m.There_Is_No_Problem_You_Tried') }}
+          <router-link :to="{name:'problem-list'}">{{ $t('m.Lets_Get_Started') }}</router-link>
+        </p>
       </div>
     </div>
   </section>

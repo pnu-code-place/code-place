@@ -40,7 +40,7 @@ export default {
 <style scoped lang="less">
 
 .side-nav {
-  width: 18%;
+  width: 17%;
   height: fit-content;
   margin-right: 20px;
   border: 1px solid #dedede;

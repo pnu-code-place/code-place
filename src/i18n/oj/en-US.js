@@ -1,7 +1,7 @@
 /* eslint-disable */
 export const m = {
   // 404.vue
-  Go_Home: "Go Home",
+  Go_Home: "메인으로",
   // Problem.vue
   Description: "설명",
   Input: "입력",
@@ -20,7 +20,7 @@ export const m = {
   Tags: "태그",
   AiRecommendation: "AI 추천 문제",
   Show: "Show",
-  Submit: "Submit",
+  Submit: "제출",
   Submitting: "Submitting",
   Judging: "Judging",
   Wrong_Answer: "Wrong Answer",
@@ -83,7 +83,7 @@ export const m = {
   Contest_Announcements: "Contest Announcements",
   By: "By",
   // ApplyResetPassword.vue
-  The_email_doesnt_exist: "The email doesn't exist",
+  The_email_doesnt_exist: "존재하지 않는 이메일입니다.",
   Success: "Success",
   Password_reset_mail_sent: "Password reset mail has been sent to your email，",
   // FAQ.vue
@@ -151,7 +151,7 @@ export const m = {
   Not_Started: "Not_Started",
   Ended: "Ended",
   No_contest: "등록된 컨테스트가 없습니다.",
-  Please_login_first: "Please login first!",
+  Please_login_first: "로그인이 필요합니다.",
   // ContestProblemList
   Problems_List: "문제",
   No_Problems: "등록된 문제가 없습니다.",
@@ -247,7 +247,7 @@ export const m = {
   Already_Registed: "로그인",
   The_username_already_exists: "The username already exists.",
   The_email_already_exists: "The email already exists",
-  password_does_not_match: "password does not match",
+  password_does_not_match: "비밀번호가 일치하지 않습니다.",
   Thanks_for_registering: "Thanks for your registering, you can login now",
   // ResetPassword.vue and ApplyResetPassword.vue
   Reset_Password: "Lost Password",
@@ -295,15 +295,50 @@ export const m = {
   User_Setting: "정보수정",
 
   // UserHome.vue
-  UserHomeSolved: "해결한 문제",
-  UserHomeFailed: "시도랬으나 해결하지 못한 문제",
   UserHomeserSubmissions: "Submissions",
-  UserHomeScore: "Score",
+  UserHomeScore: "점수",
   List_Solved_Problems: "List of solved problems",
   UserHomeIntro: "The guy is so lazy that has not solved any problem yet.",
 
   //DashboardSection.vue
   Date: "일자",
+  UserHomeFailed: "시도했으나 해결하지 못한 문제",
+  Points: "점수",
+  Point: "점",
+  Until_Promotion_Before: "승급까지",
+  Until_Promotion_After: "남았습니다.",
+
+  //OJSummary.vue
+  Ranking : "랭킹",
+  OJ_Summary: "OJ 요약",
+  TOP : "상위",
+  UserHomeSolved: "해결한 문제",
+  Miracle_Coding: "미라클 코딩",
+  MiracleCodingDays: "일",
+  Best_Record: "최고 기록",
+
+
+  //CategorySummary.vue
+  Category_Based_Distribution: "영역별 분포",
+  CategorySummaryCategory: "영역",
+  Percent: "백분율",
+  Data_Structure: "자료구조",
+  Mathematics: "수학",
+  Sorting : "정렬",
+
+  //DifficultySummary.vue
+  Difficulty_Based_Distribution: "난이도별 분포",
+  DifficultySolved: "푼 문제",
+  Ratio: "비율",
+
+  //ProblemSection.vue
+  Problem: "문제",
+  Tried_Problems : "시도한 문제",
+  Solved_Problems : "해결한 문제",
+  Failed_Problems : "못 푼 문제",
+  There_Is_No_Problem_You_Solved : "해결한 문제가 없습니다.",
+  There_Is_No_Problem_You_Tried : "시도한 문제가 없습니다.",
+  Lets_Get_Started : "한 번 시작해 볼까요?",
 
   //AchievementSection.vue
   Achieved : "달성",

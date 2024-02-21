@@ -1,15 +1,17 @@
 <script>
+import {FIELD_MAP} from "../../../../../../../utils/constants";
+
 export default {
   name: "category-summary",
   props: ['categoryInfo'],
   data() {
     return {
       CATEGORY_LABEL: {
-        data_structure: {label : '자료구조', color : '#F8B193'},
-        mathematics: {label : '수학', color : '#B5EAB0'},
-        sorting: {label : '정렬', color : '#F8D093'},
-        implementation: {label : '구현', color : '#F8D093'},
-        searching: {label : '탐색', color : '#90B8E7'}
+        data_structure: {label: FIELD_MAP["2"].value, color: FIELD_MAP["2"].boxColor},
+        mathematics: {label: FIELD_MAP["1"].value, color: FIELD_MAP["1"].boxColor},
+        sorting: {label: FIELD_MAP["4"].value, color: FIELD_MAP["4"].boxColor},
+        implementation: {label: FIELD_MAP["0"].value, color: FIELD_MAP["0"].boxColor},
+        searching: {label: FIELD_MAP["3"].value, color: FIELD_MAP["3"].boxColor},
       },
     }
   },
@@ -30,6 +32,15 @@ export default {
               ${this.percentageToScoreElement('탐색', this.categoryInfo.searching.ranking_percent)}
               ${this.percentageToScoreElement('정렬', this.categoryInfo.sorting.ranking_percent)} </div>`
     },
+    radarIndicator() {
+      return [
+        {text: FIELD_MAP["2"].value, max: this.categoryInfo.data_structure.max, color: '#000000',},
+        {text: FIELD_MAP["0"].value, max: this.categoryInfo.implementation.max, color: '#000000',},
+        {text: FIELD_MAP["1"].value, max: this.categoryInfo.mathematics.max, color: '#000000',},
+        {text: FIELD_MAP["3"].value, max: this.categoryInfo.searching.max, color: '#000000',},
+        {text: FIELD_MAP["4"].value, max: this.categoryInfo.sorting.max, color: '#000000',},
+      ]
+    },
     tooltip() {
       return {
         trigger: 'item',
@@ -48,13 +59,7 @@ export default {
           trigger: 'axis'
         },
         radar: {
-          indicator: [
-            {text: '자료구조', max: 100, color: '#000000',},
-            {text: '구현', max: 100, color: '#000000',},
-            {text: '수학', max: 100, color: '#000000',},
-            {text: '탐색', max: 100, color: '#000000',},
-            {text: '정렬', max: 100, color: '#000000',},
-          ],
+          indicator: this.radarIndicator,
           axisName: {
             fontWeight: 'bold'
           },
@@ -100,14 +105,17 @@ export default {
       <table>
         <thead>
         <tr>
-          <th>영역</th>
-          <th>점수</th>
-          <th><span class="score">랭킹</span><span class="score-ratio">(백분율)</span></th>
+          <th>{{ $t('m.CategorySummaryCategory') }}</th>
+          <th>{{ $t('m.UserHomeScore') }}</th>
+          <th><span class="score">{{ $t('m.Ranking') }}</span><span class="score-ratio">({{ $t('m.Percent') }})</span>
+          </th>
         </tr>
         </thead>
         <tbody>
         <tr class="part-row" v-for="(category, category_name) in categoryInfo">
-          <td class="part-name" ><span :style="{backgroundColor:CATEGORY_LABEL[category_name].color}">{{ CATEGORY_LABEL[category_name].label }}</span></td>
+          <td class="part-name"><span :style="{backgroundColor:CATEGORY_LABEL[category_name].color}">{{
+              CATEGORY_LABEL[category_name].label
+            }}</span></td>
           <td class="solve-number">{{ category.score }}</td>
           <td class="difficulty-score">
             <span class="score">{{ category.ranking }}</span>
@@ -117,9 +125,7 @@ export default {
         </tbody>
       </table>
     </div>
-    <div>
-
-    </div>
+    <div></div>
   </div>
 </template>
 
@@ -184,6 +190,7 @@ export default {
           font-weight: 700;
           text-align: left;
           color: #fff;
+
           span {
             padding: 2px 5px;
             border-radius: 5px;

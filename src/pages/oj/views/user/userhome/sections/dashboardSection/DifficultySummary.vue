@@ -1,15 +1,17 @@
 <script>
+import {DIFFICULTY_MAP} from "../../../../../../../utils/constants";
+
 export default {
   name: 'difficulty-summary',
   props: ['difficultyInfo'],
   data() {
     return {
       DIFFICULTY_LABEL: {
-        very_easy: {label: 'Very Low', color: '#95ef4c'},
-        easy: {label: 'Low', color: '#B5EAB0'},
-        medium: {label: 'Mid', color: '#7c7878'},
-        hard: {label: 'High', color: '#ff8828'},
-        very_hard: {label: 'Very High', color: '#c02b2b'},
+        very_easy: {label: 'Very Low', color: DIFFICULTY_MAP.VeryLow.textColor},
+        easy: {label: 'Low', color: DIFFICULTY_MAP.Low.textColor},
+        medium: {label: 'Mid', color: DIFFICULTY_MAP.Mid.textColor},
+        hard: {label: 'High', color: DIFFICULTY_MAP.High.textColor},
+        very_hard: {label: 'Very High', color: DIFFICULTY_MAP.VeryHigh.textColor},
       }
     }
   },
@@ -44,7 +46,7 @@ export default {
       return {
         tooltip: {
           trigger: 'item',
-          formatter: '<div style="padding:2px 8px">{b}: {c}점 ({d}%)</div>'
+          formatter: '<div style="padding:2px 8px">{b}: {c} points ({d}%)</div>'
         },
         series: [
           {
@@ -93,9 +95,9 @@ export default {
       <table>
         <thead>
         <tr>
-          <th>난이도</th>
-          <th>푼 문제</th>
-          <th><span class="score">점수</span><span class="score-ratio">(비율)</span></th>
+          <th>{{$t('m.Difficulty')}}</th>
+          <th>{{$t('m.DifficultySolved')}}</th>
+          <th><span class="score">{{$t('m.UserHomeScore')}}</span><span class="score-ratio">({{$t('m.Ratio')}})</span></th>
         </tr>
         </thead>
         <tbody>
