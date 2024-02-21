@@ -173,6 +173,7 @@ export default [
   {
     path: '/setting',
     component: Setting.Settings,
+    redirect: {name: 'profile-setting'},
     children: [
       {
         name: 'default-setting',
