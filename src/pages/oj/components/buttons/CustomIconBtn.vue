@@ -47,6 +47,6 @@ export default {
   align-items: center;
 }
 .iconBtnWrapper:hover{
-  background-color: #f5f5f5;
+  background-color: var(--custom-btn-hover-color);
 }
 </style>

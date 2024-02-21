@@ -89,7 +89,7 @@
                   <FieldCategoryBox :boxType="true" :value="fieldMap[problem.field].value"
                                     :boxColor="fieldMap[problem.field].boxColor"/>
                   <template v-for="(category, idx) in problem.tags">
-                    <FieldCategoryBox :boxType="false" :value="'#' + category" :boxColor="white"/>
+                    <FieldCategoryBox :boxType="false" :value="'#' + category" :boxColor="'#ffffff'"/>
                   </template>
                 </div>
               </td>

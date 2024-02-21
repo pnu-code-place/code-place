@@ -3,10 +3,12 @@ import api from '@oj/api'
 import storage from '@/utils/storage'
 import i18n from '@/i18n'
 import { STORAGE_KEY, USER_TYPE, PROBLEM_PERMISSION } from '@/utils/constants'
+import {stat} from "copy-webpack-plugin/dist/utils/promisify";
 
 const state = {
   profile: {},
-  isProblemSolving: false
+  isProblemSolving: false,
+  isDarkMode: false,
 }
 
 const getters = {
@@ -16,6 +18,7 @@ const getters = {
   isAuthenticated: (state, getters) => {
     return !!getters.user.id
   },
+  isDarkMode : state => state.isDarkMode,
   isAdminRole: (state, getters) => {
     return getters.user.admin_type === USER_TYPE.ADMIN ||
       getters.user.admin_type === USER_TYPE.SUPER_ADMIN
@@ -55,6 +58,9 @@ const actions = {
   changeProblemSolvingState({commit,state}, payload){
     state.isProblemSolving = payload
   },
+  changeProblemSolvingTheme({commit,state}, payload){
+    state.isDarkMode = payload
+  }
 }
 
 export default {

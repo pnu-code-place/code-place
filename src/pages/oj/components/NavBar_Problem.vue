@@ -5,15 +5,22 @@
         <div>
           <img src="@/assets/pojLogo.png" width="39" style="vertical-align:middle; margin-right: 10px"/>
         </div>
-          <p class="pnuName">{{ this.$route.params.problemID + '번' }}</p>
+        <p class="pnuName">{{ this.$route.params.problemID + '번' }}</p>
+        <Tooltip :content="'이전 문제'" placement="bottom" style="margin-left: 5px;">
+          <CustomIconBtn @click="movePrev" iconClass="fas fa-chevron-left" style="width: 20px"/>
+        </Tooltip>
+        <Tooltip :content="'다음 문제'" placement="bottom" style="margin-left: 5px">
+          <CustomIconBtn @click="pickOne" iconClass="fas fa-chevron-right" style="width: 20px"/>
+        </Tooltip>
+        <Tooltip :content="'문제 랜덤 선택'" placement="bottom" style="margin-left: 5px">
+          <CustomIconBtn @click="pickOne" iconClass="fas fa-random"/>
+        </Tooltip>
       </div>
-      <Tooltip :content="'문제 랜덤 선택'" placement="bottom" style="margin-left: 5px">
-        <CustomIconBtn @click="pickOne" iconClass="fas fa-random"/>
-      </Tooltip>
+
       <ProblemTimer/>
-      <div style="display: flex; height: 100%; align-items: center">
-        <Tooltip :content="'어두운 테마'" placement="bottom"  style="margin-right: 15px">
-          <CustomIconBtn iconClass="fas fa-adjust"/>
+      <div style="display: flex; height: 100%; align-items: center; width: 200px;justify-content: right">
+        <Tooltip :content="this.themeTooltipContent" placement="bottom"  style="margin-right: 15px">
+          <CustomIconBtn @click="toggleProblemTheme" iconClass="fas fa-adjust"/>
         </Tooltip>
         <template v-if="isAuthenticated">
           <div class="userAvatarWrapper" @click="handleRoute('/user-home')">
@@ -42,32 +49,61 @@ export default {
   },
   mounted () {
     this.getProfile()
+    const el = document.querySelector(':root');
+    el.classList.add('problem')
+  },
+  destroyed() {
+    const el = document.querySelector(':root');
+    el.classList.remove('problem')
+  },
+  data(){
+    return{
+      themeTooltipContent: '어두운 테마',
+    }
   },
   methods: {
-    ...mapActions(['getProfile', 'changeModalStatus']),
-    handleRoute (route) {
+    ...mapActions(['getProfile', 'changeModalStatus', 'changeProblemSolvingTheme']),
+    handleRoute(route) {
       if (route && route.indexOf('admin') < 0) {
         this.$router.push(route)
       } else {
         window.open('/admin/')
       }
     },
-    handleBtnClick (mode) {
+    handleBtnClick(mode) {
       console.log("setting complete!")
       this.changeModalStatus({
         visible: true,
         mode: mode
       })
     },
-    pickOne() {
-      api.pickone().then(res => {
-        // this.$success('')
+    async movePrev() {
+      // await this.$router.push({name: 'problem-details', params: {problemID: problemId}})
+    },
+    async moveNext() {
+      // await this.$router.push({name: 'problem-details', params: {problemID: problemId}})
+    },
+    async pickOne() {
+      await api.pickone().then(res => {
         this.$router.push({name: 'problem-details', params: {problemID: res.data.data}})
       })
     },
+    toggleProblemTheme() {
+      const el = document.querySelector(':root');
+      const isLightMode = !el.classList.contains('dark');
+      if (isLightMode) {
+        el.classList.add('dark')
+        this.changeProblemSolvingTheme(true)
+        this.themeTooltipContent = '밝은 테마'
+      } else {
+        el.classList.remove('dark');
+        this.changeProblemSolvingTheme(false)
+        this.themeTooltipContent = '어두운 테마'
+      }
+    }
   },
   computed: {
-    ...mapGetters(['website', 'modalStatus', 'user', 'isAuthenticated', 'isAdminRole']),
+    ...mapGetters(['website', 'modalStatus', 'isAdminRole','isAuthenticated']),
     ...mapGetters(['profile']),
     activeMenu () {
       return '/' + this.$route.path.split('/')[1]
@@ -80,7 +116,7 @@ export default {
         this.changeModalStatus({visible: value})
       }
     }
-  }
+  },
 }
 </script>
 
@@ -92,19 +128,22 @@ export default {
   height: 50px;
   width: 100%;
   z-index: 1000;
-  background-color: #fff;
 
-  .oj-menu {
+  .oj-menu{
+    transition: 0.3s;
     display: flex;
-    padding-left: 30px;
-    padding-right: 30px;
+    padding-left: 20px;
+    padding-right: 20px;
     justify-content: space-between;
     align-items: center;
     height: 100%;
+    background-color: var(--bg-color);
+    color: var(--text-color);
   }
 
   .logo {
     cursor: pointer;
+    width: 200px;
     display: flex;
     align-items: center;
     .pnuName{

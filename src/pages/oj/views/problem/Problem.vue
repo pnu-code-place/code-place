@@ -1,9 +1,9 @@
 <template>
   <div class="flex-container">
     <splitpanes>
-      <pane :size="40" style="border:none; padding-right: 5px">
-        <div class="container problemDetailContainer">
-          <Panel :padding="45" style="border: none" dis-hover>
+      <pane :size="43" style="border:none; padding-right: 5px">
+        <div class="problemDetailContainer">
+          <Panel :padding="45" class="detailCard" dis-hover style="transition: 0.3s">
             <div slot="title"
                  style="border-bottom: 1px solid #e7e7e7; padding-bottom: 14px; padding-left: 18px; font-weight: bold">
               {{ problem.title }}
@@ -11,7 +11,7 @@
             <div id="problem-content" class="markdown-body" v-katex>
               <div style="display: flex; justify-content: space-between;">
                 <div style="display: flex">
-                  <div class="headerDetailBtn" style="background-color: rgba(226,242,255,0.63)">
+                  <div class="headerDetailBtn" style="background-color: var(--difficulty-color)">
                     {{ difficultyMap[problem.difficulty].value }}
                   </div>
                   <div class="headerDetailBtn" @click="scrollField">
@@ -23,7 +23,7 @@
                     카테고리
                   </div>
                 </div>
-                <div class="headerDetailBtn">
+                <div class="headerDetailBtn" @click="noticeUnReadyFeature">
                   <i class="fas fa-comments" style="color: #90B8E7"></i>
                   토론하기 (24)
                 </div>
@@ -71,7 +71,6 @@
                   {{ $t('m.Memory_Limit') + "   " + problem.memory_limit + 'mb' }}
                 </code>
               </li>
-<!--              <i class="far fa-lightbulb" style="color: #FFD43B;"></i>-->
               <div v-if="problem.hint">
                 <p class="title">{{ $t('m.Hint') }}</p>
                 <Card dis-hover>
@@ -95,7 +94,7 @@
 
               <div class="detailInfoBox">
                 <div class="detailInfoBoxHeader" @click="toggleDropdown('category')">
-                  <p class="title" style="text-decoration: none; margin-top: 0px;">
+                  <p class="title" style="text-decoration: none; margin-top: 0px;" ref="category">
                     <Icon type="ios-pricetag" color="#FF9F9F" style="margin-right: 5px"/>
                     카테고리
                   </p>
@@ -103,7 +102,7 @@
                   <i class="fas fa-chevron-up" v-else></i>
                 </div>
 
-                <div v-if="dropdown.openCategoryDropdown" style="display: flex" ref="category">
+                <div v-if="dropdown.openCategoryDropdown" style="display: flex">
                   <template v-for="(category, idx) in problem.tags">
                     <FieldCategoryBox :boxType="false" :value="'#' + category" :boxColor="'#FFFFFF'"/>
                   </template>
@@ -137,8 +136,8 @@
           </Panel>
         </div>
       </pane>
-      <pane style="border: none; padding-left: 5px" min-size="30" :size="60">
-        <splitpanes horizontal style="height: calc(100vh - 80px)">
+      <pane style="border: none; padding-left: 5px" min-size="30" :size="57">
+        <splitpanes horizontal style="height: calc(100vh - 80px);">
           <pane min-size="30" :size="75" style="margin-bottom: 5px">
             <div class="container-header">
               <div>
@@ -163,6 +162,15 @@
                   </Dropdown>
                 </Tooltip>
                 <Tooltip :content="this.$i18n.t('m.Reset_to_default_code_definition')" placement="bottom-end">
+                  <CustomIconBtn @click="check()" :wrapperSize="30" iconClass="fas fa-tags"/>
+                </Tooltip>
+                <Tooltip :content="'글자 크기 키우기'" placement="bottom-end">
+                  <CustomIconBtn @click="changeFontSize(fontSize+1)" :wrapperSize="30" iconClass="fas fa-plus"/>
+                </Tooltip>
+                <Tooltip :content="'글자 크기 줄이기'" placement="bottom-end">
+                  <CustomIconBtn @click="changeFontSize(fontSize-1)" :wrapperSize="30" iconClass="fas fa-minus"/>
+                </Tooltip>
+                <Tooltip :content="this.$i18n.t('m.Reset_to_default_code_definition')" placement="bottom-end">
                   <CustomIconBtn @click="onResetToTemplate" :wrapperSize="30" iconClass="fas fa-undo"/>
                 </Tooltip>
               </div>
@@ -171,6 +179,8 @@
                             :languages="problem.languages"
                             :language="language"
                             :cursorPos.sync="cursorPos"
+                            :fontSize.sync="fontSize"
+                            :theme.sync="theme"
                             ref="myCm"/>
             <div class="sticky_ln_col">Ln {{this.cursorPos.ln}}, Col {{this.cursorPos.ch}}</div>
           </pane>
@@ -187,20 +197,21 @@
               </div>
               <div class="submitBtn" @click="submitCode">
                 <i class="fas fa-file-upload"></i>
-                <span style="font-size: small;margin-left: 4px;">제출하기</span>
+                <span style="font-size: small;margin-left: 4px;">제출</span>
               </div>
             </div>
-            <div style="height: 100%; overflow-y: scroll;">{{problem}}
-              <div class="status" v-if="statusVisible">
-                <template v-if="!this.contestID || (this.contestID && OIContestRealTimePermission)">
-                  <Tag type="dot" :color="submissionStatus.color" @click.native="handleRoute('/status/'+submissionId)">
-                    {{ $t('m.' + submissionStatus.text.replace(/ /g, "_")) }}
-                  </Tag>
-                </template>
-                <template v-else-if="this.contestID && !OIContestRealTimePermission">
-                  <Alert type="success" show-icon>{{ $t('m.Submitted_successfully') }}</Alert>
-                </template>
-              </div>
+            <div style="width: 100%;height: 70%; display: flex; font-size: small; text-align: center;">
+              <span>테스트 케이스 및 실행 결과가 표시됩니다.</span>
+<!--              <div class="status" v-if="statusVisible">-->
+<!--                <template v-if="!this.contestID || (this.contestID && OIContestRealTimePermission)">-->
+<!--                  <Tag type="dot" :color="submissionStatus.color" @click.native="handleRoute('/status/'+submissionId)">-->
+<!--                    {{ $t('m.' + submissionStatus.text.replace(/ /g, "_")) }}-->
+<!--                  </Tag>-->
+<!--                </template>-->
+<!--                <template v-else-if="this.contestID && !OIContestRealTimePermission">-->
+<!--                  <Alert type="success" show-icon>{{ $t('m.Submitted_successfully') }}</Alert>-->
+<!--                </template>-->
+<!--              </div>-->
             </div>
 
           </pane>
@@ -448,6 +459,7 @@ export default {
       problemID: '',
       submitting: false,
       code: '',
+      fontSize: 14,
       language: 'C++',
       languages: {
         type: Array,
@@ -455,7 +467,7 @@ export default {
           return ['C', 'C++', 'Java', 'Python3']
         }
       },
-      theme: 'solarized',
+      theme: false,
       submissionId: '',
       submitted: false,
       result: {
@@ -544,11 +556,23 @@ export default {
   },
   beforeRouteEnter(to, from, next) {
     let problemCode = storage.get(buildProblemCodeKey(to.params.problemID, to.params.contestID))
+    let psSettings = storage.get("ProblemSolvingSettings")
+    console.log(problemCode)
+    console.log(psSettings)
+    console.log("새로고침")
+    if(psSettings){
+      next(vm => {
+        vm.fontSize = psSettings.fontSize
+        vm.theme = psSettings.theme
+      })
+    }
+    else{
+      next()
+    }
     if (problemCode) {
       next(vm => {
         vm.language = problemCode.language
         vm.code = problemCode.code
-        vm.theme = problemCode.theme
       })
     } else {
       next()
@@ -557,12 +581,13 @@ export default {
   mounted() {
     this.$store.commit(types.CHANGE_CONTEST_ITEM_VISIBLE, {menu: false})
     this.init()
+    console.log(this.fontSize)
   },
   destroyed() {
     this.changeProblemSolvingState(false)
   },
   methods: {
-    ...mapActions(['changeDomTitle', 'changeProblemSolvingState']),
+    ...mapActions(['changeDomTitle', 'changeProblemSolvingState', 'changeProblemSolvingTheme']),
     init() {
       this.changeProblemSolvingState(true)
       this.$Loading.start()
@@ -650,6 +675,23 @@ export default {
       }
       this.language = newLang
       this.$refs.myCm.onLangChange(newLang)
+    },
+    changeFontSize(value){
+      if(value > 18){
+        alert("최대 크기입니다")
+        return
+      }
+      if(value < 10){
+        alert("최소 크기입니다")
+        return
+      }
+      console.log("폰트변경:",value)
+      this.$refs.myCm.changeFontSize(value)
+      this.fontSize = value
+    },
+    check(){
+      alert(this.code)
+      alert(this.fontSize)
     },
     onChangeTheme(newTheme) {
       this.theme = newTheme
@@ -764,6 +806,9 @@ export default {
     onCopyError(e) {
       this.$error('Failed to copy code')
     },
+    noticeUnReadyFeature(){
+      alert("준비 중인 기능입니다.")
+    },
     toggleDropdown(type) {
       if (type === 'field') {
         this.dropdown.openFieldDropdown = !this.dropdown.openFieldDropdown
@@ -773,7 +818,7 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['problemSubmitDisabled', 'contestRuleType', 'OIContestRealTimePermission', 'contestStatus']),
+    ...mapGetters(['problemSubmitDisabled', 'contestRuleType', 'OIContestRealTimePermission', 'contestStatus', 'isDarkMode']),
     contest() {
       return this.$store.state.contest.contest
     },
@@ -795,20 +840,30 @@ export default {
     }
   },
   beforeRouteLeave(to, from, next) {
-    // 防止切换组件后仍然不断请求
     clearInterval(this.refreshStatus)
-
     this.$store.commit(types.CHANGE_CONTEST_ITEM_VISIBLE, {menu: true})
     storage.set(buildProblemCodeKey(this.problem._id, from.params.contestID), {
       code: this.code,
       language: this.language,
-      theme: this.theme
+    })
+    storage.set("ProblemSolvingSettings",{
+      theme: this.theme,
+      fontsize: this.fontSize
     })
     next()
   },
   watch: {
     '$route'() {
       this.init()
+    },
+    isDarkMode(value){
+      if(value){
+        this.$refs.myCm.toggleTheme('ayu-mirage')
+      }
+      else{
+        this.$refs.myCm.toggleTheme('github-light')
+      }
+      this.theme = value
     }
   }
 }
@@ -818,7 +873,11 @@ export default {
 .card-title {
   margin-left: 8px;
 }
-
+.detailCard{
+  border: none;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
 .flex-container {
   display: flex;
   //flex-direction: column;
@@ -834,12 +893,13 @@ export default {
   }
 
   .container-header {
+    transition: 0.3s;
     display: flex;
     justify-content: space-between;
     height: 40px;
     width: 100%;
     align-items: center;
-    border: 1px solid #e7e7e7;
+    border: 1px solid var(--border-color);
     padding-right: 10px;
     padding-left: 20px;
     border-radius: 7px;
@@ -855,7 +915,7 @@ export default {
       padding-right: 10px;
       padding-top: 5px;
       padding-bottom: 5px;
-      background-color: #F8F8F8;
+      background-color: var(--custom-btn-hover-color);
       border-radius: 7px;
       cursor: pointer;
     }
@@ -866,26 +926,17 @@ export default {
   }
 
   .problemDetailContainer {
-    border: 1px solid #e7e7e7;
+    border: 1px solid var(--border-color);
     border-radius: 7px;
     height: calc(100vh - 80px);
     overflow: scroll;
     min-width: 32vw;
     overflow-x: hidden;
   }
-
-  .editorContainer {
-    height: auto;
-  }
-
-
-  .resultContainer {
-    overflow: scroll;
-  }
 }
 
 .headerDetailBtn {
-  background-color: rgba(246, 246, 246, 0.45);
+  background-color: var(--header-btn-color);
   cursor: pointer;
   font-weight: 550;
   padding-left: 8px;
@@ -901,17 +952,19 @@ export default {
 }
 
 .headerDetailBtn:hover {
-  background-color: rgba(236, 236, 236, 0.45);
+  //background-color: rgba(236, 236, 236, 0.45);
+  color: var(--text-color);
+  background-color: var(--custom-btn-hover-color);
 }
 
 #problem-content {
   margin-top: -50px;
 
   .title {
-    font-size: 15px;
+    font-size: 16.5px;
     font-weight: 750;
     margin: 25px 0 8px 0;
-    color: #444444;
+    color: var(--text--color);
     text-decoration: underline;
     text-decoration-color: rgba(96, 113, 185, 0.55);
     text-decoration-thickness: 2px;
@@ -921,6 +974,7 @@ export default {
       padding-left: 8px;
     }
   }
+
 
   p.content {
     font-size: 15px;
@@ -944,8 +998,12 @@ export default {
       border-radius: 7px;
       align-self: stretch;
       border-style: solid;
-      background: transparent;
+      //border: var(--border-color);
+      background: var(--bg-color);
     }
+  }
+  code{
+    color: #1f2430 !important;
   }
 }
 
@@ -1047,13 +1105,15 @@ export default {
 }
 
 .splitpanes {
-  background: #ffffff
+  background: var(--bg-color);
 }
 
 .splitpanes__pane {
   padding: 10px;
-  border: 1px solid #e7e7e7;
+  border: 1px solid var(--border-color);
   border-radius: 7px;
+  background-color: var(--bg-color);
+  color: var(--text-color);
 }
 
 .sticky_ln_col{

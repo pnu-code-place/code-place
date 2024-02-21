@@ -68,11 +68,29 @@ export default {
 
 <style lang="less">
 
-* {
-  -webkit-box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  box-sizing: border-box;
-}
+  :root{
+    --bg-color: #ffffff;
+    --custom-btn-hover-color: #f5f5f5;
+    --border-color: #e7e7e7;
+    --header-btn-color: rgba(246, 246, 246, 0.45);
+    //--markdown--code--color: rgba(27, 31, 35, 0.05);
+  }
+
+  :root.dark.problem{
+    --bg-color: #1f2430;
+    --text-color: #ffffff;
+    --difficulty-color: #434e69;
+    --custom-btn-hover-color: #434e69;
+    --border-color: rgba(140, 140, 140, 0.29);
+    --header-btn-color: rgba(170, 179, 203, 0.37);
+    --markdown--code--color: rgb(6, 6, 196);
+  }
+
+  * {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+  }
 
 a {
   text-decoration: none;
@@ -99,7 +117,7 @@ a {
 }
   .ps{
     margin-top: 50px;
-    background-color: #F8F8F8;
+    background-color: var(--bg-color);
   }
   .footer {
     margin-top: 400px;

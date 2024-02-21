@@ -120,12 +120,12 @@ export default {
     margin-right: 5px;
   }
   .time:hover{
-    background-color: #f5f5f5;
+    background-color: var(--custom-btn-hover-color);
   }
 }
 
 .stopwatch:hover {
-  background-color: rgba(248, 248, 248, 0.49);
-  border: 1px solid #f8f8f8;
+  background-color: var(--header-btn-color);
+  border: 1px solid var(--custom-btn-hover-color);
 }
 </style>

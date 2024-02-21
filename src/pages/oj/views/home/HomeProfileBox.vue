@@ -146,7 +146,7 @@ export default {
     margin-bottom: 30px;
     .userAvatarWrapper{
       width: 20%;
-      height: auto;
+      height: 100%;
     }
     .userInfoWrapper{
       text-align: left;

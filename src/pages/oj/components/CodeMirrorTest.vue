@@ -1,11 +1,12 @@
 <template>
   <div>
     <codemirror ref="myCm"
-                :value="code"
+                :value="value"
+                :key="key"
                 :options="cmOptions"
                 @ready="onCmReady"
-                @focus="onCmFocus"
-                @input="onCmCodeChange">
+                @input="onCmCodeChange"
+                :style="{'font-size': fontSize+'px'}">
     </codemirror>
   </div>
 </template>
@@ -18,7 +19,7 @@ import { codemirror } from 'vue-codemirror'
 // require styles
 import 'codemirror/lib/codemirror.css'
 import 'codemirror/theme/ayu-mirage.css' //dark mode 고정
-import '../../../styles/neat.css' //bright mode 고정
+import '../../../styles/github-light.css'//bright mode 고정
 
 // mode
 import 'codemirror/mode/clike/clike.js'
@@ -36,6 +37,7 @@ import 'codemirror/addon/fold/foldgutter.js'
 import 'codemirror/addon/fold/brace-fold.js'
 import 'codemirror/addon/fold/indent-fold.js'
 import 'codemirror/addon/edit/closebrackets.js'
+import {mapGetters} from "vuex";
 
 export default {
   name:"CodeMirrorTest",
@@ -50,7 +52,7 @@ export default {
     languages: {
       type: Array,
       default: () => {
-        return ['C', 'C++', 'Java', 'Python2']
+        return ['C', 'C++', 'Java', 'Python3']
       }
     },
     language: {
@@ -59,15 +61,22 @@ export default {
     },
     cursorPos:{
       type: Object
+    },
+    fontSize:{
+      type: Number
+    },
+    theme:{
+      type: Boolean
     }
   },
   data () {
     return {
-      code: '//Put your code here!',
+      key: 0,
+      code: "",
       cmOptions: {
         tabSize: 4,
         mode: 'text/x-csrc',
-        theme: 'neat',
+        theme: this.isDarkMode ? 'ayu-mirage' : 'github-light',
         lineNumbers: true,
         line: true,
         foldGutter: true,
@@ -85,19 +94,15 @@ export default {
   },
   methods: {
     onCmReady(cm) {
-      console.log('the editor is readied!', cm)
-    },
-    onCmFocus(cm) {
-      // console.log('the editor is focus!', cm)
+      console.log(this.theme)
     },
     onCmCodeChange(newCode) {
-      this.code = newCode
+      this.value = newCode
       this.$emit('update:value', newCode)
-      let cursorPos = {
+      this.$emit('update:cursorPos', {
         ln: this.codemirror.doc.getCursor().line,
         ch: this.codemirror.doc.getCursor().ch
-      }
-      this.$emit('update:cursorPos', cursorPos)
+      })
     },
     blockPasteFromExternalSource(){
       this.codemirror.on("beforeChange", function(_, change) { // block paste
@@ -105,35 +110,68 @@ export default {
       })
     },
     resetCM() {
-      this.code = ''
+      this.value = ''
     },
     onLangChange (newVal) {
       this.codemirror.setOption('mode', this.mode[newVal])
       this.$emit('changeLang', newVal)
     },
-  },
-  computed: {
-    codemirror() {
-      return this.$refs.myCm.codemirror
+    toggleTheme(value){
+        this.codemirror.setOption('theme', value)
+    },
+    changeFontSize(value){
+      this.fontSize = value
+      // this.key++
     }
   },
+  computed: {
+    ...mapGetters(['isDarkMode']),
+    codemirror() {
+      return this.$refs.myCm.codemirror
+    },
+  },
   mounted() {
-    console.log('this is current codemirror object', this.codemirror)
+    if(this.isDarkMode){
+      this.codemirror.setOption('theme', 'ayu-mirage')
+      this.theme = 'ayu-mirage'
+    }
+    else{
+      this.codemirror.setOption('theme', 'github-light')
+      this.theme = 'github-light'
+    }
+
+    this.code = this.value
+
     utils.getLanguages().then(languages => {
       let mode = {}
       languages.forEach(lang => {
         mode[lang.name] = lang.content_type
       })
       this.mode = mode
-      this.editor.setOption('mode', this.mode[this.language])
+      this.codemirror.setOption('mode', this.mode[this.language])
     })
-    this.codemirror.focus()
-    this.blockPasteFromExternalSource()
-    let cursorPos = {
+
+
+    // this.blockPasteFromExternalSource()
+    this.$emit('update:cursorPos', {
       ln: this.codemirror.doc.getCursor().line,
       ch: this.codemirror.doc.getCursor().ch
+    })
+
+    console.log('this is current codemirror object', this.codemirror)
+    console.log("In Codemirror",this.value)
+  },
+  watch:{
+    isDarkMode(value){
+      console.log("테마변경")
+      if(value){
+        this.toggleTheme('ayu-mirage')
+      }
+      else{
+        this.toggleTheme('github-light')
+      }
+      this.theme = value
     }
-    this.$emit('update:cursorPos', cursorPos)
   }
 }
 </script>
@@ -141,16 +179,8 @@ export default {
 <style>
 .CodeMirror {
   height: 60vh !important;
-  //overflow: auto !important;
-  //border-top-left-radius: 7px;
-  //border-top-right-radius: 7px;
   border-radius: 7px;
-  border: 1px solid #e7e7e7;
-
-  //border-top: 1px solid #e7e7e7;
-  //border-right: 1px solid #e7e7e7;
-  //border-left: 1px solid #e7e7e7;
-  font-size: 15px;
+  border: 1px solid var(--border-color);
 }
 .CodeMirror-Scroll {
   //min-height: 60vh;

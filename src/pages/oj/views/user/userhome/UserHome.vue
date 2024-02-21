@@ -21,7 +21,6 @@ import Error404 from "../../general/404.vue";
 export default {
   components: {Error404, UserCard, SideNavBar},
   name: "user-home",
-
   data() {
     return {
       profile: {},
@@ -73,7 +72,7 @@ export default {
 
 .container {
   position: relative;
-  width: 100%;
+  width: 1200px;
   margin: 0 auto;
   text-align: center;
   display: flex;

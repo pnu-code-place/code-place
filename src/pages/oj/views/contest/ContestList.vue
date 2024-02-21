@@ -1,5 +1,5 @@
 <template>
-  <Row type="flex">
+<!--  <Row>-->
     <Col :span="24">
     <Panel id="contest-card" shadow>
       <div slot="title">{{query.rule_type === '' ? this.$i18n.t('m.All') : query.rule_type}} {{$t('m.Contests')}}</div>
@@ -75,7 +75,7 @@
     </Panel>
     <Pagination :total="total" :page-size.sync="limit" @on-change="changeRoute" :current.sync="page" :show-sizer="true" @on-page-size-change="changeRoute"></Pagination>
     </Col>
-  </Row>
+<!--  </Row>-->
 
 </template>
 
