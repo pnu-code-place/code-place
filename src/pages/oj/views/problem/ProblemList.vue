@@ -30,7 +30,7 @@
             </Dropdown>
             <Dropdown @on-click="filterByField" trigger="click" class="dropdown fieldDropdown">
                           <span style="font-weight: bold; font-size: 15px; padding-right: 10px">{{
-                              query.field === '' ? this.$i18n.t('m.Field') : fieldMap[query.field].value
+                              query.field === '' ? this.$i18n.t('m.Field') : FIELD_MAP[query.field].value
                             }}
                           </span>
               <Icon type="arrow-down-b"></Icon>
@@ -86,14 +86,14 @@
                 </span>
                 <br>
                 <div style="display: flex">
-                  <FieldCategoryBox :boxType="true" :value="fieldMap[problem.field].value"
-                                    :boxColor="fieldMap[problem.field].boxColor"/>
+                  <FieldCategoryBox :boxType="true" :value="FIELD_MAP[problem.field].value"
+                                    :boxColor="FIELD_MAP[problem.field].boxColor"/>
                   <template v-for="(category, idx) in problem.tags">
                     <FieldCategoryBox :boxType="false" :value="'#' + category" :boxColor="'#ffffff'"/>
                   </template>
                 </div>
               </td>
-              <td class="td-third" style="font-weight: bold; font-size: 12px">{{ difficultyMap[problem.difficulty].value }}</td>
+              <td class="td-third" style="font-weight: bold; font-size: 12px">{{ DIFFICULTY_MAP[problem.difficulty].value }}</td>
               <!-- 푼 사람 수 기입해야함. 일단 난수 처리 -->
               <td class="td-fourth">{{ Math.floor(Math.random() * 101) }}</td>
               <!-- 정답률 기입해야함. 일단 난수 처리 -->
@@ -284,6 +284,7 @@ import FieldCategoryBox from "../../components/FieldCategoryBox.vue";
 import {radarGraph} from "./chartData";
 import "echarts"
 import CustomIconBtn from "../../components/buttons/CustomIconBtn.vue";
+import {DIFFICULTY_MAP, FIELD_MAP} from "../../../../utils/constants";
 
 
 export default {
@@ -302,50 +303,6 @@ export default {
         height: '250'
       },
       radarGraph: radarGraph,
-      fieldMap: {
-        '0': {
-          'value': '구현',
-          'boxColor': '#F8D093'
-        },
-        '1': {
-          'value': '수학',
-          'boxColor': '#B5EAB0'
-        },
-        '2': {
-          'value': '자료구조',
-          'boxColor': '#F8B193'
-        },
-        '3': {
-          'value': '탐색',
-          'boxColor': '#90B8E7'
-        },
-        '4': {
-          'value': '정렬',
-          'boxColor': '#EDC3C3'
-        }
-      },
-      difficultyMap: {
-        'VeryLow': {
-          'value': '매우 쉬움',
-          'textColor': '#95ef4c'
-        },
-        'Low': {
-          'value': '쉬움',
-          'textColor': '#B5EAB0'
-        },
-        'Mid': {
-          'value': '보통',
-          'textColor': '#7c7878'
-        },
-        'High': {
-          'value': '어려움',
-          'textColor': '#ff8828'
-        },
-        'VeryHigh': {
-          'value': '매우 어려움',
-          'textColor': '#c02b2b'
-        }
-      },
       problemTableColumns: [
         {
           title: '문제번호',
@@ -550,6 +507,13 @@ export default {
     }
   },
   computed: {
+    DIFFICULTY_MAP() {
+      return DIFFICULTY_MAP
+    },
+    FIELD_MAP() {
+      return FIELD_MAP
+    },
+
     ...mapGetters(['website', 'modalStatus', 'user', 'isAuthenticated', 'isAdminRole']),
   },
   watch: {
