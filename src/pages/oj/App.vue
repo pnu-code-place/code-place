@@ -13,10 +13,13 @@
     </div>
     <template v-if="!isProblemSolving">
       <div class="footer">
-        <p v-html="website.website_footer"></p>
-        <p>Powered by <a href="https://github.com/QingdaoU/OnlineJudge">OnlineJudge</a>
-          <span v-if="version">&nbsp; Version: {{ version }}</span>
-        </p>
+        <div>
+          <p v-html="website.website_footer"></p>
+          <p>Powered by <a href="https://github.com/QingdaoU/OnlineJudge">OnlineJudge</a>
+            <span v-if="version">&nbsp; Version: {{ version }}</span>
+          </p>
+        </div>
+
       </div>
     </template>
     <BackTop></BackTop>
@@ -120,7 +123,13 @@ a {
     background-color: var(--bg-color);
   }
   .footer {
-    margin-top: 400px;
+    margin-top: 300px;
+    padding-bottom: 20px;
+    height: 300px;
+    background-color: #f8f8f8;
+    display: flex;
+    align-items: end;
+    justify-content: center;
     text-align: center;
     font-size: small;
   }
