@@ -204,6 +204,7 @@ export const m = {
   // ProfileSetting.vue
   Avatar_Setting: "아바타 변경",
   Profile_Setting: "회원정보 변경",
+  Confirm: "확인",
   // SecuritySettig
   Sessions: "Sessions",
   Two_Factor_Authentication: "Two Factor Authentication",

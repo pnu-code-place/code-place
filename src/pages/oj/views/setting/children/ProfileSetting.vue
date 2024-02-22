@@ -56,7 +56,7 @@
         <img :src="uploadImgSrc"/>
       </div>
       <div slot="footer">
-        <Button @click="uploadAvatar" :loading="loadingUploadBtn">{{ $t('m.Confirm') }}</Button>
+        <Button @click="uploadAvatar" :loading="loadingUploadBtn" type="primary">{{ $t('m.Confirm') }}</Button>
       </div>
     </Modal>
     <Form ref="formProfile" :model="formProfile">
