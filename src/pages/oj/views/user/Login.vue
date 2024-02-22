@@ -29,7 +29,7 @@
         </Input>
       </FormItem>
     </Form>
-    <div class="footer">
+    <div class="footer-modal">
       <Button
         type="primary"
         @click="handleLogin"
@@ -137,7 +137,7 @@ export default {
 </script>
 
 <style scoped lang="less">
-.footer {
+.footer-modal {
   overflow: auto;
   margin-top: 20px;
   margin-bottom: -15px;

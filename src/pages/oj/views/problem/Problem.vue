@@ -35,8 +35,8 @@
               </p>
               <p class="content" v-html=problem.input_description></p>
 
-              <p class="title">{{ $t('m.Output') }} <span
-                v-if="problem.io_mode.io_mode=='File IO'">({{ $t('m.ToFile') }}: {{ problem.io_mode.output }})</span>
+              <p class="title">{{ $t('m.Output') }}
+                <span v-if="problem.io_mode.io_mode=='File IO'">({{ $t('m.ToFile') }}: {{ problem.io_mode.output }})</span>
               </p>
               <p class="content" v-html=problem.output_description></p>
               <div v-for="(sample, index) of problem.samples" :key="index">
