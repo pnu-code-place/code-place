@@ -1,5 +1,5 @@
 <template>
-  <Panel :padding="15" dis-hover>
+  <Panel :padding="15" dis-hover style="width: 1200px">
     <div slot="title">
       {{title}}
     </div>
