@@ -20,6 +20,12 @@ export default {
   name: "user-card",
   components: {ShineWrapper},
   props: ['profile'],
+  computed: {
+    isMyProfile() {
+      return this.$store.getters.user.username === this.profile.user.username;
+    }
+  },
+  methods: {}
 };
 </script>
 
@@ -41,16 +47,21 @@ export default {
       <div class="user-description">{{ profile.user.school || "공과대학" }}</div>
       <div class="user-description">{{ profile.user.major || "전기컴퓨터공학부 정보컴퓨터공학전공" }}</div>
     </div>
-    <div id="icons">
-      <a :href="profile.github">
-        <Icon type="social-github-outline" size="30"></Icon>
-      </a>
-      <a :href="'mailto:'+ profile.user.email">
-        <Icon class="icon" type="ios-email-outline" size="30"></Icon>
-      </a>
-      <a :href="profile.blog">
-        <Icon class="icon" type="ios-world-outline" size="30"></Icon>
-      </a>
+    <div class="container-right">
+      <div id="modify-button-wrapper">
+        <router-link v-if="isMyProfile" :to="{name : 'default-setting'}">{{ $t('m.User_Setting') }}</router-link>
+      </div>
+      <div id="icons">
+        <a :href="profile.github">
+          <Icon type="social-github-outline" size="30"></Icon>
+        </a>
+        <a :href="'mailto:'+ profile.user.email">
+          <Icon class="icon" type="ios-email-outline" size="30"></Icon>
+        </a>
+        <a :href="profile.blog">
+          <Icon class="icon" type="ios-world-outline" size="30"></Icon>
+        </a>
+      </div>
     </div>
   </div>
 </template>
@@ -113,21 +124,46 @@ export default {
       font-weight: 500;
     }
   }
+
+  .container-right {
+    width: 25%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+
+
+  }
+}
+
+#modify-button-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+
+  a {
+    font-size: 14px;
+    color: #495060;
+    text-decoration: none;
+
+    &:hover {
+      color: #1890ff;
+    }
+  }
 }
 
 #icons {
-  width: 25%;
   display: flex;
   flex-direction: row;
   justify-content: center;
   align-items: end;
   gap: 20px;
   padding: 10px;
-}
 
-a:hover {
-  scale: 1.20;
-  transition: scale 0.3s ease;
+  a:hover {
+    scale: 1.20;
+    transition: scale 0.3s ease;
+  }
 }
 
 
