@@ -1,16 +1,36 @@
 <template>
-  <Row type="flex" justify="space-around">
-    <Col :span="22">
-    <Panel :padding="10">
-      <div slot="title">{{$t('m.ACM_Ranklist')}}</div>
-      <div class="echarts">
-        <ECharts :options="options" ref="chart" auto-resize></ECharts>
-      </div>
-    </Panel>
-    <Table :data="dataRank" :columns="columns" :loading="loadingTable" size="large"></Table>
-    <Pagination :total="total" :page-size.sync="limit" :current.sync="page"
-                @on-change="getRankData" show-sizer
-                @on-page-size-change="getRankData(1)"></Pagination>
+  <Row>
+    <Col :span="20">
+      <Row type="flex" justify="space-around">
+        <Col :span="17">
+          <Panel :padding="30" dis-hover>
+            <!--      <div slot="title">{{$t('m.ACM_Ranklist')}}</div>-->
+            <!--      <div class="echarts">-->
+            <!--        <ECharts :options="options" ref="chart" auto-resize></ECharts>-->
+            <!--      </div>-->
+          </Panel>
+          <Table :data="dataRank" :columns="columns" :loading="loadingTable" size="large"></Table>
+          <Pagination :total="total" :page-size.sync="limit" :current.sync="page"
+                      @on-change="getRankData" show-sizer
+                      @on-page-size-change="getRankData(1)"></Pagination>
+        </Col>
+      </Row>
+    </Col>
+    <Col :span="7">
+      <Row type="flex" justify="space-around">
+        <Col :span="20">
+          <Panel :padding="30" dis-hover>
+            <!--      <div slot="title">{{$t('m.ACM_Ranklist')}}</div>-->
+            <!--      <div class="echarts">-->
+            <!--        <ECharts :options="options" ref="chart" auto-resize></ECharts>-->
+            <!--      </div>-->
+          </Panel>
+          <Table :data="dataRank" :columns="columns" :loading="loadingTable" size="large"></Table>
+          <Pagination :total="total" :page-size.sync="limit" :current.sync="page"
+                      @on-change="getRankData" show-sizer
+                      @on-page-size-change="getRankData(1)"></Pagination>
+        </Col>
+      </Row>
     </Col>
   </Row>
 </template>

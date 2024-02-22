@@ -18,7 +18,6 @@ export const m = {
   Level: "난이도",
   Score: "점수",
   Tags: "태그",
-  AiRecommendation: "AI 추천 문제",
   Show: "Show",
   Submit: "Submit",
   Submitting: "Submitting",
@@ -220,9 +219,25 @@ export const m = {
   // OIContestRank.vue
   Total_Score: "Total Score",
   // ProblemList.vue
-  Problem_List: "문제",
+  Problem_List: "문제 리스트",
   Reset: "새로고침",
-  Pick_One: "Pick one",
+  Pick_One: "문제 랜덤 선택",
+  Search_Problem: "문제 제목 / 번호 검색",
+
+  // ProblemListTable.vue
+  noProblemList: "찾으시는 문제가 존재하지 않습니다.",
+  Th_Problem_Id: "문제번호",
+  Th_Problem_Title: "제목",
+  Th_Problem_Difficulty: "난이도",
+  Th_Problem_Num_Success: "완료한 사람",
+  Th_Problem_AC_Rate: "정답률",
+  //AiRecommendationBox.vue
+  AiRecommendation: "AI 추천 문제",
+  AiRecommendation_Info: "맞춤 문제를 추천해드려요!",
+  AiSolution: "영역을 더 풀어보세요!",
+  Try_AiRecommendation_Problem: "도전하기",
+  Most_Hard_Problem_In_Last_Week: "저번 주에 가장 어려웠어요!",
+  Try_Most_Hard_Problem_In_Last_Week: "풀어보기",
   //문제 리스트의 난이도
   Difficulty: "난이도",
   Category: "카테고리",
@@ -323,4 +338,6 @@ export const m = {
   Avatar_Preview: "프로필이 다음과 같이 보입니다."
 
   //
+
+  //ToolTip
 };
