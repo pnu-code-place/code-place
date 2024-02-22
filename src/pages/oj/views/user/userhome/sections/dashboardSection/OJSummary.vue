@@ -42,19 +42,19 @@ export default {
     <div class="rank-info">
       <div class="rank-info-top">
         <div class="rank-info-elem">
-          <span class="header">종합 점수</span>
+          <span class="header">{{$t('m.UserHomeScore')}}</span>
           <span class="value">{{ ojStatus.score }}</span>
         </div>
         <div class="rank-info-elem">
-          <span class="header">랭킹</span>
-          <span class="value">{{ ojStatus.rank }} (상위 {{ rankPercent }}%)</span>
+          <span class="header">{{$t('m.Ranking')}}</span>
+          <span class="value">{{ ojStatus.rank }} ({{$t('m.TOP')}} {{ rankPercent }}%)</span>
         </div>
         <div class="rank-info-elem">
-          <span class="header">제출</span>
+          <span class="header">{{$t('m.Submit')}}</span>
           <span class="value">{{ ojStatus.submission_number }}</span>
         </div>
         <div class="rank-info-elem">
-          <span class="header">정답</span>
+          <span class="header">{{$t('m.UserHomeSolved')}}</span>
           <span class="value">{{ ojStatus.accepted_number }}</span>
         </div>
       </div>
@@ -66,14 +66,14 @@ export default {
           <horizontal-gauge :progress="gaugeWidth"></horizontal-gauge>
         </div>
         <span class="progress-next">
-          승급까지 <span class="progress-next-number">{{ ojStatus.rank_next - ojStatus.total_score }}점</span> 남았습니다.
+          {{$t('m.Until_Promotion_Before')}} <span class="progress-next-number">{{ ojStatus.rank_next - ojStatus.total_score }}{{$t('m.Point')}}</span> {{$t('m.Until_Promotion_After')}}
         </span>
       </div>
     </div>
     <div class="miracle">
-      <span class="miracle-title">미라클 코딩</span>
-      <span class="miracle-current">{{ ojStatus.miracle_current }}일차</span>
-      <span class="miracle-record">최고 기록 {{ ojStatus.miracle_record }}일</span>
+      <span class="miracle-title">{{$t('m.Miracle_Coding')}}</span>
+      <span class="miracle-current">{{ ojStatus.miracle_current }}{{$t('m.MiracleCodingDays')}}</span>
+      <span class="miracle-record">{{$t('m.Best_Record')}} {{ ojStatus.miracle_record }}{{$t('m.MiracleCodingDays')}}</span>
     </div>
   </div>
 </template>

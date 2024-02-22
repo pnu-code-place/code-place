@@ -21,7 +21,7 @@
           </div>
           <div class="userInfoWrapper">
                   <span>
-                    {{ user.username+'님' }}
+                    {{ user.username + '님' }}
                     <img src="@/assets/badgeExample.png" width="13px"/>
                   </span>
             <br>
@@ -36,9 +36,11 @@
           </div>
         </div>
         <div class="authenticatedFooter">
-          <span @click="goRouter('user-home')">마이페이지</span>
-          <span>{{'|'}}</span>
-          <span @click="goRouter('profile-setting')">환경설정</span>
+          <span @click="goRouter('user-home')"><router-link
+              :to="{name:'user-home', params:{username:user.username}}">{{ $t('m.MyHome') }}</router-link></span>
+          <span>{{ '|' }}</span>
+          <span @click="goRouter('profile-setting')"><router-link
+              :to="{name:'default-setting'}">{{ $t('m.Settings') }}</router-link></span>
         </div>
       </div>
     </template>
@@ -51,12 +53,10 @@ import {mapActions, mapGetters} from "vuex";
 
 export default {
   name: 'HomeProfileBox',
-  data () {
-    return {
-
-    }
+  data() {
+    return {}
   },
-  methods:{
+  methods: {
     ...mapActions(['getProfile', 'changeModalStatus']),
     handleLoginBtnClick(mode) {
       console.log("setting complete!")
@@ -69,14 +69,14 @@ export default {
       this.$router.push({name: route});
     },
     goResetPassword() {
-      this.changeModalStatus({ visible: false });
-      this.$router.push({ name: "apply-reset-password" });
+      this.changeModalStatus({visible: false});
+      this.$router.push({name: "apply-reset-password"});
     },
-    goRouter(routeName){
+    goRouter(routeName) {
       this.$router.push({name: routeName})
     }
   },
-  computed:{
+  computed: {
     ...mapGetters(['website', 'modalStatus', 'user', 'isAuthenticated', 'isAdminRole']),
     ...mapGetters(['profile']),
   }
@@ -106,6 +106,7 @@ export default {
     background-color: #4A86C0;
     margin-top: 30px;
     margin-bottom: 30px;
+
     span {
       margin-left: 10px;
       font-weight: 650;
@@ -127,9 +128,10 @@ export default {
   }
 }
 
-.authenticatedBox{
+.authenticatedBox {
 
   @avatar-radius: 50%;
+
   .avatar {
     width: 100%;
     height: auto;
@@ -139,23 +141,27 @@ export default {
     box-shadow: 0px 0px 1px 0px;
   }
 
-  .authenticatedBody{
+  .authenticatedBody {
     display: flex;
     justify-content: space-around;
     align-items: center;
     margin-bottom: 30px;
-    .userAvatarWrapper{
+
+    .userAvatarWrapper {
       width: 20%;
       height: 100%;
     }
-    .userInfoWrapper{
+
+    .userInfoWrapper {
       text-align: left;
-      span:first-child{
+
+      span:first-child {
         font-size: 13px;
         font-weight: 600;
       }
     }
-    .logoutBtn{
+
+    .logoutBtn {
       cursor: pointer;
       width: 80px;
       border-radius: 10px;
@@ -163,14 +169,19 @@ export default {
     }
   }
 
-  .authenticatedFooter{
+  .authenticatedFooter {
     display: flex;
     background-color: #FBFBFB;
     justify-content: space-around;
     align-items: center;
     height: 35px;
-    span{
+
+    span {
       cursor: pointer;
+
+      a {
+        color: inherit;
+      }
     }
   }
 }

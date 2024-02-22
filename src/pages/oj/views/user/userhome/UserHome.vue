@@ -11,7 +11,6 @@
   </div>
 </template>
 <script>
-import time from '@/utils/time'
 import api from '@oj/api'
 import SideNavBar from "./SideNavBar.vue";
 import UserCard from "./UserCard.vue";

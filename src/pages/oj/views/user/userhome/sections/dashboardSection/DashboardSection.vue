@@ -47,19 +47,19 @@ export default {
 
 <template>
   <section>
-    <h1>OJ 랭크</h1>
+    <h1>{{$t('m.OJ_Summary')}}</h1>
     <OjSummary v-if="this.dashboardInfo.ojStatus" :ojStatus="this.dashboardInfo.ojStatus"></OjSummary>
     <DashboardSkeleton v-else-if="this.isLoading"></DashboardSkeleton>
     <hr/>
-    <h1>영역별 분포</h1>
+    <h1>{{$t('m.Category_Based_Distribution')}}</h1>
     <CategorySummary v-if="this.dashboardInfo.categoryInfo" :categoryInfo="this.dashboardInfo.categoryInfo"></CategorySummary>
     <DashboardSkeleton v-else-if="this.isLoading"></DashboardSkeleton>
     <hr/>
-    <h1>난이도 분포</h1>
+    <h1>{{$t('m.Difficulty_Based_Distribution')}}</h1>
     <DifficultySummary v-if="this.dashboardInfo.difficultyInfo" :difficultyInfo="this.dashboardInfo.difficultyInfo"></DifficultySummary>
     <DashboardSkeleton v-else-if="this.isLoading"></DashboardSkeleton>
     <hr/>
-    <h1>도전과제</h1>
+    <h1>{{ $t('m.Achievement') }}</h1>
     <ChallengeSummary v-if="this.dashboardInfo.achievements" :achievements="this.dashboardInfo.achievements"></ChallengeSummary>
     <AchievementsSkeleton v-else-if="this.isLoading"></AchievementsSkeleton>
   </section>
