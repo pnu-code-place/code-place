@@ -223,7 +223,6 @@ export const m = {
   Reset: "새로고침",
   Pick_One: "문제 랜덤 선택",
   Search_Problem: "문제 제목 / 번호 검색",
-
   // ProblemListTable.vue
   noProblemList: "찾으시는 문제가 존재하지 않습니다.",
   Th_Problem_Id: "문제번호",
@@ -234,6 +233,7 @@ export const m = {
   //AiRecommendationBox.vue
   AiRecommendation: "AI 추천 문제",
   AiRecommendation_Info: "맞춤 문제를 추천해드려요!",
+  AiRecommendation_No_Auth: "로그인 후 사용 가능합니다.",
   AiSolution: "영역을 더 풀어보세요!",
   Try_AiRecommendation_Problem: "도전하기",
   Most_Hard_Problem_In_Last_Week: "저번 주에 가장 어려웠어요!",
