@@ -26,16 +26,6 @@ class ProblemDifficulty(object):
     VERYHIGH = "VeryHigh"
 
 
-class ProblemScore:
-    score = {
-        'VeryLow': 10,      # VeryLow
-        'Low': 20,      # Low
-        'Mid': 80,      # Mid
-        'High': 320,     # High
-        'VeryHigh': 1280,    # VeryHigh
-    }
-
-
 class ProblemIOMode(Choices):
     standard = "Standard IO"
     file = "File IO"

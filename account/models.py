@@ -2,6 +2,7 @@ from django.contrib.auth.models import AbstractBaseUser
 from django.conf import settings
 from django.db import models, transaction
 from utils.models import JSONField
+from utils.constants import Tier
 
 
 class AdminType(object):
@@ -88,6 +89,18 @@ def get_default_field_score():
     }
 
 
+def get_default_tier():
+    return next(iter(Tier.tiers.keys()))
+
+
+def get_default_current_tier_score():
+    return 0
+
+
+def get_default_next_tier_score():
+    return Tier.tiers[get_default_tier()]
+
+
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     # acm_problems_status examples:
@@ -121,7 +134,6 @@ class UserProfile(models.Model):
     accepted_number = models.IntegerField(default=0)
     # for OI
     total_score = models.BigIntegerField(default=0)
-    field_score = models.JSONField(default=get_default_field_score)
     submission_number = models.IntegerField(default=0)
 
     def add_accepted_problem_number(self):
@@ -144,16 +156,26 @@ class UserProfile(models.Model):
 
 class Score(models.Model):
     user = models.OneToOneField(User, primary_key=True, unique=True, on_delete=models.CASCADE)
-    basis = models.IntegerField(default=0)
-    score = models.IntegerField(default=0)
+    yesterday_score = models.IntegerField(default=0)
+    total_score = models.IntegerField(default=0)
     fluctuation = models.IntegerField(default=0)
+
+    math_score = models.BigIntegerField(default=0)
+    implementation_score = models.BigIntegerField(default=0)
+    datastructure_score = models.BigIntegerField(default=0)
+    search_score = models.BigIntegerField(default=0)
+    sorting_score = models.BigIntegerField(default=0)
+
+    tier = models.TextField(default=get_default_tier)
+    current_tier_score = models.IntegerField(default=get_default_current_tier_score)
+    next_tier_score = models.IntegerField(default=get_default_next_tier_score)
 
     @classmethod
     def calculate_basis(cls):
         with transaction.atomic():
             scores = cls.objects.select_for_update().all()
             for user_score in scores:
-                user_score.basis = user_score.score
+                user_score.yesterday_score = user_score.total_score
                 user_score.fluctuation = 0
                 user_score.save()
 
@@ -162,7 +184,7 @@ class Score(models.Model):
         with transaction.atomic():
             scores = cls.objects.select_for_update().all()
             for user_score in scores:
-                user_score.fluctuation = user_score.score - user_score.basis
+                user_score.fluctuation = user_score.total_score - user_score.yesterday_score
                 user_score.save()
 
     class Meta:

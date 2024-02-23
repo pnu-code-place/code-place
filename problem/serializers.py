@@ -278,7 +278,7 @@ class FPSProblemSerializer(serializers.Serializer):
     prepend = serializers.ListField(child=serializers.DictField(), allow_empty=True, allow_null=True)
 
 
-class RecommendProblemSerializer(serializers.ModelSerializer):
+class RecommendBonusProblemSerializer(serializers.ModelSerializer):
     class Meta:
         model = Problem
         fields = ['id', 'title', 'field', 'tags']

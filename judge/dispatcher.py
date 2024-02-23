@@ -8,15 +8,15 @@ from django.db import transaction, IntegrityError
 from django.db.models import F
 from django.http import HttpResponseNotFound
 
-from account.models import User, Score, UserProfile
+from account.models import User, Score
 from conf.models import JudgeServer
 from contest.models import ContestRuleType, ACMContestRank, OIContestRank, ContestStatus
 from options.options import SysOptions
-from problem.models import Problem, ProblemRuleType, ProblemScore
+from problem.models import Problem, ProblemRuleType
 from problem.utils import parse_problem_template
 from submission.models import JudgeStatus, Submission
 from utils.cache import cache
-from utils.constants import CacheKey
+from utils.constants import CacheKey, ProblemScore, ProblemField, Tier
 
 logger = logging.getLogger(__name__)
 
@@ -433,19 +433,30 @@ class JudgeDispatcher(DispatcherBase):
                     user = User.objects.get(id=self.submission.user_id)
                     Score.objects.create(user=user)
                 user_score = Score.objects.select_for_update().get(user_id=self.submission.user_id)
-                user_profile = UserProfile.objects.select_for_update().get(user_id=self.submission.user_id)
                 problem = Problem.objects.get(id=self.problem.id)
             except (Score.DoesNotExist, Problem.DoesNotExist, User.DoesNotExist):
-                return HttpResponseNotFound("user_score | problem | profile doesn't exist")
+                return HttpResponseNotFound("user_score | problem doesn't exist")
 
+            field_name = ProblemField.intToStr[problem.field] + '_score'
             if problem.is_bonus:
-                user_score.score += ProblemScore.score[problem.difficulty] * 2
-                user_profile.field_score[str(problem.field)] += ProblemScore.score[problem.difficulty] * 2
+                user_score.total_score += ProblemScore.score[problem.difficulty] * 2
+                new_field_score = getattr(user_score, field_name) + ProblemScore.score[problem.difficulty] * 2
+                setattr(user_score, field_name, new_field_score)
             else:
-                user_score.score += ProblemScore.score[problem.difficulty]
-                user_profile.field_score[str(problem.field)] += ProblemScore.score[problem.difficulty]
+                user_score.total_score += ProblemScore.score[problem.difficulty]
+                new_field_score = getattr(user_score, field_name) + ProblemScore.score[problem.difficulty]
+                setattr(user_score, field_name, new_field_score)
+
+            # update tier
+            if user_score.total_score >= user_score.next_tier_score:
+                if user_score.tier != 'diamond1':
+                    new_tier, new_current_score, new_next_score = Tier.next_tier(user_score.tier)
+                    print("new_tier:", new_tier, "new_current_score:", new_current_score, "new_next_score:", new_next_score, sep='')
+                    user_score.tier = new_tier
+                    user_score.current_tier_score = new_current_score
+                    user_score.next_tier_score = new_next_score if new_next_score else 10000000
+
             user_score.save()
-            user_profile.save()
 
         if self.submission.user_id not in problem.curr_week_info['solver']:
             problem.curr_week_info['solver'].append(self.submission.user_id)

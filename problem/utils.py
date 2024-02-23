@@ -43,7 +43,7 @@ def call_update_weekly_stats():
 
 @dramatiq.actor()
 def update_weekly_stats():
-    problems = Problem.objects.all()
+    problems = Problem.objects.filter(difficulty__in=['High', 'VeryHigh'], accepted_number__gte=1)
 
     with transaction.atomic():
         for problem in problems:
@@ -52,7 +52,7 @@ def update_weekly_stats():
             problem.is_most_difficult = False
             problem.save(update_fields=['last_week_info', 'curr_week_info', 'is_most_difficult'])
 
-    most_difficult_problem = Problem.objects.annotate(
+    most_difficult_problem = problems.annotate(
         min_success_rate=F('last_week_info__success_rate')
     ).order_by('min_success_rate').first()
 

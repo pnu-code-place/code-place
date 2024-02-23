@@ -2,12 +2,13 @@ import random
 from django.db.models import Q, Count
 from utils.api import APIView
 from account.decorators import check_contest_permission, login_required
-from ..models import ProblemTag, Problem, ProblemRuleType, ProblemScore, ProblemDifficulty
-from ..serializers import ProblemSerializer, TagSerializer, ProblemSafeSerializer, RecommendProblemSerializer
+from ..models import ProblemTag, Problem, ProblemRuleType
+from ..serializers import ProblemSerializer, TagSerializer, ProblemSafeSerializer, RecommendBonusProblemSerializer
 from contest.models import ContestRuleType
 from account.models import UserProfile
 from submission.models import JudgeStatus
 from django.http import HttpResponseNotFound
+from utils.constants import ProblemScore
 
 
 class ProblemTagAPI(APIView):
@@ -27,6 +28,14 @@ class PickOneAPI(APIView):
         if count == 0:
             return self.error("No problem to pick")
         return self.success(problems[random.randint(0, count - 1)]._id)
+
+
+class BonusProblemAPI(APIView):
+    def get(self, request):
+        bonus_problems = Problem.objects.filter(contest_id__isnull=True, visible=True, is_bonus=True)
+        if not bonus_problems:
+            return HttpResponseNotFound("No bonus problem")
+        return self.success(RecommendBonusProblemSerializer(bonus_problems, many=True).data)
 
 
 class ProblemAPI(APIView):
@@ -152,7 +161,7 @@ class AIRecommendProblemAPI(APIView):
             unresolved_problems = Problem.objects.filter(field=weak_field, visible=True)\
                 .exclude(_id__in=get_user_solved_problems(request.user))
             unresolved_problems = random.sample(list(unresolved_problems), min(3, unresolved_problems.count()))
-            recommend_problems = RecommendProblemSerializer(unresolved_problems, many=True).data
+            recommend_problems = RecommendBonusProblemSerializer(unresolved_problems, many=True).data
 
             return self.success({"field_score": field_score, "recommend_problems": recommend_problems})
         except UserProfile.DoesNotExist:
