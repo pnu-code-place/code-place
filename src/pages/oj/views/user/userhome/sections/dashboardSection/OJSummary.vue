@@ -38,6 +38,7 @@ export default {
       <shine-wrapper>
         <img :src="ojStatus.rank_image" class="rank-mark" alt="rank emblem"/>
       </shine-wrapper>
+      <span>{{ojStatus.rank_tier}}</span>
     </div>
     <div class="rank-info">
       <div class="rank-info-top">
@@ -91,13 +92,26 @@ export default {
   .rank-mark-wrapper {
     width: 30%;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding : 20px;
+
+    padding : 0 20px 10px;
+    gap: 30px;
 
     .rank-mark {
-      width: 100%;
+      width: 180px;
       height: auto;
+    }
+
+    span {
+      width: 100%;
+      font-size: 15px;
+      font-weight: 700;
+      border-radius: 5px;
+      border : 1px solid #B6B6B6;
+      padding: 5px 10px;
+      background-color: #F2F8F3;
     }
   }
 
