@@ -10,6 +10,7 @@ export const DashboardSectionProp = {
 
   ojStatus: {
     rank_image: "https://cdn-icons-png.flaticon.com/512/473/473406.png", // 랭킹 이미지
+    rank_tier: "Gold I", // 랭킹 티어
     rank: 1, // 랭킹
     rank_percent: 0.1, // 랭킹 퍼센트 ( 상위 10% )
     score: 101, // 종합 점수
