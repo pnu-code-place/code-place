@@ -44,7 +44,7 @@ export default {
       <div class="rank-info-top">
         <div class="rank-info-elem">
           <span class="header">{{$t('m.UserHomeScore')}}</span>
-          <span class="value">{{ ojStatus.score }}</span>
+          <span class="value">{{ ojStatus.total_score }}</span>
         </div>
         <div class="rank-info-elem">
           <span class="header">{{$t('m.Ranking')}}</span>

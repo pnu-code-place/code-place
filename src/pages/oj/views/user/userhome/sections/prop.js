@@ -13,7 +13,6 @@ export const DashboardSectionProp = {
     rank_tier: "Gold I", // 랭킹 티어
     rank: 1, // 랭킹
     rank_percent: 0.1, // 랭킹 퍼센트 ( 상위 10% )
-    score: 101, // 종합 점수
     submission_number: 100, // 제출 횟수
     accepted_number: 100, // 맞은 횟수
     total_score: 56000, // 현재 점수
