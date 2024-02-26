@@ -1,7 +1,12 @@
 import Vue from "vue";
 import store from "@/store";
 import axios from "axios";
-import {achievementSectionProp, DashboardSectionProp, ProblemSectionProp} from "./views/user/userhome/sections/prop";
+import {
+  achievementSectionProp,
+  DashboardSectionProp,
+  ProblemSectionProp,
+  userRankListProp
+} from "./views/user/userhome/sections/prop";
 
 Vue.prototype.$http = axios;
 axios.defaults.baseURL = "/api";
@@ -305,6 +310,11 @@ export default {
       limit,
       rule
     };
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve({data: {data: {results: userRankListProp, total: 10}}})
+      }, 500)
+    });
     return ajax("user_rank", "get", {
       params
     });

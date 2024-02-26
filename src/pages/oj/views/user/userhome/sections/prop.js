@@ -149,7 +149,7 @@ export const ProblemSectionProp = {
         title: 'A/B',
         submitTime: '2021-07-02T08:25:49.443682Z',
         difficulty: 'easy',
-      },      {
+      }, {
         id: 1001, // 문제의 id
         title: 'A+B', // 문제의 제목
         submitTime: '2021-07-02T08:25:49.443682Z', // 제출 시간
@@ -172,7 +172,7 @@ export const ProblemSectionProp = {
         title: 'A/B',
         submitTime: '2021-07-02T08:25:49.443682Z',
         difficulty: 'easy',
-      },      {
+      }, {
         id: 1001, // 문제의 id
         title: 'A+B', // 문제의 제목
         submitTime: '2021-07-02T08:25:49.443682Z', // 제출 시간
@@ -195,7 +195,7 @@ export const ProblemSectionProp = {
         title: 'A/B',
         submitTime: '2021-07-02T08:25:49.443682Z',
         difficulty: 'easy',
-      },      {
+      }, {
         id: 1001, // 문제의 id
         title: 'A+B', // 문제의 제목
         submitTime: '2021-07-02T08:25:49.443682Z', // 제출 시간
@@ -281,7 +281,7 @@ export const achievementSectionProp = {
       image: "https://cdn-icons-png.flaticon.com/512/473/473406.png",
       description: "업적은 아래와 같이 표시됩니다. 업적의 설명이 아주 길 수도 있겠죠 아주아주아주 길수도 있겠죠",
       acquireTime: '2021-07-02T08:25:49.443682Z',
-    },    {
+    }, {
       id: 1, // 업적의 id
       title: "수학자 Step1", // 업적의 제목
       image: "https://cdn-icons-png.flaticon.com/512/473/473406.png", // 업적 뱃지 이미지
@@ -293,7 +293,7 @@ export const achievementSectionProp = {
       image: "https://cdn-icons-png.flaticon.com/512/473/473406.png",
       description: "업적은 아래와 같이 표시됩니다. 업적의 설명이 아주 길 수도 있겠죠 아주아주아주 길수도 있겠죠",
       acquireTime: '2021-07-02T08:25:49.443682Z',
-    },    {
+    }, {
       id: 1, // 업적의 id
       title: "수학자 Step1", // 업적의 제목
       image: "https://cdn-icons-png.flaticon.com/512/473/473406.png", // 업적 뱃지 이미지
@@ -305,7 +305,7 @@ export const achievementSectionProp = {
       image: "https://cdn-icons-png.flaticon.com/512/473/473406.png",
       description: "업적은 아래와 같이 표시됩니다. 업적의 설명이 아주 길 수도 있겠죠 아주아주아주 길수도 있겠죠",
       acquireTime: '2021-07-02T08:25:49.443682Z',
-    },    {
+    }, {
       id: 1, // 업적의 id
       title: "수학자 Step1", // 업적의 제목
       image: "https://cdn-icons-png.flaticon.com/512/473/473406.png", // 업적 뱃지 이미지
@@ -317,7 +317,7 @@ export const achievementSectionProp = {
       image: "https://cdn-icons-png.flaticon.com/512/473/473406.png",
       description: "업적은 아래와 같이 표시됩니다. 업적의 설명이 아주 길 수도 있겠죠 아주아주아주 길수도 있겠죠",
       acquireTime: '2021-07-02T08:25:49.443682Z',
-    },    {
+    }, {
       id: 1, // 업적의 id
       title: "수학자 Step1", // 업적의 제목
       image: "https://cdn-icons-png.flaticon.com/512/473/473406.png", // 업적 뱃지 이미지
@@ -329,7 +329,7 @@ export const achievementSectionProp = {
       image: "https://cdn-icons-png.flaticon.com/512/473/473406.png",
       description: "업적은 아래와 같이 표시됩니다. 업적의 설명이 아주 길 수도 있겠죠 아주아주아주 길수도 있겠죠",
       acquireTime: '2021-07-02T08:25:49.443682Z',
-    },    {
+    }, {
       id: 1, // 업적의 id
       title: "수학자 Step1", // 업적의 제목
       image: "https://cdn-icons-png.flaticon.com/512/473/473406.png", // 업적 뱃지 이미지
@@ -341,7 +341,7 @@ export const achievementSectionProp = {
       image: "https://cdn-icons-png.flaticon.com/512/473/473406.png",
       description: "업적은 아래와 같이 표시됩니다. 업적의 설명이 아주 길 수도 있겠죠 아주아주아주 길수도 있겠죠",
       acquireTime: '2021-07-02T08:25:49.443682Z',
-    },    {
+    }, {
       id: 1, // 업적의 id
       title: "수학자 Step1", // 업적의 제목
       image: "https://cdn-icons-png.flaticon.com/512/473/473406.png", // 업적 뱃지 이미지
@@ -367,3 +367,120 @@ export const achievementSectionProp = {
     }
   ]
 }
+
+// /api/user_rank?offset=<offset>&limit=<limit> GET
+// 유저의 랭킹 정보를 조회합니다.
+// offset: 랭킹의 시작점
+// limit: 랭킹의 갯수
+export const userRankListProp = [
+  {
+    rank: 1,
+    avatar: "https://picsum.photos/200/300",
+    username: "user1",
+    mood: '안녕하세요, 저는 user1입니다. 잘 부탁드립니다.',
+    score: 10000,
+    major: "정보컴퓨터공학부",
+    tier: "Gold I",
+    solved: 100,
+    accuracy: 0.9,
+  },
+  {
+    rank: 2,
+    avatar: "https://picsum.photos/200/200",
+    username: "user2",
+    mood: '안녕하세요 user2입니다. 잘 부탁드립니다. 소개가 더 길어질 수도 있겠죠! 아주 아주 긴 소개요',
+    score: 10000,
+    major: "정보컴퓨터공학부",
+    tier: "Gold I",
+    solved: 100,
+    accuracy: 0.9,
+  },
+  {
+    rank: 3,
+    avatar: "https://picsum.photos/202",
+    username: "user3andVeryLongName",
+    mood: '안녕하세요',
+    score: 10000,
+    major: "정보컴퓨터공학부",
+    tier: "Gold I",
+    solved: 100,
+    accuracy: 0.9,
+  },
+  {
+    rank: 4,
+    avatar: "https://picsum.photos/203",
+    username: "user4",
+    mood: '안녕하세요',
+    score: 10000,
+    major: "정보컴퓨터공학부",
+    tier: "Gold I",
+    solved: 100,
+    accuracy: 0.9,
+  },
+  {
+    rank: 5,
+    avatar: "https://picsum.photos/204",
+    username: "user5",
+    mood: '안녕하세요',
+    score: 10000,
+    major: "정보컴퓨터공학부",
+    tier: "Gold I",
+    solved: 100,
+    accuracy: 0.9,
+  },
+  {
+    rank: 6,
+    avatar: "https://picsum.photos/205",
+    username: "user6",
+    mood: '안녕하세요',
+    score: 10000,
+    major: "정보컴퓨터공학부",
+    tier: "Gold I",
+    solved: 100,
+    accuracy: 0.9,
+  },
+  {
+    rank: 7,
+    avatar: "https://picsum.photos/206",
+    username: "user7",
+    mood: '안녕하세요',
+    score: 10000,
+    major: "정보컴퓨터공학부",
+    tier: "Gold I",
+    solved: 100,
+    accuracy: 0.9,
+  },
+  {
+    rank: 8,
+    avatar: "https://picsum.photos/207",
+    username: "user8",
+    mood: '안녕하세요',
+    score: 10000,
+    major: "정보컴퓨터공학부",
+    tier: "Gold I",
+    solved: 100,
+    accuracy: 0.9,
+  },
+  {
+    rank: 9,
+    avatar: "https://picsum.photos/208",
+    username: "user9",
+    mood: '안녕하세요',
+    score: 10000,
+    major: "정보컴퓨터공학부",
+    tier: "Gold I",
+    solved: 100,
+    accuracy: 0.9,
+  },
+  {
+    rank: 10,
+    avatar: "https://picsum.photos/209",
+    username: "user10",
+    mood: '안녕하세요',
+    score: 10000,
+    major: "정보컴퓨터공학부",
+    tier: "Gold I",
+    solved: 100,
+    accuracy: 0.9,
+  }
+]
