@@ -165,6 +165,49 @@ export const FIELD_MAP ={
   }
 }
 
+export const TierImageSrc ={
+  //unranked
+  'sprout' : require('@/assets/tiers/unranked/sprout.svg'),
+
+  //bronze
+  'bronze1': require('@/assets/tiers/bronze/bronze1.svg'),
+  'bronze2': require('@/assets/tiers/bronze/bronze2.svg'),
+  'bronze3': require('@/assets/tiers/bronze/bronze3.svg'),
+
+  //silver
+  'silver1': require('@/assets/tiers/silver/silver1.svg'),
+  'silver2': require('@/assets/tiers/silver/silver2.svg'),
+  'silver3': require('@/assets/tiers/silver/silver3.svg'),
+
+  //gold
+  'gold1': require('@/assets/tiers/gold/gold1.svg'),
+  'gold2': require('@/assets/tiers/gold/gold2.svg'),
+  'gold3': require('@/assets/tiers/gold/gold3.svg'),
+
+  //platinum
+  'platinum1': require('@/assets/tiers/platinum/platinum1.svg'),
+  'platinum2': require('@/assets/tiers/platinum/platinum2.svg'),
+  'platinum3': require('@/assets/tiers/platinum/platinum3.svg'),
+
+  //diamond
+  'diamond1': require('@/assets/tiers/diamond/diamond1.svg'),
+  'diamond2': require('@/assets/tiers/diamond/diamond2.svg'),
+  'diamond3': require('@/assets/tiers/diamond/diamond3.svg'),
+}
+
+export const AwardImageSrc ={
+  '1' : require('@/assets/awards/first.svg'),
+  '2': require('@/assets/awards/second.svg'),
+  '3': require('@/assets/awards/third.svg'),
+}
+
+export function getTierImageSrc(tier){
+  return TierImageSrc[tier]
+}
+
+export function getAwardImageSrc(rank){
+  return AwardImageSrc[rank]
+}
 
 
 export function buildProblemCodeKey (problemID, contestID = null) {
