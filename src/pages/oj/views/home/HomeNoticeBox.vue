@@ -131,7 +131,7 @@ export default {
     padding-top: 15px;
     list-style: none;
     padding-bottom: 15px;
-    background-color: #fbfbfb;
+    background-color: rgba(251, 251, 251, 0.38);
     padding-left: 30px;
     border-radius: 7px;
     font-size: 16px;
@@ -158,8 +158,8 @@ export default {
       }
 
       .newAnnotator {
-        background-color: #ff8a8a;
-        border-radius: 10px;
+        background-color: #fa6c6c;
+        border-radius: 4px;
         color: #ffffff;
         font-size: x-small;
         text-align: center;
