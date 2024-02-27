@@ -1,28 +1,64 @@
 <template>
   <div class="problemRecommendationBox">
-    <div class="problemRecommendationBoxHeader">
+    <header class="problemRecommendationBoxHeader">
       <span @click="handleRoute('problem')">이번 주 보너스 문제</span>
       <div class="plusDiv">
         <Icon type="ios-information" size="13" color="#7a7a7a"></Icon>
         <span class="plusSpan">주마다 보너스 점수가 있는 문제를 추천해드려요!</span>
       </div>
+    </header>
+    <div class="problemRecommendationBoxBody">
+      <template v-for="problem in problems">
+        <div @click="enterProblemDetail(problem.id)" class="bonusProblem" :style="{ 'background-image': 'url(' + FIELD_MAP[problem.field].backgroundImage + ')' }">
+          <span>{{problem.title}}</span>
+          <FieldCategoryBox :boxType="true" :value="FIELD_MAP[problem.field].value"
+                            :boxColor="FIELD_MAP[problem.field].boxColor"/>
+          <template v-for="(category, idx) in problem.tags">
+            <FieldCategoryBox :boxType="false" :value="'#' + category" :boxColor="'#ffffff'"/>
+          </template>
+        </div>
+      </template>
     </div>
   </div>
 </template>
 
 <script>
 import api from '@oj/api'
+import {FIELD_MAP} from "../../../../utils/constants";
+import FieldCategoryBox from "../../components/FieldCategoryBox.vue";
+import {mapActions} from "vuex";
 
 export default {
   name: 'HomeProblemRecommendationBox',
-  data () {
-    return {
-      value1: 0
+  components: {FieldCategoryBox},
+  computed: {
+    FIELD_MAP() {
+      return FIELD_MAP
     }
   },
+  data () {
+    return {
+      value1: 0,
+      problems: []
+    }
+  },
+  mounted() {
+    this.init()
+  },
   methods:{
+    ...mapActions(['changeProblemSolvingState']),
     handleRoute(route) {
       this.$router.push({name: route});
+    },
+    init(){
+      api.getHomeBonusProblem()
+        .then((res) =>{
+          this.problems = res.data.data
+        })
+    },
+    enterProblemDetail(problemId) {
+      this.changeProblemSolvingState(true)
+      this.$router.push({name: 'problem-details', params: {problemID: problemId}})
     },
   }
 }
@@ -35,7 +71,7 @@ export default {
   border-radius: 7px;
   border: 1px solid #dedede;
   width: 100%;
-  height: 300px;
+  height: 220px;
   padding-left: 30px;
   padding-right: 30px;
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
@@ -54,13 +90,29 @@ export default {
 
     .plusDiv{
       cursor: pointer;
-
       .plusSpan {
         color: #7a7a7a;
         font-size: 12px;
       }
     }
-
+  }
+  .problemRecommendationBoxBody{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 0;
+    span{
+      font-size: medium;
+      font-weight: bold;
+    }
+    .bonusProblem{
+      cursor: pointer;
+      align-items: center;
+      padding: 30px;
+      width: 220px;
+      border-radius: 7px;
+      background-color: #e9ece9;
+    }
   }
 }
 </style>
