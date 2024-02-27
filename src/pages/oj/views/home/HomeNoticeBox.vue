@@ -2,7 +2,7 @@
   <div class="noticeBox">
     <div class="noticeBoxHeader">
       <span @click="handleRoute('notice')">공지사항</span>
-      <div class="plusDiv" @click="handleRoute('notice')">
+      <div class="plusDiv" @click="goAnnouncement('')">
         <Icon type="android-add" size="13" color="#7a7a7a"></Icon>
         <span>더보기</span>
       </div>
@@ -72,10 +72,9 @@ export default {
       return onlyDate.toLocaleDateString();
     },
     goAnnouncement(announcement) {
-      this.$router.push("notice");
-      setTimeout(() => {
-      }, 1000);
-      this.announcement = announcement;
+      console.log(announcement)
+      this.$router.push({name: "notice", params: {announcement: announcement}});
+      // this.announcement = announcement;
       // this.listVisible = false;
     },
 
@@ -131,7 +130,7 @@ export default {
     padding-top: 15px;
     list-style: none;
     padding-bottom: 15px;
-    background-color: #fbfbfb;
+    background-color: rgba(251, 251, 251, 0.38);
     padding-left: 30px;
     border-radius: 7px;
     font-size: 16px;
@@ -158,8 +157,8 @@ export default {
       }
 
       .newAnnotator {
-        background-color: #ff8a8a;
-        border-radius: 10px;
+        background-color: #fa6c6c;
+        border-radius: 4px;
         color: #ffffff;
         font-size: x-small;
         text-align: center;

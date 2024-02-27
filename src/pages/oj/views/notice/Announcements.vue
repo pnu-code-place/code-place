@@ -7,7 +7,6 @@
 <!--      <Button v-if="listVisible" type="info" @click="init" :loading="btnLoading">{{$t('m.Refresh')}}</Button>-->
 <!--      <Button v-else type="ghost" icon="ios-undo" @click="goBack">{{$t('m.Back')}}</Button>-->
 <!--    </div>-->
-
     <transition-group name="announcement-animate" mode="in-out">
       <div class="no-announcement" v-if="!announcements.length" key="no-announcement">
         <p>{{$t('m.No_Announcements')}}</p>

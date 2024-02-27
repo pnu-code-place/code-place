@@ -14,46 +14,32 @@
       </template>
       <template v-else>
         <div style="text-align: center; margin-top: 10px; padding-left: 10px">
-          <ECharts :options="radarGraph" :initOptions="radarInitOpts" style="height: fit-content; width: fit-content"></ECharts>
+          <ECharts ref="chart" :options="option" :initOptions="radarInitOpts" style="height: fit-content; width: fit-content"></ECharts>
         </div>
         <div class="aiSolution">
           <span style="font-weight: bold; padding-right: 4px">{{user.username+' 님, '}}</span>
-          <FieldCategoryBox :boxType="true" :value="'수학'" :boxColor="'#B5EAB0'"/>
+          <FieldCategoryBox :boxType="true" :value="FIELD_MAP[this.recommend_field].value" :boxColor="FIELD_MAP[this.recommend_field].boxColor"/>
           <span>{{$t('m.AiSolution')}}</span>
         </div>
-        <div class="aiRecommendProblem">
+        <template v-for="(recommend_problem, index) of this.recommend_problems">
+          <div class="aiRecommendProblem">
                 <span style="font-weight: bold; font-size: 15px">
-                  더 크게 합치기
+                  {{ recommend_problem.title }}
                 </span>
-          <a style="text-decoration: underline; color: #7a7a7a">
-            {{$t('m.Try_Most_Hard_Problem_In_Last_Week')}}
-          </a>
-        </div>
-        <div class="aiRecommendProblem">
-                <span style="font-weight: bold; font-size: 15px">
-                  주사위 게임 2
-                </span>
-          <a style="text-decoration: underline; color: #7a7a7a">
-            {{$t('m.Try_Most_Hard_Problem_In_Last_Week')}}
-          </a>
-        </div>
-        <div class="aiRecommendProblem">
-                <span style="font-weight: bold; font-size: 15px">
-                  원소들의 곱과 합
-                </span>
-          <a style="text-decoration: underline; color: #7a7a7a">
-            {{$t('m.Try_Most_Hard_Problem_In_Last_Week')}}
-          </a>
-        </div>
+            <a @click="enterProblemDetail(recommend_problem.id)" style="text-decoration: underline; color: #7a7a7a">
+              {{$t('m.Try_Most_Hard_Problem_In_Last_Week')}}
+            </a>
+          </div>
+        </template>
       </template>
-
   </main>
 </template>
 
 <script>
 import {mapActions, mapGetters} from "vuex";
 import FieldCategoryBox from "../../../components/FieldCategoryBox.vue";
-import {radarGraph} from "../chartData";
+import api from "../../../api";
+import {FIELD_MAP} from "../../../../../utils/constants";
 
 export default {
   name: 'AiRecommendationBox',
@@ -64,14 +50,67 @@ export default {
         width: '240',
         height: '250'
       },
-      radarGraph: radarGraph,
+      option: {
+        color: ['#000000'],
+        legend: {},
+        tooltip: {
+          trigger: 'axis'
+        },
+        radar: {
+          indicator: [
+            { text: '자료구조', max: 25600, color: '#000000', },
+            { text: '구현', max: 25600, color: '#000000', },
+            { text: '수학', max: 25600, color: '#000000', },
+            { text: '탐색', max: 25600, color: '#000000', },
+            { text: '정렬', max: 25600, color: '#000000', },
+          ],
+          center: ['50%', '50%'],
+          axisName:{
+            fontWeight: 'bold'
+          },
+          splitArea: {
+            areaStyle: {
+              color: ['rgba(255,255,255,0)', 'rgba(255,255,255,0)', 'rgba(255,255,255,0)', 'rgba(255,255,255,0)'],
+            }
+          },
+          splitNumber: 4,
+        },
+        series: [
+        ]
+      },
+      recommend_problems: [],
+      recommend_field: 0
     }
   },
+  mounted() {
+    this.init()
+  },
   methods:{
+    ...mapActions(['changeProblemSolvingState']),
+    init(){
+      api.getAiRecommendProblem()
+        .then((res)=> {
+          console.log("res: ", res)
+          let field_scores = res.data.data.field_score
+          this.recommend_problems = res.data.data.recommend_problems
+          this.recommend_field = field_scores.indexOf(Math.min([...field_scores]))
+        })
+    },
+    setRadarGraph(){
+      this.$refs.chart.setOption(
+
+      )
+    },
+    enterProblemDetail(problemId) {
+      this.changeProblemSolvingState(true)
+      this.$router.push({name: 'problem-details', params: {problemID: problemId}})
+    },
   },
   computed:{
+    FIELD_MAP() {
+      return FIELD_MAP
+    },
     ...mapGetters(['user', 'isAuthenticated', 'isAdminRole']),
-    ...mapGetters(['profile']),
   }
 }
 </script>
@@ -83,7 +122,6 @@ header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  //border-bottom: 1px solid #dedede;
 
   span:first-child {
     font-weight: 650;
