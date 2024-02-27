@@ -96,6 +96,9 @@ export default {
       }, 3000)
     })
   },
+  getAiRecommendProblem(){
+    return ajax("ai_recommend_problem","get");
+  },
   getUserAchievement() {
     // return ajax("profile/achievement", "get", {
     //       params: {
