@@ -53,7 +53,7 @@ export default {
     comma,
     init() {
       this.isLoading = true
-      api.getUserRank(this.rank, 0).then(res => {
+      api.getUserRank(this.rank-1, 1).then(res => {
         this.isLoading = false
         this.user = res.data.data.results[0]
       })

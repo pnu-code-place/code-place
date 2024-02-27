@@ -102,8 +102,8 @@ export default {
       }, 3000)
     })
   },
-  getAiRecommendProblem(){
-    return ajax("ai_recommend_problem","get");
+  getAiRecommendProblem() {
+    return ajax("ai_recommend_problem", "get");
   },
   getUserAchievement() {
     // return ajax("profile/achievement", "get", {
@@ -322,7 +322,10 @@ export default {
     };
     return new Promise((resolve) => {
       setTimeout(() => {
-        resolve({data: {data: UserRankListProp}})
+        if (limit === 1) {
+          resolve({data: {data: {results: [UserRankListProp.results[offset]], total: UserRankListProp.total}}})
+        }
+        resolve({data: {data: {results: UserRankListProp.results.slice(3,13), total: UserRankListProp.total}}})
       }, 500)
     });
     return ajax("user_rank", "get", {

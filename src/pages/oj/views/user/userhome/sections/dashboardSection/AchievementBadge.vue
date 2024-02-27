@@ -84,6 +84,7 @@ export default {
 
   p {
     text-align: center;
+    width: 100%;
   }
 
   div {

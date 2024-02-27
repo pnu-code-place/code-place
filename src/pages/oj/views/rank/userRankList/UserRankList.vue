@@ -36,10 +36,10 @@ export default {
     </tr>
     </thead>
     <tbody>
-    <UserItem v-for="user in userList" :key="user.username" :user="user"></UserItem>
     <tr v-if="isLoading" v-for="index in limit" :key="index" class="skeleton-row">
       <td class="skeleton" v-for="index in 7"></td>
     </tr>
+    <UserItem v-for="user in userList" :key="user.username" :user="user" v-else></UserItem>
     </tbody>
   </table>
 </template>
