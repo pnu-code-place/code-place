@@ -1,6 +1,12 @@
 <script>
+import {comma, getTier} from "../../../../../utils/utils";
+import {TierImageSrc} from "../../../../../utils/constants";
+import ShineWrapper from "../../../components/ShineWrapper.vue";
+
 export default {
   name: 'UserItem',
+  components: {ShineWrapper},
+  methods: {comma, getTier},
   props: {
     user: {
       type: Object,
@@ -19,11 +25,11 @@ export default {
     }
   },
   computed: {
+    TierImageSrc() {
+      return TierImageSrc
+    },
     accuracy() {
       return (this.user.accuracy * 100).toFixed(1) + '%'
-    },
-    commaScore() {
-      return this.user.score.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
     }
   }
 }
@@ -38,12 +44,19 @@ export default {
         <span>{{ user.username }}</span>
       </router-link>
     </td>
-<!--    <td><p class="mood">{{ user.mood }}</p></td>-->
+    <!--    <td><p class="mood">{{ user.mood }}</p></td>-->
     <td>{{ user.major }}</td>
-    <td>{{ user.tier }}</td>
-    <td>{{ this.commaScore }}</td>
+    <td class="tier">
+      <shine-wrapper class="tier-mark-wrapper">
+        <img class="tier-mark" :src="TierImageSrc[user.tier]" alt='tier-mark'>
+      </shine-wrapper>
+      <span>{{ getTier(user.tier) }}</span>
+    </td>
+    <td>{{ comma(user.score) }}</td>
     <td class="user-problem">
-      <router-link :to="{name: 'user-problems', params: {username : user.username}}" class="justify-center">{{ user.solved }}</router-link>
+      <router-link :to="{name: 'user-problems', params: {username : user.username}}" class="justify-center">
+        {{ user.solved }}
+      </router-link>
     </td>
     <td>{{ this.accuracy }}</td>
   </tr>
@@ -56,11 +69,6 @@ tr {
   cursor: default;
   font-size: 13px;
 
-  .user-info {
-    display: flex;
-    align-items: center;
-  }
-
   &:hover {
     background-color: #f5f5f5;
   }
@@ -68,6 +76,7 @@ tr {
   td {
     padding: 10px 0;
     text-align: center;
+    height: 100%;
 
     p {
       padding: 0 10px;
@@ -81,7 +90,27 @@ tr {
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
     }
+
+    .tier-mark {
+      width: 40px;
+      height: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .tier-mark-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    span {
+      font-size: 13px;
+      font-weight: 700;
+    }
   }
+
 }
 
 .avatar {
@@ -104,5 +133,6 @@ a {
   align-items: center;
   //color: #666;
   text-decoration: none;
+  font-size: 13px;
 }
 </style>

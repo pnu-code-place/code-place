@@ -1,26 +1,18 @@
 <script>
 
-// const ojStatus = {
-//   rank: 1, // 랭킹
-//   rank_percent: 0.1, // 랭킹 퍼센트 ( 상위 10% )
-//   score: 100,
-//   submission_number: 100,
-//   accepted_number: 100,
-//   total_score: 56000, // 현재 점수
-//   rank_next: 60000, // 다음 랭킹의 허들
-//   rank_current: 50000, // 현재 랭킹의 허들
-//   miracle_current: 10, // 현재 연속 코딩일수
-//   miracle_record: 20 // 최고 연속 코딩일수
-// }
-
 import HorizontalGauge from "./HorizontalGauge.vue";
 import ShineWrapper from "../../../../../components/ShineWrapper.vue";
+import {comma, getTier} from "../../../../../../../utils/utils";
+import {AwardImageSrc, TierImageSrc} from "../../../../../../../utils/constants";
 
 export default {
   name: 'oj-summary',
   components: {ShineWrapper, HorizontalGauge},
   props: ['ojStatus'],
   computed: {
+    TierImageSrc() {
+      return TierImageSrc
+    },
     gaugeWidth() {
       return (this.ojStatus.total_score - this.ojStatus.rank_current) / (this.ojStatus.rank_next - this.ojStatus.rank_current);
     },
@@ -28,6 +20,10 @@ export default {
       // 소숫점 1자리까지
       return Math.round(this.ojStatus.rank_percent * 1000) / 10;
     }
+  },
+  methods :{
+    getTier,
+    comma,
   }
 }
 </script>
@@ -36,15 +32,15 @@ export default {
   <div class="oj-summary">
     <div class="rank-mark-wrapper">
       <shine-wrapper>
-        <img :src="ojStatus.rank_image" class="rank-mark" alt="rank emblem"/>
+        <img :src="TierImageSrc[ojStatus.rank_tier]" class="rank-mark" alt="rank emblem"/>
       </shine-wrapper>
-      <span>{{ ojStatus.rank_tier }}</span>
+      <span>{{ getTier(ojStatus.rank_tier) }}</span>
     </div>
     <div class="rank-info">
       <div class="rank-info-top">
         <div class="rank-info-elem">
           <span class="header">{{$t('m.UserHomeScore')}}</span>
-          <span class="value">{{ ojStatus.total_score }}</span>
+          <span class="value">{{ comma(ojStatus.total_score) }}</span>
         </div>
         <div class="rank-info-elem">
           <span class="header">{{$t('m.Ranking')}}</span>
@@ -61,13 +57,13 @@ export default {
       </div>
       <div class="progress">
         <span class="progress-info">
-          {{ ojStatus.total_score }} / {{ ojStatus.rank_next }}
+          {{ comma(ojStatus.total_score) }} / {{ comma(ojStatus.rank_next) }}
         </span>
         <div class="gauge-wrapper">
           <horizontal-gauge :progress="gaugeWidth"></horizontal-gauge>
         </div>
         <span class="progress-next">
-          {{$t('m.Until_Promotion_Before')}} <span class="progress-next-number">{{ ojStatus.rank_next - ojStatus.total_score }}{{$t('m.Point')}}</span> {{$t('m.Until_Promotion_After')}}
+          {{$t('m.Until_Promotion_Before')}} <span class="progress-next-number">{{ comma(ojStatus.rank_next - ojStatus.total_score) }}{{$t('m.Point')}}</span> {{$t('m.Until_Promotion_After')}}
         </span>
       </div>
     </div>
@@ -99,7 +95,7 @@ export default {
     gap: 10px;
 
     .rank-mark {
-      width: 180px;
+      width: 120px;
       height: auto;
     }
 

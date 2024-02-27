@@ -77,7 +77,7 @@ export default {
   display: flex;
 
   main {
-    width: 80%;
+    width: 83%;
     gap: 30px;
     display: flex;
     flex-direction: column;

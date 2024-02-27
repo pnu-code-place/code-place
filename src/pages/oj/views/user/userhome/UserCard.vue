@@ -1,5 +1,6 @@
 <script>
 import ShineWrapper from "@oj/components/ShineWrapper.vue";
+import {TierImageSrc} from "../../../../../utils/constants";
 
 // const profile = {
 //   avatar: "https://avatars.githubusercontent.com/u/48755175?v=4",
@@ -21,6 +22,9 @@ export default {
   components: {ShineWrapper},
   props: ['profile'],
   computed: {
+    TierImageSrc() {
+      return TierImageSrc
+    },
     isMyProfile() {
       return this.$store.getters.user.username === this.profile.user.username;
     }
@@ -39,7 +43,7 @@ export default {
         {{ profile.user.username }}
         <div class="user-rank">
           <shine-wrapper>
-            <img src="https://cdn-icons-png.flaticon.com/512/473/473406.png" class="rank-mark"/>
+            <img :src="TierImageSrc[profile.user.rank_tier]" class="rank-mark"/>
           </shine-wrapper>
         </div>
       </div>
