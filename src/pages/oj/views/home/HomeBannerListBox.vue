@@ -2,16 +2,14 @@
   <div class="bannerBox">
     <Carousel v-model="value1" autoplay loop arrow="never" radius-dot="true" autoplaySpeed="3000">
       <CarouselItem>
-        <div class="demo-carousel">Banner 1</div>
+        <div>
+          <img src="@/assets/banner1.png" width="100%" height="150px"/>
+        </div>
       </CarouselItem>
       <CarouselItem>
-        <div class="demo-carousel">Banner 2</div>
-      </CarouselItem>
-      <CarouselItem>
-        <div class="demo-carousel">Banner 3</div>
-      </CarouselItem>
-      <CarouselItem>
-        <div class="demo-carousel">Banner 4</div>
+        <div class="demo-carousel">
+          <img src="@/assets/banner2.png" width="100%" height="150px"/>
+        </div>
       </CarouselItem>
     </Carousel>
   </div>
@@ -35,6 +33,7 @@ export default {
 
 <style scoped lang="less">
 .bannerBox {
+  border-radius: 7px;
   margin-bottom: 20px;
   .demo-carousel{
     cursor: pointer;
