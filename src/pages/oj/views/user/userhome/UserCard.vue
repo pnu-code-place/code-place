@@ -44,8 +44,9 @@ export default {
         </div>
       </div>
       <div class="user-description">{{ profile.user.email }}</div>
-      <div class="user-description">{{ profile.user.school || "공과대학" }}</div>
-      <div class="user-description">{{ profile.user.major || "전기컴퓨터공학부 정보컴퓨터공학전공" }}</div>
+      <div class="user-description">{{ profile.school || "대학" }}</div>
+      <div class="user-description">{{ profile.major || "전공" }}</div>
+      <div v-if="profile.mood" class="user-description mood">{{ profile.mood || "" }}</div>
     </div>
     <div class="container-right">
       <div id="modify-button-wrapper">
@@ -69,7 +70,7 @@ export default {
 <style scoped lang="less">
 .user-card {
   width: 100%;
-  padding: 20px;
+  padding: 30px;
   gap: 20px;
   display: flex;
   justify-content: space-between;
@@ -122,6 +123,16 @@ export default {
     .user-description {
       font-size: 14px;
       font-weight: 500;
+    }
+
+    .mood {
+      background-color: #f0f0f0;
+      border-radius: 5px;
+      width: 100%;
+      font-size: 12px;
+      padding : 5px 10px;
+      margin-top: 10px;
+      text-align: left;
     }
   }
 

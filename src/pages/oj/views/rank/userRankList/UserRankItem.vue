@@ -38,11 +38,13 @@ export default {
         <span>{{ user.username }}</span>
       </router-link>
     </td>
-    <td><p>{{ user.mood}}</p></td>
+<!--    <td><p class="mood">{{ user.mood }}</p></td>-->
     <td>{{ user.major }}</td>
     <td>{{ user.tier }}</td>
     <td>{{ this.commaScore }}</td>
-    <td>{{ user.solved }}</td>
+    <td class="user-problem">
+      <router-link :to="{name: 'user-problems', params: {username : user.username}}" class="justify-center">{{ user.solved }}</router-link>
+    </td>
     <td>{{ this.accuracy }}</td>
   </tr>
 </template>
@@ -55,17 +57,8 @@ tr {
   font-size: 13px;
 
   .user-info {
-    margin-left: 20px;
     display: flex;
     align-items: center;
-
-    a {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      color: #666;
-      text-decoration: none;
-    }
   }
 
   &:hover {
@@ -79,10 +72,15 @@ tr {
     p {
       padding: 0 10px;
     }
-  }
 
-  td:first-child {
-    border-right: 1px solid #f0f0f0;
+    .mood {
+      // 2줄 이상일 때 생략
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
   }
 }
 
@@ -92,6 +90,19 @@ tr {
   border-radius: 50%;
   margin-right: 10px;
   background: linear-gradient(90deg, #f0f0f0 25%, #f5f5f5 50%, #f0f0f0 75%);
+}
 
+.justify-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+a {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  //color: #666;
+  text-decoration: none;
 }
 </style>

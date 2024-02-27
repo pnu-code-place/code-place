@@ -1,5 +1,5 @@
 <script>
-import UserItem from "./UserItem.vue";
+import UserItem from "./UserRankItem.vue";
 
 export default {
   name: 'RankList',
@@ -18,8 +18,8 @@ export default {
     <thead>
     <tr>
       <th class="col-rank">{{ $t('m.Rank') }}</th>
-      <th class="col-user">{{ $t('m.User') }}</th>
-      <th class="col-mood">{{ $t('m.Mood') }}</th>
+      <th class="col-user">{{ $t('m.Users') }}</th>
+<!--      <th class="col-mood">{{ $t('m.Mood') }}</th>-->
       <th class="col-major">{{ $t('m.Major') }}</th>
       <th class="col-grade">{{ $t('m.Grade') }}</th>
       <th class="col-score">{{ $t('m.Score') }}</th>
@@ -43,7 +43,6 @@ table {
 th {
   padding: 10px 0;
   border-bottom: 1px solid #f0f0f0;
-  border-left: 1px solid #f0f0f0;
   font-size: 15px;
   color: #666;
 
@@ -52,7 +51,7 @@ th {
   }
 
   &.col-rank {
-    width: 3%;
+    width: 7%;
   }
 
   &.col-user {

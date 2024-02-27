@@ -1,17 +1,20 @@
 <template>
   <div class="acm-rank">
     <div class="acm-rank__contents">
-      <div class="acm-rank__left">
+      <div class="acm-rank__left container">
         <h1>{{ $t('m.Top_Users') }}</h1>
         <div class="top-users">
-          <div class="top2">
-
+          <div class="top2 top-user">
+            <h2>{{$t('m.TOP_2')}}</h2>
+            <TopRanker :rank=1></TopRanker>
           </div>
-          <div class="top1">
-
+          <div class="top1 top-user">
+            <h2>{{$t('m.TOP_1')}}</h2>
+            <TopRanker :rank=2></TopRanker>
           </div>
-          <div class="top3">
-
+          <div class="top3 top-user">
+            <h2>{{$t('m.TOP_3')}}</h2>
+            <TopRanker :rank=3></TopRanker>
           </div>
         </div>
         <UserList :userList="dataRank"/>
@@ -20,6 +23,14 @@
                     @on-page-size-change="getRankData(1)"></Pagination>
       </div>
       <div class="acm-rank__right">
+        <div class="surge-user container">
+          <h2>{{ $t('m.Today_Surge_User') }}</h2>
+          <SurgeRankList></SurgeRankList>
+        </div>
+        <div class="major-rank container">
+          <h2>{{ $t('m.Major_Rank') }}</h2>
+          <MajorRankList></MajorRankList>
+        </div>
       </div>
     </div>
   </div>
@@ -28,14 +39,16 @@
 <script>
 import api from '@oj/api'
 import Pagination from '@oj/components/Pagination'
-import utils from '@/utils/utils'
 import {RULE_TYPE} from '@/utils/constants'
-import UserList from "./userRankList/UserList.vue";
+import UserList from "./userRankList/UserRankList.vue";
+import SurgeRankList from "./userRankList/SurgeRankList.vue";
+import MajorRankList from "./userRankList/MajorRankList.vue";
+import TopRanker from "./TopRanker.vue";
 
 export default {
   name: 'acm-rank',
   components: {
-    Pagination, UserList
+    Pagination, UserList, SurgeRankList, MajorRankList, TopRanker
   },
   data() {
     return {
@@ -190,12 +203,11 @@ export default {
   },
   methods: {
     getRankData(page) {
-      let offset = (page - 1) * this.limit
+      let offset = (page - 1) * this.limit + 3
       // let bar = this.$refs.chart
       // bar.showLoading({maskColor: 'rgba(250, 250, 250, 0.8)'})
       this.loadingTable = true
       api.getUserRank(offset, this.limit, RULE_TYPE.ACM).then(res => {
-        console.log("res", res.data.data.results)
         this.loadingTable = false
         if (page === 1) {
           // this.changeCharts(res.data.data.results.slice(0, 10))
@@ -221,59 +233,53 @@ export default {
     }
   },
   getTopUsers() {
-    api.getTopUsers().then(res => {
-      console.log("res", res.data.data)
+    api.getUserRank(0, 3).then(res => {
+      console.log("res", res.data.data.results)
+      this.topUsers = res.data.data.results
     })
-
   }
 }
 </script>
 
 <style scoped lang="less">
+
+.container {
+  padding: 20px 30px;
+  border: 1px solid #dedede;
+  border-radius: 7px;
+}
+
 .acm-rank {
-  width: 92%;
+  width: 100%;
   padding: 0 20px;
 
   .acm-rank__contents {
     display: flex;
     justify-content: space-between;
-    gap: 20px;
+    gap: 30px;
 
 
     .acm-rank__left {
       width: 75%;
-      padding: 30px;
-      border: 1px solid #dedede;
-      border-radius: 7px;
 
       .top-users {
-
         display: flex;
         justify-content: center;
-        margin-bottom: 20px;
-
+        margin: 20px 0;
+        gap: 50px;
 
         h1 {
           font-size: 20px;
           margin-bottom: 20px;
-        }
-
-        .top1, .top2, .top3 {
-          display: flex;
-          justify-content: space-between;
-          margin-bottom: 20px;
-
-          img {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-          }
         }
       }
     }
 
     .acm-rank__right {
       width: 25%;
+      gap: 20px;
+      display: flex;
+      flex-direction: column;
 
       .acm-rank__right__title {
         h1 {
@@ -289,5 +295,30 @@ export default {
       }
     }
   }
+}
+
+.top-user {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 10px;
+
+  h2 {
+    font-size: 20px;
+  }
+
+  img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+  }
+}
+
+.top2 {
+  margin-top: 20px;
+}
+
+.top3 {
+  margin-top: 20px;
 }
 </style>

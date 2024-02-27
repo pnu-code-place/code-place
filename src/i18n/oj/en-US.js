@@ -78,6 +78,11 @@ export const m = {
   mood: "소개",
   AC: "AC",
   Rating: "Rating",
+  Today_Surge_User: "오늘의 급상승 사용자",
+  Major_Rank: "전공 TOP 7",
+  TOP_1: "1등",
+  TOP_2: "2등",
+  TOP_3: "3등",
   // Announcements.vue
   Contest_Announcements: "Contest Announcements",
   By: "By",
@@ -218,7 +223,7 @@ export const m = {
   // OIRank.vue
   OI_Ranklist: "OI Ranklist",
   // OIContestRank.vue
-  Total_Score: "Total Score",
+  Total_Score: "총점",
   // ProblemList.vue
   Problem_List: "문제 리스트",
   Reset: "새로고침",
@@ -376,7 +381,7 @@ export const m = {
   // UserList.vue
   Top_Users: "랭킹",
   Avatar: "아바타",
-  User : "사용자",
+  Users : "사용자",
   Grade: "등급",
 
 };

@@ -2,11 +2,12 @@ import Vue from "vue";
 import store from "@/store";
 import axios from "axios";
 import {
-  achievementSectionProp,
-  DashboardSectionProp,
-  ProblemSectionProp,
-  userRankListProp
+  AchievementSectionProp,
+  DashboardSectionProp, MajorRankListProp,
+  ProblemSectionProp, SurgeUserProps,
+  UserRankListProp
 } from "./views/user/userhome/sections/prop";
+import MajorRankList from "./views/rank/userRankList/MajorRankList.vue";
 
 Vue.prototype.$http = axios;
 axios.defaults.baseURL = "/api";
@@ -49,15 +50,15 @@ export default {
       }
     });
   },
-    userEmailValidCheck(email, code) {
-        console.log("applyUserEmailValidCheck email: ", email, code);
-        return ajax("user_email_valid_check", "post", {
-            data: {
-                email,
-                code
-            }
-        });
-    },
+  userEmailValidCheck(email, code) {
+    console.log("applyUserEmailValidCheck email: ", email, code);
+    return ajax("user_email_valid_check", "post", {
+      data: {
+        email,
+        code
+      }
+    });
+  },
   // 注册
   register(data) {
     return ajax("register", "post", {
@@ -107,9 +108,9 @@ export default {
     //         username
     //       }
     //     });
-    return new Promise ((resolve) => {
+    return new Promise((resolve) => {
       setTimeout(() => {
-        resolve({data: {data: achievementSectionProp}})
+        resolve({data: {data: AchievementSectionProp}})
       }, 3000)
     })
   },
@@ -312,12 +313,34 @@ export default {
     };
     return new Promise((resolve) => {
       setTimeout(() => {
-        resolve({data: {data: {results: userRankListProp, total: 10}}})
+        resolve({data: {data: UserRankListProp}})
       }, 500)
     });
     return ajax("user_rank", "get", {
       params
     });
+  },
+  getSurgeUsers(limit) {
+    const params = {
+      limit
+    }
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve({data: {data: SurgeUserProps}})
+      }, 500)
+    });
+    return ajax("surge_users", "get", {params});
+  },
+  getMajorRankList(limit) {
+    const params = {
+      limit
+    }
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve({data: {data: MajorRankListProp}})
+      }, 500)
+    });
+    return ajax("major_rank_list", "get", {params});
   },
   getContestRank(params) {
     return ajax("contest_rank", "get", {
@@ -345,7 +368,7 @@ export default {
  */
 function ajax(url, method, options) {
   if (options !== undefined) {
-    var { params = {}, data = {} } = options;
+    var {params = {}, data = {}} = options;
   } else {
     params = data = {};
   }
