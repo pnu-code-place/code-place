@@ -2,7 +2,7 @@
   <div class="noticeBox">
     <div class="noticeBoxHeader">
       <span @click="handleRoute('notice')">공지사항</span>
-      <div class="plusDiv" @click="handleRoute('notice')">
+      <div class="plusDiv" @click="goAnnouncement('')">
         <Icon type="android-add" size="13" color="#7a7a7a"></Icon>
         <span>더보기</span>
       </div>
