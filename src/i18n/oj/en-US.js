@@ -33,7 +33,7 @@ export const m = {
   You_have_solved_the_problem: "You have solved the problem",
   Submitted_successfully: "Submitted successfully",
   You_have_submitted_a_solution: "You have submitted a solution.",
-  Contest_has_ended: "Contest has ended",
+  Contest_has_ended: "컨테스트가 종료되었습니다.",
   You_have_submission_in_this_problem_sure_to_cover_it:
     "You have submission in this problem, sure to cover it?",
   // About.vue
@@ -146,9 +146,9 @@ export const m = {
   Rule: "룰",
   OI: "OI",
   ACM: "ACM",
-  Underway: "Underway",
-  Not_Started: "Not_Started",
-  Ended: "Ended",
+  Underway: "진행 중",
+  Not_Started: "시작 전",
+  Ended: "종료",
   No_contest: "등록된 컨테스트가 없습니다.",
   Please_login_first: "로그인이 필요합니다.",
   // ContestProblemList
