@@ -11,7 +11,7 @@
       </div>
       <keep-alive>
         <div class="right-container">
-            <MostDifficultProblemLastWeekBox/>
+            <MostDifficultProblemLastWeekBox :problem="mostDifficultProblem"/>
             <AiRecommendationBox/>
         </div>
       </keep-alive>
@@ -52,6 +52,7 @@ export default {
         }
       ],
       problemList: [],
+      mostDifficultProblem: {},
       limit: 20,
       total: 0,
       loadings: {
@@ -91,6 +92,7 @@ export default {
         this.getTagList()
       }
       this.getProblemList()
+      this.mostDifficultProblem = this.mostDifficultProblemLastWeek()
     },
     pushRouter() {
       this.$router.push({
@@ -119,6 +121,10 @@ export default {
     },
     onReset() {
       this.$router.push({name: 'problem-list'})
+    },
+    mostDifficultProblemLastWeek(){
+      console.log(this.problemList)
+      return this.problemList.find(value => value.is_most_difficult === true)
     },
     pickOne() {
       api.pickone().then(res => {
