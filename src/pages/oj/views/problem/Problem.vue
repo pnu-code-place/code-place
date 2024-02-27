@@ -192,8 +192,8 @@
                   실행 결과
                 </span>
                   <i class="fas fa-circle-notch fa-spin" style="margin-left: 7px;color: #e39530"></i>
-                <i class="far fa-check-circle" style="color: #38c27b;"></i>
-                <i class="far fa-times-circle" style="color: #dd3131;"></i>
+<!--                <i class="far fa-check-circle" style="color: #38c27b;"></i>-->
+<!--                <i class="far fa-times-circle" style="color: #dd3131;"></i>-->
               </div>
               <div class="submitBtn" @click="submitCode">
                 <i class="fas fa-file-upload"></i>
@@ -201,7 +201,7 @@
               </div>
             </div>
             <div style="width: 100%;height: 70%; display: flex; font-size: small; text-align: center;">
-              <span>테스트 케이스 및 실행 결과가 표시됩니다.</span>
+<!--              <span>테스트 케이스 및 실행 결과가 표시됩니다.</span>-->
 <!--              <div class="status" v-if="statusVisible">-->
 <!--                <template v-if="!this.contestID || (this.contestID && OIContestRealTimePermission)">-->
 <!--                  <Tag type="dot" :color="submissionStatus.color" @click.native="handleRoute('/status/'+submissionId)">-->

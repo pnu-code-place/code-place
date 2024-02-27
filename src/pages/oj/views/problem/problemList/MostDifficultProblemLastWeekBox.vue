@@ -50,6 +50,11 @@ import FieldCategoryBox from "../../../components/FieldCategoryBox.vue";
 export default {
   name: 'MostDifficultProblemLastWeekBox',
   components: {FieldCategoryBox},
+  props:{
+    problem:{
+      type: Object
+    }
+  },
   data () {
     return {
 
