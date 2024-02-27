@@ -8,6 +8,14 @@ export default {
     userList: {
       type: Array,
       default: []
+    },
+    isLoading: {
+      type: Boolean,
+      default: false
+    },
+    limit: {
+      type: Number,
+      default: 30
     }
   },
 }
@@ -19,7 +27,7 @@ export default {
     <tr>
       <th class="col-rank">{{ $t('m.Rank') }}</th>
       <th class="col-user">{{ $t('m.Users') }}</th>
-<!--      <th class="col-mood">{{ $t('m.Mood') }}</th>-->
+      <!--      <th class="col-mood">{{ $t('m.Mood') }}</th>-->
       <th class="col-major">{{ $t('m.Major') }}</th>
       <th class="col-grade">{{ $t('m.Grade') }}</th>
       <th class="col-score">{{ $t('m.Score') }}</th>
@@ -29,6 +37,9 @@ export default {
     </thead>
     <tbody>
     <UserItem v-for="user in userList" :key="user.username" :user="user"></UserItem>
+    <tr v-if="isLoading" v-for="index in limit" :key="index" class="skeleton-row">
+      <td class="skeleton" v-for="index in 7"></td>
+    </tr>
     </tbody>
   </table>
 </template>
@@ -38,6 +49,28 @@ table {
   width: 100%;
   border-collapse: collapse;
   margin-bottom: 20px;
+}
+
+.skeleton-row {
+  height: 50px;
+  margin: 0;
+  animation: loading 1s infinite;
+
+  .skeleton {
+    height: 50px;
+  }
+}
+
+@keyframes loading {
+  0% {
+    background-color: #e3e3e3;
+  }
+  50% {
+    background-color: #f5f5f5;
+  }
+  100% {
+    background-color: #e3e3e3;
+  }
 }
 
 th {

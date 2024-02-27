@@ -9,18 +9,18 @@
         <div class="top-users">
           <div class="top2 top-user">
             <h2>{{ $t('m.TOP_2') }}</h2>
-            <TopRanker :rank=1></TopRanker>
+            <TopRanker :rank=2></TopRanker>
           </div>
           <div class="top1 top-user">
             <h2>{{ $t('m.TOP_1') }}</h2>
-            <TopRanker :rank=2></TopRanker>
+            <TopRanker :rank=1></TopRanker>
           </div>
           <div class="top3 top-user">
             <h2>{{ $t('m.TOP_3') }}</h2>
             <TopRanker :rank=3></TopRanker>
           </div>
         </div>
-        <UserList :userList="dataRank"/>
+        <UserList :userList="dataRank" :is-loading="loadingTable" :limit="limit"/>
         <Pagination :total="total" :page-size.sync="limit" :current.sync="page"
                     @on-change="getRankData" show-sizer
                     @on-page-size-change="getRankData(1)"></Pagination>
