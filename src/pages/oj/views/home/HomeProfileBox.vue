@@ -1,7 +1,7 @@
 <template>
   <div class="profileBox">
     <template v-if="!isAuthenticated">
-            <span>
+            <span style="font-weight: 600">
               안전한 서비스 이용을 위해 로그인을 해주세요
             </span>
       <div class="loginBtn" @click="handleLoginBtnClick('login')">
@@ -22,12 +22,13 @@
           <div class="userInfoWrapper">
                   <span>
                     {{ user.username + '님' }}
-                    <img src="@/assets/badgeExample.png" width="13px"/>
+                    <img :src="getTierImageSrc(user.tier)" width="13px"/>
                   </span>
             <br>
-            <span>{{ user.email }}</span>
+<!--            <span>{{ user.email }}</span>-->
+            <span>정보컴퓨터공학부</span>
             <br>
-            <span>ACM 56000p</span>
+            <span>PLATINUM III</span>
           </div>
           <div class="logoutBtn">
                   <span @click="goRouter('logout')">
@@ -38,7 +39,7 @@
         <div class="authenticatedFooter">
           <span @click="goRouter('user-home')"><router-link
               :to="{name:'user-home', params:{username:user.username}}">{{ $t('m.MyHome') }}</router-link></span>
-          <span>{{ '|' }}</span>
+          <span>정보수정</span>
           <span @click="goRouter('profile-setting')"><router-link
               :to="{name:'default-setting'}">{{ $t('m.Settings') }}</router-link></span>
         </div>
@@ -50,6 +51,7 @@
 <script>
 import api from '@oj/api'
 import {mapActions, mapGetters} from "vuex";
+import {getTierImageSrc} from "../../../../utils/constants";
 
 export default {
   name: 'HomeProfileBox',
@@ -57,6 +59,7 @@ export default {
     return {}
   },
   methods: {
+    getTierImageSrc,
     ...mapActions(['getProfile', 'changeModalStatus']),
     handleLoginBtnClick(mode) {
       console.log("setting complete!")
@@ -92,8 +95,8 @@ export default {
   height: 200px;
   margin-bottom: 20px;
   text-align: center;
-  padding-left: 30px;
-  padding-right: 30px;
+  padding-left: 20px;
+  padding-right: 20px;
   padding-top: 25px;
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 
@@ -103,7 +106,7 @@ export default {
     border-radius: 5px;
     height: 60px;
     line-height: 60px;
-    background-color: #4A86C0;
+    background-color: #32306b;
     margin-top: 30px;
     margin-bottom: 30px;
 
@@ -148,7 +151,7 @@ export default {
     margin-bottom: 30px;
 
     .userAvatarWrapper {
-      width: 20%;
+      width: 27%;
       height: 100%;
     }
 
@@ -163,9 +166,11 @@ export default {
 
     .logoutBtn {
       cursor: pointer;
-      width: 80px;
-      border-radius: 10px;
-      border: 1px solid #ACCCDE;
+      width: 70px;
+      padding: 3px 0;
+      border-radius: 7px;
+      color: white;
+      background-color: rgba(34, 33, 72, 0.82);
     }
   }
 
