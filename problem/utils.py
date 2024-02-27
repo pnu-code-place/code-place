@@ -45,6 +45,9 @@ def call_update_weekly_stats():
 def update_weekly_stats():
     problems = Problem.objects.filter(difficulty__in=['High', 'VeryHigh'], accepted_number__gte=1)
 
+    if not problems:
+        return
+
     with transaction.atomic():
         for problem in problems:
             problem.last_week_info = problem.curr_week_info
@@ -68,6 +71,9 @@ def call_update_bonus_problem():
 @dramatiq.actor()
 def update_bonus_problem():
     problems = Problem.objects.all()
+
+    if not problems:
+        return
 
     for problem in problems:
         problem.is_bonus = False

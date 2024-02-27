@@ -55,7 +55,6 @@ class ProblemField:
     }
 
 
-
 class ProblemScore:
     score = {
         'VeryLow': 20,      # VeryLow

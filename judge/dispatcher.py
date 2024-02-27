@@ -8,7 +8,7 @@ from django.db import transaction, IntegrityError
 from django.db.models import F
 from django.http import HttpResponseNotFound
 
-from account.models import User, Score
+from account.models import User, UserScore, UserSolved
 from conf.models import JudgeServer
 from contest.models import ContestRuleType, ACMContestRank, OIContestRank, ContestStatus
 from options.options import SysOptions
@@ -429,14 +429,13 @@ class JudgeDispatcher(DispatcherBase):
     def update_user_score(self):
         with transaction.atomic():
             try:
-                if not Score.objects.filter(user_id=self.submission.user_id).exists():
-                    user = User.objects.get(id=self.submission.user_id)
-                    Score.objects.create(user=user)
-                user_score = Score.objects.select_for_update().get(user_id=self.submission.user_id)
+                user_score = UserScore.objects.select_for_update().get(user_id=self.submission.user_id)
+                user_solved = UserSolved.objects.select_for_update().get(user_id=self.submission.user_id)
                 problem = Problem.objects.get(id=self.problem.id)
-            except (Score.DoesNotExist, Problem.DoesNotExist, User.DoesNotExist):
-                return HttpResponseNotFound("user_score | problem doesn't exist")
+            except (UserScore.DoesNotExist, Problem.DoesNotExist, UserSolved.DoesNotExist):
+                return HttpResponseNotFound("user_score | problem | user_solved doesn't exist")
 
+            # update user score
             field_name = ProblemField.intToStr[problem.field] + '_score'
             if problem.is_bonus:
                 user_score.total_score += ProblemScore.score[problem.difficulty] * 2
@@ -447,16 +446,22 @@ class JudgeDispatcher(DispatcherBase):
                 new_field_score = getattr(user_score, field_name) + ProblemScore.score[problem.difficulty]
                 setattr(user_score, field_name, new_field_score)
 
+            # update solved problem count by difficulty
+            difficulty_name = problem.difficulty + '_solved'
+            new_difficulty_solved = getattr(user_solved, difficulty_name) + 1
+            setattr(user_solved, difficulty_name, new_difficulty_solved)
+
+            user_score.save()
+            user_solved.save()
+
             # update tier
-            if user_score.total_score >= user_score.next_tier_score:
+            while user_score.total_score >= user_score.next_tier_score:
                 if user_score.tier != 'diamond1':
                     new_tier, new_current_score, new_next_score = Tier.next_tier(user_score.tier)
-                    print("new_tier:", new_tier, "new_current_score:", new_current_score, "new_next_score:", new_next_score, sep='')
                     user_score.tier = new_tier
                     user_score.current_tier_score = new_current_score
                     user_score.next_tier_score = new_next_score if new_next_score else 10000000
-
-            user_score.save()
+                    user_score.save()
 
         if self.submission.user_id not in problem.curr_week_info['solver']:
             problem.curr_week_info['solver'].append(self.submission.user_id)

@@ -13,6 +13,8 @@ from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
 from otpauth import OtpAuth
 from django.core.cache import cache
 from django.http import HttpResponseBadRequest, HttpResponseNotFound, HttpResponseForbidden, HttpResponseServerError
+from django.db.models import F, Count, Q
+from django.db import transaction
 
 from problem.models import Problem
 from utils.constants import ContestRuleType
@@ -21,12 +23,15 @@ from utils.api import APIView, validate_serializer, CSRFExemptAPIView
 from utils.captcha import Captcha
 from utils.shortcuts import rand_str, img2base64, datetime2str
 from ..decorators import login_required
-from ..models import User, UserProfile, AdminType, College, Department, Score
+from ..models import User, UserProfile, AdminType, College, Department, UserScore, UserSolved
 from ..serializers import (ApplyResetPasswordSerializer, ResetPasswordSerializer,
                            UserChangePasswordSerializer, UserLoginSerializer,
                            UserRegisterSerializer, UsernameOrEmailCheckSerializer,
                            RankInfoSerializer, UserChangeEmailSerializer, SSOSerializer,
-                           CollegeListSerializer, DepartmentSerializer, RankingSerializer)
+                           CollegeListSerializer, DepartmentSerializer, RankingSerializer,
+                            DashboardUserInfoSerializer, DashboardSubmissionSerializer,
+                           DashboardDepartmentSerializer, DashboardCollegeSerializer, DashboardRankSerializer,
+                           )
 from ..serializers import (TwoFactorAuthCodeSerializer, UserProfileSerializer,
                            EditUserProfileSerializer, ImageUploadForm)
 from ..tasks import send_email_async
@@ -56,11 +61,11 @@ class GetRankingAPI(APIView):
         try:
             limit = int(request.GET.get("limit", None))
             if limit:
-                ranking = Score.objects.all().order_by('-score')[:limit]
+                ranking = UserScore.objects.all().order_by('-score')[:limit]
             else:
-                ranking = Score.objects.all().order_by('-score')
+                ranking = UserScore.objects.all().order_by('-score')
             return self.success(RankingSerializer(ranking, many=True).data)
-        except Score.DoesNotExist:
+        except UserScore.DoesNotExist:
             return HttpResponseNotFound("no ranking table")
 
 
@@ -95,6 +100,48 @@ class UserProfileAPI(APIView):
             setattr(user_profile, k, v)
         user_profile.save()
         return self.success(UserProfileSerializer(user_profile, show_real_name=True).data)
+
+
+class UserProfileDashBoardAPI(APIView):
+    @login_required
+    def get(self, request):
+        try:
+            user_id = request.user.id
+            user = User.objects.filter(id=user_id).first()
+            user_profile = UserProfile.objects.filter(user_id=user_id).first()
+            user_department = Department.objects.filter(id=user_profile.department_id).first()
+            user_college = College.objects.filter(id=user_profile.college_id).first()
+            user_score = UserScore.objects.filter(user_id=user_id).annotate(
+                total_rank=Count('total_score',
+                    filter=Q(total_score__gt=F('total_score'))) + 1,
+                datastructure_rank=Count('datastructure_score',
+                    filter=Q(datastructure_score__gt=F('datastructure_score'))) + 1,
+                implementation_rank=Count('implementation_score',
+                    filter=Q(implementation_score__gt=F('implementation_score'))) + 1,
+                math_rank=Count('math_score',
+                    filter=Q(math_score__gt=F('math_score'))) + 1,
+                search_rank=Count('search_score',
+                    filter=Q(search_score__gt=F('search_score'))) + 1,
+                sorting_rank=Count('sorting_score',
+                    filter=Q(search_score__gt=F('sorting_score'))) + 1
+            ).first()
+        except User.DoesNotExist or UserProfile.DoesNotExist:
+            return HttpResponseNotFound('user does not exist')
+        except Department.DoesNotExist or College.DoesNotExist:
+            return HttpResponseNotFound('department or college does not exist')
+        except UserScore.DoesNotExist:
+            return HttpResponseNotFound('user_score does not exist')
+
+        total_user_count = UserScore.objects.count()
+
+        oj_status = {}
+        oj_status.update(DashboardUserInfoSerializer(user).data)
+        oj_status.update(DashboardSubmissionSerializer(user_profile).data)
+        oj_status.update(DashboardDepartmentSerializer(user_department).data)
+        oj_status.update(DashboardCollegeSerializer(user_college).data)
+        oj_status.update(DashboardRankSerializer(user_score, context={'total_user_count': total_user_count}).data)
+
+        return self.success(oj_status)
 
 
 class AvatarUploadAPI(APIView):
@@ -305,12 +352,16 @@ class UserRegisterAPI(APIView):
         print(data)
         college = College.objects.get(id=data['collegeId'])
         department = Department.objects.get(id=data['departmentId'])
-        user = User.objects.create(username=data["username"], email=data["email"],
-                                   college=college, department=department)
-        user.set_password(data["password"])
-        user.save()
-        UserProfile.objects.create(user=user)
-        Score.objects.create(user=user)
+        with transaction.atomic():
+            user = User.objects.create(username=data["username"], email=data["email"])
+            user.set_password(data["password"])
+            user.save()
+            user_profile = UserProfile.objects.create(user=user, college=college, department=department)
+            user_profile.save()
+            user_score = UserScore.objects.create(user=user)
+            user_score.save()
+            user_solved = UserSolved.objects.create(user=user)
+            user_solved.save()
         return self.success("Succeeded")
 
 

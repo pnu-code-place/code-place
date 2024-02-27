@@ -2,7 +2,7 @@ from django import forms
 
 from utils.api import serializers, UsernameSerializer
 
-from .models import AdminType, ProblemPermission, User, UserProfile, Score
+from .models import AdminType, ProblemPermission, User, UserProfile, UserScore, Department, College
 
 
 class CollegeListSerializer(serializers.Serializer):
@@ -20,7 +20,7 @@ class RankingSerializer(serializers.ModelSerializer):
     class Meta:
         user = serializers.ReadOnlyField(source="User.id")
 
-        model = Score
+        model = UserScore
         fields = ["score", "fluctuation", "user", "basis"]
 
 
@@ -101,6 +101,46 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     def get_real_name(self, obj):
         return obj.real_name if self.show_real_name else None
+
+
+class DashboardUserInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['username', 'email']
+
+
+class DashboardSubmissionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfile
+        fields = ['accepted_number', 'submission_number']
+
+
+class DashboardCollegeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = College
+        fields = ['college_name']
+
+
+class DashboardDepartmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Department
+        fields = ['department_name']
+
+
+class DashboardRankSerializer(serializers.ModelSerializer):
+    total_rank = serializers.SerializerMethodField()
+    total_rank_percentage = serializers.SerializerMethodField()
+
+    class Meta:
+        model = UserScore
+        fields = ['tier', 'total_score', 'current_tier_score', 'next_tier_score', 'total_rank', 'total_rank_percentage']
+
+    def get_total_rank(self, instance):
+        return instance.total_rank
+
+    def get_total_rank_percentage(self, instance):
+        total_rank_percentage = round(instance.total_rank / self.context['total_user_count'], 2)
+        return total_rank_percentage
 
 
 class EditUserSerializer(serializers.Serializer):
