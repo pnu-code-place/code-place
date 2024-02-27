@@ -31,6 +31,23 @@
             </a>
           </div>
         </template>
+        <div class="aiRecommendProblem">
+                <span style="font-weight: bold; font-size: 15px">
+                  {{ "벡터 매칭" }}
+                </span>
+          <a @click="enterProblemDetail('')" style="text-decoration: underline; color: #7a7a7a">
+            {{$t('m.Try_Most_Hard_Problem_In_Last_Week')}}
+          </a>
+        </div>
+        <div class="aiRecommendProblem">
+                <span style="font-weight: bold; font-size: 15px">
+                  {{ "두 수 더하기"}}
+                </span>
+          <a @click="enterProblemDetail('')" style="text-decoration: underline; color: #7a7a7a">
+            {{$t('m.Try_Most_Hard_Problem_In_Last_Week')}}
+          </a>
+        </div>
+
       </template>
   </main>
 </template>
@@ -51,7 +68,7 @@ export default {
         height: '250'
       },
       option: {
-        color: ['#000000'],
+        color: ['#efad4b'],
         legend: {},
         tooltip: {
           trigger: 'axis'
@@ -76,6 +93,29 @@ export default {
           splitNumber: 4,
         },
         series: [
+          {
+            name: 'ACM Score',
+            type: 'radar',
+            emphasis:{
+              areaStyle:{
+                color: '#756e6c',
+                shadowColor: '#FF917C'
+              },
+            },
+            data: [
+              {
+                value: [13200,1320,23400,5600,12300,20000],
+                tooltip: {
+                  trigger: 'item',
+                  backgroundColor: 'rgba(255,145,124,0.22)',
+                  textStyle: {
+                    color: '#1C1C1C',
+                    fontWeight: 'bold'
+                  }
+                },
+              },
+            ],
+          }
         ]
       },
       recommend_problems: [],
