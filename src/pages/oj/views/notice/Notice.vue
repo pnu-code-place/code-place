@@ -26,7 +26,7 @@
         </CarouselItem>
       </Carousel>
     </panel>
-    <Announcements class="announcement"></Announcements>
+    <Announcements ref="originalNotice" class="announcement"></Announcements>
     </Col>
   </Row>
 </template>
@@ -36,6 +36,7 @@
   import api from '@oj/api'
   import time from '@/utils/time'
   import { CONTEST_STATUS } from '@/utils/constants'
+  import announcement from "../../../admin/views/general/Announcement.vue";
 
   export default {
     name: 'notice',
@@ -53,6 +54,10 @@
       api.getContestList(0, 5, params).then(res => {
         this.contests = res.data.data.results
       })
+      let originalNoticeParam = this.$route.params.announcement
+      if(originalNoticeParam !== ''){
+        this.$refs.originalNotice.goAnnouncement(originalNoticeParam)
+      }
     },
     methods: {
       getDuration (startTime, endTime) {

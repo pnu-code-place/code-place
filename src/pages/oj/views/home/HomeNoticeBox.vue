@@ -72,10 +72,9 @@ export default {
       return onlyDate.toLocaleDateString();
     },
     goAnnouncement(announcement) {
-      this.$router.push("notice");
-      setTimeout(() => {
-      }, 1000);
-      this.announcement = announcement;
+      console.log(announcement)
+      this.$router.push({name: "notice", params: {announcement: announcement}});
+      // this.announcement = announcement;
       // this.listVisible = false;
     },
 
