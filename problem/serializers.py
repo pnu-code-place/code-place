@@ -279,6 +279,11 @@ class FPSProblemSerializer(serializers.Serializer):
 
 
 class RecommendBonusProblemSerializer(serializers.ModelSerializer):
+    tags = serializers.SerializerMethodField()
+
     class Meta:
         model = Problem
         fields = ['id', 'title', 'field', 'tags']
+
+    def get_tags(self, obj):
+        return [tag.name for tag in obj.tags.all()]

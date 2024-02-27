@@ -70,27 +70,23 @@ def call_update_bonus_problem():
 
 @dramatiq.actor()
 def update_bonus_problem():
-    problems = Problem.objects.all()
+    Problem.objects.update(is_bonus=False)
 
-    if not problems:
-        return
-
-    for problem in problems:
-        problem.is_bonus = False
-        problem.save(update_fields=['is_bonus'])
-
-    low_problems = problems.filter(difficulty__in=['VeryLow', 'Low'])
-    mid_problems = problems.filter(difficulty='Mid')
-    high_problems = problems.filter(difficulty__in=['High', 'VeryHigh'])
+    difficulty_groups = [
+        ['VeryLow', 'Low'],
+        ['Mid'],
+        ['High', 'VeryHigh']
+    ]
 
     selected_problems = []
+    selected_fields = set()
 
-    if low_problems.exists():
-        selected_problems.append(random.choice(low_problems))
-    if mid_problems.exists():
-        selected_problems.append(random.choice(mid_problems))
-    if high_problems.exists():
-        selected_problems.append(random.choice(high_problems))
+    for difficulty in difficulty_groups:
+        problems = Problem.objects.filter(difficulty__in=difficulty).exclude(field__in=selected_fields)
+        if problems.exists():
+            selected_problem = random.choice(problems)
+            selected_problems.append(selected_problem)
+            selected_fields.add(selected_problem.field)
 
     for problem in selected_problems:
         problem.is_bonus = True
