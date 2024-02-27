@@ -112,159 +112,79 @@ export const DashboardSectionProp = {
 // 유저가 푼 문제들의 섹션의 prop을 정의합니다.
 // /api/profile/problem?username=<username> GET
 export const ProblemSectionProp = {
-  ranking_percent: 0.3,
-  solved: { // 해결한 문제들을 표시합니다.
-    count: 4,
+  ranking_percent: 0.3, // 랭킹 퍼센트 - 상위 30%
+  solved: {
+    count: 6, // 해결한 문제들을 표시합니다.
     problems: [
       {
-        id: 1001, // 문제의 id
-        title: 'A+B', // 문제의 제목
-        submitTime: '2021-07-02T08:25:49.443682Z', // 제출 시간
-        difficulty: 'easy',   // 난이도
+        id: 2001,
+        title: '두 정수의 합',
+        submitTime: '2021-07-02T08:25:49.443682Z',
+        difficulty: 'medium',
       },
       {
-        id: 1002,
-        title: 'A-B',
+        id: 2002,
+        title: '정수 뒤집기',
         submitTime: '2021-07-02T08:25:49.443682Z',
         difficulty: 'easy',
       },
       {
-        id: 1003,
-        title: 'A*B',
+        id: 2003,
+        title: '팰린드롬 숫자',
         submitTime: '2021-07-02T08:25:49.443682Z',
         difficulty: 'easy',
       },
       {
-        id: 1004,
-        title: 'A/B',
+        id: 2004,
+        title: '로마 숫자를 정수로',
+        submitTime: '2021-07-02T08:25:49.443682Z',
+        difficulty: 'medium',
+      },
+      {
+        id: 2005,
+        title: '가장 긴 공통 접두사',
         submitTime: '2021-07-02T08:25:49.443682Z',
         difficulty: 'easy',
       },
       {
-        id: 1001, // 문제의 id
-        title: 'A+B', // 문제의 제목
-        submitTime: '2021-07-02T08:25:49.443682Z', // 제출 시간
-        difficulty: 'easy',   // 난이도
-      },
-      {
-        id: 1002,
-        title: 'A-B',
+        id: 2006,
+        title: '유효한 괄호',
         submitTime: '2021-07-02T08:25:49.443682Z',
         difficulty: 'easy',
-      },
-      {
-        id: 1003,
-        title: 'A*B',
-        submitTime: '2021-07-02T08:25:49.443682Z',
-        difficulty: 'easy',
-      },
-      {
-        id: 1004,
-        title: 'A/B',
-        submitTime: '2021-07-02T08:25:49.443682Z',
-        difficulty: 'easy',
-      }, {
-        id: 1001, // 문제의 id
-        title: 'A+B', // 문제의 제목
-        submitTime: '2021-07-02T08:25:49.443682Z', // 제출 시간
-        difficulty: 'easy',   // 난이도
-      },
-      {
-        id: 1002,
-        title: 'A-B',
-        submitTime: '2021-07-02T08:25:49.443682Z',
-        difficulty: 'easy',
-      },
-      {
-        id: 1003,
-        title: 'A*B',
-        submitTime: '2021-07-02T08:25:49.443682Z',
-        difficulty: 'easy',
-      },
-      {
-        id: 1004,
-        title: 'A/B',
-        submitTime: '2021-07-02T08:25:49.443682Z',
-        difficulty: 'easy',
-      }, {
-        id: 1001, // 문제의 id
-        title: 'A+B', // 문제의 제목
-        submitTime: '2021-07-02T08:25:49.443682Z', // 제출 시간
-        difficulty: 'easy',   // 난이도
-      },
-      {
-        id: 1002,
-        title: 'A-B',
-        submitTime: '2021-07-02T08:25:49.443682Z',
-        difficulty: 'easy',
-      },
-      {
-        id: 1003,
-        title: 'A*B',
-        submitTime: '2021-07-02T08:25:49.443682Z',
-        difficulty: 'easy',
-      },
-      {
-        id: 1004,
-        title: 'A/B',
-        submitTime: '2021-07-02T08:25:49.443682Z',
-        difficulty: 'easy',
-      }, {
-        id: 1001, // 문제의 id
-        title: 'A+B', // 문제의 제목
-        submitTime: '2021-07-02T08:25:49.443682Z', // 제출 시간
-        difficulty: 'easy',   // 난이도
-      },
-      {
-        id: 1002,
-        title: 'A-B',
-        submitTime: '2021-07-02T08:25:49.443682Z',
-        difficulty: 'easy',
-      },
-      {
-        id: 1003,
-        title: 'A*B',
-        submitTime: '2021-07-02T08:25:49.443682Z',
-        difficulty: 'easy',
-      },
-      {
-        id: 1004,
-        title: 'A/B',
-        submitTime: '2021-07-02T08:25:49.443682Z',
-        difficulty: 'easy',
-      },
+      }
     ],
   },
-  failed: { // 시도했으나 풀지 못한 문제들을 표시합니다.
-    count: 4,
+  failed: {
+    count: 4, // 시도했으나 풀지 못한 문제들을 표시합니다.
     problems: [
       {
-        id: 1001,
-        title: 'A+B',
+        id: 2007,
+        title: '직사각형 넓이 구하기',
         submitTime: '2021-07-02T08:25:49.443682Z',
         difficulty: 'easy',
       },
       {
-        id: 1002,
-        title: 'A-B',
+        id: 2008,
+        title: '이진 트리의 최대 깊이',
+        submitTime: '2021-07-02T08:25:49.443682Z',
+        difficulty: 'medium',
+      },
+      {
+        id: 2009,
+        title: '두 정수의 곱셈',
         submitTime: '2021-07-02T08:25:49.443682Z',
         difficulty: 'easy',
       },
       {
-        id: 1003,
-        title: 'A*B',
-        submitTime: '2021-07-02T08:25:49.443682Z',
-        difficulty: 'easy',
-      },
-      {
-        id: 1004,
-        title: 'A/B',
+        id: 2010,
+        title: '두 배열의 교집합',
         submitTime: '2021-07-02T08:25:49.443682Z',
         difficulty: 'easy',
       },
     ],
   }
-}
+};
+
 
 // 유저의 업적 정보들을 조회합니다.
 // /api/profile/achievement?username=<username> GET
@@ -545,7 +465,7 @@ export const SurgeUserProps = {
   ]
 };
 
-// /api/major_rank_list?limit=<limit>
+// /api/major_rank_list?limit=<limit> GET
 // 전공별 랭킹 정보를 조회합니다.
 // limit: 가져올 전공의 수 ( 아마도 7로 고정 )
 
