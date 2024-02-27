@@ -102,46 +102,46 @@ class UserProfileAPI(APIView):
         return self.success(UserProfileSerializer(user_profile, show_real_name=True).data)
 
 
-class UserProfileDashBoardAPI(APIView):
-    @login_required
-    def get(self, request):
-        try:
-            user_id = request.user.id
-            user = User.objects.filter(id=user_id).first()
-            user_profile = UserProfile.objects.filter(user_id=user_id).first()
-            user_department = Department.objects.filter(id=user_profile.department_id).first()
-            user_college = College.objects.filter(id=user_profile.college_id).first()
-            user_score = UserScore.objects.filter(user_id=user_id).annotate(
-                total_rank=Count('total_score',
-                                 filter=Q(total_score__gt=F('total_score'))) + 1,
-                datastructure_rank=Count('datastructure_score',
-                                         filter=Q(datastructure_score__gt=F('datastructure_score'))) + 1,
-                implementation_rank=Count('implementation_score',
-                                          filter=Q(implementation_score__gt=F('implementation_score'))) + 1,
-                math_rank=Count('math_score',
-                                filter=Q(math_score__gt=F('math_score'))) + 1,
-                search_rank=Count('search_score',
-                                  filter=Q(search_score__gt=F('search_score'))) + 1,
-                sorting_rank=Count('sorting_score',
-                                   filter=Q(search_score__gt=F('sorting_score'))) + 1
-            ).first()
-        except User.DoesNotExist or UserProfile.DoesNotExist:
-            return HttpResponseNotFound('user does not exist')
-        except Department.DoesNotExist or College.DoesNotExist:
-            return HttpResponseNotFound('department or college does not exist')
-        except UserScore.DoesNotExist:
-            return HttpResponseNotFound('user_score does not exist')
-
-        total_user_count = UserScore.objects.count()
-
-        oj_status = {}
-        oj_status.update(DashboardUserInfoSerializer(user).data)
-        oj_status.update(DashboardSubmissionSerializer(user_profile).data)
-        oj_status.update(DashboardDepartmentSerializer(user_department).data)
-        oj_status.update(DashboardCollegeSerializer(user_college).data)
-        oj_status.update(DashboardRankSerializer(user_score, context={'total_user_count': total_user_count}).data)
-
-        return self.success(oj_status)
+# class UserProfileDashBoardAPI(APIView):
+#     @login_required
+#     def get(self, request):
+#         try:
+#             user_id = request.user.id
+#             user = User.objects.filter(id=user_id).first()
+#             user_profile = UserProfile.objects.filter(user_id=user_id).first()
+#             user_department = Department.objects.filter(id=user_profile.department_id).first()
+#             user_college = College.objects.filter(id=user_profile.college_id).first()
+#             user_score = UserScore.objects.filter(user_id=user_id).annotate(
+#                 total_rank=Count('total_score',
+#                                  filter=Q(total_score__gt=F('total_score'))) + 1,
+#                 datastructure_rank=Count('datastructure_score',
+#                                          filter=Q(datastructure_score__gt=F('datastructure_score'))) + 1,
+#                 implementation_rank=Count('implementation_score',
+#                                           filter=Q(implementation_score__gt=F('implementation_score'))) + 1,
+#                 math_rank=Count('math_score',
+#                                 filter=Q(math_score__gt=F('math_score'))) + 1,
+#                 search_rank=Count('search_score',
+#                                   filter=Q(search_score__gt=F('search_score'))) + 1,
+#                 sorting_rank=Count('sorting_score',
+#                                    filter=Q(search_score__gt=F('sorting_score'))) + 1
+#             ).first()
+#         except User.DoesNotExist or UserProfile.DoesNotExist:
+#             return HttpResponseNotFound('user does not exist')
+#         except Department.DoesNotExist or College.DoesNotExist:
+#             return HttpResponseNotFound('department or college does not exist')
+#         except UserScore.DoesNotExist:
+#             return HttpResponseNotFound('user_score does not exist')
+#
+#         total_user_count = UserScore.objects.count()
+#
+#         oj_status = {}
+#         oj_status.update(DashboardUserInfoSerializer(user).data)
+#         oj_status.update(DashboardSubmissionSerializer(user_profile).data)
+#         oj_status.update(DashboardDepartmentSerializer(user_department).data)
+#         oj_status.update(DashboardCollegeSerializer(user_college).data)
+#         oj_status.update(DashboardRankSerializer(user_score, context={'total_user_count': total_user_count}).data)
+#
+#         return self.success(oj_status)
 
 
 class HomeRankingAPI(APIView):
