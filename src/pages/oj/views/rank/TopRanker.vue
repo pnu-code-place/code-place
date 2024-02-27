@@ -10,7 +10,7 @@
       </router-link>
       <span class="user-major">{{ user.major }}</span>
     </div>
-    <div class="user-score">{{ $t('m.Points') }} {{ this.commaScore }}</div>
+    <div class="user-score">{{ this.commaScore }}</div>
   </div>
 </template>
 <script>
