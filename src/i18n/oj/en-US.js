@@ -78,6 +78,11 @@ export const m = {
   mood: "소개",
   AC: "AC",
   Rating: "Rating",
+  Today_Surge_User: "오늘의 급상승 사용자",
+  Major_Rank: "전공 TOP 7",
+  TOP_1: "1등",
+  TOP_2: "2등",
+  TOP_3: "3등",
   // Announcements.vue
   Contest_Announcements: "Contest Announcements",
   By: "By",
@@ -203,6 +208,7 @@ export const m = {
   // ProfileSetting.vue
   Avatar_Setting: "아바타 변경",
   Profile_Setting: "회원정보 변경",
+  Confirm: "확인",
   // SecuritySettig
   Sessions: "Sessions",
   Two_Factor_Authentication: "Two Factor Authentication",
@@ -217,7 +223,7 @@ export const m = {
   // OIRank.vue
   OI_Ranklist: "OI Ranklist",
   // OIContestRank.vue
-  Total_Score: "Total Score",
+  Total_Score: "총점",
   // ProblemList.vue
   Problem_List: "문제 리스트",
   Reset: "새로고침",
@@ -241,7 +247,7 @@ export const m = {
   //문제 리스트의 난이도
   Difficulty: "난이도",
   Category: "카테고리",
-  VeryHigh:"매우 어려움",
+  VeryHigh: "매우 어려움",
   High: "어려움",
   Mid: "보통",
   Low: "쉬움",
@@ -324,9 +330,9 @@ export const m = {
   Until_Promotion_After: "남았습니다.",
 
   //OJSummary.vue
-  Ranking : "랭킹",
+  Ranking: "랭킹",
   OJ_Summary: "OJ 요약",
-  TOP : "상위",
+  TOP: "상위",
   UserHomeSolved: "해결한 문제",
   Miracle_Coding: "미라클 코딩",
   MiracleCodingDays: "일",
@@ -339,7 +345,7 @@ export const m = {
   Percent: "백분율",
   Data_Structure: "자료구조",
   Mathematics: "수학",
-  Sorting : "정렬",
+  Sorting: "정렬",
 
   //DifficultySummary.vue
   Difficulty_Based_Distribution: "난이도별 분포",
@@ -348,16 +354,16 @@ export const m = {
 
   //ProblemSection.vue
   Problem: "문제",
-  Tried_Problems : "시도한 문제",
-  Solved_Problems : "해결한 문제",
-  Failed_Problems : "못 푼 문제",
-  There_Is_No_Problem_You_Solved : "해결한 문제가 없습니다.",
-  There_Is_No_Problem_You_Tried : "시도한 문제가 없습니다.",
-  Lets_Get_Started : "한 번 시작해 볼까요?",
+  Tried_Problems: "시도한 문제",
+  Solved_Problems: "해결한 문제",
+  Failed_Problems: "못 푼 문제",
+  There_Is_No_Problem_You_Solved: "해결한 문제가 없습니다.",
+  There_Is_No_Problem_You_Tried: "시도한 문제가 없습니다.",
+  Lets_Get_Started: "한 번 시작해 볼까요?",
 
   //AchievementSection.vue
-  Achieved : "달성",
-  NotAchieved : "미달성",
+  Achieved: "달성",
+  NotAchieved: "미달성",
 
   // ProfileSetting.vue
   Current_Password: "현재 비밀번호",
@@ -370,9 +376,12 @@ export const m = {
 
   // 아바타
   Upload_Image: "이미지를 끌어다 놓거나, 클릭하여 선택하세요",
-  Avatar_Preview: "프로필이 다음과 같이 보입니다."
+  Avatar_Preview: "프로필이 다음과 같이 보입니다.",
 
-  //
+  // UserList.vue
+  Top_Users: "랭킹",
+  Avatar: "아바타",
+  Users : "사용자",
+  Grade: "등급",
 
-  //ToolTip
 };

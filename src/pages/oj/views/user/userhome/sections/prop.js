@@ -10,9 +10,9 @@ export const DashboardSectionProp = {
 
   ojStatus: {
     rank_image: "https://cdn-icons-png.flaticon.com/512/473/473406.png", // 랭킹 이미지
+    rank_tier: "Gold I", // 랭킹 티어
     rank: 1, // 랭킹
     rank_percent: 0.1, // 랭킹 퍼센트 ( 상위 10% )
-    score: 101, // 종합 점수
     submission_number: 100, // 제출 횟수
     accepted_number: 100, // 맞은 횟수
     total_score: 56000, // 현재 점수
@@ -149,7 +149,7 @@ export const ProblemSectionProp = {
         title: 'A/B',
         submitTime: '2021-07-02T08:25:49.443682Z',
         difficulty: 'easy',
-      },      {
+      }, {
         id: 1001, // 문제의 id
         title: 'A+B', // 문제의 제목
         submitTime: '2021-07-02T08:25:49.443682Z', // 제출 시간
@@ -172,7 +172,7 @@ export const ProblemSectionProp = {
         title: 'A/B',
         submitTime: '2021-07-02T08:25:49.443682Z',
         difficulty: 'easy',
-      },      {
+      }, {
         id: 1001, // 문제의 id
         title: 'A+B', // 문제의 제목
         submitTime: '2021-07-02T08:25:49.443682Z', // 제출 시간
@@ -195,7 +195,7 @@ export const ProblemSectionProp = {
         title: 'A/B',
         submitTime: '2021-07-02T08:25:49.443682Z',
         difficulty: 'easy',
-      },      {
+      }, {
         id: 1001, // 문제의 id
         title: 'A+B', // 문제의 제목
         submitTime: '2021-07-02T08:25:49.443682Z', // 제출 시간
@@ -254,7 +254,7 @@ export const ProblemSectionProp = {
 
 // 유저의 업적 정보들을 조회합니다.
 // /api/profile/achievement?username=<username> GET
-export const achievementSectionProp = {
+export const AchievementSectionProp = {
   acquired: [
     {
       id: 1, // 업적의 id
@@ -281,7 +281,7 @@ export const achievementSectionProp = {
       image: "https://cdn-icons-png.flaticon.com/512/473/473406.png",
       description: "업적은 아래와 같이 표시됩니다. 업적의 설명이 아주 길 수도 있겠죠 아주아주아주 길수도 있겠죠",
       acquireTime: '2021-07-02T08:25:49.443682Z',
-    },    {
+    }, {
       id: 1, // 업적의 id
       title: "수학자 Step1", // 업적의 제목
       image: "https://cdn-icons-png.flaticon.com/512/473/473406.png", // 업적 뱃지 이미지
@@ -293,7 +293,7 @@ export const achievementSectionProp = {
       image: "https://cdn-icons-png.flaticon.com/512/473/473406.png",
       description: "업적은 아래와 같이 표시됩니다. 업적의 설명이 아주 길 수도 있겠죠 아주아주아주 길수도 있겠죠",
       acquireTime: '2021-07-02T08:25:49.443682Z',
-    },    {
+    }, {
       id: 1, // 업적의 id
       title: "수학자 Step1", // 업적의 제목
       image: "https://cdn-icons-png.flaticon.com/512/473/473406.png", // 업적 뱃지 이미지
@@ -305,7 +305,7 @@ export const achievementSectionProp = {
       image: "https://cdn-icons-png.flaticon.com/512/473/473406.png",
       description: "업적은 아래와 같이 표시됩니다. 업적의 설명이 아주 길 수도 있겠죠 아주아주아주 길수도 있겠죠",
       acquireTime: '2021-07-02T08:25:49.443682Z',
-    },    {
+    }, {
       id: 1, // 업적의 id
       title: "수학자 Step1", // 업적의 제목
       image: "https://cdn-icons-png.flaticon.com/512/473/473406.png", // 업적 뱃지 이미지
@@ -317,7 +317,7 @@ export const achievementSectionProp = {
       image: "https://cdn-icons-png.flaticon.com/512/473/473406.png",
       description: "업적은 아래와 같이 표시됩니다. 업적의 설명이 아주 길 수도 있겠죠 아주아주아주 길수도 있겠죠",
       acquireTime: '2021-07-02T08:25:49.443682Z',
-    },    {
+    }, {
       id: 1, // 업적의 id
       title: "수학자 Step1", // 업적의 제목
       image: "https://cdn-icons-png.flaticon.com/512/473/473406.png", // 업적 뱃지 이미지
@@ -329,7 +329,7 @@ export const achievementSectionProp = {
       image: "https://cdn-icons-png.flaticon.com/512/473/473406.png",
       description: "업적은 아래와 같이 표시됩니다. 업적의 설명이 아주 길 수도 있겠죠 아주아주아주 길수도 있겠죠",
       acquireTime: '2021-07-02T08:25:49.443682Z',
-    },    {
+    }, {
       id: 1, // 업적의 id
       title: "수학자 Step1", // 업적의 제목
       image: "https://cdn-icons-png.flaticon.com/512/473/473406.png", // 업적 뱃지 이미지
@@ -341,7 +341,7 @@ export const achievementSectionProp = {
       image: "https://cdn-icons-png.flaticon.com/512/473/473406.png",
       description: "업적은 아래와 같이 표시됩니다. 업적의 설명이 아주 길 수도 있겠죠 아주아주아주 길수도 있겠죠",
       acquireTime: '2021-07-02T08:25:49.443682Z',
-    },    {
+    }, {
       id: 1, // 업적의 id
       title: "수학자 Step1", // 업적의 제목
       image: "https://cdn-icons-png.flaticon.com/512/473/473406.png", // 업적 뱃지 이미지
@@ -365,5 +365,222 @@ export const achievementSectionProp = {
       current: 50, // 현재 달성
       acquireTime: ""
     }
+  ]
+}
+
+// /api/user_rank?offset=<offset>&limit=<limit> GET
+// 유저의 랭킹 정보를 조회합니다.
+// offset: 랭킹의 시작점
+// limit: 랭킹의 갯수
+export const UserRankListProp = {
+  total: 201, // 전체 유저의 수
+  results: [
+    {
+      rank: 1, // 랭킹
+      avatar: "https://picsum.photos/200/300", // 유저의 아바타
+      username: "user1", // 유저의 이름
+      mood: '안녕하세요, 저는 user1입니다. 잘 부탁드립니다.', // 유저의 상태 메시지
+      score: 10000, // 현재 점수
+      major: "정보컴퓨터공학부", // 전공
+      tier: "Gold I", // 티어
+      solved: 100, // 해결한 문제 수
+      accuracy: 0.9, // 정확도
+    },
+    {
+      rank: 2,
+      avatar: "https://picsum.photos/200/200",
+      username: "user2",
+      mood: '안녕하세요 user2입니다. 잘 부탁드립니다. 소개가 더 길어질 수도 있겠죠! 아주 아주 긴 소개요',
+      score: 10000,
+      major: "정보컴퓨터공학부",
+      tier: "Gold I",
+      solved: 100,
+      accuracy: 0.9,
+    },
+    {
+      rank: 3,
+      avatar: "https://picsum.photos/202",
+      username: "user3andVeryLongName",
+      mood: '안녕하세요',
+      score: 10000,
+      major: "정보컴퓨터공학부",
+      tier: "Gold I",
+      solved: 100,
+      accuracy: 0.9,
+    },
+    {
+      rank: 4,
+      avatar: "https://picsum.photos/203",
+      username: "user4",
+      mood: '안녕하세요',
+      score: 10000,
+      major: "정보컴퓨터공학부",
+      tier: "Gold I",
+      solved: 100,
+      accuracy: 0.9,
+    },
+    {
+      rank: 5,
+      avatar: "https://picsum.photos/204",
+      username: "user5",
+      mood: '안녕하세요',
+      score: 10000,
+      major: "정보컴퓨터공학부",
+      tier: "Gold I",
+      solved: 100,
+      accuracy: 0.9,
+    },
+    {
+      rank: 6,
+      avatar: "https://picsum.photos/205",
+      username: "user6",
+      mood: '안녕하세요',
+      score: 10000,
+      major: "정보컴퓨터공학부",
+      tier: "Gold I",
+      solved: 100,
+      accuracy: 0.9,
+    },
+    {
+      rank: 7,
+      avatar: "https://picsum.photos/206",
+      username: "user7",
+      mood: '안녕하세요',
+      score: 10000,
+      major: "정보컴퓨터공학부",
+      tier: "Gold I",
+      solved: 100,
+      accuracy: 0.9,
+    },
+    {
+      rank: 8,
+      avatar: "https://picsum.photos/207",
+      username: "user8",
+      mood: '안녕하세요',
+      score: 10000,
+      major: "정보컴퓨터공학부",
+      tier: "Gold I",
+      solved: 100,
+      accuracy: 0.9,
+    },
+    {
+      rank: 9,
+      avatar: "https://picsum.photos/208",
+      username: "user9",
+      mood: '안녕하세요',
+      score: 10000,
+      major: "정보컴퓨터공학부",
+      tier: "Gold I",
+      solved: 100,
+      accuracy: 0.9,
+    },
+    {
+      rank: 10,
+      avatar: "https://picsum.photos/209",
+      username: "user10",
+      mood: '안녕하세요',
+      score: 10000,
+      major: "정보컴퓨터공학부",
+      tier: "Gold I",
+      solved: 100,
+      accuracy: 0.9,
+    }
+  ].map((user, index) => {
+    user.rank = user.rank + 3
+    return user
+  })
+}
+// /api/surge_users?limit=<limit> GET
+// 급상승 유저들의 정보를 조회합니다.
+// limit: 조회할 유저의 수
+export const SurgeUserProps = {
+  total: 7,
+  results: [
+    {
+      rank: 1, // 상승한 점수에 따른 랭킹
+      username: 'surgeUser1', // 유저의 이름
+      score: 10000, // 현재 점수
+      increasedScore: 1000,  // 상승한 점수
+    },
+    {
+      rank: 2,
+      username: 'surgeUser2',
+      score: 10000,
+      increasedScore: 1000,
+    },
+    {
+      rank: 3,
+      username: 'surgeUser3',
+      score: 10000,
+      increasedScore: 1000,
+    },
+    {
+      rank: 4,
+      username: 'surgeUser4',
+      score: 10000,
+      increasedScore: 1000,
+    },
+    {
+      rank: 5,
+      username: 'surgeUser5',
+      score: 10000,
+      increasedScore: 1000,
+    },
+    {
+      rank: 6,
+      username: 'surgeUser6',
+      score: 10000,
+      increasedScore: 1000,
+    },
+    {
+      rank: 7,
+      username: 'surgeUser7',
+      score: 10000,
+      increasedScore: 1000,
+    }
+  ]
+}
+
+// /api/major_rank_list?limit=<limit>
+// 전공별 랭킹 정보를 조회합니다.
+
+export const MajorRankListProp = {
+  total: 30, // 기록된 전공의 수
+  results: [
+    {
+      rank: 1, // 랭킹
+      major: "정보컴퓨터공학부", // 전공
+      score: 10000, // 현재 점수
+    },
+    {
+      rank: 2,
+      major: "정보컴퓨터공학부",
+      score: 10000,
+    },
+    {
+      rank: 3,
+      major: "정보컴퓨터공학부",
+      score: 10000,
+    },
+    {
+      rank: 4,
+      major: "정보컴퓨터공학부",
+      score: 10000,
+    },
+    {
+      rank: 5,
+      major: "정보컴퓨터공학부",
+      score: 10000,
+    },
+    {
+      rank: 6,
+      major: "정보컴퓨터공학부",
+      score: 10000,
+    },
+    {
+      rank: 7,
+      major: "정보컴퓨터공학부",
+      score: 10000,
+    },
   ]
 }

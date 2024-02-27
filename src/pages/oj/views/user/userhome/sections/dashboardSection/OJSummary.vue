@@ -38,12 +38,13 @@ export default {
       <shine-wrapper>
         <img :src="ojStatus.rank_image" class="rank-mark" alt="rank emblem"/>
       </shine-wrapper>
+      <span>{{ ojStatus.rank_tier }}</span>
     </div>
     <div class="rank-info">
       <div class="rank-info-top">
         <div class="rank-info-elem">
           <span class="header">{{$t('m.UserHomeScore')}}</span>
-          <span class="value">{{ ojStatus.score }}</span>
+          <span class="value">{{ ojStatus.total_score }}</span>
         </div>
         <div class="rank-info-elem">
           <span class="header">{{$t('m.Ranking')}}</span>
@@ -91,13 +92,21 @@ export default {
   .rank-mark-wrapper {
     width: 30%;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding : 20px;
+    padding : 0 20px 15px;
+    gap: 10px;
 
     .rank-mark {
-      width: 100%;
+      width: 180px;
       height: auto;
+    }
+
+    span {
+      width: 100%;
+      font-size: 18px;
+      font-weight: 700;
     }
   }
 
