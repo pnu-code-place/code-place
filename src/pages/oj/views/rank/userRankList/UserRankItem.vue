@@ -1,6 +1,9 @@
 <script>
+import {comma, getTier} from "../../../../../utils/utils";
+
 export default {
   name: 'UserItem',
+  methods: {comma, getTier},
   props: {
     user: {
       type: Object,
@@ -21,9 +24,6 @@ export default {
   computed: {
     accuracy() {
       return (this.user.accuracy * 100).toFixed(1) + '%'
-    },
-    commaScore() {
-      return this.user.score.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
     }
   }
 }
@@ -40,8 +40,8 @@ export default {
     </td>
 <!--    <td><p class="mood">{{ user.mood }}</p></td>-->
     <td>{{ user.major }}</td>
-    <td>{{ user.tier }}</td>
-    <td>{{ this.commaScore }}</td>
+    <td>{{ getTier(user.tier) }}</td>
+    <td>{{ comma(user.score)}}</td>
     <td class="user-problem">
       <router-link :to="{name: 'user-problems', params: {username : user.username}}" class="justify-center">{{ user.solved }}</router-link>
     </td>

@@ -10,7 +10,7 @@ export const DashboardSectionProp = {
 
   ojStatus: {
     rank_image: "https://cdn-icons-png.flaticon.com/512/473/473406.png", // 랭킹 이미지
-    rank_tier: "Gold I", // 랭킹 티어
+    rank_tier: "gold2", // 랭킹 티어
     rank: 1, // 랭킹
     rank_percent: 0.1, // 랭킹 퍼센트 ( 상위 10% )
     submission_number: 100, // 제출 횟수
@@ -382,7 +382,7 @@ export const UserRankListProp = {
       mood: '안녕하세요, 저는 user1입니다. 잘 부탁드립니다.', // 유저의 상태 메시지
       score: 10000, // 현재 점수
       major: "정보컴퓨터공학부", // 전공
-      tier: "Gold I", // 티어
+      tier: "gold1", // 티어
       solved: 100, // 해결한 문제 수
       accuracy: 0.9, // 정확도
     },
@@ -393,7 +393,7 @@ export const UserRankListProp = {
       mood: '안녕하세요 user2입니다. 잘 부탁드립니다. 소개가 더 길어질 수도 있겠죠! 아주 아주 긴 소개요',
       score: 10000,
       major: "정보컴퓨터공학부",
-      tier: "Gold I",
+      tier: "gold1",
       solved: 100,
       accuracy: 0.9,
     },
@@ -404,7 +404,7 @@ export const UserRankListProp = {
       mood: '안녕하세요',
       score: 10000,
       major: "정보컴퓨터공학부",
-      tier: "Gold I",
+      tier: "gold1",
       solved: 100,
       accuracy: 0.9,
     },
@@ -415,7 +415,7 @@ export const UserRankListProp = {
       mood: '안녕하세요',
       score: 10000,
       major: "정보컴퓨터공학부",
-      tier: "Gold I",
+      tier: "gold1",
       solved: 100,
       accuracy: 0.9,
     },
@@ -426,7 +426,7 @@ export const UserRankListProp = {
       mood: '안녕하세요',
       score: 10000,
       major: "정보컴퓨터공학부",
-      tier: "Gold I",
+      tier: "gold1",
       solved: 100,
       accuracy: 0.9,
     },
@@ -437,7 +437,7 @@ export const UserRankListProp = {
       mood: '안녕하세요',
       score: 10000,
       major: "정보컴퓨터공학부",
-      tier: "Gold I",
+      tier: "gold1",
       solved: 100,
       accuracy: 0.9,
     },
@@ -448,7 +448,7 @@ export const UserRankListProp = {
       mood: '안녕하세요',
       score: 10000,
       major: "정보컴퓨터공학부",
-      tier: "Gold I",
+      tier: "gold1",
       solved: 100,
       accuracy: 0.9,
     },
@@ -459,7 +459,7 @@ export const UserRankListProp = {
       mood: '안녕하세요',
       score: 10000,
       major: "정보컴퓨터공학부",
-      tier: "Gold I",
+      tier: "gold1",
       solved: 100,
       accuracy: 0.9,
     },
@@ -470,7 +470,7 @@ export const UserRankListProp = {
       mood: '안녕하세요',
       score: 10000,
       major: "정보컴퓨터공학부",
-      tier: "Gold I",
+      tier: "gold1",
       solved: 100,
       accuracy: 0.9,
     },
@@ -481,11 +481,11 @@ export const UserRankListProp = {
       mood: '안녕하세요',
       score: 10000,
       major: "정보컴퓨터공학부",
-      tier: "Gold I",
+      tier: "gold1",
       solved: 100,
       accuracy: 0.9,
     }
-  ].map((user, index) => {
+  ].map((user) => {
     user.rank = user.rank + 3
     return user
   })

@@ -26,6 +26,7 @@
 <script>
 import api from "../../../api";
 import SkeletonBox from "../../../components/SkeletonBox.vue";
+import {comma} from "../../../../../utils/utils";
 
 export default {
   components: {SkeletonBox},
@@ -51,9 +52,7 @@ export default {
         this.isLoading = false
       })
     },
-    comma(num) {
-      return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-    }
+    comma
   },
   mounted() {
     this.init()

@@ -1,27 +1,59 @@
 import Vue from 'vue'
 import storage from '@/utils/storage'
-import { STORAGE_KEY } from '@/utils/constants'
+import {STORAGE_KEY} from '@/utils/constants'
 import ojAPI from '@oj/api'
 
-function submissionMemoryFormat (memory) {
+export function toRoman(num) {
+  num = parseInt(num)
+  if (typeof num !== 'number') {
+    throw new TypeError('not a number')
+  }
+  if (num <= 0) return ''
+  if (num > 10) return num
+  const roman = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
+  return roman[num - 1];
+}
+
+export function comma(value) {
+  if (typeof value === 'string') {
+    return value.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+  } else {
+    return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+  }
+}
+
+export function getTier(tier) {
+  // 첫 글자 대문자로, 마지막 글자가 숫자일 경우 띄어쓰기, 숫자를 로마자로 변환, 나머지는 소문자로
+  const firstUppercase = tier[0].toUpperCase() + tier.slice(1).toLowerCase();
+  const lastChar = firstUppercase[tier.length - 1];
+  if (isNaN(lastChar)) {
+    return firstUppercase;
+  } else {
+    const grade = firstUppercase.slice(0, -1);
+    const number = parseInt(lastChar);
+    return `${grade} ${toRoman(number)}`;
+  }
+}
+
+function submissionMemoryFormat(memory) {
   if (memory === undefined) return '--'
   // 1048576 = 1024 * 1024
   let t = parseInt(memory) / 1048576
   return String(t.toFixed(0)) + 'MB'
 }
 
-function submissionTimeFormat (time) {
+function submissionTimeFormat(time) {
   if (time === undefined) return '--'
   return time + 'ms'
 }
 
-function getACRate (acCount, totalCount) {
+function getACRate(acCount, totalCount) {
   let rate = totalCount === 0 ? 0.00 : (acCount / totalCount * 100).toFixed(2)
   return String(rate) + '%'
 }
 
 // 去掉值为空的项，返回object
-function filterEmptyValue (object) {
+function filterEmptyValue(object) {
   let query = {}
   Object.keys(object).forEach(key => {
     if (object[key] || object[key] === 0 || object[key] === false) {
@@ -32,7 +64,7 @@ function filterEmptyValue (object) {
 }
 
 // 按指定字符数截断添加换行，非英文字符按指定字符的半数截断
-function breakLongWords (value, length = 16) {
+function breakLongWords(value, length = 16) {
   let re
   if (escape(value).indexOf('%u') === -1) {
     // 没有中文
@@ -44,7 +76,7 @@ function breakLongWords (value, length = 16) {
   return value.replace(re, '$1\n')
 }
 
-function downloadFile (url) {
+function downloadFile(url) {
   return new Promise((resolve, reject) => {
     Vue.prototype.$http.get(url, {responseType: 'blob'}).then(resp => {
       let headers = resp.headers
@@ -74,11 +106,12 @@ function downloadFile (url) {
       link.click()
       link.remove()
       resolve()
-    }).catch(() => {})
+    }).catch(() => {
+    })
   })
 }
 
-function getLanguages () {
+function getLanguages() {
   return new Promise((resolve, reject) => {
     let languages = storage.get(STORAGE_KEY.languages)
     if (languages) {

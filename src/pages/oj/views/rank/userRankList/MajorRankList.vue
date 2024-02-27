@@ -1,5 +1,6 @@
 <script>
 import api from "../../../api";
+import {comma} from "../../../../../utils/utils";
 
 export default {
   data() {
@@ -23,9 +24,7 @@ export default {
         this.isLoading = false
       })
     },
-    comma(num) {
-      return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-    }
+    comma
   },
   mounted() {
     this.init()

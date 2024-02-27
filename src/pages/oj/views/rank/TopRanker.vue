@@ -10,11 +10,12 @@
       </router-link>
       <span class="user-major">{{ user.major }}</span>
     </div>
-    <div class="user-score">{{ this.commaScore }}</div>
+    <div class="user-score">{{ comma(user.score) }}</div>
   </div>
 </template>
 <script>
 import api from "../../api";
+import {comma} from "../../../../utils/utils";
 
 export default {
   data() {
@@ -36,6 +37,7 @@ export default {
     }
   },
   methods: {
+    comma,
     init() {
       this.isLoading = true
       api.getUserRank(this.rank, 0).then(res => {
@@ -47,11 +49,6 @@ export default {
   mounted() {
     this.init()
   },
-  computed: {
-    commaScore() {
-      return this.user.score.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-    }
-  }
 }
 </script>
 
