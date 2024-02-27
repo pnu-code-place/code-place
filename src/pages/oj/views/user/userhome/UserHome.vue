@@ -33,12 +33,12 @@ export default {
   methods: {
     init() {
       api.getUserInfo(this.username)
-          .then(res => {
-            this.profile = res.data.data
-          })
-          .catch(error => {
-            this.error = error
-          })
+        .then(res => {
+          this.profile = res.data.data
+        })
+        .catch(error => {
+          this.error = error
+        })
     },
   },
   computed: {

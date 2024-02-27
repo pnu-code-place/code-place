@@ -1,7 +1,34 @@
+<template>
+  <table>
+    <tr>
+      <th class="rank">{{ $t('m.Rank') }}</th>
+      <th class="user">{{ $t('m.Users') }}</th>
+      <th class="score">{{ $t('m.Score') }}</th>
+    </tr>
+    <tbody>
+    <tr v-for="(user, index) in surgeUsers" class="user-data">
+      <td class="rank">{{ index + 1 }}</td>
+      <td class="user">
+        <router-link :to="{name : 'user-dashboard', params:{username:user.username}}">{{ user.username }}</router-link>
+      </td>
+      <td class="score">
+        <span>{{ comma(user.score) }}</span>
+        <span class="increased-score">{{ comma(user.increasedScore) }}▲</span>
+      </td>
+    </tr>
+    </tbody>
+    <div style="width:100%; height: 10px">
+      <SkeletonBox v-if="isLoading" :count="5"></SkeletonBox>
+    </div>
+  </table>
+</template>
+
 <script>
 import api from "../../../api";
+import SkeletonBox from "../../../components/SkeletonBox.vue";
 
 export default {
+  components: {SkeletonBox},
   data() {
     return {
       AMOUNT_TO_DISPLAY: 7,
@@ -33,28 +60,6 @@ export default {
   },
 }
 </script>
-
-<template>
-  <table>
-    <tr>
-      <th class="rank">{{ $t('m.Rank') }}</th>
-      <th class="user">{{ $t('m.Users') }}</th>
-      <th class="score">{{ $t('m.Score') }}</th>
-    </tr>
-    <tbody>
-    <tr v-for="(user, index) in surgeUsers" class="user-data">
-      <td class="rank">{{ index + 1 }}</td>
-      <td class="user">
-        <router-link :to="{name : 'user-dashboard', params:{username:user.username}}">{{ user.username }}</router-link>
-      </td>
-      <td class="score">
-        <span>{{ comma(user.score) }}</span>
-        <span class="increased-score">{{ comma(user.increasedScore) }}▲</span>
-      </td>
-    </tr>
-    </tbody>
-  </table>
-</template>
 
 <style scoped lang="less">
 table {

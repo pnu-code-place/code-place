@@ -2,18 +2,21 @@
   <div class="acm-rank">
     <div class="acm-rank__contents">
       <div class="acm-rank__left container">
-        <h1>{{ $t('m.Top_Users') }}</h1>
+        <div class="title">
+          <h1>{{ $t('m.Top_Users') }}</h1>
+<!--          <Button type="dashed" @click="getRankData()">{{ $t('m.My_Ranking')}}</Button>-->
+        </div>
         <div class="top-users">
           <div class="top2 top-user">
-            <h2>{{$t('m.TOP_2')}}</h2>
+            <h2>{{ $t('m.TOP_2') }}</h2>
             <TopRanker :rank=1></TopRanker>
           </div>
           <div class="top1 top-user">
-            <h2>{{$t('m.TOP_1')}}</h2>
+            <h2>{{ $t('m.TOP_1') }}</h2>
             <TopRanker :rank=2></TopRanker>
           </div>
           <div class="top3 top-user">
-            <h2>{{$t('m.TOP_3')}}</h2>
+            <h2>{{ $t('m.TOP_3') }}</h2>
             <TopRanker :rank=3></TopRanker>
           </div>
         </div>
@@ -206,6 +209,7 @@ export default {
       let offset = (page - 1) * this.limit + 3
       // let bar = this.$refs.chart
       // bar.showLoading({maskColor: 'rgba(250, 250, 250, 0.8)'})
+      console.log("offset", offset, this.limit, RULE_TYPE.ACM)
       this.loadingTable = true
       api.getUserRank(offset, this.limit, RULE_TYPE.ACM).then(res => {
         this.loadingTable = false
@@ -250,7 +254,7 @@ export default {
 }
 
 .acm-rank {
-  width: 100%;
+  width: 1200px;
   padding: 0 20px;
 
   .acm-rank__contents {

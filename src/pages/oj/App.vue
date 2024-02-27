@@ -28,8 +28,8 @@
 
 <script>
 import {mapActions, mapGetters, mapState} from 'vuex'
-  import NavBar from './components/NavBar.vue'
-  import NavBar_Problem from "./components/NavBar_Problem.vue";
+import NavBar from './components/NavBar.vue'
+import NavBar_Problem from "./components/NavBar_Problem.vue";
 
 export default {
   name: 'app',
@@ -71,29 +71,29 @@ export default {
 
 <style lang="less">
 
-  :root{
-    --bg-color: #ffffff;
-    --custom-btn-hover-color: #f5f5f5;
-    --border-color: #e7e7e7;
-    --header-btn-color: rgba(246, 246, 246, 0.45);
-    //--markdown--code--color: rgba(27, 31, 35, 0.05);
-  }
+:root {
+  --bg-color: #ffffff;
+  --custom-btn-hover-color: #f5f5f5;
+  --border-color: #e7e7e7;
+  --header-btn-color: rgba(246, 246, 246, 0.45);
+  //--markdown--code--color: rgba(27, 31, 35, 0.05);
+}
 
-  :root.dark.problem{
-    --bg-color: #1f2430;
-    --text-color: #ffffff;
-    --difficulty-color: #434e69;
-    --custom-btn-hover-color: #434e69;
-    --border-color: rgba(140, 140, 140, 0.29);
-    --header-btn-color: rgba(170, 179, 203, 0.37);
-    --markdown--code--color: rgb(6, 6, 196);
-  }
+:root.dark.problem {
+  --bg-color: #1f2430;
+  --text-color: #ffffff;
+  --difficulty-color: #434e69;
+  --custom-btn-hover-color: #434e69;
+  --border-color: rgba(140, 140, 140, 0.29);
+  --header-btn-color: rgba(170, 179, 203, 0.37);
+  --markdown--code--color: rgb(6, 6, 196);
+}
 
-  * {
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    box-sizing: border-box;
-  }
+* {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
 
 a {
   text-decoration: none;
@@ -104,35 +104,55 @@ a {
   }
 }
 
-  @media screen and (max-width: 1200px) {
+@media screen and (max-width: 858px) {
   .content-app {
     margin-top: 160px;
     padding: 0 2%;
   }
 }
 
-@media screen and (min-width: 1200px) {
+@media screen and (min-width: 858px) {
   .content-app {
     margin-top: 90px;
     display: flex;
     justify-content: center;
   }
 }
-  .ps{
-    margin-top: 50px;
-    background-color: var(--bg-color);
-  }
-  .footer {
-    margin-top: 300px;
-    padding-bottom: 20px;
-    height: 300px;
-    background-color: #f8f8f8;
-    display: flex;
-    align-items: end;
-    justify-content: center;
-    text-align: center;
-    font-size: small;
-  }
+
+//@media screen and (max-width: 848px) {
+//  .content-app {
+//    width: 1200px;
+//    margin: 160px auto 0;
+//    padding: 0 2%;
+//  }
+//}
+//
+//@media screen and (min-width: 848px) {
+//  .content-app {
+//    width: 1200px;
+//    margin: 90px auto 0;
+//    display: flex;
+//    justify-content: center;
+//  }
+//}
+
+
+.ps {
+  margin-top: 50px;
+  background-color: var(--bg-color);
+}
+
+.footer {
+  margin-top: 300px;
+  padding-bottom: 20px;
+  height: 300px;
+  background-color: #f8f8f8;
+  display: flex;
+  align-items: end;
+  justify-content: center;
+  text-align: center;
+  font-size: small;
+}
 
 .fadeInUp-enter-active {
   animation: fadeInUp .8s;
