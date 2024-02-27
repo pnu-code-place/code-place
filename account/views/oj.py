@@ -29,7 +29,7 @@ from ..serializers import (ApplyResetPasswordSerializer, ResetPasswordSerializer
                            UserRegisterSerializer, UsernameOrEmailCheckSerializer,
                            RankInfoSerializer, UserChangeEmailSerializer, SSOSerializer,
                            CollegeListSerializer, DepartmentSerializer, RankingSerializer,
-                            DashboardUserInfoSerializer, DashboardSubmissionSerializer,
+                           DashboardSubmissionSerializer,
                            DashboardDepartmentSerializer, DashboardCollegeSerializer, DashboardRankSerializer,
                            HomeRankingSerializer)
 from ..serializers import (TwoFactorAuthCodeSerializer, UserProfileSerializer,
@@ -113,17 +113,17 @@ class UserProfileDashBoardAPI(APIView):
             user_college = College.objects.filter(id=user_profile.college_id).first()
             user_score = UserScore.objects.filter(user_id=user_id).annotate(
                 total_rank=Count('total_score',
-                    filter=Q(total_score__gt=F('total_score'))) + 1,
+                                 filter=Q(total_score__gt=F('total_score'))) + 1,
                 datastructure_rank=Count('datastructure_score',
-                    filter=Q(datastructure_score__gt=F('datastructure_score'))) + 1,
+                                         filter=Q(datastructure_score__gt=F('datastructure_score'))) + 1,
                 implementation_rank=Count('implementation_score',
-                    filter=Q(implementation_score__gt=F('implementation_score'))) + 1,
+                                          filter=Q(implementation_score__gt=F('implementation_score'))) + 1,
                 math_rank=Count('math_score',
-                    filter=Q(math_score__gt=F('math_score'))) + 1,
+                                filter=Q(math_score__gt=F('math_score'))) + 1,
                 search_rank=Count('search_score',
-                    filter=Q(search_score__gt=F('search_score'))) + 1,
+                                  filter=Q(search_score__gt=F('search_score'))) + 1,
                 sorting_rank=Count('sorting_score',
-                    filter=Q(search_score__gt=F('sorting_score'))) + 1
+                                   filter=Q(search_score__gt=F('sorting_score'))) + 1
             ).first()
         except User.DoesNotExist or UserProfile.DoesNotExist:
             return HttpResponseNotFound('user does not exist')
