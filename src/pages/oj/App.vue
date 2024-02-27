@@ -143,6 +143,7 @@ a {
 }
 
 .footer {
+  margin-top: 300px;
   padding-bottom: 20px;
   height: 300px;
   background-color: #f8f8f8;
