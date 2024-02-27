@@ -143,6 +143,21 @@ class DashboardRankSerializer(serializers.ModelSerializer):
         return total_rank_percentage
 
 
+class HomeRankingSerializer(serializers.ModelSerializer):
+    avatar = serializers.SerializerMethodField()
+    username = serializers.SerializerMethodField()
+
+    class Meta:
+        model = UserScore
+        fields = ['avatar', 'tier', 'username', 'total_score', 'fluctuation']
+
+    def get_avatar(self, obj):
+        return obj.user.userprofile.avatar
+
+    def get_username(self, obj):
+        return obj.user.username
+
+
 class EditUserSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     username = serializers.CharField(max_length=32)

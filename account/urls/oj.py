@@ -7,7 +7,8 @@ from ..views.oj import (ApplyResetPasswordAPI, ResetPasswordAPI, GetRankingAPI,
                         UserRankAPI, CheckTFARequiredAPI, SessionManagementAPI,
                         ProfileProblemDisplayIDRefreshAPI, OpenAPIAppkeyAPI, SSOAPI,
                         ApplyUserEmailValidCheckAPI, UserEmailValidCheckAPI,
-                        GetCollegeListAPI, GetDepartmentListAPI, UserProfileDashBoardAPI)
+                        GetCollegeListAPI, GetDepartmentListAPI, UserProfileDashBoardAPI,
+                        HomeRankingAPI)
 
 from utils.captcha.views import CaptchaAPIView
 
@@ -15,6 +16,7 @@ urlpatterns = [
     url(r"^college_list/?$", GetCollegeListAPI.as_view(), name="college_list"),
     url(r"^department_list/?$", GetDepartmentListAPI.as_view(), name="department_list"),
     url(r"^ranking/?$", GetRankingAPI.as_view(), name="ranking"),
+    url(r"^home_ranking/?$", HomeRankingAPI.as_view(), name="home_ranking"),
     url(r"^login/?$", UserLoginAPI.as_view(), name="user_login_api"),
     url(r"^logout/?$", UserLogoutAPI.as_view(), name="user_logout_api"),
     url(r"^apply_user_email_valid_check/?$", ApplyUserEmailValidCheckAPI.as_view(), name="apply_user_email_valid_check"),

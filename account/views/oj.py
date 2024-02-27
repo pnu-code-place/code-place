@@ -31,7 +31,7 @@ from ..serializers import (ApplyResetPasswordSerializer, ResetPasswordSerializer
                            CollegeListSerializer, DepartmentSerializer, RankingSerializer,
                             DashboardUserInfoSerializer, DashboardSubmissionSerializer,
                            DashboardDepartmentSerializer, DashboardCollegeSerializer, DashboardRankSerializer,
-                           )
+                           HomeRankingSerializer)
 from ..serializers import (TwoFactorAuthCodeSerializer, UserProfileSerializer,
                            EditUserProfileSerializer, ImageUploadForm)
 from ..tasks import send_email_async
@@ -142,6 +142,17 @@ class UserProfileDashBoardAPI(APIView):
         oj_status.update(DashboardRankSerializer(user_score, context={'total_user_count': total_user_count}).data)
 
         return self.success(oj_status)
+
+
+class HomeRankingAPI(APIView):
+    def get(self, request):
+        # rank, avatar, tier, total_score, fluctuation
+        limit = request.GET.get('limit', 100)
+        try:
+            ranking = UserScore.objects.all().order_by('-total_score')[:limit]
+        except UserScore.DoesNotExist:
+            return HttpResponseNotFound('no user score table')
+        return self.success(HomeRankingSerializer(ranking, many=True).data)
 
 
 class AvatarUploadAPI(APIView):
