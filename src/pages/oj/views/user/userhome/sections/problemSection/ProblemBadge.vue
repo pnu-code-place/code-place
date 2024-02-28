@@ -29,7 +29,7 @@ export default {
 
 <template>
   <Tooltip :content="problem.title">
-    <router-link :to="{name : 'problem-details', params : {problemId:problem.id}}">
+    <router-link :to="{name : 'problem-details', params : {problemID:problem.id}}">
       {{problem.id}}
     </router-link>
   </Tooltip>
