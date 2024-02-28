@@ -21,7 +21,7 @@
           <FieldCategoryBox :boxType="true" :value="FIELD_MAP[this.recommend_field].value" :boxColor="FIELD_MAP[this.recommend_field].boxColor"/>
           <span>{{$t('m.AiSolution')}}</span>
         </div>
-        <template v-for="(recommend_problem, index) of this.recommend_problems">
+        <template v-for="(recommend_problem, index) of this.problems">
           <div class="aiRecommendProblem">
                 <span style="font-weight: bold; font-size: 15px">
                   {{ recommend_problem.title }}
@@ -31,22 +31,22 @@
             </a>
           </div>
         </template>
-        <div class="aiRecommendProblem">
-                <span style="font-weight: bold; font-size: 15px">
-                  {{ "벡터 매칭" }}
-                </span>
-          <a @click="enterProblemDetail('')" style="text-decoration: underline; color: #7a7a7a">
-            {{$t('m.Try_Most_Hard_Problem_In_Last_Week')}}
-          </a>
-        </div>
-        <div class="aiRecommendProblem">
-                <span style="font-weight: bold; font-size: 15px">
-                  {{ "두 수 더하기"}}
-                </span>
-          <a @click="enterProblemDetail('')" style="text-decoration: underline; color: #7a7a7a">
-            {{$t('m.Try_Most_Hard_Problem_In_Last_Week')}}
-          </a>
-        </div>
+<!--        <div class="aiRecommendProblem">-->
+<!--                <span style="font-weight: bold; font-size: 15px">-->
+<!--                  {{ "벡터 매칭" }}-->
+<!--                </span>-->
+<!--          <a @click="enterProblemDetail('')" style="text-decoration: underline; color: #7a7a7a">-->
+<!--            {{$t('m.Try_Most_Hard_Problem_In_Last_Week')}}-->
+<!--          </a>-->
+<!--        </div>-->
+<!--        <div class="aiRecommendProblem">-->
+<!--                <span style="font-weight: bold; font-size: 15px">-->
+<!--                  {{ "두 수 더하기"}}-->
+<!--                </span>-->
+<!--          <a @click="enterProblemDetail('')" style="text-decoration: underline; color: #7a7a7a">-->
+<!--            {{$t('m.Try_Most_Hard_Problem_In_Last_Week')}}-->
+<!--          </a>-->
+<!--        </div>-->
 
       </template>
   </main>
@@ -61,6 +61,11 @@ import {FIELD_MAP} from "../../../../../utils/constants";
 export default {
   name: 'AiRecommendationBox',
   components: {FieldCategoryBox},
+  props:{
+    problems:{
+      type:Object
+    }
+  },
   data () {
     return {
       radarInitOpts: {
