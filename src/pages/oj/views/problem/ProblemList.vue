@@ -12,7 +12,7 @@
       <keep-alive>
         <div class="right-container">
             <MostDifficultProblemLastWeekBox :problem="mostDifficultProblem"/>
-            <AiRecommendationBox/>
+            <AiRecommendationBox :problems="problemList.slice(3,5)"/>
         </div>
       </keep-alive>
     </div>
