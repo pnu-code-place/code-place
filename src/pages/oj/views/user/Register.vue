@@ -269,7 +269,8 @@ export default {
 }
 .btn {
   height: 45px;
-  background-color: #4a86c0;
+  background-color: #32306b;
+  border: none;
   font-weight: 600;
   font-size: 14px;
   border-radius: 8px;
@@ -282,7 +283,8 @@ export default {
 }
 .emailAuthBtn {
   height: 36px;
-  background-color: #4a86c0;
+  background-color: #32306b;
+  border: none;
   font-weight: 600;
   font-size: 14px;
   border-radius: 8px;

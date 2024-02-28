@@ -139,7 +139,7 @@
   }
 
   .menuItemText:hover{
-    color: #4A86C0;
+    color: #32306b;
   }
 
   @avatar-radius: 50%;
