@@ -165,7 +165,7 @@ export default {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    background-color: #F2F8F3;
+    background-color: rgba(213, 213, 229, 0.82);
     border-radius: 10px;
 
     .miracle-title {
