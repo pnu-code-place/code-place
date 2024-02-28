@@ -65,10 +65,7 @@ export default {
       border-radius: 5px;
 
       &:hover {
-        // #e6f2ff 보다는 조금 더 진한 색상을 찾아줘
-        background-color: #f2f8ff;
-        scale: 1.05;
-        transition: scale 0.3s ease;
+        background-color: #e6f2ff;
       }
     }
 
@@ -78,8 +75,12 @@ export default {
     }
 
     .router-link-exact-active {
-      background-color: #e6f2ff;
-      color: #0078ff;
+      background-color: rgba(34, 33, 72, 0.82);
+      color: #e6f2ff;
+
+      &:hover {
+        background-color: rgba(34, 33, 72, 0.82);
+      }
     }
   }
 }

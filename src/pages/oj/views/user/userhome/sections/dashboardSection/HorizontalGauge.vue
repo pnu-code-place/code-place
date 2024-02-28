@@ -59,7 +59,7 @@ export default {
   }
   .gauge-bar {
     height: 100%;
-    background-color: #22CC77;
+    background-color: rgba(108, 107, 152, 0.82);
     position: absolute;
     top: 0;
     left: 0;
