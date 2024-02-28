@@ -1,8 +1,8 @@
 <template>
   <div class="bannerBox">
-    <Carousel v-model="value1" autoplay loop arrow="never" radius-dot="true" autoplaySpeed="3000">
+    <Carousel v-model="value1" autoplay loop arrow="never" :radius-dot="true" :autoplaySpeed="3000">
       <CarouselItem>
-        <div>
+        <div class="demo-carousel">
           <img src="@/assets/banner1.png" width="100%" height="150px"/>
         </div>
       </CarouselItem>

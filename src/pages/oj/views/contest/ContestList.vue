@@ -1,8 +1,9 @@
 <template>
 <!--  <Row>-->
+  <main>
     <Col :span="24">
-    <Panel id="contest-card" shadow>
-      <div slot="title">{{query.rule_type === '' ? this.$i18n.t('m.All') : query.rule_type}} {{$t('m.Contests')}}</div>
+    <Panel id="contest-card" dis-hover>
+      <div slot="title" style="font-size: medium; font-weight: bold">{{query.rule_type === '' ? this.$i18n.t('m.All') : query.rule_type}} {{$t('m.Contests')}}</div>
       <div slot="extra">
         <ul class="filter">
           <li>
@@ -40,34 +41,33 @@
       <ol id="contest-list">
         <li v-for="contest in contests" :key="contest.title">
           <Row type="flex" justify="space-between" align="middle">
-            <img class="trophy" src="../../../../assets/Cup.png"/>
             <Col :span="18" class="contest-main">
-            <p class="title">
-              <a class="entry" @click.stop="goContest(contest)">
-                {{contest.title}}
-              </a>
-              <template v-if="contest.contest_type != 'Public'">
-                <Icon type="ios-locked-outline" size="20"></Icon>
-              </template>
-            </p>
-            <ul class="detail">
-              <li>
-                <Icon type="calendar" color="#3091f2"></Icon>
-                {{contest.start_time | localtime('YYYY-M-D HH:mm') }}
-              </li>
-              <li>
-                <Icon type="android-time" color="#3091f2"></Icon>
-                {{getDuration(contest.start_time, contest.end_time)}}
-              </li>
-              <li>
-                <Button size="small" shape="circle" @click="onRuleChange(contest.rule_type)">
-                  {{contest.rule_type}}
-                </Button>
-              </li>
-            </ul>
+              <p class="title">
+                <a class="entry" @click.stop="goContest(contest)">
+                  {{contest.title}}
+                </a>
+                <template v-if="contest.contest_type != 'Public'">
+                  <Icon type="ios-locked-outline" size="20"></Icon>
+                </template>
+              </p>
+              <ul class="detail">
+                <li>
+                  <Icon type="calendar" color="#3091f2"></Icon>
+                  {{contest.start_time | localtime('YYYY-M-D HH:mm') }}
+                </li>
+                <li>
+                  <Icon type="android-time" color="#3091f2"></Icon>
+                  {{getDuration(contest.start_time, contest.end_time)}}
+                </li>
+                <li>
+                  <Button size="small" shape="circle" @click="onRuleChange(contest.rule_type)">
+                    {{contest.rule_type}}
+                  </Button>
+                </li>
+              </ul>
             </Col>
             <Col :span="4" style="text-align: center">
-            <Tag type="dot" :color="CONTEST_STATUS_REVERSE[contest.status].color">{{$t('m.' + CONTEST_STATUS_REVERSE[contest.status].name.replace(/ /g, "_"))}}</Tag>
+              <Tag type="dot" :color="CONTEST_STATUS_REVERSE[contest.status].color">{{$t('m.' + CONTEST_STATUS_REVERSE[contest.status].name.replace(/ /g, "_"))}}</Tag>
             </Col>
           </Row>
         </li>
@@ -75,8 +75,7 @@
     </Panel>
     <Pagination :total="total" :page-size.sync="limit" @on-change="changeRoute" :current.sync="page" :show-sizer="true" @on-page-size-change="changeRoute"></Pagination>
     </Col>
-<!--  </Row>-->
-
+  </main>
 </template>
 
 <script>
@@ -186,6 +185,8 @@
   }
 </script>
 <style lang="less" scoped>
+main{
+  width: 1200px;
   #contest-card {
     #keyword {
       width: 80%;
@@ -198,15 +199,16 @@
     }
     #contest-list {
       > li {
-        padding: 20px;
+        justify-content: center;
+        padding: 40px 55px;
         border-bottom: 1px solid rgba(187, 187, 187, 0.5);
         list-style: none;
-
-        .trophy {
-          height: 40px;
-          margin-left: 10px;
-          margin-right: -20px;
-        }
+        //
+        //.trophy {
+        //  height: 40px;
+        //  margin-left: 10px;
+        //  margin-right: -20px;
+        //}
         .contest-main {
           .title {
             font-size: 18px;
@@ -229,4 +231,6 @@
       }
     }
   }
+}
+
 </style>

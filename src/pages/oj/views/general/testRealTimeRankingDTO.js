@@ -1,19 +1,15 @@
-const testRealTimeRankingDTO = [
-  {userId: 1, userName: "seunghun0917", badgeId: 1, ranking: 1},
-  {userId: 2, userName: "junwoo1017", badgeId: 1, ranking: 2},
-  {userId: 3, userName: "sdfknbas17", badgeId: 1, ranking: 3},
-  {userId: 4, userName: "금정산고라니", badgeId: 1, ranking: 4},
-  {userId: 5, userName: "yungs0917", badgeId: 1, ranking: 5},
-  {userId: 6, userName: "oplte3", badgeId: 1, ranking: 6},
-  {userId: 7, userName: "sdfsadf23", badgeId: 1, ranking: 7},
-  {userId: 8, userName: "20kee", badgeId: 1, ranking: 8},
-  {userId: 9, userName: "300asdf", badgeId: 1, ranking: 9},
-  {userId: 10, userName: "39sngj", badgeId: 1, ranking: 10},
-  {userId: 11, userName: "kadsfnkn235", badgeId: 1, ranking: 11},
-  {userId: 12, userName: "asdgk111", badgeId: 1, ranking: 12},
-  {userId: 13, userName: "asdknneo000", badgeId: 1, ranking: 13},
-  {userId: 14, userName: "dfgksn", badgeId: 1, ranking: 14},
+const testRealTimetotal_scoreDTO = [
+  { username: "seunghun0917", tier: "diamond2", total_score: 32004},
+  { username: "junwoo1017", tier: "platinum1", total_score: 30000},
+  { username: "sdfknbas17", tier: "platinum2", total_score: 28000},
+  { username: "금정산고라니", tier: "platinum2", total_score: 27034},
+  { username: "yungs0917", tier: "platinum3", total_score: 26435},
+  {username: "oplte3", tier: "gold1", total_score: 24345},
+  {username: "sdfsadf23", tier: "gold1", total_score: 18049},
+  { username: "20kee", tier: "gold2", total_score: 15463},
+  { username: "300asdf", tier: "gold2", total_score: 14032},
+  { username: "39sngj", tier: "gold3", total_score: 13348},
 ]
 export default {
-  testRealTimeRankingDTO
+  testRealTimetotal_scoreDTO
 }

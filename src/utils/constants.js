@@ -145,23 +145,28 @@ export const DIFFICULTY_MAP ={
 export const FIELD_MAP ={
   '0': {
     'value': '구현',
-    'boxColor': '#F8D093'
+    'boxColor': '#F8D093',
+    'backgroundImage': require('../assets/fieldBackground/implement.svg')
   },
   '1': {
     'value': '수학',
-    'boxColor': '#B5EAB0'
+    'boxColor': '#B5EAB0',
+    'backgroundImage': require('../assets/fieldBackground/math.svg')
   },
   '2': {
     'value': '자료구조',
-    'boxColor': '#F8B193'
+    'boxColor': '#F8B193',
+    'backgroundImage': require('../assets/fieldBackground/datastructure.svg')
   },
   '3': {
     'value': '탐색',
-    'boxColor': '#90B8E7'
+    'boxColor': '#90B8E7',
+    'backgroundImage': require('../assets/fieldBackground/search.svg')
   },
   '4': {
     'value': '정렬',
-    'boxColor': '#EDC3C3'
+    'boxColor': '#d9c9ea',
+    'backgroundImage': require('../assets/fieldBackground/sort.svg')
   }
 }
 

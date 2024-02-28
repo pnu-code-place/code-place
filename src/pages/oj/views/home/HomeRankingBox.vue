@@ -2,47 +2,67 @@
   <div class="rankingBox">
     <div class="rankingBoxHeader">
       <span>실시간 랭킹</span>
-      <div>
-        <Icon type="ios-information-outline" size="13" color="#7a7a7a"></Icon>
-        <span>순위는 매일 밤 12시 갱신됩니다</span>
+      <div class="plusDiv" @click="handleRoute('acm-rank')">
+        <Icon type="android-add" size="13" color="#7a7a7a"></Icon>
+        <span>더보기</span>
       </div>
     </div>
-    <ul class="ranking-container" key="list">
-      <li
-        v-for="(rankingInfo, idx) in rankingItems.testRealTimeRankingDTO"
-        v-if="idx <= 9"
-      >
-        <div class="flex-container">
-          <!-- 랭킹 10위까지 데이터 바인딩 필요 -->
-          <!--                <div class="title">-->
-          <!--                  <a class="entry">-->
-          <!--                    {{ rankingInfo.ranking + '위' }}-->
-          <!--                  </a>-->
-          <!--                  <a class="entry">-->
-          <!--                    {{ rankingInfo.userName }}-->
-          <!--                  </a>-->
-          <!--                  <img src="@/assets/badgeExample.png" width="13px"/>-->
-          <!--                </div>-->
-        </div>
-      </li>
-    </ul>
+    <div style="padding: 10px">
+      <table>
+        <tr>
+          <th class="rank">순위</th>
+          <th class="name">이름</th>
+          <th class="score">{{ $t('m.Total_Score') }}</th>
+        </tr>
+        <tbody>
+        <tr v-for="(user, index) in this.rankingItems" :key="index">
+          <template v-if="(index + 1) <= 3">
+            <td class="rank">
+              <img alt="" :src="getAwardImageSrc(index+1)" width="12px"/>
+            </td>
+          </template>
+          <template v-else>
+            <td class="rank">{{ index + 1 }}</td>
+          </template>
+          <td class="name">{{ user.username }}</td>
+          <td class="score">{{ user.total_score }}</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+
   </div>
 </template>
 
 <script>
 import testRealTimeRankingDTO from "../general/testRealTimeRankingDTO";
+import api from "../../api";
+import {getAwardImageSrc, getTierImageSrc} from "../../../../utils/constants";
 
 export default {
   name: 'HomeRankingBox',
   data () {
     return {
-      rankingItems: testRealTimeRankingDTO,
+      rankingItems: testRealTimeRankingDTO.testRealTimetotal_scoreDTO,
+      isLoading: true,
     }
   },
+  mounted() {
+    this.init()
+  },
   methods:{
+    getTierImageSrc,
+    getAwardImageSrc,
     handleRoute(route) {
       this.$router.push({name: route});
     },
+    init() {
+      api.getHomeRealTimeRanking()
+        .then((res)=>{
+          console.log(res)
+          // this.rankingItems = res.data.data
+        })
+    }
   }
 }
 </script>
@@ -54,19 +74,16 @@ export default {
   border-radius: 7px;
   border: 1px solid #dedede;
   width: 100%;
-  height: 450px;
-  padding-left: 30px;
-  padding-right: 30px;
+  height: 510px;
+
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 
   .rankingBoxHeader {
-
-    padding-top: 15px;
-    padding-bottom: 15px;
+    padding: 15px 20px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    border-bottom: 1px solid #dedede;
+    //border-bottom: 1px solid #dedede;
 
     span:first-child {
       font-weight: 650;
@@ -77,45 +94,63 @@ export default {
       color: #7a7a7a;
       font-size: 12px;
     }
+
+    .plusDiv{
+      cursor: pointer;
+    }
   }
 }
 
+table {
+  width: 100%;
+  border-collapse: collapse;
+  //margin: 20px 0;
+  th {
+    padding: 3px 0;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 14px;
+    color: #666;
 
-.ranking-container {
-  margin-top: -5px;
-  margin-bottom: 5px;
-
-  li {
-    padding-top: 5px;
-    list-style: none;
-    padding-bottom: 5px;
-    margin-top: 9px;
-    border-radius: 15px;
-    margin-left: 20px;
-    margin-right: 20px;
-    font-size: 12px;
-    font-weight: bold;
-
-    &:last-child {
-      border-bottom: none;
+    &.rank {
+      width: 20%;
     }
 
-    .flex-container {
-      img {
-        margin-right: 1px;
-      }
+    &.name {
+      width: 50%;
+      text-align: left;
+      padding: 0 10px;
+    }
 
-      .title {
-        flex: 1 1;
-        text-align: left;
-        a.entry:first-child {
-          margin-left: 12px;
-          margin-right: 80px;
-          color: #495060;
+    &.score {
+      width: 30%;
+      text-align: center;
+    }
+  }
+
+  tbody {
+    tr {
+      border-top: 1px solid #efefef;
+
+      td {
+        padding: 10px 0;
+        font-size: 13px;
+        color: #666;
+
+        &.rank {
+          text-align: center;
+        }
+
+        &.name {
+          text-align: left;
+          padding: 0 10px;
+          font-weight: 560;
+        }
+
+        &.score {
+          text-align: center;
         }
       }
     }
   }
 }
-
 </style>

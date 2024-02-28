@@ -123,6 +123,12 @@ export default {
       data: profile
     });
   },
+  getHomeRealTimeRanking(){
+    return ajax("home_ranking", "get");
+  },
+  getHomeBonusProblem(){
+    return ajax("problem/bonus", "get");
+  },
   freshDisplayID(userID) {
     return ajax("profile/fresh_display_id", "get", {
       params: {
