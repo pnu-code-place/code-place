@@ -41,6 +41,7 @@ a {
   font-size: 13px;
   border : 1px solid #cfe2ff;
   border-radius: 5px;
+  min-width: 65px;
 }
 
 a:hover {
