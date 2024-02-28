@@ -1,5 +1,6 @@
 <template>
   <div class="setting-main">
+    <h2>{{$t('m.Avatar_Setting')}}</h2>
     <template v-if="!avatarOption.imgSrc">
       <Upload type="drag"
               class="mini-container"
@@ -61,6 +62,7 @@
     </Modal>
     <Form ref="formProfile" :model="formProfile">
       <div class="form">
+        <h2>{{$t('m.User_Setting')}}</h2>
         <div class="form-top">
           <div class="form-column">
             <label>{{ $t('m.Real_Name') }}</label>
@@ -252,6 +254,16 @@ export default {
 
 <style lang="less" scoped>
 
+h2{
+  font-size: 20px;
+  margin-bottom: 20px;
+
+}
+
+.setting-main {
+  margin-top: 50px;
+  background-color: var(--bg-color);
+}
 label {
   font-size: 13px;
   font-weight: bold;
