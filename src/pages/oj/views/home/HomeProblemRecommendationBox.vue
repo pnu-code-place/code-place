@@ -13,7 +13,7 @@
           <span>{{problem.title}}</span>
           <FieldCategoryBox :boxType="true" :value="FIELD_MAP[problem.field].value"
                             :boxColor="FIELD_MAP[problem.field].boxColor"/>
-          <template v-for="(category, idx) in problem.tags">
+          <template v-for="(category, idx) in [problem.tags[0]]">
             <FieldCategoryBox :boxType="false" :value="'#' + category" :boxColor="'#ffffff'"/>
           </template>
         </div>
