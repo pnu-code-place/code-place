@@ -117,38 +117,38 @@ export const ProblemSectionProp = {
     count: 6, // 해결한 문제들을 표시합니다.
     problems: [
       {
-        id: 2001,
-        title: '두 정수의 합',
+        id: 1,
+        title: '좌표 정렬하기',
         submitTime: '2021-07-02T08:25:49.443682Z',
         difficulty: 'medium',
       },
       {
-        id: 2002,
-        title: '정수 뒤집기',
+        id: 2,
+        title: '팰린드롬수',
         submitTime: '2021-07-02T08:25:49.443682Z',
         difficulty: 'easy',
       },
       {
-        id: 2003,
-        title: '팰린드롬 숫자',
+        id: 3,
+        title: '체스판 다시 칠하기',
         submitTime: '2021-07-02T08:25:49.443682Z',
         difficulty: 'easy',
       },
       {
-        id: 2004,
-        title: '로마 숫자를 정수로',
+        id: 4,
+        title: '리스트 계산기',
         submitTime: '2021-07-02T08:25:49.443682Z',
         difficulty: 'medium',
       },
       {
-        id: 2005,
-        title: '가장 긴 공통 접두사',
+        id: 5,
+        title: '피보나치 함수',
         submitTime: '2021-07-02T08:25:49.443682Z',
         difficulty: 'easy',
       },
       {
-        id: 2006,
-        title: '유효한 괄호',
+        id: 6,
+        title: '더블 초콜릿',
         submitTime: '2021-07-02T08:25:49.443682Z',
         difficulty: 'easy',
       }
@@ -158,26 +158,26 @@ export const ProblemSectionProp = {
     count: 4, // 시도했으나 풀지 못한 문제들을 표시합니다.
     problems: [
       {
-        id: 2007,
-        title: '직사각형 넓이 구하기',
+        id: 7,
+        title: '리모컨',
         submitTime: '2021-07-02T08:25:49.443682Z',
         difficulty: 'easy',
       },
       {
-        id: 2008,
-        title: '이진 트리의 최대 깊이',
+        id: 8,
+        title: '동물원 우리',
         submitTime: '2021-07-02T08:25:49.443682Z',
         difficulty: 'medium',
       },
       {
-        id: 2009,
-        title: '두 정수의 곱셈',
+        id: 9,
+        title: '비상연락망',
         submitTime: '2021-07-02T08:25:49.443682Z',
         difficulty: 'easy',
       },
       {
-        id: 2010,
-        title: '두 배열의 교집합',
+        id: 10,
+        title: '크레인',
         submitTime: '2021-07-02T08:25:49.443682Z',
         difficulty: 'easy',
       },

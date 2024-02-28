@@ -99,7 +99,7 @@ export default {
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve({data: {data: ProblemSectionProp}})
-      }, 3000)
+      }, 1000)
     })
   },
   getAiRecommendProblem() {
@@ -114,7 +114,7 @@ export default {
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve({data: {data: AchievementSectionProp}})
-      }, 3000)
+      }, 1000)
     })
   },
 
