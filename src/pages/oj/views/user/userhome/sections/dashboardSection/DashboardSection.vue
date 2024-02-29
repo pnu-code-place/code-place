@@ -1,6 +1,6 @@
 <script>
 import OjSummary from "./OJSummary.vue";
-import CategorySummary from "./CategorySummary.vue";
+import FieldSummary from "./FieldSummary.vue";
 import DifficultySummary from "./DifficultySummary.vue";
 import ChallengeSummary from "./AchievementSummary.vue";
 import api from "@oj/api";
@@ -15,7 +15,7 @@ export default {
       dashboardInfo: {}
     }
   },
-  components: {AchievementsSkeleton, DashboardSkeleton, ChallengeSummary, DifficultySummary, OjSummary, CategorySummary},
+  components: {AchievementsSkeleton, DashboardSkeleton, ChallengeSummary, DifficultySummary, OjSummary, FieldSummary},
   methods: {
     init() {
       api.getDashboardInfo(this.username).then(res => {
@@ -51,8 +51,8 @@ export default {
     <OjSummary v-if="this.dashboardInfo.ojStatus" :ojStatus="this.dashboardInfo.ojStatus"></OjSummary>
     <DashboardSkeleton v-else-if="this.isLoading"></DashboardSkeleton>
     <hr/>
-    <h1>{{$t('m.Category_Based_Distribution')}}</h1>
-    <CategorySummary v-if="this.dashboardInfo.categoryInfo" :categoryInfo="this.dashboardInfo.categoryInfo"></CategorySummary>
+    <h1>{{$t('m.Field_Based_Distribution')}}</h1>
+    <FieldSummary v-if="this.dashboardInfo.fieldInfo" :fieldInfo="this.dashboardInfo.fieldInfo"></FieldSummary>
     <DashboardSkeleton v-else-if="this.isLoading"></DashboardSkeleton>
     <hr/>
     <h1>{{$t('m.Difficulty_Based_Distribution')}}</h1>
