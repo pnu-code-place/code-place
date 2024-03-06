@@ -1,4 +1,4 @@
-# OnlineJudge Front End
+# CSEP Front End
 [![vue](https://img.shields.io/badge/vue-2.5.13-blue.svg?style=flat-square)](https://github.com/vuejs/vue)
 [![vuex](https://img.shields.io/badge/vuex-3.0.1-blue.svg?style=flat-square)](https://vuex.vuejs.org/)
 [![echarts](https://img.shields.io/badge/echarts-3.8.3-blue.svg?style=flat-square)](https://github.com/ecomfe/echarts)
@@ -80,6 +80,9 @@ set TARGET=http://Your-backend
 # serve with hot reload at localhost:8080
 npm run dev
 ```
+
+### 프로덕션 배포
+[Deploy.md를 참고해주십시오](https://github.com/PNU-CSEP/CSEP_FE/blob/main/deploy/Deploy.md)
 
 ## 4.디렉터리 구조
 
