@@ -1,6 +1,6 @@
 #!/bin/sh
 
-base=/OJ_FE
+base=/CSEP_FE
 
 build_vendor_dll()
 {
@@ -10,7 +10,7 @@ build_vendor_dll()
   fi
 }
 cd $base
-npm install --registry=https://registry.npm.taobao.org && \
+#npm install --registry=https://registry.npm.taobao.org && \
 build_vendor_dll && \
 npm run build
 
