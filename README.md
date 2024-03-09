@@ -33,7 +33,6 @@
   기존 QingdaoU Online Judge에 사용된 버전인 <strong>3.12.0</strong> 버전을 사용합니다.
 </details>
 
-
 ### 개발 기간
 2023.12 ~ 2024.3 (현재 진행 중)
 
