@@ -13,7 +13,7 @@
 
 부산대학교 코딩역량강화플랫폼의 백엔드 레포지토리입니다.
 
-기존 [QingdaoU의 OnlineJudge](https://github.com/QingdaoU/OnlineJudge)를 기반으로 개발되었습니다.
+이 프로젝트는 기존 [QingdaoU의 OnlineJudge](https://github.com/QingdaoU/OnlineJudge)를 기반으로 개발되었습니다.
 
 ### 개발 환경
 <details>
