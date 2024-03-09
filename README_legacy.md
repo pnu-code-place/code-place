@@ -5,40 +5,40 @@
 [![Django Rest Framework](https://img.shields.io/badge/django_rest_framework-3.12.0-blue.svg?style=flat-square)](http://www.django-rest-framework.org/)
 [![Build Status](https://travis-ci.org/QingdaoU/OnlineJudge.svg?branch=master)](https://travis-ci.org/QingdaoU/OnlineJudge)
 
-> #### 基于 Python 和 Vue 的在线评测系统。 [Demo](https://qduoj.com)
+> #### An onlinejudge system based on Python and Vue. [Demo](https://qduoj.com)
 
-[English Document](README_legacy)
+[中文文档](README-CN.md)
 
-## 概览
+## Overview
 
-+ 基于 Docker，真正一键部署
-+ 前后端分离，模块化编程，微服务
-+ ACM/OI 两种比赛模式、实时/非实时评判 任意选择
-+ 丰富的可视化图表，一图胜千言
-+ 支持 Template Problem，可以添加函数题甚至填空题
-+ 更细致的权限划分，超级管理员和普通管理员各司其职
-+ 多语言支持：`C`, `C++`, `Java`, `Python2`, `Python3`，题目可以选择使用的语言
-+ Markdown & MathJax 支持
-+ 比赛用户IP限制 (CIDR ranges)
++ Based on Docker; One-click deployment
++ Separated backend and frontend; Modular programming; Micro service
++ ACM/OI rule support; realtime/non-realtime rank support
++ Amazing charting and visualization
++ Template-problem support
++ More reasonable permission control
++ Multi-language support: `C`, `C++`, `Java`, `Python2`, `Python3`
++ Markdown & MathJax support
++ Contest participants IP limit(CIDR)
 
-主要模块均已开源:
+Main modules are available below:
 
-+ 后端(Django): [https://github.com/QingdaoU/OnlineJudge](https://github.com/QingdaoU/OnlineJudge)
-+ 前端(Vue): [https://github.com/QingdaoU/OnlineJudgeFE](https://github.com/QingdaoU/OnlineJudgeFE)
-+ 判题沙箱(Seccomp): [https://github.com/QingdaoU/Judger](https://github.com/QingdaoU/Judger)
-+ 判题服务器(对Judger的封装): [https://github.com/QingdaoU/JudgeServer](https://github.com/QingdaoU/JudgeServer)
++ Backend(Django): [https://github.com/QingdaoU/OnlineJudge](https://github.com/QingdaoU/OnlineJudge)
++ Frontend(Vue): [https://github.com/QingdaoU/OnlineJudgeFE](https://github.com/QingdaoU/OnlineJudgeFE)
++ Judger Sandbox(Seccomp): [https://github.com/QingdaoU/Judger](https://github.com/QingdaoU/Judger)
++ JudgeServer(A wrapper for Judger): [https://github.com/QingdaoU/JudgeServer](https://github.com/QingdaoU/JudgeServer)
 
-## 安装
+## Installation
 
-请根据此进行安装:  [https://github.com/QingdaoU/OnlineJudgeDeploy/tree/2.0](https://github.com/QingdaoU/OnlineJudgeDeploy/tree/2.0)
+Follow me:  [https://github.com/QingdaoU/OnlineJudgeDeploy/tree/2.0](https://github.com/QingdaoU/OnlineJudgeDeploy/tree/2.0)
 
-## 文档
+## Documents
 
 [http://opensource.qduoj.com/](http://opensource.qduoj.com/)
 
-## 截图
+## Screenshots
 
-### OJ前台
+### Frontend:
 
 ![problem-list](https://user-images.githubusercontent.com/20637881/33372506-402022e4-d539-11e7-8e64-6656f8ceb75a.png)
 
@@ -48,8 +48,10 @@
 
 ![contest-list](https://user-images.githubusercontent.com/20637881/33372509-40d880dc-d539-11e7-9eba-1f08dcb6b9a0.png)
 
-Rankings 中可以控制图表和菜单的显隐。
+You can control the menu and chart status in rankings.
+
 ![acm-rankings](https://user-images.githubusercontent.com/20637881/33372510-41117f68-d539-11e7-9947-70e60bad3cf2.png)
+
 ![oi-rankings](https://user-images.githubusercontent.com/20637881/33372511-41d406fa-d539-11e7-9947-7a2a088785b0.png)
 
 ![status](https://user-images.githubusercontent.com/20637881/33372512-420ba240-d539-11e7-8645-594cac4a0b78.png)
@@ -58,7 +60,7 @@ Rankings 中可以控制图表和菜单的显隐。
 
 ![user-home](https://user-images.githubusercontent.com/20637881/33365521-7842d808-d523-11e7-84c1-2e2aa0079f32.png)
 
-### 后台管理
+### Admin: 
 
 ![admin-users](https://user-images.githubusercontent.com/20637881/33372516-42c34fda-d539-11e7-9f4e-5109477f83be.png)
 
@@ -68,18 +70,16 @@ Rankings 中可以控制图表和菜单的显隐。
 
 ![create-contest](https://user-images.githubusercontent.com/20637881/33372514-428ab922-d539-11e7-8f68-da55dedf3ad3.png)
 
+## Browser Support
 
-## 浏览器支持
+Modern browsers(chrome, firefox) and Internet Explorer 10+.
 
-Modern browsers(chrome, firefox) 和 Internet Explorer 10+.
+## Thanks
 
-## 特别感谢
++ I'd appreciate a star if you find this helpful.
++ Thanks to everyone that contributes to this project.
++ Special thanks to [heb1c](https://github.com/hebicheng), who has given us a lot of suggestions.
 
-+ 所有为本项目做出贡献的人
-+ [heb1c](https://github.com/hebicheng) 同学为我们提供了很多意见和建议
+## License
 
-如果您觉得这个项目还不错，就star一下吧 ：)
-
-## 许可
-
-The [MIT](http://opensource.org/licenses/MIT) License
+[MIT](http://opensource.org/licenses/MIT)
