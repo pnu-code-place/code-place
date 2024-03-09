@@ -42,9 +42,9 @@ Vue.js 2.5.13 버전으로 개발된 기존 [QingdaoU의 OnlineJudge 프론트�
 ### 개발 인원
 | github   | 사진                                                              | 역할                 | 이메일 주소                 | 소속                |
 |----------|-----------------------------------------------------------------|--------------------|------------------------|-------------------|
-| [hunsy9](https://github.com/hunsy9)   | ![유저 아바타](https://avatars.githubusercontent.com/u/101303791?v=4)  | 프로젝트 메니저, 프론트/백엔드 기획 및 개발 | juniper0917@gmail.com  | 정보컴퓨터공학부 |
-| [minmunui](https://github.com/minmunui) | ![유저 아바타](https://avatars.githubusercontent.com/u/82745129?v=4) | 프론트엔드 기획 및 개발                    | ehdwls1638@pusan.ac.kr | 정보컴퓨터공학부 |
-| [llddang](https://github.com/llddang) | ![유저 아바타](https://avatars.githubusercontent.com/u/77055208?v=4) | 프론트엔드 기획 및 개발                    | bodyness@naver.com | 정보컴퓨터공학부 |
+| [hunsy9](https://github.com/hunsy9)   | ![유저 아바타](https://avatars.githubusercontent.com/u/101303791?v=4)  | PM, 프론트/백엔드 기획 및 개발 | juniper0917@gmail.com  | 정보컴퓨터공학부 |
+| [minmunui](https://github.com/minmunui) | ![유저 아바타](https://avatars.githubusercontent.com/u/82745129?v=4) | 프론트엔드(Client) 기획 및 개발                    | ehdwls1638@pusan.ac.kr | 정보컴퓨터공학부 |
+| [llddang](https://github.com/llddang) | ![유저 아바타](https://avatars.githubusercontent.com/u/77055208?v=4) | 프론트엔드(Admin) 기획 및 개발                    | bodyness@naver.com | 정보컴퓨터공학부 |
 
 ## 2.프로젝트 설치
 서버가 설치되어 있지 않은 경우, [OnlineJudgeBE 프로젝트]()를 이용하여 DB와 서버를 설치해야 합니다.
