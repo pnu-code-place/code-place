@@ -16,7 +16,6 @@
 기존 [QingdaoU의 OnlineJudge](https://github.com/QingdaoU/OnlineJudge)를 기반으로 개발되었습니다.
 
 ### 개발 환경
-
 <details>
   <summary>Python <strong>3.8.0</strong></summary>
   기본 QingdaoU의 Online Judge에 사용된 Python 버전은 <strong>3.8.0</strong> 입니다.
