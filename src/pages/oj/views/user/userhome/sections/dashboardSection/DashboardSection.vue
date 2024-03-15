@@ -11,7 +11,7 @@ export default {
   name: "dashboard-section",
   data() {
     return {
-      isLoading : true,
+      isLoading: true,
       dashboardInfo: {}
     }
   },
@@ -47,20 +47,22 @@ export default {
 
 <template>
   <section>
-    <h1>{{$t('m.OJ_Summary')}}</h1>
+    <h1>{{ $t('m.OJ_Summary') }}</h1>
     <OjSummary v-if="this.dashboardInfo.ojStatus" :ojStatus="this.dashboardInfo.ojStatus"></OjSummary>
     <DashboardSkeleton v-else-if="this.isLoading"></DashboardSkeleton>
     <hr/>
-    <h1>{{$t('m.Field_Based_Distribution')}}</h1>
+    <h1>{{ $t('m.Field_Based_Distribution') }}</h1>
     <FieldSummary v-if="this.dashboardInfo.fieldInfo" :fieldInfo="this.dashboardInfo.fieldInfo"></FieldSummary>
     <DashboardSkeleton v-else-if="this.isLoading"></DashboardSkeleton>
     <hr/>
-    <h1>{{$t('m.Difficulty_Based_Distribution')}}</h1>
-    <DifficultySummary v-if="this.dashboardInfo.difficultyInfo" :difficultyInfo="this.dashboardInfo.difficultyInfo"></DifficultySummary>
+    <h1>{{ $t('m.Difficulty_Based_Distribution') }}</h1>
+    <DifficultySummary v-if="this.dashboardInfo.difficultyInfo"
+                       :difficultyInfo="this.dashboardInfo.difficultyInfo"></DifficultySummary>
     <DashboardSkeleton v-else-if="this.isLoading"></DashboardSkeleton>
     <hr/>
     <h1>{{ $t('m.Achievement') }}</h1>
-    <ChallengeSummary v-if="this.dashboardInfo.achievements" :achievements="this.dashboardInfo.achievements"></ChallengeSummary>
+    <ChallengeSummary v-if="this.dashboardInfo.achievements"
+                      :achievements="this.dashboardInfo.achievements"></ChallengeSummary>
     <AchievementsSkeleton v-else-if="this.isLoading"></AchievementsSkeleton>
   </section>
 </template>

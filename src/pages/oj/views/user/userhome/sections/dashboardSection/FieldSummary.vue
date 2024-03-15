@@ -16,29 +16,30 @@ export default {
     }
   },
   methods: {
-    percentageToScoreElement(label, percentage) {
-      return `<div style="display:flex; width:100%; justify-content: space-between"><span>${label}</span><span>${((1 - percentage) * 100).toFixed(1)}</span></div>`
+    percentageToScoreElement(label, score) {
+      return `<div style="display:flex; width:100%; justify-content: space-between"><span>${label}</span><span>${score}</span></div>`
     },
   },
   computed: {
     graphRankData() {
-      return Object.keys(this.fieldInfo).map((key) => ((1 - this.fieldInfo[key].ranking_percent) * 100).toFixed(1))
+      // 각 영역별로 점수를 배열로 만들어서 반환
+      return Object.keys(this.fieldInfo).map((key) => (this.fieldInfo[key].score))
     },
     tooltipFormatter() {
-      return `<div style="display:flex; flex-direction: column; padding:4px 15px">영역별 상대점수<br>
-              ${this.percentageToScoreElement('자료구조', this.fieldInfo.data_structure.ranking_percent)}
-              ${this.percentageToScoreElement('구현', this.fieldInfo.implementation.ranking_percent)}
-              ${this.percentageToScoreElement('수학', this.fieldInfo.mathematics.ranking_percent)}
-              ${this.percentageToScoreElement('탐색', this.fieldInfo.searching.ranking_percent)}
-              ${this.percentageToScoreElement('정렬', this.fieldInfo.sorting.ranking_percent)} </div>`
+      return `<div style="display:flex; flex-direction: column; padding:4px 15px; min-width: 150px">영역별 점수<br>
+              ${this.percentageToScoreElement('자료구조', this.fieldInfo.data_structure.score)}
+              ${this.percentageToScoreElement('구현', this.fieldInfo.implementation.score)}
+              ${this.percentageToScoreElement('수학', this.fieldInfo.mathematics.score)}
+              ${this.percentageToScoreElement('탐색', this.fieldInfo.searching.score)}
+              ${this.percentageToScoreElement('정렬', this.fieldInfo.sorting.score)} </div>`
     },
     radarIndicator() {
       return [
-        {text: FIELD_MAP["2"].value, max: this.fieldInfo.data_structure.max, color: '#000000',},
-        {text: FIELD_MAP["0"].value, max: this.fieldInfo.implementation.max, color: '#000000',},
-        {text: FIELD_MAP["1"].value, max: this.fieldInfo.mathematics.max, color: '#000000',},
-        {text: FIELD_MAP["3"].value, max: this.fieldInfo.searching.max, color: '#000000',},
-        {text: FIELD_MAP["4"].value, max: this.fieldInfo.sorting.max, color: '#000000',},
+        {text: FIELD_MAP["2"].value, max: FIELD_MAP["2"].maxScore, color: '#000000',},
+        {text: FIELD_MAP["0"].value, max: FIELD_MAP["0"].maxScore, color: '#000000',},
+        {text: FIELD_MAP["1"].value, max: FIELD_MAP["1"].maxScore, color: '#000000',},
+        {text: FIELD_MAP["3"].value, max: FIELD_MAP["3"].maxScore, color: '#000000',},
+        {text: FIELD_MAP["4"].value, max: FIELD_MAP["4"].maxScore, color: '#000000',},
       ]
     },
     tooltip() {

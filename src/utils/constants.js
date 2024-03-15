@@ -119,7 +119,7 @@ export const STORAGE_KEY = {
   languages: 'languages'
 }
 
-export const DIFFICULTY_MAP ={
+export const DIFFICULTY_MAP = {
   'VeryLow': {
     'value': '매우 쉬움',
     'textColor': '#95ef4c'
@@ -142,37 +142,42 @@ export const DIFFICULTY_MAP ={
   }
 }
 
-export const FIELD_MAP ={
+export const FIELD_MAP = {
   '0': {
     'value': '구현',
     'boxColor': '#F8D093',
-    'backgroundImage': require('../assets/fieldBackground/implement.svg')
+    'backgroundImage': require('../assets/fieldBackground/implement.svg'),
+    'maxScore': 25600
   },
   '1': {
     'value': '수학',
     'boxColor': '#B5EAB0',
-    'backgroundImage': require('../assets/fieldBackground/math.svg')
+    'backgroundImage': require('../assets/fieldBackground/math.svg'),
+    'maxScore': 25600
   },
   '2': {
     'value': '자료구조',
     'boxColor': '#F8B193',
-    'backgroundImage': require('../assets/fieldBackground/datastructure.svg')
+    'backgroundImage': require('../assets/fieldBackground/datastructure.svg'),
+    'maxScore': 25600
   },
   '3': {
     'value': '탐색',
     'boxColor': '#90B8E7',
-    'backgroundImage': require('../assets/fieldBackground/search.svg')
+    'backgroundImage': require('../assets/fieldBackground/search.svg'),
+    'maxScore': 25600
   },
   '4': {
     'value': '정렬',
     'boxColor': '#d9c9ea',
-    'backgroundImage': require('../assets/fieldBackground/sort.svg')
+    'backgroundImage': require('../assets/fieldBackground/sort.svg'),
+    'maxScore': 25600
   }
 }
 
-export const TierImageSrc ={
+export const TierImageSrc = {
   //unranked
-  'sprout' : require('@/assets/tiers/unranked/sprout.svg'),
+  'sprout': require('@/assets/tiers/unranked/sprout.svg'),
 
   //bronze
   'bronze1': require('@/assets/tiers/bronze/bronze1.svg'),
@@ -200,22 +205,22 @@ export const TierImageSrc ={
   'diamond3': require('@/assets/tiers/diamond/diamond3.svg'),
 }
 
-export const AwardImageSrc ={
-  '1' : require('@/assets/awards/first.svg'),
+export const AwardImageSrc = {
+  '1': require('@/assets/awards/first.svg'),
   '2': require('@/assets/awards/second.svg'),
   '3': require('@/assets/awards/third.svg'),
 }
 
-export function getTierImageSrc(tier){
+export function getTierImageSrc(tier) {
   return TierImageSrc[tier]
 }
 
-export function getAwardImageSrc(rank){
+export function getAwardImageSrc(rank) {
   return AwardImageSrc[rank]
 }
 
 
-export function buildProblemCodeKey (problemID, contestID = null) {
+export function buildProblemCodeKey(problemID, contestID = null) {
   if (contestID) {
     return `${STORAGE_KEY.PROBLEM_CODE}_${contestID}_${problemID}`
   }

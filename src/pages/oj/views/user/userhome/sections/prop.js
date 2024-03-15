@@ -27,31 +27,26 @@ export const DashboardSectionProp = {
       score: 340, // 점수
       ranking: 60, // 랭킹
       ranking_percent: 0.3, // 랭킹 퍼센트 - 상위 30%
-      max: 100
     },
     mathematics: {
       score: 200,
       ranking: 101,
       ranking_percent: 0.505,
-      max: 100
     },
     sorting: {
       score: 45,
       ranking: 34,
       ranking_percent: 0.17,
-      max: 100
     },
     implementation: {
       score: 610,
       ranking: 20,
       ranking_percent: 0.101,
-      max: 100
     },
     searching: {
       score: 30,
       ranking: 190,
       ranking_percent: 0.95,
-      max: 100
     }
   },
 
