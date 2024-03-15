@@ -536,7 +536,7 @@
           }
         }
         if (!this.problem.tags.length) {
-          this.error.tags = 'Please add at least one Category'
+          this.error.tags = 'Please add at least one Tag'
           this.$error(this.error.tags)
           return
         }
