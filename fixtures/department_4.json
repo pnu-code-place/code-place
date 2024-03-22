@@ -1,0 +1,114 @@
+[
+  {
+    "model": "account.department",
+    "fields": {
+      "department_name": "기계공학부",
+      "college_id": 4
+    }
+  },
+  {
+    "model": "account.department",
+    "fields": {
+      "department_name": "고분자공학과",
+      "college_id": 4
+    }
+  },
+  {
+    "model": "account.department",
+    "fields": {
+      "department_name": "유기소재시스템공학과",
+      "college_id": 4
+    }
+  },
+  {
+    "model": "account.department",
+    "fields": {
+      "department_name": "화공생명·환경공학부-화공생명공학전공",
+      "college_id": 4
+    }
+  },
+  {
+    "model": "account.department",
+    "fields": {
+      "department_name": "화공생명·환경공학부-환경공학전공",
+      "college_id": 4
+    }
+  },
+  {
+    "model": "account.department",
+    "fields": {
+      "department_name": "전기전자공학부-전자공학전공",
+      "college_id": 4
+    }
+  },
+  {
+    "model": "account.department",
+    "fields": {
+      "department_name": "전기전자공학부-전기공학전공",
+      "college_id": 4
+    }
+  },
+  {
+    "model": "account.department",
+    "fields": {
+      "department_name": "전기전자공학부-반도체공학전공",
+      "college_id": 4
+    }
+  },
+  {
+    "model": "account.department",
+    "fields": {
+      "department_name": "조선해양공학과",
+      "college_id": 4
+    }
+  },
+  {
+    "model": "account.department",
+    "fields": {
+      "department_name": "재료공학부",
+      "college_id": 4
+    }
+  },
+  {
+    "model": "account.department",
+    "fields": {
+      "department_name": "산업공학과",
+      "college_id": 4
+    }
+  },
+  {
+    "model": "account.department",
+    "fields": {
+      "department_name": "항공우주공학과",
+      "college_id": 4
+    }
+  },
+  {
+    "model": "account.department",
+    "fields": {
+      "department_name": "건축공학과",
+      "college_id": 4
+    }
+  },
+  {
+    "model": "account.department",
+    "fields": {
+      "department_name": "건축학과",
+      "college_id": 4
+    }
+  },
+  {
+    "model": "account.department",
+    "fields": {
+      "department_name": "도시공학과",
+      "college_id": 4
+    }
+  },
+  {
+    "model": "account.department",
+    "fields": {
+      "department_name": "사회기반시스템공학과",
+      "college_id": 4
+    }
+  }
+]

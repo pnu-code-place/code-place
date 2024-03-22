@@ -1,0 +1,16 @@
+[
+  {
+    "model": "account.department",
+    "fields": {
+      "department_name": "약학대학-약학전공",
+      "college_id": 8
+    }
+  },
+  {
+    "model": "account.department",
+    "fields": {
+      "department_name": "약학대학-제약학전공",
+      "college_id": 8
+    }
+  }
+]

@@ -1,0 +1,79 @@
+[
+  {
+    "model": "account.department",
+    "fields": {
+      "department_name": "식물생명과학과",
+      "college_id": 12
+    }
+  },
+  {
+    "model": "account.department",
+    "fields": {
+      "department_name": "원예생명과학과",
+      "college_id": 12
+    }
+  },
+  {
+    "model": "account.department",
+    "fields": {
+      "department_name": "동물생명자원과학과",
+      "college_id": 12
+    }
+  },
+  {
+    "model": "account.department",
+    "fields": {
+      "department_name": "식품공학과",
+      "college_id": 12
+    }
+  },
+  {
+    "model": "account.department",
+    "fields": {
+      "department_name": "생명환경화학과",
+      "college_id": 12
+    }
+  },
+  {
+    "model": "account.department",
+    "fields": {
+      "department_name": "바이오소재과학과",
+      "college_id": 12
+    }
+  },
+  {
+    "model": "account.department",
+    "fields": {
+      "department_name": "바이오산업기계공학과",
+      "college_id": 12
+    }
+  },
+  {
+    "model": "account.department",
+    "fields": {
+      "department_name": "조경학과",
+      "college_id": 12
+    }
+  },
+  {
+    "model": "account.department",
+    "fields": {
+      "department_name": "식품자원경제학과",
+      "college_id": 12
+    }
+  },
+  {
+    "model": "account.department",
+    "fields": {
+      "department_name": "IT응용공학과",
+      "college_id": 12
+    }
+  },
+  {
+    "model": "account.department",
+    "fields": {
+      "department_name": "바이오환경에너지학과",
+      "college_id": 12
+    }
+  }
+]
