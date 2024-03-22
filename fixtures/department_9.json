@@ -1,0 +1,37 @@
+[
+  {
+    "model": "account.department",
+    "fields": {
+      "department_name": "아동가족학과",
+      "college_id": 9
+    }
+  },
+  {
+    "model": "account.department",
+    "fields": {
+      "department_name": "의류학과",
+      "college_id": 9
+    }
+  },
+  {
+    "model": "account.department",
+    "fields": {
+      "department_name": "식품영양학과",
+      "college_id": 9
+    }
+  },
+  {
+    "model": "account.department",
+    "fields": {
+      "department_name": "실내환경디자인학과",
+      "college_id": 9
+    }
+  },
+  {
+    "model": "account.department",
+    "fields": {
+      "department_name": "스포츠과학과",
+      "college_id": 9
+    }
+  }
+]

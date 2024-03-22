@@ -1,0 +1,86 @@
+[
+  {
+    "model": "account.department",
+    "fields": {
+      "department_name": "국어국문학과",
+      "college_id": 1
+    }
+  },
+  {
+    "model": "account.department",
+    "fields": {
+      "department_name": "일어일문학과",
+      "college_id": 1
+    }
+  },
+  {
+    "model": "account.department",
+    "fields": {
+      "department_name": "불어불문학과",
+      "college_id": 1
+    }
+  },
+  {
+    "model": "account.department",
+    "fields": {
+      "department_name": "노어노문학과",
+      "college_id": 1
+    }
+  },
+  {
+    "model": "account.department",
+    "fields": {
+      "department_name": "중어중문학과",
+      "college_id": 1
+    }
+  },
+  {
+    "model": "account.department",
+    "fields": {
+      "department_name": "영어영문학과",
+      "college_id": 1
+    }
+  },
+  {
+    "model": "account.department",
+    "fields": {
+      "department_name": "독어독문학과",
+      "college_id": 1
+    }
+  },
+  {
+    "model": "account.department",
+    "fields": {
+      "department_name": "한문학과",
+      "college_id": 1
+    }
+  },
+  {
+    "model": "account.department",
+    "fields": {
+      "department_name": "언어정보학과",
+      "college_id": 1
+    }
+  },
+  {
+    "model": "account.department",
+    "fields": {
+      "department_name": "사학과",
+      "college_id": 1
+    }
+  },
+  {
+    "model": "account.department",
+    "fields": {
+      "department_name": "철학과",
+      "college_id": 1
+    }
+  },
+  {
+    "model": "account.department",
+    "fields": {
+      "department_name": "고고학과",
+      "college_id": 1
+    }
+  }
+]
