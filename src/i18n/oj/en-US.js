@@ -340,8 +340,8 @@ export const m = {
 
 
   //CategorySummary.vue
-  Category_Based_Distribution: "영역별 분포",
-  CategorySummaryCategory: "영역",
+  Field_Based_Distribution: "영역별 분포",
+  Field: "영역",
   Percent: "백분율",
   Data_Structure: "자료구조",
   Mathematics: "수학",

@@ -22,36 +22,31 @@ export const DashboardSectionProp = {
     miracle_record: 20 // 최고 연속 코딩일수
   },
 
-  categoryInfo: { // 카테고리별 정보를 표시합니다.
+  fieldInfo: { // 카테고리별 정보를 표시합니다.
     data_structure: {
       score: 340, // 점수
       ranking: 60, // 랭킹
       ranking_percent: 0.3, // 랭킹 퍼센트 - 상위 30%
-      max: 100
     },
     mathematics: {
       score: 200,
       ranking: 101,
       ranking_percent: 0.505,
-      max: 100
     },
     sorting: {
       score: 45,
       ranking: 34,
       ranking_percent: 0.17,
-      max: 100
     },
     implementation: {
       score: 610,
       ranking: 20,
       ranking_percent: 0.101,
-      max: 100
     },
     searching: {
       score: 30,
       ranking: 190,
       ranking_percent: 0.95,
-      max: 100
     }
   },
 
@@ -120,37 +115,43 @@ export const ProblemSectionProp = {
         id: 1,
         title: '좌표 정렬하기',
         submitTime: '2021-07-02T08:25:49.443682Z',
-        difficulty: 'medium',
+        difficulty: 'Mid',
+        field: 'data_structure'
       },
       {
         id: 2,
         title: '팰린드롬수',
         submitTime: '2021-07-02T08:25:49.443682Z',
-        difficulty: 'easy',
+        difficulty: 'Low',
+        field: 'mathematics'
       },
       {
         id: 3,
         title: '체스판 다시 칠하기',
         submitTime: '2021-07-02T08:25:49.443682Z',
-        difficulty: 'easy',
+        difficulty: 'VeryLow',
+        field: 'implementation'
       },
       {
         id: 4,
         title: '리스트 계산기',
         submitTime: '2021-07-02T08:25:49.443682Z',
-        difficulty: 'medium',
+        difficulty: 'Mid',
+        field: 'mathematics'
       },
       {
         id: 5,
         title: '피보나치 함수',
         submitTime: '2021-07-02T08:25:49.443682Z',
-        difficulty: 'easy',
+        difficulty: 'Low',
+        field: 'data_structure'
       },
       {
         id: 6,
         title: '더블 초콜릿',
         submitTime: '2021-07-02T08:25:49.443682Z',
-        difficulty: 'easy',
+        difficulty: 'Low',
+        field: 'mathematics'
       }
     ],
   },
@@ -161,25 +162,29 @@ export const ProblemSectionProp = {
         id: 7,
         title: '리모컨',
         submitTime: '2021-07-02T08:25:49.443682Z',
-        difficulty: 'easy',
+        difficulty: 'Low',
+        field: 'mathematics'
       },
       {
         id: 8,
         title: '동물원 우리',
         submitTime: '2021-07-02T08:25:49.443682Z',
-        difficulty: 'medium',
+        difficulty: 'Medium',
+        field: 'data_structure'
       },
       {
         id: 9,
         title: '비상연락망',
         submitTime: '2021-07-02T08:25:49.443682Z',
-        difficulty: 'easy',
+        difficulty: 'VeryHigh',
+        field: 'implementation'
       },
       {
         id: 10,
         title: '크레인',
         submitTime: '2021-07-02T08:25:49.443682Z',
-        difficulty: 'easy',
+        difficulty: 'High',
+        field: 'mathematics'
       },
     ],
   }

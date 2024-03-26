@@ -2,8 +2,8 @@
 import {FIELD_MAP} from "../../../../../../../utils/constants";
 
 export default {
-  name: "category-summary",
-  props: ['categoryInfo'],
+  name: "field-summary",
+  props: ['fieldInfo'],
   data() {
     return {
       CATEGORY_LABEL: {
@@ -16,29 +16,33 @@ export default {
     }
   },
   methods: {
-    percentageToScoreElement(label, percentage) {
-      return `<div style="display:flex; width:100%; justify-content: space-between"><span>${label}</span><span>${((1 - percentage) * 100).toFixed(1)}</span></div>`
+    getTooltipRow(label, score) {
+      return `<div style="display:flex; width:100%; justify-content: space-between"><span>${label}</span><span>${score}</span></div>`
     },
   },
   computed: {
-    graphRankData() {
-      return Object.keys(this.categoryInfo).map((key) => ((1 - this.categoryInfo[key].ranking_percent) * 100).toFixed(1))
+    maxScore() {
+      return Math.max(...Object.keys(this.fieldInfo).map((key) => (this.fieldInfo[key].score)))
+    },
+    graphData() {
+      // 각 영역별로 점수를 배열로 만들어서 반환
+      return Object.keys(this.fieldInfo).map((key) => (this.fieldInfo[key].score)/this.maxScore)
     },
     tooltipFormatter() {
-      return `<div style="display:flex; flex-direction: column; padding:4px 15px">영역별 상대점수<br>
-              ${this.percentageToScoreElement('자료구조', this.categoryInfo.data_structure.ranking_percent)}
-              ${this.percentageToScoreElement('구현', this.categoryInfo.implementation.ranking_percent)}
-              ${this.percentageToScoreElement('수학', this.categoryInfo.mathematics.ranking_percent)}
-              ${this.percentageToScoreElement('탐색', this.categoryInfo.searching.ranking_percent)}
-              ${this.percentageToScoreElement('정렬', this.categoryInfo.sorting.ranking_percent)} </div>`
+      return `<div style="display:flex; flex-direction: column; padding:4px 15px; min-width: 150px">영역별 점수<br>
+              ${this.getTooltipRow('자료구조', this.fieldInfo.data_structure.score)}
+              ${this.getTooltipRow('구현', this.fieldInfo.implementation.score)}
+              ${this.getTooltipRow('수학', this.fieldInfo.mathematics.score)}
+              ${this.getTooltipRow('탐색', this.fieldInfo.searching.score)}
+              ${this.getTooltipRow('정렬', this.fieldInfo.sorting.score)} </div>`
     },
     radarIndicator() {
       return [
-        {text: FIELD_MAP["2"].value, max: this.categoryInfo.data_structure.max, color: '#000000',},
-        {text: FIELD_MAP["0"].value, max: this.categoryInfo.implementation.max, color: '#000000',},
-        {text: FIELD_MAP["1"].value, max: this.categoryInfo.mathematics.max, color: '#000000',},
-        {text: FIELD_MAP["3"].value, max: this.categoryInfo.searching.max, color: '#000000',},
-        {text: FIELD_MAP["4"].value, max: this.categoryInfo.sorting.max, color: '#000000',},
+        {text: FIELD_MAP["2"].value, max: 1, color: '#000000',},
+        {text: FIELD_MAP["0"].value, max: 1, color: '#000000',},
+        {text: FIELD_MAP["1"].value, max: 1, color: '#000000',},
+        {text: FIELD_MAP["3"].value, max: 1, color: '#000000',},
+        {text: FIELD_MAP["4"].value, max: 1, color: '#000000',},
       ]
     },
     tooltip() {
@@ -83,7 +87,7 @@ export default {
             },
             data: [
               {
-                value: this.graphRankData,
+                value: this.graphData,
                 tooltip: this.tooltip,
               },
             ],
@@ -105,14 +109,14 @@ export default {
       <table>
         <thead>
         <tr>
-          <th>{{ $t('m.CategorySummaryCategory') }}</th>
+          <th>{{ $t('m.Field') }}</th>
           <th>{{ $t('m.UserHomeScore') }}</th>
           <th><span class="score">{{ $t('m.Ranking') }}</span><span class="score-ratio">({{ $t('m.Percent') }})</span>
           </th>
         </tr>
         </thead>
         <tbody>
-        <tr class="part-row" v-for="(category, category_name) in categoryInfo">
+        <tr class="part-row" v-for="(category, category_name) in fieldInfo">
           <td class="part-name"><span :style="{backgroundColor:CATEGORY_LABEL[category_name].color}">{{
               CATEGORY_LABEL[category_name].label
             }}</span></td>
