@@ -10,7 +10,6 @@ build_vendor_dll()
   fi
 }
 cd $base
-#npm install --registry=https://registry.npm.taobao.org && \
 build_vendor_dll && \
 npm run build
 
@@ -19,4 +18,4 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-exec nginx -c /OJ_FE/deploy/nginx.conf
+exec nginx -c /CSEP_FE/deploy/nginx.conf
