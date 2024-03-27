@@ -20,7 +20,7 @@
 import {collegeDto, DropDownType, majorDto} from "./test"
 
 export default {
-  name: "customDropDown",
+  name: "customDropDown_legacy",
   props: {
     dropdownType: DropDownType
   },
