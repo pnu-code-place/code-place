@@ -55,11 +55,11 @@
       <div class="inputName">
         단과대학 선택
       </div>
-      <CustomDropDown :dropdownType="DropDownType.COLLEGE" @handleDropDownChange="handleCustomDropdownChange"/>
+      <CustomDropDown :options="this.collegeList" nameKey="college_name" @dropdownChange="handleCollegeChange"/>
       <div class="inputName">
         학과선택
       </div>
-      <CustomDropDown :dropdownType="DropDownType.MAJOR" @handleDropDownChange="handleCustomDropdownChange"/>
+      <CustomDropDown :options="this.majorList" nameKey="department_name" @dropdownChange="handleMajorChange"/>
       <div class="inputName">
         비밀번호
       </div>
@@ -111,7 +111,7 @@
 import { mapGetters, mapActions } from "vuex";
 import api from "@oj/api";
 import { FormMixin } from "@oj/components/mixins";
-import CustomDropDown from "../../components/dropdown/CustomDropDown.vue";
+import CustomDropDown from "../../components/dropdown/CustomDropdown.vue";
 import { DropDownType } from "../../components/dropdown/test";
 
 export default {
@@ -120,6 +120,7 @@ export default {
     CustomDropDown
   },
   mounted() {
+    this.getCollegeList();
     this.getCaptchaSrc();
   },
   data() {
@@ -165,8 +166,6 @@ export default {
       btnRegisterLoading: false,
       emailAuthCodeInputState: false,
       emailAuthCodeVerifyCompletedState: false,
-      name1: "단과대학 선택",
-      name2: "학과 선택",
       pnuAuthCode: "",
       formRegister: {
         email: "",
@@ -190,7 +189,9 @@ export default {
           { required: true, validator: CheckAgainPassword, trigger: "change" }
         ],
         // captcha: [{ required: true, trigger: "blur", min: 1, max: 10 }]
-      }
+      },
+      collegeList : [],
+      majorList : []
     };
   },
   methods: {
@@ -243,6 +244,21 @@ export default {
         return
       }
       this.formRegister.departmentId = data.id
+    },
+    handleCollegeChange(collegeId){
+      this.formRegister.collegeId = collegeId
+      this.getMajorList(collegeId)
+    },
+    handleMajorChange(majorId){
+      this.formRegister.departmentId = majorId
+    },
+    async getCollegeList(){
+      let res = await api.getCollegeList()
+      this.collegeList = res.data.data
+    },
+    async getMajorList(collegeId){
+      let res = await api.getMajorList(collegeId)
+      this.majorList = res.data.data
     }
   },
   computed: {
