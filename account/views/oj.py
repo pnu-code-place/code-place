@@ -49,7 +49,7 @@ class GetCollegeListAPI(APIView):
 class GetDepartmentListAPI(APIView):
     def get(self, request):
         try:
-            college_id = json.loads(request.body).get('college_id')
+            college_id = request.GET.get("college_id")
             department_list = Department.objects.filter(college=college_id).order_by('id')
         except Department.DoesNotExist:
             return self.error("failed to get department list")
