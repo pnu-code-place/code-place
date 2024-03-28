@@ -14,7 +14,6 @@
           :autofocus="true"
         >
         </Input>
-
         <Button
           type="primary"
           class="emailAuthBtn"
@@ -107,12 +106,10 @@
 </template>
 
 <script>
-/*eslint-disable*/
 import { mapGetters, mapActions } from "vuex";
 import api from "@oj/api";
 import { FormMixin } from "@oj/components/mixins";
 import CustomDropDown from "../../components/dropdown/CustomDropdown.vue";
-import { DropDownType } from "../../components/dropdown/test";
 
 export default {
   mixins: [FormMixin],
@@ -124,30 +121,6 @@ export default {
     this.getCaptchaSrc();
   },
   data() {
-    const CheckUsernameNotExist = (rule, value, callback) => {
-      api.checkUsernameOrEmail(value, undefined).then(
-        res => {
-          if (res.data.data.username === true) {
-            callback(new Error(this.$i18n.t("m.The_username_already_exists")));
-          } else {
-            callback();
-          }
-        },
-        _ => callback()
-      );
-    };
-    const CheckEmailNotExist = (rule, value, callback) => {
-      api.checkUsernameOrEmail(undefined, value).then(
-        res => {
-          if (res.data.data.email === true) {
-            callback(new Error(this.$i18n.t("m.The_email_already_exists")));
-          } else {
-            callback();
-          }
-        },
-        _ => callback()
-      );
-    };
     const CheckPassword = (rule, value, callback) => {
       if (this.formRegister.password !== "") {
         this.$refs.formRegister.validateField("passwordAgain");
@@ -177,10 +150,6 @@ export default {
         captcha: ""
       },
       ruleRegister: {
-        // pnuWebMail: [
-        //   { required: true, type: "email", trigger: "blur" },
-        //   { validator: CheckEmailNotExist, trigger: "blur" }
-        // ],
         password: [
           { required: true, trigger: "blur", min: 6, max: 20 },
           { validator: CheckPassword, trigger: "blur" }
@@ -188,7 +157,6 @@ export default {
         passwordAgain: [
           { required: true, validator: CheckAgainPassword, trigger: "change" }
         ],
-        // captcha: [{ required: true, trigger: "blur", min: 1, max: 10 }]
       },
       collegeList : [],
       majorList : []
@@ -231,19 +199,10 @@ export default {
             this.btnRegisterLoading = false;
           },
           _ => {
-            // this.getCaptchaSrc();
-            // this.formRegister.captcha = "";
             this.btnRegisterLoading = false;
           }
         );
       });
-    },
-    handleCustomDropdownChange(data){
-      if(data.dropdownType === DropDownType.COLLEGE){
-        this.formRegister.collegeId = data.id
-        return
-      }
-      this.formRegister.departmentId = data.id
     },
     handleCollegeChange(collegeId){
       this.formRegister.collegeId = collegeId
@@ -262,9 +221,6 @@ export default {
     }
   },
   computed: {
-    DropDownType() {
-      return DropDownType;
-    },
     ...mapGetters(["website", "modalStatus"])
   }
 };
