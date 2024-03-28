@@ -5,13 +5,14 @@ jobs:
   build_test:
     runs-on: ubuntu-latest
     steps:
+      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
+      - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
       - uses: actions/checkout@v4
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '16.x'
       - name: Install dependencies
-      - run: npm ci
-      - run: npm run build --if-present
-
+        run: npm ci
+      - run: echo "The Job Finished."
 
