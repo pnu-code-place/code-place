@@ -15,7 +15,9 @@ jobs:
       - run: echo "The Job is installing dependencies."
       - name: Install dependencies
         run: npm install
-      - name: Build Project
+      - name: Build Project dll
+        run: npm run build:dll
+      - name: Build Test
         run: npm run build
       - run: echo "The Job Finished."
 
