@@ -128,6 +128,31 @@ export default {
       callback();
     };
 
+    const CheckUsernameNotExist = (rule, value, callback) => {
+      api.checkUsernameOrEmail(value, undefined).then(
+        res => {
+          if (res.data.data.username === true) {
+            callback(new Error(this.$i18n.t("m.The_username_already_exists")));
+          } else {
+            callback();
+          }
+        },
+        _ => callback()
+      );
+    };
+    const CheckEmailNotExist = (rule, value, callback) => {
+      api.checkUsernameOrEmail(undefined, value).then(
+        res => {
+          if (res.data.data.email === true) {
+            callback(new Error(this.$i18n.t("m.The_email_already_exists")));
+          } else {
+            callback();
+          }
+        },
+        _ => callback()
+      );
+    };
+
     const CheckAgainPassword = (rule, value, callback) => {
       if (value !== this.formRegister.password) {
         callback(new Error(this.$i18n.t("m.password_does_not_match")));
