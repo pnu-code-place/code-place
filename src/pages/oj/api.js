@@ -59,6 +59,16 @@ export default {
       }
     });
   },
+  getCollegeList() {
+    return ajax("college_list", "get");
+  },
+  getMajorList(collegeID) {
+    return ajax("department_list", "get", {
+      params: {
+        college_id: collegeID
+      }
+    });
+  },
   // 注册
   register(data) {
     return ajax("register", "post", {

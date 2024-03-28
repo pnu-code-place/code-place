@@ -14,7 +14,6 @@
           :autofocus="true"
         >
         </Input>
-
         <Button
           type="primary"
           class="emailAuthBtn"
@@ -55,11 +54,11 @@
       <div class="inputName">
         단과대학 선택
       </div>
-      <CustomDropDown :dropdownType="DropDownType.COLLEGE" @handleDropDownChange="handleCustomDropdownChange"/>
+      <CustomDropDown :options="this.collegeList" nameKey="college_name" @dropdownChange="handleCollegeChange"/>
       <div class="inputName">
         학과선택
       </div>
-      <CustomDropDown :dropdownType="DropDownType.MAJOR" @handleDropDownChange="handleCustomDropdownChange"/>
+      <CustomDropDown :options="this.majorList" nameKey="department_name" @dropdownChange="handleMajorChange"/>
       <div class="inputName">
         비밀번호
       </div>
@@ -107,12 +106,10 @@
 </template>
 
 <script>
-/*eslint-disable*/
 import { mapGetters, mapActions } from "vuex";
 import api from "@oj/api";
 import { FormMixin } from "@oj/components/mixins";
-import CustomDropDown from "../../components/dropdown/CustomDropDown.vue";
-import { DropDownType } from "../../components/dropdown/test";
+import CustomDropDown from "../../components/dropdown/CustomDropdown.vue";
 
 export default {
   mixins: [FormMixin],
@@ -120,9 +117,17 @@ export default {
     CustomDropDown
   },
   mounted() {
+    this.getCollegeList();
     this.getCaptchaSrc();
   },
   data() {
+    const CheckPassword = (rule, value, callback) => {
+      if (this.formRegister.password !== "") {
+        this.$refs.formRegister.validateField("passwordAgain");
+      }
+      callback();
+    };
+
     const CheckUsernameNotExist = (rule, value, callback) => {
       api.checkUsernameOrEmail(value, undefined).then(
         res => {
@@ -147,12 +152,6 @@ export default {
         _ => callback()
       );
     };
-    const CheckPassword = (rule, value, callback) => {
-      if (this.formRegister.password !== "") {
-        this.$refs.formRegister.validateField("passwordAgain");
-      }
-      callback();
-    };
 
     const CheckAgainPassword = (rule, value, callback) => {
       if (value !== this.formRegister.password) {
@@ -165,8 +164,6 @@ export default {
       btnRegisterLoading: false,
       emailAuthCodeInputState: false,
       emailAuthCodeVerifyCompletedState: false,
-      name1: "단과대학 선택",
-      name2: "학과 선택",
       pnuAuthCode: "",
       formRegister: {
         email: "",
@@ -178,10 +175,6 @@ export default {
         captcha: ""
       },
       ruleRegister: {
-        // pnuWebMail: [
-        //   { required: true, type: "email", trigger: "blur" },
-        //   { validator: CheckEmailNotExist, trigger: "blur" }
-        // ],
         password: [
           { required: true, trigger: "blur", min: 6, max: 20 },
           { validator: CheckPassword, trigger: "blur" }
@@ -189,8 +182,9 @@ export default {
         passwordAgain: [
           { required: true, validator: CheckAgainPassword, trigger: "change" }
         ],
-        // captcha: [{ required: true, trigger: "blur", min: 1, max: 10 }]
-      }
+      },
+      collegeList : [],
+      majorList : []
     };
   },
   methods: {
@@ -230,25 +224,28 @@ export default {
             this.btnRegisterLoading = false;
           },
           _ => {
-            // this.getCaptchaSrc();
-            // this.formRegister.captcha = "";
             this.btnRegisterLoading = false;
           }
         );
       });
     },
-    handleCustomDropdownChange(data){
-      if(data.dropdownType === DropDownType.COLLEGE){
-        this.formRegister.collegeId = data.id
-        return
-      }
-      this.formRegister.departmentId = data.id
+    handleCollegeChange(collegeId){
+      this.formRegister.collegeId = collegeId
+      this.getMajorList(collegeId)
+    },
+    handleMajorChange(majorId){
+      this.formRegister.departmentId = majorId
+    },
+    async getCollegeList(){
+      let res = await api.getCollegeList()
+      this.collegeList = res.data.data
+    },
+    async getMajorList(collegeId){
+      let res = await api.getMajorList(collegeId)
+      this.majorList = res.data.data
     }
   },
   computed: {
-    DropDownType() {
-      return DropDownType;
-    },
     ...mapGetters(["website", "modalStatus"])
   }
 };
