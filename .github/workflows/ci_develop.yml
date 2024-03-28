@@ -1,6 +1,9 @@
-name: GitHub Actions Demo
-run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
-on: [ push ]
+name: FE_CI (feature branch -> develop)
+run-name: ${{ github.actor }} is testing out GitHub Actions (Merge code to develop)
+on:
+  pull_request:
+    branches:
+      - develop
 jobs:
   build_test:
     runs-on: ubuntu-latest
