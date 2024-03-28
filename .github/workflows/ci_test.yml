@@ -12,7 +12,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '16.x'
+      - run: echo "The Job is installing dependencies."
       - name: Install dependencies
         run: npm install
+      - name: Build Project
+        run: npm run build
       - run: echo "The Job Finished."
 
