@@ -99,9 +99,7 @@
 
 <style lang="less" scoped>
   #header {
-    //min-width: 800px;
-    //overflow-x: hidden;
-    //overflow-y: visible;
+    min-width: 1200px;
     position: fixed;
     padding-left: 5%;
     padding-right: 4%;

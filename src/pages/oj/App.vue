@@ -104,38 +104,12 @@ a {
   }
 }
 
-@media screen and (max-width: 858px) {
-  .content-app {
-    margin-top: 160px;
-    padding: 0 2%;
-  }
+.content-app {
+  margin-top: 90px;
+  display: flex;
+  justify-content: center;
+  min-width: 1200px;
 }
-
-@media screen and (min-width: 858px) {
-  .content-app {
-    margin-top: 90px;
-    display: flex;
-    justify-content: center;
-  }
-}
-
-//@media screen and (max-width: 848px) {
-//  .content-app {
-//    width: 1200px;
-//    margin: 160px auto 0;
-//    padding: 0 2%;
-//  }
-//}
-//
-//@media screen and (min-width: 848px) {
-//  .content-app {
-//    width: 1200px;
-//    margin: 90px auto 0;
-//    display: flex;
-//    justify-content: center;
-//  }
-//}
-
 
 .ps {
   margin-top: 50px;
