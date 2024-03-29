@@ -6,7 +6,7 @@ import {
   DashboardSectionProp, MajorRankListProp,
   ProblemSectionProp, SurgeUserProps,
   UserRankListProp
-} from "./views/user/userhome/sections/prop";
+} from "../../prop";
 import MajorRankList from "./views/rank/userRankList/MajorRankList.vue";
 
 Vue.prototype.$http = axios;
@@ -89,23 +89,24 @@ export default {
     });
   },
   getDashboardInfo(username) {
-    // return ajax("profile/dashboard", "get", {
-    //   params: {
-    //     username
-    //   }
-    // });
+    return ajax("profile/dashboard", "get", {
+      params: {
+        username
+      }
+    });
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve({data: {data: DashboardSectionProp}})
       }, 300)
     })
   },
-  getUserProblemInfo() {
-    // return ajax("profile/problem_info", "get", {
-    //       params: {
-    //         username
-    //       }
-    //     });
+  getUserProblemInfo(username) {
+    console.log("")
+    return ajax("profile/problem", "get", {
+          params: {
+            username
+          }
+        });
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve({data: {data: ProblemSectionProp}})
@@ -115,12 +116,12 @@ export default {
   getAiRecommendProblem() {
     return ajax("ai_recommend_problem", "get");
   },
-  getUserAchievement() {
-    // return ajax("profile/achievement", "get", {
-    //       params: {
-    //         username
-    //       }
-    //     });
+  getUserAchievement(username) {
+    return ajax("profile/achievement", "get", {
+          params: {
+            username
+          }
+        });
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve({data: {data: AchievementSectionProp}})
@@ -136,7 +137,7 @@ export default {
   getHomeRealTimeRanking(){
     return ajax("home_ranking", "get");
   },
-  getHomeBonusProblem(){
+  getHomeBonusProblem(){ㅏ
     return ajax("problem/bonus", "get");
   },
   freshDisplayID(userID) {
