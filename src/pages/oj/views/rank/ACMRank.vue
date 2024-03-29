@@ -1,7 +1,7 @@
 <template>
   <div class="acm-rank">
     <div class="acm-rank__contents">
-      <div class="acm-rank__left container">
+      <div class="acm-rank__left rank-container">
         <div class="title">
           <h1>{{ $t('m.Top_Users') }}</h1>
 <!--          <Button type="dashed" @click="getRankData()">{{ $t('m.My_Ranking')}}</Button>-->
@@ -26,11 +26,11 @@
                     @on-page-size-change="getRankData(1)"></Pagination>
       </div>
       <div class="acm-rank__right">
-        <div class="surge-user container">
+        <div class="surge-user rank-container">
           <h2>{{ $t('m.Today_Surge_User') }}</h2>
           <SurgeRankList></SurgeRankList>
         </div>
-        <div class="major-rank container">
+        <div class="major-rank rank-container">
           <h2>{{ $t('m.Major_Rank') }}</h2>
           <MajorRankList></MajorRankList>
         </div>
@@ -247,7 +247,7 @@ export default {
 
 <style scoped lang="less">
 
-.container {
+.rank-container {
   padding: 20px 30px;
   border: 1px solid #dedede;
   border-radius: 7px;
