@@ -38,6 +38,7 @@ export default {
   padding: 0 30px 0 10px;
 
   .dashboard-skeleton__graph {
+    height: 250px;
     width: 30%;
     flex-direction: column;
     background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);

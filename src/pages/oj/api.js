@@ -6,8 +6,7 @@ import {
   DashboardSectionProp, MajorRankListProp,
   ProblemSectionProp, SurgeUserProps,
   UserRankListProp
-} from "./views/user/userhome/sections/prop";
-import MajorRankList from "./views/rank/userRankList/MajorRankList.vue";
+} from "../../prop";
 
 Vue.prototype.$http = axios;
 axios.defaults.baseURL = "/api";
@@ -89,23 +88,24 @@ export default {
     });
   },
   getDashboardInfo(username) {
-    // return ajax("profile/dashboard", "get", {
-    //   params: {
-    //     username
-    //   }
-    // });
+    return ajax("profile/dashboard", "get", {
+      params: {
+        username
+      }
+    });
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve({data: {data: DashboardSectionProp}})
       }, 300)
     })
   },
-  getUserProblemInfo() {
-    // return ajax("profile/problem_info", "get", {
-    //       params: {
-    //         username
-    //       }
-    //     });
+  getUserProblemInfo(username) {
+    console.log("")
+    return ajax("profile/problem", "get", {
+          params: {
+            username
+          }
+        });
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve({data: {data: ProblemSectionProp}})
@@ -115,12 +115,12 @@ export default {
   getAiRecommendProblem() {
     return ajax("ai_recommend_problem", "get");
   },
-  getUserAchievement() {
-    // return ajax("profile/achievement", "get", {
-    //       params: {
-    //         username
-    //       }
-    //     });
+  getUserAchievement(username) {
+    return ajax("profile/achievement", "get", {
+          params: {
+            username
+          }
+        });
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve({data: {data: AchievementSectionProp}})
@@ -384,8 +384,7 @@ export default {
 /**
  * @param url
  * @param method get|post|put|delete...
- * @param params like queryString. if a url is index?a=1&b=2, params = {a: '1', b: '2'}
- * @param data post data, use for method put|post
+ * @param options // {params: {}, data: {}} // params for get, data for post
  * @returns {Promise}
  */
 function ajax(url, method, options) {
