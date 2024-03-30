@@ -1,35 +1,28 @@
 <script>
 export default {
-  name: 'ProblemSkeleton'
+  name: 'ProblemSkeleton',
+  data() {
+    return {
+      amount: 3,
+      interval: null,
+    }
+  },
+  mounted () {
+    this.interval = setInterval(() => {
+      this.amount += 1
+      if (this.amount > 120) {
+        clearInterval(this.interval);
+      }
+    }, 200);
+  },
 }
 </script>
 
 <template>
   <div class="problem-skeleton">
-    <ul class="problem-skeleton__status">
-      <li class="problem-skeleton__status__item"></li>
-      <li class="problem-skeleton__status__item"></li>
-      <li class="problem-skeleton__status__item"></li>
-      <li class="problem-skeleton__status__item"></li>
-    </ul>
-    <hr/>
-    <div class="problem-tab">
-      <div class="title"></div>
-      <ul class="problem-tab__content">
-        <li class="problem-tab__content__item"></li>
-<!--        <li class="problem-tab__content__item"></li>-->
-<!--        <li class="problem-tab__content__item"></li>-->
-      </ul>
-    </div>
-    <hr/>
-    <div class="problem-tab">
-      <div class="title"></div>
-      <ul class="problem-tab__content">
-        <li class="problem-tab__content__item"></li>
-<!--        <li class="problem-tab__content__item"></li>-->
-<!--        <li class="problem-tab__content__item"></li>-->
-      </ul>
-    </div>
+      <transition-group name="fade" tag="ul" class="problem-tab__content">
+        <li v-for="i in 100" :key="i" v-if="i < amount" class="problem-tab__content__item"></li>
+      </transition-group>
   </div>
 </template>
 
@@ -47,68 +40,34 @@ li {
   list-style: none;
 }
 
-hr {
-  border: 0;
-  border-top: 0.5px solid #dedede;
-  margin: 20px 0;
-}
-
 .problem-skeleton {
   display: flex;
-  flex-direction: column;
   gap: 20px;
   width: 100%;
-  padding: 0 30px 0 10px;
+  padding: 10px 20px;
+  align-content: center;
 
-  .problem-skeleton__status {
+  .problem-tab__content {
     width: 100%;
     display: flex;
-    gap: 30px;
-    flex-shrink: 0;
-    justify-content: space-between;
-    padding: 50px 25%;
-
-    .problem-skeleton__status__item {
-      width: 75px;
-      height: 42px;
-      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-      background-size: 400% 100%;
-      animation: loading 1.5s infinite;
-      border-radius: 10px;
-    }
-  }
-
-  .problem-tab {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
     gap: 10px;
-
-    .title {
-      width: 200px;
+    flex-wrap: wrap;
+    .problem-tab__content__item {
+      padding: 4px;
+      font-size: 1rem;
+      background-color: #cfe2ff;
+      border-radius: 5px;
+      min-width: 59px;
       height: 35px;
-      margin-bottom: 20px;
-      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-      background-size: 400% 100%;
-      animation: loading 1.5s infinite;
-      border-radius: 20px;
-    }
+      display: block;
 
-    .problem-tab__content {
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-
-      .problem-tab__content__item {
-        width: 100%;
-        height: 25px;
-        background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-        background-size: 400% 100%;
-        animation: loading 1.5s infinite;
-        border-radius: 20px;
-      }
     }
   }
+}
+.fade-enter-active, .fade-leave-active {
+  transition: transform 1s;
+}
+.fade-enter, .fade-leave-to {
+  transform: translateX(100%);
 }
 </style>

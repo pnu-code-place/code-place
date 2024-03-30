@@ -24,6 +24,7 @@ import DashboardSection from "../views/user/userhome/sections/dashboardSection/D
 import ProblemSection from "../views/user/userhome/sections/problemSection/ProblemSection.vue";
 import communitySection from "../views/user/userhome/sections/communitySection/CommunitySection.vue";
 import AchievementSection from "../views/user/userhome/sections/achievementSection/AchievementSection.vue";
+import ProblemSectionList from "../views/user/userhome/sections/problemSection/ProblemSectionList.vue";
 
 export default [
   {
@@ -141,32 +142,32 @@ export default [
     name: 'user-home',
     redirect: {name: 'user-dashboard'},
     component: UserHome,
-    meta: {requiresAuth: true, title: 'User Home'},
+    meta: {title: 'User Home'},
     children: [
       {
         name: 'user-dashboard',
         path: 'dashboard/:username?',
         component: DashboardSection,
-        meta: {requiresAuth: true, title: 'Main'}
+        meta: {title: 'Main'}
       },
       {
         name: 'user-problems',
         path: 'problems/:username?',
         component: ProblemSection,
-        meta: {requiresAuth: true, title: 'User Problems'},
+        meta: {title: 'User Problems'}
       },
       {
         name: 'user-community',
         path: 'community/:username?',
         component: communitySection,
-        meta: {requiresAuth: true, title: 'Community'},
+        meta: {title: 'Community'},
       },
       {
         name: 'user-achievements',
         path: 'achievements/:username?',
         props: true,
         component: AchievementSection,
-        meta: {requiresAuth: true, title: 'Challenges'},
+        meta: {title: 'Challenges'},
       }
     ]
   },

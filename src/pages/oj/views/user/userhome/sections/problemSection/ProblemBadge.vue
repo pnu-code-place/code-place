@@ -4,7 +4,7 @@
 //   id : 1001,
 //   title: 'A+B',
 //   submitTime: '2021-07-02T08:25:49.443682Z',
-//   difficulty: 'easy',
+//   difficulty: 'VeryLow|Low|Mid|High|VeryHigh',
 // }
 export default {
   props: ['problem'],
@@ -20,10 +20,8 @@ export default {
       const minute = date.getMinutes();
       const second = date.getSeconds();
       return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
-    }
+    },
   },
-  methods : {
-  }
 }
 </script>
 
@@ -37,11 +35,12 @@ export default {
 
 <style scoped lang="less">
 a {
-  padding: 8px;
-  font-size: 13px;
+  padding: 4px;
+  font-size: 1rem;
   border : 1px solid #cfe2ff;
   border-radius: 5px;
-  min-width: 65px;
+  min-width: 60px;
+  display: block;
 }
 
 a:hover {
