@@ -6,22 +6,34 @@ import ChallengeSummary from "./AchievementSummary.vue";
 import api from "@oj/api";
 import DashboardSkeleton from "./DashboardSkeleton.vue";
 import AchievementsSkeleton from "../AchievementsSkeleton.vue";
+import ErrorSign from "../../../../general/ErrorSign.vue";
 
 export default {
   name: "dashboard-section",
   data() {
     return {
       isLoading: true,
-      dashboardInfo: {}
+      error: 0,
+      dashboardInfo: {},
+      myData: 0
     }
   },
-  components: {AchievementsSkeleton, DashboardSkeleton, ChallengeSummary, DifficultySummary, OjSummary, FieldSummary},
+  components: {
+    ErrorSign,
+    AchievementsSkeleton, DashboardSkeleton, ChallengeSummary, DifficultySummary, OjSummary, FieldSummary
+  },
   methods: {
     init() {
       api.getDashboardInfo(this.username).then(res => {
         this.dashboardInfo = res.data.data
         this.isLoading = false
+      }).catch((err) => {
+        this.isLoading = false
+        this.error = err.response.status
       })
+    },
+    test() {
+      this.myData += 1
     }
   },
   mounted() {
@@ -47,23 +59,26 @@ export default {
 
 <template>
   <section>
-    <h1>{{ $t('m.OJ_Summary') }}</h1>
-    <OjSummary v-if="this.dashboardInfo.ojStatus" :ojStatus="this.dashboardInfo.ojStatus"></OjSummary>
-    <DashboardSkeleton v-else-if="this.isLoading"></DashboardSkeleton>
-    <hr/>
-    <h1>{{ $t('m.Field_Based_Distribution') }}</h1>
-    <FieldSummary v-if="this.dashboardInfo.fieldInfo" :fieldInfo="this.dashboardInfo.fieldInfo"></FieldSummary>
-    <DashboardSkeleton v-else-if="this.isLoading"></DashboardSkeleton>
-    <hr/>
-    <h1>{{ $t('m.Difficulty_Based_Distribution') }}</h1>
-    <DifficultySummary v-if="this.dashboardInfo.difficultyInfo"
-                       :difficultyInfo="this.dashboardInfo.difficultyInfo"></DifficultySummary>
-    <DashboardSkeleton v-else-if="this.isLoading"></DashboardSkeleton>
-    <hr/>
-    <h1>{{ $t('m.Achievement') }}</h1>
-    <ChallengeSummary v-if="this.dashboardInfo.achievements"
-                      :achievements="this.dashboardInfo.achievements"></ChallengeSummary>
-    <AchievementsSkeleton v-else-if="this.isLoading"></AchievementsSkeleton>
+    <ErrorSign v-if="error !== 0" :code="this.error"></ErrorSign>
+    <div v-else>
+      <h1>{{ $t('m.OJ_Summary') }}</h1>
+      <OjSummary v-if="this.dashboardInfo.ojStatus" :ojStatus="this.dashboardInfo.ojStatus"></OjSummary>
+      <DashboardSkeleton v-else-if="this.isLoading"></DashboardSkeleton>
+      <hr/>
+      <h1>{{ $t('m.Field_Based_Distribution') }}</h1>
+      <FieldSummary v-if="this.dashboardInfo.fieldInfo" :fieldInfo="this.dashboardInfo.fieldInfo"></FieldSummary>
+      <DashboardSkeleton v-else-if="this.isLoading"></DashboardSkeleton>
+      <hr/>
+      <h1>{{ $t('m.Difficulty_Based_Distribution') }}</h1>
+      <DifficultySummary v-if="this.dashboardInfo.difficultyInfo"
+                         :difficultyInfo="this.dashboardInfo.difficultyInfo"></DifficultySummary>
+      <DashboardSkeleton v-else-if="this.isLoading"></DashboardSkeleton>
+      <hr/>
+      <h1>{{ $t('m.Achievement') }}</h1>
+      <ChallengeSummary v-if="this.dashboardInfo.achievements"
+                        :achievements="this.dashboardInfo.achievements"></ChallengeSummary>
+      <AchievementsSkeleton v-else-if="this.isLoading"></AchievementsSkeleton>
+    </div>
   </section>
 </template>
 
