@@ -104,91 +104,141 @@ export const DashboardSectionProp = {
   ]
 }
 
-// 유저가 푼 문제들의 섹션의 prop을 정의합니다.
-// /api/profile/problem?username=<username> GET
-export const ProblemSectionProp = {
-  ranking_percent: 0.3, // 랭킹 퍼센트 - 상위 30%
-  solved: {
-    count: 6, // 해결한 문제들을 표시합니다.
-    problems: [
-      {
-        id: 1,
-        title: '좌표 정렬하기',
-        submitTime: '2021-07-02T08:25:49.443682Z',
-        difficulty: 'Mid',
-        field: 'data_structure'
-      },
-      {
-        id: 2,
-        title: '팰린드롬수',
-        submitTime: '2021-07-02T08:25:49.443682Z',
-        difficulty: 'Low',
-        field: 'mathematics'
-      },
-      {
-        id: 3,
-        title: '체스판 다시 칠하기',
-        submitTime: '2021-07-02T08:25:49.443682Z',
-        difficulty: 'VeryLow',
-        field: 'implementation'
-      },
-      {
-        id: 4,
-        title: '리스트 계산기',
-        submitTime: '2021-07-02T08:25:49.443682Z',
-        difficulty: 'Mid',
-        field: 'mathematics'
-      },
-      {
-        id: 5,
-        title: '피보나치 함수',
-        submitTime: '2021-07-02T08:25:49.443682Z',
-        difficulty: 'Low',
-        field: 'data_structure'
-      },
-      {
-        id: 6,
-        title: '더블 초콜릿',
-        submitTime: '2021-07-02T08:25:49.443682Z',
-        difficulty: 'Low',
-        field: 'mathematics'
-      }
-    ],
+// 특정 유저가 푼 문제를 쿼리에 맞게 불러옵니다.
+// query가 없을 경우 필터가 적용되지 않습니다. 예, /api/profile/problem?username=minmunui&field=2, GET 요청 시 field가 2인 문제들만 불러옵니다.
+// username: 유저의 이름
+// field: 카테고리 | All, 0: implementation, 1: mathematics, 2: data_structure, 3: searching, 4: sorting
+// difficulty: 난이도 | All, VeryLow, Low, Mid, High, VeryHigh
+// status: 상태 | All, Solved, Failed
+// /api/profile/problem?username=<username>&field=<fieldId>&difficulty=<difficulty>&status=<status> GET
+export const ProblemSectionProp = [
+  {
+    id: 2,
+    title: '팰린드롬수',
+    submitTime: '2021-07-02T08:25:49.443682Z',
+    difficulty: 'Low',
+    field: 'mathematics'
   },
-  failed: {
-    count: 4, // 시도했으나 풀지 못한 문제들을 표시합니다.
-    problems: [
-      {
-        id: 7,
-        title: '리모컨',
-        submitTime: '2021-07-02T08:25:49.443682Z',
-        difficulty: 'Low',
-        field: 'mathematics'
-      },
-      {
-        id: 8,
-        title: '동물원 우리',
-        submitTime: '2021-07-02T08:25:49.443682Z',
-        difficulty: 'Medium',
-        field: 'data_structure'
-      },
-      {
-        id: 9,
-        title: '비상연락망',
-        submitTime: '2021-07-02T08:25:49.443682Z',
-        difficulty: 'VeryHigh',
-        field: 'implementation'
-      },
-      {
-        id: 10,
-        title: '크레인',
-        submitTime: '2021-07-02T08:25:49.443682Z',
-        difficulty: 'High',
-        field: 'mathematics'
-      },
-    ],
-  }
-};
+  {
+    id: 3,
+    title: '체스판 다시 칠하기',
+    submitTime: '2021-07-02T08:25:49.443682Z',
+    difficulty: 'VeryLow',
+    field: 'implementation'
+  },
+  {
+    id: 4,
+    title: '리스트 계산기',
+    submitTime: '2021-07-02T08:25:49.443682Z',
+    difficulty: 'Mid',
+    field: 'mathematics'
+  },
+  {
+    id: 5,
+    title: '피보나치 함수',
+    submitTime: '2021-07-02T08:25:49.443682Z',
+    difficulty: 'Low',
+    field: 'data_structure'
+  },
+  {
+    id: 6,
+    title: '더블 초콜릿',
+    submitTime: '2021-07-02T08:25:49.443682Z',
+    difficulty: 'Low',
+    field: 'mathematics'
+  },
+  {
+    id: 7,
+    title: '리모컨',
+    submitTime: '2021-07-02T08:25:49.443682Z',
+    difficulty: 'Low',
+    field: 'mathematics'
+  },
+  {
+    id: 8,
+    title: '동물원 우리',
+    submitTime: '2021-07-02T08:25:49.443682Z',
+    difficulty: 'Mid',
+    field: 'data_structure'
+  },
+  {
+    id: 9,
+    title: '비상연락망',
+    submitTime: '2021-07-02T08:25:49.443682Z',
+    difficulty: 'VeryHigh',
+    field: 'implementation'
+  },
+  {
+    id: 10,
+    title: '크레인',
+    submitTime: '2021-07-02T08:25:49.443682Z',
+    difficulty: 'High',
+    field: 'mathematics'
+  },
+  {
+    id: 2,
+    title: '팰린드롬수',
+    submitTime: '2021-07-02T08:25:49.443682Z',
+    difficulty: 'Low',
+    field: 'mathematics'
+  },
+  {
+    id: 3,
+    title: '체스판 다시 칠하기',
+    submitTime: '2021-07-02T08:25:49.443682Z',
+    difficulty: 'VeryLow',
+    field: 'implementation'
+  },
+  {
+    id: 4,
+    title: '리스트 계산기',
+    submitTime: '2021-07-02T08:25:49.443682Z',
+    difficulty: 'Mid',
+    field: 'mathematics'
+  },
+  {
+    id: 5,
+    title: '피보나치 함수',
+    submitTime: '2021-07-02T08:25:49.443682Z',
+    difficulty: 'Low',
+    field: 'data_structure'
+  },
+  {
+    id: 6,
+    title: '더블 초콜릿',
+    submitTime: '2021-07-02T08:25:49.443682Z',
+    difficulty: 'Low',
+    field: 'mathematics'
+  },
+  {
+    id: 7,
+    title: '리모컨',
+    submitTime: '2021-07-02T08:25:49.443682Z',
+    difficulty: 'Low',
+    field: 'mathematics'
+  },
+  {
+    id: 8,
+    title: '동물원 우리',
+    submitTime: '2021-07-02T08:25:49.443682Z',
+    difficulty: 'Mid',
+    field: 'data_structure'
+  },
+  {
+    id: 9,
+    title: '비상연락망',
+    submitTime: '2021-07-02T08:25:49.443682Z',
+    difficulty: 'VeryHigh',
+    field: 'implementation'
+  },
+  {
+    id: 10,
+    title: '크레인',
+    submitTime: '2021-07-02T08:25:49.443682Z',
+    difficulty: 'High',
+    field: 'mathematics'
+  },
+]
 
 
 // 유저의 업적 정보들을 조회합니다.
