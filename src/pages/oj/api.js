@@ -99,17 +99,17 @@ export default {
       }, 300)
     })
   },
-  getUserProblemInfo(username) {
-    console.log("")
+  getUserProblemInfo(username, query) {
     return ajax("profile/problem", "get", {
           params: {
-            username
+            username,
+            ...query
           }
         });
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve({data: {data: ProblemSectionProp}})
-      }, 1000)
+      }, 500)
     })
   },
   getAiRecommendProblem() {
