@@ -7,7 +7,6 @@ import {
   ProblemSectionProp, SurgeUserProps,
   UserRankListProp
 } from "../../prop";
-import MajorRankList from "./views/rank/userRankList/MajorRankList.vue";
 
 Vue.prototype.$http = axios;
 axios.defaults.baseURL = "/api";
@@ -137,7 +136,7 @@ export default {
   getHomeRealTimeRanking(){
     return ajax("home_ranking", "get");
   },
-  getHomeBonusProblem(){ㅏ
+  getHomeBonusProblem(){
     return ajax("problem/bonus", "get");
   },
   freshDisplayID(userID) {
@@ -385,8 +384,7 @@ export default {
 /**
  * @param url
  * @param method get|post|put|delete...
- * @param params like queryString. if a url is index?a=1&b=2, params = {a: '1', b: '2'}
- * @param data post data, use for method put|post
+ * @param options // {params: {}, data: {}} // params for get, data for post
  * @returns {Promise}
  */
 function ajax(url, method, options) {
