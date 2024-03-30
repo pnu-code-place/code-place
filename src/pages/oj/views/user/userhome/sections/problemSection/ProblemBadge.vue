@@ -4,8 +4,10 @@
 //   id : 1001,
 //   title: 'A+B',
 //   submitTime: '2021-07-02T08:25:49.443682Z',
-//   difficulty: 'easy',
+//   difficulty: 'VeryLow|Low|Mid|High|VeryHigh',
 // }
+import {DIFFICULTY_MAP} from "../../../../../../../utils/constants";
+
 export default {
   props: ['problem'],
   name : 'problem-badge',
@@ -20,16 +22,17 @@ export default {
       const minute = date.getMinutes();
       const second = date.getSeconds();
       return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
-    }
+    },
+    difficultyColor () {
+      return DIFFICULTY_MAP[this.problem.difficulty].textColor
+    },
   },
-  methods : {
-  }
 }
 </script>
 
 <template>
   <Tooltip :content="problem.title">
-    <router-link :to="{name : 'problem-details', params : {problemID:problem.id}}">
+    <router-link :to="{name : 'problem-details', params : {problemID:problem.id}}" :style="{backgroundColor : difficultyColor}">
       {{problem.id}}
     </router-link>
   </Tooltip>
@@ -37,11 +40,13 @@ export default {
 
 <style scoped lang="less">
 a {
-  padding: 8px;
-  font-size: 13px;
+  color: unset;
+  padding: 4px;
+  font-size: 1rem;
   border : 1px solid #cfe2ff;
   border-radius: 5px;
-  min-width: 65px;
+  min-width: 60px;
+  display: block;
 }
 
 a:hover {
