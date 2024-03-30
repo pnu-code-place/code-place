@@ -6,8 +6,6 @@
 //   submitTime: '2021-07-02T08:25:49.443682Z',
 //   difficulty: 'VeryLow|Low|Mid|High|VeryHigh',
 // }
-import {DIFFICULTY_MAP} from "../../../../../../../utils/constants";
-
 export default {
   props: ['problem'],
   name : 'problem-badge',
@@ -23,16 +21,13 @@ export default {
       const second = date.getSeconds();
       return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
     },
-    difficultyColor () {
-      return DIFFICULTY_MAP[this.problem.difficulty].textColor
-    },
   },
 }
 </script>
 
 <template>
   <Tooltip :content="problem.title">
-    <router-link :to="{name : 'problem-details', params : {problemID:problem.id}}" :style="{backgroundColor : difficultyColor}">
+    <router-link :to="{name : 'problem-details', params : {problemID:problem.id}}">
       {{problem.id}}
     </router-link>
   </Tooltip>
@@ -40,7 +35,6 @@ export default {
 
 <style scoped lang="less">
 a {
-  color: unset;
   padding: 4px;
   font-size: 1rem;
   border : 1px solid #cfe2ff;
