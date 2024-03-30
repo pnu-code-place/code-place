@@ -6,7 +6,6 @@
       <router-link :to="{name:'user-community', params: {username:username}}" :disabled="true" class="disabled">
         {{ $t('m.Community') }}
       </router-link>
-<!--      <router-link :to="{name:'user-achievements', params: {username:username}}">{{ $t('m.Achievement') }}</router-link>-->
     </ul>
   </nav>
 </template>

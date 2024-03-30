@@ -360,6 +360,7 @@ export const m = {
   There_Is_No_Problem_You_Solved: "해결한 문제가 없습니다.",
   There_Is_No_Problem_You_Tried: "시도한 문제가 없습니다.",
   Lets_Get_Started: "한 번 시작해 볼까요?",
+  Is_Solved:"해결 여부",
 
   //AchievementSection.vue
   Achieved: "달성",
