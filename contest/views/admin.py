@@ -15,6 +15,7 @@ from utils.constants import CacheKey
 from utils.shortcuts import rand_str
 from utils.tasks import delete_files
 from ..models import Contest, ContestAnnouncement, ACMContestRank
+from datetime import datetime
 from ..serializers import (ContestAnnouncementSerializer, ContestAdminSerializer,
                            CreateConetestSeriaizer, CreateContestAnnouncementSerializer,
                            EditConetestSeriaizer, EditContestAnnouncementSerializer,
@@ -86,6 +87,25 @@ class ContestAPI(APIView):
         if keyword:
             contests = contests.filter(title__contains=keyword)
         return self.success(self.paginate_data(request, contests, ContestAdminSerializer))
+
+    def delete(self, request):
+        contest_id = request.GET.get("id")
+        # 컨테스트가 진행 중이 아닌 경우
+        if self.isRunning(contest_id):
+            return self.error("Contest is Running... Try later")
+        else:
+            Contest.objects.filter(id=contest_id).delete()
+            ContestAnnouncement.objects.filter(contest_id=contest_id).delete()
+        return self.success()
+
+    def isRunning(self, contest_id):
+        contest = Contest.objects.get(id=contest_id)
+        now = dateutil.parser.parse(datetime.now())
+        start_time = dateutil.parser.parse(contest.start_time)
+        end_time = dateutil.parser.parse(contest.end_time)
+        return (now > start_time and now < end_time)
+
+
 
 
 class ContestAnnouncementAPI(APIView):
