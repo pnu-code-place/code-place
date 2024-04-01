@@ -21,6 +21,7 @@ services:
     image: registry.cn-hongkong.aliyuncs.com/oj-image/judge:1.6.0
     restart: always
     read_only: true
+    pull_policy: never
     cap_drop:
       - SETPCAP
       - MKNOD
@@ -43,6 +44,7 @@ services:
   backend:
     image: juniper0917/csep-be:0.1
     restart: always
+    pull_policy: always
     depends_on:
       - oj-redis
       - oj-postgres
