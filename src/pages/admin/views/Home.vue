@@ -13,7 +13,7 @@
         </el-dropdown-menu>
       </el-dropdown>
     </div>
-    <div class="content-app">
+    <div class="admin-content-app">
       <transition name="fadeInUp" mode="out-in">
         <router-view></router-view>
       </transition>
@@ -76,7 +76,7 @@
   }
 </script>
 
-<style lang="less">
+<style scoped lang="less">
   a {
     background-color: transparent;
   }
@@ -115,7 +115,7 @@
     }
   }
 
-  .content-app {
+  .admin-content-app {
     padding-top: 20px;
     padding-right: 10px;
     padding-left: 210px;
