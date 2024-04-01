@@ -8,7 +8,6 @@ https://docs.djangoproject.com/en/1.8/howto/deployment/wsgi/
 """
 
 import os
-from utils.scheduler import Scheduler
 
 from django.core.wsgi import get_wsgi_application
 
@@ -16,5 +15,6 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "oj.settings")
 
 application = get_wsgi_application()
 
-scheduler = Scheduler()
-scheduler.start()
+# from utils.scheduler import Scheduler
+# scheduler = Scheduler()
+# scheduler.start()
