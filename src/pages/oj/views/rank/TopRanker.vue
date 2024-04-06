@@ -9,7 +9,7 @@
       <div class="avatar-wrapper">
         <img class="avatar" :src="user.avatar" alt="avatar"/>
         <img class="trophy" :src="AwardImageSrc[rank.toString()]" alt="medal"/>
-        <img class="tier-mark" :src="TierImageSrc[user.tier]" alt="tier mark"/>
+<!--        <img class="tier-mark" :src="TierImageSrc[user.tier]" alt="tier mark"/>-->
       </div>
       <span class="user-name">{{ user.username }}</span>
       <span class="user-major">{{ user.major }}</span>
