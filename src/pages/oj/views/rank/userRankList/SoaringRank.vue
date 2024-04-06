@@ -1,42 +1,31 @@
 <template>
-  <table>
-    <tr>
-      <th class="rank">{{ $t('m.Rank') }}</th>
-      <th class="user">{{ $t('m.Users') }}</th>
-      <th class="score">{{ $t('m.Score') }}</th>
-    </tr>
-    <tbody>
-    <tr v-for="(user, index) in surgeUsers" class="user-data">
-      <td class="rank">{{ index + 1 }}</td>
-      <td class="user">
-        <router-link :to="{name : 'user-dashboard', params:{username:user.username}}">{{ user.username }}</router-link>
-      </td>
-      <td class="score">
-        <span>{{ comma(user.score) }}</span>
-        <span class="increased-score">{{ comma(user.increasedScore) }}▲</span>
-      </td>
-    </tr>
-    </tbody>
-    <div style="width:100%; height: 10px">
-      <SkeletonBox v-if="isLoading" :count="5"></SkeletonBox>
-    </div>
-  </table>
+  <div class="soaring-rank">
+    <UserList :userList="surgeUsers" :is-loading="isLoading" :limit="limit"/>
+    <Pagination :total="total" :page-size.sync="limit" :current.sync="page"
+                @on-change="getSurgeUsers" show-sizer
+                @on-page-size-change="getSurgeUsers(1)"></Pagination>
+  </div>
 </template>
 
 <script>
 import api from "../../../api";
 import SkeletonBox from "../../../components/SkeletonBox.vue";
 import {comma} from "../../../../../utils/utils";
+import RankList from "./UserRankList.vue";
+import Pagination from "../../../components/Pagination.vue";
+import UserList from "./UserRankList.vue";
 
 export default {
   name: 'SoaringRank',
-  components: {SkeletonBox},
+  components: {UserList, Pagination, RankList, SkeletonBox},
   data() {
     return {
       AMOUNT_TO_DISPLAY: 7,
       surgeUsers: [],
       total: 0,
-      isLoading: true
+      isLoading: true,
+      limit: 30,
+      page: 1
     }
   },
   methods: {
@@ -62,64 +51,7 @@ export default {
 </script>
 
 <style scoped lang="less">
-table {
+.soaring-rank {
   width: 100%;
-  border-collapse: collapse;
-  margin: 20px 0;
-
-  th {
-    padding: 10px 0;
-    border-bottom: 1px solid #f0f0f0;
-    font-size: 15px;
-    color: #666;
-
-    &.rank {
-      width: 15%;
-    }
-
-    &.user {
-      text-align: left;
-      padding: 0 10px;
-      width: 60%;
-    }
-
-    &.score {
-      width: 25%;
-      text-align: left;
-    }
-  }
-
-  tbody {
-    tr {
-      border-top: 1px solid #dedede;
-
-      &:hover {
-        background-color: #f5f5f5;
-      }
-
-      td {
-        padding: 10px 0;
-        font-size: 13px;
-        color: #666;
-
-        &.rank {
-          text-align: center;
-        }
-
-        &.user {
-          padding: 0 10px;
-        }
-
-        &.score {
-
-          .increased-score {
-            color: #ff4d4f;
-            margin-left: 5px;
-            font-weight: 700;
-          }
-        }
-      }
-    }
-  }
 }
 </style>

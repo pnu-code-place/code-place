@@ -29,7 +29,7 @@ export default {
       <th class="col-user">{{ $t('m.Users') }}</th>
       <th class="col-major">{{ $t('m.Major') }}</th>
       <th class="col-grade">{{ $t('m.Grade') }}</th>
-      <th class="col-score">{{ $t('m.Score') }}</th>
+      <th class="col-score">{{ $t('m.Score') }}/{{ $t('m.Today_Growth')}}</th>
       <th class="col-solved">{{ $t('m.Solved_Problems') }}</th>
     </tr>
     </thead>

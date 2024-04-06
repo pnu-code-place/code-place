@@ -303,15 +303,15 @@ export const UserRankListProp = {
   total: 201,
   results: [
     {
-      rank: 1,
-      avatar: "https://picsum.photos/200/300",
-      username: "root",
-      mood: '안녕하세요, 저는 Alice입니다. 잘 부탁드립니다.',
-      score: 12000,
-      major: "전자전기공학부",
-      tier: "diamond1",
-      solved: 150,
-      accuracy: 0.95,
+      rank: 1, // 랭킹
+      avatar: "https://picsum.photos/200/300", // 아바타
+      username: "root", // 유저 이름
+      mood: '안녕하세요, 저는 Alice입니다. 잘 부탁드립니다.', // 인사말
+      score: 12000, // 현재 점수
+      major: "전자전기공학부", // 전공
+      tier: "diamond1", // 티어
+      solved: 150, // 푼 문제 수
+      growth: 3000, // 금일 점수 상승량
     },
     {
       rank: 2,
@@ -322,7 +322,7 @@ export const UserRankListProp = {
       major: "기계공학부",
       tier: "diamond1",
       solved: 140,
-      accuracy: 0.93,
+      growth: 3000,
     },
     {
       rank: 3,
@@ -333,7 +333,7 @@ export const UserRankListProp = {
       major: "화학공학부",
       tier: "platinum1",
       solved: 130,
-      accuracy: 0.92,
+      growth: 3000,
     },
     {
       rank: 4,
@@ -344,7 +344,7 @@ export const UserRankListProp = {
       major: "건축학부",
       tier: "platinum1",
       solved: 120,
-      accuracy: 0.91,
+      growth: 3000,
     },
     {
       rank: 5,
@@ -355,7 +355,7 @@ export const UserRankListProp = {
       major: "환경공학부",
       tier: "gold1",
       solved: 110,
-      accuracy: 0.90,
+      growth: 3000,
     },
     {
       rank: 6,
@@ -366,7 +366,7 @@ export const UserRankListProp = {
       major: "산업공학부",
       tier: "gold1",
       solved: 100,
-      accuracy: 0.89,
+      growth: 3000,
     },
     {
       rank: 7,
@@ -377,7 +377,7 @@ export const UserRankListProp = {
       major: "식품공학부",
       tier: "silver1",
       solved: 90,
-      accuracy: 0.88,
+      growth: 3000,
     },
     {
       rank: 8,
@@ -388,7 +388,7 @@ export const UserRankListProp = {
       major: "생물공학부",
       tier: "silver2",
       solved: 80,
-      accuracy: 0.87,
+      growth: 3000,
     },
     {
       rank: 9,
@@ -399,7 +399,7 @@ export const UserRankListProp = {
       major: "농업생명공학부",
       tier: "silver2",
       solved: 70,
-      accuracy: 0.86,
+      growth: 3000,
     },
     {
       rank: 10,
@@ -410,7 +410,7 @@ export const UserRankListProp = {
       major: "응용수학부",
       tier: "silver3",
       solved: 60,
-      accuracy: 0.85,
+      growth: 3000,
     },
     {
       rank: 11,
@@ -421,7 +421,7 @@ export const UserRankListProp = {
       major: "통계학과",
       tier: "bronze2",
       solved: 50,
-      accuracy: 0.84,
+      growth: 3000,
     },
     {
       rank: 12,
@@ -432,7 +432,7 @@ export const UserRankListProp = {
       major: "컴퓨터공학부",
       tier: "bronze2",
       solved: 40,
-      accuracy: 0.83,
+      growth: 3000,
     },
     {
       rank: 13,
@@ -443,7 +443,7 @@ export const UserRankListProp = {
       major: "소프트웨어학과",
       tier: "sprout",
       solved: 30,
-      accuracy: 0.82,
+      growth: 3000,
     },
     {
       rank: 14,
@@ -454,7 +454,7 @@ export const UserRankListProp = {
       major: "정보통신공학부",
       tier: "bronze3",
       solved: 20,
-      accuracy: 0.81,
+      growth: 3000,
     },
     {
       rank: 15,
@@ -465,58 +465,183 @@ export const UserRankListProp = {
       major: "전자공학과",
       tier: "bronze2",
       solved: 10,
-      accuracy: 0.80,
+      growth: 3000,
     },
   ]
 };
-// /api/surge_users?limit=<limit> GET
+// /api/surge_users?offset=<offset>&limit=<limit> GET
 // 급상승 유저들의 정보를 조회합니다.
-// limit: 조회할 유저의 수 ( 아마도 7로 고정 )
+// limit: 조회할 유저의 수
+// offset: 랭킹의 시작점
+// limit: 랭킹의 갯수
 export const SurgeUserProps = {
-  total: 7,
+  total: 303,
   results: [
     {
-      rank: 1, // 랭킹
-      username: 'Alice', // 유저의 이름
-      score: 12000, // 현재 점수
-      increasedScore: 1500, // 증가한 점수
+      rank: 1,
+      avatar: "https://picsum.photos/200/300",
+      username: "root",
+      mood: '안녕하세요, 저는 Alice입니다. 잘 부탁드립니다.',
+      score: 12000,
+      major: "전자전기공학부",
+      tier: "diamond1",
+      solved: 150,
+      growth: 3000,
     },
     {
       rank: 2,
-      username: 'Bob',
+      avatar: "https://picsum.photos/200/200",
+      username: "minmunui",
+      mood: '안녕하세요, Bob입니다. 잘 부탁드립니다.',
       score: 11500,
-      increasedScore: 1200,
+      major: "기계공학부",
+      tier: "diamond1",
+      solved: 140,
+      growth: 3000,
     },
     {
       rank: 3,
-      username: 'Charlie',
+      avatar: "https://picsum.photos/202",
+      username: "Charlie",
+      mood: '안녕하세요, Charlie입니다.',
       score: 11000,
-      increasedScore: 1000,
+      major: "화학공학부",
+      tier: "platinum1",
+      solved: 130,
+      growth: 3000,
     },
     {
       rank: 4,
-      username: 'David',
+      avatar: "https://picsum.photos/203",
+      username: "David",
+      mood: '안녕하세요, David입니다.',
       score: 10500,
-      increasedScore: 900,
+      major: "건축학부",
+      tier: "platinum1",
+      solved: 120,
+      growth: 3000,
     },
     {
       rank: 5,
-      username: 'Eve',
+      avatar: "https://picsum.photos/204",
+      username: "Eve",
+      mood: '안녕하세요, Eve입니다.',
       score: 10000,
-      increasedScore: 800,
+      major: "환경공학부",
+      tier: "gold1",
+      solved: 110,
+      growth: 3000,
     },
     {
       rank: 6,
-      username: 'Frank',
+      avatar: "https://picsum.photos/205",
+      username: "Frank",
+      mood: '안녕하세요, Frank입니다.',
       score: 9500,
-      increasedScore: 700,
+      major: "산업공학부",
+      tier: "gold1",
+      solved: 100,
+      growth: 3000,
     },
     {
       rank: 7,
-      username: 'Grace',
+      avatar: "https://picsum.photos/206",
+      username: "Grace",
+      mood: '안녕하세요, Grace입니다.',
       score: 9000,
-      increasedScore: 600,
-    }
+      major: "식품공학부",
+      tier: "silver1",
+      solved: 90,
+      growth: 3000,
+    },
+    {
+      rank: 8,
+      avatar: "https://picsum.photos/207",
+      username: "Harry",
+      mood: '안녕하세요, Harry입니다.',
+      score: 8500,
+      major: "생물공학부",
+      tier: "silver2",
+      solved: 80,
+      growth: 3000,
+    },
+    {
+      rank: 9,
+      avatar: "https://picsum.photos/208",
+      username: "Ivy",
+      mood: '안녕하세요, Ivy입니다.',
+      score: 8000,
+      major: "농업생명공학부",
+      tier: "silver2",
+      solved: 70,
+      growth: 3000,
+    },
+    {
+      rank: 10,
+      avatar: "https://picsum.photos/209",
+      username: "Jack",
+      mood: '안녕하세요, Jack입니다.',
+      score: 7500,
+      major: "응용수학부",
+      tier: "silver3",
+      solved: 60,
+      growth: 3000,
+    },
+    {
+      rank: 11,
+      avatar: "https://picsum.photos/210",
+      username: "Kate",
+      mood: '안녕하세요, Kate입니다.',
+      score: 7000,
+      major: "통계학과",
+      tier: "bronze2",
+      solved: 50,
+      growth: 3000,
+    },
+    {
+      rank: 12,
+      avatar: "https://picsum.photos/211",
+      username: "Leo",
+      mood: '안녕하세요, Leo입니다.',
+      score: 6500,
+      major: "컴퓨터공학부",
+      tier: "bronze2",
+      solved: 40,
+      growth: 3000,
+    },
+    {
+      rank: 13,
+      avatar: "https://picsum.photos/212",
+      username: "Mia",
+      mood: '안녕하세요, Mia입니다.',
+      score: 6000,
+      major: "소프트웨어학과",
+      tier: "sprout",
+      solved: 30,
+      growth: 3000,
+    },
+    {
+      rank: 14,
+      avatar: "https://picsum.photos/213",
+      username: "Nate",
+      mood: '안녕하세요, Nate입니다.',
+      score: 5500,
+      major: "정보통신공학부",
+      tier: "bronze3",
+      solved: 20,
+      growth: 3000,
+    },
+    {
+      rank: 15,
+      avatar: "https://picsum.photos/214",
+      username: "Olivia",
+      mood: '안녕하세요, Olivia입니다.',
+      score: 5000,
+      major: "전자공학과",
+      tier: "bronze2",
+      solved: 10,
+      growth: 3000,
+    },
   ]
 };
 
