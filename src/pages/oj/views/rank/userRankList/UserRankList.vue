@@ -32,7 +32,6 @@ export default {
       <th class="col-grade">{{ $t('m.Grade') }}</th>
       <th class="col-score">{{ $t('m.Score') }}</th>
       <th class="col-solved">{{ $t('m.Solved_Problems') }}</th>
-      <th class="col-rate">{{ $t('m.AC_Rate') }}</th>
     </tr>
     </thead>
     <tbody>

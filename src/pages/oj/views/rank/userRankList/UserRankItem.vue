@@ -58,7 +58,6 @@ export default {
         {{ user.solved }}
       </router-link>
     </td>
-    <td>{{ this.accuracy }}</td>
   </tr>
 </template>
 
