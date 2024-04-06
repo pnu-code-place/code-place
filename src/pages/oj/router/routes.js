@@ -24,7 +24,9 @@ import DashboardSection from "../views/user/userhome/sections/dashboardSection/D
 import ProblemSection from "../views/user/userhome/sections/problemSection/ProblemSection.vue";
 import communitySection from "../views/user/userhome/sections/communitySection/CommunitySection.vue";
 import AchievementSection from "../views/user/userhome/sections/achievementSection/AchievementSection.vue";
-import ProblemSectionList from "../views/user/userhome/sections/problemSection/ProblemSectionList.vue";
+import SoaringRank from "../views/rank/userRankList/SoaringRank.vue";
+import MajorRank from "../views/rank/userRankList/MajorRank.vue";
+import UserRank from "../views/rank/userRankList/UserRank.vue";
 
 export default [
   {
@@ -128,8 +130,26 @@ export default [
   {
     name: 'acm-rank',
     path: '/acm-rank',
+    redirect: {name: 'user-rank'},
     meta: {title: 'ACM Rankings'},
-    component: ACMRank
+    component: ACMRank,
+    children: [
+      {
+        name: 'user-rank',
+        path: 'user-rank',
+        component : UserRank
+      },
+      {
+        name: 'soaring-rank',
+        path: 'soaring-rank',
+        component : SoaringRank
+      },
+      {
+        name: 'major-rank',
+        path: 'major-rank',
+        component : MajorRank
+      }
+    ]
   },
   {
     name: 'oi-rank',

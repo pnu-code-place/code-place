@@ -100,12 +100,12 @@ export default {
     })
   },
   getUserProblemInfo(username, query) {
-    return ajax("profile/problem", "get", {
-          params: {
-            username,
-            ...query
-          }
-        });
+    // return ajax("profile/problem", "get", {
+    //       params: {
+    //         username,
+    //         ...query
+    //       }
+    //     });
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve({data: {data: ProblemSectionProp}})
@@ -336,7 +336,7 @@ export default {
           resolve({data: {data: {results: [UserRankListProp.results[offset]], total: UserRankListProp.total}}})
         }
         resolve({data: {data: {results: UserRankListProp.results.slice(3,13), total: UserRankListProp.total}}})
-      }, 500)
+      }, 50000)
     });
     return ajax("user_rank", "get", {
       params

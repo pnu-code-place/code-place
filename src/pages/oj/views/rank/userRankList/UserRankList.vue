@@ -27,7 +27,6 @@ export default {
     <tr>
       <th class="col-rank">{{ $t('m.Rank') }}</th>
       <th class="col-user">{{ $t('m.Users') }}</th>
-      <!--      <th class="col-mood">{{ $t('m.Mood') }}</th>-->
       <th class="col-major">{{ $t('m.Major') }}</th>
       <th class="col-grade">{{ $t('m.Grade') }}</th>
       <th class="col-score">{{ $t('m.Score') }}</th>
@@ -35,10 +34,12 @@ export default {
     </tr>
     </thead>
     <tbody>
-<!--    <tr v-if="isLoading" v-for="index in limit" :key="index" class="skeleton-row">-->
-<!--      <td class="skeleton" v-for="index in 7"></td>-->
-<!--    </tr>-->
-    <UserItem v-for="user in userList" :key="user.username" :user="user" ></UserItem>
+    <tr v-if="isLoading" v-for="index in 10" :key="index" class="skeleton-row">
+      <td class="skeleton-wrapper" v-for="index in 6">
+        <div class="skeleton"></div>
+      </td>
+    </tr>
+    <UserItem v-for="user in userList" :key="user.username" :user="user"></UserItem>
     </tbody>
   </table>
 </template>
@@ -53,10 +54,32 @@ table {
 .skeleton-row {
   height: 50px;
   margin: 0;
-  animation: loading 1s infinite;
 
-  .skeleton {
-    height: 50px;
+  .skeleton-wrapper {
+    padding: 20px 0;
+    height: 87px;
+
+    .skeleton {
+      width: 100%;
+      height: 100%;
+      animation: loading 1s infinite;
+    }
+  }
+
+  .skeleton-wrapper:nth-child(1) {
+    padding-left: 20px;
+
+    .skeleton {
+      border-radius: 20px 0 0 20px;
+    }
+  }
+
+  .skeleton-wrapper:last-child {
+    padding-right: 20px;
+
+    .skeleton {
+      border-radius: 0 20px 20px 0;
+    }
   }
 }
 
@@ -108,10 +131,6 @@ th {
 
   &.col-solved {
     width: 10%;
-  }
-
-  &.col-rate {
-    width: 5%;
   }
 
 }

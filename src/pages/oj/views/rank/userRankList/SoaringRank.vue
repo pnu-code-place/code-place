@@ -29,6 +29,7 @@ import SkeletonBox from "../../../components/SkeletonBox.vue";
 import {comma} from "../../../../../utils/utils";
 
 export default {
+  name: 'SoaringRank',
   components: {SkeletonBox},
   data() {
     return {

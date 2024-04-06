@@ -3,12 +3,12 @@ import api from "../../../api";
 import {comma} from "../../../../../utils/utils";
 
 export default {
+  name: 'MajorRank',
   data() {
     return {
       isLoading: true,
       majorRankList: [],
       AMOUNT_TO_DISPLAY: 7
-
     }
   },
   methods: {
