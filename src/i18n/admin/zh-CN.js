@@ -8,8 +8,6 @@ export const m = {
   Judge_Server: '判题服务器',
   Prune_Test_Case: '测试用例',
   Problem: '问题',
-  FromFile: '读取文件',
-  ToFile: '写入文件',
   ShareSubmission: '分享提交',
   Problem_List: '问题列表',
   Create_Problem: '增加题目',

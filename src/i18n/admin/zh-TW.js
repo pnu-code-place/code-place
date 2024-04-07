@@ -8,8 +8,6 @@ export const m = {
   Judge_Server: 'Judge 伺服器',
   Prune_Test_Case: '測資',
   Problem: '試題',
-  FromFile: '讀取檔案',
-  ToFile: '寫入檔案',
   ShareSubmission: '分享提交',
   Problem_List: '試題列表',
   Create_Problem: '增加題目',
