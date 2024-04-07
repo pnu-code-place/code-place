@@ -83,6 +83,7 @@ export const m = {
   Today_User: "오늘의 급상승 사용자",
   Today_Growth: "금일 상승",
   Major_Rank: "학과별 랭킹",
+  Num_People: "회원 수",
   TOP_1: "1등",
   TOP_2: "2등",
   TOP_3: "3등",

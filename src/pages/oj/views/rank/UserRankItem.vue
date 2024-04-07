@@ -1,10 +1,10 @@
 <script>
-import {comma, getTier} from "../../../../../utils/utils";
-import {TierImageSrc} from "../../../../../utils/constants";
-import ShineWrapper from "../../../components/ShineWrapper.vue";
+import {comma, getTier} from "../../../../utils/utils";
+import {TierImageSrc} from "../../../../utils/constants";
+import ShineWrapper from "../../components/ShineWrapper.vue";
 
 export default {
-  name: 'UserItem',
+  name: 'RankItem',
   components: {ShineWrapper},
   methods: {comma, getTier},
   props: {

@@ -24,7 +24,7 @@ export default {}
   width: 1200px;
   h1 {
     font-size: 18px;
-    margin: 0 0 25px;
+    margin: 0 0 25px 1%;
   }
 
   header {

@@ -1,6 +1,6 @@
 <script>
-import api from "../../../api";
-import {comma} from "../../../../../utils/utils";
+import api from "../../api";
+import {comma} from "../../../../utils/utils";
 
 export default {
   name: 'MajorRank',
@@ -38,12 +38,14 @@ export default {
       <th class="rank">{{ $t('m.Rank') }}</th>
       <th class="major">{{ $t('m.Major') }}</th>
       <th class="score">{{ $t('m.Total_Score') }}</th>
+      <th class="people">{{$t('m.Num_People')}}</th>
     </tr>
     <tbody>
     <tr v-for="(major, index) in this.majorRankList" :key="index">
       <td class="rank">{{ major.rank }}</td>
       <td class="major">{{ major.major }}</td>
       <td class="score">{{ comma(major.score) }}</td>
+      <td class="people">{{ comma(major.people) }}</td>
     </tr>
     </tbody>
   </table>
@@ -58,7 +60,7 @@ table {
   th {
     padding: 5px 0;
     border-bottom: 1px solid #f0f0f0;
-    font-size: 14px;
+    font-size: 15px;
     color: #666;
 
     &.rank {
@@ -72,17 +74,21 @@ table {
     }
 
     &.score {
-      width: 25%;
+      width: 5%;
       text-align: left;
+    }
+
+    &.people {
+      width: 15%;
+      text-align: center;
     }
   }
 
   tbody {
     tr {
       border-top: 1px solid #dedede;
-
       td {
-        padding: 10px 0;
+        padding: 15px 0;
         font-size: 13px;
         color: #666;
 
@@ -96,6 +102,10 @@ table {
 
         &.score {
 
+        }
+
+        &.people {
+          text-align: center;
         }
       }
     }

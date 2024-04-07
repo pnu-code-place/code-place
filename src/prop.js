@@ -300,7 +300,7 @@ export const AchievementSectionProp = {
 // offset: 랭킹의 시작점
 // limit: 랭킹의 갯수
 export const UserRankListProp = {
-  total: 201,
+  total: 201, // 전체 유저 수
   results: [
     {
       rank: 1, // 랭킹
@@ -475,18 +475,18 @@ export const UserRankListProp = {
 // offset: 랭킹의 시작점
 // limit: 랭킹의 갯수
 export const SurgeUserProps = {
-  total: 303,
+  total: 303, // 전체 유저 수
   results: [
     {
-      rank: 1,
-      avatar: "https://picsum.photos/200/300",
-      username: "root",
-      mood: '안녕하세요, 저는 Alice입니다. 잘 부탁드립니다.',
-      score: 12000,
-      major: "전자전기공학부",
-      tier: "diamond1",
-      solved: 150,
-      growth: 3000,
+      rank: 1, // 랭킹
+      avatar: "https://picsum.photos/200/300", // 유저 아바타
+      username: "root", // 유저 이름
+      mood: '안녕하세요, 저는 Alice입니다. 잘 부탁드립니다.', // 상태메세지
+      score: 12000, // 현재 점수
+      major: "전자전기공학부", // 전공
+      tier: "diamond1", // 티어
+      solved: 150, // 푼 문제 수
+      growth: 3000, // 금일 점수 상승량
     },
     {
       rank: 2,
@@ -656,36 +656,43 @@ export const MajorRankListProp = {
       rank: 1, // 랭킹
       major: "전자전기공학부", // 전공
       score: 12000, // 현재 점수
+      people: 200, // 전공 내의 유저 수
     },
     {
       rank: 2,
       major: "기계공학부",
       score: 11500,
+      people: 190,
     },
     {
       rank: 3,
       major: "화학공학부",
       score: 11000,
+      people: 180,
     },
     {
       rank: 4,
       major: "건축학부",
       score: 10500,
+      people: 170,
     },
     {
       rank: 5,
       major: "환경공학부",
       score: 10000,
+      people: 160,
     },
     {
       rank: 6,
       major: "산업공학부",
       score: 9500,
+      people: 150,
     },
     {
       rank: 7,
       major: "식품공학부",
       score: 9000,
+      people: 140,
     },
   ]
 };

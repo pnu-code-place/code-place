@@ -1,15 +1,15 @@
 <script>
 
-import TopRanker from "../TopRanker.vue";
+import TopRanker from "./TopRanker.vue";
 import UserList from "./UserRankList.vue";
-import Pagination from "../../../components/Pagination.vue";
+import Pagination from "../../components/Pagination.vue";
 import SurgeRankList from "./SoaringRank.vue";
 import MajorRankList from "./MajorRank.vue";
-import {RULE_TYPE} from "../../../../../utils/constants";
-import api from "../../../api";
+import {RULE_TYPE} from "../../../../utils/constants";
+import api from "../../api";
 
 export default {
-  name: 'user-rank',
+  name: 'UserRank',
   components: {
     Pagination, UserList, SurgeRankList, MajorRankList, TopRanker
   },
