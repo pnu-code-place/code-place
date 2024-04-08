@@ -8,15 +8,17 @@
       </div>
     </header>
     <div class="problemRecommendationBoxBody">
-      <template v-for="problem in problems">
-        <div @click="enterProblemDetail(problem.id)" class="bonusProblem" :style="{ 'background-image': 'url(' + FIELD_MAP[problem.field].backgroundImage + ')' }">
-          <span>{{problem.title}}</span>
-          <FieldCategoryBox :boxType="true" :value="FIELD_MAP[problem.field].value"
-                            :boxColor="FIELD_MAP[problem.field].boxColor"/>
-          <template v-for="(category, idx) in [problem.tags[0]]">
-            <FieldCategoryBox :boxType="false" :value="'#' + category" :boxColor="'#ffffff'"/>
-          </template>
-        </div>
+      <template v-for="(problem, index) in problems" v-if="index <= 2">
+<!--        <ShineWrapper>-->
+          <div @click="enterProblemDetail(problem.id)" class="bonusProblem" :style="{ 'background-image': 'url(' + FIELD_MAP[problem.field].backgroundImage + ')' }">
+            <span>{{problem.title}}</span>
+            <FieldCategoryBox :boxType="true" :value="FIELD_MAP[problem.field].value"
+                              :boxColor="FIELD_MAP[problem.field].boxColor"/>
+            <template v-for="(category, idx) in [problem.tags[0]]">
+              <FieldCategoryBox :boxType="false" :value="'#' + category" :boxColor="'#ffffff'"/>
+            </template>
+          </div>
+<!--        </ShineWrapper>-->
       </template>
     </div>
   </div>
@@ -27,10 +29,11 @@ import api from '@oj/api'
 import {FIELD_MAP} from "../../../../utils/constants";
 import FieldCategoryBox from "../../components/FieldCategoryBox.vue";
 import {mapActions} from "vuex";
+import ShineWrapper from "../../components/ShineWrapper.vue";
 
 export default {
   name: 'HomeProblemRecommendationBox',
-  components: {FieldCategoryBox},
+  components: {ShineWrapper, FieldCategoryBox},
   computed: {
     FIELD_MAP() {
       return FIELD_MAP
@@ -112,7 +115,12 @@ export default {
       width: 220px;
       border-radius: 7px;
       background-color: #e9ece9;
+      transition: all .2s ease-in-out;
     }
+    .bonusProblem:hover { transform: scale(1.11); }
   }
+}
+.problemRecommendationBox:hover{
+  border: 1px solid #cccccc;
 }
 </style>

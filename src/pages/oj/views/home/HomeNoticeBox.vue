@@ -11,6 +11,7 @@
       <ul class="announcements-container" key="list">
         <li
           v-for="(announcement, idx) in announcements"
+          v-if="idx <= 4"
           :key="announcement.title"
         >
           <div class="flex-container">
@@ -18,9 +19,8 @@
               <a class="entry" @click="goAnnouncement(announcement)">
                 {{ announcement.title }}
               </a>
-              <span class="newAnnotator" v-if="idx == 0">new</span>
+              <span class="newAnnotator" v-if="isWithinOneDay(announcement.create_time)">new</span>
             </div>
-
             <div class="date">
               {{ getOnlyDate(announcement.create_time) }}
             </div>
@@ -71,6 +71,13 @@ export default {
       let onlyDate = new Date(date);
       return onlyDate.toLocaleDateString();
     },
+    isWithinOneDay(createTime) {
+      const currentTime = new Date().getTime();
+      const createTimestamp = new Date(createTime).getTime();
+      const oneDayInMilliseconds = 24 * 60 * 60 * 1000;
+
+      return (currentTime - createTimestamp) <= oneDayInMilliseconds;
+    },
     goAnnouncement(announcement) {
       console.log(announcement)
       this.$router.push({name: "notice", params: {announcement: announcement}});
@@ -91,7 +98,7 @@ export default {
   border-radius: 7px;
   border: 1px solid #dedede;
   width: 100%;
-  height: 400px;
+  height: 380px;
   padding-left: 30px;
   padding-right: 30px;
   margin-bottom: 20px;
@@ -117,15 +124,21 @@ export default {
         color: #7a7a7a;
         font-size: 12px;
       }
+      span:hover{
+        font-weight: bold;
+      }
     }
-
   }
+}
+
+.noticeBox:hover{
+  border: 1px solid #cccccc;
 }
 
 .announcements-container {
   margin-top: 10px;
   margin-bottom: 10px;
-
+  cursor: pointer;
   li {
     padding-top: 15px;
     list-style: none;
@@ -176,6 +189,10 @@ export default {
         color: #737373;
       }
     }
+  }
+
+  li:hover{
+    background-color: rgba(241, 241, 241, 0.45);
   }
 }
 </style>

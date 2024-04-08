@@ -253,6 +253,9 @@ main {
     }
   }
 }
+main:hover{
+  border: 1px solid #cccccc;
+}
 
 </style>
 

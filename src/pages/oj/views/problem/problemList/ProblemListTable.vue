@@ -96,6 +96,9 @@ table {
   border-spacing: 0;
   overflow: hidden;
 }
+table:hover{
+  border: 1px solid #cccccc;
+}
 
 th:first-child {
   text-align: center;

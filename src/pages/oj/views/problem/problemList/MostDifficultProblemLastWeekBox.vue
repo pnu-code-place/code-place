@@ -97,6 +97,10 @@ export default {
   }
 }
 
+.recommendationBox:hover{
+  border: 1px solid #cccccc;
+}
+
 .recommendationBoxHeader {
   padding-top: 8px;
   padding-bottom: 15px;
