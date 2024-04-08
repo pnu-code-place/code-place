@@ -27,18 +27,10 @@
             </div>
           </td>
           <td class="td-third" style="font-weight: bold; font-size: 12px">{{ DIFFICULTY_MAP[problem.difficulty].value }}</td>
-          <!-- 푼 사람 수 기입해야함. 일단 난수 처리 -->
-          <td class="td-fourth">{{ Math.floor(Math.random() * 101) }}</td>
-          <!-- 정답률 기입해야함. 일단 난수 처리 -->
-          <td class="td-fifth">{{ Math.floor(Math.random() * 101) + '%' }}</td>
-          <!--              <td class="td-fifth">{{ problem.accepted_number / problem.submission_number }}</td>-->
+          <td class="td-fourth">{{ problem.accepted_number }}</td>
+          <td class="td-fifth">{{ problem.submission_number == 0 ? "없음" : (problem.accepted_number / problem.submission_number ) * 100 + '%' }}</td>
         </tr>
         </tbody>
-      </template>
-      <template v-if="this.problemList.length == 0">
-        <div class="noProblemListBox">
-          {{$t('m.noProblemList')}}
-        </div>
       </template>
     </table>
 </template>
