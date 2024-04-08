@@ -434,6 +434,8 @@ class JudgeDispatcher(DispatcherBase):
             except (UserScore.DoesNotExist, Problem.DoesNotExist, UserSolved.DoesNotExist):
                 return HttpResponseNotFound("user_score | problem | user_solved doesn't exist")
 
+            """ update UserScore Model """
+
             # update user score
             field_name_score = ProblemField.intToStr[problem.field] + '_score'
             difficulty_name_score = problem.difficulty + '_score'
@@ -442,7 +444,7 @@ class JudgeDispatcher(DispatcherBase):
             score_multiplier = 2 if problem.is_bonus else 1
             problem_score = ProblemScore.score[problem.difficulty] * score_multiplier
 
-            """ update UserScore Model """
+
             # update user total score
             user_score.total_score += problem_score
 
