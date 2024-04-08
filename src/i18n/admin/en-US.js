@@ -114,6 +114,7 @@ export const m = {
   Contest_Problem_List: '대회 문제 목록',
 
   // Contest.vue
+  CreateContent: '대회 생성',
   ContestTitle: '대회명',
   ContestDescription: '설명',
   Contest_Start_Time: '시작 시간',

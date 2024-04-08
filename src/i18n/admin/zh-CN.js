@@ -15,10 +15,12 @@ export const m = {
   Contest: '比赛&练习',
   Contest_List: '比赛列表',
   Create_Contest: '创建比赛',
+
   // User.vue
   User_User: '用户',
   Import_User: '导入用户',
   Generate_User: '生成用户',
+
   // User.vue-dialog
   User_Info: '用户信息',
   User_Username: '用户名',
@@ -29,11 +31,13 @@ export const m = {
   Problem_Permission: '问题权限',
   Two_Factor_Auth: '双因素认证',
   Is_Disabled: '是否禁用',
+
   // Announcement.vue
   General_Announcement: '公告',
   Announcement_Title: '标题',
   Announcement_Content: '内容',
   Announcement_visible: '是否可见',
+
   // Conf.vue
   SMTP_Config: 'SMTP 设置',
   Server: '服务器',
@@ -47,6 +51,7 @@ export const m = {
   Footer: '页脚',
   Allow_Register: '是否允许注册',
   Submission_List_Show_All: '显示全部题目的提交',
+
   // JudgeServer.vue
   Judge_Server_Token: '判题服务器接口',
   Judge_Server_Info: '判题服务器',
@@ -55,8 +60,10 @@ export const m = {
   Service_URL: '服务器 URL',
   Last_Heartbeat: '上一次心跳',
   Create_Time: '创建时间',
+
   // PruneTestCase
   Test_Case_Prune_Test_Case: '精简测试用例',
+
   // Problem.vue
   Display_ID: '显示 ID',
   Title: '题目',
@@ -94,9 +101,12 @@ export const m = {
   Low: '低',
   Tag: '标签',
   New_Tag: '新增标签',
+
   // ProblemList.vue
   Contest_Problem_List: '比赛问题列表',
+
   // Contest.vue
+  CreateContent: '대회 생성',
   ContestTitle: '标题',
   ContestDescription: '描述',
   Contest_Start_Time: '开始时间',
@@ -107,6 +117,7 @@ export const m = {
   Contest_Status: '状态',
   Allowed_IP_Ranges: '允许的 IP 范围',
   CIDR_Network: 'CIDR 网络',
+
   // Dashboard.vue
   Last_Login: '最后登录状态',
   System_Overview: '系统状况',
@@ -114,6 +125,7 @@ export const m = {
   HTTPS_Status: 'HTTPS 状态',
   Force_HTTPS: '强制使用 HTTPS',
   CDN_HOST: 'CDN 主机',
+
   // Login.vue
   Welcome_to_Login: '欢迎登录 OnlineJudge 后台管理系统',
   GO: '登录',
