@@ -105,7 +105,8 @@ export const DashboardSectionProp = {
 }
 
 // 특정 유저가 푼 문제를 쿼리에 맞게 불러옵니다.
-// query가 없을 경우 필터가 적용되지 않습니다. 예, /api/profile/problem?username=minmunui&field=2, GET 요청 시 field가 2인 문제들만 불러옵니다.
+// query가 없을 경우 필터가 적용되지 않습니다. 예,
+// /api/profile/problem?username=minmunui&field=2, GET 요청 시 field가 2인 문제들만 불러옵니다.
 // username: 유저의 이름
 // field: 카테고리 | All, 0: implementation, 1: mathematics, 2: data_structure, 3: searching, 4: sorting
 // difficulty: 난이도 | All, VeryLow, Low, Mid, High, VeryHigh

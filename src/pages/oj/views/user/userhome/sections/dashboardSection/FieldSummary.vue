@@ -143,7 +143,7 @@ export default {
 
   .graph-column {
     width: 30%;
-    height: 100%;
+    //height: 100%;
   }
 
   .table-wrapper {
