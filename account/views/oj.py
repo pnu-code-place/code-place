@@ -137,12 +137,12 @@ class UserProfileDashBoardAPI(APIView):
         total_submitted_user_count = UserScore.objects.count()
 
         """ Build oj_status """
-        oj_status = {}
+        ojStatus = {}
         # oj_status.update(DashboardUserInfoSerializer(user).data)
         # oj_status.update(DashboardDepartmentSerializer(user_department).data)
         # oj_status.update(DashboardCollegeSerializer(user_college).data)
-        oj_status.update(DashboardSubmissionSerializer(user_profile).data)
-        oj_status.update(DashboardRankSerializer(user_score, context={'total_user_count': total_submitted_user_count}).data)
+        ojStatus.update(DashboardSubmissionSerializer(user_profile).data)
+        ojStatus.update(DashboardRankSerializer(user_score, context={'total_user_count': total_submitted_user_count}).data)
 
         """ Build fieldInfo """
         fieldInfo = DashboardFieldInfoSerializer(user_score).data['fieldInfo']
@@ -151,7 +151,7 @@ class UserProfileDashBoardAPI(APIView):
         difficultyInfo = DashboardDifficultyInfoSerializer(user_solved).data['difficultyInfo']
 
         response_data = {
-            'oj_status': oj_status,
+            'ojStatus': ojStatus,
             'fieldInfo': fieldInfo,
             'difficultyInfo': difficultyInfo
         }
