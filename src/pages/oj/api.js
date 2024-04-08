@@ -93,11 +93,11 @@ export default {
         username
       }
     });
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({data: {data: DashboardSectionProp}})
-      }, 300)
-    })
+    // return new Promise((resolve) => {
+    //   setTimeout(() => {
+    //     resolve({data: {data: DashboardSectionProp}})
+    //   }, 300)
+    // })
   },
   getUserProblemInfo(username, query) {
     return ajax("profile/problem", "get", {
@@ -106,21 +106,21 @@ export default {
             ...query
           }
         });
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({data: {data: ProblemSectionProp}})
-      }, 500)
-    })
+    // return new Promise((resolve) => {
+    //   setTimeout(() => {
+    //     resolve({data: {data: ProblemSectionProp}})
+    //   }, 9000)
+    // })
   },
   getAiRecommendProblem() {
     return ajax("ai_recommend_problem", "get");
   },
   getUserAchievement(username) {
     return ajax("profile/achievement", "get", {
-          params: {
-            username
-          }
-        });
+      params: {
+        username
+      }
+    });
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve({data: {data: AchievementSectionProp}})
@@ -133,10 +133,10 @@ export default {
       data: profile
     });
   },
-  getHomeRealTimeRanking(){
+  getHomeRealTimeRanking() {
     return ajax("home_ranking", "get");
   },
-  getHomeBonusProblem(){
+  getHomeBonusProblem() {
     return ajax("problem/bonus", "get");
   },
   freshDisplayID(userID) {
@@ -335,15 +335,16 @@ export default {
         if (limit === 1) {
           resolve({data: {data: {results: [UserRankListProp.results[offset]], total: UserRankListProp.total}}})
         }
-        resolve({data: {data: {results: UserRankListProp.results.slice(3,13), total: UserRankListProp.total}}})
+        resolve({data: {data: {results: UserRankListProp.results.slice(3, 13), total: UserRankListProp.total}}})
       }, 500)
     });
     return ajax("user_rank", "get", {
       params
     });
   },
-  getSurgeUsers(limit) {
+  getSurgeUsers(offset, limit) {
     const params = {
+      offset,
       limit
     }
     return new Promise((resolve) => {
@@ -351,10 +352,13 @@ export default {
         resolve({data: {data: SurgeUserProps}})
       }, 500)
     });
-    return ajax("surge_users", "get", {params});
+    return ajax("surge_users", "get", {
+      params
+    });
   },
-  getMajorRankList(limit) {
+  getMajorRankList(offset, limit) {
     const params = {
+      offset,
       limit
     }
     return new Promise((resolve) => {

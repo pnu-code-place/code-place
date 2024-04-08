@@ -79,7 +79,11 @@ export const m = {
   AC: "AC",
   Rating: "Rating",
   Today_Surge_User: "오늘의 급상승 사용자",
-  Major_Rank: "전공 TOP 7",
+  User_Rank: "사용자 랭킹",
+  Today_User: "오늘의 급상승 사용자",
+  Today_Growth: "금일 상승",
+  Major_Rank: "학과별 랭킹",
+  Num_People: "사용자 수",
   TOP_1: "1등",
   TOP_2: "2등",
   TOP_3: "3등",
@@ -310,7 +314,7 @@ export const m = {
   Rejudge: "Rejudge",
 
   // SideNavBar.vue
-  OJ_Status: "OJ통계",
+  OJ_Status: "나의 정보",
   Problem_Status: "문제풀이",
   Achievement: "업적",
   User_Setting: "정보수정",
@@ -331,7 +335,7 @@ export const m = {
 
   //OJSummary.vue
   Ranking: "랭킹",
-  OJ_Summary: "OJ 요약",
+  OJ_Summary: "랭킹 및 티어",
   TOP: "상위",
   UserHomeSolved: "해결한 문제",
   Miracle_Coding: "미라클 코딩",

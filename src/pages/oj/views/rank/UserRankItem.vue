@@ -1,10 +1,10 @@
 <script>
-import {comma, getTier} from "../../../../../utils/utils";
-import {TierImageSrc} from "../../../../../utils/constants";
-import ShineWrapper from "../../../components/ShineWrapper.vue";
+import {comma, getTier} from "../../../../utils/utils";
+import {TierImageSrc} from "../../../../utils/constants";
+import ShineWrapper from "../../components/ShineWrapper.vue";
 
 export default {
-  name: 'UserItem',
+  name: 'RankItem',
   components: {ShineWrapper},
   methods: {comma, getTier},
   props: {
@@ -50,15 +50,19 @@ export default {
       <shine-wrapper class="tier-mark-wrapper">
         <img class="tier-mark" :src="TierImageSrc[user.tier]" alt='tier-mark'>
       </shine-wrapper>
-      <span>{{ getTier(user.tier) }}</span>
+      <span class="tier">{{ getTier(user.tier) }}</span>
     </td>
-    <td>{{ comma(user.score) }}</td>
+    <td>
+      <div class="user-score">
+        <span class="user-score__score">{{ comma(user.score) }}</span>
+        <span class="user-score__growth">{{user.growth===0? "-":"▲"}}{{ comma(user.growth) }}</span>
+      </div>
+    </td>
     <td class="user-problem">
       <router-link :to="{name: 'user-problems', params: {username : user.username}}" class="justify-center">
         {{ user.solved }}
       </router-link>
     </td>
-    <td>{{ this.accuracy }}</td>
   </tr>
 </template>
 
@@ -105,9 +109,27 @@ tr {
       justify-content: center;
     }
 
-    span {
+    .tier {
       font-size: 13px;
       font-weight: 700;
+    }
+
+    .user-score {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: #666;
+      .user-score__score {
+        font-size: 15px;
+        color: #333;
+      }
+      .user-score__growth {
+        font-size: 12px;
+        color: #00aaaa;
+      }
     }
   }
 

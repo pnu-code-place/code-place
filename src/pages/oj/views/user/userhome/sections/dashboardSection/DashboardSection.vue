@@ -73,11 +73,11 @@ export default {
       <DifficultySummary v-if="this.dashboardInfo.difficultyInfo"
                          :difficultyInfo="this.dashboardInfo.difficultyInfo"></DifficultySummary>
       <DashboardSkeleton v-else-if="this.isLoading"></DashboardSkeleton>
-      <hr/>
-      <h1>{{ $t('m.Achievement') }}</h1>
-      <ChallengeSummary v-if="this.dashboardInfo.achievements"
-                        :achievements="this.dashboardInfo.achievements"></ChallengeSummary>
-      <AchievementsSkeleton v-else-if="this.isLoading"></AchievementsSkeleton>
+<!--      <hr/>-->
+<!--      <h1>{{ $t('m.Achievement') }}</h1>-->
+<!--      <ChallengeSummary v-if="this.dashboardInfo.achievements"-->
+<!--                        :achievements="this.dashboardInfo.achievements"></ChallengeSummary>-->
+<!--      <AchievementsSkeleton v-else-if="this.isLoading"></AchievementsSkeleton>-->
     </div>
   </section>
 </template>
@@ -87,20 +87,21 @@ section {
   border: 1px solid #dedede;
   border-radius: 7px;
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  padding: 20px;
+  padding: 40px 40px 60px;
   gap: 15px;
   display: flex;
   flex-direction: column;
 
   hr {
     border: 0.5px solid #dedede;
-    margin: 10px 10px 10px 0;
+    margin: 40px 10px 40px 0;
   }
 
   h1 {
     text-align: left;
+    font-size: 22px;
     margin-left: 10px;
-    margin-bottom: 15px;
+    margin-bottom: 30px;
   }
 }
 </style>

@@ -43,7 +43,7 @@ export default {
         {{ profile.user.username }}
         <div class="user-rank">
           <shine-wrapper>
-            <img :src="TierImageSrc[profile.user.rank_tier]" class="rank-mark"/>
+            <img :src="TierImageSrc[profile.user.tier]" class="rank-mark"/>
           </shine-wrapper>
         </div>
       </div>
