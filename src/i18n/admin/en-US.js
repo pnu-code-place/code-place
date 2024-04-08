@@ -126,6 +126,35 @@ export const m = {
   Allowed_IP_Ranges: '허용된 IP 범위',
   CIDR_Network: 'CIDR 네트워크',
 
+  // ContestList.vue
+  Contest_List_Page_Title: '대회 목록',
+  Contest_List_Table_Id: 'ID',
+  Contest_List_Table_Title: '대회명',
+  Contest_List_Table_Rule_Type: '규칙 종류',
+  Contest_List_Table_Contest_Type: '대회 종류',
+  Contest_List_Table_Status: '상태',
+  Contest_List_Table_Visible: '활성 여부',
+  Contest_List_Table_Operation: '설정',
+  Contest_List_Start_Time: '시작일',
+  Contest_List_End_Time: '종료일',
+  Contest_List_Create_Time: '생성일',
+  Contest_List_Creator: '생성자',
+  Contest_List_Icon_Edit: '수정',
+  Contest_List_Icon_Problem: '문제',
+  Contest_List_Icon_Announcement: '공지사항',
+  Contest_List_Icon_Download: '제출된 코드 다운로드',
+  Contest_List_DownloadModal_Title: '대회 제출물 다운로드',
+  Contest_List_DownloadModal_Exclude: '관리자 제출 제외',
+  Contest_List_DownloadModal_Execute: '확인',
+
+  // constants.js
+  Contest_Status_Not_Started: '시작 전',
+  Contest_Status_Underway: '진행중',
+  Contest_Status_Ended: '종료됨',
+  Contest_Type_Public: '공개 대회',
+  Contest_Type_PasswordProtected: '비공개 대회',
+
+
   // Dashboard.vue
   Last_Login: '마지막 로그인 날',
   System_Overview: '시스템 개요',
