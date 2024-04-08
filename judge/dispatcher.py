@@ -190,7 +190,6 @@ class JudgeDispatcher(DispatcherBase):
         #     else:
         #         self.submission.result = JudgeStatus.PARTIALLY_ACCEPTED
         """아래 코드는 채점 결과 상관없이 무조건 ACCEPTED 처리하는 코드"""
-        print("resp:", resp)
         self.submission.info = resp
         # self._compute_statistic_info(resp["data"])
         self.submission.result = JudgeStatus.ACCEPTED
@@ -435,21 +434,39 @@ class JudgeDispatcher(DispatcherBase):
             except (UserScore.DoesNotExist, Problem.DoesNotExist, UserSolved.DoesNotExist):
                 return HttpResponseNotFound("user_score | problem | user_solved doesn't exist")
 
+            """ update UserScore Model """
+
             # update user score
-            field_name = ProblemField.intToStr[problem.field] + '_score'
-            if problem.is_bonus:
-                user_score.total_score += ProblemScore.score[problem.difficulty] * 2
-                new_field_score = getattr(user_score, field_name) + ProblemScore.score[problem.difficulty] * 2
-                setattr(user_score, field_name, new_field_score)
-            else:
-                user_score.total_score += ProblemScore.score[problem.difficulty]
-                new_field_score = getattr(user_score, field_name) + ProblemScore.score[problem.difficulty]
-                setattr(user_score, field_name, new_field_score)
+            field_name_score = ProblemField.intToStr[problem.field] + '_score'
+            difficulty_name_score = problem.difficulty + '_score'
+
+            # bonus problem score multiplier
+            score_multiplier = 2 if problem.is_bonus else 1
+            problem_score = ProblemScore.score[problem.difficulty] * score_multiplier
+
+
+            # update user total score
+            user_score.total_score += problem_score
+
+            # update user score by field
+            new_field_score = getattr(user_score, field_name_score) + problem_score
+            setattr(user_score, field_name_score, new_field_score)
+
+            # update user score by difficulty
+            new_difficulty_score = getattr(user_score, difficulty_name_score) + problem_score
+            setattr(user_score, difficulty_name_score, new_difficulty_score)
+
+            """ update UserSolved Model """
 
             # update solved problem count by difficulty
-            difficulty_name = problem.difficulty + '_solved'
-            new_difficulty_solved = getattr(user_solved, difficulty_name) + 1
-            setattr(user_solved, difficulty_name, new_difficulty_solved)
+            difficulty_name_solved = problem.difficulty + '_solved'
+            new_difficulty_solved = getattr(user_solved, difficulty_name_solved) + 1
+            setattr(user_solved, difficulty_name_solved, new_difficulty_solved)
+
+            # update solved problem count by field
+            field_name_solved = ProblemField.intToStr[problem.field] + '_solved'
+            new_field_solved = getattr(user_solved, field_name_solved) + 1
+            setattr(user_solved, field_name_solved, new_field_solved)
 
             user_score.save()
             user_solved.save()
