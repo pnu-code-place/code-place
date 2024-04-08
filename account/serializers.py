@@ -2,7 +2,7 @@ from django import forms
 
 from utils.api import serializers, UsernameSerializer
 
-from .models import AdminType, ProblemPermission, User, UserProfile, UserScore, Department, College
+from .models import AdminType, ProblemPermission, User, UserProfile, UserScore, Department, College, UserSolved
 
 
 class CollegeListSerializer(serializers.Serializer):
@@ -22,6 +22,7 @@ class RankingSerializer(serializers.ModelSerializer):
 
         model = UserScore
         fields = ["score", "fluctuation", "user", "basis"]
+
 
 
 class UserLoginSerializer(serializers.Serializer):
@@ -133,7 +134,7 @@ class DashboardRankSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserScore
-        fields = ['tier', 'total_score', 'current_tier_score', 'next_tier_score', 'total_rank', 'total_rank_percentage']
+        fields = ['tier', 'total_rank', 'total_rank_percentage', 'total_score', 'current_tier_score', 'next_tier_score' ]
 
     def get_total_rank(self, instance):
         return instance.total_rank
@@ -141,6 +142,58 @@ class DashboardRankSerializer(serializers.ModelSerializer):
     def get_total_rank_percentage(self, instance):
         total_rank_percentage = round(instance.total_rank / self.context['total_user_count'], 2)
         return total_rank_percentage
+
+class DashboardFieldInfoSerializer(serializers.ModelSerializer):
+    fieldInfo = serializers.SerializerMethodField()
+
+    class Meta:
+        model = UserScore
+        fields = ['fieldInfo']
+
+    def get_fieldInfo(self, instance):
+        field_info = {}
+        fields = ['datastructure', 'math', 'sorting', 'implementation', 'search']
+
+        for field in fields:
+            field_name_score = f"{field}_score"
+            user_field_score = getattr(instance, field_name_score)
+
+            field_rank = UserScore.objects.filter(**{f'{field_name_score}__gt': user_field_score}).count() + 1
+            total_users = UserScore.objects.count()
+            rank_percentage = (field_rank / total_users)
+
+            field_info[field] = {
+                'score': user_field_score,
+                'ranking': field_rank,
+                'ranking_percent': rank_percentage,
+            }
+
+        return field_info
+
+class DashboardDifficultyInfoSerializer(serializers.ModelSerializer):
+    difficultyInfo = serializers.SerializerMethodField()
+
+    class Meta:
+        model = UserSolved
+        fields = ['difficultyInfo']
+
+    def get_difficultyInfo(self, instance):
+        difficulty_info = {}
+        difficulties = ['VeryLow', 'Low', 'Mid', 'High', 'VeryHigh']
+
+        for difficulty in difficulties:
+            solved_field = f"{difficulty}_solved"
+            score_field = f"{difficulty}_score"
+
+            solved_count = getattr(instance, solved_field)
+            total_score = getattr(UserScore.objects.get(user=instance.user), score_field)
+
+            difficulty_info[difficulty.lower()] = {
+                'solve_number': solved_count,
+                'total_score': total_score,
+            }
+
+        return difficulty_info
 
 
 class HomeRankingSerializer(serializers.ModelSerializer):
