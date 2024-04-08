@@ -14,11 +14,11 @@ export default {
       return TierImageSrc
     },
     gaugeWidth() {
-      return (this.ojStatus.total_score - this.ojStatus.rank_current) / (this.ojStatus.rank_next - this.ojStatus.rank_current);
+      return (this.ojStatus.total_score - this.ojStatus.current_tier_score) / (this.ojStatus.next_tier_score - this.ojStatus.current_tier_score);
     },
     rankPercent() {
       // 소숫점 1자리까지
-      return Math.round(this.ojStatus.rank_percent * 1000) / 10;
+      return Math.round(this.ojStatus.total_rank_percentage * 1000) / 10;
     }
   },
   methods :{
@@ -32,9 +32,9 @@ export default {
   <div class="oj-summary">
     <div class="rank-mark-wrapper">
       <shine-wrapper>
-        <img :src="TierImageSrc[ojStatus.rank_tier]" class="rank-mark" alt="rank emblem"/>
+        <img :src="TierImageSrc[ojStatus.tier]" class="rank-mark" alt="rank emblem"/>
       </shine-wrapper>
-      <span>{{ getTier(ojStatus.rank_tier) }}</span>
+      <span>{{ getTier(ojStatus.tier) }}</span>
     </div>
     <div class="rank-info">
       <div class="rank-info-top">
@@ -57,20 +57,17 @@ export default {
       </div>
       <div class="progress">
         <span class="progress-info">
-          {{ comma(ojStatus.total_score) }} / {{ comma(ojStatus.rank_next) }}
+          {{ comma(ojStatus.total_score) }} / {{ comma(ojStatus.next_tier_score) }}
         </span>
         <div class="gauge-wrapper">
           <horizontal-gauge :progress="gaugeWidth"></horizontal-gauge>
         </div>
         <span class="progress-next">
-          {{$t('m.Until_Promotion_Before')}} <span class="progress-next-number">{{ comma(ojStatus.rank_next - ojStatus.total_score) }}{{$t('m.Point')}}</span> {{$t('m.Until_Promotion_After')}}
+          {{$t('m.Until_Promotion_Before')}} <span class="progress-next-number">{{ comma(ojStatus.next_tier_score - ojStatus.total_score) }}{{$t('m.Point')}}</span> {{$t('m.Until_Promotion_After')}}
         </span>
       </div>
     </div>
     <div class="miracle">
-      <span class="miracle-title">{{$t('m.Miracle_Coding')}}</span>
-      <span class="miracle-current">{{ ojStatus.miracle_current }}{{$t('m.MiracleCodingDays')}}</span>
-      <span class="miracle-record">{{$t('m.Best_Record')}} {{ ojStatus.miracle_record }}{{$t('m.MiracleCodingDays')}}</span>
     </div>
   </div>
 </template>
@@ -107,7 +104,7 @@ export default {
   }
 
   .rank-info {
-    width: 50%;
+    width: 75%;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -161,11 +158,11 @@ export default {
   }
 
   .miracle {
-    width: 25%;
+    width: 0%;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    background-color: rgba(213, 213, 229, 0.82);
+    //background-color: rgba(213, 213, 229, 0.82);
     border-radius: 10px;
 
     .miracle-title {

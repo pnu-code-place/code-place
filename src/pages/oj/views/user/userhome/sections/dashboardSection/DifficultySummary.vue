@@ -7,16 +7,19 @@ export default {
   data() {
     return {
       DIFFICULTY_LABEL: {
-        very_easy: {label: 'Very Low', color: DIFFICULTY_MAP.VeryLow.textColor},
-        easy: {label: 'Low', color: DIFFICULTY_MAP.Low.textColor},
-        medium: {label: 'Mid', color: DIFFICULTY_MAP.Mid.textColor},
-        hard: {label: 'High', color: DIFFICULTY_MAP.High.textColor},
-        very_hard: {label: 'Very High', color: DIFFICULTY_MAP.VeryHigh.textColor},
+        verylow: {label: 'Very Low', color: DIFFICULTY_MAP.VeryLow.textColor},
+        low: {label: 'Low', color: DIFFICULTY_MAP.Low.textColor},
+        mid: {label: 'Mid', color: DIFFICULTY_MAP.Mid.textColor},
+        high: {label: 'High', color: DIFFICULTY_MAP.High.textColor},
+        veryhigh: {label: 'Very High', color: DIFFICULTY_MAP.VeryHigh.textColor},
       }
     }
   },
   methods: {
     getProportion(value) {
+      if (this.totalScore === 0) {
+        return 0;
+      }
       return (value / this.totalScore * 100).toFixed(1);
     },
     chartLabel(params) {
@@ -97,15 +100,17 @@ export default {
         <tr>
           <th>{{$t('m.Difficulty')}}</th>
           <th>{{$t('m.DifficultySolved')}}</th>
-          <th><span class="score">{{$t('m.UserHomeScore')}}</span><span class="score-ratio">({{$t('m.Ratio')}})</span></th>
+          <th><span class="score">{{$t('m.UserHomeScore')}}</span>
+            <span class="ratio">({{$t('m.Ratio')}})</span></th>
         </tr>
         </thead>
         <tbody>
         <tr v-for="(difficulty, key, index) in difficultyInfo" :key="index">
           <td class="part-name" :style="{color:DIFFICULTY_LABEL[key].color}">{{ DIFFICULTY_LABEL[key].label }}</td>
           <td class="solve-number">{{ difficulty.solve_number }}</td>
-          <td class="difficulty-score">{{ difficulty.total_score }} <span
-              class="score-ratio">({{ getProportion(difficulty.total_score) }}%)</span></td>
+          <td class="difficulty-score">{{ difficulty.total_score }}
+            <span class="ratio">({{ getProportion(difficulty.total_score) }}%)</span>
+          </td>
         </tr>
         </tbody>
       </table>
@@ -163,7 +168,7 @@ export default {
             font-weight: 700;
           }
 
-          .score-ratio {
+          .ratio {
             font-size: 13px;
           }
         }
@@ -182,7 +187,7 @@ export default {
         .difficulty-score {
           font-size: 14px;
 
-          .score-ratio {
+          .ratio {
             font-size: 12px;
           }
         }

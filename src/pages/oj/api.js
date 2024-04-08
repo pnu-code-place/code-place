@@ -93,24 +93,24 @@ export default {
         username
       }
     });
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({data: {data: DashboardSectionProp}})
-      }, 300)
-    })
+    // return new Promise((resolve) => {
+    //   setTimeout(() => {
+    //     resolve({data: {data: DashboardSectionProp}})
+    //   }, 300)
+    // })
   },
   getUserProblemInfo(username, query) {
-    // return ajax("profile/problem", "get", {
-    //       params: {
-    //         username,
-    //         ...query
-    //       }
-    //     });
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({data: {data: ProblemSectionProp}})
-      }, 500)
-    })
+    return ajax("profile/problem", "get", {
+          params: {
+            username,
+            ...query
+          }
+        });
+    // return new Promise((resolve) => {
+    //   setTimeout(() => {
+    //     resolve({data: {data: ProblemSectionProp}})
+    //   }, 9000)
+    // })
   },
   getAiRecommendProblem() {
     return ajax("ai_recommend_problem", "get");

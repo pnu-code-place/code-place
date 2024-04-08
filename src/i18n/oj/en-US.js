@@ -314,7 +314,7 @@ export const m = {
   Rejudge: "Rejudge",
 
   // SideNavBar.vue
-  OJ_Status: "OJ통계",
+  OJ_Status: "나의 정보",
   Problem_Status: "문제풀이",
   Achievement: "업적",
   User_Setting: "정보수정",
@@ -335,7 +335,7 @@ export const m = {
 
   //OJSummary.vue
   Ranking: "랭킹",
-  OJ_Summary: "OJ 요약",
+  OJ_Summary: "랭킹 및 티어",
   TOP: "상위",
   UserHomeSolved: "해결한 문제",
   Miracle_Coding: "미라클 코딩",

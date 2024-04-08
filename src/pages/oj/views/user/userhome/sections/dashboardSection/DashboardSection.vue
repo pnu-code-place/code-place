@@ -99,6 +99,7 @@ section {
 
   h1 {
     text-align: left;
+    font-size: 22px;
     margin-left: 10px;
     margin-bottom: 30px;
   }

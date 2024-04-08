@@ -7,101 +7,67 @@
 // OJ 대시보드의 섹션들의 prop을 정의합니다.
 // /api/profile/dashboard?username=<username> GET
 export const DashboardSectionProp = {
-
-  ojStatus: {
-    rank_image: "https://cdn-icons-png.flaticon.com/512/473/473406.png", // 랭킹 이미지
-    rank_tier: "platinum3", // 랭킹 티어
-    rank: 1, // 랭킹
-    rank_percent: 0.1, // 랭킹 퍼센트 ( 상위 10% )
-    submission_number: 100, // 제출 횟수
-    accepted_number: 100, // 맞은 횟수
-    total_score: 56000, // 현재 점수
-    rank_next: 60000, // 다음 랭킹의 허들
-    rank_current: 50000, // 이전 랭킹의 허들
-    miracle_current: 10, // 현재 연속 코딩일수
-    miracle_record: 20 // 최고 연속 코딩일수
+  "ojStatus": {
+    "accepted_number": 4,
+    "submission_number": 5,
+    "tier": "platinum3",
+    "total_rank": 1,
+    "total_rank_percentage": 0.5,
+    "total_score": 2160,
+    "next_tier_score": 3500,
+    "current_tier_score": 1900
   },
-
-  fieldInfo: { // 카테고리별 정보를 표시합니다.
-    data_structure: {
-      score: 340, // 점수
-      ranking: 60, // 랭킹
-      ranking_percent: 0.3, // 랭킹 퍼센트 - 상위 30%
+  "fieldInfo": {
+    "datastructure": {
+      "score": 640,
+      "ranking": 1,
+      "ranking_percent": 0.5
     },
-    mathematics: {
-      score: 200,
-      ranking: 101,
-      ranking_percent: 0.505,
+    "math": {
+      "score": 0,
+      "ranking": 1,
+      "ranking_percent": 0.5
     },
-    sorting: {
-      score: 45,
-      ranking: 34,
-      ranking_percent: 0.17,
+    "sorting": {
+      "score": 160,
+      "ranking": 1,
+      "ranking_percent": 0.5
     },
-    implementation: {
-      score: 610,
-      ranking: 20,
-      ranking_percent: 0.101,
+    "implementation": {
+      "score": 1280,
+      "ranking": 1,
+      "ranking_percent": 0.5
     },
-    searching: {
-      score: 30,
-      ranking: 190,
-      ranking_percent: 0.95,
+    "search": {
+      "score": 80,
+      "ranking": 1,
+      "ranking_percent": 0.5
     }
   },
-
-  difficultyInfo: { // 난이도별 정보를 표시합니다.
-    very_easy: {
-      solve_number: 33,  // 해결한 문제 수
-      total_score: 330,  // 총 점수
+  "difficultyInfo": {
+    "verylow": {
+      "solve_number": 0,
+      "total_score": 0
     },
-    easy: {
-      solve_number: 20,
-      total_score: 400,
+    "low": {
+      "solve_number": 1,
+      "total_score": 0
     },
-    medium: {
-      solve_number: 10,
-      total_score: 800,
+    "mid": {
+      "solve_number": 1,
+      "total_score": 160
     },
-    hard: {
-      solve_number: 4,
-      total_score: 640,
+    "high": {
+      "solve_number": 1,
+      "total_score": 0
     },
-    very_hard: {
-      solve_number: 1,
-      total_score: 320,
+    "veryhigh": {
+      "solve_number": 1,
+      "total_score": 1280
     }
-  },
-  achievements: [ // 달성한 업적을 표시합니다.
-    {
-      id: 3,
-      title: "프로그래밍 마스터",
-      image: "https://cdn-icons-png.flaticon.com/512/473/473406.png",
-      description: "프로그래밍 카테고리에서 20문제 이상 풀이",
-      acquireTime: '2022-01-01T08:25:49.443682Z',
-    },
-    {
-      id: 4,
-      title: "알고리즘 전문가",
-      image: "https://cdn-icons-png.flaticon.com/512/473/473406.png",
-      description: "알고리즘 카테고리에서 15문제 이상 풀이",
-      acquireTime: '2022-02-01T08:25:49.443682Z',
-    },
-    {
-      id: 5,
-      title: "데이터베이스 마스터",
-      image: "https://cdn-icons-png.flaticon.com/512/473/473406.png",
-      description: "데이터베이스 카테고리에서 10문제 이상 풀이",
-      acquireTime: '2022-03-01T08:25:49.443682Z',
-    },
-    {
-      id: 6,
-      title: "웹 개발 전문가",
-      image: "https://cdn-icons-png.flaticon.com/512/473/473406.png",
-      description: "웹 개발 카테고리에서 15문제 이상 풀이",
-      acquireTime: '2022-04-01T08:25:49.443682Z',
-    },
-  ]
+  }
+
+
 }
 
 // 특정 유저가 푼 문제를 쿼리에 맞게 불러옵니다.
