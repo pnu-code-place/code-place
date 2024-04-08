@@ -177,11 +177,11 @@ class UserScore(models.Model):
     search_score = models.BigIntegerField(default=0)
     sorting_score = models.BigIntegerField(default=0)
 
-    very_low_score = models.BigIntegerField(default=0)
-    easy_score = models.BigIntegerField(default=0)
-    medium_score = models.BigIntegerField(default=0)
-    high_score = models.BigIntegerField(default=0)
-    very_high_score = models.BigIntegerField(default=0)
+    VeryLow_score = models.BigIntegerField(default=0)
+    Low_score = models.BigIntegerField(default=0)
+    Mid_score = models.BigIntegerField(default=0)
+    High_score = models.BigIntegerField(default=0)
+    VeryHigh_score = models.BigIntegerField(default=0)
 
     tier = models.TextField(default=get_default_tier)
     current_tier_score = models.IntegerField(default=get_default_current_tier_score)
