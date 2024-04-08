@@ -10,7 +10,7 @@
     <div style="padding: 10px; height: 100%">
       <template v-if="this.rankingItems.length == 1">
         <div style="text-align: center; height: 80%; display: flex; align-items: center; justify-content: center">
-          표시할 데이터가 부족합니다
+          표시할 데이터가 충분하지 않습니다.
         </div>
       </template>
       <template v-else>

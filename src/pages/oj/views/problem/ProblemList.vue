@@ -11,7 +11,7 @@
       </div>
       <keep-alive>
         <div class="right-container">
-            <MostDifficultProblemLastWeekBox :problem="mostDifficultProblem"/>
+            <MostDifficultProblemLastWeekBox :problem="problemList.filter(value => value.is_most_difficult)[0]"/>
             <AiRecommendationBox :problems="problemList.slice(3,5)"/>
         </div>
       </keep-alive>
@@ -76,7 +76,7 @@ export default {
   },
   methods: {
     ...mapActions(['changeDomTitle']),
-    init(simulate = false) {
+    async init(simulate = false) {
       this.routeName = this.$route.name
       let query = this.$route.query
       this.query.difficulty = query.difficulty || ''
@@ -91,7 +91,7 @@ export default {
       if (!simulate) {
         this.getTagList()
       }
-      this.getProblemList()
+      await this.getProblemList()
       this.mostDifficultProblem = this.mostDifficultProblemLastWeek()
     },
     pushRouter() {
@@ -124,6 +124,7 @@ export default {
     },
     mostDifficultProblemLastWeek(){
       console.log(this.problemList)
+      console.log( this.problemList.find(value => value.is_most_difficult === true))
       return this.problemList.find(value => value.is_most_difficult === true)
     },
     pickOne() {
