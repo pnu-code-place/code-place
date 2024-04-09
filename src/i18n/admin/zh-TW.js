@@ -67,6 +67,15 @@ export const m = {
   Footer: '頁尾',
   Allow_Register: '是否允許註冊',
   Submission_List_Show_All: '顯示全部題目的提交',
+  SMTP_Server_Address: 'SMTP 서버 주소',
+  SMTP_Server_Port: 'SMTP 서버 포트',
+  SMTP_Server_Email: '이메일을 보내는데 사용할 계정',
+  SMTP_Server_Password: 'SMTP 서버 비밀번호',
+  SMTP_Test_Email: 'Send Test Email',
+  Web_Config_Url: 'Website Base Url',
+  Web_Config_Name: 'Website Name',
+  Web_Config_Shortcut: 'Website Name Shortcut',
+  Web_Config_Footer: 'Website Footer HTML',
 
   // JudgeServer.vue
   Judge_Server_Token: 'Judge 伺服器 Token',
