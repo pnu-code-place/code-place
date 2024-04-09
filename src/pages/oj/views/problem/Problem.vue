@@ -161,9 +161,6 @@
                     </Dropdown-menu>
                   </Dropdown>
                 </Tooltip>
-                <Tooltip :content="this.$i18n.t('m.Reset_to_default_code_definition')" placement="bottom-end">
-                  <CustomIconBtn @click="check()" :wrapperSize="30" iconClass="fas fa-tags"/>
-                </Tooltip>
                 <Tooltip :content="'글자 크기 키우기'" placement="bottom-end">
                   <CustomIconBtn @click="changeFontSize(fontSize+1)" :wrapperSize="30" iconClass="fas fa-plus"/>
                 </Tooltip>
