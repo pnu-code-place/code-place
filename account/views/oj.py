@@ -12,7 +12,8 @@ from django.utils.timezone import now
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
 from otpauth import OtpAuth
 from django.core.cache import cache
-from django.http import HttpResponseBadRequest, HttpResponseNotFound, HttpResponseForbidden, HttpResponseServerError
+from django.http import HttpResponseBadRequest, HttpResponseNotFound, HttpResponseForbidden, HttpResponseServerError, \
+    JsonResponse
 from django.db.models import F, Count, Q
 from django.db import transaction
 
@@ -366,7 +367,6 @@ class UserRegisterAPI(APIView):
             return self.error("Register function has been disabled by admin")
 
         data = request.data
-        print(data)
         data["username"] = data["username"].lower()
         data["email"] = data["email"].lower()
 
@@ -374,14 +374,13 @@ class UserRegisterAPI(APIView):
             return self.error("username already exists")
         if User.objects.filter(email=data["email"]).exists():
             return self.error("email already exists")
-        print(data)
         college = College.objects.get(id=data['collegeId'])
         department = Department.objects.get(id=data['departmentId'])
         with transaction.atomic():
             user = User.objects.create(username=data["username"], email=data["email"])
             user.set_password(data["password"])
             user.save()
-            user_profile = UserProfile.objects.create(user=user, college=college, department=department)
+            user_profile = UserProfile.objects.create(user=user, school=college.college_name, major=department.department_name, college=college, department=department)
             user_profile.save()
             user_score = UserScore.objects.create(user=user)
             user_score.save()
@@ -533,17 +532,43 @@ class SessionManagementAPI(APIView):
 
 
 class UserRankAPI(APIView):
+    # def get(self, request):
+    #     rule_type = request.GET.get("rule")
+    #     if rule_type not in ContestRuleType.choices():
+    #         rule_type = ContestRuleType.ACM
+    #     profiles = UserProfile.objects.filter(user__admin_type=AdminType.REGULAR_USER, user__is_disabled=False) \
+    #         .select_related("user")
+    #     if rule_type == ContestRuleType.ACM:
+    #         profiles = profiles.filter(submission_number__gt=0).order_by("-accepted_number", "submission_number")
+    #     else:
+    #         profiles = profiles.filter(total_score__gt=0).order_by("-total_score")
+    #     return self.success(self.paginate_data(request, profiles, RankInfoSerializer))
     def get(self, request):
-        rule_type = request.GET.get("rule")
-        if rule_type not in ContestRuleType.choices():
-            rule_type = ContestRuleType.ACM
-        profiles = UserProfile.objects.filter(user__admin_type=AdminType.REGULAR_USER, user__is_disabled=False) \
-            .select_related("user")
-        if rule_type == ContestRuleType.ACM:
-            profiles = profiles.filter(submission_number__gt=0).order_by("-accepted_number", "submission_number")
-        else:
-            profiles = profiles.filter(total_score__gt=0).order_by("-total_score")
-        return self.success(self.paginate_data(request, profiles, RankInfoSerializer))
+
+        #total: 201, // 전체 유저 수
+          # results: [
+          #   {
+          #     rank: 1, // 랭킹
+          #     avatar: "https://picsum.photos/200/300", // 아바타
+          #     username: "root", // 유저 이름
+          #     mood: '안녕하세요, 저는 Alice입니다. 잘 부탁드립니다.', // 인사말
+          #     score: 12000, // 현재 점수
+          #     major: "전자전기공학부", // 전공
+          #     tier: "diamond1", // 티어
+          #     solved: 150, // 푼 문제 수
+          #     growth: 3000, // 금일 점수 상승량
+          #   },
+
+        offset = request.GET.get("offset")
+        limit = request.GET.get("limit")
+        total_user_count = UserScore.objects.all().count()
+        # UserProfile.objects.select_related('')
+
+        # print(a)
+
+        return self.success(1)
+
+
 
 
 class ProfileProblemDisplayIDRefreshAPI(APIView):
