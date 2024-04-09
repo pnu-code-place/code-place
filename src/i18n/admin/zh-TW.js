@@ -44,8 +44,6 @@ export const m = {
   Announcement_Table_Author: '작성자',
   Announcement_Table_Visible: '공개',
   Announcement_Table_Option: '설정',
-  Announcement_Icon_Edit: '수정',
-  Announcement_Icon_Delete: '삭제',
   Announcement_Create: '추가',
   Edit_Announcement: '공지사항 수정',
   Create_Announcement: '공지사항',
@@ -96,6 +94,11 @@ export const m = {
 
   // PruneTestCase
   Test_Case_Prune_Test_Case: '精簡測資',
+  PruneTestCase_Tooltip_Content: 'These test cases are not owned by any problem, you can clean them safely.',
+  PruneTestCase_Last_Modified: 'Last Modified',
+  PruneTestCase_Test_Case_ID: 'Test Case ID',
+  PruneTestCase_Last_Option: 'Option',
+  PruneTestCase_Delete_All: 'Delete All',
 
   // Problem.vue
   Display_ID: '顯示 ID',
@@ -154,10 +157,6 @@ export const m = {
   Contest_List_End_Time: '종료일',
   Contest_List_Create_Time: '생성일',
   Contest_List_Creator: '생성자',
-  Contest_List_Icon_Edit: '수정',
-  Contest_List_Icon_Problem: '문제',
-  Contest_List_Icon_Announcement: '공지사항',
-  Contest_List_Icon_Download: '제출된 코드 다운로드',
   Contest_List_DownloadModal_Title: 'Download Contest Submissions',
   Contest_List_DownloadModal_Exclude: '관리자 제출 제외',
   Contest_List_DownloadModal_Execute: '확인',
@@ -194,5 +193,16 @@ export const m = {
   Welcome_to_Login: '欢迎登录 OnlineJudge 后台管理系统',
   GO: '登录',
   username: '用户名',
-  password: '密码'
+  password: '密码',
+
+  // Modal
+  Modal_Confirm: 'Confirm',
+  Modal_Cancel: 'Cancel',
+
+  // Icon
+  Icon_Edit: 'Edit',
+  Icon_Delete: 'Delete',
+  Icon_Problem: 'Problem',
+  Icon_Announcement: 'Announcement',
+  Icon_Download: 'Download',
 }

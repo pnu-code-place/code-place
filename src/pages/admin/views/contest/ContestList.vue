@@ -73,11 +73,11 @@
           width="250"
           :label="$t('m.Contest_List_Table_Operation')">
           <div slot-scope="scope">
-            <icon-btn :name="$t('m.Contest_List_Icon_Edit')" icon="edit" @click.native="goEdit(scope.row.id)"></icon-btn>
-            <icon-btn :name="$t('m.Contest_List_Icon_Problem')" icon="list-ol" @click.native="goContestProblemList(scope.row.id)"></icon-btn>
-            <icon-btn :name="$t('m.Contest_List_Icon_Announcement')" icon="info-circle"
+            <icon-btn :name="$t('m.Icon_Edit')" icon="edit" @click.native="goEdit(scope.row.id)"></icon-btn>
+            <icon-btn :name="$t('m.Icon_Problem')" icon="list-ol" @click.native="goContestProblemList(scope.row.id)"></icon-btn>
+            <icon-btn :name="$t('m.Icon_Announcement')" icon="info-circle"
                       @click.native="goContestAnnouncement(scope.row.id)"></icon-btn>
-            <icon-btn :name="$t('m.Contest_List_Icon_Download')" icon="download"
+            <icon-btn :name="$t('m.Icon_Download')" icon="download"
                       @click.native="openDownloadOptions(scope.row.id)"></icon-btn>
           </div>
         </el-table-column>

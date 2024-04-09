@@ -43,8 +43,6 @@ export const m = {
   Announcement_Table_Author: '작성자',
   Announcement_Table_Visible: '공개',
   Announcement_Table_Option: '설정',
-  Announcement_Icon_Edit: '수정',
-  Announcement_Icon_Delete: '삭제',
   Announcement_Create: '추가',
   Edit_Announcement: '공지사항 수정',
   Create_Announcement: '공지사항',
@@ -95,6 +93,11 @@ export const m = {
 
   // PruneTestCase
   Test_Case_Prune_Test_Case: '테스트 케이스 목록',
+  PruneTestCase_Tooltip_Content: '이 테스트 케이스는 어떠한 문제에 종속되어 있지 않습니다. 자유롭게 삭제하여도 괜찮습니다.',
+  PruneTestCase_Last_Modified: '마지막 생성일',
+  PruneTestCase_Test_Case_ID: '테스트 케이스 ID',
+  PruneTestCase_Last_Option: '옵션',
+  PruneTestCase_Delete_All: '전체 삭제',
 
   // Problem.vue
   Display_ID: '문제 번호',
@@ -172,10 +175,6 @@ export const m = {
   Contest_List_End_Time: '종료일',
   Contest_List_Create_Time: '생성일',
   Contest_List_Creator: '생성자',
-  Contest_List_Icon_Edit: '수정',
-  Contest_List_Icon_Problem: '문제',
-  Contest_List_Icon_Announcement: '공지사항',
-  Contest_List_Icon_Download: '제출된 코드 다운로드',
   Contest_List_DownloadModal_Title: '대회 제출물 다운로드',
   Contest_List_DownloadModal_Exclude: '관리자 제출 제외',
   Contest_List_DownloadModal_Execute: '확인',
@@ -217,4 +216,11 @@ export const m = {
   // Modal
   Modal_Confirm: '확인',
   Modal_Cancel: '취소',
+
+  // Icon
+  Icon_Edit: '수정',
+  Icon_Delete: '삭제',
+  Icon_Problem: '문제',
+  Icon_Announcement: '공지사항',
+  Icon_Download: '다운로드',
 }

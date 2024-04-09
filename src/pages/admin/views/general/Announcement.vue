@@ -52,8 +52,8 @@
             :label="$t('m.Announcement_Table_Option')"
             width="200">
             <div slot-scope="scope">
-              <icon-btn :name="$t('m.Announcement_Icon_Edit')" icon="edit" @click.native="openAnnouncementDialog(scope.row.id)"></icon-btn>
-              <icon-btn :name="$t('m.Announcement_Icon_Delete')" icon="trash" @click.native="deleteAnnouncement(scope.row.id)"></icon-btn>
+              <icon-btn :name="$t('m.Icon_Edit')" icon="edit" @click.native="openAnnouncementDialog(scope.row.id)"></icon-btn>
+              <icon-btn :name="$t('m.Icon_Delete')" icon="trash" @click.native="deleteAnnouncement(scope.row.id)"></icon-btn>
             </div>
           </el-table-column>
         </el-table>
