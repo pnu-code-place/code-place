@@ -101,6 +101,10 @@ table:hover{
   border: 1px solid #cccccc;
 }
 
+th{
+  font-size: 1.3em;
+}
+
 th:first-child {
   text-align: center;
 }
