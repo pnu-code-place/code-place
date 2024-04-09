@@ -167,5 +167,24 @@ export const m = {
   DashBoardJudge_Server: 'Judge 伺服器',
   HTTPS_Status: 'HTTPS 狀態',
   Force_HTTPS: '強制 HTTPS',
-  CDN_HOST: 'CDN HOST'
+  CDN_HOST: 'CDN HOST',
+  Time: '시간',
+  Ip: 'IP',
+  OS: '운영체제',
+  Browser: '브라우저',
+  Total_Users: '전체 사용자 수',
+  Today_Submissions: '오늘 제출 수',
+  Recent_Contests: '최근 대회 수',
+  Release_Notes: '릴리즈 노트',
+  Release_Tooltip_Content: 'Please upgrade to the latest version to enjoy the new features.',
+  Release_Tooltip_Reference: 'Reference',
+  New_Version: 'New Version',
+  Level: 'Level',
+  Details: 'Details',
+
+  // Login.vue
+  Welcome_to_Login: '欢迎登录 OnlineJudge 后台管理系统',
+  GO: '登录',
+  username: '用户名',
+  password: '密码'
 }
