@@ -51,8 +51,6 @@ export const m = {
   Create_Announcement: '공지사항',
   Delete_Announcement: '공지사항 삭제',
   Delete_Announcement_Content: '정말로 이 공지사항을 삭제하겠습니까?',
-  Delete_Announcement_Confirm: '삭제',
-  Delete_Announcement_Cancel: '취소',
 
   // Conf.vue
   SMTP_Config: 'SMTP 設定',
@@ -85,6 +83,16 @@ export const m = {
   Service_URL: '伺服器 URL',
   Last_Heartbeat: '上一次活動訊號',
   Create_Time: '建立時間',
+  JudgeServer_Table_Status: 'Status',
+  JudgeServer_Table_Hostname: 'Hostname',
+  JudgeServer_Table_Task_Number: 'Task Number',
+  JudgeServer_Table_CPU_Core: 'CPU Core',
+  JudgeServer_Table_CPU_Usage: 'CPU Usage',
+  JudgeServer_Table_Memory_Usage: 'Memory Usages',
+  JudgeServer_Table_Disabled: 'Disabled',
+  JudgeServer_Table_Options: 'Options',
+  JudgeServer_Delete_Modal_Title: 'Warning',
+  JudgeServer_Delete_Modal_Content: 'If you delete this judge server, it can\'t be used until next heartbeat',
 
   // PruneTestCase
   Test_Case_Prune_Test_Case: '精簡測資',

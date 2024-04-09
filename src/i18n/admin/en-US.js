@@ -50,8 +50,6 @@ export const m = {
   Create_Announcement: '공지사항',
   Delete_Announcement: '공지사항 삭제',
   Delete_Announcement_Content: '정말로 이 공지사항을 삭제하겠습니까?',
-  Delete_Announcement_Confirm: '삭제',
-  Delete_Announcement_Cancel: '취소',
 
   // Conf.vue
   SMTP_Config: 'SMTP 설정',
@@ -70,7 +68,7 @@ export const m = {
   SMTP_Server_Port: 'SMTP 서버 포트',
   SMTP_Server_Email: '이메일을 보내는데 사용할 계정',
   SMTP_Server_Password: 'SMTP 서버 비밀번호',
-  SMTP_Test_Email: 'Send Test Email',
+  SMTP_Test_Email: '테스트 메일 보내기',
   Web_Config_Url: '웹사이트 기본 url',
   Web_Config_Name: '웹사이트 이름',
   Web_Config_Shortcut: '웹사이트 이름 축약어',
@@ -84,6 +82,16 @@ export const m = {
   Service_URL: '서버스 URL',
   Last_Heartbeat: '마지막 통신',
   Create_Time: '생성일',
+  JudgeServer_Table_Status: '상태',
+  JudgeServer_Table_Hostname: '호스트 이름',
+  JudgeServer_Table_Task_Number: '일 순서',
+  JudgeServer_Table_CPU_Core: 'CPU 코어',
+  JudgeServer_Table_CPU_Usage: 'CPU 사용량',
+  JudgeServer_Table_Memory_Usage: '메모리 사용량',
+  JudgeServer_Table_Disabled: '비활성화',
+  JudgeServer_Table_Options: '설정',
+  JudgeServer_Delete_Modal_Title: 'Warning',
+  JudgeServer_Delete_Modal_Content: 'If you delete this judge server, it can\'t be used until next heartbeat',
 
   // PruneTestCase
   Test_Case_Prune_Test_Case: '테스트 케이스 목록',
@@ -204,5 +212,9 @@ export const m = {
   // Login.vue
   GO: '로그인',
   username: '아이디',
-  password: '비밀번호'
+  password: '비밀번호',
+
+  // Modal
+  Modal_Confirm: '확인',
+  Modal_Cancel: '취소',
 }

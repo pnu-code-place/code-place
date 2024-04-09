@@ -204,8 +204,8 @@
       // 删除公告
       deleteAnnouncement (announcementId) {
         this.$confirm(this.$t('m.Delete_Announcement_Content'), this.$t('m.Delete_Announcement'), {
-          confirmButtonText: this.$t('m.Delete_Announcement_Confirm'),
-          cancelButtonText: this.$t('m.Delete_Announcement_Cancel'),
+          confirmButtonText: this.$t('m.Modal_Confirm'),
+          cancelButtonText: this.$t('m.Modal_Cancel'),
           type: 'warning'
         }).then(() => {
           // then 为确定
