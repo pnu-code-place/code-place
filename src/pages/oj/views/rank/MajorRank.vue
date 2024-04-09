@@ -85,6 +85,7 @@ export default {
 <style scoped lang="less">
 .major-rank {
   width: 100%;
+  background-color: var(--box-background-color);
 }
 
 table {

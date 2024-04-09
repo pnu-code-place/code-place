@@ -92,6 +92,7 @@ export default {
 .recommendationBox {
   border-radius: 7px;
   border: 1px solid #dedede;
+  background-color: var(--box-background-color);
   width: 100%;
   height: 240px;
   margin-bottom: 20px;

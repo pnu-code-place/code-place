@@ -76,6 +76,7 @@ export default {
   text-align: center;
   display: flex;
 
+
   main {
     width: 83%;
     gap: 30px;

@@ -108,6 +108,7 @@ export default {
 <style scoped lang="less">
 .contents {
   width: 100%;
+  background-color: var(--box-background-color);
   .top-users {
     display: flex;
     justify-content: center;

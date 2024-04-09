@@ -78,6 +78,7 @@ export default {
   gap: 20px;
   display: flex;
   justify-content: space-between;
+  background-color: var(--box-background-color);
   border: 1px solid #dedede;
   border-radius: 7px;
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);

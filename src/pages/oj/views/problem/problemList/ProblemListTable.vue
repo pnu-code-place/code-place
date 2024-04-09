@@ -87,6 +87,7 @@ export default {
   text-align: center;
 }
 table {
+  background-color: var(--box-background-color);
   border: 1px solid #dedede;
   padding-right: 20px;
   padding-left: 20px;

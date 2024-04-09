@@ -52,6 +52,7 @@ export default {
 
 <style scoped lang="less">
 .soaring-rank {
+  background-color: var(--box-background-color);
   width: 100%;
 }
 </style>

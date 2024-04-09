@@ -49,6 +49,7 @@ table {
   width: 100%;
   border-collapse: collapse;
   margin: 20px 0;
+  background-color: var(--box-background-color);
 }
 
 .skeleton-row {

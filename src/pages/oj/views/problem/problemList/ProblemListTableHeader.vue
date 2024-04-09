@@ -134,6 +134,7 @@ export default {
     padding-bottom: 4px;
     padding-left: 15px;
     padding-right: 15px;
+    background-color: var(--box-background-color);
     border-radius: 7px;
     border: 1px solid #dedede;
   }
