@@ -6,6 +6,7 @@ import json
 import qrcode
 from django.conf import settings
 from django.contrib import auth
+from django.db.models.functions import Concat
 from django.template.loader import render_to_string
 from django.utils.decorators import method_decorator
 from django.utils.timezone import now
@@ -14,7 +15,7 @@ from otpauth import OtpAuth
 from django.core.cache import cache
 from django.http import HttpResponseBadRequest, HttpResponseNotFound, HttpResponseForbidden, HttpResponseServerError, \
     JsonResponse
-from django.db.models import F, Count, Q
+from django.db.models import F, Count, Q, Sum, Value, TextField
 from django.db import transaction
 
 from problem.models import Problem
@@ -33,7 +34,7 @@ from ..serializers import (ApplyResetPasswordSerializer, ResetPasswordSerializer
                            DashboardSubmissionSerializer,
                            DashboardDepartmentSerializer, DashboardCollegeSerializer, DashboardRankSerializer,
                            HomeRankingSerializer, DashboardUserInfoSerializer, DashboardFieldInfoSerializer,
-                           DashboardDifficultyInfoSerializer)
+                           DashboardDifficultyInfoSerializer, UserRankListSerializer, SurgeUserSerializer)
 from ..serializers import (TwoFactorAuthCodeSerializer, UserProfileSerializer,
                            EditUserProfileSerializer, ImageUploadForm)
 from ..tasks import send_email_async
@@ -545,30 +546,25 @@ class UserRankAPI(APIView):
     #     return self.success(self.paginate_data(request, profiles, RankInfoSerializer))
     def get(self, request):
 
-        #total: 201, // 전체 유저 수
-          # results: [
-          #   {
-          #     rank: 1, // 랭킹
-          #     avatar: "https://picsum.photos/200/300", // 아바타
-          #     username: "root", // 유저 이름
-          #     mood: '안녕하세요, 저는 Alice입니다. 잘 부탁드립니다.', // 인사말
-          #     score: 12000, // 현재 점수
-          #     major: "전자전기공학부", // 전공
-          #     tier: "diamond1", // 티어
-          #     solved: 150, // 푼 문제 수
-          #     growth: 3000, // 금일 점수 상승량
-          #   },
+        offset = int(request.GET.get("offset", 0))
+        limit = int(request.GET.get("limit", 10))
 
-        offset = request.GET.get("offset")
-        limit = request.GET.get("limit")
-        total_user_count = UserScore.objects.all().count()
-        # UserProfile.objects.select_related('')
+        users = User.objects.prefetch_related('userprofile', 'userscore', 'usersolved') \
+                    .order_by('-userscore__total_score')[offset:offset + limit]
 
-        # print(a)
+        total_users = User.objects.count()
 
-        return self.success(1)
+        results = []
+        for rank, user in enumerate(users, start=offset + 1):
+            serializer = UserRankListSerializer(user, context={'rank': rank})
+            results.append(serializer.data)
 
+        data = {
+            'total': total_users,
+            'results': results
+        }
 
+        return self.success(data)
 
 
 class ProfileProblemDisplayIDRefreshAPI(APIView):

@@ -103,6 +103,33 @@ class UserProfileSerializer(serializers.ModelSerializer):
     def get_real_name(self, obj):
         return obj.real_name if self.show_real_name else None
 
+class UserRankListSerializer(serializers.ModelSerializer):
+    rank = serializers.SerializerMethodField()
+    avatar = serializers.SerializerMethodField()
+    username = serializers.CharField()  # 수정
+    mood = serializers.CharField(source='userprofile.mood')  # 수정
+    score = serializers.IntegerField(source='userscore.total_score')  # 수정
+    major = serializers.CharField(source='userprofile.major')  # 수정
+    tier = serializers.CharField(source='userscore.tier')  # 수정
+    solved = serializers.SerializerMethodField()
+    growth = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ['rank', 'avatar', 'username', 'mood', 'score', 'major', 'tier', 'solved', 'growth']
+
+    def get_rank(self, obj):
+        return self.context['rank']
+
+    def get_avatar(self, obj):
+        return obj.userprofile.avatar
+
+    def get_growth(self, obj):
+        return obj.userscore.fluctuation
+
+    def get_solved(self, obj):  # 추가
+        return obj.usersolved.total_solved
+
 
 class DashboardUserInfoSerializer(serializers.ModelSerializer):
     class Meta:
