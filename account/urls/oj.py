@@ -8,7 +8,7 @@ from ..views.oj import (ApplyResetPasswordAPI, ResetPasswordAPI, GetRankingAPI,
                         UserRankAPI, CheckTFARequiredAPI, SessionManagementAPI,
                         ProfileProblemDisplayIDRefreshAPI, OpenAPIAppkeyAPI, SSOAPI,
                         ApplyUserEmailValidCheckAPI, UserEmailValidCheckAPI,
-                        GetCollegeListAPI, GetDepartmentListAPI, HomeRankingAPI, SurgeUserRankAPI)
+                        GetCollegeListAPI, GetDepartmentListAPI, HomeRankingAPI, SurgeUserRankAPI, MajorRankAPI)
 
 from utils.captcha.views import CaptchaAPIView
 
@@ -37,6 +37,7 @@ urlpatterns = [
     url(r"^two_factor_auth/?$", TwoFactorAuthAPI.as_view(), name="two_factor_auth_api"),
     url(r"^user_rank/?$", UserRankAPI.as_view(), name="user_rank_api"),
     url(r"^surge_user_rank/?$", SurgeUserRankAPI.as_view(), name="surge_user_rank_api"),
+    url(r"^major_rank/?$", MajorRankAPI.as_view(), name="major_rank_api"),
     url(r"^sessions/?$", SessionManagementAPI.as_view(), name="session_management_api"),
     url(r"^open_api_appkey/?$", OpenAPIAppkeyAPI.as_view(), name="open_api_appkey_api"),
     url(r"^sso?$", SSOAPI.as_view(), name="sso_api")

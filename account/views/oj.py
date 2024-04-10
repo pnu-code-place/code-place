@@ -588,6 +588,41 @@ class SurgeUserRankAPI(APIView):
 
         return self.success(data)
 
+class MajorRankAPI(APIView):
+    def get(self, request):
+        limit = int(request.GET.get("limit", 7))
+
+        major_ranks = Department.objects.annotate(
+            score=Sum('userprofile__user__userscore__total_score'),
+            people=Count('userprofile__user')
+        ).filter(score__isnull=False).order_by('-score')[:limit]
+
+        total_majors = major_ranks.count()
+
+        results = []
+        for rank, major in enumerate(major_ranks, start=1):
+            people_data = major.userprofile_set.select_related('user', 'user__userscore').annotate(
+                avatar_url=Concat(Value('/public/avatar/'), 'avatar', output_field=TextField()),
+                username=F('user__username'),
+                score=F('user__userscore__total_score'),
+                tier=F('user__userscore__tier')
+            ).order_by('-user__userscore__total_score').values('avatar_url', 'username', 'mood', 'score', 'tier')
+
+            data = {
+                'rank': rank,
+                'major': major.department_name,
+                'score': major.score,
+                'people': list(people_data)
+            }
+            results.append(data)
+
+        data = {
+            'total': total_majors,
+            'results': results
+        }
+
+        return self.success(data)
+
 class ProfileProblemDisplayIDRefreshAPI(APIView):
     @login_required
     def get(self, request):

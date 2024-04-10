@@ -158,6 +158,15 @@ class SurgeUserSerializer(serializers.ModelSerializer):
     def get_growth(self, obj):
         return obj.userscore.fluctuation
 
+class MajorRankListSerializer(serializers.ModelSerializer):
+    rank = serializers.IntegerField()
+    major = serializers.CharField()
+    score = serializers.IntegerField()
+    people = serializers.IntegerField()
+
+    class Meta:
+        model = Department
+        fields = ['rank', 'major', 'score', 'people']
 
 class DashboardUserInfoSerializer(serializers.ModelSerializer):
     class Meta:
