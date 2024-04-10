@@ -6,14 +6,16 @@ import json
 import qrcode
 from django.conf import settings
 from django.contrib import auth
+from django.db.models.functions import Concat
 from django.template.loader import render_to_string
 from django.utils.decorators import method_decorator
 from django.utils.timezone import now
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
 from otpauth import OtpAuth
 from django.core.cache import cache
-from django.http import HttpResponseBadRequest, HttpResponseNotFound, HttpResponseForbidden, HttpResponseServerError
-from django.db.models import F, Count, Q
+from django.http import HttpResponseBadRequest, HttpResponseNotFound, HttpResponseForbidden, HttpResponseServerError, \
+    JsonResponse
+from django.db.models import F, Count, Q, Sum, Value, TextField
 from django.db import transaction
 
 from problem.models import Problem
@@ -32,7 +34,7 @@ from ..serializers import (ApplyResetPasswordSerializer, ResetPasswordSerializer
                            DashboardSubmissionSerializer,
                            DashboardDepartmentSerializer, DashboardCollegeSerializer, DashboardRankSerializer,
                            HomeRankingSerializer, DashboardUserInfoSerializer, DashboardFieldInfoSerializer,
-                           DashboardDifficultyInfoSerializer)
+                           DashboardDifficultyInfoSerializer, UserRankListSerializer, SurgeUserSerializer)
 from ..serializers import (TwoFactorAuthCodeSerializer, UserProfileSerializer,
                            EditUserProfileSerializer, ImageUploadForm)
 from ..tasks import send_email_async
@@ -366,7 +368,6 @@ class UserRegisterAPI(APIView):
             return self.error("Register function has been disabled by admin")
 
         data = request.data
-        print(data)
         data["username"] = data["username"].lower()
         data["email"] = data["email"].lower()
 
@@ -374,14 +375,13 @@ class UserRegisterAPI(APIView):
             return self.error("username already exists")
         if User.objects.filter(email=data["email"]).exists():
             return self.error("email already exists")
-        print(data)
         college = College.objects.get(id=data['collegeId'])
         department = Department.objects.get(id=data['departmentId'])
         with transaction.atomic():
             user = User.objects.create(username=data["username"], email=data["email"])
             user.set_password(data["password"])
             user.save()
-            user_profile = UserProfile.objects.create(user=user, college=college, department=department)
+            user_profile = UserProfile.objects.create(user=user, school=college.college_name, major=department.department_name, college=college, department=department)
             user_profile.save()
             user_score = UserScore.objects.create(user=user)
             user_score.save()
@@ -533,18 +533,95 @@ class SessionManagementAPI(APIView):
 
 
 class UserRankAPI(APIView):
+    # def get(self, request):
+    #     rule_type = request.GET.get("rule")
+    #     if rule_type not in ContestRuleType.choices():
+    #         rule_type = ContestRuleType.ACM
+    #     profiles = UserProfile.objects.filter(user__admin_type=AdminType.REGULAR_USER, user__is_disabled=False) \
+    #         .select_related("user")
+    #     if rule_type == ContestRuleType.ACM:
+    #         profiles = profiles.filter(submission_number__gt=0).order_by("-accepted_number", "submission_number")
+    #     else:
+    #         profiles = profiles.filter(total_score__gt=0).order_by("-total_score")
+    #     return self.success(self.paginate_data(request, profiles, RankInfoSerializer))
     def get(self, request):
-        rule_type = request.GET.get("rule")
-        if rule_type not in ContestRuleType.choices():
-            rule_type = ContestRuleType.ACM
-        profiles = UserProfile.objects.filter(user__admin_type=AdminType.REGULAR_USER, user__is_disabled=False) \
-            .select_related("user")
-        if rule_type == ContestRuleType.ACM:
-            profiles = profiles.filter(submission_number__gt=0).order_by("-accepted_number", "submission_number")
-        else:
-            profiles = profiles.filter(total_score__gt=0).order_by("-total_score")
-        return self.success(self.paginate_data(request, profiles, RankInfoSerializer))
 
+        offset = int(request.GET.get("offset", 0))
+        limit = int(request.GET.get("limit", 10))
+
+        users = User.objects.prefetch_related('userprofile', 'userscore', 'usersolved') \
+                    .order_by('-userscore__total_score')[offset:offset + limit]
+
+        total_users = User.objects.count()
+
+        results = []
+        for rank, user in enumerate(users, start=offset + 1):
+            serializer = UserRankListSerializer(user, context={'rank': rank})
+            results.append(serializer.data)
+
+        data = {
+            'total': total_users,
+            'results': results
+        }
+
+        return self.success(data)
+
+class SurgeUserRankAPI(APIView):
+    def get(self, request):
+        offset = int(request.GET.get("offset", 0))
+        limit = int(request.GET.get("limit", 10))
+
+        users = User.objects.prefetch_related('userprofile', 'userscore', 'usersolved') \
+                            .order_by('-userscore__fluctuation')[offset:offset+limit]
+
+        total_users = User.objects.count()
+
+        results = []
+        for rank, user in enumerate(users, start=offset+1):
+            serializer = SurgeUserSerializer(user, context={'rank': rank})
+            results.append(serializer.data)
+
+        data = {
+            'total': total_users,
+            'results': results
+        }
+
+        return self.success(data)
+
+class MajorRankAPI(APIView):
+    def get(self, request):
+        limit = int(request.GET.get("limit", 7))
+
+        major_ranks = Department.objects.annotate(
+            score=Sum('userprofile__user__userscore__total_score'),
+            people=Count('userprofile__user')
+        ).filter(score__isnull=False).order_by('-score')[:limit]
+
+        total_majors = major_ranks.count()
+
+        results = []
+        for rank, major in enumerate(major_ranks, start=1):
+            people_data = major.userprofile_set.select_related('user', 'user__userscore').annotate(
+                avatar_url=Concat(Value('/public/avatar/'), 'avatar', output_field=TextField()),
+                username=F('user__username'),
+                score=F('user__userscore__total_score'),
+                tier=F('user__userscore__tier')
+            ).order_by('-user__userscore__total_score').values('avatar_url', 'username', 'mood', 'score', 'tier')
+
+            data = {
+                'rank': rank,
+                'major': major.department_name,
+                'score': major.score,
+                'people': list(people_data)
+            }
+            results.append(data)
+
+        data = {
+            'total': total_majors,
+            'results': results
+        }
+
+        return self.success(data)
 
 class ProfileProblemDisplayIDRefreshAPI(APIView):
     @login_required

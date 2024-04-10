@@ -227,3 +227,7 @@ class UserSolved(models.Model):
 
     class Meta:
         db_table = "user_solved"
+
+    @property
+    def total_solved(self):
+        return self.math_solved + self.implementation_solved + self.datastructure_solved + self.search_solved + self.sorting_solved

@@ -15,6 +15,6 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "oj.settings")
 
 application = get_wsgi_application()
 
-# from utils.scheduler import Scheduler
-# scheduler = Scheduler()
-# scheduler.start()
+from utils.scheduler import Scheduler
+scheduler = Scheduler()
+scheduler.start()
