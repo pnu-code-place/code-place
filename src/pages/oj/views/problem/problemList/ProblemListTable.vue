@@ -124,7 +124,9 @@ thead {
 
 tbody {
   tr {
+    font-size: 1.05em;
     td:first-child {
+      font-size: 1.2em;
       text-align: center;
       font-weight: bold;
     }
