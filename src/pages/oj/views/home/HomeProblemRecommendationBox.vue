@@ -4,7 +4,7 @@
       <span @click="handleRoute('problem')">이번 주 보너스 문제</span>
       <div class="plusDiv">
         <Icon type="ios-information" size="13" color="#7a7a7a"></Icon>
-        <span class="plusSpan">주마다 보너스 점수가 있는 문제를 추천해드려요!</span>
+        <span class="plusSpan">주마다 보너스 점수(x2)가 있는 문제를 추천해드려요!</span>
       </div>
     </header>
     <div class="problemRecommendationBoxBody">

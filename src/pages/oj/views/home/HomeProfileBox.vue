@@ -98,7 +98,7 @@ export default {
 
 <style scoped lang="less">
 .profileBox {
-  background-color: #ffffff;
+  background-color: var(--box-background-color);
   border-radius: 7px;
   border: 1px solid #dedede;
   width: 100%;
@@ -189,7 +189,8 @@ export default {
 
   .authenticatedFooter {
     display: flex;
-    background-color: #FBFBFB;
+    background-color: rgba(208, 223, 248, 0.18);
+    border-radius: 5px;
     justify-content: space-around;
     align-items: center;
     height: 35px;
