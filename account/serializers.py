@@ -131,6 +131,34 @@ class UserRankListSerializer(serializers.ModelSerializer):
         return obj.usersolved.total_solved
 
 
+class SurgeUserSerializer(serializers.ModelSerializer):
+    rank = serializers.SerializerMethodField()
+    avatar = serializers.SerializerMethodField()
+    username = serializers.CharField()
+    mood = serializers.CharField(source='userprofile.mood')
+    score = serializers.IntegerField(source='userscore.total_score')
+    major = serializers.CharField(source='userprofile.major')
+    tier = serializers.CharField(source='userscore.tier')
+    solved = serializers.SerializerMethodField()
+    growth = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ['rank', 'avatar', 'username', 'mood', 'score', 'major', 'tier', 'solved', 'growth']
+
+    def get_rank(self, obj):
+        return self.context['rank']
+
+    def get_avatar(self, obj):
+        return obj.userprofile.avatar
+
+    def get_solved(self, obj):
+        return obj.usersolved.total_solved
+
+    def get_growth(self, obj):
+        return obj.userscore.fluctuation
+
+
 class DashboardUserInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = User

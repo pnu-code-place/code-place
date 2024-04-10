@@ -566,6 +566,27 @@ class UserRankAPI(APIView):
 
         return self.success(data)
 
+class SurgeUserRankAPI(APIView):
+    def get(self, request):
+        offset = int(request.GET.get("offset", 0))
+        limit = int(request.GET.get("limit", 10))
+
+        users = User.objects.prefetch_related('userprofile', 'userscore', 'usersolved') \
+                            .order_by('-userscore__fluctuation')[offset:offset+limit]
+
+        total_users = User.objects.count()
+
+        results = []
+        for rank, user in enumerate(users, start=offset+1):
+            serializer = SurgeUserSerializer(user, context={'rank': rank})
+            results.append(serializer.data)
+
+        data = {
+            'total': total_users,
+            'results': results
+        }
+
+        return self.success(data)
 
 class ProfileProblemDisplayIDRefreshAPI(APIView):
     @login_required
