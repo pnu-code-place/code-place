@@ -14,8 +14,6 @@ export default {
   name: 'CustomDropdown',
   data() {
     return {
-      selected: this.defaultValue,
-      defaultValue: this.defaultValue
     }
   },
 
@@ -39,6 +37,8 @@ export default {
     valueKey: { // valueKey는 options의 실제 값이 저장된 key값을 지정 value값은 emit을 통해 부모 컴포넌트로 전달
       type: String,
       default: 'id'
+    },
+    selected: {
     }
   },
   mounted() {
@@ -61,9 +61,9 @@ export default {
 
 <template>
   <select v-model=selected class="p-dropdown"
-          :class="this.selected === -1 && this.defaultText !== '' ? 'disabled' : '' ">
-    <option v-if="this.defaultValue === -1 && this.defaultText !== ''" :value="-1" disabled class="disabled">
-      {{ this.defaultText }}
+          :class="selected === -1 && defaultText !== '' ? 'disabled' : '' ">
+    <option v-if="defaultValue === -1 && defaultText !== ''" :value="-1" disabled class="disabled">
+      {{ defaultText }}
     </option>
     <option v-for="item in options" :key="item[valueKey]" :value="item[valueKey]">{{ item[nameKey] }}</option>
   </select>
