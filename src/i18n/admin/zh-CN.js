@@ -178,6 +178,8 @@ export const m = {
   AddProblem_Table_DisplayId: 'Display ID',
   AddProblem_Table_Title: 'Title',
   AddProblem_Table_Option: 'Option',
+  AddProblem_Modal_Title: 'confirm',
+  AddProblem_Modal_Content: 'Please input display id for the contest problem',
 
   // Contest.vue
   CreateContent: '대회 생성',

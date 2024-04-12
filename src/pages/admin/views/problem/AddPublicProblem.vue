@@ -2,26 +2,26 @@
   <div>
     <el-input
       v-model="keyword"
-      placeholder="Keywords"
+      :placeholder="$t('m.Search_Keywords')"
       prefix-icon="el-icon-search">
     </el-input>
     <el-table :data="problems" v-loading="loading">
       <el-table-column
-        label="ID"
+        :label="$t('m.AddProblem_Table_ID')"
         width="100"
         prop="id">
       </el-table-column>
       <el-table-column
-        label="문제 번호"
+        :label="$t('m.AddProblem_Table_DisplayId')"
         width="200"
         prop="_id">
       </el-table-column>
       <el-table-column
-        label="Title"
+        :label="$t('m.AddProblem_Table_Title')"
         prop="title">
       </el-table-column>
       <el-table-column
-        label="option"
+        :label="$t('m.AddProblem_Table_Option')"
         align="center"
         width="100"
         fixed="right">
@@ -82,7 +82,7 @@
         })
       },
       handleAddProblem (problemID) {
-        this.$prompt('Please input display id for the contest problem', 'confirm').then(({value}) => {
+        this.$prompt(this.$t('m.AddProblem_Modal_Content'), this.$t('m.AddProblem_Modal_Title')).then(({value}) => {
           let data = {
             problem_id: problemID,
             contest_id: this.contestID,

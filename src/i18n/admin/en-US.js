@@ -175,9 +175,11 @@ export const m = {
 
   // AddPublicProblem.vue
   AddProblem_Table_ID: 'ID',
-  AddProblem_Table_DisplayId: 'Display ID',
-  AddProblem_Table_Title: 'Title',
-  AddProblem_Table_Option: 'Option',
+  AddProblem_Table_DisplayId: '문제 번호',
+  AddProblem_Table_Title: '제목',
+  AddProblem_Table_Option: '옵션',
+  AddProblem_Modal_Title: '확인',
+  AddProblem_Modal_Content: '추가하려는 문제 번호를 기입해주세요.',
 
   // Contest.vue
   CreateContent: '대회 생성',
@@ -260,5 +262,5 @@ export const m = {
   Button_Generate_Export: '생성 & 내보내기',
 
   // Search
-  Search_Keywords: 'Keywords',
+  Search_Keywords: '검색어',
 }
