@@ -176,10 +176,21 @@ export const m = {
   // AddPublicProblem.vue
   AddProblem_Table_ID: 'ID',
   AddProblem_Table_DisplayId: '문제 번호',
-  AddProblem_Table_Title: '제목',
+  AddProblem_Table_Title: '문제명',
   AddProblem_Table_Option: '옵션',
   AddProblem_Modal_Title: '확인',
   AddProblem_Modal_Content: '추가하려는 문제 번호를 기입해주세요.',
+
+  // ImportAndExport.vue
+  ImportAndExport_Title: '문제 다운로드 (beta)',
+  ImportAndExport_ID: 'ID',
+  ImportAndExport_Display_ID: '문제 번호',
+  ImportAndExport_Title: '문제명',
+  ImportAndExport_Author: '작성자',
+  ImportAndExport_Create_Time: '생성일',
+  ImportAndExport_Export: '다운로드',
+  ImportAndExport_Import_Problems: '문제 가져오기 (beta)',
+  ImportAndExport_Import_FPS: 'FPS 문제 가져오기 (beta)',
 
   // Contest.vue
   CreateContent: '대회 생성',
@@ -260,6 +271,7 @@ export const m = {
   Button_Import_All: '모두 가져오기',
   Button_Reset_Data: '데이터 리셋',
   Button_Generate_Export: '생성 & 내보내기',
+  Button_Upload: '업로드',
 
   // Search
   Search_Keywords: '검색어',

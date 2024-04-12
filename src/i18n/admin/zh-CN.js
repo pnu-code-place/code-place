@@ -181,6 +181,17 @@ export const m = {
   AddProblem_Modal_Title: 'confirm',
   AddProblem_Modal_Content: 'Please input display id for the contest problem',
 
+  // ImportAndExport.vue
+  ImportAndExport_Title: 'Export Problems (beta)',
+  ImportAndExport_ID: 'ID',
+  ImportAndExport_Display_ID: 'DisplayId',
+  ImportAndExport_Title: 'Title',
+  ImportAndExport_Author: 'Author',
+  ImportAndExport_Create_Time: 'Create Time',
+  ImportAndExport_Export: 'Export',
+  ImportAndExport_Import_Problems: 'Import Problems (beta)',
+  ImportAndExport_Import_FPS: 'Import FPS Problems (beta)',
+
   // Contest.vue
   CreateContent: '대회 생성',
   ContestTitle: '标题',
@@ -260,6 +271,7 @@ export const m = {
   Button_Import_All: 'Import All',
   Button_Reset_Data: 'Reset Data',
   Button_Generate_Export: 'Generate & Export',
+  Button_Upload: 'Upload',
 
   // Search
   Search_Keywords: 'Keywords',
