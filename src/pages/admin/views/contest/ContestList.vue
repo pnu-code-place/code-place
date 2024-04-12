@@ -1,6 +1,6 @@
 <template>
   <div class="view">
-    <Panel title="Contest List">
+    <Panel :title="$t('m.Contest_List_Page_Title')">
       <div slot="header">
         <el-input
           v-model="keyword"
@@ -16,50 +16,50 @@
         style="width: 100%">
         <el-table-column type="expand">
           <template slot-scope="props">
-            <p>Start Time: {{props.row.start_time | localtime }}</p>
-            <p>End Time: {{props.row.end_time | localtime }}</p>
-            <p>Create Time: {{props.row.create_time | localtime}}</p>
-            <p>Creator: {{props.row.created_by.username}}</p>
+            <p>{{$t('m.Contest_List_Start_Time')}}: {{props.row.start_time | localtime }}</p>
+            <p>{{$t('m.Contest_List_End_Time')}}: {{props.row.end_time | localtime }}</p>
+            <p>{{$t('m.Contest_List_Create_Time')}}: {{props.row.create_time | localtime}}</p>
+            <p>{{$t('m.Contest_List_Creator')}}: {{props.row.created_by.username}}</p>
           </template>
         </el-table-column>
         <el-table-column
           prop="id"
           width="80"
-          label="ID">
+          :label="$t('m.Contest_List_Table_Id')">
         </el-table-column>
         <el-table-column
           prop="title"
-          label="Title">
+          :label="$t('m.Contest_List_Table_Title')">
         </el-table-column>
         <el-table-column
-          label="Rule Type"
+          :label="$t('m.Contest_List_Table_Rule_Type')"
           width="130">
           <template slot-scope="scope">
             <el-tag type="gray">{{scope.row.rule_type}}</el-tag>
           </template>
         </el-table-column>
         <el-table-column
-          label="Contest Type"
+          :label="$t('m.Contest_List_Table_Contest_Type')"
           width="180">
           <template slot-scope="scope">
             <el-tag :type="scope.row.contest_type === 'Public' ? 'success' : 'primary'">
-              {{ scope.row.contest_type}}
+              {{scope.row.contest_type}}
             </el-tag>
           </template>
         </el-table-column>
         <el-table-column
-          label="Status"
-          width="130">
+          width="130"
+          :label="$t('m.Contest_List_Table_Status')">
           <template slot-scope="scope">
             <el-tag
               :type="scope.row.status === '-1' ? 'danger' : scope.row.status === '0' ? 'success' : 'primary'">
-              {{ scope.row.status | contestStatus}}
+              {{scope.row.status | contestStatus}}
             </el-tag>
           </template>
         </el-table-column>
         <el-table-column
           width="100"
-          label="Visible">
+          :label="$t('m.Contest_List_Table_Visible')">
           <template slot-scope="scope">
             <el-switch v-model="scope.row.visible"
                        active-text=""
@@ -71,13 +71,13 @@
         <el-table-column
           fixed="right"
           width="250"
-          label="Operation">
+          :label="$t('m.Contest_List_Table_Operation')">
           <div slot-scope="scope">
-            <icon-btn name="Edit" icon="edit" @click.native="goEdit(scope.row.id)"></icon-btn>
-            <icon-btn name="Problem" icon="list-ol" @click.native="goContestProblemList(scope.row.id)"></icon-btn>
-            <icon-btn name="Announcement" icon="info-circle"
+            <icon-btn :name="$t('m.Icon_Edit')" icon="edit" @click.native="goEdit(scope.row.id)"></icon-btn>
+            <icon-btn :name="$t('m.Icon_Problem')" icon="list-ol" @click.native="goContestProblemList(scope.row.id)"></icon-btn>
+            <icon-btn :name="$t('m.Icon_Announcement')" icon="info-circle"
                       @click.native="goContestAnnouncement(scope.row.id)"></icon-btn>
-            <icon-btn icon="download" name="Download Accepted Submissions"
+            <icon-btn :name="$t('m.Icon_Download')" icon="download"
                       @click.native="openDownloadOptions(scope.row.id)"></icon-btn>
           </div>
         </el-table-column>
@@ -92,12 +92,12 @@
         </el-pagination>
       </div>
     </Panel>
-    <el-dialog title="Download Contest Submissions"
+    <el-dialog :title="$t('m.Contest_List_DownloadModal_Title')"
                width="30%"
                :visible.sync="downloadDialogVisible">
-      <el-switch v-model="excludeAdmin" active-text="Exclude admin submissions"></el-switch>
+      <el-switch v-model="excludeAdmin" :active-text="$t('m.Contest_List_DownloadModal_Exclude')"></el-switch>
       <span slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="downloadSubmissions">确 定</el-button>
+        <el-button type="primary" @click="downloadSubmissions">{{$t('m.Contest_List_DownloadModal_Execute')}}</el-button>
       </span>
     </el-dialog>
   </div>
@@ -132,7 +132,6 @@
       }
     },
     methods: {
-      // 切换页码回调
       currentChange (page) {
         this.currentPage = page
         this.getContestList(page)

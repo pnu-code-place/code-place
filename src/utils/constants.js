@@ -1,3 +1,5 @@
+import i18n from '@/i18n'
+
 export const JUDGE_STATUS = {
   '-2': {
     name: 'Compile Error',
@@ -78,15 +80,15 @@ export const CONTEST_STATUS = {
 
 export const CONTEST_STATUS_REVERSE = {
   '1': {
-    name: 'Not Started',
+    name: i18n.t('m.Contest_Status_Not_Started'),
     color: 'yellow'
   },
   '0': {
-    name: 'Underway',
+    name: i18n.t('m.Contest_Status_Underway'),
     color: 'green'
   },
   '-1': {
-    name: 'Ended',
+    name: i18n.t('m.Contest_Status_Ended'),
     color: 'red'
   }
 }

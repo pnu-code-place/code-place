@@ -3,27 +3,27 @@
     <panel>
       <span slot="title">{{$t('m.Test_Case_Prune_Test_Case')}}
         <el-popover placement="right" trigger="hover">
-          These test cases are not owned by any problem, you can clean them safely.
+          {{$t('m.PruneTestCase_Tooltip_Content')}}
           <i slot="reference" class="el-icon-fa-question-circle import-user-icon"></i>
         </el-popover>
       </span>
       <el-table :data="data">
         <el-table-column
-          label="Last Modified">
+        :label="$t('m.PruneTestCase_Last_Modified')">
           <template slot-scope="{row}">
             {{row.create_time | timestampFormat }}
           </template>
         </el-table-column>
         <el-table-column
           prop="id"
-          label="Test Case ID">
+          :label="$t('m.PruneTestCase_Test_Case_ID')">
         </el-table-column>
         <el-table-column
-          label="Option"
+          :label="$t('m.PruneTestCase_Last_Option')"
           fixed="right"
           width="200">
           <template slot-scope="{row}">
-            <icon-btn name="Delete" icon="trash" @click.native="deleteTestCase(row.id)"></icon-btn>
+            <icon-btn :name="$t('m.Icon_Delete')" icon="trash" @click.native="deleteTestCase(row.id)"></icon-btn>
           </template>
         </el-table-column>
       </el-table>
@@ -31,7 +31,7 @@
         <el-button type="warning" size="small"
                    :loading="loading"
                    icon="el-icon-fa-trash"
-                   @click="deleteTestCase()">Delete All
+                   @click="deleteTestCase()">{{$t('m.PruneTestCase_Delete_All')}}
         </el-button>
       </div>
     </panel>

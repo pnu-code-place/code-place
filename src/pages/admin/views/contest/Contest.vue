@@ -1,6 +1,6 @@
 <template>
   <div class="view">
-    <Panel :title="title">
+    <Panel :title="$t('m.CreateContent')">
       <el-form label-position="top">
         <el-row :gutter="20">
           <el-col :span="24">

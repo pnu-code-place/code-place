@@ -6,7 +6,7 @@
           <el-col :span="8">
             <el-button v-show="selectedUsers.length"
                        type="warning" icon="el-icon-fa-trash"
-                       @click="deleteUsers(selectedUserIDs)">Delete
+                       @click="deleteUsers(selectedUserIDs)">{{$t('m.Icon_Delete')}}
             </el-button>
           </el-col>
           <el-col :span="selectedUsers.length ? 16: 24">
@@ -23,36 +23,36 @@
         style="width: 100%">
         <el-table-column type="selection" width="55"></el-table-column>
 
-        <el-table-column prop="id" label="ID"></el-table-column>
+        <el-table-column prop="id" :label="$t('m.User_Table_ID')"></el-table-column>
 
-        <el-table-column prop="username" label="Username"></el-table-column>
+        <el-table-column prop="username" :label="$t('m.User_Table_Username')"></el-table-column>
 
-        <el-table-column prop="create_time" label="Create Time">
+        <el-table-column prop="create_time" :label="$t('m.User_Table_Create_Time')">
           <template slot-scope="scope">
             {{scope.row.create_time | localtime }}
           </template>
         </el-table-column>
 
-        <el-table-column prop="last_login" label="Last Login">
+        <el-table-column prop="last_login" :label="$t('m.User_Table_Last_Login')">
           <template slot-scope="scope">
             {{scope.row.last_login | localtime }}
           </template>
         </el-table-column>
 
-        <el-table-column prop="real_name" label="Real Name"></el-table-column>
+        <el-table-column prop="real_name" :label="$t('m.User_Table_Real_Name')"></el-table-column>
 
-        <el-table-column prop="email" label="Email"></el-table-column>
+        <el-table-column prop="email" :label="$t('m.User_Table_Email')"></el-table-column>
 
-        <el-table-column prop="admin_type" label="User Type">
+        <el-table-column prop="admin_type" :label="$t('m.User_Table_User_Type')">
           <template slot-scope="scope">
             {{ scope.row.admin_type }}
           </template>
         </el-table-column>
 
-        <el-table-column fixed="right" label="Option" width="200">
+        <el-table-column fixed="right" :label="$t('m.User_Table_Option')" width="200">
           <template slot-scope="{row}">
-            <icon-btn name="Edit" icon="edit" @click.native="openUserDialog(row.id)"></icon-btn>
-            <icon-btn name="Delete" icon="trash" @click.native="deleteUsers([row.id])"></icon-btn>
+            <icon-btn :name="$t('m.Icon_Edit')" icon="edit" @click.native="openUserDialog(row.id)"></icon-btn>
+            <icon-btn :name="$t('m.Icon_Delete')" icon="trash" @click.native="deleteUsers([row.id])"></icon-btn>
           </template>
         </el-table-column>
       </el-table>
@@ -70,9 +70,11 @@
     <Panel>
       <span slot="title">{{$t('m.Import_User')}}
         <el-popover placement="right" trigger="hover">
-          <p>Only support csv file without headers, check the <a
-            href="http://docs.onlinejudge.me/#/onlinejudge/guide/import_users">link</a> for details</p>
           <i slot="reference" class="el-icon-fa-question-circle import-user-icon"></i>
+          <p>{{$t('m.User_Import_Tooltip_Content')}}</p>
+          <p>{{$t('m.User_Import_Tooltip_Reference')}}: <a href="http://docs.onlinejudge.me/#/onlinejudge/guide/import_users" target="_blank">
+            http://docs.onlinejudge.me/#/onlinejudge/guide/import_users</a>
+          </p>
         </el-popover>
       </span>
       <el-upload v-if="!uploadUsers.length"
@@ -80,26 +82,26 @@
                  :show-file-list="false"
                  accept=".csv"
                  :before-upload="handleUsersCSV">
-        <el-button size="small" icon="el-icon-fa-upload" type="primary">Choose File</el-button>
+        <el-button size="small" icon="el-icon-fa-upload" type="primary">{{$t('m.Button_Choose_File')}}</el-button>
       </el-upload>
       <template v-else>
         <el-table :data="uploadUsersPage">
-          <el-table-column label="Username">
+          <el-table-column :label="$t('m.Import_User_Table_Username')">
             <template slot-scope="{row}">
               {{row[0]}}
             </template>
           </el-table-column>
-          <el-table-column label="Password">
+          <el-table-column :label="$t('m.Import_User_Table_Password')">
             <template slot-scope="{row}">
               {{row[1]}}
             </template>
           </el-table-column>
-          <el-table-column label="Email">
+          <el-table-column :label="$t('m.Import_User_Table_Email')">
             <template slot-scope="{row}">
               {{row[2]}}
             </template>
           </el-table-column>
-          <el-table-column label="RealName">
+          <el-table-column :label="$t('m.Import_User_Table_RealName')">
             <template slot-scope="{row}">
               {{row[3]}}
             </template>
@@ -108,11 +110,11 @@
         <div class="panel-options">
           <el-button type="primary" size="small"
                      icon="el-icon-fa-upload"
-                     @click="handleUsersUpload">Import All
+                     @click="handleUsersUpload">{{$t('m.Button_Import_All')}}
           </el-button>
           <el-button type="warning" size="small"
                      icon="el-icon-fa-undo"
-                     @click="handleResetData">Reset Data
+                     @click="handleResetData">{{$t('m.Button_Reset_Data')}}
           </el-button>
           <el-pagination
             class="page"
@@ -129,27 +131,27 @@
       <el-form :model="formGenerateUser" ref="formGenerateUser">
         <el-row type="flex" justify="space-between">
           <el-col :span="4">
-            <el-form-item label="Prefix" prop="prefix">
-              <el-input v-model="formGenerateUser.prefix" placeholder="Prefix"></el-input>
+            <el-form-item :label="$t('m.Create_User_Table_Prefix')" prop="prefix">
+              <el-input v-model="formGenerateUser.prefix" :placeholder="$t('m.Create_User_Table_Prefix')"></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="4">
-            <el-form-item label="Suffix" prop="suffix">
-              <el-input v-model="formGenerateUser.suffix" placeholder="Suffix"></el-input>
+            <el-form-item :label="$t('m.Create_User_Table_Suffix')" prop="suffix">
+              <el-input v-model="formGenerateUser.suffix" :placeholder="$t('m.Create_User_Table_Suffix')"></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="4">
-            <el-form-item label="Start Number" prop="number_from" required>
+            <el-form-item :label="$t('m.Create_User_Table_Start_Number')" prop="number_from" required>
               <el-input-number v-model="formGenerateUser.number_from" style="width: 100%"></el-input-number>
             </el-form-item>
           </el-col>
           <el-col :span="4">
-            <el-form-item label="End Number" prop="number_to" required>
+            <el-form-item :label="$t('m.Create_User_Table_End_Number')" prop="number_to" required>
               <el-input-number v-model="formGenerateUser.number_to" style="width: 100%"></el-input-number>
             </el-form-item>
           </el-col>
           <el-col :span="4">
-            <el-form-item label="Password Length" prop="password_length" required>
+            <el-form-item :label="$t('m.Create_User_Table_Password_Length')" prop="password_length" required>
               <el-input v-model="formGenerateUser.password_length"
                         placeholder="Password Length"></el-input>
             </el-form-item>
@@ -157,11 +159,11 @@
         </el-row>
 
         <el-form-item>
-          <el-button type="primary" @click="generateUser" icon="el-icon-fa-users" :loading="loadingGenerate">Generate & Export
+          <el-button type="primary" @click="generateUser" icon="el-icon-fa-users" :loading="loadingGenerate">{{$t('m.Button_Generate_Export')}}
           </el-button>
           <span class="userPreview" v-if="formGenerateUser.number_from && formGenerateUser.number_to &&
                                           formGenerateUser.number_from <= formGenerateUser.number_to">
-            The usernames will be {{formGenerateUser.prefix + formGenerateUser.number_from + formGenerateUser.suffix}},
+            {{$t('m.Create_User_Annotation')}} {{formGenerateUser.prefix + formGenerateUser.number_from + formGenerateUser.suffix}},
             <span v-if="formGenerateUser.number_from + 1 < formGenerateUser.number_to">
               {{formGenerateUser.prefix + (formGenerateUser.number_from + 1) + formGenerateUser.suffix + '...'}}
             </span>
@@ -172,7 +174,6 @@
         </el-form-item>
       </el-form>
     </Panel>
-    <!--对话框-->
     <el-dialog :title="$t('m.User_Info')" :visible.sync="showUserDialog" :close-on-click-modal="false">
       <el-form :model="user" label-width="120px" label-position="left">
         <el-row :gutter="20">
@@ -259,25 +260,18 @@
     name: 'User',
     data () {
       return {
-        // 一页显示的用户数
         pageSize: 10,
-        // 用户总数
         total: 0,
-        // 用户列表
         userList: [],
         uploadUsers: [],
         uploadUsersPage: [],
         uploadUsersCurrentPage: 1,
         uploadUsersPageSize: 15,
-        // 搜索关键字
         keyword: '',
-        // 是否显示用户对话框
         showUserDialog: false,
-        // 当前用户model
         user: {},
         loadingTable: false,
         loadingGenerate: false,
-        // 当前页码
         currentPage: 0,
         selectedUsers: [],
         formGenerateUser: {
@@ -293,22 +287,18 @@
       this.getUserList(1)
     },
     methods: {
-      // 切换页码回调
       currentChange (page) {
         this.currentPage = page
         this.getUserList(page)
       },
-      // 提交修改用户的信息
       saveUser () {
         api.editUser(this.user).then(res => {
-          // 更新列表
           this.getUserList(this.currentPage)
         }).then(() => {
           this.showUserDialog = false
         }).catch(() => {
         })
       },
-      // 打开用户对话框
       openUserDialog (id) {
         this.showUserDialog = true
         api.getUser(id).then(res => {
@@ -317,7 +307,6 @@
           this.user.real_tfa = this.user.two_factor_auth
         })
       },
-      // 获取用户列表
       getUserList (page) {
         this.loadingTable = true
         api.getUserList((page - 1) * this.pageSize, this.pageSize, this.keyword).then(res => {
@@ -329,7 +318,7 @@
         })
       },
       deleteUsers (ids) {
-        this.$confirm('Sure to delete the user? The associated resources created by this user will be deleted as well, like problem, contest, announcement, etc.', 'confirm', {
+        this.$confirm(this.$t('m.Delete_User_Modal_Content'), this.$t('m.Delete_User_Modal_Title'), {
           type: 'warning'
         }).then(() => {
           api.deleteUsers(ids.join(',')).then(res => {
@@ -355,7 +344,7 @@
             this.loadingGenerate = false
             let url = '/admin/generate_user?file_id=' + res.data.data.file_id
             utils.downloadFile(url).then(() => {
-              this.$alert('All users created successfully, the users sheets have downloaded to your disk.', 'Notice')
+              this.$alert(this.$t('m.Create_User_Modal_Content'), this.$t('m.Create_User_Modal_Title'))
             })
             this.getUserList(1)
           }).catch(() => {

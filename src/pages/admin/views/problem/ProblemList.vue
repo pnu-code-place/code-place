@@ -18,22 +18,11 @@
         <el-table-column
           width="100"
           prop="id"
-          label="ID">
+          :label="$t('m.ProblemList_ID')">
         </el-table-column>
-<!--        <el-table-column-->
-<!--          width="150"-->
-<!--          label="Display ID">-->
-<!--          <template slot-scope="{row}">-->
-<!--            <span v-show="!row.isEditing">{{row._id}}</span>-->
-<!--            <el-input v-show="row.isEditing" v-model="row._id"-->
-<!--                      @keyup.enter.native="handleInlineEdit(row)">-->
-
-<!--            </el-input>-->
-<!--          </template>-->
-<!--        </el-table-column>-->
         <el-table-column
           prop="title"
-          label="Title">
+          :label="$t('m.ProblemList_Title')">
           <template slot-scope="{row}">
             <span v-show="!row.isEditing">{{row.title}}</span>
             <el-input v-show="row.isEditing" v-model="row.title"
@@ -43,12 +32,12 @@
         </el-table-column>
         <el-table-column
           prop="created_by.username"
-          label="Author">
+          :label="$t('m.ProblemList_Author')">
         </el-table-column>
         <el-table-column
           width="250"
           prop="create_time"
-          label="Create Time">
+          :label="$t('m.ProblemList_Create_Time')">
           <template slot-scope="scope">
             {{scope.row.create_time | localtime }}
           </template>
@@ -56,7 +45,7 @@
         <el-table-column
           width="150"
           prop="visible"
-          label="Visible">
+          :label="$t('m.ProblemList_Visible')">
           <template slot-scope="scope">
             <el-switch v-model="scope.row.visible"
                        active-text=""
@@ -67,26 +56,26 @@
         </el-table-column>
         <el-table-column
           fixed="right"
-          label="Operation"
-          width="250">
+          width="250"
+          :label="$t('m.ProblemList_Operation')">
           <div slot-scope="scope">
-            <icon-btn name="Edit" icon="edit" @click.native="goEdit(scope.row.id)"></icon-btn>
-            <icon-btn v-if="contestId" name="Make Public" icon="clone"
+            <icon-btn  :name="$t('m.Icon_Edit')" icon="edit" @click.native="goEdit(scope.row.id)"></icon-btn>
+            <icon-btn v-if="contestId" :name="$t('m.Icon_Make_Public')" icon="clone"
                       @click.native="makeContestProblemPublic(scope.row.id)"></icon-btn>
-            <icon-btn icon="download" name="Download TestCase"
+            <icon-btn icon="download" :name="$t('m.Icon_Download_TestCase')"
                       @click.native="downloadTestCase(scope.row.id)"></icon-btn>
-            <icon-btn icon="trash" name="Delete Problem"
+            <icon-btn icon="trash" :name="$t('m.Icon_Delete')"
                       @click.native="deleteProblem(scope.row.id)"></icon-btn>
           </div>
         </el-table-column>
       </el-table>
       <div class="panel-options">
         <el-button type="primary" size="small"
-                   @click="goCreateProblem" icon="el-icon-plus">Create
+                   @click="goCreateProblem" icon="el-icon-plus">{{$t('m.Button_Create')}}
         </el-button>
         <el-button v-if="contestId" type="primary"
                    size="small" icon="el-icon-plus"
-                   @click="addProblemDialogVisible = true">Add From Public Problem
+                   @click="addProblemDialogVisible = true">{{$t('m.Button_Add_Public_Problem')}}
         </el-button>
         <el-pagination
           class="page"
@@ -97,13 +86,13 @@
         </el-pagination>
       </div>
     </Panel>
-    <el-dialog title="Sure to update the problem? "
+    <el-dialog :title="$t('m.ProblemList_Update_Title')"
                width="20%"
                :visible.sync="InlineEditDialogVisible"
                @close-on-click-modal="false">
       <div>
-        <p>DisplayID: {{currentRow._id}}</p>
-        <p>Title: {{currentRow.title}}</p>
+        <p>{{$t('m.Display_ID')}}: {{currentRow.id}}</p>
+        <p>{{$t('m.ProblemList_Title')}}: {{currentRow.title}}</p>
       </div>
       <span slot="footer">
         <cancel @click.native="InlineEditDialogVisible = false; getProblemList(currentPage)"></cancel>
@@ -197,7 +186,7 @@
         })
       },
       deleteProblem (id) {
-        this.$confirm('Sure to delete this problem? The associated submissions will be deleted as well.', 'Delete Problem', {
+        this.$confirm(this.$t('m.ProblemList_Delete_Problem_Content'), this.$t('m.ProblemList_Delete_Problem_Title'), {
           type: 'warning'
         }).then(() => {
           let funcName = this.routeName === 'problem-list' ? 'deleteProblem' : 'deleteContestProblem'
@@ -209,7 +198,7 @@
         })
       },
       makeContestProblemPublic (problemID) {
-        this.$prompt('Please input display id for the public problem', 'confirm').then(({value}) => {
+        this.$prompt(this.$t('m.ProblemList_Visible_Problem_Content'), this.$t('m.ProblemList_Visible_Problem_Title')).then(({value}) => {
           api.makeContestProblemPublic({id: problemID, display_id: value}).catch()
         }, () => {
         })
