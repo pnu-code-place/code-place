@@ -3,9 +3,7 @@
     <ul class="nav-content">
       <router-link :to="{name:'user-dashboard', params: {username:username}}">{{ $t('m.OJ_Status') }}</router-link>
       <router-link :to="{name:'user-problems', params: {username:username}}">{{ $t('m.Problem_Status') }}</router-link>
-      <router-link :to="{name:'user-community', params: {username:username}}" :disabled="true" class="disabled">
-        {{ $t('m.Community') }}
-      </router-link>
+      <router-link :to="{name:'user-community', params: {username:username}}" :disabled="true" class="disabled">{{ $t('m.Community') }}</router-link>
     </ul>
   </nav>
 </template>
@@ -26,11 +24,6 @@ export default {
       }
 
       return username;
-    }
-  },
-  methods: {
-    logUsername() {
-      console.log(this.username)
     }
   }
 }
