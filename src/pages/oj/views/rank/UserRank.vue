@@ -149,6 +149,7 @@ export default {
 
 .contents {
   width: 100%;
+  background-color: var(--box-background-color);
 
   .top-users {
     display: flex;

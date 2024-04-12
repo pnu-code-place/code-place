@@ -35,6 +35,7 @@ export default {
   width: 17%;
   height: fit-content;
   margin-right: 20px;
+  background-color: var(--box-background-color);
   border: 1px solid #dedede;
   border-radius: 7px;
   padding: 10px;

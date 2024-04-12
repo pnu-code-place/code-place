@@ -90,6 +90,7 @@ section {
   padding: 40px 40px 60px;
   gap: 15px;
   display: flex;
+  background-color: var(--box-background-color);
   flex-direction: column;
 
   hr {

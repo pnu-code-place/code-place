@@ -27,18 +27,10 @@
             </div>
           </td>
           <td class="td-third" style="font-weight: bold; font-size: 12px">{{ DIFFICULTY_MAP[problem.difficulty].value }}</td>
-          <!-- 푼 사람 수 기입해야함. 일단 난수 처리 -->
-          <td class="td-fourth">{{ Math.floor(Math.random() * 101) }}</td>
-          <!-- 정답률 기입해야함. 일단 난수 처리 -->
-          <td class="td-fifth">{{ Math.floor(Math.random() * 101) + '%' }}</td>
-          <!--              <td class="td-fifth">{{ problem.accepted_number / problem.submission_number }}</td>-->
+          <td class="td-fourth">{{ problem.accepted_number }}</td>
+          <td class="td-fifth">{{ problem.submission_number == 0 ? "없음" : (problem.accepted_number / problem.submission_number ) * 100 + '%' }}</td>
         </tr>
         </tbody>
-      </template>
-      <template v-if="this.problemList.length == 0">
-        <div class="noProblemListBox">
-          {{$t('m.noProblemList')}}
-        </div>
       </template>
     </table>
 </template>
@@ -95,6 +87,7 @@ export default {
   text-align: center;
 }
 table {
+  background-color: var(--box-background-color);
   border: 1px solid #dedede;
   padding-right: 20px;
   padding-left: 20px;
@@ -103,6 +96,13 @@ table {
   border-radius: 7px;
   border-spacing: 0;
   overflow: hidden;
+}
+table:hover{
+  border: 1px solid #cccccc;
+}
+
+th{
+  font-size: 1.3em;
 }
 
 th:first-child {
@@ -124,7 +124,9 @@ thead {
 
 tbody {
   tr {
+    font-size: 1.05em;
     td:first-child {
+      font-size: 1.2em;
       text-align: center;
       font-weight: bold;
     }

@@ -2,12 +2,12 @@
   <div>
     <div style="padding-bottom: 10px;">
     </div>
-    <panel title="Export Problems (beta)">
+    <panel :title="$t('m.ImportAndExport_Title')">
       <div slot="header">
         <el-input
           v-model="keyword"
           prefix-icon="el-icon-search"
-          placeholder="Keywords">
+          :placeholder="$t('m.Search_Keywords')">
         </el-input>
       </div>
       <el-table :data="problems"
@@ -17,26 +17,26 @@
           width="60">
         </el-table-column>
         <el-table-column
-          label="ID"
+          :label="$t('m.ImportAndExport_ID')"
           width="100"
           prop="id">
         </el-table-column>
         <el-table-column
-          label="DisplayID"
+          :label="$t('m.ImportAndExport_Display_ID')"
           width="200"
           prop="_id">
         </el-table-column>
         <el-table-column
-          label="Title"
+          :label="$t('m.ImportAndExport_Title')"
           prop="title">
         </el-table-column>
         <el-table-column
-          prop="created_by.username"
-          label="Author">
+          :label="$t('m.ImportAndExport_Author')"
+          prop="created_by.username">
         </el-table-column>
         <el-table-column
-          prop="create_time"
-          label="Create Time">
+          :label="$t('m.ImportAndExport_Create_Time')"
+          prop="create_time">
           <template slot-scope="scope">
             {{scope.row.create_time | localtime }}
           </template>
@@ -45,7 +45,7 @@
 
       <div class="panel-options">
         <el-button type="primary" size="small" v-show="selected_problems.length"
-                   @click="exportProblems" icon="el-icon-fa-arrow-down">Export
+                   @click="exportProblems" icon="el-icon-fa-arrow-down">{{$t('m.ImportAndExport_Export')}}
         </el-button>
         <el-pagination
           class="page"
@@ -56,7 +56,7 @@
         </el-pagination>
       </div>
     </panel>
-    <panel title="Import QDUOJ Problems (beta)">
+    <panel :title="$t('m.ImportAndExport_Import_Problems')">
       <el-upload
         ref="QDU"
         action="/api/admin/import_problem"
@@ -69,12 +69,12 @@
         :auto-upload="false"
         :on-success="uploadSucceeded"
         :on-error="uploadFailed">
-        <el-button size="small" type="primary" icon="el-icon-fa-upload" slot="trigger">Choose File</el-button>
-        <el-button style="margin-left: 10px;" size="small" type="success" @click="submitUpload('QDU')">Upload</el-button>
+        <el-button size="small" type="primary" icon="el-icon-fa-upload" slot="trigger">{{$t('m.Button_Choose_File')}}</el-button>
+        <el-button style="margin-left: 10px;" size="small" type="success" @click="submitUpload('QDU')">{{$t('m.Button_Upload')}}</el-button>
       </el-upload>
     </panel>
 
-    <panel title="Import FPS Problems (beta)">
+    <panel :title="$t('m.ImportAndExport_Import_FPS')">
       <el-upload
         ref="FPS"
         action="/api/admin/import_fps"
@@ -87,8 +87,8 @@
         :auto-upload="false"
         :on-success="uploadSucceeded"
         :on-error="uploadFailed">
-        <el-button size="small" type="primary" icon="el-icon-fa-upload" slot="trigger">Choose File</el-button>
-        <el-button style="margin-left: 10px;" size="small" type="success" @click="submitUpload('FPS')">Upload</el-button>
+        <el-button size="small" type="primary" icon="el-icon-fa-upload" slot="trigger">{{$t('m.Button_Choose_File')}}</el-button>
+        <el-button style="margin-left: 10px;" size="small" type="success" @click="submitUpload('FPS')">{{$t('m.Button_Upload')}}</el-button>
       </el-upload>
     </panel>
   </div>

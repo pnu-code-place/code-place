@@ -167,6 +167,7 @@ header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  background-color: var(--box-background-color);
 
   span:first-child {
     font-weight: 650;
@@ -220,6 +221,7 @@ header {
 main {
   border-radius: 7px;
   border: 1px solid #dedede;
+  background-color: var(--box-background-color);
   width: 100%;
   height: fit-content;
   margin-bottom: 20px;
@@ -252,6 +254,9 @@ main {
       background-position: 100% 50%;
     }
   }
+}
+main:hover{
+  border: 1px solid #cccccc;
 }
 
 </style>

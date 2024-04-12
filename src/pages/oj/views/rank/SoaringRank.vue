@@ -72,6 +72,7 @@ export default {
 }
 
 .soaring-rank {
+  background-color: var(--box-background-color);
   width: 100%;
 }
 </style>

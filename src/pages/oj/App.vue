@@ -72,6 +72,8 @@ export default {
 <style lang="less">
 
 :root {
+  --box-background-color: #ffffff;
+  --site-background-color: #F9FAFB;
   --bg-color: #ffffff;
   --custom-btn-hover-color: #f5f5f5;
   --border-color: #e7e7e7;
@@ -109,6 +111,7 @@ a {
   display: flex;
   justify-content: center;
   min-width: 1200px;
+  background-color: var(--site-background-color);
 }
 
 .ps {

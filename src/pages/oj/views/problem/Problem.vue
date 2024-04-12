@@ -161,9 +161,6 @@
                     </Dropdown-menu>
                   </Dropdown>
                 </Tooltip>
-                <Tooltip :content="this.$i18n.t('m.Reset_to_default_code_definition')" placement="bottom-end">
-                  <CustomIconBtn @click="check()" :wrapperSize="30" iconClass="fas fa-tags"/>
-                </Tooltip>
                 <Tooltip :content="'글자 크기 키우기'" placement="bottom-end">
                   <CustomIconBtn @click="changeFontSize(fontSize+1)" :wrapperSize="30" iconClass="fas fa-plus"/>
                 </Tooltip>
@@ -201,17 +198,17 @@
               </div>
             </div>
             <div style="width: 100%;height: 70%; display: flex; font-size: small; text-align: center;">
-<!--              <span>테스트 케이스 및 실행 결과가 표시됩니다.</span>-->
-<!--              <div class="status" v-if="statusVisible">-->
-<!--                <template v-if="!this.contestID || (this.contestID && OIContestRealTimePermission)">-->
-<!--                  <Tag type="dot" :color="submissionStatus.color" @click.native="handleRoute('/status/'+submissionId)">-->
-<!--                    {{ $t('m.' + submissionStatus.text.replace(/ /g, "_")) }}-->
-<!--                  </Tag>-->
-<!--                </template>-->
-<!--                <template v-else-if="this.contestID && !OIContestRealTimePermission">-->
-<!--                  <Alert type="success" show-icon>{{ $t('m.Submitted_successfully') }}</Alert>-->
-<!--                </template>-->
-<!--              </div>-->
+              <span>테스트 케이스 및 실행 결과가 표시됩니다.</span>
+              <div class="status" v-if="statusVisible">
+                <template v-if="!this.contestID || (this.contestID && OIContestRealTimePermission)">
+                  <Tag type="dot" :color="submissionStatus.color" @click.native="handleRoute('/status/'+submissionId)">
+                    {{ $t('m.' + submissionStatus.text.replace(/ /g, "_")) }}
+                  </Tag>
+                </template>
+                <template v-else-if="this.contestID && !OIContestRealTimePermission">
+                  <Alert type="success" show-icon>{{ $t('m.Submitted_successfully') }}</Alert>
+                </template>
+              </div>
             </div>
 
           </pane>

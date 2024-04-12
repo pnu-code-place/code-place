@@ -6,38 +6,44 @@
             </span>
     </div>
     <div class="hardProblemRecommendationBoxBody">
-      <div class="hardProblemFieldCategory">
-        <!--              더미 데이터로 문제들 중 첫번째 것 뽑아서 우선 배치해놓겠음.-->
-        <FieldCategoryBox :boxType="true" :value="'자료구조'"
-                          :boxColor="'#F8B193'"/>
-        <!--              <template v-for="(category, idx) in this.problemList[1].tags">-->
-        <FieldCategoryBox :boxType="false" :value="'#스택'" :boxColor="'#FFFFFF'"/>
-        <!--              </template>-->
-      </div>
-      <div class="hardProblemFieldCategory" style="justify-content: space-between; margin-top: 2px">
-        <span style="font-weight: bold;font-size: medium"> 부분 팰린드롬 </span>
-        <a style="color: #7a7a7a; text-decoration: underline" >{{ $t('m.Try_AiRecommendation_Problem') }}</a>
-      </div>
-      <div class="hardProblemInfo" style="margin-top: 15px">
-        <div style="display: flex; justify-content: space-between; width: 50%; float: right">
-          <span>정답률</span>
-          <span>12%</span>
+      <template v-if="problem">
+        <div class="hardProblemFieldCategory">
+          <FieldCategoryBox :boxType="true" :value="FIELD_MAP[problem.field].value"
+                            :boxColor="FIELD_MAP[problem.field].boxColor"/>
+          <template v-for="(category, idx) in problem.tags">
+            <FieldCategoryBox :boxType="false" :value="'#' + category" :boxColor="'#ffffff'"/>
+          </template>
         </div>
-      </div>
-      <br>
-      <div class="hardProblemInfo" style="margin-top: 5px">
-        <div style="display: flex; justify-content: space-between; width: 50%; float: right">
-          <span>완료한 사람</span>
-          <span>7명</span>
+        <div class="hardProblemFieldCategory" style="justify-content: space-between; margin-top: 2px">
+          <span style="font-weight: bold;font-size: medium"> {{ problem.title }} </span>
+          <a style="color: #7a7a7a; text-decoration: underline" @click="enterProblemDetail(problem._id)">{{ $t('m.Try_AiRecommendation_Problem') }}</a>
         </div>
-      </div>
-      <br>
-      <div class="hardProblemInfo" style="margin-top: 5px; margin-bottom: 20px">
-        <div style="display: flex; justify-content: space-between; width: 50%; float: right">
-          <span>난이도</span>
-          <span style="color: #c02b2b; font-weight: bolder">매우 어려움</span>
+        <div class="hardProblemInfo" style="margin-top: 15px">
+          <div style="display: flex; justify-content: space-between; width: 50%; float: right">
+            <span>정답률</span>
+            <span>{{ problem.submission_number == 0 ? "없음" : (problem.accepted_number / problem.submission_number ) * 100 + '%' }}</span>
+          </div>
         </div>
-      </div>
+        <br>
+        <div class="hardProblemInfo" style="margin-top: 5px">
+          <div style="display: flex; justify-content: space-between; width: 50%; float: right">
+            <span>완료한 사람</span>
+            <span>{{problem.accepted_number}}명</span>
+          </div>
+        </div>
+        <br>
+        <div class="hardProblemInfo" style="margin-top: 5px; margin-bottom: 20px">
+          <div style="display: flex; justify-content: space-between; width: 50%; float: right">
+            <span>난이도</span>
+            <span style="color: #c02b2b; font-weight: bolder">{{ DIFFICULTY_MAP[problem.difficulty].value }}</span>
+          </div>
+        </div>
+      </template>
+      <template v-else>
+        <div style="height:100%; display: flex; align-items: center; justify-content: center">
+          표시할 데이터가 충분하지 않습니다.
+        </div>
+      </template>
     </div>
   </div>
 </template>
@@ -46,6 +52,7 @@
 import api from '@oj/api'
 import {mapActions, mapGetters} from "vuex";
 import FieldCategoryBox from "../../../components/FieldCategoryBox.vue";
+import {DIFFICULTY_MAP, FIELD_MAP} from "../../../../../utils/constants";
 
 export default {
   name: 'MostDifficultProblemLastWeekBox',
@@ -61,9 +68,19 @@ export default {
     }
   },
   methods:{
-    ...mapActions(['getProfile', 'changeModalStatus']),
+    ...mapActions(['getProfile', 'changeModalStatus','changeProblemSolvingState']),
+    enterProblemDetail(problemId) {
+      this.changeProblemSolvingState(true)
+      this.$router.push({name: 'problem-details', params: {problemID: problemId}})
+    },
   },
   computed:{
+    FIELD_MAP() {
+      return FIELD_MAP
+    },
+    DIFFICULTY_MAP() {
+      return DIFFICULTY_MAP
+    },
     ...mapGetters(['website', 'modalStatus', 'user', 'isAuthenticated', 'isAdminRole']),
     ...mapGetters(['profile']),
   }
@@ -75,6 +92,7 @@ export default {
 .recommendationBox {
   border-radius: 7px;
   border: 1px solid #dedede;
+  background-color: var(--box-background-color);
   width: 100%;
   height: 240px;
   margin-bottom: 20px;
@@ -88,6 +106,7 @@ export default {
     border-radius: 7px;
     background-color: #FBFBFB;
     padding: 20px;
+    height: 160px;
 
     .hardProblemFieldCategory {
       display: flex;
@@ -95,6 +114,10 @@ export default {
       justify-content: left;
     }
   }
+}
+
+.recommendationBox:hover{
+  border: 1px solid #cccccc;
 }
 
 .recommendationBoxHeader {

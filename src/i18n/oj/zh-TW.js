@@ -5,6 +5,8 @@ export const m = {
   Description: '題目描述',
   Input: '輸入',
   Output: '輸出',
+  FromFile: 'from file',
+  ToFile: 'to file',
   Sample_Input: '輸入範例',
   Sample_Output: '輸出範例',
   Hint: '提示',

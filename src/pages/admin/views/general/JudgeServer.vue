@@ -23,7 +23,7 @@
         </el-table-column>
         <el-table-column
           prop="status"
-          label="Status">
+          :label="$t('m.JudgeServer_Table_Status')">
           <template slot-scope="scope">
             <el-tag
               :type="scope.row.status === 'normal' ? 'success' : 'danger'">
@@ -33,34 +33,34 @@
         </el-table-column>
         <el-table-column
           prop="hostname"
-          label="Hostname">
+          :label="$t('m.JudgeServer_Table_Hostname')">
         </el-table-column>
         <el-table-column
           prop="task_number"
-          label="Task Number">
+          :label="$t('m.JudgeServer_Table_Task_Number')">
         </el-table-column>
         <el-table-column
           prop="cpu_core"
-          label="CPU Core">
+          :label="$t('m.JudgeServer_Table_CPU_Core')">
         </el-table-column>
         <el-table-column
           prop="cpu_usage"
-          label="CPU Usage">
+          :label="$t('m.JudgeServer_Table_CPU_Usage')">
           <template slot-scope="scope">{{ scope.row.cpu_usage }}%</template>
         </el-table-column>
         <el-table-column
           prop="memory_usage"
-          label="Memory Usage">
+          :label="$t('m.JudgeServer_Table_Memory_Usage')">
           <template slot-scope="scope">{{ scope.row.memory_usage }}%</template>
         </el-table-column>
-        <el-table-column label="Disabled">
+        <el-table-column :label="$t('m.JudgeServer_Table_Disabled')">
           <template slot-scope="{row}">
             <el-switch v-model="row.is_disabled" @change="handleDisabledSwitch(row.id, row.is_disabled)"></el-switch>
           </template>
         </el-table-column>
         <el-table-column
           fixed="right"
-          label="Options">
+          :label="$t('m.JudgeServer_Table_Options')">
           <template slot-scope="scope">
             <icon-btn name="Delete" icon="trash" @click.native="deleteJudgeServer(scope.row.hostname)"></icon-btn>
           </template>
@@ -96,9 +96,9 @@
         })
       },
       deleteJudgeServer (hostname) {
-        this.$confirm('If you delete this judge server, it can\'t be used until next heartbeat', 'Warning', {
-          confirmButtonText: 'Delete',
-          cancelButtonText: 'Cancel',
+        this.$confirm(this.$t('m.JudgeServer_Delete_Modal_Content'), this.$t('m.JudgeServer_Delete_Modal_Title'),  {
+          confirmButtonText: this.$t('m.Modal_Confirm'),
+          cancelButtonText: this.$t('m.Modal_Cancel'),
           type: 'warning'
         }).then(() => {
           api.deleteJudgeServer(hostname).then(res =>

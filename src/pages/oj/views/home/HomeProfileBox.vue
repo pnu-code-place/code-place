@@ -24,11 +24,16 @@
                     {{ user.username + '님' }}
                     <img :src="getTierImageSrc(user.tier)" width="13px"/>
                   </span>
-            <br>
-<!--            <span>{{ user.email }}</span>-->
-            <span>정보컴퓨터공학부</span>
-            <br>
-            <span>PLATINUM III</span>
+            <template v-if="!isAdminRole">
+              <br>
+              <span>정보컴퓨터공학부</span>
+              <br>
+              <span>PLATINUM III</span>
+            </template>
+            <template v-else>
+              <br>
+              <span v-if="isAdminRole">관리자({{user.admin_type}})</span>
+            </template>
           </div>
           <div class="logoutBtn">
                   <span @click="goRouter('logout')">
@@ -39,7 +44,8 @@
         <div class="authenticatedFooter">
           <span @click="goRouter('user-home')"><router-link
               :to="{name:'user-home', params:{username:user.username}}">{{ $t('m.MyHome') }}</router-link></span>
-          <span>정보수정</span>
+          <span v-if="!isAdminRole">정보수정</span>
+          <span v-else @click="window.open('/admin/')">관리</span>
           <span @click="goRouter('profile-setting')"><router-link
               :to="{name:'default-setting'}">{{ $t('m.Settings') }}</router-link></span>
         </div>
@@ -76,7 +82,11 @@ export default {
       this.$router.push({name: "apply-reset-password"});
     },
     goRouter(routeName) {
-      this.$router.push({name: routeName})
+      if (routeName && routeName.indexOf('admin') < 0) {
+        this.$router.push({name: routeName})
+      } else {
+        window.open('/admin/')
+      }
     }
   },
   computed: {
@@ -88,7 +98,7 @@ export default {
 
 <style scoped lang="less">
 .profileBox {
-  background-color: #ffffff;
+  background-color: var(--box-background-color);
   border-radius: 7px;
   border: 1px solid #dedede;
   width: 100%;
@@ -129,6 +139,9 @@ export default {
       margin-right: 10px;
     }
   }
+}
+.profileBox:hover{
+  border: 1px solid #cccccc;
 }
 
 .authenticatedBox {
@@ -176,17 +189,19 @@ export default {
 
   .authenticatedFooter {
     display: flex;
-    background-color: #FBFBFB;
+    background-color: rgba(208, 223, 248, 0.18);
+    border-radius: 5px;
     justify-content: space-around;
     align-items: center;
     height: 35px;
-
     span {
       cursor: pointer;
-
       a {
         color: inherit;
       }
+    }
+    span:hover{
+      font-weight: 500;
     }
   }
 }

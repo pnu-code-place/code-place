@@ -12,6 +12,8 @@ export const m = {
   Description: "설명",
   Input: "입력",
   Output: "출력",
+  FromFile: 'from file',
+  ToFile: 'to file',
   Sample_Input: "예제 입력",
   Sample_Output: "예제 출력",
   Hint: "힌트",

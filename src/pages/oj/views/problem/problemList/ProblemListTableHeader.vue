@@ -58,9 +58,6 @@
       <Tooltip :content="$t('m.Pick_One')" placement="bottom" style="margin-left: 5px">
         <CustomIconBtn @click="pickOne" iconClass="fas fa-random"/>
       </Tooltip>
-      <Tooltip :content="$t('m.Pick_One')" placement="bottom" style="margin-left: 5px">
-        <CustomIconBtn iconClass="fas fa-ellipsis-h"/>
-      </Tooltip>
     </div>
   </div>
 </template>
@@ -137,6 +134,7 @@ export default {
     padding-bottom: 4px;
     padding-left: 15px;
     padding-right: 15px;
+    background-color: var(--box-background-color);
     border-radius: 7px;
     border: 1px solid #dedede;
   }

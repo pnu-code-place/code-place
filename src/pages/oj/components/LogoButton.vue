@@ -45,7 +45,7 @@ export default {
     .systemTitle{
       font-size: 18px;
       font-weight: bold;
-      color: #255AA4;
+      color: #32306b;
     }
   }
 }

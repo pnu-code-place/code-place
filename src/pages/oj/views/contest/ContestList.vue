@@ -188,6 +188,7 @@
 main{
   width: 1200px;
   #contest-card {
+    background-color: var(--box-background-color);
     #keyword {
       width: 80%;
       margin-right: 30px;
