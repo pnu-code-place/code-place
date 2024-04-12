@@ -8,7 +8,6 @@ export const m = {
   Judge_Server: 'Judge 伺服器',
   Prune_Test_Case: '測資',
   Problem: '試題',
-  ShareSubmission: '分享提交',
   Problem_List: '試題列表',
   Create_Problem: '增加題目',
   Export_Import_Problem: '匯入匯出題目',
@@ -134,6 +133,7 @@ export const m = {
   Memory_limit: '記憶體限制',
   Difficulty: '難度',
   Visible: '是否可見',
+  ShareSubmission: '分享提交',
   Languages: '可選程式語言',
   Input_Samples: '輸入範例',
   Output_Samples: '輸出範例',
@@ -154,6 +154,30 @@ export const m = {
   Score: '分數',
   Hint: '提示',
   Source: '來源',
+  Edit_Problem: '문제 수정',
+  Add_Problem: '문제 추가',
+  VeryHigh: "매우 어려움",
+  High: '어려움',
+  Mid: '보통',
+  Low: '쉬움',
+  VeryLow: '매우 쉬움',
+  Field: '영역',
+  Field_Math: '수학',
+  Field_Impl: '구현',
+  Field_DataStructure: '자료구조',
+  Field_Search: '탐색',
+  Field_Sorting: '정렬',
+  Tag: '카테고리',
+  New_Tag: '새 카테고리',
+
+   // ProblemList.vue
+  Contest_Problem_List: '대회 문제 목록',
+
+  // AddPublicProblem.vue
+  AddProblem_Table_ID: 'ID',
+  AddProblem_Table_DisplayId: 'Display ID',
+  AddProblem_Table_Title: 'Title',
+  AddProblem_Table_Option: 'Option',
 
   // Contest.vue
   CreateContent: '대회 생성',
@@ -214,7 +238,6 @@ export const m = {
   Details: 'Details',
 
   // Login.vue
-  Welcome_to_Login: '欢迎登录 OnlineJudge 后台管理系统',
   GO: '登录',
   username: '用户名',
   password: '密码',
@@ -235,4 +258,7 @@ export const m = {
   Button_Import_All: 'Import All',
   Button_Reset_Data: 'Reset Data',
   Button_Generate_Export: 'Generate & Export',
+
+  // Search
+  Search_Keywords: 'Keywords',
 }

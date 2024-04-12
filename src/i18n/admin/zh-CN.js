@@ -8,7 +8,6 @@ export const m = {
   Judge_Server: '判题服务器',
   Prune_Test_Case: '测试用例',
   Problem: '问题',
-  ShareSubmission: '分享提交',
   Problem_List: '问题列表',
   Create_Problem: '增加题目',
   Export_Import_Problem: '导入导出题目',
@@ -134,6 +133,7 @@ export const m = {
   Memory_limit: '内存限制',
   Difficulty: '难度',
   Visible: '是否可见',
+  ShareSubmission: '分享提交',
   Languages: '可选编程语言',
   Input_Samples: '输入样例',
   Output_Samples: '输出样例',
@@ -156,14 +156,28 @@ export const m = {
   Source: '来源',
   Edit_Problem: '编辑问题',
   Add_Problem: '添加问题',
+  VeryHigh: "매우 어려움",
   High: '高',
   Mid: '中',
   Low: '低',
+  VeryLow: '매우 쉬움',
+  Field: '영역',
+  Field_Math: '수학',
+  Field_Impl: '구현',
+  Field_DataStructure: '자료구조',
+  Field_Search: '탐색',
+  Field_Sorting: '정렬',
   Tag: '标签',
   New_Tag: '新增标签',
 
   // ProblemList.vue
   Contest_Problem_List: '比赛问题列表',
+
+  // AddPublicProblem.vue
+  AddProblem_Table_ID: 'ID',
+  AddProblem_Table_DisplayId: 'Display ID',
+  AddProblem_Table_Title: 'Title',
+  AddProblem_Table_Option: 'Option',
 
   // Contest.vue
   CreateContent: '대회 생성',
@@ -224,7 +238,6 @@ export const m = {
   Details: 'Details',
 
   // Login.vue
-  Welcome_to_Login: '欢迎登录 OnlineJudge 后台管理系统',
   GO: '登录',
   username: '用户名',
   password: '密码',
@@ -245,4 +258,7 @@ export const m = {
   Button_Import_All: 'Import All',
   Button_Reset_Data: 'Reset Data',
   Button_Generate_Export: 'Generate & Export',
+
+  // Search
+  Search_Keywords: 'Keywords',
 }

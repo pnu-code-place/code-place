@@ -29,10 +29,10 @@ export const m = {
   User_Table_Option: '옵션',
   User_Import_Tooltip_Content: '헤더가 없는 CSV 파일만을 제공합니다.',
   User_Import_Tooltip_Reference: '참조',
-  Import_User_Table_Username: 'Username',
-  Import_User_Table_Password: 'Password',
-  Import_User_Table_Email: 'Email',
-  Import_User_Table_RealName: 'RealName',
+  Import_User_Table_Username: '사용자명',
+  Import_User_Table_Password: '비밀번호',
+  Import_User_Table_Email: '이메일',
+  Import_User_Table_RealName: '이름',
   Create_User_Table_Prefix: '접두사',
   Create_User_Table_Suffix: '접미사',
   Create_User_Table_Start_Number: '시작 숫자',
@@ -173,6 +173,12 @@ export const m = {
    // ProblemList.vue
   Contest_Problem_List: '대회 문제 목록',
 
+  // AddPublicProblem.vue
+  AddProblem_Table_ID: 'ID',
+  AddProblem_Table_DisplayId: 'Display ID',
+  AddProblem_Table_Title: 'Title',
+  AddProblem_Table_Option: 'Option',
+
   // Contest.vue
   CreateContent: '대회 생성',
   ContestTitle: '대회명',
@@ -209,7 +215,6 @@ export const m = {
   Contest_Status_Ended: '종료됨',
   Contest_Type_Public: '공개 대회',
   Contest_Type_PasswordProtected: '비공개 대회',
-
 
   // Dashboard.vue
   Last_Login: '마지막 로그인 날',
@@ -253,4 +258,7 @@ export const m = {
   Button_Import_All: '모두 가져오기',
   Button_Reset_Data: '데이터 리셋',
   Button_Generate_Export: '생성 & 내보내기',
+
+  // Search
+  Search_Keywords: 'Keywords',
 }
