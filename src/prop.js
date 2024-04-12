@@ -440,7 +440,6 @@ export const UserRankListProp = {
 // 급상승 유저들의 정보를 조회합니다.
 // limit: 조회할 유저의 수
 // offset: 랭킹의 시작점
-// limit: 랭킹의 갯수
 export const SurgeUserProps = {
   total: 303, // 전체 유저 수
   results: [

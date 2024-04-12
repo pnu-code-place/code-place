@@ -347,11 +347,11 @@ export default {
       offset,
       limit
     }
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({data: {data: SurgeUserProps}})
-      }, 500)
-    });
+    // return new Promise((resolve) => {
+    //   setTimeout(() => {
+    //     resolve({data: {data: SurgeUserProps}})
+    //   }, 500)
+    // });
     return ajax("surge_users", "get", {
       params
     });

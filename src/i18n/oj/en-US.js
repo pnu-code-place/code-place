@@ -6,7 +6,7 @@ export const m = {
   Server_Error: "서버에 오류가 발생했습니다.",
   Gateway_Timeout: "게이트웨이 타임아웃",
 
-  Reload_Page: "페이지를 새로고침하거나",
+  Reload_Page: "페이지를 새로고침하거나, 나중에 다시 시도해주세요",
   Try_Again_Later: "나중에 다시 시도해주세요.",
   // Problem.vue
   Description: "설명",

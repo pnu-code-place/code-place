@@ -18,7 +18,7 @@ export default {
   },
   data() {
     return {
-      loadingTable: false,
+      isLoading: false,
       error: null,
 
       total: 0,
@@ -74,7 +74,7 @@ export default {
   methods: {
     getRankData() {
       let offset = (this.query.page - 1) * this.query.limit + 3
-      this.loadingTable = true
+      this.isLoading = true
       api.getUserRank(offset, this.limit, RULE_TYPE.ACM)
         .then(res => {
           this.total = res.data.data.total
@@ -82,11 +82,11 @@ export default {
           if (this.dataRank.length === 0) {
             this.error = {code: 404, description: '충분한 데이터가 없습니다.', solution: '잠시 후 다시 시도해 주세요.'}
           }
-          this.loadingTable = false
+          this.isLoading = false
         })
         .catch(error => {
           this.error = error.response.status
-          this.loadingTable = false
+          this.isLoading = false
         })
     },
     pushRouter() {
@@ -115,7 +115,7 @@ export default {
 
 <template>
   <div class="contents-wrapper">
-    <ErrorSign v-if="error" :code="this.error.code" :description="this.error.description" :solution="this.error.solution"/>
+    <ErrorSign v-if="this.error" :code="this.error.code || 404" :description="this.error.description || ''" :solution="this.error.solution || ''"/>
     <div class="contents" v-else>
       <div class="top-users">
         <div class="top-user sub-top">
@@ -131,7 +131,7 @@ export default {
           <TopRanker :rank=3></TopRanker>
         </div>
       </div>
-      <UserList :userList="dataRank" :is-loading="loadingTable" :limit="limit"/>
+      <UserList :userList="dataRank" :is-loading="isLoading" :limit="limit"/>
       <Pagination
         :total="total" :page-size.sync="query.limit" :current.sync="query.page"
         @on-change="pushRouter" @on-page-size-change="pushRouter"
