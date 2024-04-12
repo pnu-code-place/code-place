@@ -169,8 +169,8 @@ export const m = {
   Field_Sorting: '정렬',
   Tag: '카테고리',
   New_Tag: '새 카테고리',
-
-   // ProblemList.vue
+  
+  // ProblemList.vue
   Contest_Problem_List: '대회 문제 목록',
 
   // AddPublicProblem.vue

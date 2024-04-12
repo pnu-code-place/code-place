@@ -2,13 +2,9 @@
   <div class="problem">
 
     <Panel :title="title">
-      <el-form ref="form" :model="problem" :rules="rules" label-position="top" label-width="70px">
+      <el-form ref="form" :model="problem" label-position="top" label-width="70px">
         <el-row :gutter="20">
           <el-col :span="6">
-<!--            <el-form-item prop="_id" :label="$t('m.Display_ID')"-->
-<!--                          :required="this.routeName === 'create-contest-problem' || this.routeName === 'edit-contest-problem'">-->
-<!--              <el-input :placeholder="$t('m.Display_ID')" v-model="problem._id"></el-input>-->
-<!--            </el-form-item>-->
           </el-col>
           <el-col :span="18">
             <el-form-item prop="title" :label="$t('m.Title')" required>
@@ -87,7 +83,7 @@
                 <el-option :label="$t('m.Field_Sorting')" value="4"></el-option>
               </el-select>
             </el-form-item>
-            <el-form-item :label="$t('m.Tag')" :error="error.tags" required> <!-- 카테고리 -->
+            <el-form-item :label="$t('m.Tag')" :error="error.tags" required>
               <span class="tags">
                 <el-tag
                   v-for="tag in problem.tags"
@@ -214,7 +210,7 @@
                 :show-file-list="true"
                 :on-success="uploadSucceeded"
                 :on-error="uploadFailed">
-                <el-button size="small" type="primary" icon="el-icon-fa-upload">Choose File</el-button>
+                <el-button size="small" type="primary" icon="el-icon-fa-upload">{{$t('m.Button_Choose_File')}}</el-button>
               </el-upload>
             </el-form-item>
           </el-col>
@@ -291,12 +287,6 @@
     },
     data () {
       return {
-        rules: {
-          // _id: {required: true, message: 'Display ID is required', trigger: 'blur'},
-          title: {required: true, message: 'Title is required', trigger: 'blur'},
-          input_description: {required: true, message: 'Input Description is required', trigger: 'blur'},
-          output_description: {required: true, message: 'Output Description is required', trigger: 'blur'}
-        },
         loadingCompile: false,
         mode: '',
         contest: {},
