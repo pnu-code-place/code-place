@@ -109,24 +109,24 @@ export default {
     // return new Promise((resolve) => {
     //   setTimeout(() => {
     //     resolve({data: {data: ProblemSectionProp}})
-    //   }, 9000)
+    //   }, 900)
     // })
   },
   getAiRecommendProblem() {
     return ajax("ai_recommend_problem", "get");
   },
-  getUserAchievement(username) {
-    return ajax("profile/achievement", "get", {
-      params: {
-        username
-      }
-    });
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({data: {data: AchievementSectionProp}})
-      }, 1000)
-    })
-  },
+  // getUserAchievement(username) {
+  //   return ajax("profile/achievement", "get", {
+  //     params: {
+  //       username
+  //     }
+  //   });
+  //   return new Promise((resolve) => {
+  //     setTimeout(() => {
+  //       resolve({data: {data: AchievementSectionProp}})
+  //     }, 1000)
+  //   })
+  // },
 
   updateProfile(profile) {
     return ajax("profile", "put", {
@@ -324,20 +324,20 @@ export default {
       data
     });
   },
-  getUserRank(offset, limit, rule = "acm") {
+  getUserRank(offset, limit, rule = "ACM") {
     let params = {
       offset,
       limit,
       rule
     };
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        if (limit === 1) {
-          resolve({data: {data: {results: [UserRankListProp.results[offset]], total: UserRankListProp.total}}})
-        }
-        resolve({data: {data: {results: UserRankListProp.results.slice(3, 13), total: UserRankListProp.total}}})
-      }, 500)
-    });
+    // return new Promise((resolve) => {
+    //   setTimeout(() => {
+    //     if (limit === 1) {
+    //       resolve({data: {data: {results: [UserRankListProp.results[offset]], total: UserRankListProp.total}}})
+    //     }
+    //     resolve({data: {data: {results: UserRankListProp.results.slice(3, 13), total: UserRankListProp.total}}})
+    //   }, 500)
+    // });
     return ajax("user_rank", "get", {
       params
     });

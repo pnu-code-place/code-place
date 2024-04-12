@@ -7,18 +7,26 @@ import SurgeRankList from "./SoaringRank.vue";
 import MajorRankList from "./MajorRank.vue";
 import {RULE_TYPE} from "../../../../utils/constants";
 import api from "../../api";
+import utils from "../../../../utils/utils";
+import ErrorSign from "../general/ErrorSign.vue";
 
 export default {
   name: 'UserRank',
   components: {
+    ErrorSign,
     Pagination, UserList, SurgeRankList, MajorRankList, TopRanker
   },
   data() {
     return {
-      page: 1,
-      limit: 30,
-      total: 0,
       loadingTable: false,
+      error: null,
+
+      total: 0,
+      limit: 10,
+      query: {
+        page: 1,
+        limit: 10
+      },
       dataRank: [],
       topUsers: {
         '1': {
@@ -46,74 +54,108 @@ export default {
     }
   },
   mounted() {
-    this.getRankData(1)
+    this.init()
+    this.getTopUsers()
+  },
+  computed: {
+    offset() {
+      if (this.$route.query.offset === undefined) {
+        return 3
+      }
+      return this.$route.query.offset
+    },
+    limit() {
+      if (this.$route.query.limit === undefined) {
+        return 10
+      }
+      return this.$route.query.limit
+    }
   },
   methods: {
-    getRankData(page) {
-      let offset = (page - 1) * this.limit + 3
-      console.log("offset", offset, this.limit, RULE_TYPE.ACM)
+    getRankData() {
+      let offset = (this.query.page - 1) * this.query.limit + 3
       this.loadingTable = true
-      api.getUserRank(offset, this.limit, RULE_TYPE.ACM).then(res => {
-        this.loadingTable = false
-        this.total = res.data.data.total
-        this.dataRank = res.data.data.results
-      }).catch(() => {
-        this.loadingTable = false
+      api.getUserRank(offset, this.limit, RULE_TYPE.ACM)
+        .then(res => {
+          this.total = res.data.data.total
+          this.dataRank = res.data.data.results
+          if (this.dataRank.length === 0) {
+            this.error = {code: 404, description: '충분한 데이터가 없습니다.', solution: '잠시 후 다시 시도해 주세요.'}
+          }
+          this.loadingTable = false
+        })
+        .catch(error => {
+          this.error = error.response.status
+          this.loadingTable = false
+        })
+    },
+    pushRouter() {
+      this.$router.push({
+        name: 'user-rank',
+        query: utils.filterEmptyValue(this.query)
       })
     },
-    changeCharts(rankData) {
-      let [usernames, acData, totalData] = [[], [], []]
-      rankData.forEach(ele => {
-        usernames.push(ele.user.username)
-        acData.push(ele.accepted_number)
-        totalData.push(ele.submission_number)
-      })
-      this.options.xAxis[0].data = usernames
-      this.options.series[0].data = acData
-      this.options.series[1].data = totalData
+    init() {
+      let query = this.$route.query
+      this.query.page = parseInt(query.page) || 1
+      if (this.query.page < 1) {
+        this.query.page = 1
+      }
+      this.query.limit = parseInt(query.limit) || 10
+      this.getRankData()
     }
   },
   getTopUsers() {
     api.getUserRank(0, 3).then(res => {
-      console.log("res", res.data.data.results)
       this.topUsers = res.data.data.results
     })
-  }
+  },
 }
 </script>
 
 <template>
-  <div class="contents">
-    <div class="top-users">
-      <div class="top-user sub-top">
-        <h2>{{ $t('m.TOP_2') }}</h2>
-        <TopRanker :rank=2></TopRanker>
+  <div class="contents-wrapper">
+    <ErrorSign v-if="error" :code="this.error.code" :description="this.error.description" :solution="this.error.solution"/>
+    <div class="contents" v-else>
+      <div class="top-users">
+        <div class="top-user sub-top">
+          <h2>{{ $t('m.TOP_2') }}</h2>
+          <TopRanker :rank=2></TopRanker>
+        </div>
+        <div class="top-user">
+          <h2>{{ $t('m.TOP_1') }}</h2>
+          <TopRanker :rank=1></TopRanker>
+        </div>
+        <div class="top-user sub-top">
+          <h2>{{ $t('m.TOP_3') }}</h2>
+          <TopRanker :rank=3></TopRanker>
+        </div>
       </div>
-      <div class="top-user">
-        <h2>{{ $t('m.TOP_1') }}</h2>
-        <TopRanker :rank=1></TopRanker>
-      </div>
-      <div class="top-user sub-top">
-        <h2>{{ $t('m.TOP_3') }}</h2>
-        <TopRanker :rank=3></TopRanker>
-      </div>
+      <UserList :userList="dataRank" :is-loading="loadingTable" :limit="limit"/>
+      <Pagination
+        :total="total" :page-size.sync="query.limit" :current.sync="query.page"
+        @on-change="pushRouter" @on-page-size-change="pushRouter"
+        :show-sizer="true">
+      </Pagination>
     </div>
-    <UserList :userList="dataRank" :is-loading="loadingTable" :limit="limit"/>
-    <Pagination :total="total" :page-size.sync="limit" :current.sync="page"
-                @on-change="getRankData" show-sizer
-                @on-page-size-change="getRankData(1)"></Pagination>
   </div>
 </template>
 
 <style scoped lang="less">
+
+.contents-wrapper {
+  width: 100%;
+}
+
 .contents {
   width: 100%;
+
   .top-users {
     display: flex;
     justify-content: center;
     align-items: center;
     margin-bottom: 20px;
-    gap : 30px;
+    gap: 30px;
 
     .sub-top {
       margin-top: 60px;
