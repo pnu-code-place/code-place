@@ -2,6 +2,12 @@
 export const m = {
   // 404.vue
   Go_Home: "메인으로",
+  No_Response: "서버가 응답하지 않습니다.",
+  Server_Error: "서버에 오류가 발생했습니다.",
+  Gateway_Timeout: "게이트웨이 타임아웃",
+
+  Reload_Page: "페이지를 새로고침하거나",
+  Try_Again_Later: "나중에 다시 시도해주세요.",
   // Problem.vue
   Description: "설명",
   Input: "입력",

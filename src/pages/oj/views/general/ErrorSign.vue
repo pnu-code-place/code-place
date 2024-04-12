@@ -5,24 +5,24 @@ export default {
     return {
       errorStatus: {
         code: 0,
-        message: '',
+        description: '',
         solution: ''
       },
       errorInfo: {
         404: {
           code: '404',
-          description: '서버가 응답하지 않습니다.',
-          solution: '현재 페이지를 다시 로드하거나, 나중에 다시 시도해 주세요.'
+          description: this.$t('m.No_Response'),
+          solution: this.$t('m.Reload_Page')
         },
         500: {
           code: '500',
-          description: '서버가 응답하지 않습니다.',
-          solution: '잠시 후 다시 시도해 주세요.'
+          description: this.$t('m.Server_Error'),
+          solution: this.$t('m.Try_Again_Later')
         },
         504: {
           code: '504',
-          description: '서버가 응답하지 않습니다.',
-          solution: '잠시 후 다시 시도해 주세요.'
+          description: this.$t('m.Gateway_Timeout'),
+          solution: this.$t('m.Try_Again_Later')
         }
       }
     }
@@ -32,7 +32,7 @@ export default {
       type: Number,
       default: 404
     },
-    message: {
+    description: {
       type: String,
       default: ''
     },
@@ -45,10 +45,10 @@ export default {
     init() {
       if (Object.keys(this.errorInfo).includes(this.code.toString())) {
         this.errorStatus.code = this.code;
-        if (this.message) {
-          this.errorStatus.message = this.message;
+        if (this.description) {
+          this.errorStatus.description = this.description;
         } else {
-          this.errorStatus.message = this.errorInfo[this.code].description;
+          this.errorStatus.description = this.errorInfo[this.code].description;
         }
         if (this.solution) {
           this.errorStatus.solution = this.solution;
@@ -57,7 +57,7 @@ export default {
         }
       } else {
         this.errorStatus.code = this.code;
-        this.errorStatus.message = this.message;
+        this.errorStatus.description = this.description;
         this.errorStatus.solution = this.solution;
       }
     }
@@ -71,7 +71,7 @@ export default {
 <template>
   <div class="error-sign">
     <h1>{{ this.errorStatus.code }}</h1>
-    <p class="error-message">{{ this.errorStatus.message }}</p>
+    <p class="error-message">{{ this.errorStatus.description }}</p>
     <p class="error-solution">{{ this.errorStatus.solution }}</p>
   </div>
 </template>
@@ -79,6 +79,7 @@ export default {
 <style scoped lang="less">
 .error-sign {
   padding: 2rem 2rem 4rem;
+  text-align: center;
 }
 
 h1 {
