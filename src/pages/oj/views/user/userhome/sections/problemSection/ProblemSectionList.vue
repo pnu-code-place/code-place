@@ -11,6 +11,7 @@
                 @dropdownChange="changeStatus"
                 placeholder="Status"
                 :default-text="this.$t('m.Is_Solved')"
+                :selected="this.query.status"
               ></CustomDropdown>
             </li>
             <li>
@@ -19,6 +20,7 @@
                 @dropdownChange="changeField"
                 placeholder="Category"
                 :default-text="this.$t('m.Field')"
+                :selected="this.query.field"
               ></CustomDropdown>
             </li>
             <li>
@@ -27,6 +29,7 @@
                 @dropdownChange="changeDifficulty"
                 placeholder="Difficulty"
                 :default-text="this.$t('m.Difficulty')"
+                :selected="this.query.difficulty"
               ></CustomDropdown>
             </li>
           </ul>
@@ -53,6 +56,7 @@ import ProblemSkeleton from "./ProblemSkeleton.vue";
 import {DIFFICULTY_MAP, FIELD_MAP} from "../../../../../../../utils/constants";
 import ErrorSign from "../../../../general/ErrorSign.vue";
 import CustomDropdown from "../../../../../components/dropdown/CustomDropdown.vue";
+import utils from "../../../../../../../utils/utils";
 
 export default {
   name: 'problem-section-list',
@@ -61,7 +65,11 @@ export default {
     return {
       isLoading: true,
       error: 0,
-
+      query: {
+        field: '',
+        difficulty: '',
+        status: ''
+      },
       fieldOptions: [],
       difficultyOptions: [],
       statusOptions: [
@@ -76,18 +84,21 @@ export default {
           id: 'Failed',
           name: this.$t('m.Failed_Problems')
         }],
-
-      problemQuery: {
-        difficulty: 'All',
-        field: 'All',
-        status: 'All',
-      },
       problem_list: [],
     }
   },
   methods: {
     init() {
-      this.status = this.$route.params.status
+      this.initQuery()
+      this.optionInit()
+      this.requestData()
+    },
+    initQuery() {
+      this.query.field = this.$route.query.field || ''
+      this.query.difficulty = this.$route.query.difficulty || ''
+      this.query.status = this.$route.query.status || ''
+    },
+    optionInit() {
       this.difficultyOptions = Object.keys(DIFFICULTY_MAP).map(key => ({
         id: key,
         name: DIFFICULTY_MAP[key].value
@@ -98,30 +109,36 @@ export default {
         name: FIELD_MAP[key].value
       }))
       this.fieldOptions.unshift({id: 'All', name: this.$t('m.All')})
-      this.refresh()
     },
-    changeDifficulty(difficulty) {
-      this.problemQuery.difficulty = difficulty
-      this.refresh()
-    },
-    changeField(field) {
-      this.problemQuery.field = field
-      this.refresh()
-    },
-    changeStatus(status) {
-      this.problemQuery.status = status
-      this.refresh()
-    },
-    refresh() {
+    requestData() {
       this.isLoading = true
-      api.getUserProblemInfo(this.username, this.problemQuery).then(res => {
+      api.getUserProblemInfo(this.username, this.query).then(res => {
         this.problem_list = res.data.data
       }).catch(error =>
         this.error = error.response.status
       ).finally(() =>
         this.isLoading = false
       )
-    }
+    },
+    changeField(newVal) {
+      this.query.field = newVal
+      this.pushRouter()
+    },
+    changeStatus(newVal) {
+      this.query.status = newVal
+      this.pushRouter()
+    },
+    changeDifficulty(newVal) {
+      this.query.difficulty = newVal
+      this.pushRouter()
+    },
+    pushRouter() {
+      this.$router.push({
+        name: 'user-problems',
+        params: {username: this.username},
+        query: utils.filterEmptyValue(this.query)
+      })
+    },
   },
   mounted() {
     this.init()
@@ -140,7 +157,7 @@ export default {
 
       return username;
     }
-  }
+  },
 }
 </script>
 

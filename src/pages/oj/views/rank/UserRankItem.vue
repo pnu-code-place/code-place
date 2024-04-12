@@ -59,7 +59,7 @@ export default {
       </div>
     </td>
     <td class="user-problem">
-      <router-link :to="{name: 'user-problems', params: {username : user.username}}" class="justify-center">
+      <router-link :to="{name: 'user-problems', params: {username : user.username}, query:{status:'Solved'}}" class="justify-center">
         {{ user.solved }}
       </router-link>
     </td>

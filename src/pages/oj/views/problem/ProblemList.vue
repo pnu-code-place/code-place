@@ -2,17 +2,19 @@
   <main>
     <div class="boxWrapper">
       <div class="left-container">
-        <ProblemListTableHeader :query="query" :problemList="problemList" @on-change-header="pushRouter" @pick-one="pickOne"/>
+        <ProblemListTableHeader :query="query" :problemList="problemList" @on-change-header="pushRouter"
+                                @pick-one="pickOne"/>
         <ProblemListTable :problemList="problemList"/>
         <Pagination
-          :total="total" :page-size.sync="query.limit" @on-change="pushRouter" @on-page-size-change="pushRouter"
-          :current.sync="query.page" :show-sizer="true">
+          :total="total" :page-size.sync="query.limit" :current.sync="query.page"
+          @on-change="pushRouter" @on-page-size-change="pushRouter"
+          :show-sizer="true">
         </Pagination>
       </div>
       <keep-alive>
         <div class="right-container">
-            <MostDifficultProblemLastWeekBox :problem="problemList.filter(value => value.is_most_difficult)[0]"/>
-            <AiRecommendationBox :problems="problemList.slice(3,5)"/>
+          <MostDifficultProblemLastWeekBox :problem="problemList.filter(value => value.is_most_difficult)[0]"/>
+          <AiRecommendationBox :problems="problemList.slice(3,5)"/>
         </div>
       </keep-alive>
     </div>
@@ -152,7 +154,7 @@ export default {
 </script>
 
 <style scoped lang="less">
-main{
+main {
   width: 1200px;
   overflow-x: hidden;
 }
