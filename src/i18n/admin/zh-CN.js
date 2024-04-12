@@ -169,7 +169,7 @@ export const m = {
   Field_Sorting: '정렬',
   Tag: '标签',
   New_Tag: '新增标签',
-  
+
   // ProblemList.vue
   Contest_Problem_List: '比赛问题列表',
 
@@ -191,6 +191,19 @@ export const m = {
   ImportAndExport_Export: 'Export',
   ImportAndExport_Import_Problems: 'Import Problems (beta)',
   ImportAndExport_Import_FPS: 'Import FPS Problems (beta)',
+
+  // ProblemList.vue
+  ProblemList_ID: 'ID',
+  ProblemList_Title: 'Title',
+  ProblemList_Author: 'Author',
+  ProblemList_Create_Time: 'Create Time',
+  ProblemList_Visible: 'Visible',
+  ProblemList_Operation: 'Operation',
+  ProblemList_Update_Title: 'Sure to update the problem?',
+  ProblemList_Delete_Problem_Title: 'Delete Problem',
+  ProblemList_Delete_Problem_Content: 'Sure to delete this problem? The associated submissions will be deleted as well.',
+  ProblemList_Visible_Problem_Title: 'confirm',
+  ProblemList_Visible_Problem_Content: 'Please input display id for the public problem',
 
   // Contest.vue
   CreateContent: '대회 생성',
@@ -265,6 +278,9 @@ export const m = {
   Icon_Problem: 'Problem',
   Icon_Announcement: 'Announcement',
   Icon_Download: 'Download',
+  Icon_Download_TestCase: 'Download TestCase',
+  Icon_Make_Public: 'Make Public',
+  Icon_Add: 'Add',
 
   // Button
   Button_Choose_File: 'Choose File',
@@ -272,6 +288,8 @@ export const m = {
   Button_Reset_Data: 'Reset Data',
   Button_Generate_Export: 'Generate & Export',
   Button_Upload: 'Upload',
+  Button_Create: 'Create',
+  Button_Add_Public_Problem: 'Add From Public Problem',
 
   // Search
   Search_Keywords: 'Keywords',

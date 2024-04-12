@@ -169,7 +169,7 @@ export const m = {
   Field_Sorting: '정렬',
   Tag: '카테고리',
   New_Tag: '새 카테고리',
-  
+
   // ProblemList.vue
   Contest_Problem_List: '대회 문제 목록',
 
@@ -191,6 +191,19 @@ export const m = {
   ImportAndExport_Export: '다운로드',
   ImportAndExport_Import_Problems: '문제 가져오기 (beta)',
   ImportAndExport_Import_FPS: 'FPS 문제 가져오기 (beta)',
+
+  // ProblemList.vue
+  ProblemList_ID: 'ID',
+  ProblemList_Title: '문제명',
+  ProblemList_Author: '작성자',
+  ProblemList_Create_Time: '생성일',
+  ProblemList_Visible: '활성화',
+  ProblemList_Operation: '설정',
+  ProblemList_Update_Title: '이 문제를 변경하는 것이 확실합니까?',
+  ProblemList_Delete_Problem_Title: '문제 삭제',
+  ProblemList_Delete_Problem_Content: '이 문제를 삭제하겠습니까? 문제와 관련된 모든 제출물도 삭제됩니다.',
+  ProblemList_Visible_Problem_Title: '확인',
+  ProblemList_Visible_Problem_Content: '공개할 문제의 번호를 입력해주세요.',
 
   // Contest.vue
   CreateContent: '대회 생성',
@@ -265,6 +278,9 @@ export const m = {
   Icon_Problem: '문제',
   Icon_Announcement: '공지사항',
   Icon_Download: '다운로드',
+  Icon_Download_TestCase: '테스트케이스 다운로드',
+  Icon_Make_Public: '공개',
+  Icon_Add: '추가',
 
   // Button
   Button_Choose_File: '파일 선택',
@@ -272,6 +288,8 @@ export const m = {
   Button_Reset_Data: '데이터 리셋',
   Button_Generate_Export: '생성 & 내보내기',
   Button_Upload: '업로드',
+  Button_Create: '생성하기',
+  Button_Add_Public_Problem: '기존 문제 추가하기',
 
   // Search
   Search_Keywords: '검색어',
