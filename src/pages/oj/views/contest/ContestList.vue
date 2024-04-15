@@ -204,12 +204,6 @@ main{
         padding: 40px 55px;
         border-bottom: 1px solid rgba(187, 187, 187, 0.5);
         list-style: none;
-        //
-        //.trophy {
-        //  height: 40px;
-        //  margin-left: 10px;
-        //  margin-right: -20px;
-        //}
         .contest-main {
           .title {
             font-size: 18px;
