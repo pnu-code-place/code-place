@@ -38,7 +38,7 @@
         </ul>
       </div>
       <p id="no-contest" v-if="contests.length == 0">{{$t('m.No_contest')}}</p>
-      <ol id="contest-list">
+      <!-- <ol id="contest-list">
         <li v-for="contest in contests" :key="contest.title">
           <Row type="flex" justify="space-between" align="middle">
             <Col :span="18" class="contest-main">
@@ -71,8 +71,26 @@
             </Col>
           </Row>
         </li>
-      </ol>
+      </ol> -->
     </Panel>
+    <!--  -->
+    <div class="contestBody">
+      <template v-for="contest in contests">
+        <div @click.stop="goContest(contest)" class="contestBox" :key="contest.id">
+          <div class="contestTitle">
+            <p>
+              <template v-if="contest.contest_type != 'Public'">
+                <Icon type="ios-locked-outline" size="20"></Icon>
+              </template>
+              <a @click.stop="goContest(contest)">
+                {{contest.title}}
+              </a>
+            </p>
+            <Tag style="flex-shrink: 0; margin: 0; width: 84px;" type="dot" :color="CONTEST_STATUS_REVERSE[contest.status].color">{{$t(CONTEST_STATUS_REVERSE[contest.status].name)}}</Tag>
+          </div>
+        </div>
+      </template>
+    </div>
     <Pagination :total="total" :page-size.sync="limit" @on-change="changeRoute" :current.sync="page" :show-sizer="true" @on-page-size-change="changeRoute"></Pagination>
     </Col>
   </main>
@@ -224,6 +242,38 @@ main{
           }
         }
       }
+    }
+  }
+
+  .contestBody{
+    margin-top: 10px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    align-items: center;
+    gap: 10px;
+  }
+  .contestBox {
+    cursor: pointer;
+    align-items: center;
+    padding: 20px 30px;
+    width: 380px;
+    border-radius: 7px;
+    border: 1px solid #e9ece9;
+    background-color: white;
+    transition: all .2s ease-in-out;
+  }
+  .contestTitle{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    p {
+      font-size: 18px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    p:hover{
+      white-space: wrap;
     }
   }
 }
