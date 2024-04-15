@@ -89,7 +89,7 @@
             <Tag style="flex-shrink: 0; margin: 0; width: 84px;" type="dot" :color="CONTEST_STATUS_REVERSE[contest.status].color">{{$t(CONTEST_STATUS_REVERSE[contest.status].name)}}</Tag>
           </div>
           <div class="contestContent">
-            <!-- TODO: add description  -->
+            <p v-html="contest.description"></p>
           </div>
           <div class="contestFooter">
             <div class="contestTag">
@@ -292,6 +292,17 @@ main{
     p:hover {
       white-space: wrap;
     }
+  }
+  .contestContent {
+    margin: 0px 0px 6px 6px;
+    width: 280px;
+
+    height: 18px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
   }
   .contestFooter {
     display: flex;
