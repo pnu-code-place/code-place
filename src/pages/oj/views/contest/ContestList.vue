@@ -1,5 +1,4 @@
 <template>
-<!--  <Row>-->
   <main>
     <Col :span="24">
     <Panel id="contest-card" dis-hover>
@@ -105,7 +104,6 @@
         rows: '',
         contests: [],
         CONTEST_STATUS_REVERSE: CONTEST_STATUS_REVERSE,
-//      for password modal use
         cur_contest_id: ''
       }
     },
