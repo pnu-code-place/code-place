@@ -74,7 +74,7 @@
       </ol> -->
     </Panel>
     <!--  -->
-    <div class="contestBody">
+    <div class="contestLayer">
       <template v-for="contest in contests">
         <div @click.stop="goContest(contest)" class="contestBox" :key="contest.id">
           <div class="contestTitle">
@@ -87,6 +87,22 @@
               </a>
             </p>
             <Tag style="flex-shrink: 0; margin: 0; width: 84px;" type="dot" :color="CONTEST_STATUS_REVERSE[contest.status].color">{{$t(CONTEST_STATUS_REVERSE[contest.status].name)}}</Tag>
+          </div>
+          <div class="contestContent">
+            <!-- TODO: add description  -->
+          </div>
+          <div class="contestFooter">
+            <div class="contestTag">
+              {{contest.rule_type}}
+            </div>
+            <div style="display: flex; gap: 5px; justify-content: space-between; width: 150px;">
+                <li>
+                  <Icon type="android-time" color="#3091f2"></Icon> {{getDuration(contest.start_time, contest.end_time)}}
+                </li>
+                <li>
+                  <Icon type="calendar" color="#3091f2"></Icon> {{contest.start_time | localtime('YYYY-M-D') }}
+                </li>
+            </div>
           </div>
         </div>
       </template>
@@ -245,7 +261,7 @@ main{
     }
   }
 
-  .contestBody{
+  .contestLayer {
     margin-top: 10px;
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
@@ -254,15 +270,16 @@ main{
   }
   .contestBox {
     cursor: pointer;
-    align-items: center;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
     padding: 20px 30px;
     width: 380px;
     border-radius: 7px;
     border: 1px solid #e9ece9;
     background-color: white;
-    transition: all .2s ease-in-out;
   }
-  .contestTitle{
+  .contestTitle {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -272,8 +289,22 @@ main{
       overflow: hidden;
       text-overflow: ellipsis;
     }
-    p:hover{
+    p:hover {
       white-space: wrap;
+    }
+  }
+  .contestFooter {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    li {
+      display: inline-block;
+    }
+    .contestTag {
+      background-color: #F7F7F7; 
+      border: 1px solid #DDDEE1; 
+      border-radius: 32px; 
+      padding: 2px 7px;
     }
   }
 }
