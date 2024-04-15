@@ -38,42 +38,7 @@
         </ul>
       </div>
       <p id="no-contest" v-if="contests.length == 0">{{$t('m.No_contest')}}</p>
-      <!-- <ol id="contest-list">
-        <li v-for="contest in contests" :key="contest.title">
-          <Row type="flex" justify="space-between" align="middle">
-            <Col :span="18" class="contest-main">
-              <p class="title">
-                <a class="entry" @click.stop="goContest(contest)">
-                  {{contest.title}}
-                </a>
-                <template v-if="contest.contest_type != 'Public'">
-                  <Icon type="ios-locked-outline" size="20"></Icon>
-                </template>
-              </p>
-              <ul class="detail">
-                <li>
-                  <Icon type="calendar" color="#3091f2"></Icon>
-                  {{contest.start_time | localtime('YYYY-M-D HH:mm') }}
-                </li>
-                <li>
-                  <Icon type="android-time" color="#3091f2"></Icon>
-                  {{getDuration(contest.start_time, contest.end_time)}}
-                </li>
-                <li>
-                  <Button size="small" shape="circle" @click="onRuleChange(contest.rule_type)">
-                    {{contest.rule_type}}
-                  </Button>
-                </li>
-              </ul>
-            </Col>
-            <Col :span="4" style="text-align: center">
-              <Tag type="dot" :color="CONTEST_STATUS_REVERSE[contest.status].color">{{$t('m.' + CONTEST_STATUS_REVERSE[contest.status].name.replace(/ /g, "_"))}}</Tag>
-            </Col>
-          </Row>
-        </li>
-      </ol> -->
     </Panel>
-    <!--  -->
     <div class="contestLayer">
       <template v-for="contest in contests">
         <div @click.stop="goContest(contest)" class="contestBox" :key="contest.id">
@@ -232,35 +197,7 @@ main{
       font-size: 16px;
       padding: 20px;
     }
-    #contest-list {
-      > li {
-        justify-content: center;
-        padding: 40px 55px;
-        border-bottom: 1px solid rgba(187, 187, 187, 0.5);
-        list-style: none;
-        .contest-main {
-          .title {
-            font-size: 18px;
-            a.entry {
-              color: #495060;
-              &:hover {
-                color: #2d8cf0;
-                border-bottom: 1px solid #2d8cf0;
-              }
-            }
-          }
-          li {
-            display: inline-block;
-            padding: 10px 0 0 10px;
-            &:first-child {
-              padding: 10px 0 0 0;
-            }
-          }
-        }
-      }
-    }
   }
-
   .contestLayer {
     margin-top: 10px;
     display: grid;
