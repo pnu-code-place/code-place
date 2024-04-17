@@ -1,12 +1,14 @@
 version: "1"
 services:
 
+  # DB는 외부 서버로 분리 예정
   oj-redis:
     image: redis:4.0-alpine
     restart: always
     volumes:
       - ./data/redis:/data
 
+  # DB는 외부 서버로 분리 예정
   oj-postgres:
     image: postgres:10-alpine
     restart: always
@@ -55,7 +57,7 @@ services:
       - POSTGRES_DB=csep
       - POSTGRES_USER=csep
       - POSTGRES_PASSWORD=csep
-      - JUDGE_SERVER_TOKEN=CHANGE_THIS
+      - JUDGE_SERVER_TOKEN=CHANGE_THIS # secret.key
       # - FORCE_HTTPS=1
       # - STATIC_CDN_HOST=cdn.oj.com
     ports:
