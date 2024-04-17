@@ -1,3 +1,3 @@
 # DOCUMENT
 
-[Here](http://docs.onlinejudge.me/)
+[Here](https://github.com/PNU-CSEP/CSEP/wiki)
