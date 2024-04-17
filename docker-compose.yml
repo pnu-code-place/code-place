@@ -18,6 +18,9 @@ services:
       - POSTGRES_DB=csep
       - POSTGRES_USER=csep
       - POSTGRES_PASSWORD=csep
+    ports:
+      - "0.0.0.0:5437:5432"
+      # 운영환경 데이터 점검을 위해 임시로 열어둡니다.
 
   oj-judge:
     image: registry.cn-hongkong.aliyuncs.com/oj-image/judge:1.6.0
