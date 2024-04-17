@@ -91,14 +91,19 @@ export default [
   },
   {
     name: 'contest-details',
-    path: '/contest/:contestID/',
+    path: '/contest/:contestID',
     component: Contest.ContestDetails,
     meta: {title: 'Contest Details'},
     children: [
       {
+        name: 'contest-overview',
+        path: 'overview',
+        component: Contest.Overview
+      },
+      {
         name: 'contest-submission-list',
         path: 'submissions',
-        component: SubmissionList
+        component: Contest.SubmissionList
       },
       {
         name: 'contest-problem-list',
@@ -113,7 +118,7 @@ export default [
       {
         name: 'contest-announcement-list',
         path: 'announcements',
-        component: Announcements
+        component: Contest.Announcements
       },
       {
         name: 'contest-rank',

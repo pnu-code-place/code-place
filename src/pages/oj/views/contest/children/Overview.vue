@@ -1,16 +1,35 @@
 <template>
-  <main>
-    <side-nav-bar></side-nav-bar>
-    <div id="contest-content">
-      <transition name="fadeInUp">
-        <router-view></router-view>
-      </transition>
+  <div class="flex-container">
+    <div id="contest-main">
+      <div class="flex-container">
+        <template>
+          <div id="contest-desc">
+            <Panel :padding="20" shadow>
+              <div slot="title">
+                {{contest.title}}
+              </div>
+              <div slot="extra">
+                <Tag type="dot" :color="countdownColor">
+                  <span id="countdown">{{countdown}}</span>
+                </Tag>
+              </div>
+              <div v-html="contest.description" class="markdown-body"></div>
+              <div v-if="passwordFormVisible" class="contest-password">
+                <Input v-model="contestPassword" type="password"
+                       placeholder="contest password" class="contest-password-input"
+                       @on-enter="checkPassword"/>
+                <Button type="info" @click="checkPassword">Enter</Button>
+              </div>
+            </Panel>
+            <Table :columns="columns" :data="contest_table" disabled-hover style="margin-bottom: 40px;"></Table>
+          </div>
+        </template>
+      </div>
     </div>
-  </main>
+  </div>
 </template>
 
 <script>
-  import SideNavBar from "./SideNavBar.vue";
   import moment from 'moment'
   import api from '@oj/api'
   import { mapState, mapGetters, mapActions } from 'vuex'
@@ -19,8 +38,8 @@
   import time from '@/utils/time'
 
   export default {
-    components: {SideNavBar},
     name: 'ContestDetail',
+    components: {},
     data () {
       return {
         CONTEST_STATUS: CONTEST_STATUS,
@@ -129,15 +148,25 @@
     }
   }
 </script>
-
-<style scoped lang="less">
-main {
-  width: 1200px;
-  display: flex;
-  gap: 10px;
-
-  #contest-content{
-    flex: 1 auto;
+<style lang="less" scoped>
+  #countdown {
+    font-size: 16px;
   }
-}
+  .flex-container {
+    #contest-main {
+      flex: 1 1;
+      width: 0;
+      #contest-desc {
+        flex: auto;
+      }
+    }
+    .contest-password {
+      margin-top: 20px;
+      margin-bottom: -10px;
+      &-input {
+        width: 200px;
+        margin-right: 10px;
+      }
+    }
+  }
 </style>

@@ -160,7 +160,7 @@
           this.$error(this.$i18n.t('m.Please_login_first'))
           this.$store.dispatch('changeModalStatus', {visible: true})
         } else {
-          this.$router.push({name: 'contest-details', params: {contestID: contest.id}})
+          this.$router.push({name: 'contest-overview', params: {contestID: contest.id}})
         }
       },
 
@@ -212,7 +212,7 @@ main{
     width: 380px;
     border-radius: 7px;
     border: 1px solid #e9ece9;
-    background-color: white;
+    background-color: var(--box-background-color);
   }
   .contestTitle {
     display: flex;

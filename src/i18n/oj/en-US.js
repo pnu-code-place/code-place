@@ -147,12 +147,12 @@ export const m = {
   // Cancel.vue
   Cancel: "Cancel",
   // ContestDetail.vue
-  Problems: "Problems",
+  Problems: "문제",
   Announcements: "공지사항",
-  Submissions: "Submissions",
-  Rankings: "Rankings",
-  Overview: "Overview",
-  Admin_Helper: "Admin Helper",
+  Submissions: "제출물",
+  Rankings: "랭킹",
+  Overview: "대회",
+  Admin_Helper: "채점 현황",
   StartAt: "StartAt",
   EndAt: "EndAt",
   ContestType: "ContestType",
