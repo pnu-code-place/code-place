@@ -42,8 +42,8 @@ services:
       - ./data/judge_server/run:/judger
     environment:
       - SERVICE_URL=http://oj-judge:8080
-      - BACKEND_URL=http://backend/api/judge_server_heartbeat/
-      - TOKEN=CHANGE_THIS
+      - BACKEND_URL=http://backend:8000/api/judge_server_heartbeat/
+      - TOKEN=CHANGE_THIS # secret.key
       # - judger_debug=1
 
   backend:
