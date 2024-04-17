@@ -70,6 +70,7 @@ do
     python3 manage.py makemigrations --no-input
     python3 manage.py migrate contest 0011
     python3 manage.py migrate --no-input
+    python3 manage.py loaddata ./fixtures/*.json
     python manage.py inituser --username=root --password=rootroot --action=create_super_admin &&
     echo "from options.options import SysOptions; SysOptions.judge_server_token='$JUDGE_SERVER_TOKEN'" | python manage.py shell &&
     echo "from conf.models import JudgeServer; JudgeServer.objects.update(task_number=0)" | python manage.py shell &&
