@@ -112,7 +112,7 @@ export default {
     },
     requestData() {
       this.isLoading = true
-      api.getUserProblemInfo(this.username, this.query).then(res => {
+      api.getUserProblemInfo(this.username, utils.filterEmptyValue(this.query)).then(res => {
         this.problem_list = res.data.data
       }).catch(error =>
         this.error = error.response.status
@@ -133,6 +133,7 @@ export default {
       this.pushRouter()
     },
     pushRouter() {
+      console.log(utils.filterEmptyValue(this.query))
       this.$router.push({
         name: 'user-problems',
         params: {username: this.username},

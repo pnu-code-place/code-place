@@ -24,7 +24,7 @@ import DashboardSection from "../views/user/userhome/sections/dashboardSection/D
 import ProblemSection from "../views/user/userhome/sections/problemSection/ProblemSection.vue";
 import communitySection from "../views/user/userhome/sections/communitySection/CommunitySection.vue";
 import AchievementSection from "../views/user/userhome/sections/achievementSection/AchievementSection.vue";
-import SoaringRank from "../views/rank/SoaringRank.vue";
+import SoaringRank from "../views/rank/SurgeRank.vue";
 import MajorRank from "../views/rank/MajorRank.vue";
 import UserRank from "../views/rank/UserRank.vue";
 
@@ -146,9 +146,9 @@ export default [
         component : UserRank
       },
       {
-        name: 'soaring-rank',
-        path: 'soaring-rank',
-        meta: {title: 'Soaring Rank'},
+        name: 'surge-rank',
+        path: 'surge-rank',
+        meta: {title: 'Surge-Rank'},
         component : SoaringRank
       },
       {

@@ -4,7 +4,7 @@
     <div class="main-contents">
       <header class="routers">
         <router-link class="" to="user-rank">{{ $t('m.User_Rank') }}</router-link>
-        <router-link class="" to="soaring-rank">{{ $t('m.Today_User') }}</router-link>
+        <router-link class="" to="surge-rank">{{ $t('m.Today_User') }}</router-link>
         <router-link class="" to="major-rank">{{ $t('m.Major_Rank') }}</router-link>
       </header>
       <div class="acm-rank__contents">

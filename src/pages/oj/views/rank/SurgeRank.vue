@@ -21,7 +21,7 @@ import UserList from "./UserRankList.vue";
 import ErrorSign from "../general/ErrorSign.vue";
 
 export default {
-  name: 'SoaringRank',
+  name: 'SurgeRank',
   components: {ErrorSign, UserList, Pagination, RankList, SkeletonBox},
   data() {
     return {
