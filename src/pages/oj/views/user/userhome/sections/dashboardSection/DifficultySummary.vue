@@ -12,6 +12,13 @@ export default {
         mid: {label: 'Mid', color: DIFFICULTY_MAP.Mid.textColor},
         high: {label: 'High', color: DIFFICULTY_MAP.High.textColor},
         veryhigh: {label: 'Very High', color: DIFFICULTY_MAP.VeryHigh.textColor},
+      },
+      DIFFICULTY_NAME_TO_CODE: {
+        verylow: 'VeryLow',
+        low: 'Low',
+        mid: 'Mid',
+        high: 'High',
+        veryhigh: 'VeryHigh',
       }
     }
   },
@@ -26,6 +33,10 @@ export default {
       // 이니셜을 표시해주는 함수
       const initial = params.name.split(' ').map((word) => word[0]).join('')
       return params.percent >= 10 ? initial : ''
+    },
+    goDifficulty(difficulty) {
+      this.$router.push({name: 'user-problems', params: {username: this.$route.params.username}, query: {difficulty: this.DIFFICULTY_NAME_TO_CODE[difficulty]}})
+      window.location.reload()
     }
   },
   computed: {
@@ -105,7 +116,7 @@ export default {
         </tr>
         </thead>
         <tbody>
-        <tr v-for="(difficulty, key, index) in difficultyInfo" :key="index">
+        <tr class="part-row" v-for="(difficulty, key, index) in difficultyInfo" :key="index" @click="goDifficulty(key)">
           <td class="part-name" :style="{color:DIFFICULTY_LABEL[key].color}">{{ DIFFICULTY_LABEL[key].label }}</td>
           <td class="solve-number">{{ difficulty.solve_number }}</td>
           <td class="difficulty-score">{{ difficulty.total_score }}
@@ -122,6 +133,15 @@ export default {
 </template>
 
 <style scoped lang="less">
+.part-row {
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  font-size: 14px;
+  border-top: 1px solid #dedede;
+  &:hover {
+    background-color: #f5f5f5;
+  }
+}
 .difficulty-summary {
   display: flex;
   flex-direction: row;

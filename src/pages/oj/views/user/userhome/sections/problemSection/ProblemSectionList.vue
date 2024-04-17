@@ -138,6 +138,7 @@ export default {
         params: {username: this.username},
         query: utils.filterEmptyValue(this.query)
       })
+      this.requestData()
     },
   },
   mounted() {

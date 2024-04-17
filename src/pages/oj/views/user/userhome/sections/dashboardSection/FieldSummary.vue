@@ -13,6 +13,13 @@ export default {
         implementation: {label: FIELD_MAP["0"].value, color: FIELD_MAP["0"].boxColor},
         search: {label: FIELD_MAP["3"].value, color: FIELD_MAP["3"].boxColor},
       },
+      CATEGORY_NAME_TO_CODE: {
+        datastructure: 2,
+        math: 1,
+        sorting: 4,
+        implementation: 0,
+        search: 3,
+      }
     }
   },
   methods: {
@@ -25,6 +32,10 @@ export default {
       }
       return (value / this.totalScore * 100).toFixed(1);
     },
+    goField(category) {
+      this.$router.push({name: 'user-problems', params: {username: this.$route.params.username}, query: {field: this.CATEGORY_NAME_TO_CODE[category]}})
+      window.location.reload()
+    }
   },
   computed: {
     totalScore() {
@@ -132,9 +143,9 @@ export default {
         </tr>
         </thead>
         <tbody>
-        <tr class="part-row" v-for="(category, category_name) in fieldInfo">
+        <tr class="part-row" v-for="(category, category_name) in fieldInfo" @click="goField(category_name)">
           <td class="part-name">
-            <span :style="{backgroundColor:CATEGORY_LABEL[category_name].color}">
+            <span :style="{backgroundColor:CATEGORY_LABEL[category_name].color}" >
               {{ CATEGORY_LABEL[category_name].label }}
             </span>
           </td>
@@ -162,6 +173,16 @@ export default {
   justify-content: space-between;
   padding: 0 10px;
   gap: 20px;
+
+  .part-row {
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    font-size: 14px;
+    border-top: 1px solid #dedede;
+    &:hover {
+      background-color: #f5f5f5;
+    }
+  }
 
   .graph-column {
     width: 30%;
