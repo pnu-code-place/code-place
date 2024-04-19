@@ -293,4 +293,5 @@ export const m = {
 
   // Search
   Search_Keywords: '검색어',
+  Search_Author: "작성자 검색",
 }
