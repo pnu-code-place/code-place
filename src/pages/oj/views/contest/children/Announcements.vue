@@ -1,4 +1,4 @@
-<template key="announcement">
+<template>
   <div class="announcementBox">
     <div class="announcementTitle">
       <p>{{$t('m.Announcement')}}</p>

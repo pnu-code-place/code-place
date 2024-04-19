@@ -57,67 +57,10 @@
 
   export default {
     name: 'ContestDetail',
-    components: {},
-    data () {
-      return {
-        CONTEST_STATUS: CONTEST_STATUS,
-        route_name: '',
-        btnLoading: false,
-        contestID: '',
-        contestPassword: '',
-        columns: [
-          {
-            title: this.$i18n.t('m.StartAt'),
-            render: (h, params) => {
-              return h('span', time.utcToLocal(params.row.start_time))
-            }
-          },
-          {
-            title: this.$i18n.t('m.EndAt'),
-            render: (h, params) => {
-              return h('span', time.utcToLocal(params.row.end_time))
-            }
-          },
-          {
-            title: this.$i18n.t('m.ContestType'),
-            render: (h, params) => {
-              return h('span', this.$i18n.t('m.' + params.row.contest_type ? params.row.contest_type.replace(' ', '_') : ''))
-            }
-          },
-          {
-            title: this.$i18n.t('m.Rule'),
-            render: (h, params) => {
-              return h('span', this.$i18n.t('m.' + params.row.rule_type))
-            }
-          },
-          {
-            title: this.$i18n.t('m.Creator'),
-            render: (h, data) => {
-              return h('span', data.row.created_by.username)
-            }
-          }
-        ]
-      }
-    },
     mounted () {
       this.contestID = this.$route.params.contestID
-      this.route_name = this.$route.name
-      this.$store.dispatch('getContest').then(res => {
-        this.changeDomTitle({title: res.data.data.title})
-        let data = res.data.data
-        let endTime = moment(data.end_time)
-        if (endTime.isAfter(moment(data.now))) {
-          this.timer = setInterval(() => {
-            this.$store.commit(types.NOW_ADD_1S)
-          }, 1000)
-        }
-      })
     },
     methods: {
-      ...mapActions(['changeDomTitle']),
-      handleRoute (route) {
-        this.$router.push(route)
-      },
       checkPassword () {
         if (this.contestPassword === '') {
           this.$error('Password can\'t be empty')
@@ -135,14 +78,10 @@
     },
     computed: {
       ...mapState({
-        showMenu: state => state.contest.itemVisible.menu,
         contest: state => state.contest.contest,
-        contest_table: state => [state.contest.contest],
-        now: state => state.contest.now
       }),
       ...mapGetters(
-        ['contestMenuDisabled', 'contestRuleType', 'contestStatus', 'countdown', 'isContestAdmin',
-          'OIContestRealTimePermission', 'passwordFormVisible']
+        ['contestStatus', 'countdown', 'passwordFormVisible']
       ),
       countdownColor () {
         if (this.contestStatus) {
@@ -150,17 +89,6 @@
         }
       },
     },
-    watch: {
-      '$route' (newVal) {
-        this.route_name = newVal.name
-        this.contestID = newVal.params.contestID
-        this.changeDomTitle({title: this.contest.title})
-      }
-    },
-    beforeDestroy () {
-      clearInterval(this.timer)
-      this.$store.commit(types.CLEAR_CONTEST)
-    }
   }
 </script>
 

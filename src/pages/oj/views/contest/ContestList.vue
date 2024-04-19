@@ -50,7 +50,7 @@
                 {{contest.title}}
               </a>
             </p>
-            <Tag style="flex-shrink: 0; margin: 0; width: 84px;" type="dot" :color="CONTEST_STATUS_REVERSE[contest.status].color">{{$t(CONTEST_STATUS_REVERSE[contest.status].name)}}</Tag>
+            <Tag style="flex-shrink: 0; margin: 0; width: 84px;" type="dot" :color="CONTEST_STATUS_REVERSE[contest.status].color">{{CONTEST_STATUS_REVERSE[contest.status].name}}</Tag>
           </div>
           <div class="contestContent">
             <p v-html="contest.description"></p>

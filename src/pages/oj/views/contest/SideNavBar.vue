@@ -1,22 +1,22 @@
 <template>
   <nav v-show="showMenu" class="side-nav sticky">
     <ul class="nav-content">
-      <router-link :to="{name: 'contest-overview', params: {contestID: contestID}}"> 
+      <router-link :to="{name: 'contest-overview'}"> 
         <Icon type="home"></Icon> {{$t('m.Overview')}}
       </router-link>
-      <router-link :to="{name: 'contest-announcement-list', params: {contestID: contestID}}"> 
+      <router-link :to="{name: 'contest-announcement-list'}"> 
         <Icon type="chatbubble-working"></Icon> {{$t('m.Announcements')}}
       </router-link>
-      <router-link :to="{name: 'contest-problem-list', params: {contestID: contestID}}"> 
+      <router-link :to="{name: 'contest-problem-list'}"> 
         <Icon type="ios-photos"></Icon> {{$t('m.Problems')}}
       </router-link>
-      <router-link :to="{name: 'contest-submission-list', params: {contestID: contestID}}" v-if="OIContestRealTimePermission">
+      <router-link :to="{name: 'contest-submission-list'}" v-if="OIContestRealTimePermission">
         <Icon type="navicon-round"></Icon> {{$t('m.Submissions')}}
       </router-link>
-      <router-link :to="{name: 'contest-rank', params: {contestID: contestID}}" v-if="OIContestRealTimePermission">
+      <router-link :to="{name: 'contest-rank'}" v-if="OIContestRealTimePermission">
         <Icon type="stats-bars"></Icon> {{$t('m.Rankings')}}
       </router-link>
-      <router-link :to="{name: 'acm-helper', params: {contestID: contestID}}" v-if="showAdminHelper">
+      <router-link :to="{name: 'acm-helper'}" v-if="showAdminHelper">
         <Icon type="ios-paw"></Icon> {{$t('m.Admin_Helper')}}
       </router-link>
     </ul>
