@@ -79,18 +79,32 @@ const getters = {
   countdown: (state, getters) => {
     if (getters.contestStatus === CONTEST_STATUS.NOT_START) {
       let duration = moment.duration(getters.contestStartTime.diff(state.now, 'seconds'), 'seconds')
-      // time is too long
-      if (duration.weeks() > 0) {
-        return 'Start At ' + duration.humanize()
-      }
-      let texts = [Math.floor(duration.asHours()), duration.minutes(), duration.seconds()]
-      return '-' + texts.join(':')
+      if(duration.days() > 0)
+        return '시작 ' + duration.days() + '일 전';
+      let result = "";
+      if(duration.hours() > 0)
+        result += duration.hours() + '시 ';
+      if(duration.minutes() > 0)
+        result += duration.minutes() + '분 ';
+      if(duration.seconds() > 0)
+        result += duration.seconds() + '초';
+
+      return '시작 ' + result + '전';
     } else if (getters.contestStatus === CONTEST_STATUS.UNDERWAY) {
       let duration = moment.duration(getters.contestEndTime.diff(state.now, 'seconds'), 'seconds')
-      let texts = [Math.floor(duration.asHours()), duration.minutes(), duration.seconds()]
-      return '-' + texts.join(':')
+      let result = "";
+      if(duration.days() > 0)
+        result += duration.days() + '알 ';
+      if(duration.hours() > 0)
+        result += duration.hours() + '시 ';
+      if(duration.minutes() > 0)
+        result += duration.minutes() + '분 ';
+      if(duration.seconds() > 0)
+        result += duration.seconds() + '초';
+
+      return '종료 ' + result + '전';
     } else {
-      return 'Ended'
+      return '종료'
     }
   }
 }

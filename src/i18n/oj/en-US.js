@@ -397,4 +397,10 @@ export const m = {
   Users : "사용자",
   Grade: "등급",
 
+  // Contest-Overview.vue
+  Contest_Password_Placeholder: "대회 비밀번호",
+
+  // 버튼
+  Button_Enter: '확인',
+
 };
