@@ -247,6 +247,7 @@ export const m = {
   Th_Problem_Title: "제목",
   Th_Problem_Difficulty: "난이도",
   Th_Problem_Num_Success: "완료한 사람",
+  Th_Problem_Total_Score: "총점",
   Th_Problem_AC_Rate: "정답률",
   //AiRecommendationBox.vue
   AiRecommendation: "AI 추천 문제",
