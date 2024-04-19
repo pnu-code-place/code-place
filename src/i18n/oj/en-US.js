@@ -96,7 +96,7 @@ export const m = {
   TOP_2: "2등",
   TOP_3: "3등",
   // Announcements.vue
-  Contest_Announcements: "Contest Announcements",
+  Contest_Announcements: "대회 공지사항",
   By: "By",
   // ApplyResetPassword.vue
   The_email_doesnt_exist: "존재하지 않는 이메일입니다.",

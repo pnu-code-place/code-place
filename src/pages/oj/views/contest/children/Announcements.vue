@@ -1,52 +1,27 @@
-<template>
-  <Panel shadow :padding="10">
-    <div slot="title">
-      {{title}}
-    </div>
-    <div slot="extra">
+<template key="announcement">
+  <div class="announcementBox">
+    <div class="announcementTitle">
+      <p>{{$t('m.Announcement')}}</p>
       <Button v-if="listVisible" type="info" @click="init" :loading="btnLoading">{{$t('m.Refresh')}}</Button>
       <Button v-else type="ghost" icon="ios-undo" @click="goBack">{{$t('m.Back')}}</Button>
     </div>
-
-    <transition-group name="announcement-animate" mode="in-out">
-      <div class="no-announcement" v-if="!announcements.length" key="no-announcement">
-        <p>{{$t('m.No_Announcements')}}</p>
-      </div>
-      <template v-if="listVisible">
-        <ul class="announcements-container" key="list">
-          <li v-for="announcement in announcements" :key="announcement.title">
-            <div class="flex-container">
-              <div class="title"><a class="entry" @click="goAnnouncement(announcement)">
-                {{announcement.title}}</a></div>
-              <div class="date">{{announcement.create_time | localtime }}</div>
-              <div class="creator"> {{$t('m.By')}} {{announcement.created_by.username}}</div>
-            </div>
-          </li>
-        </ul>
-        <Pagination v-if="!isContest"
-                    key="page"
-                    :total="total"
-                    :page-size="limit"
-                    @on-change="getAnnouncementList">
-        </Pagination>
-      </template>
-
-      <template v-else>
-        <div v-katex v-html="announcement.content" key="content" class="content-container markdown-body"></div>
-      </template>
-    </transition-group>
-  </Panel>
+    <div v-if="listVisible" class="announcementContent">
+      <div v-if="!announcements.length" key="noAnnouncement">{{$t('m.No_Announcements')}}</div>
+      <a v-for="announcement in announcements" :key="announcement.id" class="announcementItem" @click="goAnnouncement(announcement)">
+        <div class="title">{{announcement.title}}</div>
+        <div class="date">{{announcement.create_time | localtime('YYYY-M-D')}}</div>
+        <div class="creator">{{announcement.created_by.username}}</div>
+      </a>
+    </div>
+    <div v-else v-html="announcement.content" key="content" class="markdown-body" style="padding: 10px 20px;"></div>
+  </div>
 </template>
 
 <script>
   import api from '@oj/api'
-  import Pagination from '@oj/components/Pagination'
 
   export default {
     name: 'Announcement',
-    components: {
-      Pagination
-    },
     data () {
       return {
         limit: 10,
@@ -62,21 +37,7 @@
     },
     methods: {
       init () {
-        if (this.isContest) {
-          this.getContestAnnouncementList()
-        } else {
-          this.getAnnouncementList()
-        }
-      },
-      getAnnouncementList (page = 1) {
-        this.btnLoading = true
-        api.getAnnouncementList((page - 1) * this.limit, this.limit).then(res => {
-          this.btnLoading = false
-          this.announcements = res.data.data.results
-          this.total = res.data.data.total
-        }, () => {
-          this.btnLoading = false
-        })
+        this.getContestAnnouncementList()
       },
       getContestAnnouncementList () {
         this.btnLoading = true
@@ -96,72 +57,55 @@
         this.announcement = ''
       }
     },
-    computed: {
-      title () {
-        if (this.listVisible) {
-          return this.isContest ? this.$i18n.t('m.Contest_Announcements') : this.$i18n.t('m.Announcements')
-        } else {
-          return this.announcement.title
-        }
-      },
-      isContest () {
-        return !!this.$route.params.contestID
-      }
-    }
   }
 </script>
 
 <style scoped lang="less">
-  .announcements-container {
-    margin-top: -10px;
-    margin-bottom: 10px;
-    li {
-      padding-top: 15px;
-      list-style: none;
-      padding-bottom: 15px;
-      margin-left: 20px;
-      font-size: 16px;
-      border-bottom: 1px solid rgba(187, 187, 187, 0.5);
-      &:last-child {
-        border-bottom: none;
-      }
-      .flex-container {
-        .title {
-          flex: 1 1;
-          text-align: left;
-          padding-left: 10px;
-          a.entry {
-            color: #495060;
-            &:hover {
-              color: #2d8cf0;
-              border-bottom: 1px solid #2d8cf0;
-            }
-          }
-        }
-        .creator {
-          flex: none;
-          width: 200px;
-          text-align: center;
-        }
-        .date {
-          flex: none;
-          width: 200px;
-          text-align: center;
-        }
-      }
-    }
+.announcementBox {
+  border: 1px solid #e9ece9;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  background: var(--box-background-color);
+  padding: 15px 20px;
+  border-radius: 7px;
+}
+.announcementTitle {
+  display: flex;
+  justify-content: space-between;
+  p {
+    text-decoration: none;
+    font-size: 24px;
+    font-weight: bold;
   }
-
-  .content-container {
-    padding: 0 20px 20px 20px;
+}
+.announcementContent {
+  display: flex;
+  flex-direction: column;
+  font-size: 16px;
+  text-align: center;
+}
+.announcementItem {
+  display: flex;
+  margin: 0px 20px;
+  color: #495060;
+  padding: 15px;
+  border-bottom: 1px solid rgba(187, 187, 187, 0.5);
+  &:hover {
+    :first-child {color: #2d8cf0;}
   }
-
-  .no-announcement {
-    text-align: center;
-    font-size: 16px;
-  }changeLocale
-
-  .announcement-animate-enter-active {
-    animation: fadeIn 1s;
+  &:last-child { border-bottom: none; }
+  .title {
+    flex: 1 auto;
+    text-align: left;
   }
+  .date {
+    flex-shrink: 0;
+    width: 150px;
+  }
+  .creator {
+    flex-shrink: 0;
+    width: 150px;
+  }
+}
 </style>

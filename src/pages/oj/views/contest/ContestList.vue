@@ -219,6 +219,7 @@ main{
     justify-content: space-between;
     align-items: center;
     p {
+      padding-left: 2px;
       font-size: 18px;
       white-space: nowrap;
       overflow: hidden;
