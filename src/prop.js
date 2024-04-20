@@ -616,49 +616,52 @@ export const SurgeUserProps = {
 // limit: 가져올 전공의 수 ( 아마도 7로 고정 )
 
 export const MajorRankListProp = {
-  total: 30,
+  total: 3,
   results: [
     {
-      rank: 1, // 랭킹
-      major: "전자전기공학부", // 전공
-      score: 12000, // 현재 점수
-      people: 200, // 전공 내의 유저 수
+      "rank": 1,
+      "major": "전기전자공학부-전자공학전공",
+      "score": 1280,
+      "people_num": 10,
+      "people": [ //기존에 people에 해당 학과에 user가 몇명인지를 넣었다면
+        { //이제는 해당학과에 속한 user들의 정보의 리스트를 다 넣었습니다. 기존에 원하시던 방식은 people의 length를 찍으시면 되구요
+          "mood": "나는 강서인 남편",
+          "avatar_url": "https://picsum.photos/202",
+          "username": "유승훈",
+          "score": 1280,
+          "tier": "silver2"
+        }
+      ]
     },
     {
-      rank: 2,
-      major: "기계공학부",
-      score: 11500,
-      people: 190,
+      "rank": 2,
+      "major": "컴퓨터공학전공-의생명융합공학부",
+      "score": 720,
+      "people_num": 10,
+      "people": [
+        {
+          "mood": "저는 강서인 남자친구 개발자입니다.",
+          "avatar_url": "https://picsum.photos/200",
+          "username": "csep관리자",
+          "score": 720,
+          "tier": "silver3"
+        }
+      ]
     },
     {
-      rank: 3,
-      major: "화학공학부",
-      score: 11000,
-      people: 180,
-    },
-    {
-      rank: 4,
-      major: "건축학부",
-      score: 10500,
-      people: 170,
-    },
-    {
-      rank: 5,
-      major: "환경공학부",
-      score: 10000,
-      people: 160,
-    },
-    {
-      rank: 6,
-      major: "산업공학부",
-      score: 9500,
-      people: 150,
-    },
-    {
-      rank: 7,
-      major: "식품공학부",
-      score: 9000,
-      people: 140,
-    },
+      "rank": 3,
+      "major": "의예과",
+      "score": 0,
+      "people_num": 10,
+      "people": [
+        {
+          "mood": null,
+          "avatar_url": "https://picsum.photos/201",
+          "username": "강서인(승훈 아내)",
+          "score": 0,
+          "tier": "sprout"
+        }
+      ]
+    }
   ]
-};
+}

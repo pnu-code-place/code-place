@@ -25,7 +25,7 @@ import ProblemSection from "../views/user/userhome/sections/problemSection/Probl
 import communitySection from "../views/user/userhome/sections/communitySection/CommunitySection.vue";
 import AchievementSection from "../views/user/userhome/sections/achievementSection/AchievementSection.vue";
 import SoaringRank from "../views/rank/SurgeRank.vue";
-import MajorRank from "../views/rank/MajorRank.vue";
+import MajorRank from "../views/rank/majorRank/MajorRank.vue";
 import UserRank from "../views/rank/UserRank.vue";
 
 export default [

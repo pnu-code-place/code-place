@@ -48,7 +48,7 @@ export default {
         .then(res => {
           this.surgeUsers = res.data.data.results
           this.total = res.data.data.total
-          if (this.dataRank.length === 0) {
+          if (this.surgeUsers.length === 0) {
             this.error = {code: 404, description: '충분한 데이터가 없습니다.', solution: '잠시 후 다시 시도해 주세요.'}
           }
           this.isLoading = false

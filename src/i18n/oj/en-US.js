@@ -346,6 +346,7 @@ export const m = {
   Ranking: "랭킹",
   OJ_Summary: "랭킹 및 티어",
   TOP: "상위",
+  Th: "위",
   UserHomeSolved: "해결한 문제",
   Miracle_Coding: "미라클 코딩",
   MiracleCodingDays: "일",

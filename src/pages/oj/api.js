@@ -352,7 +352,7 @@ export default {
     //     resolve({data: {data: SurgeUserProps}})
     //   }, 500)
     // });
-    return ajax("surge_users", "get", {
+    return ajax("surge_user_rank", "get", {
       params
     });
   },
