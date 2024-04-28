@@ -68,9 +68,6 @@ export default {
     <ErrorSign v-if="error" :code="this.error.code || 404" :solution="this.error.solution || ''" :description="this.error.description || ''"/>
 
     <div class="major-rank" v-else>
-      <div class="loading" v-if="isLoading">
-        <el-skeleton :row="10"/>
-      </div>
       <div class="table">
         <div class="table-header">
           <div class="rank">{{ $t('m.Rank') }}</div>
@@ -159,7 +156,6 @@ export default {
     height: 100%;
     animation: loading 1s infinite;
   }
-
 }
 
 @keyframes loading {

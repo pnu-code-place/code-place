@@ -33,11 +33,11 @@ export default {
       <div class="rank">{{ major.rank }}</div>
       <div class="major">{{ major.major }}</div>
       <div class="score">{{ comma(major.score) }}</div>
-      <div class="people">{{ comma(major.people_num) }}</div>
+      <div class="people">{{ comma(major.people.length) }}</div>
     </div>
     <transition>
       <div class="major-people" v-if="isExtended">
-        <MajorRankPeople v-for="(person, index) in major.people" :user="person" :key="person.username" :ranking="index+1"/>
+        <MajorRankPeople v-for="(person, index) in major.people.slice(this.PEOPLE_TO_SHOW)" :user="person" :key="person.username" :ranking="index+1"/>
       </div>
     </transition>
   </div>
