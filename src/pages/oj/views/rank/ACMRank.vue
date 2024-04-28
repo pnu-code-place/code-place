@@ -52,6 +52,7 @@ export default {}
   }
 
   .acm-rank__contents {
+    background-color: #fff;
     display: flex;
     justify-content: space-between;
     border-color: #dedede;

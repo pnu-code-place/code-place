@@ -4,13 +4,15 @@ import utils, {comma} from "../../../../../utils/utils";
 import Pagination from "../../../components/Pagination.vue";
 import {push} from "echarts/lib/component/dataZoom/history";
 import MajorRankItem from "./MajorRankItem.vue";
+import ErrorSign from "../../general/ErrorSign.vue";
 
 export default {
   name: 'MajorRank',
-  components: {MajorRankItem, Pagination},
+  components: {ErrorSign, MajorRankItem, Pagination},
   data() {
     return {
       isLoading: true,
+      error: null,
       majorRankList: [],
       offset: 0,
       limits: 100,
@@ -37,6 +39,12 @@ export default {
         // item의 rank에 따라서 정렬
         this.majorRankList.sort((a, b) => a.rank - b.rank).slice(0, 5)
         this.total = res.data.data.total
+        if (this.majorRankList.length === 0) {
+          this.error = {code: 404, description: '충분한 데이터가 없습니다.', solution: '잠시 후 다시 시도해 주세요.'}
+        }
+        this.isLoading = false
+      }).catch(err => {
+        this.error = err
         this.isLoading = false
       })
     },
@@ -56,29 +64,50 @@ export default {
 </script>
 
 <template>
-  <div class="major-rank">
-    <div class="table">
-      <div class="table-header">
-        <div class="rank">{{ $t('m.Rank') }}</div>
-        <div class="major">{{ $t('m.Major') }}</div>
-        <div class="score">{{ $t('m.Total_Score') }}</div>
-        <div class="people">{{ $t('m.Num_People') }}</div>
+  <div class="content-wrapper">
+    <ErrorSign v-if="error" :code="this.error.code || 404" :solution="this.error.solution || ''" :description="this.error.description || ''"/>
+
+    <div class="major-rank" v-else>
+      <div class="loading" v-if="isLoading">
+        <el-skeleton :row="10"/>
       </div>
-      <div class="table-body">
-        <major-rank-item v-for="(major, index) in this.majorRankList" :major="major" :key="index"/>
+      <div class="table">
+        <div class="table-header">
+          <div class="rank">{{ $t('m.Rank') }}</div>
+          <div class="major">{{ $t('m.Major') }}</div>
+          <div class="score">{{ $t('m.Total_Score') }}</div>
+          <div class="people">{{ $t('m.Num_People') }}</div>
+        </div>
+        <div class="table-body" v-if="isLoading">
+          <div v-for="i in Array(7)" class="skeleton-row">
+            <div class="skeleton"></div>
+          </div>
+        </div>
+        <div class="table-body" v-else>
+          <major-rank-item v-for="(major, index) in this.majorRankList" :major="major" :key="index"/>
+        </div>
       </div>
+      <Pagination
+        :total="this.total"
+        :limit="10"
+        :page="1"
+        @onChange="pushRouter"
+        @on-page-size-change="pushRouter">
+      </Pagination>
     </div>
-    <Pagination
-      :total="this.total"
-      :limit="10"
-      :page="1"
-      @onChange="pushRouter"
-      @on-page-size-change="pushRouter">
-    </Pagination>
   </div>
 </template>
 
 <style scoped lang="less">
+.content-wrapper {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
 .major-rank {
   width: 100%;
   background-color: var(--box-background-color);
@@ -119,9 +148,29 @@ export default {
       text-align: center;
     }
   }
+}
 
-  .table-body {
+.skeleton-row {
+  height: 35px;
+  margin: 20px;
+  .skeleton {
+    border-radius: 10px;
+    width: 100%;
+    height: 100%;
+    animation: loading 1s infinite;
+  }
 
+}
+
+@keyframes loading {
+  0% {
+    background-color: #e3e3e3;
+  }
+  50% {
+    background-color: #f5f5f5;
+  }
+  100% {
+    background-color: #e3e3e3;
   }
 }
 </style>
