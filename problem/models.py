@@ -107,10 +107,6 @@ class Problem(models.Model):
         unique_together = (("_id", "contest"),)
         ordering = ("create_time",)
 
-    def save(self, *args, **kwargs):
-        self._id = str(self.id)
-        super().save(*args, **kwargs)
-
     def add_submission_number(self):
         self.submission_number = models.F("submission_number") + 1
         self.save(update_fields=["submission_number"])
