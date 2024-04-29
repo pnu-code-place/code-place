@@ -211,8 +211,8 @@ class ProblemAPI(ProblemBase):
         tags = data.pop("tags")
         data["created_by"] = request.user
         problem = Problem.objects.create(**data)
-        problem._id = str(problem.id)
-        problem.save()
+        # problem._id = str(problem.id)
+        # problem.save()
 
         for item in tags:
             try:
