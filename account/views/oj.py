@@ -602,7 +602,7 @@ class MajorRankAPI(APIView):
         results = []
         for rank, major in enumerate(major_ranks, start=1):
             people_data = major.userprofile_set.select_related('user', 'user__userscore').annotate(
-                avatar_url=Concat(Value('/public/avatar/'), 'avatar', output_field=TextField()),
+                avatar_url=F('user__userprofile__avatar'),
                 username=F('user__username'),
                 score=F('user__userscore__total_score'),
                 tier=F('user__userscore__tier')
