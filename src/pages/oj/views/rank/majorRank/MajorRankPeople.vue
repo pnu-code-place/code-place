@@ -42,12 +42,12 @@ export default {
 
 <template>
   <div class="major-rank-people" @click="goUserInfo">
-    <div class="ranking">{{ this.ranking }} {{$t('m.Th')}}</div>
+    <div class="ranking">{{ this.ranking }}</div>
     <div class="user-avatar">
       <img :src="user.avatar_url" alt="avatar">
     </div>
     <div class="username">{{ this.user.username }}</div>
-    <div class="mood">{{ this.user.mood }}</div>
+    <div :class="this.user.mood? 'mood exist' : 'mood'">{{ this.user.mood }}</div>
     <div class="tier">
       <shine-wrapper class="tier-mark-wrapper">
         <img class="tier-mark" :src="TierImageSrc[user.tier]" alt='tier-mark'>
@@ -68,7 +68,6 @@ export default {
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-
 
   &:hover {
     background-color: #f5f5f5;
@@ -108,6 +107,16 @@ export default {
     width: 30%;
     text-align: left;
     font-weight: 400;
+    padding: 10px;
+    margin-right: 20px;
+    border-radius: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    &.exist {
+      background-color : rgba(208, 223, 248, 0.18);
+    }
   }
 
   & > .tier {

@@ -103,19 +103,20 @@ export default {
       }
       this.query.limit = parseInt(query.limit) || 10
       this.getRankData()
-    }
-  },
-  getTopUsers() {
-    api.getUserRank(0, 3).then(res => {
-      this.topUsers = res.data.data.results
-    })
+    },
+    getTopUsers() {
+      api.getUserRank(0, 3).then(res => {
+        this.topUsers = res.data.data.results
+      })
+    },
   },
 }
 </script>
 
 <template>
   <div class="contents-wrapper">
-    <ErrorSign v-if="this.error" :code="this.error.code || 404" :description="this.error.description || ''" :solution="this.error.solution || ''"/>
+    <ErrorSign v-if="this.error" :code="this.error.code || 404" :description="this.error.description || ''"
+               :solution="this.error.solution || ''"/>
     <div class="contents" v-else>
       <div class="top-users">
         <div class="top-user sub-top">

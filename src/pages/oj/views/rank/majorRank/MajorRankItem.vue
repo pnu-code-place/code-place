@@ -37,7 +37,7 @@ export default {
     </div>
     <transition>
       <div class="major-people" v-if="isExtended">
-        <MajorRankPeople v-for="(person, index) in major.people.slice(this.PEOPLE_TO_SHOW)" :user="person" :key="person.username" :ranking="index+1"/>
+        <MajorRankPeople v-for="(person, index) in major.people.slice(0, this.PEOPLE_TO_SHOW)" :user="person" :key="person.username" :ranking="index+1"/>
       </div>
     </transition>
   </div>

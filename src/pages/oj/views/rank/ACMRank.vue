@@ -33,21 +33,31 @@ export default {}
     justify-content: space-between;
 
     a {
-      font-size: 15px;
+      font-size: 16px;
       width: 100%;
       text-align: center;
       padding: 12px;
-      color: #fff;
-      font-weight: 500;
+      font-weight: 700;
       border: 1px solid #dedede;
       border-radius: 10px 10px 0 0;
       background-color: #495060;
+      color : #e6f2ff;
+
+      &:hover {
+        background-color: #5b6375;
+        color : #e6f2ff;
+      }
     }
 
     .router-link-active {
       background-color: #fff;
       color: #495060;
       border-bottom: 0;
+
+      &:hover {
+        background-color: #edf4fb;
+        color: #495060;
+      }
     }
   }
 
@@ -58,6 +68,7 @@ export default {}
     border-color: #dedede;
     border-style: solid;
     border-width: 0 1px 1px 1px;
+    border-radius: 0 0 10px 10px;
     gap: 30px;
   }
 }
