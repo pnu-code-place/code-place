@@ -109,9 +109,13 @@ class UserProfileDashBoardAPI(APIView):
     @login_required
     def get(self, request):
         try:
-            user_id = request.user.id
+            # user_id = request.user.id
+            username = request.GET.get("username")
+            user_profile = UserProfile.objects.filter(user__username=username).first()
+            user_id = user_profile.user_id
+            # print(user_profile.user_id)
             # user = User.objects.filter(id=user_id).first()
-            user_profile = UserProfile.objects.filter(user_id=user_id).first()
+            # user_profile = UserProfile.objects.filter(user_id=user_id).first()
             # user_department = Department.objects.filter(id=user_profile.department_id).first()
             # user_college = College.objects.filter(id=user_profile.college_id).first()
             user_score = UserScore.objects.filter(user_id=user_id).annotate(
