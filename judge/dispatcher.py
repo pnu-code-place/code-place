@@ -2,6 +2,7 @@ import hashlib
 import json
 import logging
 from urllib.parse import urljoin
+from utils.shortcuts import get_env
 
 import requests
 from django.db import transaction, IntegrityError
