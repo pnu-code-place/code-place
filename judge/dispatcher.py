@@ -170,31 +170,29 @@ class JudgeDispatcher(DispatcherBase):
             Submission.objects.filter(id=self.submission.id).update(result=JudgeStatus.SYSTEM_ERROR)
             return
 
-        """아래 주석은 원래 코드, judge server오류로 ACCEPTED처리해주기 위해 잠시 대체"""
-        # if resp["err"]:
-        #     self.submission.result = JudgeStatus.COMPILE_ERROR
-        #     self.submission.statistic_info["err_info"] = resp["data"]
-        #     self.submission.statistic_info["score"] = 0
-        # else:
-        #     resp["data"].sort(key=lambda x: int(x["test_case"]))
-        #     self.submission.info = resp
-        #     self._compute_statistic_info(resp["data"])
-        #     error_test_case = list(filter(lambda case: case["result"] != 0, resp["data"]))
-        #     # ACM모드: 모든 테스트 케이스가 정답이면 Accepted, 그렇지 않으면 첫번째 오답 테스트케이스의 상태를 가짐
-        #     # OI모드: 모든 테스트 케이스가 맞으면 Accepted, 모두 틀리면 첫번째 오답 테스트케이스의 상태, 그렇지 않으면 Partially Accepted
-        #
-        #
-        #     if not error_test_case:
-        #         self.submission.result = JudgeStatus.ACCEPTED
-        #     elif self.problem.rule_type == ProblemRuleType.ACM or len(error_test_case) == len(resp["data"]):
-        #         self.submission.result = error_test_case[0]["result"]
-        #     else:
-        #         self.submission.result = JudgeStatus.PARTIALLY_ACCEPTED
-        """아래 코드는 채점 결과 상관없이 무조건 ACCEPTED 처리하는 코드"""
+        production_env = get_env("OJ_ENV", "dev") == "production"
+        if production_env:
+            if resp["err"]:
+                self.submission.result = JudgeStatus.COMPILE_ERROR
+                self.submission.statistic_info["err_info"] = resp["data"]
+                self.submission.statistic_info["score"] = 0
+            else:
+                resp["data"].sort(key=lambda x: int(x["test_case"]))
+                self.submission.info = resp
+                self._compute_statistic_info(resp["data"])
+                error_test_case = list(filter(lambda case: case["result"] != 0, resp["data"]))
+                # ACM모드: 모든 테스트 케이스가 정답이면 Accepted, 그렇지 않으면 첫번째 오답 테스트케이스의 상태를 가짐
+                # OI모드: 모든 테스트 케이스가 맞으면 Accepted, 모두 틀리면 첫번째 오답 테스트케이스의 상태, 그렇지 않으면 Partially Accepted
+                if not error_test_case:
+                    self.submission.result = JudgeStatus.ACCEPTED
+                elif self.problem.rule_type == ProblemRuleType.ACM or len(error_test_case) == len(resp["data"]):
+                    self.submission.result = error_test_case[0]["result"]
+                else:
+                    self.submission.result = JudgeStatus.PARTIALLY_ACCEPTED
+        else: # 개발환경에선 무조건 정답 처리
+            self.submission.result = JudgeStatus.ACCEPTED
         self.submission.info = resp
         # self._compute_statistic_info(resp["data"])
-        self.submission.result = JudgeStatus.ACCEPTED
-
         self.submission.save()
 
         if self.contest_id:
