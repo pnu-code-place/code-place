@@ -27,10 +27,10 @@ import api from '@oj/api'
 import utils from '@/utils/utils'
 import {ProblemMixin} from '@oj/components/mixins'
 import Pagination from '@oj/components/Pagination'
-import AiRecommendationBox from "./problemList/AiRecommendationBox.vue";
-import MostDifficultProblemLastWeekBox from "./problemList/MostDifficultProblemLastWeekBox.vue";
-import ProblemListTable from "./problemList/ProblemListTable.vue";
-import ProblemListTableHeader from "./problemList/ProblemListTableHeader.vue";
+import AiRecommendationBox from "./rightSideComponent/AiRecommendationBox.vue";
+import MostDifficultProblemLastWeekBox from "./rightSideComponent/MostDifficultProblemLastWeekBox.vue";
+import ProblemListTable from "./problemListComponent/ProblemListTable.vue";
+import ProblemListTableHeader from "./problemListComponent/ProblemListTableHeader.vue";
 
 export default {
   name: 'ProblemList',

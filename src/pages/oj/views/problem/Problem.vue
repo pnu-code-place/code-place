@@ -188,7 +188,7 @@
                 <span>
                   실행 결과
                 </span>
-                  <i class="fas fa-circle-notch fa-spin" style="margin-left: 7px;color: #e39530"></i>
+<!--                  <i class="fas fa-circle-notch fa-spin" style="margin-left: 7px;color: #e39530"></i>-->
 <!--                <i class="far fa-check-circle" style="color: #38c27b;"></i>-->
 <!--                <i class="far fa-times-circle" style="color: #dd3131;"></i>-->
               </div>
@@ -316,92 +316,92 @@
     <!--        </Card>-->
     <!--      </div>-->
 
-    <!--      <div id="right-column">-->
-    <!--        <VerticalMenu @on-click="handleRoute">-->
-    <!--          <template v-if="this.contestID">-->
-    <!--            <VerticalMenu-item :route="{name: 'contest-problem-list', params: {contestID: contestID}}">-->
-    <!--              <Icon type="ios-photos"></Icon>-->
-    <!--              {{$t('m.Problems')}}-->
-    <!--            </VerticalMenu-item>-->
+<!--          <div id="right-column">-->
+<!--            <VerticalMenu @on-click="handleRoute">-->
+<!--              <template v-if="this.contestID">-->
+<!--                <VerticalMenu-item :route="{name: 'contest-problem-list', params: {contestID: contestID}}">-->
+<!--                  <Icon type="ios-photos"></Icon>-->
+<!--                  {{$t('m.Problems')}}-->
+<!--                </VerticalMenu-item>-->
 
-    <!--            <VerticalMenu-item :route="{name: 'contest-announcement-list', params: {contestID: contestID}}">-->
-    <!--              <Icon type="chatbubble-working"></Icon>-->
-    <!--              {{$t('m.Announcements')}}-->
-    <!--            </VerticalMenu-item>-->
-    <!--          </template>-->
+<!--                <VerticalMenu-item :route="{name: 'contest-announcement-list', params: {contestID: contestID}}">-->
+<!--                  <Icon type="chatbubble-working"></Icon>-->
+<!--                  {{$t('m.Announcements')}}-->
+<!--                </VerticalMenu-item>-->
+<!--              </template>-->
 
-    <!--          <VerticalMenu-item v-if="!this.contestID || OIContestRealTimePermission" :route="submissionRoute">-->
-    <!--            <Icon type="navicon-round"></Icon>-->
-    <!--             {{$t('m.Submissions')}}-->
-    <!--          </VerticalMenu-item>-->
+<!--              <VerticalMenu-item v-if="!this.contestID || OIContestRealTimePermission" :route="submissionRoute">-->
+<!--                <Icon type="navicon-round"></Icon>-->
+<!--                 {{$t('m.Submissions')}}-->
+<!--              </VerticalMenu-item>-->
 
-    <!--          <template v-if="this.contestID">-->
-    <!--            <VerticalMenu-item v-if="!this.contestID || OIContestRealTimePermission"-->
-    <!--                               :route="{name: 'contest-rank', params: {contestID: contestID}}">-->
-    <!--              <Icon type="stats-bars"></Icon>-->
-    <!--              {{$t('m.Rankings')}}-->
-    <!--            </VerticalMenu-item>-->
-    <!--            <VerticalMenu-item :route="{name: 'contest-details', params: {contestID: contestID}}">-->
-    <!--              <Icon type="home"></Icon>-->
-    <!--              {{$t('m.View_Contest')}}-->
-    <!--            </VerticalMenu-item>-->
-    <!--          </template>-->
-    <!--        </VerticalMenu>-->
+<!--              <template v-if="this.contestID">-->
+<!--                <VerticalMenu-item v-if="!this.contestID || OIContestRealTimePermission"-->
+<!--                                   :route="{name: 'contest-rank', params: {contestID: contestID}}">-->
+<!--                  <Icon type="stats-bars"></Icon>-->
+<!--                  {{$t('m.Rankings')}}-->
+<!--                </VerticalMenu-item>-->
+<!--                <VerticalMenu-item :route="{name: 'contest-details', params: {contestID: contestID}}">-->
+<!--                  <Icon type="home"></Icon>-->
+<!--                  {{$t('m.View_Contest')}}-->
+<!--                </VerticalMenu-item>-->
+<!--              </template>-->
+<!--            </VerticalMenu>-->
 
-    <!--        <Card id="info">-->
-    <!--          <div slot="title" class="header">-->
-    <!--            <Icon type="information-circled"></Icon>-->
-    <!--            <span class="card-title">{{$t('m.Information')}}</span>-->
-    <!--          </div>-->
-    <!--          <ul>-->
-    <!--            <li><p>ID</p>-->
-    <!--              <p>{{problem._id}}</p></li>-->
-    <!--            <li>-->
-    <!--              <p>{{$t('m.Time_Limit')}}</p>-->
-    <!--              <p>{{problem.time_limit}}MS</p></li>-->
-    <!--            <li>-->
-    <!--              <p>{{$t('m.Memory_Limit')}}</p>-->
-    <!--              <p>{{problem.memory_limit}}MB</p></li>-->
-    <!--            <li>-->
-    <!--            <li>-->
-    <!--              <p>{{$t('m.IOMode')}}</p>-->
-    <!--              <p>{{problem.io_mode.io_mode}}</p>-->
-    <!--            </li>-->
-    <!--            <li>-->
-    <!--              <p>{{$t('m.Created')}}</p>-->
-    <!--              <p>{{problem.created_by.username}}</p></li>-->
-    <!--            <li v-if="problem.difficulty">-->
-    <!--              <p>{{$t('m.Level')}}</p>-->
-    <!--              <p>{{$t('m.' + problem.difficulty)}}</p></li>-->
-    <!--            <li v-if="problem.total_score">-->
-    <!--              <p>{{$t('m.Score')}}</p>-->
-    <!--              <p>{{problem.total_score}}</p>-->
-    <!--            </li>-->
-    <!--            <li>-->
-    <!--              <p>{{$t('m.Tags')}}</p>-->
-    <!--              <p>-->
-    <!--                <Poptip trigger="hover" placement="left-end">-->
-    <!--                  <a>{{$t('m.Show')}}</a>-->
-    <!--                  <div slot="content">-->
-    <!--                    <Tag v-for="tag in problem.tags" :key="tag">{{tag}}</Tag>-->
-    <!--                  </div>-->
-    <!--                </Poptip>-->
-    <!--              </p>-->
-    <!--            </li>-->
-    <!--          </ul>-->
-    <!--        </Card>-->
+<!--            <Card id="info">-->
+<!--              <div slot="title" class="header">-->
+<!--                <Icon type="information-circled"></Icon>-->
+<!--                <span class="card-title">{{$t('m.Information')}}</span>-->
+<!--              </div>-->
+<!--              <ul>-->
+<!--                <li><p>ID</p>-->
+<!--                  <p>{{problem._id}}</p></li>-->
+<!--                <li>-->
+<!--                  <p>{{$t('m.Time_Limit')}}</p>-->
+<!--                  <p>{{problem.time_limit}}MS</p></li>-->
+<!--                <li>-->
+<!--                  <p>{{$t('m.Memory_Limit')}}</p>-->
+<!--                  <p>{{problem.memory_limit}}MB</p></li>-->
+<!--                <li>-->
+<!--                <li>-->
+<!--                  <p>{{$t('m.IOMode')}}</p>-->
+<!--                  <p>{{problem.io_mode.io_mode}}</p>-->
+<!--                </li>-->
+<!--                <li>-->
+<!--                  <p>{{$t('m.Created')}}</p>-->
+<!--                  <p>{{problem.created_by.username}}</p></li>-->
+<!--                <li v-if="problem.difficulty">-->
+<!--                  <p>{{$t('m.Level')}}</p>-->
+<!--                  <p>{{$t('m.' + problem.difficulty)}}</p></li>-->
+<!--                <li v-if="problem.total_score">-->
+<!--                  <p>{{$t('m.Score')}}</p>-->
+<!--                  <p>{{problem.total_score}}</p>-->
+<!--                </li>-->
+<!--                <li>-->
+<!--                  <p>{{$t('m.Tags')}}</p>-->
+<!--                  <p>-->
+<!--                    <Poptip trigger="hover" placement="left-end">-->
+<!--                      <a>{{$t('m.Show')}}</a>-->
+<!--                      <div slot="content">-->
+<!--                        <Tag v-for="tag in problem.tags" :key="tag">{{tag}}</Tag>-->
+<!--                      </div>-->
+<!--                    </Poptip>-->
+<!--                  </p>-->
+<!--                </li>-->
+<!--              </ul>-->
+<!--            </Card>-->
 
-    <!--        <Card id="pieChart" :padding="0" v-if="!this.contestID || OIContestRealTimePermission">-->
-    <!--          <div slot="title">-->
-    <!--            <Icon type="ios-analytics"></Icon>-->
-    <!--            <span class="card-title">{{$t('m.Statistic')}}</span>-->
-    <!--            <Button type="ghost" size="small" id="detail" @click="graphVisible = !graphVisible">Details</Button>-->
-    <!--          </div>-->
-    <!--          <div class="echarts">-->
-    <!--            <ECharts :options="pie"></ECharts>-->
-    <!--          </div>-->
-    <!--        </Card>-->
-    <!--      </div>-->
+<!--            <Card id="pieChart" :padding="0" v-if="!this.contestID || OIContestRealTimePermission">-->
+<!--              <div slot="title">-->
+<!--                <Icon type="ios-analytics"></Icon>-->
+<!--                <span class="card-title">{{$t('m.Statistic')}}</span>-->
+<!--                <Button type="ghost" size="small" id="detail" @click="graphVisible = !graphVisible">Details</Button>-->
+<!--              </div>-->
+<!--              <div class="echarts">-->
+<!--                <ECharts :options="pie"></ECharts>-->
+<!--              </div>-->
+<!--            </Card>-->
+<!--          </div>-->
 
     <!--      <Modal v-model="graphVisible">-->
     <!--        <div id="pieChart-detail">-->
@@ -511,9 +511,6 @@ export default {
   beforeRouteEnter(to, from, next) {
     let problemCode = storage.get(buildProblemCodeKey(to.params.problemID, to.params.contestID))
     let psSettings = storage.get("ProblemSolvingSettings")
-    console.log(problemCode)
-    console.log(psSettings)
-    console.log("새로고침")
     if(psSettings){
       next(vm => {
         vm.fontSize = psSettings.fontSize
@@ -829,7 +826,7 @@ export default {
 }
 </script>
 
-<style lang="less">
+<style scoped lang="less">
 .card-title {
   margin-left: 8px;
 }
