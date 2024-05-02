@@ -2,7 +2,13 @@
   <div id="header">
     <Menu mode="horizontal" theme="primary" @on-select="handleRoute" :active-name="activeMenu" class="oj-menu">
       <div class="logo" @click="handleRoute('/problem')">
-        <p class="pnuName">{{ this.$route.params.problemID + '번' }}</p>
+        <img class="solvingLogo" src="@/assets/pojLogo.png"/>
+        <template v-if="this.$route.name === 'problem-details'">
+          <p class="pnuName">{{ '문제 풀이' }}</p>
+        </template>
+        <template v-else>
+          <p class="pnuName">{{ '대회' }}</p>
+        </template>
       </div>
       <div style="display: flex; align-items: center; width: 200px;justify-content: right">
         <Tooltip :content="this.themeTooltipContent" placement="bottom"  style="margin-right: 15px">
@@ -40,7 +46,7 @@ export default {
   },
   data(){
     return{
-      themeTooltipContent: '어두운 테마',
+      themeTooltipContent: '다크 테마',
     }
   },
   methods: {
@@ -52,35 +58,17 @@ export default {
         window.open('/admin/')
       }
     },
-    handleBtnClick(mode) {
-      console.log("setting complete!")
-      this.changeModalStatus({
-        visible: true,
-        mode: mode
-      })
-    },
-    async movePrev() {
-      // await this.$router.push({name: 'problem-details', params: {problemID: problemId}})
-    },
-    async moveNext() {
-      // await this.$router.push({name: 'problem-details', params: {problemID: problemId}})
-    },
-    async pickOne() {
-      await api.pickone().then(res => {
-        this.$router.push({name: 'problem-details', params: {problemID: res.data.data}})
-      })
-    },
     toggleProblemTheme() {
       const el = document.querySelector(':root');
       const isLightMode = !el.classList.contains('dark');
       if (isLightMode) {
         el.classList.add('dark')
         this.changeProblemSolvingTheme(true)
-        this.themeTooltipContent = '밝은 테마'
+        this.themeTooltipContent = '라이트 테마'
       } else {
         el.classList.remove('dark');
         this.changeProblemSolvingTheme(false)
-        this.themeTooltipContent = '어두운 테마'
+        this.themeTooltipContent = '다크 테마'
       }
     }
   },
@@ -102,7 +90,7 @@ export default {
 }
 </script>
 
-<style lang="less" scoped>
+<style scoped lang="less">
 #header {
   position: fixed;
   top: 0;
@@ -118,20 +106,26 @@ export default {
     justify-content: space-between;
     height: 50px;
     align-items: center;
+    border-bottom: 1px solid var(--border-color);
     background-color: var(--bg-color);
     color: var(--text-color);
   }
 
   .logo {
     cursor: pointer;
-    width: 200px;
     display: flex;
     align-items: center;
     .pnuName{
-      font-size: 14px;
+      margin-left: 10px;
+      font-size: 16px;
       font-weight: bold;
     }
   }
+}
+
+.solvingLogo{
+  display: block;
+  width: 35px;
 }
 
 @avatar-radius: 50%;

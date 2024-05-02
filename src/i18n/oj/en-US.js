@@ -259,7 +259,7 @@ export const m = {
   Try_Most_Hard_Problem_In_Last_Week: "풀어보기",
   //문제 리스트의 난이도
   Difficulty: "난이도",
-  Category: "카테고리",
+  Category: "태그",
   VeryHigh: "매우 어려움",
   High: "어려움",
   Mid: "보통",

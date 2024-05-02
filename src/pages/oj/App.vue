@@ -29,7 +29,7 @@
 <script>
 import {mapActions, mapGetters, mapState} from 'vuex'
 import NavBar from './components/NavBar.vue'
-import NavBar_Problem from "./components/NavBar_Problem.vue";
+import NavBar_Problem from "./views/problem/problemSolving/problemSolvingNavbar/NavBar_Problem.vue";
 
 export default {
   name: 'app',
@@ -72,20 +72,53 @@ export default {
 <style lang="less">
 
 :root {
+  /* Site Global Variable */
   --box-background-color: #ffffff;
   --site-background-color: #F9FAFB;
   --bg-color: #ffffff;
-  --custom-btn-hover-color: #f5f5f5;
+  --custom-btn-hover-color: #ffffff;
   --border-color: #e7e7e7;
-  --header-btn-color: rgba(246, 246, 246, 0.45);
-  //--markdown--code--color: rgba(27, 31, 35, 0.05);
+  --header-btn-color: rgba(237, 237, 237, 0.45);
+
+  /* Problem Solving Page */
+  --ps-background-color: #F9FAFB;
+  /* Problem Solving Page - Inner Content */
+  --ps-content-color: #FFFFFF;
+  --ps-content-text-color: #454545;
+  --ps-content-title-color: #000000;
+  --ps-content-pre-background-color: #f6f6f6;
+  --ps-content-pre-border-color: #e7e7e7;
+  --ps-content-code-background-color: #f3f4f4;
+  --ps-content-code-text-color: #1a1f29;
+  /* Code Submission */
+  --submit-btn-color: rgba(238, 247, 251, 0.84);
+  --submit-btn-hover-color: rgba(221, 240, 250, 0.84);
+  --submission-result-btn-color: #f8f8f8;
+  --submission-result-btn-text-color: #d1d1d1;
 }
 
+
 :root.dark.problem {
+  /* Problem Solving Page */
+  --ps-background-color: #181c25;
+  /* Problem Solving Page - Inner Content */
+  --ps-content-color: #1f2430;
+  --ps-content-text-color: #b2c0cc;
+  --ps-content-title-color: #ffffff;
+  --ps-content-pre-background-color: #1a1f29;
+  --ps-content-pre-border-color: rgba(140, 140, 140, 0.29);
+  --ps-content-code-background-color: #1b212c;
+  --ps-content-code-text-color: #FFFFFF;
+  /* Code Submission */
+  --submit-btn-color: #343f5a;
+  --submit-btn-hover-color: #364361;
+  --submission-result-btn-color: #1b212c;
+  --submission-result-btn-text-color: #333842;
+
   --bg-color: #1f2430;
   --text-color: #ffffff;
   --difficulty-color: #434e69;
-  --custom-btn-hover-color: #434e69;
+  --custom-btn-hover-color: #465477;
   --border-color: rgba(140, 140, 140, 0.29);
   --header-btn-color: rgba(170, 179, 203, 0.37);
   --markdown--code--color: rgb(6, 6, 196);

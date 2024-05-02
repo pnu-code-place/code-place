@@ -19,7 +19,7 @@ import { codemirror } from 'vue-codemirror'
 // require styles
 import 'codemirror/lib/codemirror.css'
 import 'codemirror/theme/ayu-mirage.css' //dark mode 고정
-import '../../../styles/github-light.css'//bright mode 고정
+import '../../../../../../styles/github-light.css'//bright mode 고정
 
 // mode
 import 'codemirror/mode/clike/clike.js'
@@ -29,7 +29,7 @@ import 'codemirror/mode/javascript/javascript.js'
 
 // active-line.js
 import 'codemirror/addon/selection/active-line.js'
-import utils from "../../../utils/utils";
+import utils from "../../../../../../utils/utils";
 
 // foldGutter
 import 'codemirror/addon/fold/foldgutter.css'
@@ -40,7 +40,7 @@ import 'codemirror/addon/edit/closebrackets.js'
 import {mapGetters} from "vuex";
 
 export default {
-  name:"CodeMirrorTest",
+  name:"CodeEditor",
   components:{
     codemirror
   },
@@ -131,14 +131,9 @@ export default {
     },
   },
   mounted() {
-    if(this.isDarkMode){
-      this.codemirror.setOption('theme', 'ayu-mirage')
-      this.theme = 'ayu-mirage'
-    }
-    else{
-      this.codemirror.setOption('theme', 'github-light')
-      this.theme = 'github-light'
-    }
+    let customTheme = this.isDarkMode ? 'ayu-mirage' : 'github-light'
+    this.codemirror.setOption('theme', customTheme)
+    this.theme = customTheme
 
     this.code = this.value
 
@@ -163,13 +158,8 @@ export default {
   },
   watch:{
     isDarkMode(value){
-      console.log("테마변경")
-      if(value){
-        this.toggleTheme('ayu-mirage')
-      }
-      else{
-        this.toggleTheme('github-light')
-      }
+      let customTheme = value ? 'ayu-mirage' : 'github-light'
+      this.toggleTheme(customTheme)
       this.theme = value
     }
   }
@@ -178,12 +168,9 @@ export default {
 
 <style>
 .CodeMirror {
-  height: 60vh !important;
+  height: calc(100vh - 132px) !important;
   border-radius: 7px;
   border: 1px solid var(--border-color);
-}
-.CodeMirror-Scroll {
-  //min-height: 60vh;
 }
 
 </style>

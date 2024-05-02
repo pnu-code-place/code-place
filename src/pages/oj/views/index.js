@@ -1,4 +1,4 @@
-import ProblemList from './problem/ProblemList.vue'
+import ProblemList from './problem/problemList/ProblemList.vue'
 import Logout from './user/Logout.vue'
 import UserHome from './user/userhome/UserHome.vue'
 import About from './help/About.vue'
@@ -17,7 +17,7 @@ const OIRank = () => import(/* webpackChunkName: "userRank" */ '@oj/views/rank/O
 const ApplyResetPassword = () => import(/* webpackChunkName: "password" */ '@oj/views/user/ApplyResetPassword.vue')
 const ResetPassword = () => import(/* webpackChunkName: "password" */ '@oj/views/user/ResetPassword.vue')
 
-const Problem = () => import(/* webpackChunkName: "Problem" */ '@oj/views/problem/Problem.vue')
+const Problem = () => import(/* webpackChunkName: "Problem" */ '@oj/views/problem/problemSolving/Problem.vue')
 
 export {
   Home, NotFound, Announcements,

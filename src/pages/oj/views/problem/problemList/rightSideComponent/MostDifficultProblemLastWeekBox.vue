@@ -51,8 +51,8 @@
 <script>
 import api from '@oj/api'
 import {mapActions, mapGetters} from "vuex";
-import FieldCategoryBox from "../../../components/FieldCategoryBox.vue";
-import {DIFFICULTY_MAP, FIELD_MAP} from "../../../../../utils/constants";
+import FieldCategoryBox from "../../../../components/FieldCategoryBox.vue";
+import {DIFFICULTY_MAP, FIELD_MAP} from "../../../../../../utils/constants";
 
 export default {
   name: 'MostDifficultProblemLastWeekBox',
