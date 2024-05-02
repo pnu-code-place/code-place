@@ -12,7 +12,7 @@ docker run -it -d -e POSTGRES_DB=onlinejudge -e POSTGRES_USER=onlinejudge -e POS
 docker run -it -d -p 127.0.0.1:6380:6379 --name oj-redis-dev redis:4.0-alpine
 
 if [ "$1" = "--migrate" ]; then
-    # DB가 정상적으로 동작할 때까지 잠시 대기
+    # wait until DB set completly
     sleep 5
     echo `cat /dev/urandom | head -1 | md5sum | head -c 32` > data/config/secret.key
     python3 manage.py migrate
