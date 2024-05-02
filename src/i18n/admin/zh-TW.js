@@ -167,8 +167,8 @@ export const m = {
   Field_DataStructure: '자료구조',
   Field_Search: '탐색',
   Field_Sorting: '정렬',
-  Tag: '태그',
-  New_Tag: '새 태그',
+  Tag: '카테고리',
+  New_Tag: '새 카테고리',
 
   // ProblemList.vue
   Contest_Problem_List: '대회 문제 목록',

@@ -2,9 +2,23 @@
   <div id="header">
     <Menu mode="horizontal" @on-select="handleRoute" :active-name="activeMenu" class="oj-menu">
       <div class="logo" @click="handleRoute('/problem')">
+        <div>
+          <img src="@/assets/pojLogo.png" width="39" style="vertical-align:middle; margin-right: 10px"/>
+        </div>
         <p class="pnuName">{{ this.$route.params.problemID + '번' }}</p>
+        <Tooltip :content="'이전 문제'" placement="bottom" style="margin-left: 5px;">
+          <CustomIconBtn @click="movePrev" iconClass="fas fa-chevron-left" style="width: 20px"/>
+        </Tooltip>
+        <Tooltip :content="'다음 문제'" placement="bottom" style="margin-left: 5px">
+          <CustomIconBtn @click="pickOne" iconClass="fas fa-chevron-right" style="width: 20px"/>
+        </Tooltip>
+        <Tooltip :content="'문제 랜덤 선택'" placement="bottom" style="margin-left: 5px">
+          <CustomIconBtn @click="pickOne" iconClass="fas fa-random"/>
+        </Tooltip>
       </div>
-      <div style="display: flex; align-items: center; width: 200px;justify-content: right">
+
+      <ProblemTimer/>
+      <div style="display: flex; height: 100%; align-items: center; width: 200px;justify-content: right">
         <Tooltip :content="this.themeTooltipContent" placement="bottom"  style="margin-right: 15px">
           <CustomIconBtn @click="toggleProblemTheme" iconClass="fas fa-adjust"/>
         </Tooltip>
@@ -111,6 +125,7 @@ export default {
   position: fixed;
   top: 0;
   left: 0;
+  height: 50px;
   width: 100%;
   z-index: 1000;
 
@@ -120,8 +135,8 @@ export default {
     padding-left: 20px;
     padding-right: 20px;
     justify-content: space-between;
-    height: 50px;
     align-items: center;
+    height: 100%;
     background-color: var(--bg-color);
     color: var(--text-color);
   }
