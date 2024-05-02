@@ -63,10 +63,10 @@
 </template>
 
 <script>
-import FieldCategoryBox from "../../../components/FieldCategoryBox.vue";
-import {DIFFICULTY_MAP, FIELD_MAP} from "../../../../../utils/constants";
-import Pagination from "../../../components/Pagination.vue";
-import CustomIconBtn from "../../../components/buttons/CustomIconBtn.vue";
+import FieldCategoryBox from "../../../../components/FieldCategoryBox.vue";
+import {DIFFICULTY_MAP, FIELD_MAP} from "../../../../../../utils/constants";
+import Pagination from "../../../../components/Pagination.vue";
+import CustomIconBtn from "../../../../components/buttons/CustomIconBtn.vue";
 
 export default {
   name: 'ProblemListTableHeader',

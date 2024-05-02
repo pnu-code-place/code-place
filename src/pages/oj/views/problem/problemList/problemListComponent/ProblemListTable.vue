@@ -13,7 +13,7 @@
         <tbody>
         <tr v-for="problem in this.problemList">
           <td class="td-first">{{ problem._id }}</td>
-          <td class="td-second" @click="enterProblemDetail(problem._id)">
+          <td class="td-second" @click="enterProblemDetail(problem._id, problem.title)">
                 <span class="problemTitle">
                   {{ problem.title }}
                 </span>
@@ -37,9 +37,9 @@
 
 <script>
 import {mapActions} from "vuex";
-import FieldCategoryBox from "../../../components/FieldCategoryBox.vue";
-import {DIFFICULTY_MAP, FIELD_MAP} from "../../../../../utils/constants";
-import Pagination from "../../../components/Pagination.vue";
+import FieldCategoryBox from "../../../../components/FieldCategoryBox.vue";
+import {DIFFICULTY_MAP, FIELD_MAP} from "../../../../../../utils/constants";
+import Pagination from "../../../../components/Pagination.vue";
 
 export default {
   name: 'ProblemListTable',
@@ -51,9 +51,9 @@ export default {
   },
   methods:{
     ...mapActions(['changeProblemSolvingState']),
-    enterProblemDetail(problemId) {
+    enterProblemDetail(problemId, problemTitle) {
       this.changeProblemSolvingState(true)
-      this.$router.push({name: 'problem-details', params: {problemID: problemId}})
+      this.$router.push({name: 'problem-details', params: {problemID: problemId, problemTitle: problemTitle}})
     },
   },
   computed:{
