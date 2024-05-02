@@ -10,6 +10,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
+        ('contest', '0011_auto_20231203_0742'),
         ('submission', '0006_auto_20170830_1154'),
     ]
 
