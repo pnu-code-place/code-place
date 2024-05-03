@@ -361,11 +361,6 @@ export default {
       offset,
       limit
     }
-    // return new Promise((resolve) => {
-    //   setTimeout(() => {
-    //     resolve({data: {data: MajorRankListProp}})
-    //   }, 5000)
-    // });
     return ajax("major_rank", "get", {params});
   },
   getContestRank(params) {
@@ -373,16 +368,6 @@ export default {
       params
     });
   },
-  getACMACInfo(params) {
-    return ajax("admin/contest/acm_helper", "get", {
-      params
-    });
-  },
-  updateACInfoCheckedStatus(data) {
-    return ajax("admin/contest/acm_helper", "put", {
-      data
-    });
-  }
 };
 
 /**

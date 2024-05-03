@@ -16,9 +16,6 @@
       <router-link :to="{name: 'contest-rank'}" v-if="OIContestRealTimePermission">
         <Icon type="stats-bars"></Icon> {{$t('m.Rankings')}}
       </router-link>
-      <router-link :to="{name: 'acm-helper'}" v-if="showAdminHelper">
-        <Icon type="ios-paw"></Icon> {{$t('m.Admin_Helper')}}
-      </router-link>
     </ul>
   </nav>
 </template>

@@ -125,11 +125,6 @@ export default [
         path: 'rank',
         component: Contest.ContestRank
       },
-      {
-        name: 'acm-helper',
-        path: 'helper',
-        component: Contest.ACMContestHelper
-      }
     ]
   },
   {
