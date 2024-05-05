@@ -8,7 +8,7 @@ from django.db import transaction
 from django.db.models import Min, F
 
 from .models import Problem, get_default_week_info
-
+from utils.constants import Difficulty
 TEMPLATE_BASE = """//PREPEND BEGIN
 {}
 //PREPEND END
@@ -70,23 +70,46 @@ def call_update_bonus_problem():
 
 @dramatiq.actor()
 def update_bonus_problem():
-    Problem.objects.all().update(is_bonus=False)
+    """보너스문제를 업데이트합니다.
 
-    difficulty_groups = [['VeryLow', 'Low'], ['Mid'], ['High', 'VeryHigh']]
+    Scheduler에 의해 매주 한번씩 실행되며 난이도 그룹별로 한 문제씩, 총 3문제를 보너스문제로 설정합니다.
+    영역 중복을 최대한 겹치지 않도록 하되 총 3문제를 보너스문제로 설정할 수 없다면 영역 중복을 허용합니다.
+    저번 주에 보너스 문제였던 문제는 이번 주 보너스 문제에서 제외됩니다.
+    """
+    difficulty_groups = [
+        [Difficulty.VERYLOW, Difficulty.LOW],
+        [Difficulty.MID],
+        [Difficulty.HIGH, Difficulty.VERYHIGH]
+    ]
 
     selected_problems = []
     selected_fields = set()
 
     with transaction.atomic():
         for difficulty in difficulty_groups:
-            problems = Problem.objects.filter(difficulty__in=difficulty).exclude(field__in=selected_fields)
+            problems = Problem.objects\
+                .filter(difficulty__in=difficulty, visible=True, contest__isnull=True)\
+                .exclude(is_bonus=True, field__in=selected_fields)
+            if not problems:
+                # 영역 중복을 허용하여 다시 한 번 후보 문제 추출
+                problems = Problem.objects\
+                    .filter(difficulty__in=difficulty, visible=True, contest__isnull=True)\
+                    .exclude(is_bonuse=True)
+
             if problems:
+                # 후보 문제 중 하나를 선택하여 selected_problems에 추가
                 selected_problem = random.choice(problems)
-            if selected_problem:
                 selected_problems.append(selected_problem)
                 selected_fields.add(selected_problem.field)
 
+        # 지난 주 보너스 문제 초기화
+        try:
+            Problem.objects.all().update(is_bonus=False)
+        except Problem.DoesNotExist as e:
+            raise e
+
+        # 이번 주 보너스 문제 설정
         for problem in selected_problems:
-            print(problem.title, "is set to bonus problem", sep='')
+            print(f"{problem.title} is set to bonus problem")
             problem.is_bonus = True
             problem.save(update_fields=['is_bonus'])
