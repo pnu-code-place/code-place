@@ -80,8 +80,10 @@ done
 
 # 데이터베이스에 College와 Department 데이터가 이미 로드되었는지 확인
 if [ "$(echo "from account.models import College, Department; print(College.objects.count() == 0 or Department.objects.count() == 0)" | python manage.py shell)" == "True" ]; then
+    echo "Loading Fixtures..."
     sleep 2
-    python3 manage.py loaddata ./fixtures/*.json
+    python3 manage.py loaddata ../fixtures/*.json
+    echo "Fixtures loaded!"
 fi
 
 addgroup -g 12003 spj
