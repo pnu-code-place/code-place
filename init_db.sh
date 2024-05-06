@@ -19,7 +19,3 @@ if [ "$1" = "--migrate" ]; then
     python3 manage.py migrate
     python3 manage.py inituser --username root --password rootroot --action create_super_admin
 fi
-
-if [ "$1" = "--loaddata" ]; then
-  python3 manage.py loaddata ./fixtures/*.json
-fi
