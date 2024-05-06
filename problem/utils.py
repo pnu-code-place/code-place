@@ -94,7 +94,7 @@ def update_bonus_problem():
                 # 영역 중복을 허용하여 다시 한 번 후보 문제 추출
                 problems = Problem.objects\
                     .filter(difficulty__in=difficulty, visible=True, contest__isnull=True)\
-                    .exclude(is_bonuse=True)
+                    .exclude(is_bonus=True)
 
             if problems:
                 # 후보 문제 중 하나를 선택하여 selected_problems에 추가
