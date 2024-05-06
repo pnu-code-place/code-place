@@ -257,6 +257,9 @@ export const m = {
   Try_AiRecommendation_Problem: "도전하기",
   Most_Hard_Problem_In_Last_Week: "저번 주에 가장 어려웠어요!",
   Try_Most_Hard_Problem_In_Last_Week: "풀어보기",
+  //HomeProblemRecommendationBox.vue
+  HomeProblemRecommendation: "이주의 보너스 문제",
+  HomeProblemRecommendation_Info: "주마다 보너스 점수(x2)가 있는 문제를 추천해드려요!",
   //문제 리스트의 난이도
   Difficulty: "난이도",
   Category: "태그",

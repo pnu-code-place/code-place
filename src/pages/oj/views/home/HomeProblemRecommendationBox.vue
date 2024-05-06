@@ -1,24 +1,22 @@
 <template>
   <div class="problemRecommendationBox">
     <header class="problemRecommendationBoxHeader">
-      <span @click="handleRoute('problem')">이번 주 보너스 문제</span>
+      <span @click="handleRoute('problem')">{{$t('m.HomeProblemRecommendation')}}</span>
       <div class="plusDiv">
         <Icon type="ios-information" size="13" color="#7a7a7a"></Icon>
-        <span class="plusSpan">주마다 보너스 점수(x2)가 있는 문제를 추천해드려요!</span>
+        <span class="plusSpan">{{$t('m.HomeProblemRecommendation_Info')}}</span>
       </div>
     </header>
     <div class="problemRecommendationBoxBody">
       <template v-for="(problem, index) in problems" v-if="index <= 2">
-<!--        <ShineWrapper>-->
-          <div @click="enterProblemDetail(problem.id)" class="bonusProblem" :style="{ 'background-image': 'url(' + FIELD_MAP[problem.field].backgroundImage + ')' }">
-            <span>{{problem.title}}</span>
-            <FieldCategoryBox :boxType="true" :value="FIELD_MAP[problem.field].value"
-                              :boxColor="FIELD_MAP[problem.field].boxColor"/>
-            <template v-for="(category, idx) in [problem.tags[0]]">
-              <FieldCategoryBox :boxType="false" :value="'#' + category" :boxColor="'#ffffff'"/>
-            </template>
-          </div>
-<!--        </ShineWrapper>-->
+        <div @click="enterProblemDetail(problem._id)" class="bonusProblem" :style="{ 'background-image': 'url(' + FIELD_MAP[problem.field].backgroundImage + ')' }">
+          <span>{{problem.title}}</span>
+          <FieldCategoryBox :boxType="true" :value="FIELD_MAP[problem.field].value"
+                            :boxColor="FIELD_MAP[problem.field].boxColor"/>
+          <template v-for="(category, idx) in [problem.tags[0]]">
+            <FieldCategoryBox :boxType="false" :value="'#' + category" :boxColor="'#ffffff'"/>
+          </template>
+        </div>
       </template>
     </div>
   </div>
@@ -107,6 +105,10 @@ export default {
     span{
       font-size: medium;
       font-weight: bold;
+      display: block;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      overflow: hidden;
     }
     .bonusProblem{
       cursor: pointer;
