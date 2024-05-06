@@ -74,8 +74,8 @@ class SPJCompiler(DispatcherBase):
     def __init__(self, spj_code, spj_version, spj_language):
         super().__init__()
         spj_compile_config = \
-        list(filter(lambda config: spj_language == config["name"], SysOptions.spj_languages))[0]["spj"][
-            "compile"]
+            list(filter(lambda config: spj_language == config["name"], SysOptions.spj_languages))[0]["spj"][
+                "compile"]
         self.data = {
             "src": spj_code,
             "spj_version": spj_version,
@@ -108,6 +108,7 @@ class JudgeDispatcher(DispatcherBase):
 
     def _compute_statistic_info(self, resp_data):
         # 用时和内存占用保存为多个测试点中最长的那个
+        print("_compute_statistic_info:", resp_data)
         self.submission.statistic_info["time_cost"] = max([x["cpu_time"] for x in resp_data])
         self.submission.statistic_info["memory_cost"] = max([x["memory"] for x in resp_data])
 
@@ -189,10 +190,35 @@ class JudgeDispatcher(DispatcherBase):
                     self.submission.result = error_test_case[0]["result"]
                 else:
                     self.submission.result = JudgeStatus.PARTIALLY_ACCEPTED
-        else: # 개발환경에선 무조건 정답 처리
+        else:  # 개발환경에선 무조건 정답 처리
             self.submission.result = JudgeStatus.ACCEPTED
         self.submission.info = resp
+        dev_mock_data = [
+            {
+                "cpu_time": 1,
+                "result": 0,
+                "memory": 12836864,
+                "real_time": 2,
+                "signal": 0,
+                "error": 0,
+                "exit_code": 0,
+                "output_md5": "eccbc87e4b5ce2fe28308fd9f2a7baf3",
+                "test_case": 1
+            },
+            {
+                "cpu_time": 1,
+                "result": 0,
+                "memory": 12849152,
+                "real_time": 1,
+                "signal": 0,
+                "error": 0,
+                "exit_code": 0,
+                "output_md5": "eccbc87e4b5ce2fe28308fd9f2a7baf3",
+                "test_case": 2
+            }
+        ]
         # self._compute_statistic_info(resp["data"])
+        self._compute_statistic_info(dev_mock_data)
         self.submission.save()
 
         if self.contest_id:
@@ -442,7 +468,6 @@ class JudgeDispatcher(DispatcherBase):
             # bonus problem score multiplier
             score_multiplier = 2 if problem.is_bonus else 1
             problem_score = ProblemScore.score[problem.difficulty] * score_multiplier
-
 
             # update user total score
             user_score.total_score += problem_score
