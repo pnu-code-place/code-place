@@ -10,24 +10,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RenameField(
-            model_name='userscore',
-            old_name='easy_score',
-            new_name='Low_score',
-        ),
-        migrations.RenameField(
-            model_name='userscore',
-            old_name='medium_score',
-            new_name='Mid_score',
-        ),
-        migrations.RenameField(
-            model_name='userscore',
-            old_name='very_high_score',
-            new_name='VeryHigh_score',
-        ),
-        migrations.RenameField(
-            model_name='userscore',
-            old_name='very_low_score',
-            new_name='VeryLow_score',
-        ),
+
     ]
