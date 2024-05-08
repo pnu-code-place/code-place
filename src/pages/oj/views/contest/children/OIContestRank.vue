@@ -1,46 +1,46 @@
 <template>
-  <Panel shadow>
-    <div slot="title">{{ contest.title }}</div>
-    <div slot="extra">
-      <screen-full :height="18" :width="18" class="screen-full"></screen-full>
-      <Poptip trigger="hover" placement="left-start">
-        <Icon type="android-settings" size="20"></Icon>
-        <div slot="content" id="switches">
-          <p>
-            <span>{{$t('m.Menu')}}</span>
-            <i-switch v-model="showMenu"></i-switch>
-            <span>{{$t('m.Chart')}}</span>
-            <i-switch v-model="showChart"></i-switch>
-          </p>
-          <p>
-            <span>{{$t('m.Auto_Refresh')}}(10s)</span>
-            <i-switch :disabled="refreshDisabled" @on-change="handleAutoRefresh"></i-switch>
-          </p>
-          <p v-if="isContestAdmin">
-            <span>{{$t('m.RealName')}}</span>
-            <i-switch v-model="showRealName"></i-switch>
-          </p>
-          <p>
-            <Button type="primary" size="small" @click="downloadRankCSV">{{$t('m.download_csv')}}</Button>
-          </p>
+  <div>
+    <div class="OIRankBox">
+      <div class="OIRankTitle">
+        <p>{{ $t('m.Rank') }}</p>
+        <div class="OIRankTitleIcon">
+          <screen-full style="height: 18px; width: 18px;"></screen-full>
+          <Button v-if="isContestAdmin" size="small" @click="downloadRankCSV">{{$t('m.download_csv')}}</Button>
         </div>
-      </Poptip>
+      </div>
+      <div v-if="!myDataRank.length" style="text-align: center; font-size: 16px;">{{$t('m.No_Submissions')}}</div>
+      <table v-else class="OIRankContent">
+        <thead>
+          <th style="width: 50px;">#</th>
+          <th>{{ $t('m.User_User') }}</th>
+          <th>{{ $t('m.Total_Score') }}</th>
+          <th v-for="problem in contestProblems"><a style="color: #6CCBFF;" @click="goProblemPage(problem._id)">{{problem._id}}</a></th>
+        </thead>
+        <tbody>
+          <tr v-for="rank in myDataRank">
+            <td>{{rank.idx}}</td>
+            <td><a @click="goUserPage(rank.user.username)">{{rank.user.username}}</a></td>
+            <td>{{rank.total_score}}</td>
+            <td v-for="problem in contestProblems">
+              <div v-if="rank[problem.id].isSet">
+                {{ rank[problem.id].total_score }}
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
-    <div v-show="showChart" class="echarts">
-      <ECharts :options="options" ref="chart" auto-resize></ECharts>
-    </div>
-    <Table ref="tableRank" class="auto-resize" :columns="columns" :data="dataRank" disabled-hover></Table>
     <Pagination :total="total"
                 :page-size.sync="limit"
                 :current.sync="page"
-                @on-change="getContestRankData"
-                @on-page-size-change="getContestRankData(1)"
+                @on-change="updateContestData"
+                @on-page-size-change="updateContestData()"
                 show-sizer></Pagination>
-  </Panel>
+  </div>
 </template>
 <script>
   import { mapActions } from 'vuex'
-
+  import api from '@oj/api'
   import Pagination from '@oj/components/Pagination'
   import ContestRankMixin from './contestRankMixin'
   import utils from '@/utils/utils'
@@ -56,173 +56,62 @@
         total: 0,
         page: 1,
         contestID: '',
-        columns: [
-          {
-            align: 'center',
-            width: 60,
-            render: (h, params) => {
-              return h('span', {}, params.index + (this.page - 1) * this.limit + 1)
-            }
-          },
-          {
-            title: this.$i18n.t('m.User_User'),
-            align: 'center',
-            render: (h, params) => {
-              return h('a', {
-                style: {
-                  display: 'inline-block',
-                  'max-width': '150px'
-                },
-                on: {
-                  click: () => {
-                    this.$router.push(
-                      {
-                        name: 'user-home',
-                        query: {username: params.row.user.username}
-                      })
-                  }
-                }
-              }, params.row.user.username)
-            }
-          },
-          {
-            title: this.$i18n.t('m.Total_Score'),
-            align: 'center',
-            render: (h, params) => {
-              return h('a', {
-                on: {
-                  click: () => {
-                    this.$router.push({
-                      name: 'contest-submission-list',
-                      query: {username: params.row.user.username}
-                    })
-                  }
-                }
-              }, params.row.total_score)
-            }
-          }
-        ],
-        dataRank: [],
-        options: {
-          title: {
-            text: this.$i18n.t('m.Top_10_Teams'),
-            left: 'center'
-          },
-          tooltip: {
-            trigger: 'axis'
-          },
-          toolbox: {
-            show: true,
-            feature: {
-              dataView: {show: true, readOnly: true},
-              magicType: {show: true, type: ['line', 'bar']},
-              saveAsImage: {show: true}
-            },
-            right: '10%'
-          },
-          calculable: true,
-          xAxis: [
-            {
-              type: 'category',
-              data: ['root'],
-              boundaryGap: true,
-              axisLabel: {
-                interval: 0,
-                showMinLabel: true,
-                showMaxLabel: true,
-                align: 'center',
-                formatter: (value, index) => {
-                  return utils.breakLongWords(value, 14)
-                }
-              },
-              axisTick: {
-                alignWithLabel: true
-              }
-            }
-          ],
-          yAxis: [
-            {
-              type: 'value'
-            }
-          ],
-          series: [
-            {
-              name: this.$i18n.t('m.Score'),
-              type: 'bar',
-              barMaxWidth: '80',
-              data: [0],
-              markPoint: {
-                data: [
-                  {type: 'max', name: 'max'}
-                ]
-              }
-            }
-          ]
-        }
+        myDataRank: [],
       }
     },
     mounted () {
       this.contestID = this.$route.params.contestID
-      this.getContestRankData(1)
-      if (this.contestProblems.length === 0) {
-        this.getContestProblems().then((res) => {
-          this.addTableColumns(res.data.data)
-        })
-      } else {
-        this.addTableColumns(this.contestProblems)
-      }
+      this.updateContestData()
     },
     methods: {
       ...mapActions(['getContestProblems']),
-      applyToChart (rankData) {
-        let [usernames, scores] = [[], []]
-        rankData.forEach(ele => {
-          usernames.push(ele.user.username)
-          scores.push(ele.total_score)
+      updateContestData () {
+        let params = {
+          offset: (this.page - 1) * this.limit,
+          limit: this.limit,
+          contest_id: this.$route.params.contestID,
+          force_refresh: this.forceUpdate ? '1' : '0'
+        }
+        api.getContestRank(params).then(res => {
+          const data = res.data.data.results
+          let dataRank = JSON.parse(JSON.stringify(data))
+
+          this.getContestProblems().then((res) => {
+            this.addRankData(dataRank, res.data.data)
+          })
+          this.total = res.data.data.total
         })
-        this.options.xAxis[0].data = usernames
-        this.options.series[0].data = scores
       },
-      applyToTable (data) {
-        // deepcopy
-        let dataRank = JSON.parse(JSON.stringify(data))
-        // 从submission_info中取出相应的problem_id 放入到父object中,这么做主要是为了适应iview table的data格式
-        // 见https://www.iviewui.com/components/table
+      addRankData (dataRank, problems) {
+        console.log("dataRank", problems);
+        problems.forEach(problem => {
+          dataRank.forEach((rank, idx) => {
+            dataRank[idx][problem.id] = {isSet: false, problemId: problem._id};
+          })
+        })
         dataRank.forEach((rank, i) => {
           let info = rank.submission_info
           Object.keys(info).forEach(problemID => {
-            dataRank[i][problemID] = info[problemID]
+            dataRank[i][problemID].total_score = info[problemID];
+            dataRank[i][problemID].isSet = true
           })
+          dataRank[i].idx = (this.page - 1) * this.limit + i + 1;
         })
-        this.dataRank = dataRank
+        this.myDataRank = dataRank;
       },
-      addTableColumns (problems) {
-        problems.forEach(problem => {
-          this.columns.push({
-            align: 'center',
-            key: problem.id,
-            renderHeader: (h, params) => {
-              return h('a', {
-                'class': {
-                  'emphasis': true
-                },
-                on: {
-                  click: () => {
-                    this.$router.push({
-                      name: 'contest-problem-details',
-                      params: {
-                        contestID: this.contestID,
-                        problemID: problem._id
-                      }
-                    })
-                  }
-                }
-              }, problem._id)
-            },
-            render: (h, params) => {
-              return h('span', params.row[problem.id])
-            }
-          })
+      goUserPage (username) {
+        this.$router.push({
+          name: 'user-dashboard',
+          params: {username: username}
+        })
+      },
+      goProblemPage (problemId) {
+        this.$router.push({
+          name: 'contest-problem-details',
+          params: {
+            contestID: this.contestID,
+            problemID: problemId
+          }
         })
       },
       downloadRankCSV () {
@@ -232,25 +121,45 @@
   }
 </script>
 <style scoped lang="less">
-  .echarts {
-    margin: 20px auto;
-    height: 400px;
-    width: 98%;
+.OIRankBox {
+  border: 1px solid #e9ece9;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  background: var(--box-background-color);
+  padding: 15px 20px;
+  border-radius: 7px;
+}
+.OIRankTitle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  p {
+    text-decoration: none;
+    font-size: 24px;
+    font-weight: bold;
   }
-
-  .screen-full {
-    margin-right: 8px;
+  .OIRankTitleIcon {
+    display: flex;
+    gap: 10px;
+    justify-content: space-between;
+    align-items: center;
   }
-
-  #switches {
-    p {
-      margin-top: 5px;
-      &:first-child {
-        margin-top: 0;
-      }
-      span {
-        margin-left: 8px;
-      }
-    }
+}
+.OIRankContent {
+  text-align: center;
+  th {
+    width: 80px;
+    color: #7E7E7E;
+    font-size: 1.3em;
+    padding-bottom: 10px;
   }
+  td {
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    padding: 10px 0px;
+  }
+  tr {
+    font-size: 1.05em;
+  }
+}
 </style>
