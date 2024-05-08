@@ -155,22 +155,38 @@ class RecommendProblemAPI(APIView):
         NotFound(404):
             - 요청한 사용자의 UserScore 또는 UserProfile이 존재하지 않습니다.
         """
+        # user_score = self.get_user_score(request.user)
+        # user_solved_problems = self.get_user_solved_problems(request.user)
+        #
+        # if len(user_solved_problems) < 10:
+        #     return HttpResponseBadRequest('User should solve at least 10 problems.')
+        #
+        # field_scores = self.get_field_scores(user_score)
+        # difficulty = self.get_recommend_difficulty(user_score)
+        # recommend_problems = self.get_recommend_problems(field_scores, difficulty, user_solved_problems)
+        #
+        # if recommend_problems:
+        #     return self.success({
+        #         "field_score": field_scores,
+        #         "recommend_problems": RecommendBonusProblemSerializer(recommend_problems, many=True).data})
+        # else:
+        #     return HttpResponseBadRequest("No Recommendation because of insufficient problems.")
         user_score = self.get_user_score(request.user)
-        user_solved_problems = self.get_user_solved_problems(request.user)
-
-        if len(user_solved_problems) < 10:
-            return HttpResponseBadRequest('User should solve at least 10 problems.')
-
+        user_solved_problem = self.get_user_solved_problems(request.user)
         field_scores = self.get_field_scores(user_score)
+
         difficulty = self.get_recommend_difficulty(user_score)
-        recommend_problems = self.get_recommend_problems(field_scores, difficulty, user_solved_problems)
+        candidate_problems = Problem.objects.filter(
+            difficulty__in=difficulty, visible=True, contest__isnull=True).exclude(_id__in=user_solved_problem)
+        recommend_problems = random.sample(list(candidate_problems), min(3, len(candidate_problems)))
 
         if recommend_problems:
             return self.success({
-                "field_score": field_scores,
-                "recommend_problems": RecommendBonusProblemSerializer(recommend_problems, many=True).data})
+                'field_score': field_scores,
+                'recommend_problems': RecommendBonusProblemSerializer(recommend_problems, many=True).data
+            })
         else:
-            return HttpResponseBadRequest("No Recommendation because of insufficient problems.")
+            return HttpResponseBadRequest("No recommendation because of insufficient problems.")
 
     @staticmethod
     def get_user_score(user):

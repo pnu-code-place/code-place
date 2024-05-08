@@ -9,6 +9,6 @@ urlpatterns = [
     url(r"^problem/bonus/?$", BonusProblemAPI.as_view(), name="bonus_problem_api"),
     url(r"^pickone/?$", PickOneAPI.as_view(), name="pick_one_api"),
     url(r"^contest/problem/?$", ContestProblemAPI.as_view(), name="contest_problem_api"),
-    url(r"^ai_recommend_problem/?$", RecommendProblemAPI.as_view(), name="ai_recommend_problem_api"),
+    url(r"^recommend_problem/?$", RecommendProblemAPI.as_view(), name="recommend_problem_api"),
     url(r"^problem/most_difficult_problems?$",MostDifficultProblemAPI.as_view(), name="most_difficult_problem_api"),
 ]
