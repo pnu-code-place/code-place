@@ -288,12 +288,18 @@ class RecommendBonusProblemSerializer(serializers.ModelSerializer):
     def get_tags(self, obj):
         return [tag.name for tag in obj.tags.all()]
 
-class MostDifficultProblemSerializer(BaseProblemSerializer):
-    id = serializers.IntegerField()
-    tags = serializers.SerializerMethodField()
+class MostDifficultProblemSerializer(serializers.ModelSerializer):
     _id = serializers.CharField(max_length=128)
+    tags = serializers.SerializerMethodField()
     title = serializers.CharField(max_length=128)
     field = serializers.IntegerField()
     difficulty = serializers.CharField(max_length=128)
     submission_number = serializers.IntegerField()
     accepted_number = serializers.IntegerField()
+
+    class Meta:
+        model = Problem
+        fields = ['tags', '_id', 'title', 'field', 'difficulty', 'submission_number', 'accepted_number']
+
+    def get_tags(self, obj):
+        return [tag.name for tag in obj.tags.all()]
