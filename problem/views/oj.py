@@ -3,7 +3,7 @@ from django.db.models import Q, Count
 from utils.api import APIView
 from account.decorators import check_contest_permission, login_required
 from ..models import ProblemTag, Problem, ProblemRuleType
-from ..serializers import ProblemSerializer, TagSerializer, ProblemSafeSerializer, RecommendBonusProblemSerializer
+from ..serializers import ProblemSerializer, TagSerializer, ProblemSafeSerializer, RecommendBonusProblemSerializer,MostDifficultProblemSerializer
 from contest.models import ContestRuleType
 from account.models import UserProfile
 from submission.models import JudgeStatus
@@ -166,3 +166,10 @@ class AIRecommendProblemAPI(APIView):
             return self.success({"field_score": field_score, "recommend_problems": recommend_problems})
         except UserProfile.DoesNotExist:
             return HttpResponseNotFound("User does not exist")
+class MostDifficultProblemAPI(APIView):
+    def get(self, request):
+        most_difficult_problems = Problem.objects.filter(is_most_difficult=True, visivble=True)
+        if not most_difficult_problems:
+            return HttpResponseNotFound("No most difficult problems")
+        serializer = MostDifficultProblemSerializer(most_difficult_problems)
+        self.success(serializer.data)
