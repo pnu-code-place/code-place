@@ -18,14 +18,7 @@
         <tr v-for="problem in problems" @click="goContestProblem(problem._id)">
           <td >{{problem._id}}</td>
           <td class="TableTitle">
-            <p>{{problem.title}}</p>
-            <div style="display: flex;">
-              <FieldCategoryBox :boxType="true" :value="FIELD_MAP[problem.field].value"
-                                :boxColor="FIELD_MAP[problem.field].boxColor" style="font-size: 12px;" />
-              <template v-for="(category, idx) in problem.tags">
-                <FieldCategoryBox :boxType="false" :value="'#' + category" :boxColor="'#ffffff'" style="font-size: 12px;"/>
-              </template>
-            </div>
+            {{problem.title}}
           </td>
           <td>{{DIFFICULTY_MAP[problem.difficulty].value}}</td>
           <td>{{problem.total_score}}</td>
@@ -37,22 +30,13 @@
       <thead>
         <th>{{ $t('m.Th_Problem_Id') }}</th>
         <th class="TableTitle">{{ $t('m.Th_Problem_Title') }}</th>
-        <th>{{ $t('m.Th_Problem_Difficulty') }}</th>
       </thead>
       <tbody>
         <tr v-for="problem in problems" @click="goContestProblem(problem._id)">
-          <td >{{problem._id}}</td>
+          <td>{{problem._id}}</td>
           <td class="TableTitle">
-            <p>{{problem.title}}</p>
-            <div style="display: flex;">
-              <FieldCategoryBox :boxType="true" :value="FIELD_MAP[problem.field].value"
-                                :boxColor="FIELD_MAP[problem.field].boxColor" style="font-size: 12px;" />
-              <template v-for="(category, idx) in problem.tags">
-                <FieldCategoryBox :boxType="false" :value="'#' + category" :boxColor="'#ffffff'" style="font-size: 12px;"/>
-              </template>
-            </div>
+            {{problem.title}}
           </td>
-          <td>{{DIFFICULTY_MAP[problem.difficulty].value}}</td>
         </tr>
       </tbody>
     </table>
@@ -141,7 +125,6 @@
     cursor: pointer;
     td:first-child {
       font-size: 1.2em;
-      font-weight: bold;
     }
   }
   .TableTitle {
@@ -149,9 +132,7 @@
     width: auto;
     padding: 10px 0px 10px 40px;
     text-align: left;
-    p {
-      font-weight: bold;
-    }
+    font-weight: bold;
   }
 }
 </style>

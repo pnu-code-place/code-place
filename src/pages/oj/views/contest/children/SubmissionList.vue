@@ -23,7 +23,8 @@
           <Button type="info" icon="refresh" @click="getSubmissions">{{$t('m.Refresh')}}</Button>
         </div>
       </div>
-      <table class="submissionContent">
+      <div v-if="submissions.length === 0" style="text-align: center; font-size: 16px;">{{ $t('m.No_Submissions') }}</div>
+      <table v-else class="submissionContent">
         <thead>
           <th>{{ $t('m.When') }}</th>
           <th>{{ $t('m.ID') }}</th>

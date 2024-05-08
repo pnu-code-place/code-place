@@ -20,10 +20,10 @@
     <div class="contestFooter">
       <div style="display: flex; flex-direction: column; gap: 5px;">
         <li style="display: inline-block;">
-          <Icon type="calendar" color="#3091f2"></Icon> 시작일 : {{contest.start_time | localtime('YYYY-M-D') }}
+          <Icon type="calendar" color="#3091f2"></Icon> 시작일 : {{contest.start_time | localtime('YYYY-MM-DD HH:mm') }}
         </li>
         <li style="display: inline-block;">
-          <Icon type="calendar" color="#3091f2"></Icon> 종료일 : {{contest.end_time | localtime('YYYY-M-D') }}
+          <Icon type="calendar" color="#3091f2"></Icon> 종료일 : {{contest.end_time | localtime('YYYY-MM-DD HH:mm') }}
         </li>
       </div>
       <div style="display: flex; flex-direction: column; gap: 5px;">

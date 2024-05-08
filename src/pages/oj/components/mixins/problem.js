@@ -8,6 +8,7 @@ export default {
   },
   methods: {
     getACRate (ACCount, TotalCount) {
+      if(TotalCount != 0 && ACCount === TotalCount) return "100%"
       return utils.getACRate(ACCount, TotalCount)
     },
     addStatusColumn (tableColumns, dataProblems) {

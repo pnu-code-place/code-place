@@ -43,12 +43,8 @@
         <div @click.stop="goContest(contest)" class="contestBox" :key="contest.id">
           <div class="contestTitle">
             <p>
-              <template v-if="contest.contest_type != 'Public'">
-                <Icon type="ios-locked-outline" size="20"></Icon>
-              </template>
-              <a @click.stop="goContest(contest)">
-                {{contest.title}}
-              </a>
+              <Icon v-if="contest.contest_type != 'Public'" type="ios-locked-outline" size="20" style="font-weight: 900;"></Icon>
+              {{contest.title}}
             </p>
             <Tag style="flex-shrink: 0; margin: 0; width: 84px;" type="dot" :color="CONTEST_STATUS_REVERSE[contest.status].color">{{CONTEST_STATUS_REVERSE[contest.status].name}}</Tag>
           </div>
@@ -59,13 +55,9 @@
             <div class="contestTag">
               {{contest.rule_type}}
             </div>
-            <div style="display: flex; gap: 5px; justify-content: space-between; width: 150px;">
-                <li>
-                  <Icon type="android-time" color="#3091f2"></Icon> {{getDuration(contest.start_time, contest.end_time)}}
-                </li>
-                <li>
-                  <Icon type="calendar" color="#3091f2"></Icon> {{contest.start_time | localtime('YYYY-M-D') }}
-                </li>
+            <div>
+              <Icon type="calendar"></Icon>
+              {{contest.start_time | localtime('YYYY-M-D HH:mm') }}
             </div>
           </div>
         </div>
@@ -163,10 +155,6 @@
           this.$router.push({name: 'contest-overview', params: {contestID: contest.id}})
         }
       },
-
-      getDuration (startTime, endTime) {
-        return time.duration(startTime, endTime)
-      }
     },
     computed: {
       ...mapGetters(['isAuthenticated', 'user'])
@@ -208,8 +196,8 @@ main{
     display: flex;
     flex-direction: column;
     gap: 8px;
-    padding: 20px 30px;
-    width: 380px;
+    padding: 20px;
+    width: 393px;
     border-radius: 7px;
     border: 1px solid #e9ece9;
     background-color: var(--box-background-color);
@@ -221,6 +209,7 @@ main{
     p {
       padding-left: 2px;
       font-size: 18px;
+      font-weight: bold;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
