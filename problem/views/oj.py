@@ -255,7 +255,7 @@ class RecommendProblemAPI(APIView):
 
 class MostDifficultProblemAPI(APIView):
     def get(self, request):
-        most_difficult_problems = Problem.objects.filter(is_most_difficult=True, visivble=True)
+        most_difficult_problems = Problem.objects.filter(is_most_difficult=True, visible=True)
         if not most_difficult_problems:
             return HttpResponseNotFound("No most difficult problems")
         serializer = MostDifficultProblemSerializer(most_difficult_problems)
