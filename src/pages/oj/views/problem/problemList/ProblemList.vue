@@ -13,7 +13,7 @@
       </div>
       <keep-alive>
         <div class="right-container">
-          <MostDifficultProblemLastWeekBox :problem="problemList.filter(value => value.is_most_difficult)[0]"/>
+          <MostDifficultProblemLastWeekBox/>
           <AiRecommendationBox :problems="problemList.slice(3,5)"/>
         </div>
       </keep-alive>

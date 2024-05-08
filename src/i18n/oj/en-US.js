@@ -255,9 +255,11 @@ export const m = {
   AiRecommendation_Info: "맞춤 문제를 추천해드려요!",
   AiRecommendation_No_Auth: "로그인 후 사용 가능합니다.",
   AiSolution: "영역을 더 풀어보세요!",
-  Try_AiRecommendation_Problem: "도전하기",
+  Try_AiRecommendation_Problem: "풀어보기",
+  //MostDifficultProblemLastWeekBox.vue
   Most_Hard_Problem_In_Last_Week: "저번 주에 가장 어려웠어요!",
-  Try_Most_Hard_Problem_In_Last_Week: "풀어보기",
+  Try_Most_Hard_Problem_In_Last_Week: "도전하기",
+  There_Is_No_Data: "표시할 데이터가 충분하지 않습니다.",
   //HomeProblemRecommendationBox.vue
   HomeProblemRecommendation: "이주의 보너스 문제",
   HomeProblemRecommendation_Info: "주마다 보너스 점수(x2)가 있는 문제를 추천해드려요!",

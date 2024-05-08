@@ -139,6 +139,9 @@ export default {
   getHomeBonusProblem() {
     return ajax("problem/bonus", "get");
   },
+  getMostDifficultProblem(){
+    return ajax("problem/most_difficult_problem", "get");
+  },
   freshDisplayID(userID) {
     return ajax("profile/fresh_display_id", "get", {
       params: {
