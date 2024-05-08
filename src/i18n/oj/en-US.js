@@ -325,7 +325,8 @@ export const m = {
   Pending: "Pending",
   Partial_Accepted: "Partial Accepted",
   Compile_Error: "Compile Error",
-  Rejudge: "Rejudge",
+  Rejudge: "재채점",
+  Rejudging: "채점중...",
 
   // SideNavBar.vue
   OJ_Status: "나의 정보",
