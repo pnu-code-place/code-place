@@ -1,7 +1,7 @@
 <template>
   <div id="header">
     <Menu mode="horizontal" theme="primary" @on-select="handleRoute" :active-name="activeMenu" class="oj-menu">
-      <div class="logo" @click="handleRoute('/problem')">
+      <div class="logo" @click="goHeadPage()">
         <img class="solvingLogo" src="@/assets/pojLogo.png"/>
         <template v-if="this.$route.name === 'problem-details'">
           <p class="pnuName">{{ '문제 풀이' }}</p>
@@ -70,6 +70,12 @@ export default {
         this.changeProblemSolvingTheme(false)
         this.themeTooltipContent = '다크 테마'
       }
+    },
+    goHeadPage() {
+      if(this.$route.name === 'problem-details')
+        this.handleRoute('/problem');
+      else 
+        this.handleRoute(`/contest/${this.$route.params.contestID}/problems`);
     }
   },
   computed: {

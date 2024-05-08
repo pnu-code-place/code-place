@@ -83,7 +83,6 @@
         })
       },
       addRankData (dataRank, problems) {
-        console.log("dataRank", problems);
         problems.forEach(problem => {
           dataRank.forEach((rank, idx) => {
             dataRank[idx][problem.id] = {isSet: false, problemId: problem._id};

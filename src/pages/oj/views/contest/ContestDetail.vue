@@ -1,5 +1,8 @@
 <template>
-  <main>
+  <main v-if="route_name === 'contest-problem-details'" style="width: 100%;">
+    <router-view></router-view>
+  </main>
+  <main v-else>
     <side-nav-bar></side-nav-bar>
     <div id="contest-content">
       <transition name="fadeInUp">
