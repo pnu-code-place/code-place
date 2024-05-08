@@ -287,3 +287,13 @@ class RecommendBonusProblemSerializer(serializers.ModelSerializer):
 
     def get_tags(self, obj):
         return [tag.name for tag in obj.tags.all()]
+
+class MostDifficultProblemSerializer(BaseProblemSerializer):
+    id = serializers.IntegerField()
+    tags = serializers.SerializerMethodField()
+    _id = serializers.CharField(max_length=128)
+    title = serializers.CharField(max_length=128)
+    field = serializers.IntegerField()
+    difficulty = serializers.CharField(max_length=128)
+    submission_number = serializers.IntegerField()
+    accepted_number = serializers.IntegerField()
