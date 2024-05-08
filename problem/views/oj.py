@@ -259,4 +259,4 @@ class MostDifficultProblemAPI(APIView):
         if not most_difficult_problem:
             return HttpResponseNotFound("There is No most difficult problem in last week")
         serializer = MostDifficultProblemSerializer(most_difficult_problem)
-        self.success(serializer.data)
+        return self.success(serializer.data)
