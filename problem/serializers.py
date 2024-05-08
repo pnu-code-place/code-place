@@ -283,7 +283,7 @@ class RecommendBonusProblemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Problem
-        fields = ['id', 'title', 'field', 'tags']
+        fields = ['_id', 'title', 'difficulty', 'field', 'tags']
 
     def get_tags(self, obj):
         return [tag.name for tag in obj.tags.all()]

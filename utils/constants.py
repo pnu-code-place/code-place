@@ -39,6 +39,7 @@ CONTEST_PASSWORD_SESSION_KEY = "contest_password"
 
 
 class ProblemField:
+    fields = ['implementation', 'math', 'datastructure', 'search', 'sorting']
     strToInt = {
         'implementation': 0,
         'math': 1,

@@ -18,5 +18,4 @@ if [ "$1" = "--migrate" ]; then
     python3 manage.py migrate contest 0011
     python3 manage.py migrate
     python3 manage.py inituser --username root --password rootroot --action create_super_admin
-    python3 manage.py loaddata ./fixtures/*.json
 fi

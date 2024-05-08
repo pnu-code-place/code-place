@@ -67,10 +67,8 @@ cd $APP
 n=0
 while [ $n -lt 5 ]
 do
-    python3 manage.py makemigrations --no-input
     python3 manage.py migrate contest 0011
     python3 manage.py migrate --no-input
-    python3 manage.py loaddata ./fixtures/*.json
     python manage.py inituser --username=root --password=rootroot --action=create_super_admin &&
     echo "from options.options import SysOptions; SysOptions.judge_server_token='$JUDGE_SERVER_TOKEN'" | python manage.py shell &&
     echo "from conf.models import JudgeServer; JudgeServer.objects.update(task_number=0)" | python manage.py shell &&
@@ -79,6 +77,14 @@ do
     echo "Failed to migrate, going to retry..."
     sleep 8
 done
+
+# 데이터베이스에 College와 Department 데이터가 이미 로드되었는지 확인
+if [ "$(echo "from account.models import College, Department; print(College.objects.count() == 0 or Department.objects.count() == 0)" | python manage.py shell)" == "True" ]; then
+    echo "Loading Fixtures..."
+    sleep 2
+    python3 manage.py loaddata ../fixtures/*.json
+    echo "Fixtures loaded!"
+fi
 
 addgroup -g 12003 spj
 adduser -u 12000 -S -G spj server

@@ -5,10 +5,10 @@ from account.decorators import check_contest_permission, login_required
 from ..models import ProblemTag, Problem, ProblemRuleType
 from ..serializers import ProblemSerializer, TagSerializer, ProblemSafeSerializer, RecommendBonusProblemSerializer,MostDifficultProblemSerializer
 from contest.models import ContestRuleType
-from account.models import UserProfile
+from account.models import UserProfile, UserScore
 from submission.models import JudgeStatus
-from django.http import HttpResponseNotFound
-from utils.constants import ProblemScore
+from django.http import HttpResponseNotFound, HttpResponseBadRequest
+from utils.constants import ProblemField, Difficulty, Tier
 
 
 class ProblemTagAPI(APIView):
@@ -137,35 +137,106 @@ class ContestProblemAPI(APIView):
         return self.success(data)
 
 
-def get_user_solved_problems(user):
-    solved_problems = UserProfile.objects.get(user=user).acm_problems_status.get("problems", {})
-    return [v['_id'] for k, v in solved_problems.items() if v['status'] == JudgeStatus.ACCEPTED]
-
-
-class AIRecommendProblemAPI(APIView):
+class RecommendProblemAPI(APIView):
     @login_required
     def get(self, request):
+        """사용자의 실력에 맞는 3문제를 추천합니다.
+
+        추천 문제는 사용자의 현재 점수에 맞는 난이도를 가져야 합니다.
+        가장 약한 분야부터 시작하여, 3문제가 추천됩니다.
+
+        OK(200):
+            - 다섯 분야의 사용자 점수와 추천된 세 문제가 반환됩니다.
+
+        BadRequest(400):
+            - 사용자가 푼 문제가 10개 미만인 경우, 추천을 받기에 데이터가 충분하지 않습니다.
+            - 추천할 문제가 0개인 경우입니다. CSEP의 총 문제 개수가 충분하지 않을 때 발생할 수 있습니다.
+
+        NotFound(404):
+            - 요청한 사용자의 UserScore 또는 UserProfile이 존재하지 않습니다.
+        """
+        user_score = self.get_user_score(request.user)
+        user_solved_problems = self.get_user_solved_problems(request.user)
+
+        if len(user_solved_problems) < 10:
+            return HttpResponseBadRequest('User should solve at least 10 problems.')
+
+        field_scores = self.get_field_scores(user_score)
+        difficulty = self.get_recommend_difficulty(user_score)
+        recommend_problems = self.get_recommend_problems(field_scores, difficulty, user_solved_problems)
+
+        if recommend_problems:
+            return self.success({
+                "field_score": field_scores,
+                "recommend_problems": RecommendBonusProblemSerializer(recommend_problems, many=True).data})
+        else:
+            return HttpResponseBadRequest("No Recommendation because of insufficient problems.")
+
+    @staticmethod
+    def get_user_score(user):
+        """사용자의 UserScore ORM Model을 반환합니다."""
         try:
-            field_score = UserProfile.objects.get(user=request.user).field_score
-            field_score['max_score'] = ProblemScore.score['VeryHigh'] * 20
+            return UserScore.objects.get(user=user)
+        except UserScore.DoesNotExist:
+            return HttpResponseNotFound("UserScore does not exist.")
 
-            weak_field = 0
-            weak_field_score = field_score['0']
-            for k, v in field_score.items():
-                field_score[k] = min(v, field_score['max_score'])
-                if field_score[k] < weak_field_score:
-                    weak_field = k
-                    weak_field_score = field_score[k]
-
-            # remove if the user has solved the problem
-            unresolved_problems = Problem.objects.filter(field=weak_field, visible=True)\
-                .exclude(_id__in=get_user_solved_problems(request.user))
-            unresolved_problems = random.sample(list(unresolved_problems), min(3, unresolved_problems.count()))
-            recommend_problems = RecommendBonusProblemSerializer(unresolved_problems, many=True).data
-
-            return self.success({"field_score": field_score, "recommend_problems": recommend_problems})
+    @staticmethod
+    def get_user_solved_problems(user):
+        """사용자가 이미 푼 문제들의 id를 List로 반환합니다."""
+        try:
+            solved_problems = UserProfile.objects.get(user=user).acm_problems_status.get("problems", {})
         except UserProfile.DoesNotExist:
-            return HttpResponseNotFound("User does not exist")
+            return HttpResponseNotFound("UserProfile does not exist.")
+        return [v['_id'] for k, v in solved_problems.items() if v['status'] == JudgeStatus.ACCEPTED]
+
+    @staticmethod
+    def get_recommend_difficulty(user_score):
+        """사용자의 총 점수를 토대로 적절한 난이도를 반환합니다.
+
+        총 점수에 따른 추천 난이도는 다음과 같습니다.
+            - sprout ~ silver1: [VeryLow, Low]
+            - gold3 ~ gold1: [Mid]
+            - platinum3 ~ diamond1: [High, VeryHigh]
+        """
+        if 0 <= user_score.total_score <= Tier.tiers['silver1']:
+            return [Difficulty.VERYLOW, Difficulty.LOW]
+        elif Tier.tiers['gold3'] <= user_score.total_score <= Tier.tiers['gold1']:
+            return [Difficulty.MID]
+        else:
+            return [Difficulty.HIGH, Difficulty.VERYHIGH]
+
+    @staticmethod
+    def get_field_scores(user_score):
+        """각 영역의 이름과 점수 리스트를 점수에 따른 오름차순으로 정렬 후 반환합니다."""
+        field_scores = [{'name': field_name, 'score': getattr(user_score, field_name + '_score')}
+                        for field_name in ProblemField.fields]
+        field_scores.sort(key=lambda x: x['score'])
+        return field_scores
+
+    @staticmethod
+    def get_recommend_problems(field_scores, difficulty, user_solved_problems):
+        """추천 문제를 반환합니다.
+
+        Args:
+            field_scores(List[Dict['name', 'score']): 사용자의 모든 영역에 대한 [영역이름, 점수] List, 점수로 오름차순 정렬
+            difficulty(String): 추천할 문제의 난이도
+            user_solved_problems(List[String]): 사용자가 이미 푼 문제의 display_id List
+        """
+        recommend_problems = []
+        for field_score in field_scores:
+            # 문제의 영역 컬럼은 정수이기 때문에 필드의 idx를 가져옵니다.
+            field_idx = ProblemField.strToInt[field_score['name']]
+            candidate_problems = Problem.objects.filter(
+                field=field_idx, difficulty__in=difficulty, visible=True, contest__isnull=True) \
+                .exclude(_id__in=user_solved_problems)
+            # 추천문제가 총 3개가 되도록 문제를 선택합니다.
+            num_to_pick = min(3 - len(recommend_problems), len(candidate_problems))
+            # 후보 문제 중 랜덤으로 recommend_problems에 추가합니다.
+            recommend_problems.extend(random.sample(list(candidate_problems), num_to_pick))
+            if len(recommend_problems) == 3:
+                break
+        return recommend_problems
+
 class MostDifficultProblemAPI(APIView):
     def get(self, request):
         most_difficult_problems = Problem.objects.filter(is_most_difficult=True, visivble=True)
