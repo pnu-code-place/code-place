@@ -31,12 +31,12 @@
             </li>
 
             <li>
-              <Button type="info" icon="refresh" @click="getSubmissions">{{ $t('m.Refresh') }}</Button>
+              <Button class="refresh-button" icon="refresh" @click="getSubmissions">{{ $t('m.Refresh') }}</Button>
             </li>
           </ul>
         </div>
         <SubmissionTable :columns="columns" :data="submissions" :loading="loadingTable"></SubmissionTable>
-<!--        <Table stripe :disabled-hover="true" :columns="columns" :data="submissions" :loading="loadingTable"></Table>-->
+        <!--        <Table stripe :disabled-hover="true" :columns="columns" :data="submissions" :loading="loadingTable"></Table>-->
         <Pagination :total="total" :page-size="limit" @on-change="changeRoute" :current.sync="page"></Pagination>
       </Panel>
     </div>
@@ -351,5 +351,10 @@ export default {
     flex: none;
     width: 210px;
   }
+}
+
+.refresh-button {
+  background-color: #32306b;
+  color: white;
 }
 </style>
