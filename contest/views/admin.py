@@ -2,19 +2,21 @@ import copy
 import os
 import zipfile
 from ipaddress import ip_network
+from django.utils import timezone
 
 import dateutil.parser
 from django.http import FileResponse
 
 from account.decorators import check_contest_permission, ensure_created_by
 from account.models import User
+from problem.models import Problem
 from submission.models import Submission, JudgeStatus
 from utils.api import APIView, validate_serializer
 from utils.cache import cache
 from utils.constants import CacheKey
 from utils.shortcuts import rand_str
 from utils.tasks import delete_files
-from ..models import Contest, ContestAnnouncement, ACMContestRank
+from ..models import Contest, ContestAnnouncement, ACMContestRank, OIContestRank
 from datetime import datetime
 from ..serializers import (ContestAnnouncementSerializer, ContestAdminSerializer,
                            CreateConetestSeriaizer, CreateContestAnnouncementSerializer,
@@ -90,23 +92,38 @@ class ContestAPI(APIView):
 
     def delete(self, request):
         contest_id = request.GET.get("id")
-        # 컨테스트가 진행 중이 아닌 경우
-        if self.isRunning(contest_id):
-            return self.error("Contest is Running... Try later")
+
+        if contest_id:
+            contest = Contest.objects.get(id=contest_id)
+            now = timezone.now()
+            end_time = contest.end_time
+            start_time = contest.start_time
+            # 컨테스트가 진행 중이라면 삭제 불가
+            if end_time >= now >= start_time:
+                return self.error("진행 중인 대회는 삭제할 수 없습니다.")
+
+            if Problem.objects.filter(contest_id=contest_id).exists():
+                return self.error("문제를 출제한 대회는 삭제할 수 없습니다.")
+
+            if ContestAnnouncement.objects.filter(contest_id=contest_id).exists():
+                return self.error("공지사항이 있어 삭제할 수 없습니다.")
+
+            if Submission.objects.filter(contest_id=contest_id).exists():
+                return self.error("제출 이력이 있는 대회는 삭제할 수 없습니다.")
+
+            if ACMContestRank.objects.filter(contest_id=contest_id).exists():
+                return self.error("제출 이력이 있는 대회는 삭제할 수 없습니다.")
+
+            if OIContestRank.objects.filter(contest_id=contest_id).exists():
+                return self.error("제출 이력이 있는 대회는 삭제할 수 없습니다.")
+
+            try:
+                Contest.objects.filter(id=contest_id).delete()
+                return self.success()
+            except:
+                return self.error("알 수 없는 이유로 삭제에 실패하였습니다.")
         else:
-            Contest.objects.filter(id=contest_id).delete()
-            ContestAnnouncement.objects.filter(contest_id=contest_id).delete()
-        return self.success()
-
-    def isRunning(self, contest_id):
-        contest = Contest.objects.get(id=contest_id)
-        now = dateutil.parser.parse(datetime.now())
-        start_time = dateutil.parser.parse(contest.start_time)
-        end_time = dateutil.parser.parse(contest.end_time)
-        return (now > start_time and now < end_time)
-
-
-
+            return self.error("해당 대회는 존재하지 않습니다.")
 
 class ContestAnnouncementAPI(APIView):
     @validate_serializer(CreateContestAnnouncementSerializer)
