@@ -141,44 +141,90 @@ class ContestRankAPI(APIView):
                 qs = self.get_rank()
                 cache.set(cache_key, qs)
 
+        def convert_ms_to_time(ms):
+            # 밀리초를 초 단위로 변환
+            seconds = ms // 1000
+
+            # 시간 계산
+            hours = seconds // 3600
+            seconds %= 3600
+
+            # 분 계산
+            minutes = seconds // 60
+            seconds %= 60
+
+            return f"{hours}시간 {minutes}분 {seconds}초"
+
         if download_csv:
             data = serializer(qs, many=True, is_contest_admin=is_contest_admin).data
             contest_problems = Problem.objects.filter(contest=self.contest, visible=True).order_by("_id")
             problem_ids = [item.id for item in contest_problems]
 
             f = io.BytesIO()
+
             workbook = xlsxwriter.Workbook(f)
             worksheet = workbook.add_worksheet()
-            worksheet.write("A1", "User ID")
-            worksheet.write("B1", "Username")
-            worksheet.write("C1", "Real Name")
+
+            # write contest info
+            contest_title = workbook.add_format({'font_size': 30, 'bold': True})
+            worksheet.write("A1", self.contest.title, contest_title)
+            contest_type = workbook.add_format({'font_size': 15, 'bold': True})
+            worksheet.write("A2", "OI 타입" if self.contest.rule_type == ContestRuleType.OI else "ACM 타입", contest_type)
+            contest_other_info = workbook.add_format({'bold': True})
+            worksheet.write("A3", "대회 시작 시간", contest_other_info)
+            worksheet.write("B3", str(self.contest.start_time), contest_other_info)
+            worksheet.write("A4", "대회 종료 시간", contest_other_info)
+            worksheet.write("B4", str(self.contest.end_time), contest_other_info)
+
+            ranking_bg = workbook.add_format({'bg_color': '#EEECE2', 'bold':True})
+            user_info_bg = workbook.add_format({'bg_color': '#DAE4C0', 'bold':True})
+            worksheet.write("A6", "순위", ranking_bg)
+            worksheet.write("B6", "닉네임", user_info_bg)
+            worksheet.write("C6", "실명", user_info_bg)
+            worksheet.write("D6", "이메일", user_info_bg)
+            worksheet.write("E6", "단과대학", user_info_bg)
+            worksheet.write("F6", "학과명", user_info_bg)
+            worksheet.write("G6", "학번", user_info_bg)
             if self.contest.rule_type == ContestRuleType.OI:
-                worksheet.write("D1", "Total Score")
+                total_score_bg = workbook.add_format({'bg_color': '#F6D7B8', 'bold': True})
+                worksheet.write("H6", "총점", total_score_bg)
                 for item in range(contest_problems.count()):
-                    worksheet.write(self.column_string(5 + item) + "1", f"{contest_problems[item].title}")
+                    problems_bg = workbook.add_format({'bg_color': '#DEEDF2', 'bold': True})
+                    worksheet.write(self.column_string(10 + item) + "6", f"문제 {contest_problems[item]._id}번", problems_bg)
                 for index, item in enumerate(data):
-                    worksheet.write_string(index + 1, 0, str(item["user"]["id"]))
-                    worksheet.write_string(index + 1, 1, item["user"]["username"])
-                    worksheet.write_string(index + 1, 2, item["user"]["real_name"] or "")
-                    worksheet.write_string(index + 1, 3, str(item["total_score"]))
+                    worksheet.write_string(index + 6, 0, str(index + 1))
+                    worksheet.write_string(index + 6, 1, item["user"]["username"])
+                    worksheet.write_string(index + 6, 2, item["user"]["real_name"] or "")
+                    worksheet.write_string(index + 6, 3, item["user"]["email"] or "")
+                    worksheet.write_string(index + 6, 4, item["user"]["school"] or "")
+                    worksheet.write_string(index + 6, 5, item["user"]["major"] or "")
+                    worksheet.write_string(index + 6, 6, item["user"]["student_id"] or "")
+                    worksheet.write_string(index + 6, 7, str(item["total_score"])+ '점')
                     for k, v in item["submission_info"].items():
-                        worksheet.write_string(index + 1, 4 + problem_ids.index(int(k)), str(v))
+                        worksheet.write_string(index + 6, 9 + problem_ids.index(int(k)), str(v) + '점' )
+
             else:
-                worksheet.write("D1", "AC")
-                worksheet.write("E1", "Total Submission")
-                worksheet.write("F1", "Total Time")
+                score_bg = workbook.add_format({'bg_color': '#F6D7B8', 'bold':True})
+                worksheet.write("H6", "AC", score_bg)
+                worksheet.write("I6", "총 제출 수", score_bg)
+                worksheet.write("J6", "총 시간", score_bg)
                 for item in range(contest_problems.count()):
-                    worksheet.write(self.column_string(7 + item) + "1", f"{contest_problems[item].title}")
+                    problems_bg = workbook.add_format({'bg_color': '#DEEDF2', 'bold':True})
+                    worksheet.write(self.column_string(12 + item) + "6", f"문제 {contest_problems[item]._id}번", problems_bg)
 
                 for index, item in enumerate(data):
-                    worksheet.write_string(index + 1, 0, str(item["user"]["id"]))
-                    worksheet.write_string(index + 1, 1, item["user"]["username"])
-                    worksheet.write_string(index + 1, 2, item["user"]["real_name"] or "")
-                    worksheet.write_string(index + 1, 3, str(item["accepted_number"]))
-                    worksheet.write_string(index + 1, 4, str(item["submission_number"]))
-                    worksheet.write_string(index + 1, 5, str(item["total_time"]))
+                    worksheet.write_string(index + 6, 0, str(str(index + 1)))
+                    worksheet.write_string(index + 6, 1, item["user"]["username"])
+                    worksheet.write_string(index + 6, 2, item["user"]["real_name"] or "")
+                    worksheet.write_string(index + 6, 3, item["user"]["email"] or "")
+                    worksheet.write_string(index + 6, 4, item["user"]["school"] or "")
+                    worksheet.write_string(index + 6, 5, item["user"]["major"] or "")
+                    worksheet.write_string(index + 6, 6, item["user"]["student_id"] or "")
+                    worksheet.write_string(index + 6, 7, str(item["accepted_number"]) + '번')
+                    worksheet.write_string(index + 6, 8, str(item["submission_number"]) + '번')
+                    worksheet.write_string(index + 6, 9, convert_ms_to_time(item["total_time"]))
                     for k, v in item["submission_info"].items():
-                        worksheet.write_string(index + 1, 6 + problem_ids.index(int(k)), str(v["is_ac"]))
+                        worksheet.write_string(index + 6, 11 + problem_ids.index(int(k)), str(v["is_ac"]))
 
             workbook.close()
             f.seek(0)
