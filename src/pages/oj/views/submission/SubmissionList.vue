@@ -354,7 +354,7 @@ export default {
 }
 
 .refresh-button {
-  background-color: #32306b;
+  background-color: #495060;
   color: white;
 }
 </style>

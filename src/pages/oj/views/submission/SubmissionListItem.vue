@@ -90,7 +90,7 @@ export default {
   <tr>
     <td>{{ this.submit_time }}</td>
     <td class="link" @click="this.goStatus">{{ item.id.slice(0, 12) }}</td>
-    <td><button class="status-badge">{{ JUDGE_STATUS[item.result].name }}</button></td>
+    <td><button class="status-badge" :style="{backgroundColor : JUDGE_STATUS[item.result].color}">{{ JUDGE_STATUS[item.result].name }}</button></td>
     <td class="link" @click="this.goProblem">{{ item.problem }}</td>
     <td>{{ this.running_time }}</td>
     <td>{{ this.memory }}</td>
@@ -127,7 +127,7 @@ td {
 }
 
 button.rejudge {
-  background-color: #32306b;
+  background-color: #495060;
   border: none;
   color: white;
   padding: 5px 10px;
@@ -146,7 +146,6 @@ button:hover.rejudge {
 .rejudging {
   background-color: #f0f0f0;
   animation: rejudging 1s infinite;
-  //pointer-events: none;
   cursor: not-allowed;
 }
 
@@ -163,7 +162,6 @@ button:hover.rejudge {
 }
 
 .status-badge {
-  background-color: #32306b;
   border: none;
   color: white;
   padding: 5px 10px;
