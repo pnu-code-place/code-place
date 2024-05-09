@@ -12,9 +12,7 @@ class Scheduler:
         self.scheduler.add_job(UserScore.calculate_basis, 'cron', hour=0)
         self.scheduler.add_job(UserScore.calculate_fluctuation, 'interval', minutes=1)
         self.scheduler.add_job(call_update_weekly_stats, 'cron', day_of_week='mon', hour=0, minute=0)
-        self.scheduler.add_job(call_update_bonus_problem, 'interval', minutes=1)
-        # self.scheduler.add_job(call_update_weekly_stats, 'cron', day_of_week='mon', hour=0, minute=0)
-        # self.scheduler.add_job(call_update_bonus_problem, 'cron', day_of_week='mon', hour=0, minute=0)
+        self.scheduler.add_job(call_update_bonus_problem, 'cron', day_of_week='mon', hour=0, minute=0)
 
     def start(self):
         self.scheduler.start()

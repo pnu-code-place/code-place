@@ -370,13 +370,17 @@ class UserRegisterAPI(APIView):
             return self.error("username already exists")
         if User.objects.filter(email=data["email"]).exists():
             return self.error("email already exists")
+        if User.objects.filter(email=data["student_id"]).exists():
+            return self.error("student_id already exists")
+
         college = College.objects.get(id=data['collegeId'])
         department = Department.objects.get(id=data['departmentId'])
+
         with transaction.atomic():
             user = User.objects.create(username=data["username"], email=data["email"])
             user.set_password(data["password"])
             user.save()
-            user_profile = UserProfile.objects.create(user=user, school=college.college_name, major=department.department_name, college=college, department=department)
+            user_profile = UserProfile.objects.create(user=user, school=college.college_name, major=department.department_name, college=college, department=department, real_name=data["real_name"], student_id=data["student_id"])
             user_profile.save()
             user_score = UserScore.objects.create(user=user)
             user_score.save()

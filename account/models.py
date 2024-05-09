@@ -133,6 +133,7 @@ class UserProfile(models.Model):
     oi_problems_status = JSONField(default=dict)
 
     real_name = models.TextField(null=True)
+    student_id = models.TextField(null=True)
     avatar = models.TextField(default=f"{settings.AVATAR_URI_PREFIX}/default.png")
     blog = models.URLField(null=True)
     mood = models.TextField(null=True)
