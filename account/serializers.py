@@ -38,8 +38,10 @@ class UsernameOrEmailCheckSerializer(serializers.Serializer):
 
 class UserRegisterSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=32)
-    password = serializers.CharField(min_length=6)
+    real_name = serializers.CharField(max_length=32)
     email = serializers.EmailField(max_length=64)
+    password = serializers.CharField(min_length=6)
+    student_id = serializers.CharField(min_length=6)
     collegeId = serializers.IntegerField()
     departmentId = serializers.IntegerField()
 
