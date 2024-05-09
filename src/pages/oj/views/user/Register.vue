@@ -19,7 +19,8 @@
           class="emailAuthBtn"
           :disabled="this.emailAuthCodeInputState"
           @click="handleClickEmailAuthBtn"
-          >인증</Button
+        >인증
+        </Button
         >
       </FormItem>
       <FormItem prop="emailAuthCode" v-if="emailAuthCodeInputState">
@@ -35,7 +36,8 @@
                 class="emailAuthBtn emailCodeBtn"
                 @click="handleClickAuthCodeVerificationBtn"
                 :disabled="emailAuthCodeVerifyCompletedState"
-          >인증완료</Button
+        >인증완료
+        </Button
         >
       </FormItem>
       <div class="inputName">
@@ -46,6 +48,32 @@
           type="text"
           v-model="formRegister.username"
           :placeholder="$t('m.RegisterNickname')"
+          size="large"
+          @on-enter="handleRegister"
+        >
+        </Input>
+      </FormItem>
+      <div class="inputName">
+        학번
+      </div>
+      <FormItem prop="student_id">
+        <Input
+          type="text"
+          v-model="formRegister.student_id"
+          :placeholder="$t('m.RegisterStudentId')"
+          size="large"
+          @on-enter="handleRegister"
+        >
+        </Input>
+      </FormItem>
+      <div class="inputName">
+        이름(실명)
+      </div>
+      <FormItem prop="real_name">
+        <Input
+          type="text"
+          v-model="formRegister.real_name"
+          :placeholder="$t('m.RegisterRealName')"
           size="large"
           @on-enter="handleRegister"
         >
@@ -98,17 +126,17 @@
       </Button>
       <div style="text-align: center">
         <a class="redirectLogin" @click.stop="switchMode('login')">{{
-          $t("m.UserLogin")
-        }}</a>
+            $t("m.UserLogin")
+          }}</a>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import { mapGetters, mapActions } from "vuex";
+import {mapGetters, mapActions} from "vuex";
 import api from "@oj/api";
-import { FormMixin } from "@oj/components/mixins";
+import {FormMixin} from "@oj/components/mixins";
 import CustomDropDown from "../../components/dropdown/CustomDropdown.vue";
 
 export default {
@@ -168,6 +196,8 @@ export default {
       formRegister: {
         email: "",
         username: "",
+        real_name: "",
+        student_id: "",
         collegeId: "",
         departmentId: "",
         password: "",
@@ -176,15 +206,15 @@ export default {
       },
       ruleRegister: {
         password: [
-          { required: true, trigger: "blur", min: 6, max: 20 },
-          { validator: CheckPassword, trigger: "blur" }
+          {required: true, trigger: "blur", min: 6, max: 20},
+          {validator: CheckPassword, trigger: "blur"}
         ],
         passwordAgain: [
-          { required: true, validator: CheckAgainPassword, trigger: "change" }
+          {required: true, validator: CheckAgainPassword, trigger: "change"}
         ],
       },
-      collegeList : [],
-      majorList : []
+      collegeList: [],
+      majorList: []
     };
   },
   methods: {
@@ -209,7 +239,7 @@ export default {
       });
     },
     handleRegister() {
-      if(!this.emailAuthCodeVerifyCompletedState){
+      if (!this.emailAuthCodeVerifyCompletedState) {
         this.$error("웹메일 인증이 완료되지 않았습니다.")
         return
       }
@@ -229,18 +259,18 @@ export default {
         );
       });
     },
-    handleCollegeChange(collegeId){
+    handleCollegeChange(collegeId) {
       this.formRegister.collegeId = collegeId
       this.getMajorList(collegeId)
     },
-    handleMajorChange(majorId){
+    handleMajorChange(majorId) {
       this.formRegister.departmentId = majorId
     },
-    async getCollegeList(){
+    async getCollegeList() {
       let res = await api.getCollegeList()
       this.collegeList = res.data.data
     },
-    async getMajorList(collegeId){
+    async getMajorList(collegeId) {
       let res = await api.getMajorList(collegeId)
       this.majorList = res.data.data
     }
@@ -257,13 +287,16 @@ export default {
   margin-top: 20px;
   margin-bottom: -15px;
   text-align: left;
+
   .btn {
     margin: 0 0 15px 0;
+
     &:last-child {
       margin: 0;
     }
   }
 }
+
 .btn {
   height: 45px;
   background-color: #32306b;
@@ -272,12 +305,13 @@ export default {
   font-size: 14px;
   border-radius: 8px;
 }
+
 .inputName {
   font-size: small;
   font-weight: 800;
-  margin-bottom: 5px;
   margin-left: 1px;
 }
+
 .emailAuthBtn {
   height: 36px;
   background-color: #32306b;
@@ -286,20 +320,24 @@ export default {
   font-size: 14px;
   border-radius: 8px;
 }
+
 .emailAuthInput {
   width: 303px;
 }
+
 .emailCodeInput {
   width: 280px;
   animation: fadeIn;
   animation-duration: 0.5s;
   animation-timing-function: ease-in-out;
 }
+
 .emailCodeBtn {
   animation: fadeIn;
   animation-duration: 0.5s;
   animation-timing-function: ease-in-out;
 }
+
 .redirectLogin {
   color: #7a7a7a;
   text-decoration-line: underline;

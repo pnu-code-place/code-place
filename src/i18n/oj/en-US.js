@@ -276,7 +276,7 @@ export const m = {
   // Register.vue
   RegisterNickname: "닉네임",
   RegisterStudentId: "학번",
-  RegisterRealName: "실명",
+  RegisterRealName: "이름",
   CollegeName: "단과대학",
   Major: "학과",
   Email_Address: "부산대학교 웹메일",
