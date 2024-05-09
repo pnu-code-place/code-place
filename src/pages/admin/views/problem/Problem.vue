@@ -514,7 +514,6 @@ export default {
       })
     },
     submit () {
-      console.log(this.problem)
       if(!this.problem.field){
         this.$error('Field is required')
         return;

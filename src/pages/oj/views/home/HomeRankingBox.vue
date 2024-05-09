@@ -75,7 +75,6 @@ export default {
     init() {
       api.getHomeRealTimeRanking()
         .then((res)=>{
-          console.log(res)
           this.rankingItems = res.data.data
         })
     }
@@ -163,6 +162,9 @@ table {
         }
 
         &.name {
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
           text-align: left;
           padding: 0 10px;
           font-weight: 560;

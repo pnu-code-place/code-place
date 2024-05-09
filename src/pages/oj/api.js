@@ -42,7 +42,6 @@ export default {
     });
   },
   applyUserEmailValidCheck(email) {
-    console.log("applyUserEmailValidCheck email: ", email);
     return ajax("apply_user_email_valid_check", "post", {
       data: {
         email
@@ -112,8 +111,8 @@ export default {
     //   }, 900)
     // })
   },
-  getAiRecommendProblem() {
-    return ajax("ai_recommend_problem", "get");
+  getPersonalRecommendProblem() {
+    return ajax("recommend_problem", "get");
   },
   // getUserAchievement(username) {
   //   return ajax("profile/achievement", "get", {

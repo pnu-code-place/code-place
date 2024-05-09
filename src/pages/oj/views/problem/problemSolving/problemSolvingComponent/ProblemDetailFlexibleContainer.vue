@@ -85,63 +85,65 @@
           </Card>
         </div>
 
-        <div class="detailInfoBox">
-          <div class="detailInfoBoxHeader" @click="toggleDropdown('field')">
-            <p class="title" style="text-decoration: none; margin-top: 0px" ref="field">
-              <Icon type="ios-pie" color="#F8B193" style="margin-right: 5px"/>
-              영역
-            </p>
-            <i class="fas fa-chevron-down" v-if="!dropdown.openFieldDropdown"></i>
-            <i class="fas fa-chevron-up" v-else></i>
-          </div>
-          <transition name="slide">
-            <div class="dropdown-content" v-if="dropdown.openFieldDropdown">
-              <FieldCategoryBox :boxType="true" :value="FIELD_MAP[problem.field].value"
-                                :boxColor="FIELD_MAP[problem.field].boxColor"/>
+        <template v-if="!contestID">
+          <div class="detailInfoBox">
+            <div class="detailInfoBoxHeader" @click="toggleDropdown('field')">
+              <p class="title" style="text-decoration: none; margin-top: 0px" ref="field">
+                <Icon type="ios-pie" color="#F8B193" style="margin-right: 5px"/>
+                영역
+              </p>
+              <i class="fas fa-chevron-down" v-if="!dropdown.openFieldDropdown"></i>
+              <i class="fas fa-chevron-up" v-else></i>
             </div>
-          </transition>
-        </div>
-
-        <div class="detailInfoBox">
-          <div class="detailInfoBoxHeader" @click="toggleDropdown('category')">
-            <p class="title" style="text-decoration: none; margin-top: 0px;" ref="category">
-              <Icon type="ios-pricetag" color="#FF9F9F" style="margin-right: 5px"/>
-              태그
-            </p>
-            <i class="fas fa-chevron-down" v-if="!dropdown.openCategoryDropdown"></i>
-            <i class="fas fa-chevron-up" v-else></i>
+            <transition name="slide">
+              <div class="dropdown-content" v-if="dropdown.openFieldDropdown">
+                <FieldCategoryBox :boxType="true" :value="FIELD_MAP[problem.field].value"
+                                  :boxColor="FIELD_MAP[problem.field].boxColor"/>
+              </div>
+            </transition>
           </div>
 
-          <div v-if="dropdown.openCategoryDropdown" style="display: flex">
-            <template v-for="(category, idx) in problem.tags">
-              <FieldCategoryBox :boxType="false" :value="'#' + category" :boxColor="'#FFFFFF'"/>
-            </template>
-          </div>
-        </div>
+          <div class="detailInfoBox">
+            <div class="detailInfoBoxHeader" @click="toggleDropdown('category')">
+              <p class="title" style="text-decoration: none; margin-top: 0px;" ref="category">
+                <Icon type="ios-pricetag" color="#FF9F9F" style="margin-right: 5px"/>
+                태그
+              </p>
+              <i class="fas fa-chevron-down" v-if="!dropdown.openCategoryDropdown"></i>
+              <i class="fas fa-chevron-up" v-else></i>
+            </div>
 
-        <div class="detailInfoBox">
-          <div class="detailInfoBoxHeader">
-            <p class="title" style="text-decoration: none; margin-top: 0px;">
-              <Icon type="ios-contact" color="#90B8E7" style="margin-right: 5px"/>
-              문제를 등록한 사람
-            </p>
-            <p class="title" style="text-decoration: none; margin-top: 0px;">
-              {{ problem.created_by.username + '님' }}
-            </p>
+            <div v-if="dropdown.openCategoryDropdown" style="display: flex">
+              <template v-for="(category, idx) in problem.tags">
+                <FieldCategoryBox :boxType="false" :value="'#' + category" :boxColor="'#FFFFFF'"/>
+              </template>
+            </div>
           </div>
-        </div>
 
-        <div class="detailInfoBox" v-if="problem.source">
-          <div class="detailInfoBoxHeader">
-            <p class="title" style="text-decoration: none; margin-top: 0px;">
-              <i class="fas fa-paperclip" style="margin-right: 5px; color: #424f66"></i>
-              출처
-            </p>
-            <p class="title" style="text-decoration: none; margin-top: 0px;">
-              {{ problem.source }}
-            </p>
+          <div class="detailInfoBox">
+            <div class="detailInfoBoxHeader">
+              <p class="title" style="text-decoration: none; margin-top: 0px;">
+                <Icon type="ios-contact" color="#90B8E7" style="margin-right: 5px"/>
+                문제를 등록한 사람
+              </p>
+              <p class="title" style="text-decoration: none; margin-top: 0px;">
+                {{ problem.created_by.username + '님' }}
+              </p>
+            </div>
           </div>
-        </div>
+
+          <div class="detailInfoBox" v-if="problem.source">
+            <div class="detailInfoBoxHeader">
+              <p class="title" style="text-decoration: none; margin-top: 0px;">
+                <i class="fas fa-paperclip" style="margin-right: 5px; color: #424f66"></i>
+                출처
+              </p>
+              <p class="title" style="text-decoration: none; margin-top: 0px;">
+                {{ problem.source }}
+              </p>
+            </div>
+          </div>
+        </template>
       </div>
     </Panel>
   </div>
@@ -155,7 +157,8 @@ import {DIFFICULTY_MAP, FIELD_MAP} from "../../../../../../utils/constants";
 
 export default defineComponent({
   props: {
-    problem: Object
+    problem: Object,
+    contestID: Number
   },
   components: {FieldCategoryBox},
   data() {

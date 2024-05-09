@@ -250,12 +250,11 @@ export const m = {
   Th_Problem_Num_Success: "완료한 사람",
   Th_Problem_Total_Score: "총점",
   Th_Problem_AC_Rate: "정답률",
-  //AiRecommendationBox.vue
-  AiRecommendation: "AI 추천 문제",
-  AiRecommendation_Info: "맞춤 문제를 추천해드려요!",
-  AiRecommendation_No_Auth: "로그인 후 사용 가능합니다.",
+  //PersonalRecommendationBox.vue
+  PersonalRecommendation: "실력향상을 위한 추천문제",
+  PersonalRecommendation_No_Auth: "로그인 후 사용 가능합니다.",
   AiSolution: "영역을 더 풀어보세요!",
-  Try_AiRecommendation_Problem: "풀어보기",
+  Try_Personal_Recommendation_Problem: "풀어보기",
   //MostDifficultProblemLastWeekBox.vue
   Most_Hard_Problem_In_Last_Week: "저번 주에 가장 어려웠어요!",
   Try_Most_Hard_Problem_In_Last_Week: "도전하기",
@@ -276,6 +275,8 @@ export const m = {
   AC_Rate: "정답률",
   // Register.vue
   RegisterNickname: "닉네임",
+  RegisterStudentId: "학번",
+  RegisterRealName: "실명",
   CollegeName: "단과대학",
   Major: "학과",
   Email_Address: "부산대학교 웹메일",

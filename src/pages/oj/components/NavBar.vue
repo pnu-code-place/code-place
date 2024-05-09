@@ -41,7 +41,7 @@
         </Dropdown>
       </template>
     </Menu>
-    <Modal v-model="modalVisible" :width="400" :styles="{'top': modalStatus.mode == 'login' ? '10%' : '10%'}">
+    <Modal v-model="modalVisible" :maskClosable="false" :width="400" :styles="{'top': modalStatus.mode == 'login' ? '10%' : '2%'}">
       <div slot="header" class="modal-title" style="text-align: center">
         {{ modalStatus.mode == 'login' ? $t('m.LoginModalHeader') : $t('m.RegisterModalHeader') }}
       </div>

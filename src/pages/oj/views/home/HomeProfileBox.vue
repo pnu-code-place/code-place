@@ -1,7 +1,7 @@
 <template>
   <div class="profileBox">
     <template v-if="!isAuthenticated">
-            <span style="font-weight: 600">
+            <span style="font-size: 14px; font-weight: 600">
               안전한 서비스 이용을 위해 로그인을 해주세요
             </span>
       <div class="loginBtn" @click="handleLoginBtnClick('login')">
@@ -22,13 +22,12 @@
           <div class="userInfoWrapper">
                   <span>
                     {{ user.username + '님' }}
-                    <img :src="getTierImageSrc(user.tier)" width="13px"/>
                   </span>
             <template v-if="!isAdminRole">
               <br>
-              <span>정보컴퓨터공학부</span>
+              <span>{{profile.school}}</span>
               <br>
-              <span>PLATINUM III</span>
+              <span>{{profile.major}}</span>
             </template>
             <template v-else>
               <br>
@@ -45,7 +44,7 @@
           <span @click="goRouter('user-home')"><router-link
               :to="{name:'user-home', params:{username:user.username}}">{{ $t('m.MyHome') }}</router-link></span>
           <span v-if="!isAdminRole">정보수정</span>
-          <span v-else @click="window.open('/admin/')">관리</span>
+          <span v-else @click="goRouter('admin')">관리</span>
           <span @click="goRouter('profile-setting')"><router-link
               :to="{name:'default-setting'}">{{ $t('m.Settings') }}</router-link></span>
         </div>
@@ -161,7 +160,7 @@ export default {
     display: flex;
     justify-content: space-around;
     align-items: center;
-    margin-bottom: 30px;
+    margin-bottom: 20px;
 
     .userAvatarWrapper {
       width: 27%;
@@ -169,10 +168,14 @@ export default {
     }
 
     .userInfoWrapper {
+      width: 40%;
       text-align: left;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
 
       span:first-child {
-        font-size: 13px;
+        font-size: 15px;
         font-weight: 600;
       }
     }
@@ -180,7 +183,7 @@ export default {
     .logoutBtn {
       cursor: pointer;
       width: 70px;
-      padding: 3px 0;
+      padding: 5px 0;
       border-radius: 7px;
       color: white;
       background-color: rgba(34, 33, 72, 0.82);
@@ -193,9 +196,10 @@ export default {
     border-radius: 5px;
     justify-content: space-around;
     align-items: center;
-    height: 35px;
+    height: 40px;
     span {
       cursor: pointer;
+      font-weight: 600;
       a {
         color: inherit;
       }

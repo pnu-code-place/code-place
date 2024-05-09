@@ -26,9 +26,9 @@
               </template>
             </div>
           </td>
-          <td class="td-third" style="font-weight: bold; font-size: 12px">{{ DIFFICULTY_MAP[problem.difficulty].value }}</td>
-          <td class="td-fourth">{{ problem.accepted_number }}</td>
-          <td class="td-fifth">{{ problem.submission_number == 0 ? "없음" : (problem.accepted_number / problem.submission_number ) * 100 + '%' }}</td>
+          <td class="td-third" style="font-weight: bold; font-size: 14px">{{ DIFFICULTY_MAP[problem.difficulty].value }}</td>
+          <td class="td-fourth" style="font-size: 13px">{{ problem.accepted_number+'명' }}</td>
+          <td class="td-fifth" style="font-size: 13px">{{ problem.submission_number == 0 ? "없음" : Math.floor((problem.accepted_number / problem.submission_number ) * 100) + '%' }}</td>
         </tr>
         </tbody>
       </template>
@@ -74,7 +74,6 @@ export default {
   border-radius: 7px;
   border: 1px solid #dedede;
   width: 100%;
-  height: 800px;
   padding-left: 30px;
   padding-right: 30px;
   margin-bottom: 20px;
@@ -86,6 +85,7 @@ export default {
   padding: 30px;
   text-align: center;
 }
+
 table {
   background-color: var(--box-background-color);
   border: 1px solid #dedede;
@@ -118,7 +118,7 @@ thead {
   color: #7E7E7E;
 
   .th-second {
-    width: 470px;
+    width: 400px;
   }
 }
 
@@ -133,7 +133,7 @@ tbody {
 
     td:nth-child(2) {
       text-align: left;
-      padding-left: 60px;
+      padding-left: 70px;
     }
 
     td {

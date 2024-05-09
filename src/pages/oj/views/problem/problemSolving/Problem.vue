@@ -2,7 +2,7 @@
   <div class="flex-container">
     <splitpanes vertical style="height: calc(100vh - 50px)">
       <pane :size="50">
-        <ProblemDetailFlexibleContainer :problem="problem"/>
+        <ProblemDetailFlexibleContainer :problem="problem" :contestID="contestID"/>
       </pane>
       <pane min-size="30" :size="50">
         <CodeEditorHeader @create-submission="submitCode"
@@ -201,7 +201,8 @@ export default {
       dropdown: {
         openFieldDropdown: false,
         openCategoryDropdown: false
-      }
+      },
+      modalCheck: false,
     }
   },
   beforeRouteEnter(to, from, next) {
@@ -275,6 +276,9 @@ export default {
       }
       this.language = newLang
       this.$refs.myCm.onLangChange(newLang)
+    },
+    modalOpen() {
+      this.modalCheck = !this.modalCheck
     },
     handleRoute(route) {
       this.$router.push(route)

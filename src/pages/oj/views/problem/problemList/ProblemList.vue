@@ -14,7 +14,7 @@
       <keep-alive>
         <div class="right-container">
           <MostDifficultProblemLastWeekBox/>
-          <AiRecommendationBox :problems="problemList.slice(3,5)"/>
+          <PersonalRecommendationBox/>
         </div>
       </keep-alive>
     </div>
@@ -27,19 +27,19 @@ import api from '@oj/api'
 import utils from '@/utils/utils'
 import {ProblemMixin} from '@oj/components/mixins'
 import Pagination from '@oj/components/Pagination'
-import AiRecommendationBox from "./rightSideComponent/AiRecommendationBox.vue";
 import MostDifficultProblemLastWeekBox from "./rightSideComponent/MostDifficultProblemLastWeekBox.vue";
 import ProblemListTable from "./problemListComponent/ProblemListTable.vue";
 import ProblemListTableHeader from "./problemListComponent/ProblemListTableHeader.vue";
+import PersonalRecommendationBox from "./rightSideComponent/PersonalRecommendationBox.vue";
 
 export default {
   name: 'ProblemList',
   mixins: [ProblemMixin],
   components: {
+    PersonalRecommendationBox,
     ProblemListTableHeader,
     ProblemListTable,
     MostDifficultProblemLastWeekBox,
-    AiRecommendationBox,
     Pagination,
   },
   data() {
@@ -94,7 +94,6 @@ export default {
         this.getTagList()
       }
       await this.getProblemList()
-      this.mostDifficultProblem = this.mostDifficultProblemLastWeek()
     },
     pushRouter() {
       this.$router.push({
@@ -123,11 +122,6 @@ export default {
     },
     onReset() {
       this.$router.push({name: 'problem-list'})
-    },
-    mostDifficultProblemLastWeek(){
-      console.log(this.problemList)
-      console.log( this.problemList.find(value => value.is_most_difficult === true))
-      return this.problemList.find(value => value.is_most_difficult === true)
     },
     pickOne() {
       api.pickone().then(res => {

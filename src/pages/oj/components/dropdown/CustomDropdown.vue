@@ -71,11 +71,12 @@ export default {
 <style scoped lang="less">
 select {
   width: 100%;
-  padding: 6px 7px;
+  padding: 8px 7px;
   border: 1px solid #ccc;
   border-radius: 5px;
   font-size: 14px;
   color: #495060;
+  margin-bottom: 15px;
 
   option {
     font-size: 16px;

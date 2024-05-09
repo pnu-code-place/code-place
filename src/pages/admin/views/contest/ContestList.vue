@@ -70,7 +70,7 @@
         </el-table-column>
         <el-table-column
           fixed="right"
-          width="250"
+          width="300"
           :label="$t('m.Contest_List_Table_Operation')">
           <div slot-scope="scope">
             <icon-btn :name="$t('m.Icon_Edit')" icon="edit" @click.native="goEdit(scope.row.id)"></icon-btn>
@@ -79,6 +79,8 @@
                       @click.native="goContestAnnouncement(scope.row.id)"></icon-btn>
             <icon-btn :name="$t('m.Icon_Download')" icon="download"
                       @click.native="openDownloadOptions(scope.row.id)"></icon-btn>
+            <icon-btn :name="$t('m.Icon_Delete')" icon="remove"
+                      @click.native="deleteContest(scope.row.id)"></icon-btn>
           </div>
         </el-table-column>
       </el-table>
@@ -107,6 +109,7 @@
   import api from '../../api.js'
   import utils from '@/utils/utils'
   import {CONTEST_STATUS_REVERSE} from '@/utils/constants'
+  import router from "../../router";
 
   export default {
     name: 'ContestList',
@@ -166,6 +169,13 @@
       },
       handleVisibleSwitch (row) {
         api.editContest(row)
+      },
+      deleteContest (contestId) {
+        if(confirm(`정말 삭제하시겠습니까?`)){
+          api.deleteContest(contestId).then((res)=>{
+            this.$router.go(0)
+          })
+        }
       }
     },
     watch: {

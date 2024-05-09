@@ -51,6 +51,7 @@ export default {
   padding-left: 4px;
   padding-right: 4px;
   border-radius: 30px;
+  background-color: #ffffff;
   width: fit-content;
   height: fit-content;
 }
