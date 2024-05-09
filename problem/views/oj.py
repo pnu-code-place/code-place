@@ -175,9 +175,12 @@ class RecommendProblemAPI(APIView):
         user_solved_problem = self.get_user_solved_problems(request.user)
         field_scores = self.get_field_scores(user_score)
 
-        difficulty = self.get_recommend_difficulty(user_score)
-        candidate_problems = Problem.objects.filter(
-            difficulty__in=difficulty, visible=True, contest__isnull=True).exclude(_id__in=user_solved_problem)
+        # 추천 난이도 임시 제외
+        # difficulty = self.get_recommend_difficulty(user_score)
+        # candidate_problems = Problem.objects.filter(
+        #     difficulty__in=difficulty, visible=True, contest__isnull=True).exclude(_id__in=user_solved_problem)
+
+        candidate_problems = Problem.objects.filter(visible=True, contest__isnull=True).exclude(_id__in=user_solved_problem)
         recommend_problems = random.sample(list(candidate_problems), min(3, len(candidate_problems)))
 
         if recommend_problems:
