@@ -2,7 +2,7 @@
   <el-menu class="vertical_menu"
            :router="true" :default-active="currentPath">
     <div class="logo">
-      <img src="../../../assets/logo.svg" alt="oj admin"/>
+      <img src="../../../assets/pnu_logo.svg" alt="oj admin"/>
     </div>
     <el-menu-item index="/"><i class="el-icon-fa-dashboard"></i>{{$t('m.Dashboard')}}</el-menu-item>
     <el-submenu v-if="isSuperAdmin" index="general">
@@ -61,9 +61,6 @@
       margin: 20px 0;
       text-align: center;
       img {
-        background-color: #fff;
-        border-radius: 50%;
-        border: 3px solid #fff;
         width: 75px;
         height: 75px;
       }
