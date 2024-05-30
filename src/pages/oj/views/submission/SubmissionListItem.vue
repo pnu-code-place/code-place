@@ -44,6 +44,13 @@ export default {
     },
     buttonText() {
       return this.rejudging ? this.$i18n.t('m.Rejudging') : this.$i18n.t('m.Rejudge')
+    },
+    statusStyle() {
+      return {
+        backgroundColor: JUDGE_STATUS[this.item.result].color,
+        color: JUDGE_STATUS[this.item.result].textColor,
+        fontWeight: 'bold'
+      }
     }
   },
   methods: {
@@ -90,7 +97,7 @@ export default {
   <tr>
     <td>{{ this.submit_time }}</td>
     <td class="link" @click="this.goStatus">{{ item.id.slice(0, 12) }}</td>
-    <td><button class="status-badge" :style="{backgroundColor : JUDGE_STATUS[item.result].color}">{{ JUDGE_STATUS[item.result].name }}</button></td>
+    <td><button class="status-badge" :style="this.statusStyle">{{ JUDGE_STATUS[item.result].name }}</button></td>
     <td class="link" @click="this.goProblem">{{ item.problem }}</td>
     <td>{{ this.running_time }}</td>
     <td>{{ this.memory }}</td>

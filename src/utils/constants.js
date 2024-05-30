@@ -1,58 +1,69 @@
 import i18n from '@/i18n'
 
+export const JUDGE_COLOR = {
+  WRONG: {
+    color: '#FFD338',
+    textColor: '#454545'
+  },
+  CORRECT: {
+    color: '#AEFF87',
+    textColor: '#454545'
+  },
+  PENDING: {
+    color: '#C3EBFF',
+    textColor: '#454545'
+  },
+  ERROR: {
+    color: '#FF0031',
+    textColor: '#454545'
+  },
+}
+
 export const JUDGE_STATUS = {
   '-2': {
     name: 'Compile Error',
     short: 'CE',
-    color: 'yellow',
-    type: 'warning'
+    ...JUDGE_COLOR.ERROR
   },
   '-1': {
     name: 'Wrong Answer',
     short: 'WA',
-    color: 'red',
-    type: 'error'
+    ...JUDGE_COLOR.WRONG
   },
   '0': {
     name: 'Accepted',
     short: 'AC',
-    color: 'green',
-    type: 'success'
+    ...JUDGE_COLOR.CORRECT
   },
   '1': {
     name: 'Time Limit Exceeded',
     short: 'TLE',
-    color: 'red',
-    type: 'error'
+    ...JUDGE_COLOR.WRONG
   },
   '2': {
     name: 'Time Limit Exceeded',
     short: 'TLE',
-    color: 'red',
-    type: 'error'
+    ...JUDGE_COLOR.WRONG
   },
   '3': {
     name: 'Memory Limit Exceeded',
     short: 'MLE',
-    color: 'red',
-    type: 'error'
+    ...JUDGE_COLOR.WRONG
   },
   '4': {
     name: 'Runtime Error',
     short: 'RE',
-    color: 'red',
-    type: 'error'
+    ...JUDGE_COLOR.ERROR
   },
   '5': {
     name: 'System Error',
     short: 'SE',
-    color: 'red',
-    type: 'error'
+    ...JUDGE_COLOR.ERROR
   },
   '6': {
     name: 'Pending',
     color: 'yellow',
-    type: 'warning'
+    ...JUDGE_COLOR.PENDING
   },
   '7': {
     name: 'Judging',
@@ -62,13 +73,12 @@ export const JUDGE_STATUS = {
   '8': {
     name: 'Partial Accepted',
     short: 'PAC',
-    color: 'blue',
-    type: 'info'
+    ...JUDGE_COLOR.WRONG
   },
   '9': {
     name: 'Submitting',
     color: 'yellow',
-    type: 'warning'
+    ...JUDGE_COLOR.PENDING
   }
 }
 
