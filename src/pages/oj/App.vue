@@ -6,7 +6,7 @@
     <template v-else>
       <NavBar></NavBar>
     </template>
-    <div class="content-app" :class="{'ps': isProblemSolving}">
+    <div class="content-app" :class="{ ps: isProblemSolving }">
       <transition name="fadeInUp" mode="out-in">
         <router-view></router-view>
       </transition>
@@ -15,11 +15,12 @@
       <div class="footer">
         <div>
           <p v-html="website.website_footer"></p>
-          <p>Powered by <a href="https://github.com/QingdaoU/OnlineJudge">OnlineJudge</a>
+          <p>
+            Powered by
+            <a href="https://github.com/QingdaoU/OnlineJudge">OnlineJudge</a>
             <span v-if="version">&nbsp; Version: {{ version }}</span>
           </p>
         </div>
-
       </div>
     </template>
     <BackTop></BackTop>
@@ -27,63 +28,63 @@
 </template>
 
 <script>
-import {mapActions, mapGetters, mapState} from 'vuex'
-import NavBar from './components/NavBar.vue'
+import { mapActions, mapGetters, mapState } from "vuex";
+import NavBar from "./components/NavBar.vue";
 import NavBar_Problem from "./views/problem/problemSolving/problemSolvingNavbar/NavBar_Problem.vue";
 
 export default {
-  name: 'app',
+  name: "app",
   components: {
     NavBar_Problem,
-    NavBar
+    NavBar,
   },
   data() {
     return {
-      version: process.env.VERSION
-    }
+      version: process.env.VERSION,
+    };
   },
   created() {
     try {
-      document.body.removeChild(document.getElementById('app-loader'))
-    } catch (e) {
-    }
+      document.body.removeChild(document.getElementById("app-loader"));
+    } catch (e) {}
   },
   mounted() {
-    this.getWebsiteConfig()
+    this.getWebsiteConfig();
   },
   methods: {
-    ...mapActions(['getWebsiteConfig', 'changeDomTitle'])
+    ...mapActions(["getWebsiteConfig", "changeDomTitle"]),
   },
   computed: {
-    ...mapState(['website']),
-    ...mapGetters(['isProblemSolving']),
+    ...mapState(["website"]),
+    ...mapGetters(["isProblemSolving"]),
   },
   watch: {
-    'website'() {
-      this.changeDomTitle()
+    website() {
+      this.changeDomTitle();
     },
-    '$route'() {
-      this.changeDomTitle()
-    }
-  }
-}
+    $route() {
+      this.changeDomTitle();
+    },
+  },
+};
 </script>
 
 <style lang="less">
-
 :root {
   /* Site Global Variable */
   --box-background-color: #ffffff;
-  --site-background-color: #F9FAFB;
+  --site-background-color: #f9fafb;
   --bg-color: #ffffff;
   --custom-btn-hover-color: #ffffff;
   --border-color: #e7e7e7;
   --header-btn-color: rgba(237, 237, 237, 0.45);
 
+  --point-color: #32306b;
+
   /* Problem Solving Page */
-  --ps-background-color: #F9FAFB;
+  --ps-background-color: #f9fafb;
   /* Problem Solving Page - Inner Content */
-  --ps-content-color: #FFFFFF;
+  --ps-content-color: #ffffff;
   --ps-content-text-color: #454545;
   --ps-content-title-color: #000000;
   --ps-content-pre-background-color: #f6f6f6;
@@ -95,8 +96,14 @@ export default {
   --submit-btn-hover-color: rgba(221, 240, 250, 0.84);
   --submission-result-btn-color: #f8f8f8;
   --submission-result-btn-text-color: #d1d1d1;
-}
 
+  /* Contest Page */
+  --container-border-color: #dedede;
+  --rule-type-border-color: #6b6b6b;
+  --container-font-color: #495060;
+  --container-border-radius: 10px;
+  --container-comment-color: #7e7e7e;
+}
 
 :root.dark.problem {
   /* Problem Solving Page */
@@ -108,7 +115,7 @@ export default {
   --ps-content-pre-background-color: #1a1f29;
   --ps-content-pre-border-color: rgba(140, 140, 140, 0.29);
   --ps-content-code-background-color: #1b212c;
-  --ps-content-code-text-color: #FFFFFF;
+  --ps-content-code-text-color: #ffffff;
   /* Code Submission */
   --submit-btn-color: #343f5a;
   --submit-btn-hover-color: #364361;
@@ -134,7 +141,8 @@ a {
   text-decoration: none;
   background-color: transparent;
 
-  &:active, &:hover {
+  &:active,
+  &:hover {
     outline-width: 0;
   }
 }
@@ -165,8 +173,6 @@ a {
 }
 
 .fadeInUp-enter-active {
-  animation: fadeInUp .8s;
+  animation: fadeInUp 0.8s;
 }
-
-
 </style>

@@ -12,8 +12,8 @@ export const m = {
   Description: "설명",
   Input: "입력",
   Output: "출력",
-  FromFile: 'from file',
-  ToFile: 'to file',
+  FromFile: "from file",
+  ToFile: "to file",
   Sample_Input: "예제 입력",
   Sample_Output: "예제 출력",
   Hint: "힌트",
@@ -34,8 +34,7 @@ export const m = {
   Statistic: "Statistic",
   Close: "Close",
   View_Contest: "View Contest",
-  Are_you_sure_you_want_to_reset_your_code:
-    "코드를 리셋하시겠습니까?",
+  Are_you_sure_you_want_to_reset_your_code: "코드를 리셋하시겠습니까?",
   Code_can_not_be_empty: "코드를 입력해주세요.",
   Submit_code_successfully: "Submit code successfully",
   You_have_solved_the_problem: "You have solved the problem",
@@ -157,7 +156,8 @@ export const m = {
   EndAt: "EndAt",
   ContestType: "ContestType",
   Creator: "Creator",
-  Public: "Public",
+  Public: "공개",
+  Private: "비공개",
   Password_Protected: "Password Protected",
   // ContestList.vue
   Rule: "룰",
@@ -168,6 +168,23 @@ export const m = {
   Ended: "종료",
   No_contest: "등록된 대회가 없습니다.",
   Please_login_first: "로그인이 필요합니다.",
+  Underway_Contest: "진행 중인 대회",
+  Not_Start_Contest: "진행 예정 대회",
+  Ended_Contest: "최근에 마감된 대회",
+  History_Of_Contest: "전체 대회 히스토리",
+  Contest_ID: "대회 번호",
+  Contest_Title: "대회 제목",
+  Contest_Title_Description: "대회 제목/설명",
+  Contest_Type: "대회 타입",
+  Contest_Search_Keyword: "대회 제목/번호 검색",
+  Start_Date: "시작 일시",
+  End_Date: "마감 일시",
+  State: "상태",
+  Disclosure: "공개여부",
+  Search: "검색",
+  Underway_Contest_Not_Exist: "진행 중인 대회가 존재하지 않습니다.",
+  Not_Start_Contest_Not_Exist: "진행 예정인 대회가 존재하지 않습니다.",
+  Ended_Contest_Not_Exist: "대회 이력이 존재하지 않습니다.",
   // ContestProblemList
   Problems_List: "문제",
   No_Problems: "등록된 문제가 없습니다.",
@@ -261,7 +278,8 @@ export const m = {
   There_Is_No_Data: "표시할 데이터가 충분하지 않습니다.",
   //HomeProblemRecommendationBox.vue
   HomeProblemRecommendation: "이주의 보너스 문제",
-  HomeProblemRecommendation_Info: "주마다 보너스 점수(x2)가 있는 문제를 추천해드려요!",
+  HomeProblemRecommendation_Info:
+    "주마다 보너스 점수(x2)가 있는 문제를 추천해드려요!",
   //문제 리스트의 난이도
   Difficulty: "난이도",
   Category: "태그",
@@ -361,7 +379,6 @@ export const m = {
   MiracleCodingDays: "일",
   Best_Record: "최고 기록",
 
-
   //CategorySummary.vue
   Field_Based_Distribution: "영역별 분포",
   Field: "영역",
@@ -383,7 +400,7 @@ export const m = {
   There_Is_No_Problem_You_Solved: "해결한 문제가 없습니다.",
   There_Is_No_Problem_You_Tried: "시도한 문제가 없습니다.",
   Lets_Get_Started: "한 번 시작해 볼까요?",
-  Is_Solved:"해결 여부",
+  Is_Solved: "해결 여부",
 
   //AchievementSection.vue
   Achieved: "달성",
@@ -405,13 +422,12 @@ export const m = {
   // UserList.vue
   Top_Users: "랭킹",
   Avatar: "아바타",
-  Users : "사용자",
+  Users: "사용자",
   Grade: "등급",
 
   // Contest-Overview.vue
   Contest_Password_Placeholder: "대회 비밀번호",
 
   // 버튼
-  Button_Enter: '확인',
-
+  Button_Enter: "확인",
 };
