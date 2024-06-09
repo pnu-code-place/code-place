@@ -62,9 +62,9 @@ export default {
       <div class="left">
         <div class="top">
           <div class="username">{{ this.user.username }}</div>
-          <div class="score">{{ comma(this.user.score) }}{{ $t('m.Point') }}</div>
         </div>
-        <div :class="this.user.mood? 'mood exist' : 'mood'">{{ this.user.mood }}</div>
+        <div class="score">{{ comma(this.user.score) }}{{ $t('m.Point') }}</div>
+        <!--        <div :class="this.user.mood? 'mood exist' : 'mood'">{{ this.user.mood }}</div>-->
       </div>
       <div class="tier">
         <shine-wrapper class="tier-mark-wrapper">
@@ -188,18 +188,5 @@ export default {
       }
     }
   }
-}
-
-.v-enter-active {
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-}
-
-.v-leave-active {
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-}
-
-.v-enter, .v-leave-to {
-  opacity: 0;
-  transform: scaleX(0%);
 }
 </style>
