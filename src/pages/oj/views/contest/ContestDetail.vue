@@ -135,7 +135,7 @@
 
 <style scoped lang="less">
 main {
-  width: 1200px;
+  width: var(--global-width);
   display: flex;
   gap: 10px;
 

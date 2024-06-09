@@ -2,7 +2,6 @@
 import {
   About,
   ACMRank,
-  Announcements,
   ApplyResetPassword,
   FAQ,
   Home,

@@ -336,7 +336,7 @@ export default {
 }
 
 .flex-container {
-  width: 1200px;
+  width: var(--global-width);
 
   #main {
     flex: auto;

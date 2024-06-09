@@ -1,9 +1,11 @@
 <template>
   <el-menu class="vertical_menu"
            :router="true" :default-active="currentPath">
+    <router-link to="/">
     <div class="logo">
       <img src="../../../assets/pnu_logo.svg" alt="oj admin"/>
     </div>
+    </router-link>
     <el-menu-item index="/"><i class="el-icon-fa-dashboard"></i>{{$t('m.Dashboard')}}</el-menu-item>
     <el-submenu v-if="isSuperAdmin" index="general">
       <template slot="title"><i class="el-icon-menu"></i>{{$t('m.General')}}</template>

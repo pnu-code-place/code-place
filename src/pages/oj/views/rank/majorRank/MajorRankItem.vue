@@ -1,19 +1,19 @@
 <script>
 import {comma} from "../../../../../utils/utils";
-import MajorRankPeople from "./MajorRankPeople.vue";
+import MajorRankPeople from "./MajorRankPerson.vue";
+import MajorRankPerson from "./MajorRankPerson.vue";
 
 export default {
   name: 'MajorRankItem',
-  components: {MajorRankPeople},
+  components: {MajorRankPerson},
   methods: {
     comma,
-    toggleExtended() {
-      this.isExtended = !this.isExtended
-    },
+    printUsers() {
+      console.log(this.major)
+    }
   },
   data() {
     return {
-      isExtended: false,
       PEOPLE_TO_SHOW: 5
     }
   },
@@ -29,21 +29,27 @@ export default {
 
 <template>
   <div class="major-rank-item">
-    <div class="major-info" @click="toggleExtended">
-      <div class="rank">{{ major.rank }}</div>
-      <div class="major">{{ major.major }}</div>
-      <div class="score">{{ comma(major.score) }}</div>
-      <div class="people">{{ comma(major.people.length) }}</div>
-    </div>
-    <transition>
-      <div class="major-people" v-if="isExtended">
-        <MajorRankPeople v-for="(person, index) in major.people.slice(0, this.PEOPLE_TO_SHOW)" :user="person" :key="person.username" :ranking="index+1"/>
+    <div class="major-info" @click="printUsers">
+      <div class="rank vertical-center"><span>{{ major.rank }}{{$t("m.Th")}}</span></div>
+      <div class="major">{{ major.major }}
+        <div class="users">
+          <major-rank-person v-for="(user, index) in this.major.people" :ranking="index+1" :user="user"/>
+        </div>
       </div>
-    </transition>
+      <div class="score">{{ comma(major.score) }}{{$t("m.Point")}}</div>
+      <div class="people">{{ comma(major.people.length) }}{{$t("m.People")}}</div>
+    </div>
   </div>
 </template>
 
 <style scoped lang="less">
+
+.vertical-center {
+  display:flex;
+  justify-content: center;
+  align-content: center;
+}
+
 .major-info {
   border-top: 1px solid #dedede;
   padding: 15px 0;
@@ -52,11 +58,6 @@ export default {
   color: #666;
   display: flex;
   justify-content: space-around;
-  cursor: pointer;
-
-  &:hover {
-    background-color: #f5f5f5;
-  }
 
   & > .rank {
     width: 15%;
@@ -65,7 +66,14 @@ export default {
 
   & > .major {
     width: 60%;
+    display: flex;
+    justify-content: space-between;
     padding: 0 10px;
+
+    .users{
+      display:flex;
+      justify-content:end;
+    }
   }
 
   & > .score {
@@ -78,18 +86,4 @@ export default {
     text-align: center;
   }
 }
-
-.v-enter-active {
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-}
-
-.v-leave-active {
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-}
-
-.v-enter, .v-leave-to {
-  opacity: 0;
-  transform: translateY(-20px);
-}
-
 </style>

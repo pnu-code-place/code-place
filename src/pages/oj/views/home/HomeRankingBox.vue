@@ -36,7 +36,7 @@
             <td class="score">
               <div class="user-score">
                 <span class="user-score__score">{{ user.total_score }}</span>
-                <span class="user-score__growth">{{user.fluctuation===0? "-":"▲"}}{{ user.fluctuation }}
+                <span class="user-score__growth">{{user.fluctuation===0? "-":("▲" + user.fluctuation) }}
               </span>
               </div>
               </td>

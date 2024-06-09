@@ -71,7 +71,7 @@ export default {
 
 .container {
   position: relative;
-  width: 1200px;
+  width: var(--global-width);
   margin: 0 auto;
   text-align: center;
   display: flex;

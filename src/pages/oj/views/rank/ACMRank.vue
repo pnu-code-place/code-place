@@ -21,7 +21,7 @@ export default {}
 
 <style scoped lang="less">
 .acm-rank {
-  width: 1200px;
+  width: var(--global-width);
   h1 {
     font-size: 18px;
     margin: 0 0 25px 1%;

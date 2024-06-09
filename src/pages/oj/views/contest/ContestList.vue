@@ -307,7 +307,7 @@ export default {
 
 <style lang="less" scoped>
 main {
-  width: 1200px;
+  width: var(--global-width);
 
   .session-not-exist {
     width: 100%;

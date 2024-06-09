@@ -89,7 +89,7 @@ export default {
 
 <style lang="less" scoped>
 .mainBox {
-  width: 1200px;
+  width: var(--global-width);
 }
 
 .boxWrapper {

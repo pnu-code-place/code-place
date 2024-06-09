@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div id="wrapper">
     <template v-if="isProblemSolving">
       <NavBar_Problem></NavBar_Problem>
     </template>
@@ -12,41 +12,31 @@
       </transition>
     </div>
     <template v-if="!isProblemSolving">
-      <div class="footer">
-        <div>
-          <p v-html="website.website_footer"></p>
-          <p>
-            Powered by
-            <a href="https://github.com/QingdaoU/OnlineJudge">OnlineJudge</a>
-            <span v-if="version">&nbsp; Version: {{ version }}</span>
-          </p>
-        </div>
-      </div>
+      <div class="footer-dummy"></div>
+      <CSEPFooter></CSEPFooter>
     </template>
     <BackTop></BackTop>
   </div>
 </template>
 
 <script>
-import { mapActions, mapGetters, mapState } from "vuex";
+import {mapActions, mapGetters, mapState} from "vuex";
 import NavBar from "./components/NavBar.vue";
 import NavBar_Problem from "./views/problem/problemSolving/problemSolvingNavbar/NavBar_Problem.vue";
+import CSEPFooter from "./views/general/CSEPFooter.vue";
 
 export default {
   name: "app",
   components: {
+    CSEPFooter,
     NavBar_Problem,
     NavBar,
-  },
-  data() {
-    return {
-      version: process.env.VERSION,
-    };
   },
   created() {
     try {
       document.body.removeChild(document.getElementById("app-loader"));
-    } catch (e) {}
+    } catch (e) {
+    }
   },
   mounted() {
     this.getWebsiteConfig();
@@ -70,6 +60,11 @@ export default {
 </script>
 
 <style lang="less">
+#wrapper {
+  min-height: calc(100vh - var(--header-height) - var(--header-margin));
+  position: relative;
+}
+
 :root {
   /* Site Global Variable */
   --box-background-color: #ffffff;
@@ -103,6 +98,16 @@ export default {
   --container-font-color: #495060;
   --container-border-radius: 10px;
   --container-comment-color: #7e7e7e;
+
+  /* header */
+  --header-height: 70px;
+  --header-margin: 20px;
+  /* footer */
+  --footer-height: 200px;
+  --footer-margin: 80px;
+
+  --global-width: 1200px;
+
 }
 
 :root.dark.problem {
@@ -146,30 +151,21 @@ a {
     outline-width: 0;
   }
 }
+.footer-dummy{
+  height: calc(var(--footer-height) + var(--footer-margin));
+}
 
 .content-app {
-  margin-top: 90px;
+  margin-top: calc(var(--header-height) + var(--header-margin));
   display: flex;
   justify-content: center;
-  min-width: 1200px;
+  min-width: var(--global-width);
   background-color: var(--site-background-color);
 }
 
 .ps {
   margin-top: 50px;
   background-color: var(--bg-color);
-}
-
-.footer {
-  margin-top: 300px;
-  padding-bottom: 20px;
-  height: 300px;
-  background-color: #f8f8f8;
-  display: flex;
-  align-items: end;
-  justify-content: center;
-  text-align: center;
-  font-size: small;
 }
 
 .fadeInUp-enter-active {

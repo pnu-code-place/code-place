@@ -94,6 +94,7 @@ export const m = {
   TOP_1: "1등",
   TOP_2: "2등",
   TOP_3: "3등",
+  People: "명",
   // Announcements.vue
   Contest_Announcements: "대회 공지사항",
   By: "By",
@@ -430,4 +431,9 @@ export const m = {
 
   // 버튼
   Button_Enter: "확인",
+
+  // footer.vue
+  PNUCSEP : "부산대학교 코딩역량강화플랫폼",
+  AddressPNUCSEP : "부산광역시 금정구 부산대학로63번길 2 (장전동) 부산대학교 소프트웨어융합교육원",
+  UserGuide: "사용자 가이드"
 };

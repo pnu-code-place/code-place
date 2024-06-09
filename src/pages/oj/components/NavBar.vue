@@ -104,14 +104,13 @@ export default {
 
 <style lang="less" scoped>
 #header {
-  min-width: 1200px;
+  min-width: var(--global-width);
   position: fixed;
   padding-left: 5%;
   padding-right: 4%;
-
   top: 0;
   left: 0;
-  height: 70px;
+  height: var(header-height);
   width: 100%;
   background-color: #fff;
   z-index: 999;

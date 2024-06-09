@@ -149,7 +149,7 @@ export default {
 
 <style scoped lang="less">
 main {
-  width: 1200px;
+  width: var(--global-width);
   overflow-x: hidden;
 }
 

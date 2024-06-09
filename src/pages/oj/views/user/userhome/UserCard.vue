@@ -63,9 +63,6 @@ export default {
         <a :href="'mailto:'+ profile.user.email">
           <Icon class="icon" type="ios-email-outline" size="30"></Icon>
         </a>
-        <a :href="profile.blog">
-          <Icon class="icon" type="ios-world-outline" size="30"></Icon>
-        </a>
       </div>
     </div>
   </div>
@@ -135,7 +132,7 @@ export default {
       border-radius: 5px;
       width: 100%;
       font-size: 12px;
-      padding : 5px 10px;
+      padding: 5px 10px;
       margin-top: 10px;
       text-align: left;
     }
@@ -169,9 +166,10 @@ export default {
 }
 
 #icons {
+  width: 100%;
   display: flex;
   flex-direction: row;
-  justify-content: center;
+  justify-content: end;
   align-items: end;
   gap: 20px;
   padding: 10px;
