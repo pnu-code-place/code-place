@@ -555,9 +555,14 @@ class ImportProblemAPI(CSRFExemptAPIView, TestCaseZipProcessor):
         count = 0
         with zipfile.ZipFile(tmp_file, "r") as zip_file:
             name_list = zip_file.namelist()
-            for item in name_list:
-                if "/problem.json" in item:
-                    count += 1
+
+            # 공백이 있는 경우도 처리할 수 있도록 수정
+            problem_dirs = set()
+            for name in name_list:
+                parts = name.split('/')
+                if len(parts) >= 2 and parts[-1] == 'problem.json':
+                    problem_dirs.add('/'.join(parts[:-1]))
+
             with transaction.atomic():
                 for i in range(1, count + 1):
                     with zip_file.open(f"{i}/problem.json") as f:
