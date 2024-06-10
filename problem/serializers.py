@@ -232,9 +232,9 @@ class TestCaseScoreSerializer(serializers.Serializer):
 
 
 class TemplateSerializer(serializers.Serializer):
-    prepend = serializers.CharField()
-    template = serializers.CharField()
-    append = serializers.CharField()
+    prepend = serializers.CharField(allow_blank=True)
+    template = serializers.CharField(allow_blank=True)
+    append = serializers.CharField(allow_blank=True)
 
 
 class SPJSerializer(serializers.Serializer):
