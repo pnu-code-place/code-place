@@ -152,10 +152,18 @@ class ExportProblemSerializer(serializers.ModelSerializer):
     spj = serializers.SerializerMethodField()
     template = serializers.SerializerMethodField()
     source = serializers.SerializerMethodField()
+    field = serializers.SerializerMethodField()
+    difficulty = serializers.SerializerMethodField()
     tags = serializers.SlugRelatedField(many=True, slug_field="name", read_only=True)
 
     def get_display_id(self, obj):
         return obj._id
+
+    def get_field(self, obj):
+        return obj.field
+
+    def get_difficulty(self, obj):
+        return obj.difficulty
 
     def _html_format_value(self, value):
         return {"format": "html", "value": value}
