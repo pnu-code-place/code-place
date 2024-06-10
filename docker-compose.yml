@@ -51,6 +51,8 @@ services:
       - oj-judge
     volumes:
       - ./data/backend:/data
+      - ./data/certbot/conf:/etc/letsencrypt
+      - ./data/certbot/www:/var/www/certbot
     env_file:
       - .env
     environment:
