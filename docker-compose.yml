@@ -1,26 +1,21 @@
 version: "1"
 services:
 
-  # DB는 외부 서버로 분리 예정
   oj-redis:
     image: redis:4.0-alpine
     restart: always
     volumes:
       - ./data/redis:/data
 
-  # DB는 외부 서버로 분리 예정
   oj-postgres:
     image: postgres:10-alpine
     restart: always
     volumes:
       - ./data/postgres:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_DB=csep
-      - POSTGRES_USER=csep
-      - POSTGRES_PASSWORD=csep
+    env_file:
+      - .env
     ports:
-      - "0.0.0.0:5437:5432"
-      # 운영환경 데이터 점검을 위해 임시로 열어둡니다.
+      - "5437:5432"
 
   oj-judge:
     image: registry.cn-hongkong.aliyuncs.com/oj-image/judge:1.6.0
@@ -56,13 +51,23 @@ services:
       - oj-judge
     volumes:
       - ./data/backend:/data
+      - ./data/certbot/conf:/etc/letsencrypt
+      - ./data/certbot/www:/var/www/certbot
+    env_file:
+      - .env
     environment:
-      - POSTGRES_DB=csep
-      - POSTGRES_USER=csep
-      - POSTGRES_PASSWORD=csep
       - JUDGE_SERVER_TOKEN=CHANGE_THIS # secret.key
       # - FORCE_HTTPS=1
       # - STATIC_CDN_HOST=cdn.oj.com
     ports:
       - "0.0.0.0:80:8000"
       - "0.0.0.0:443:1443"
+    command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+
+  certbot:
+    image: certbot/certbot
+    restart: unless-stopped
+    volumes:
+      - ./data/certbot/conf:/etc/letsencrypt
+      - ./data/certbot/www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
