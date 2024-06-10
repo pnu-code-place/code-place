@@ -15,8 +15,7 @@ services:
     env_file:
       - .env
     ports:
-      - "0.0.0.0:5437:5432"
-      # 운영환경 데이터 점검을 위해 임시로 열어둡니다.
+      - "5437:5432"
 
   oj-judge:
     image: registry.cn-hongkong.aliyuncs.com/oj-image/judge:1.6.0
