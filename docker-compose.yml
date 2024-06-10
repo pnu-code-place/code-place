@@ -51,7 +51,8 @@ services:
       - oj-judge
     volumes:
       - ./data/backend:/data
-      - ./data/backend/certbot/conf:/etc/letsencrypt
+      - ./data/backend/certbot/conf/fullchain.pem:/etc/letsencrypt/live/csep.co.kr/fullchain.pem
+      - ./data/backend/certbot/conf/privkey.pem:/etc/letsencrypt/live/csep.co.kr/privkey.pem
       - ./data/backend/certbot/www:/var/www/certbot
     env_file:
       - .env
@@ -64,10 +65,10 @@ services:
       - "0.0.0.0:443:1443"
     command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
 
-  certbot:
-    image: certbot/certbot
-    restart: unless-stopped
-    volumes:
-      - ./data/backend/certbot/conf:/etc/letsencrypt
-      - ./data/backend/certbot/www:/var/www/certbot
-    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+    certbot:
+      image: certbot/certbot
+      restart: unless-stopped
+      volumes:
+        - ./data/backend/certbot/conf:/etc/letsencrypt
+        - ./data/backend/certbot/www:/var/www/certbot
+      entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
