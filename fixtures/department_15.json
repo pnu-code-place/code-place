@@ -1,16 +1,16 @@
 [
   {
     "model": "account.department",
+    "pk": 100,
     "fields": {
-      "pk": 100,
       "department_name": "컴퓨터공학전공-인공지능전공",
       "college_id": 15
     }
   },
   {
     "model": "account.department",
+    "pk": 101,
     "fields": {
-      "pk": 101,
       "department_name": "컴퓨터공학전공-의생명융합공학부",
       "college_id": 15
     }

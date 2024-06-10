@@ -1,8 +1,8 @@
 [
   {
     "model": "account.department",
+    "pk": 97,
     "fields": {
-      "pk": 97,
       "department_name": "간호학과",
       "college_id": 13
     }

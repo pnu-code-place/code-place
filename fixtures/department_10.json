@@ -1,56 +1,56 @@
 [
   {
     "model": "account.department",
+    "pk": 76,
     "fields": {
-      "pk": 76,
       "department_name": "음악학과",
       "college_id": 10
     }
   },
   {
     "model": "account.department",
+    "pk": 77,
     "fields": {
-      "pk": 77,
       "department_name": "한국음악학과",
       "college_id": 10
     }
   },
   {
     "model": "account.department",
+    "pk": 78,
     "fields": {
-      "pk": 78,
       "department_name": "미술학과",
       "college_id": 10
     }
   },
   {
     "model": "account.department",
+    "pk": 79,
     "fields": {
-      "pk": 79,
       "department_name": "조형학과",
       "college_id": 10
     }
   },
   {
     "model": "account.department",
+    "pk": 80,
     "fields": {
-      "pk": 80,
       "department_name": "디자인학과",
       "college_id": 10
     }
   },
   {
     "model": "account.department",
+    "pk": 81,
     "fields": {
-      "pk": 81,
       "department_name": "무용학과",
       "college_id": 10
     }
   },
   {
     "model": "account.department",
+    "pk": 82,
     "fields": {
-      "pk": 82,
       "department_name": "예술문화영상학과",
       "college_id": 10
     }

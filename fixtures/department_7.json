@@ -1,8 +1,8 @@
 [
   {
     "model": "account.department",
+    "pk": 68,
     "fields": {
-      "pk": 68,
       "department_name": "경영학과",
       "college_id": 7
     }

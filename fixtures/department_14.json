@@ -1,16 +1,16 @@
 [
   {
     "model": "account.department",
+    "pk": 98,
     "fields": {
-      "pk": 98,
       "department_name": "의예과",
       "college_id": 14
     }
   },
   {
     "model": "account.department",
+    "pk": 99,
     "fields": {
-      "pk": 99,
       "department_name": "의학과",
       "college_id": 14
     }

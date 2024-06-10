@@ -1,80 +1,80 @@
 [
   {
     "model": "account.department",
+    "pk": 20,
     "fields": {
-      "pk": 20,
       "department_name": "수학과",
       "college_id": 3
     }
   },
   {
     "model": "account.department",
+    "pk": 21,
     "fields": {
-      "pk": 21,
       "department_name": "통계학과",
       "college_id": 3
     }
   },
   {
     "model": "account.department",
+    "pk": 22,
     "fields": {
-      "pk": 22,
       "department_name": "물리학과",
       "college_id": 3
     }
   },
   {
     "model": "account.department",
+    "pk": 23,
     "fields": {
-      "pk": 23,
       "department_name": "화학과",
       "college_id": 3
     }
   },
   {
     "model": "account.department",
+    "pk": 24,
     "fields": {
-      "pk": 24,
       "department_name": "생명과학과",
       "college_id": 3
     }
   },
   {
     "model": "account.department",
+    "pk": 25,
     "fields": {
-      "pk": 25,
       "department_name": "미생물학과",
       "college_id": 3
     }
   },
   {
     "model": "account.department",
+    "pk": 26,
     "fields": {
-      "pk": 26,
       "department_name": "분자생물학과",
       "college_id": 3
     }
   },
   {
     "model": "account.department",
+    "pk": 27,
     "fields": {
-      "pk": 27,
       "department_name": "지질환경과학과",
       "college_id": 3
     }
   },
   {
     "model": "account.department",
+    "pk": 28,
     "fields": {
-      "pk": 28,
       "department_name": "대기환경과학과",
       "college_id": 3
     }
   },
   {
     "model": "account.department",
+    "pk": 29,
     "fields": {
-      "pk": 29,
       "department_name": "해양학과",
       "college_id": 3
     }

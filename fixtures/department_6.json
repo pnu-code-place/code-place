@@ -1,40 +1,40 @@
 [
   {
     "model": "account.department",
+    "pk": 63,
     "fields": {
-      "pk": 63,
       "department_name": "무역학부",
       "college_id": 6
     }
   },
   {
     "model": "account.department",
+    "pk": 64,
     "fields": {
-      "pk": 64,
       "department_name": "경제학부",
       "college_id": 6
     }
   },
   {
     "model": "account.department",
+    "pk": 65,
     "fields": {
-      "pk": 65,
       "department_name": "관광컨벤션학과",
       "college_id": 6
     }
   },
   {
     "model": "account.department",
+    "pk": 66,
     "fields": {
-      "pk": 66,
       "department_name": "국제학부",
       "college_id": 6
     }
   },
   {
     "model": "account.department",
+    "pk": 67,
     "fields": {
-      "pk": 67,
       "department_name": "공공정책학부",
       "college_id": 6
     }

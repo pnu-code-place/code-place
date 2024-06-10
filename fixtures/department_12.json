@@ -1,88 +1,88 @@
 [
   {
     "model": "account.department",
+    "pk": 86,
     "fields": {
-      "pk": 86,
       "department_name": "식물생명과학과",
       "college_id": 12
     }
   },
   {
     "model": "account.department",
+    "pk": 87,
     "fields": {
-      "pk": 87,
       "department_name": "원예생명과학과",
       "college_id": 12
     }
   },
   {
     "model": "account.department",
+    "pk": 88,
     "fields": {
-      "pk": 88,
       "department_name": "동물생명자원과학과",
       "college_id": 12
     }
   },
   {
     "model": "account.department",
+    "pk": 89,
     "fields": {
-      "pk": 89,
       "department_name": "식품공학과",
       "college_id": 12
     }
   },
   {
     "model": "account.department",
+    "pk": 90,
     "fields": {
-      "pk": 90,
       "department_name": "생명환경화학과",
       "college_id": 12
     }
   },
   {
     "model": "account.department",
+    "pk": 91,
     "fields": {
-      "pk": 91,
       "department_name": "바이오소재과학과",
       "college_id": 12
     }
   },
   {
     "model": "account.department",
+    "pk": 92,
     "fields": {
-      "pk": 92,
       "department_name": "바이오산업기계공학과",
       "college_id": 12
     }
   },
   {
     "model": "account.department",
+    "pk": 93,
     "fields": {
-      "pk": 93,
       "department_name": "조경학과",
       "college_id": 12
     }
   },
   {
     "model": "account.department",
+    "pk": 94,
     "fields": {
-      "pk": 94,
       "department_name": "식품자원경제학과",
       "college_id": 12
     }
   },
   {
     "model": "account.department",
+    "pk": 95,
     "fields": {
-      "pk": 95,
       "department_name": "IT응용공학과",
       "college_id": 12
     }
   },
   {
     "model": "account.department",
+    "pk": 96,
     "fields": {
-      "pk": 96,
       "department_name": "바이오환경에너지학과",
       "college_id": 12
     }

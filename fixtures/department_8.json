@@ -1,16 +1,16 @@
 [
   {
     "model": "account.department",
+    "pk": 69,
     "fields": {
-      "pk": 69,
       "department_name": "약학대학-약학전공",
       "college_id": 8
     }
   },
   {
     "model": "account.department",
+    "pk": 70,
     "fields": {
-      "pk": 70,
       "department_name": "약학대학-제약학전공",
       "college_id": 8
     }

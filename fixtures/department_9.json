@@ -1,40 +1,40 @@
 [
   {
     "model": "account.department",
+    "pk": 71,
     "fields": {
-      "pk": 71,
       "department_name": "아동가족학과",
       "college_id": 9
     }
   },
   {
     "model": "account.department",
+    "pk": 72,
     "fields": {
-      "pk": 72,
       "department_name": "의류학과",
       "college_id": 9
     }
   },
   {
     "model": "account.department",
+    "pk": 73,
     "fields": {
-      "pk": 73,
       "department_name": "식품영양학과",
       "college_id": 9
     }
   },
   {
     "model": "account.department",
+    "pk": 74,
     "fields": {
-      "pk": 74,
       "department_name": "실내환경디자인학과",
       "college_id": 9
     }
   },
   {
     "model": "account.department",
+    "pk": 75,
     "fields": {
-      "pk": 75,
       "department_name": "스포츠과학과",
       "college_id": 9
     }
