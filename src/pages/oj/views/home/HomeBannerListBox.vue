@@ -3,12 +3,12 @@
     <Carousel autoplay loop arrow="never" :radius-dot="true" :autoplaySpeed="3000">
       <CarouselItem>
         <div class="demo-carousel">
-          <img src="@/assets/banner1.png" width="100%" height="150px"/>
+          <img src="@/assets/banner1.svg" width="100%" height="150px"/>
         </div>
       </CarouselItem>
       <CarouselItem>
         <div class="demo-carousel">
-          <img src="@/assets/banner2.png" width="100%" height="150px"/>
+          <img src="@/assets/banner2.svg" width="100%" height="150px"/>
         </div>
       </CarouselItem>
     </Carousel>
