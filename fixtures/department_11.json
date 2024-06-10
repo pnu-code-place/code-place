@@ -2,6 +2,7 @@
   {
     "model": "account.department",
     "fields": {
+      "pk": 83,
       "department_name": "나노메카트로닉스공학과",
       "college_id": 11
     }
@@ -9,6 +10,7 @@
   {
     "model": "account.department",
     "fields": {
+      "pk": 84,
       "department_name": "나노에너지공학과",
       "college_id": 11
     }
@@ -16,6 +18,7 @@
   {
     "model": "account.department",
     "fields": {
+      "pk": 85,
       "department_name": "광메카트로닉스공학과",
       "college_id": 11
     }

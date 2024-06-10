@@ -2,6 +2,7 @@
   {
     "model": "account.department",
     "fields": {
+      "pk": 13,
       "department_name": "행정학과",
       "college_id": 2
     }
@@ -9,6 +10,7 @@
   {
     "model": "account.department",
     "fields": {
+      "pk": 14,
       "department_name": "정치외교학과",
       "college_id": 2
     }
@@ -16,6 +18,7 @@
   {
     "model": "account.department",
     "fields": {
+      "pk": 15,
       "department_name": "사회복지학과",
       "college_id": 2
     }
@@ -23,6 +26,7 @@
   {
     "model": "account.department",
     "fields": {
+      "pk": 16,
       "department_name": "사회학과",
       "college_id": 2
     }
@@ -30,6 +34,7 @@
   {
     "model": "account.department",
     "fields": {
+      "pk": 17,
       "department_name": "심리학과",
       "college_id": 2
     }
@@ -37,6 +42,7 @@
   {
     "model": "account.department",
     "fields": {
+      "pk": 18,
       "department_name": "문헌정보학과",
       "college_id": 2
     }
@@ -44,6 +50,7 @@
   {
     "model": "account.department",
     "fields": {
+      "pk": 19,
       "department_name": "미디어커뮤니케이션학과",
       "college_id": 2
     }

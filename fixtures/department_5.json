@@ -2,6 +2,7 @@
   {
     "model": "account.department",
     "fields": {
+      "pk": 46,
       "department_name": "국어교육과",
       "college_id": 5
     }
@@ -9,6 +10,7 @@
   {
     "model": "account.department",
     "fields": {
+      "pk": 47,
       "department_name": "영어교육과",
       "college_id": 5
     }
@@ -16,6 +18,7 @@
   {
     "model": "account.department",
     "fields": {
+      "pk": 48,
       "department_name": "독어교육과",
       "college_id": 5
     }
@@ -23,6 +26,7 @@
   {
     "model": "account.department",
     "fields": {
+      "pk": 49,
       "department_name": "불어교육과",
       "college_id": 5
     }
@@ -30,6 +34,7 @@
   {
     "model": "account.department",
     "fields": {
+      "pk": 50,
       "department_name": "교육학과",
       "college_id": 5
     }
@@ -37,6 +42,7 @@
   {
     "model": "account.department",
     "fields": {
+      "pk": 51,
       "department_name": "유아교육과",
       "college_id": 5
     }
@@ -44,6 +50,7 @@
   {
     "model": "account.department",
     "fields": {
+      "pk": 52,
       "department_name": "특수교육과",
       "college_id": 5
     }
@@ -51,6 +58,7 @@
   {
     "model": "account.department",
     "fields": {
+      "pk": 53,
       "department_name": "일반사회교육과",
       "college_id": 5
     }
@@ -58,6 +66,7 @@
   {
     "model": "account.department",
     "fields": {
+      "pk": 54,
       "department_name": "역사교육과",
       "college_id": 5
     }
@@ -65,6 +74,7 @@
   {
     "model": "account.department",
     "fields": {
+      "pk": 55,
       "department_name": "지리교육과",
       "college_id": 5
     }
@@ -72,6 +82,7 @@
   {
     "model": "account.department",
     "fields": {
+      "pk": 56,
       "department_name": "윤리교육과",
       "college_id": 5
     }
@@ -79,6 +90,7 @@
   {
     "model": "account.department",
     "fields": {
+      "pk": 57,
       "department_name": "수학교육과",
       "college_id": 5
     }
@@ -86,6 +98,7 @@
   {
     "model": "account.department",
     "fields": {
+      "pk": 58,
       "department_name": "물리교육과",
       "college_id": 5
     }
@@ -93,6 +106,7 @@
   {
     "model": "account.department",
     "fields": {
+      "pk": 59,
       "department_name": "화학교육과",
       "college_id": 5
     }
@@ -100,6 +114,7 @@
   {
     "model": "account.department",
     "fields": {
+      "pk": 60,
       "department_name": "생물교육과",
       "college_id": 5
     }
@@ -107,6 +122,7 @@
   {
     "model": "account.department",
     "fields": {
+      "pk": 61,
       "department_name": "지구과학교육과",
       "college_id": 5
     }
@@ -114,6 +130,7 @@
   {
     "model": "account.department",
     "fields": {
+      "pk": 62,
       "department_name": "체육교육과",
       "college_id": 5
     }

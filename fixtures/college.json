@@ -103,5 +103,12 @@
     "fields": {
       "college_name": "정보의생명공학대학"
     }
+  },
+  {
+    "model": "account.college",
+    "pk": 16,
+    "fields": {
+      "college_name": "기타"
+    }
   }
 ]
