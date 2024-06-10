@@ -19,7 +19,7 @@ from options.options import SysOptions
 from submission.models import Submission, JudgeStatus
 from utils.api import APIView, CSRFExemptAPIView, validate_serializer, APIError
 from utils.constants import Difficulty
-from utils.shortcuts import rand_str, natural_sort_key
+from utils.shortcuts import rand_str, natural_sort_key, get_difficulty
 from utils.tasks import delete_files
 from ..models import Problem, ProblemRuleType, ProblemTag
 from ..serializers import (CreateContestProblemSerializer, CompileSPJSerializer,
@@ -564,8 +564,12 @@ class ImportProblemAPI(CSRFExemptAPIView, TestCaseZipProcessor):
                     problem_dirs.add('/'.join(parts[:-1]))
 
             with transaction.atomic():
-                for i in range(1, count + 1):
-                    with zip_file.open(f"{i}/problem.json") as f:
+                for problem_dir in problem_dirs:
+                    json_path = f"{problem_dir}/problem.json"
+                    if json_path not in name_list:
+                        return self.error(f"problem.json not found in directory: {problem_dir}")
+
+                    with zip_file.open(json_path) as f:
                         problem_info = json.load(f)
                         serializer = ImportProblemSerializer(data=problem_info)
                         if not serializer.is_valid():
@@ -586,7 +590,7 @@ class ImportProblemAPI(CSRFExemptAPIView, TestCaseZipProcessor):
                         test_case_score = problem_info["test_case_score"]
 
                         # process test case
-                        _, test_case_id = self.process_zip(tmp_file, spj=spj, dir=f"{i}/testcase/")
+                        _, test_case_id = self.process_zip(tmp_file, spj=spj, dir=f"{problem_dir}/testcase/")
 
                         problem_obj = Problem.objects.create(_id=problem_info["display_id"],
                                                              title=problem_info["title"],
@@ -610,8 +614,9 @@ class ImportProblemAPI(CSRFExemptAPIView, TestCaseZipProcessor):
                                                              spj_version=rand_str(8) if spj else "",
                                                              languages=SysOptions.language_names,
                                                              created_by=request.user,
-                                                             visible=False,
-                                                             difficulty=Difficulty.MID,
+                                                             visible=True,
+                                                             field=problem_info["field"],
+                                                             difficulty=get_difficulty(problem_info["difficulty"]),
                                                              total_score=sum(item["score"] for item in test_case_score)
                                                              if rule_type == ProblemRuleType.OI else 0,
                                                              test_case_id=test_case_id
@@ -619,6 +624,7 @@ class ImportProblemAPI(CSRFExemptAPIView, TestCaseZipProcessor):
                         for tag_name in problem_info["tags"]:
                             tag_obj, _ = ProblemTag.objects.get_or_create(name=tag_name)
                             problem_obj.tags.add(tag_obj)
+                        count += 1
         return self.success({"import_count": count})
 
 
