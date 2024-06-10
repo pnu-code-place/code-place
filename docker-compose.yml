@@ -1,23 +1,19 @@
 version: "1"
 services:
 
-  # DB는 외부 서버로 분리 예정
   oj-redis:
     image: redis:4.0-alpine
     restart: always
     volumes:
       - ./data/redis:/data
 
-  # DB는 외부 서버로 분리 예정
   oj-postgres:
     image: postgres:10-alpine
     restart: always
     volumes:
       - ./data/postgres:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_DB=csep
-      - POSTGRES_USER=csep
-      - POSTGRES_PASSWORD=csep
+    env_file:
+      - .env
     ports:
       - "0.0.0.0:5437:5432"
       # 운영환경 데이터 점검을 위해 임시로 열어둡니다.
@@ -56,10 +52,9 @@ services:
       - oj-judge
     volumes:
       - ./data/backend:/data
+    env_file:
+      - .env
     environment:
-      - POSTGRES_DB=csep
-      - POSTGRES_USER=csep
-      - POSTGRES_PASSWORD=csep
       - JUDGE_SERVER_TOKEN=CHANGE_THIS # secret.key
       # - FORCE_HTTPS=1
       # - STATIC_CDN_HOST=cdn.oj.com
