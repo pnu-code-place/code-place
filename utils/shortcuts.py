@@ -8,6 +8,8 @@ from io import BytesIO
 from django.utils.crypto import get_random_string
 from envelopes import Envelope
 
+from utils.constants import Difficulty
+
 
 def rand_str(length=32, type="lower_hex"):
     """
@@ -39,6 +41,20 @@ def build_query_string(kv_data, ignore_none=True):
         query_string += (k + "=" + str(v))
     return query_string
 
+
+def get_difficulty(difficulty_str):
+    if difficulty_str is None:
+        return Difficulty.MID
+
+    difficulty_map = {
+        "VeryLow": Difficulty.VERYLOW,
+        "Low": Difficulty.LOW,
+        "Mid": Difficulty.MID,
+        "High": Difficulty.HIGH,
+        "VeryHigh": Difficulty.VERYHIGH
+    }
+
+    return difficulty_map.get(difficulty_str, Difficulty.MID)
 
 def img2base64(img):
     with BytesIO() as buf:
