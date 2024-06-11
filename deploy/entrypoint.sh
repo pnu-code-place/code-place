@@ -83,8 +83,8 @@ sleep 2
 python3 manage.py loaddata $APP/fixtures/*.json
 echo "Fixtures loaded!"
 
-addgroup -g 12003 spj
-adduser -u 12000 -S -G spj server
+addgroup -g 903 spj
+adduser -u 900 -S -G spj server
 
 chown -R server:spj $DATA $APP/dist
 find $DATA/test_case -type d -exec chmod 710 {} \;
