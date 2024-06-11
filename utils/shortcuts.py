@@ -74,8 +74,8 @@ def datetime2str(value, format="iso-8601"):
     return value.strftime(format)
 
 
-def timestamp2utcstr(value):
-    return datetime.datetime.utcfromtimestamp(value).isoformat()
+# def timestamp2utcstr(value):
+#     return datetime.datetime.utcfromtimestamp(value).isoformat()
 
 
 def natural_sort_key(s, _nsre=re.compile(r"(\d+)")):
