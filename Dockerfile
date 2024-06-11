@@ -1,18 +1,38 @@
-FROM python:3.8-alpine3.14
+FROM alpine:3.19 AS downloader
 
-ENV OJ_ENV production
-
-ADD . /app
 WORKDIR /app
 
-HEALTHCHECK --interval=5s --retries=3 CMD python3 /app/deploy/health_check.py
+RUN <<EOS
+set -ex
+apk add unzip
+wget https://github.com/PNU-CSEP/CSEP_FE/releases/download/v1.0-beta/dist.zip
+unzip dist.zip
+rm -f dist.zip
+EOS
 
-RUN apk add --update --no-cache build-base nginx openssl curl unzip supervisor jpeg-dev zlib-dev postgresql-dev freetype-dev && \
-    pip install --no-cache-dir -r /app/deploy/requirements.txt && \
-    apk del build-base --purge
+FROM python:3.12-alpine
+ARG TARGETARCH
+ARG TARGETVARIANT
 
-RUN curl -L  https://github.com/PNU-CSEP/CSEP_FE/releases/download/v1.0-beta/dist.zip -o dist.zip && \
-    unzip dist.zip && \
-    rm dist.zip
+ENV OJ_ENV production
+WORKDIR /app
 
-ENTRYPOINT /app/deploy/entrypoint.sh
+COPY ./deploy/requirements.txt /app/deploy/
+# psycopg2: libpg-dev
+# pillow: libjpeg-turbo-dev zlib-dev freetype-dev
+RUN --mount=type=cache,target=/etc/apk/cache,id=apk-cahce-$TARGETARCH$TARGETVARIANT-final \
+    --mount=type=cache,target=/root/.cache/pip,id=pip-cahce-$TARGETARCH$TARGETVARIANT-final \
+    <<EOS
+set -ex
+apk add gcc libc-dev python3-dev libpq libpq-dev libjpeg-turbo libjpeg-turbo-dev zlib zlib-dev freetype freetype-dev supervisor openssl nginx curl unzip
+pip install -r /app/deploy/requirements.txt
+apk del gcc libc-dev python3-dev libpq-dev libjpeg-turbo-dev zlib-dev freetype-dev
+EOS
+
+COPY ./ /app/
+COPY --from=downloader --link /app/dist/ /app/dist/
+RUN chmod -R u=rwX,go=rX ./ && chmod +x ./deploy/entrypoint.sh
+
+HEALTHCHECK --interval=5s CMD [ "/usr/local/bin/python3", "/app/deploy/health_check.py" ]
+EXPOSE 8000
+ENTRYPOINT [ "/app/deploy/entrypoint.sh" ]
