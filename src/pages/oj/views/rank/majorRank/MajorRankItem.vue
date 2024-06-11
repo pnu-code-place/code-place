@@ -30,14 +30,14 @@ export default {
 <template>
   <div class="major-rank-item">
     <div class="major-info" @click="printUsers">
-      <div class="rank vertical-center"><span>{{ major.rank }}{{$t("m.Th")}}</span></div>
-      <div class="major">{{ major.major }}
+      <div class="rank vertical-center horizontal-center">{{ major.rank }}{{$t("m.Th")}}</div>
+      <div class="major vertical-center">{{ major.major }}
         <div class="users">
           <major-rank-person v-for="(user, index) in this.major.people" :ranking="index+1" :user="user"/>
         </div>
       </div>
-      <div class="score">{{ comma(major.score) }}{{$t("m.Point")}}</div>
-      <div class="people">{{ comma(major.people.length) }}{{$t("m.People")}}</div>
+      <div class="score vertical-center">{{ comma(major.score) }}{{$t("m.Point")}}</div>
+      <div class="people vertical-center">{{ comma(major.people.length) }}{{$t("m.People")}}</div>
     </div>
   </div>
 </template>
@@ -45,14 +45,17 @@ export default {
 <style scoped lang="less">
 
 .vertical-center {
-  display:flex;
-  justify-content: center;
-  align-content: center;
+  display: flex;
+  align-items: center;
 }
 
+.horizontal-center {
+  display: flex;
+  justify-content: center;
+}
 .major-info {
   border-top: 1px solid #dedede;
-  padding: 15px 0;
+  padding: 5px 0;
   font-size: 15px;
   font-weight: 500;
   color: #666;
@@ -79,11 +82,13 @@ export default {
   & > .score {
     width: 5%;
     text-align: right;
+    justify-content: end;
   }
 
   & > .people {
     width: 15%;
     text-align: center;
+    justify-content: center;
   }
 }
 </style>

@@ -108,7 +108,7 @@ export default {
 
 .major-rank-people {
   --user-avatar-size: 45px;
-  box-shadow: 0 3px 3px rgba(0, 0, 0, 0.10);
+  box-shadow: 0 3px 3px rgba(0, 0, 0, 0.50);
   height: var(--user-avatar-size);
   display: flex;
   justify-content: flex-start;
@@ -125,6 +125,8 @@ export default {
     height: var(--user-avatar-size);
     border-radius: 50%;
     text-align: center;
+    background-color: var(--site-background-color);
+    border :1px solid #f0f0f0;
 
     img {
       width: var(--user-avatar-size);
