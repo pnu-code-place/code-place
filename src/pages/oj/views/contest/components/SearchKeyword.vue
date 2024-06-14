@@ -34,7 +34,7 @@ export default {
 };
 </script>
 
-<style>
+<style scoped lang="less">
 .search-input-wrapper {
   width: 200px;
   height: 35px;

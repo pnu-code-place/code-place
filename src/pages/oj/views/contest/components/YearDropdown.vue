@@ -32,7 +32,7 @@ export default {
 };
 </script>
 
-<style>
+<style scoped lang="less">
 .dropdown {
   color: var(--container-font-color);
   font-size: 14px;
