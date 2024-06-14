@@ -18,21 +18,7 @@
             <Dropdown-item name="ACM">{{ $t("m.ACM") }}</Dropdown-item>
           </Dropdown-menu>
         </Dropdown>
-        <div class="search-input-wrapper">
-          <input
-            id="keyword"
-            class="search-input"
-            @keyup.enter="changeRoute"
-            v-model="query.keyword"
-            :placeholder="$t('m.Contest_Search_Keyword')"
-          />
-          <button class="search-input-icon" @click="changeRoute">
-            <Icon type="ios-search-strong"></Icon>
-          </button>
-        </div>
-        <button class="search-button" @click="changeRoute">
-          {{ $t("m.Search") }}
-        </button>
+        <SearchKeyword @onKeywordChange="onKeywordChange" />
       </div>
     </div>
     <div v-if="underway_contests.length === 0" class="session-not-exist">
@@ -80,8 +66,10 @@
 
     <div class="session-title-wrapper">
       <span class="session-title">{{ $t("m.Ended_Contest") }}</span>
-      <!-- TODO: 클릭 시 전체 히스토리로 이동하도록 수정. -->
-      <span style="font-size: 15px">
+      <span
+        style="font-size: 15px; cursor: pointer"
+        @click="goContestHistory()"
+      >
         {{ $t("m.History_Of_Contest") }}
         <Icon type="arrow-right-b"></Icon>
       </span>
@@ -174,20 +162,18 @@
 import api from "@oj/api";
 import { mapGetters } from "vuex";
 import utils from "@/utils/utils";
-import Pagination from "@/pages/oj/components/Pagination";
 import time from "@/utils/time";
 import {
   CONTEST_STATUS,
   CONTEST_STATUS_REVERSE,
   CONTEST_TYPE,
 } from "@/utils/constants";
-import CustomDropDown from "../../components/dropdown/CustomDropdown.vue";
+import SearchKeyword from "./components/SearchKeyword";
 
 export default {
   name: "contest-list",
   components: {
-    Pagination,
-    CustomDropDown,
+    SearchKeyword,
   },
   data() {
     return {
@@ -207,7 +193,7 @@ export default {
     };
   },
   beforeRouteEnter(to, from, next) {
-    api.getContestList(0, 10000).then(
+    api.getContestList(0, 250).then(
       (res) => {
         next((vm) => {
           vm.contests = res.data.data.results;
@@ -234,6 +220,15 @@ export default {
       this.query.status = route.status || "";
       this.query.rule_type = route.rule_type || "";
       this.query.keyword = route.keyword || "";
+      this.getContestList();
+    },
+    getContestList(page = 1) {
+      api.getContestList(0, 10000, this.query).then((res) => {
+        this.underway_contests = res.data.data.results.filter(
+          (item) => item.status === CONTEST_STATUS.UNDERWAY
+        );
+        this.total = res.data.data.total;
+      });
     },
     changeRoute() {
       let query = Object.assign({}, this.query);
@@ -245,6 +240,10 @@ export default {
     },
     onRuleChange(rule) {
       this.query.rule_type = rule;
+      this.changeRoute();
+    },
+    onKeywordChange(keyword) {
+      this.query.keyword = keyword;
       this.changeRoute();
     },
     goContest(contest) {
@@ -261,6 +260,11 @@ export default {
           params: { contestID: contest.id },
         });
       }
+    },
+    goContestHistory() {
+      this.$router.push({
+        name: "contest-history-list",
+      });
     },
     dateFormat(date) {
       const formattedDate = new Date(date);
@@ -347,35 +351,6 @@ main {
       border: 1px solid var(--container-border-color);
       border-radius: var(--container-border-radius);
     }
-  }
-
-  .search-input-wrapper {
-    width: 200px;
-    height: 35px;
-    font-size: 14px;
-    padding: 5px 10px;
-    background-color: white;
-    border: 1px solid var(--container-border-color);
-    border-radius: var(--container-border-radius);
-    .search-input {
-      width: 90%;
-      height: 100%;
-      border: none;
-      outline: none;
-    }
-    .search-input-icon {
-      background-color: transparent;
-      border: none;
-      font-size: 15px;
-    }
-  }
-  .search-button {
-    width: 45px;
-    height: 35px;
-    border-radius: var(--container-border-radius);
-    font-size: 13px;
-    color: white;
-    background-color: var(--point-color);
   }
 
   .contest-table {

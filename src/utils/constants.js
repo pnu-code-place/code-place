@@ -239,3 +239,54 @@ export function buildProblemCodeKey(problemID, contestID = null) {
 }
 
 export const GOOGLE_ANALYTICS_ID = "UA-111499601-1";
+
+export const MONTH = {
+  JAN: {
+    name: i18n.t("m.JAN"),
+    number: 1,
+  },
+  FEB: {
+    name: i18n.t("m.FEB"),
+    number: 2,
+  },
+  MAR: {
+    name: i18n.t("m.MAR"),
+    number: 3,
+  },
+  APR: {
+    name: i18n.t("m.APR"),
+    number: 4,
+  },
+  MAY: {
+    name: i18n.t("m.MAY"),
+    number: 5,
+  },
+  JUN: {
+    name: i18n.t("m.JUN"),
+    number: 6,
+  },
+  JUL: {
+    name: i18n.t("m.JUL"),
+    number: 7,
+  },
+  AUG: {
+    name: i18n.t("m.AUG"),
+    number: 8,
+  },
+  SEP: {
+    name: i18n.t("m.SEP"),
+    number: 9,
+  },
+  OCT: {
+    name: i18n.t("m.OCT"),
+    number: 10,
+  },
+  NOV: {
+    name: i18n.t("m.NOV"),
+    number: 11,
+  },
+  DEC: {
+    name: i18n.t("m.DEC"),
+    number: 12,
+  },
+};
