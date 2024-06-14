@@ -10,6 +10,7 @@ export default {
     comma,
     printUsers() {
       console.log(this.major)
+      console.log(this.major.people.length)
     }
   },
   data() {
@@ -24,6 +25,11 @@ export default {
       }
     }
   },
+  computed: {
+    peopleNum() {
+      return this.major.people.length
+    }
+  }
 }
 </script>
 
@@ -33,7 +39,7 @@ export default {
       <div class="rank vertical-center horizontal-center">{{ major.rank }}{{$t("m.Th")}}</div>
       <div class="major vertical-center">{{ major.major }}
         <div class="users">
-          <major-rank-person v-for="(user, index) in this.major.people" :ranking="index+1" :user="user"/>
+          <major-rank-person v-for="(user, index) in this.major.people" :ranking="index+1" :user="user" :key="index"  :user-num="peopleNum"/>
         </div>
       </div>
       <div class="score vertical-center">{{ comma(major.score) }}{{$t("m.Point")}}</div>

@@ -10,7 +10,7 @@ export default {
       return TierImageSrc
     },
     shift() {
-      return `shift-${this.ranking}`
+      return `shift-${this.userNum-this.ranking}`
     }
   },
   methods: {
@@ -46,24 +46,36 @@ export default {
     },
     ranking: {
       type: Number,
-      default: 0
+      default: 0,
+    },
+    userNum: {
+      type: Number,
+      default: 1,
     }
   }
 }
 </script>
 
 <template>
-  <div class="major-rank-people " @click="goUserInfo" @mouseover="extend" @mouseout="shrink"
-       :class="is_extended? `extended ${this.shift}`: `shrink ${this.shift}`">
+  <div class="major-rank-people "
+       @click="goUserInfo"
+       @mouseover="extend"
+       @mouseout="shrink"
+       :class="is_extended? `extended ${this.shift}`: `shrink ${this.shift}`"
+  >
     <div class="user-avatar">
       <img :src="user.avatar_url" alt="avatar">
     </div>
     <div class="extend-user-badge">
       <div class="left">
         <div class="top">
-          <div class="username">{{ this.user.username }}</div>
+          <div class="username">
+            {{ this.user.username }}
+          </div>
         </div>
-        <div class="score">{{ comma(this.user.score) }}{{ $t('m.Point') }}</div>
+        <div class="score">
+          {{ comma(this.user.score) }}{{ $t('m.Point') }}
+        </div>
         <!--        <div :class="this.user.mood? 'mood exist' : 'mood'">{{ this.user.mood }}</div>-->
       </div>
       <div class="tier">
@@ -86,24 +98,24 @@ export default {
   width: auto;
 }
 
+.shift-0 {
+  transform: translateX(0);
+}
+
 .shift-1 {
-  transform: translateX(calc(-7px));
+  transform: translateX(calc(5px));
 }
 
 .shift-2 {
-  transform: translateX(calc(-14px));
+  transform: translateX(calc(10px));
 }
 
 .shift-3 {
-  transform: translateX(calc(-21px));
+  transform: translateX(calc(15px));
 }
 
 .shift-4 {
-  transform: translateX(calc(-28px));
-}
-
-.shift-5 {
-  transform: translateX(calc(-35px));
+  transform: translateX(calc(20px));
 }
 
 .major-rank-people {
