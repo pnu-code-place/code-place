@@ -1,6 +1,5 @@
 <script>
 import {comma} from "../../../../../utils/utils";
-import MajorRankPeople from "./MajorRankPerson.vue";
 import MajorRankPerson from "./MajorRankPerson.vue";
 
 export default {

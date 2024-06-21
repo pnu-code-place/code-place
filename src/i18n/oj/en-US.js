@@ -352,7 +352,7 @@ export const m = {
   Author: "작성자",
   Option: "옵션",
   Check: "확인",
-  Mine: "내 것",
+  Mine: "사용자",
   Submission_Table_Author: "제출자",
   Accepted: "Accepted",
   Time_Limit_Exceeded: "Time Limit Exceeded",
