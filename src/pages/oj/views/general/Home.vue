@@ -11,6 +11,7 @@
         <HomeRankingBox/>
       </div>
     </div>
+    <HomeStatusBox/>
   </div>
 
 </template>
@@ -27,10 +28,12 @@ import HomeNoticeBox from "../home/HomeNoticeBox.vue";
 import HomeProblemRecommendationBox from "../home/HomeProblemRecommendationBox.vue";
 import HomeRankingBox from "../home/HomeRankingBox.vue";
 import HomeProfileBox from "../home/HomeProfileBox.vue";
+import HomeStatusBox from "../home/HomeStatistics/HomeStatistics.vue";
 
 export default {
   name: "home",
   components: {
+    HomeStatusBox,
     HomeProfileBox,
     HomeRankingBox,
     HomeProblemRecommendationBox,

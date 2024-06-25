@@ -1,4 +1,16 @@
 export const m = {
+
+  // HomeStatistics.vue
+  UsableLanguages: '채점 가능한 언어',
+  NumberOfProblems : '전체 문제 수',
+  NumberOfSolvedProblems : '해결된 문제',
+  NumberOfHeldContests : '진행된 대회',
+  Lecture: '관련강의',
+  Times: '회',
+  Standard: '기준',
+  Grading: '채점중..',
+  Correct: '정답!',
+
   // SideMenu.vue
   Dashboard: '대시보드',
   General: '일반',
@@ -182,7 +194,6 @@ export const m = {
   AddProblem_Modal_Content: '추가하려는 문제 번호를 기입해주세요.',
 
   // ImportAndExport.vue
-  ImportAndExport_Title: '문제 다운로드 (beta)',
   ImportAndExport_ID: 'ID',
   ImportAndExport_Display_ID: '문제 번호',
   ImportAndExport_Title: '문제명',
