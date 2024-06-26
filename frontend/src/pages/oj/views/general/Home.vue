@@ -9,6 +9,7 @@
       <div class="right-container">
         <HomeProfileBox/>
         <HomeRankingBox/>
+        <Statistics/>
       </div>
     </div>
     <HomeStatusBox/>
@@ -28,11 +29,13 @@ import HomeNoticeBox from "../home/HomeNoticeBox.vue";
 import HomeProblemRecommendationBox from "../home/HomeProblemRecommendationBox.vue";
 import HomeRankingBox from "../home/HomeRankingBox.vue";
 import HomeProfileBox from "../home/HomeProfileBox.vue";
-import HomeStatusBox from "../home/HomeStatistics/HomeStatistics.vue";
+import HomeStatusBox from "../home/HomeStatistics/HomeLanguages.vue";
+import Statistics from "./HomeStatistics.vue";
 
 export default {
   name: "home",
   components: {
+    Statistics,
     HomeStatusBox,
     HomeProfileBox,
     HomeRankingBox,
@@ -108,6 +111,9 @@ export default {
 .right-container {
   width: 30%;
   height: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 .contestBox {

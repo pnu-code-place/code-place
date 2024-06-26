@@ -129,7 +129,6 @@ export default {
 
   .rankingBoxBody{
     padding: 10px;
-    height: 100%;
     .noData{
       text-align: center;
       height: 80%;

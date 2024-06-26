@@ -12,27 +12,12 @@ export default {
     return {
       languages: LANGUAGE_INFO,
       languageIndex: 0,
-      statIndex: -1,
-      statistics: {
-        totalProblems: 512,
-        solvedProblems: 120,
-        heldContests: 36
-      }
     }
   },
   methods: {
     langSelect(index) {
       this.languageIndex = index
     },
-    statSelect(index) {
-      this.statIndex = index
-    },
-    statExtendedClass(index) {
-      return this.statIndex === index ? 'extended' : ''
-    },
-    statExtended(index) {
-      return this.statIndex === index
-    }
   },
   computed: {
     description() {
@@ -83,29 +68,6 @@ export default {
         </div>
       </div>
     </div>
-    <div class="statistics">
-      <div :class="`statistics-contents ${statExtendedClass(0)}`" @mouseenter="statSelect(0)">
-        <h3>
-          {{ $t('m.NumberOfProblems') }}
-        </h3>
-        <TotalProblems :extended="statExtended(0)" :total-problems="this.statistics.totalProblems"/>
-      </div>
-      <hr/>
-      <div :class="`statistics-contents ${statExtendedClass(1)}`" @mouseenter="statSelect(1)">
-
-        <h3>
-          {{ $t('m.NumberOfSolvedProblems') }}
-        </h3>
-        <SolvedProblems :extended="statExtended(1)" :solved-problems="this.statistics.solvedProblems"/>
-      </div>
-      <hr/>
-      <div :class="`statistics-contents ${statExtendedClass(2)}`" @mouseenter="statSelect(2)">
-        <h3>
-          {{ $t('m.NumberOfHeldContests') }}
-        </h3>
-        <HeldContests :extended="statExtended(2)" :held-contests="this.statistics.heldContests"/>
-      </div>
-    </div>
   </div>
 </template>
 
@@ -128,32 +90,11 @@ h3 {
   height: 428px;
 }
 
-.statistics {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  padding: 0 30px 15px 30px;
-
-  .statistics-contents {
-    height: 52.5px;
-    transition: height 0.3s ease-in-out;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-
-    &.extended {
-      height: 100%
-    }
-  }
-
-}
-
 .languages {
   display: flex;
   flex-direction: column;
   padding: 0 30px 15px 30px;
-  width: 358px;
-  border-right: 1px solid var(--container-border-color);
+  width: 100%;
   transition: width 0.5s ease-in-out;
 
   .language-list {
@@ -169,7 +110,7 @@ h3 {
   }
 
   .description {
-    width: 744px;
+    width: 100%;
     font-size: 14px;
   }
 
@@ -182,10 +123,6 @@ h3 {
       border-radius: 5px;
       margin-right: 10px;
     }
-  }
-
-  &.extended {
-    width: 804px;
   }
 }
 

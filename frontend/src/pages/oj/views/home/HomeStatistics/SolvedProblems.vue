@@ -6,7 +6,7 @@ export default {
     return {
       animationTimer: null,
       animationTime: 0,
-      flipTime: 1.1,
+      flipTime: 1.0,
       showNumberTime: 1.5,
     }
   },
@@ -53,7 +53,7 @@ export default {
 </script>
 
 <template>
-  <div class="solved-problems">
+  <div :class="`solved-problems ${this.flipped}`">
     <div class="number-wrapper">
       <transition name="number">
         <div v-if="showNumber" class="number">
@@ -62,7 +62,7 @@ export default {
         </div>
       </transition>
     </div>
-    <div :class="`flip-inner ${flipped}`">
+    <div :class="`flip-inner ${flipped} ${showNumber}`">
       <div class="flip-front">
         <transition name="gauge">
           <div v-if="extended" class="gauge">
@@ -78,26 +78,31 @@ export default {
       </span>
       </div>
     </div>
+    <div class="standard-wrapper">
     <transition name="standard">
-      <div v-if="extended">
+      <div v-if="flipped">
         {{ this.currentTime }} {{ $t('m.Standard') }}
       </div>
     </transition>
+    </div>
   </div>
 </template>
 
 <style scoped lang="less">
 .solved-problems {
+  //transform: matrix3d(0.9303999999999999,-0.17,-0.17,0,0.17,0.9303999999999999,-0.17,-0.0011,0.17,0.17,0.9603999999999999,0,-10,-50,0,1);
+  transform-origin: center center 0;
   display: flex;
-  height: 100%;
+  height: var(--statistics-extend-height);
   align-items: center;
   justify-content: space-around;
   flex-direction: column;
   perspective: 900px;
+  transition: all 0.7s ease-in-out;
+
 
   .number-wrapper {
-    height: 50px;
-
+    height: 75px;
     .number {
       font-size: 50px;
       font-weight: 900;
@@ -110,6 +115,7 @@ export default {
     height: 80px;
     transform-style: preserve-3d;
     transition: all 0.7s;
+    transform: translateY(-60%);
 
     .flip-front {
       width: 100%;
@@ -168,6 +174,12 @@ export default {
     &.flipped {
       transform: rotateY(180deg);
     }
+    &.show-number {
+      transform: translateY(0) rotateY(180deg) ;
+    }
+  }
+  .standard-wrapper {
+    height:12px;
   }
 }
 

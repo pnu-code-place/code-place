@@ -5,7 +5,7 @@ import Time from "../../../../../utils/time";
 export default {
   data() {
     return {
-      countingTime: 0.8,
+      countingTime: 1.5,
       timer: null,
       steps: 100,
       displayCount: 0
@@ -53,7 +53,7 @@ export default {
 </script>
 
 <template>
-  <div class="total-problems">
+  <div class="held-contests">
     <div>
       <span class="number">{{ this.displayCount }}<span class="times">{{ $t('m.Times') }}</span></span>
     </div>
@@ -83,12 +83,12 @@ export default {
 </template>
 
 <style scoped lang="less">
-.total-problems {
+.held-contests {
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-direction: column;
-  height: 100%;
+  height: var(--statistics-extend-height);
 
   .number {
     font-size: 50px;

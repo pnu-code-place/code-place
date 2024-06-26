@@ -5,9 +5,11 @@ export default {
   data() {
     return {
       itemTimer: null,
-      MAX_ITEMS: 22,
+      numberTimer: null,
+      MAX_ITEMS: 16,
       displayNumber: 0,
-      countingTime: 1.5,
+      countingTime: 1.7,
+      stackingTime: 2.0,
       steps: 30,
       itemArray: []
     }
@@ -26,11 +28,14 @@ export default {
     countingInterval() {
       return Math.max((this.totalProblems / (this.steps)).toFixed(0), 1);
     },
-    timeInterval() {
+    numberInterval() {
       return (this.countingTime * 1000 / this.steps).toFixed(0);
     },
     currentTime() {
       return Time.utcToLocal()
+    },
+    itemInterval() {
+      return Math.max((this.stackingTime * 1000 / this.MAX_ITEMS).toFixed(0), 1);
     }
   },
   methods: {
@@ -45,27 +50,39 @@ export default {
     extended: function (newVal, oldVal) {
       if (newVal) {
         this.displayNumber = 0;
-        this.itemArray = []
-        this.itemTimer = setInterval(() => {
+        this.itemArray = [];
+        this.numberTimer = setInterval(() => {
           if (this.displayNumber < this.totalProblems) {
             this.displayNumber += this.countingInterval;
-            if (this.itemArray.length < this.MAX_ITEMS) {
-              this.itemArray.push(this.displayNumber);
-            }
           } else {
             this.displayNumber = this.totalProblems;
+            clearInterval(this.numberTimer);
+          }
+        }, this.numberInterval);
+        this.itemTimer = setInterval(() => {
+          if (this.itemArray.length < this.MAX_ITEMS) {
+            this.itemArray.push(1);
+          } else {
             clearInterval(this.itemTimer);
           }
-        }, this.timeInterval);
+        }, this.itemInterval);
       }
-    }
+      else {
+        this.displayNumber = 0;
+        this.itemArray = [];
+        clearInterval(this.numberTimer);
+        clearInterval(this.itemTimer);
+      }
+    },
   }
 }
 </script>
 
 <template>
-  <div class="total-problems">
-    <span class="number" v-if="extended">{{ this.displayNumber }}<span class="problem">{{ $t('m.Problems') }}</span></span>
+  <div class="held-contests">
+    <span class="number" v-if="extended">{{ this.displayNumber }}<span class="problem">{{
+        $t('m.Problems')
+      }}</span></span>
     <transition-group name="item" tag="ul" class="stack-wrapper">
       <li class="stack-item" :style="{backgroundColor: getRandomColor()}" v-for="(elem, index) in this.itemArray"
           :key="index"/>
@@ -79,8 +96,8 @@ export default {
 </template>
 
 <style scoped lang="less">
-.total-problems {
-  height: 273px;
+.held-contests {
+  height: var(--statistics-extend-height);
   position: relative;
 
   .number {
@@ -94,12 +111,14 @@ export default {
   }
 
   .stack-wrapper {
+    width: 100%;
     height: 100%;
     display: flex;
     flex-direction: column-reverse;
     align-items: flex-end;
     gap: 5px;
     flex-wrap: wrap;
+    padding-bottom: 36px;
   }
 }
 
@@ -108,8 +127,8 @@ export default {
   font-weight: 600;
 }
 
-.standard{
-  position : absolute;
+.standard {
+  position: absolute;
   bottom: 15px;
   right: 0;
   left: 0;
@@ -132,8 +151,8 @@ export default {
 }
 
 .stack-item {
-  width: 50%;
-  height: 20px;
+  width: 49%;
+  height: 16px;
   background-color: var(--submission-result-btn-color);
   border-radius: 5px;
   transition: all 0.5s ease-in-out;
@@ -141,11 +160,11 @@ export default {
 }
 
 .item-enter-active, .item-leave-active {
-  transition: all 0.3s;
+  transition: all 0.6s;
 }
 
 .item-enter, .item-leave-to {
-  transform: translateY(-100%);
+  transform: translateY(-200%);
   opacity: 0;
 }
 

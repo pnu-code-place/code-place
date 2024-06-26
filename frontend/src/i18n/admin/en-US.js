@@ -1,6 +1,6 @@
 export const m = {
 
-  // HomeStatistics.vue
+  // HomeLanguages.vue
   UsableLanguages: '채점 가능한 언어',
   NumberOfProblems : '전체 문제 수',
   NumberOfSolvedProblems : '해결된 문제',

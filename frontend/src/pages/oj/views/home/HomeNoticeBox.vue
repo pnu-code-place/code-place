@@ -98,7 +98,7 @@ export default {
   border-radius: 7px;
   border: 1px solid #dedede;
   width: 100%;
-  height: 380px;
+  height: 457px;
   padding-left: 30px;
   padding-right: 30px;
   margin-bottom: 20px;
