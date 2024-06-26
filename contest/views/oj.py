@@ -66,6 +66,26 @@ class ContestListAPI(APIView):
                 contests = contests.filter(start_time__lte=cur, end_time__gte=cur)
         return self.success(self.paginate_data(request, contests, ContestSerializer))
 
+class ContestHistoryListAPI(APIView):
+    def get(self, request):
+        contests = Contest.objects.select_related("created_by").filter(visible=True)
+        keyword = request.GET.get("keyword")
+        rule_type = request.GET.get("rule_type")
+        status = request.GET.get("status")
+        year = request.GET.get("year")
+        month = request.GET.get("month")
+        if keyword:
+            contests = contests.filter(title__contains=keyword)
+        if rule_type:
+            contests = contests.filter(rule_type=rule_type)
+        if status:
+            cur = now()
+            contests = contests.filter(end_time__lt=cur)
+        if year:
+            contests = contests.filter(start_time__year=year)
+        if month:
+            contests = contests.filter(start_time__month=month)
+        return self.success(self.paginate_data(request, contests, ContestSerializer))
 
 class ContestPasswordVerifyAPI(APIView):
     @validate_serializer(ContestPasswordVerifySerializer)
