@@ -1,38 +1,46 @@
 <template>
   <div class="rankingBox">
     <div class="rankingBoxHeader">
-      <span>실시간 랭킹 <span class="gradientSpan">TOP 3</span></span>
+      <span>{{ $t('m.Title_Home_Ranking') }} <span class="gradientSpan">{{ $t('m.Top_Three_Home_Ranking') }}</span></span>
       <div class="plusDiv" @click="handleRoute('acm-rank')" v-if="this.rankingItems.length >= 3">
         <Icon type="android-add" size="13" color="#7a7a7a"></Icon>
-        <span>더보기</span>
+        <span>{{ $t('m.More_Home_Ranking') }}</span>
       </div>
     </div>
-    <div style="padding: 10px; height: 100%">
+      <div class="rankingBoxBody">
       <template v-if="this.rankingItems.length <= 1">
-        <div style="text-align: center; height: 80%; display: flex; align-items: center; justify-content: center">
-          표시할 데이터가 충분하지 않습니다.
+        <div class="noData">
+          {{ $t('m.No_Sufficient_Data_Home_Ranking') }}
         </div>
       </template>
       <template v-else>
         <table>
           <tr>
-            <th class="rank">티어</th>
-            <th class="name">이름</th>
-            <th class="score">{{ $t('m.Total_Score') }}</th>
+            <th class="idx">{{ $t('m.Rank_Home_Ranking') }}</th>
+            <th class="name">{{ $t('m.User_Home_Ranking') }}</th>
+            <th class="tier">{{ $t('m.Tier_Home_Ranking') }}</th>
+            <th class="score">{{ $t('m.Total_Score_Home_Ranking') }}</th>
           </tr>
           <tbody>
           <tr v-for="(user, index) in this.rankingItems" :key="index" v-if="index <= 2">
+            <td class="idx">
+              {{index + 1 + '위'}}
+            </td>
+            <td class="name">
+                <div class="user-wrapper" @click="goUserInfo(user.username)">
+                  <img class="avatar" :src="user.avatar"/>
+                  <span>
+                {{ user.username }}
+              </span>
+                </div>
+              </td>
             <template v-if="(index + 1) <= 3">
-              <td class="rank">
+              <td class="tier">
                 <ShineWrapper>
                   <img alt="" :src="TierImageSrc[user.tier]" width="25px"/>
                 </ShineWrapper>
               </td>
             </template>
-            <template v-else>
-              <td class="rank">{{ index + 1 }}</td>
-            </template>
-            <td class="name">{{ user.username }}</td>
             <td class="score">
               <div class="user-score">
                 <span class="user-score__score">{{ user.total_score }}</span>
@@ -49,9 +57,8 @@
 </template>
 
 <script>
-import testRealTimeRankingDTO from "../general/testRealTimeRankingDTO";
 import api from "../../api";
-import {getAwardImageSrc, getTierImageSrc, TierImageSrc} from "../../../../utils/constants";
+import {TierImageSrc} from "../../../../utils/constants";
 import ShineWrapper from "../../components/ShineWrapper.vue";
 
 export default {
@@ -67,10 +74,11 @@ export default {
     this.init()
   },
   methods:{
-    getTierImageSrc,
-    getAwardImageSrc,
     handleRoute(route) {
       this.$router.push({name: route});
+    },
+    goUserInfo(username) {
+      this.$router.push({name: 'user-home', params: {username: username}})
     },
     init() {
       api.getHomeRealTimeRanking()
@@ -118,6 +126,18 @@ export default {
       cursor: pointer;
     }
   }
+
+  .rankingBoxBody{
+    padding: 10px;
+    height: 100%;
+    .noData{
+      text-align: center;
+      height: 80%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
 }
 .rankingBox:hover{
   border: 1px solid #cccccc;
@@ -127,24 +147,28 @@ table {
   width: 100%;
   border-collapse: collapse;
   th {
-    padding: 3px 0;
+    padding: 1px 0;
     border-bottom: 1px solid #f0f0f0;
     font-size: 14px;
     color: #666;
 
-    &.rank {
-      width: 27%;
+    &.idx{
+      width: 15%;
+    }
+
+    &.tier {
+      width: 10%;
     }
 
     &.name {
-      width: 30%;
+      width: 28%;
       text-align: left;
       padding: 0 10px;
     }
 
     &.score {
-      width: 30%;
-      text-align: center;
+      width: 20%;
+
     }
   }
 
@@ -156,9 +180,11 @@ table {
         padding: 10px 0;
         font-size: 13px;
         color: #666;
+        text-align: center;
 
-        &.rank {
-          text-align: center;
+        &.idx{
+          font-weight: 560;
+          font-size: 13px;
         }
 
         &.name {
@@ -166,12 +192,23 @@ table {
           overflow: hidden;
           text-overflow: ellipsis;
           text-align: left;
+          vertical-align: middle;
           padding: 0 10px;
           font-weight: 560;
+          font-size: 14px;
+
+          .user-wrapper{
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+
+            span{
+              padding-left: 10px;
+            }
+          }
         }
 
         &.score {
-          text-align: center;
           .user-score {
             display: flex;
             flex-direction: column;
@@ -229,5 +266,13 @@ table {
   100% {
     transform: scale(1);
   }
+}
+
+@avatar-radius: 50%;
+
+.avatar {
+  width: 30px;
+  border-radius: @avatar-radius;
+  box-shadow: 0px 0px 1px 0px;
 }
 </style>

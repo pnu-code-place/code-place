@@ -296,6 +296,15 @@ export const m = {
   HomeProblemRecommendation: "이주의 보너스 문제",
   HomeProblemRecommendation_Info:
     "주마다 보너스 점수(x2)가 있는 문제를 추천해드려요!",
+  //HomeRankingBox.vue
+  Title_Home_Ranking: "실시간 랭킹",
+  Top_Three_Home_Ranking: "Top 3",
+  More_Home_Ranking: "더보기",
+  No_Sufficient_Data_Home_Ranking: "표시할 데이터가 충분하지 않습니다.",
+  Rank_Home_Ranking: "순위",
+  User_Home_Ranking: "사용자",
+  Tier_Home_Ranking: "티어",
+  Total_Score_Home_Ranking: "총점",
   //문제 리스트의 난이도
   Difficulty: "난이도",
   Category: "태그",
