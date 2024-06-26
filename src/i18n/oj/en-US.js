@@ -334,13 +334,14 @@ export const m = {
   password_does_not_match: "비밀번호가 일치하지 않습니다.",
   Thanks_for_registering: "Thanks for your registering, you can login now",
   // ResetPassword.vue and ApplyResetPassword.vue
-  Reset_Password: "Lost Password",
-  RPassword: "Password",
-  RPassword_Again: "Password Again",
-  RCaptcha: "Captcha",
-  ApplyEmail: "Your Email Address",
-  Send_Password_Reset_Email: "Send Password Reset Email",
-  Your_password_has_been_reset: "Your password has been reset.",
+  Reset_Password: "비밀번호 재설정",
+  RPassword: "비밀번호",
+  RPassword_Again: "비밀번호를 다시 입력해주세요",
+  RCaptcha: "우측 문자를 입력해주세요",
+  Click_To_Refresh: "클릭하여 리프레시하세요",
+  ApplyEmail: "이메일 주소",
+  Send_Password_Reset_Email: "비밀번호 재설정",
+  Your_password_has_been_reset: "비밀번호가 재설정되었습니다.",
   // Save.vue
   Save: "저장",
   // Simditor.vue

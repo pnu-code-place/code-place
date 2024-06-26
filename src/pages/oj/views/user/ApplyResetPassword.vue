@@ -5,25 +5,23 @@
       <Form :rules="ruleResetPassword" :model=formResetPassword ref="formResetPassword">
         <Form-item prop="email">
           <Input v-model="formResetPassword.email" :placeholder="$t('m.ApplyEmail')" size="large">
-          <Icon type="ios-email-outline" slot="prepend"></Icon>
           </Input>
         </Form-item>
         <Form-item prop="captcha" style="margin-bottom:10px">
           <div class="oj-captcha">
             <div class="oj-captcha-code">
               <Input v-model="formResetPassword.captcha" :placeholder="$t('m.RCaptcha')" size="large">
-              <Icon type="ios-lightbulb-outline" slot="prepend"></Icon>
               </Input>
             </div>
             <div class="oj-captcha-img">
-              <Tooltip content="Click to refresh" placement="top">
+              <Tooltip :content="$t('m.Click_To_Refresh')" placement="top">
                 <img :src="captchaSrc" @click="getCaptchaSrc"/>
               </Tooltip>
             </div>
           </div>
         </Form-item>
       </Form>
-      <Button type="primary"
+      <Button
               @click="sendEmail"
               class="btn" long
               :loading="btnLoading">{{$t('m.Send_Password_Reset_Email')}}
@@ -104,6 +102,7 @@
   .container {
     width: 450px;
     margin: auto;
+    border-radius: 20px;
     .center {
       text-align: center;
     }
