@@ -16,3 +16,14 @@ class Announcement(models.Model):
     class Meta:
         db_table = "announcement"
         ordering = ("-create_time",)
+
+class LinkAnnouncement(models.Model):
+    title = models.TextField()
+    link = models.TextField()
+    create_time = models.DateTimeField(auto_now_add=True)
+    created_by = models.TextField()
+    last_update_time = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "link_announcement"
+        ordering = ("-create_time",)
