@@ -1,6 +1,8 @@
 from django.conf.urls import url
 
 from ..views.oj import ContestAnnouncementListAPI, ContestHistoryListAPI
+from ..views.oj import ContestAnnouncementListAPI, ContestHistoryListAPI, ContestUnderWayListAPI, \
+    ContestNotStartedListAPI
 from ..views.oj import ContestPasswordVerifyAPI, ContestAccessAPI
 from ..views.oj import ContestListAPI, ContestAPI
 from ..views.oj import ContestRankAPI
@@ -8,6 +10,7 @@ from ..views.oj import ContestRankAPI
 urlpatterns = [
     url(r"^contests/?$", ContestListAPI.as_view(), name="contest_list_api"),
     url(r"^contest_history/?$", ContestHistoryListAPI.as_view(), name="contest_history_list_api"),
+    url(r"^contest_not_started/?$", ContestNotStartedListAPI.as_view(), name="contest_not_started_list_api"),
     url(r"^contest/?$", ContestAPI.as_view(), name="contest_api"),
     url(r"^contest/password/?$", ContestPasswordVerifyAPI.as_view(), name="contest_password_api"),
     url(r"^contest/announcement/?$", ContestAnnouncementListAPI.as_view(), name="contest_announcement_api"),
