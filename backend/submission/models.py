@@ -1,5 +1,6 @@
 from django.db import models
 
+from account.models import UserProfile
 from utils.constants import ContestStatus
 from utils.models import JSONField
 from problem.models import Problem
@@ -57,3 +58,7 @@ class Submission(models.Model):
 
     def __str__(self):
         return self.id
+
+    @property
+    def user_avatar(self):
+        return UserProfile.objects.get(user=self.user_id).avatar

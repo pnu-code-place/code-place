@@ -2,20 +2,20 @@ import i18n from "@/i18n";
 
 export const JUDGE_COLOR = {
   WRONG: {
-    color: "#FFD338",
-    textColor: "#454545",
+    color: "#ffd025",
+    textColor: "#ffffff",
   },
   CORRECT: {
-    color: "#D9FBE1",
-    textColor: "#454545",
+    color: "#1abe6b",
+    textColor: "#ffffff",
   },
   PENDING: {
-    color: "#C3EBFF",
-    textColor: "#454545",
+    color: "#ffb574",
+    textColor: "#ffffff",
   },
   ERROR: {
-    color: "#FECECB",
-    textColor: "#454545",
+    color: "#ed3f13",
+    textColor: "#ffffff",
   },
 };
 

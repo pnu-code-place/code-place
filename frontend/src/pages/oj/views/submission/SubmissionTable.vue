@@ -29,7 +29,6 @@ export default {
       <th class="small">{{ $t('m.Memory') }}</th>
       <th class="small">{{ $t('m.Language') }}</th>
       <th class="medium">{{ $t('m.Author') }}</th>
-      <th class="medium">{{ $t('m.Option') }}</th>
     </tr>
     </thead>
     <tbody>

@@ -50,7 +50,7 @@
 
 <style scoped lang="less">
   .page {
-    margin: 20px;
+    margin: 10px;
     float: right;
   }
 </style>
@@ -58,5 +58,13 @@
 <style lang="less">
   .ivu-page-options-sizer {
     min-width: 85px;
+  }
+  .ivu-page-item-active {
+    background-color: #ffffff;
+    border: 1px solid #283143;
+    box-shadow: 0px 0px 1px 0px;
+    a{
+      color: #1a1f29;
+    }
   }
 </style>
