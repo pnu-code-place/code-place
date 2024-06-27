@@ -97,6 +97,7 @@ export const m = {
   TOP_3: "3등",
   People: "명",
   // Announcements.vue
+  SWCenter: "SW센터",
   Contest_Announcements: "대회 공지사항",
   By: "By",
   // ApplyResetPassword.vue
