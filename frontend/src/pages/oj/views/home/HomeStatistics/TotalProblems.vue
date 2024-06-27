@@ -61,7 +61,7 @@ export default {
         }, this.numberInterval);
         this.itemTimer = setInterval(() => {
           if (this.itemArray.length < this.MAX_ITEMS) {
-            this.itemArray.push(1);
+            this.itemArray.push(this.itemArray.length);
           } else {
             clearInterval(this.itemTimer);
           }

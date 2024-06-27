@@ -4,10 +4,25 @@ import {defineComponent} from "vue";
 import SolvedProblems from "../home/HomeStatistics/SolvedProblems.vue";
 import HeldContests from "../home/HomeStatistics/HeldContests.vue";
 import TotalProblems from "../home/HomeStatistics/TotalProblems.vue";
+import api from "../../api";
 
 export default defineComponent({
   components: {TotalProblems, HeldContests, SolvedProblems},
+  mounted() {
+    this.init()
+  },
   methods: {
+    init() {
+      this.loadStatistics()
+    },
+    loadStatistics() {
+      api.getStatistics().then(res => {
+        console.log(res.data.data)
+        this.statistics.totalProblems = res.data.data.total_problem_length
+        this.statistics.solvedProblems = res.data.data.accepted_problem_length
+        this.statistics.heldContests = res.data.data.ended_contest_length
+      })
+    },
     statSelect(index) {
       this.statIndex = index
     },
@@ -77,7 +92,7 @@ h3 {
   border: 1px solid var(--container-border-color);
   border-radius: var(--container-border-radius);
   background-color: var(--box-background-color);
-  --statistics-extend-height : 200px;
+  --statistics-extend-height: 200px;
   height: 380px;
 
   &.hover {

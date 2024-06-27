@@ -8,6 +8,9 @@ axios.defaults.xsrfHeaderName = "X-CSRFToken";
 axios.defaults.xsrfCookieName = "csrftoken";
 
 export default {
+  getStatistics() {
+    return ajax("home_statistics", "get");
+  },
   getWebsiteConf(params) {
     return ajax("website", "get", {
       params
