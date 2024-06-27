@@ -1,12 +1,6 @@
 import Vue from "vue";
 import store from "@/store";
 import axios from "axios";
-import {
-  AchievementSectionProp,
-  DashboardSectionProp, MajorRankListProp,
-  ProblemSectionProp, SurgeUserProps,
-  UserRankListProp
-} from "../../prop";
 
 Vue.prototype.$http = axios;
 axios.defaults.baseURL = "/api";
@@ -92,40 +86,18 @@ export default {
         username
       }
     });
-    // return new Promise((resolve) => {
-    //   setTimeout(() => {
-    //     resolve({data: {data: DashboardSectionProp}})
-    //   }, 300)
-    // })
   },
   getUserProblemInfo(username, query) {
     return ajax("profile/problem", "get", {
-          params: {
-            username,
-            ...query
-          }
-        });
-    // return new Promise((resolve) => {
-    //   setTimeout(() => {
-    //     resolve({data: {data: ProblemSectionProp}})
-    //   }, 900)
-    // })
+      params: {
+        username,
+        ...query
+      }
+    });
   },
   getPersonalRecommendProblem() {
     return ajax("recommend_problem", "get");
   },
-  // getUserAchievement(username) {
-  //   return ajax("profile/achievement", "get", {
-  //     params: {
-  //       username
-  //     }
-  //   });
-  //   return new Promise((resolve) => {
-  //     setTimeout(() => {
-  //       resolve({data: {data: AchievementSectionProp}})
-  //     }, 1000)
-  //   })
-  // },
 
   updateProfile(profile) {
     return ajax("profile", "put", {
@@ -138,7 +110,7 @@ export default {
   getHomeBonusProblem() {
     return ajax("problem/bonus", "get");
   },
-  getMostDifficultProblem(){
+  getMostDifficultProblem() {
     return ajax("problem/most_difficult_problem", "get");
   },
   freshDisplayID(userID) {
@@ -332,14 +304,6 @@ export default {
       limit,
       rule
     };
-    // return new Promise((resolve) => {
-    //   setTimeout(() => {
-    //     if (limit === 1) {
-    //       resolve({data: {data: {results: [UserRankListProp.results[offset]], total: UserRankListProp.total}}})
-    //     }
-    //     resolve({data: {data: {results: UserRankListProp.results.slice(3, 13), total: UserRankListProp.total}}})
-    //   }, 500)
-    // });
     return ajax("user_rank", "get", {
       params
     });
@@ -349,11 +313,6 @@ export default {
       offset,
       limit
     }
-    // return new Promise((resolve) => {
-    //   setTimeout(() => {
-    //     resolve({data: {data: SurgeUserProps}})
-    //   }, 500)
-    // });
     return ajax("surge_user_rank", "get", {
       params
     });
