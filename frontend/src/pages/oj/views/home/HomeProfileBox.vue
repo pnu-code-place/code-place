@@ -112,8 +112,7 @@ export default {
     height: 60px;
     line-height: 60px;
     background-color: #32306b;
-    margin-top: 30px;
-    margin-bottom: 30px;
+    margin: 23px 0;
 
     span {
       margin-left: 10px;

@@ -7,7 +7,7 @@ export default {
       animationTimer: null,
       animationTime: 0,
       flipTime: 1.0,
-      showNumberTime: 1.5,
+      showNumberTime: 1.2,
     }
   },
   props: {

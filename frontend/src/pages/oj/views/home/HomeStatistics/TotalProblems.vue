@@ -84,8 +84,8 @@ export default {
         $t('m.Problems')
       }}</span></span>
     <transition-group name="item" tag="ul" class="stack-wrapper">
-      <li class="stack-item" :style="{backgroundColor: getRandomColor()}" v-for="(elem, index) in this.itemArray"
-          :key="index"/>
+      <li class="stack-item" :style="{backgroundColor: getRandomColor()}" v-for="elem in this.itemArray"
+          :key="elem"/>
     </transition-group>
     <transition name="standard">
       <div v-if="extended" class="standard">

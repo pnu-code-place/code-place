@@ -25,14 +25,12 @@ export default defineComponent({
         totalProblems: 512,
         solvedProblems: 120,
         heldContests: 36
-      }
+      },
+      statTimer: setTimeout(() => {
+        this.statIndex = 0
+      }, 0)
     }
   },
-  onMounted() {
-    setTimeout(() => {
-      this.statIndex = 0
-    }, 500)
-  }
 })
 </script>
 
@@ -81,6 +79,10 @@ h3 {
   background-color: var(--box-background-color);
   --statistics-extend-height : 200px;
   height: 380px;
+
+  &.hover {
+    border-color: var(--cont)
+  }
 
 
   .statistics-contents {
