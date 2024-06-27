@@ -489,7 +489,7 @@ export default {
 }
 
 .splitpanes--vertical > .splitpanes__splitter {
-  min-width: 4px;
+  min-width: 4px!important;
   margin-top: 350px;
   margin-bottom: 350px;
   align-items: center;

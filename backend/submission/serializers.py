@@ -35,6 +35,7 @@ class SubmissionSafeModelSerializer(serializers.ModelSerializer):
 class SubmissionListSerializer(serializers.ModelSerializer):
     problem = serializers.SlugRelatedField(read_only=True, slug_field="_id")
     show_link = serializers.SerializerMethodField()
+    user_avatar = serializers.SerializerMethodField()
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop("user", None)
@@ -49,3 +50,7 @@ class SubmissionListSerializer(serializers.ModelSerializer):
         if self.user is None or not self.user.is_authenticated:
             return False
         return obj.check_user_permission(self.user)
+
+    def get_user_avatar(self, obj):
+        return obj.user_avatar
+

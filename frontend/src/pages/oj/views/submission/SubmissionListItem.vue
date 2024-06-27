@@ -11,11 +11,6 @@ export default {
       }
     }
   },
-  data() {
-    return {
-      rejudging: false
-    }
-  },
   computed: {
     JUDGE_STATUS() {
       return JUDGE_STATUS
@@ -23,7 +18,6 @@ export default {
     submit_time() {
       // 2024-04-30T10:51:36.831239Z-> 2024-04-30 10:51:36
       return this.item.create_time.replace('T', ' ').split('.')[0]
-
     },
     id() {
       return this.item.id.slice(0, 12)
@@ -42,9 +36,6 @@ export default {
         return this.item.statistic_info.time_cost + 'ms'
       }
     },
-    buttonText() {
-      return this.rejudging ? this.$i18n.t('m.Rejudging') : this.$i18n.t('m.Rejudge')
-    },
     statusStyle() {
       return {
         backgroundColor: JUDGE_STATUS[this.item.result].color,
@@ -62,20 +53,6 @@ export default {
     },
     goUser() {
       this.$router.push({name: 'user-home', params: {username: this.item.username}})
-    },
-    handleRejudge(id) {
-      if (this.rejudging) {
-        return
-      }
-      this.rejudging = true
-      api.submissionRejudge(id).then(res => {
-        this.$success('Succeeded')
-        this.getSubmissions()
-      }, () => {
-        this.$error('Failed')
-      }).finally(() => {
-        this.rejudging = false
-      })
     },
     getMemory(memory_cost) {
       if (memory_cost > 1024 * 1024 * 1024) {
@@ -98,14 +75,18 @@ export default {
     <td>{{ this.submit_time }}</td>
     <td class="link" @click="this.goStatus">{{ item.id.slice(0, 12) }}</td>
     <td><button class="status-badge" :style="this.statusStyle">{{ JUDGE_STATUS[item.result].name }}</button></td>
-    <td class="link" @click="this.goProblem">{{ item.problem }}</td>
+    <td class="link" @click="this.goProblem">{{ item.problem + '번' }}</td>
     <td>{{ this.running_time }}</td>
     <td>{{ this.memory }}</td>
     <td>{{ item.language }}</td>
-    <td class="link" @click="this.goUser">{{ item.username }}</td>
-    <td>
-      <button @click="handleRejudge(item.id)" :class="this.rejudging? 'rejudging rejudge' : 'rejudge'">{{ this.buttonText }}</button>
-    </td>
+    <td class="link" @click="this.goUser">
+      <div class="user-wrapper">
+        <img class="avatar" :src="item.user_avatar"/>
+        <div class="name-wrapper">
+          {{ item.username }}
+        </div>
+      </div>
+      </td>
     <!--        <td>{{ item.id }}</td>-->
     <!--        <td>{{ item.status }}</td>-->
     <!--        <td>{{ item.memory }}</td>-->
@@ -126,46 +107,19 @@ td {
 .link {
   color: #32306b;
   cursor: pointer;
+  .user-wrapper{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    .name-wrapper{
+      margin-left: 7px;
+    }
+  }
 }
 
 .link:hover {
   color: #32306b;
   text-decoration: underline;
-}
-
-button.rejudge {
-  background-color: #495060;
-  border: none;
-  color: white;
-  padding: 5px 10px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 12px;
-  cursor: pointer;
-  border-radius: 5px;
-}
-
-button:hover.rejudge {
-  background-color: #4a47a3;
-}
-
-.rejudging {
-  background-color: #f0f0f0;
-  animation: rejudging 1s infinite;
-  cursor: not-allowed;
-}
-
-@keyframes rejudging {
-  0% {
-    background-color: #5c59b8;
-  }
-  50% {
-    background-color: #32306b;
-  }
-  100% {
-    background-color: #5c59b8;
-  }
 }
 
 .status-badge {
@@ -175,8 +129,16 @@ button:hover.rejudge {
   text-align: center;
   text-decoration: none;
   display: inline-block;
-  font-size: 12px;
+  font-size: 10.5px;
   cursor: pointer;
   border-radius: 5px;
+}
+
+@avatar-radius: 50%;
+
+.avatar {
+  width: 30px;
+  border-radius: @avatar-radius;
+  box-shadow: 0px 0px 1px 0px;
 }
 </style>

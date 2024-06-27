@@ -19,6 +19,7 @@ export const m = {
   Hint: "힌트",
   Source: "Source",
   Status: "채점 현황",
+  Submission_State: "채점 상태",
   Information: "Information",
   Time_Limit: "시간 제한",
   Memory_Limit: "메모리 제한",
@@ -355,8 +356,8 @@ export const m = {
   Real_Time: "Real Time",
   Signal: "Signal",
   // SubmissionList.vue
-  When: "시각",
-  ID: "ID",
+  When: "제출시각",
+  ID: "제출ID",
   Time: "Time",
   Memory: "메모리",
   Author: "작성자",

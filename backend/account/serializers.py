@@ -15,6 +15,11 @@ class DepartmentSerializer(serializers.Serializer):
     department_name = serializers.CharField()
     college_id = serializers.IntegerField()
 
+class HomeStatistics(serializers.Serializer):
+    total_problem_length = serializers.IntegerField()
+    accepted_problem_length = serializers.IntegerField()
+    ended_contest_length = serializers.IntegerField()
+
 
 class RankingSerializer(serializers.ModelSerializer):
     class Meta:
