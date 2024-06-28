@@ -77,7 +77,7 @@ export default {
     transition: all 0.5s ease-in-out;
 
     &.extended {
-      width: 70px;
+      width: 80px;
     }
   }
 

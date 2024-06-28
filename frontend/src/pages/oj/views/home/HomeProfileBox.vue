@@ -101,12 +101,8 @@ export default {
   border-radius: 7px;
   border: 1px solid #dedede;
   width: 100%;
-  height: 200px;
-  margin-bottom: 20px;
   text-align: center;
-  padding-left: 20px;
-  padding-right: 20px;
-  padding-top: 25px;
+  padding: 15px 20px 15px 20px;
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 
   .loginBtn {
@@ -116,8 +112,7 @@ export default {
     height: 60px;
     line-height: 60px;
     background-color: #32306b;
-    margin-top: 30px;
-    margin-bottom: 30px;
+    margin: 23px 0;
 
     span {
       margin-left: 10px;
