@@ -193,26 +193,17 @@ export default {
     };
   },
   beforeRouteEnter(to, from, next) {
-    api.getContestList(0, 250).then(
-      (res) => {
-        next((vm) => {
-          vm.contests = res.data.data.results;
-          vm.underway_contests = res.data.data.results.filter(
-            (item) => item.status === CONTEST_STATUS.UNDERWAY
-          );
-          vm.not_start_contests = res.data.data.results.filter(
-            (item) => item.status === CONTEST_STATUS.NOT_START
-          );
-          vm.ended_contests = res.data.data.results
-            .filter((item) => item.status === CONTEST_STATUS.ENDED)
-            .slice(0, 5);
-          vm.total = res.data.data.total;
-        });
-      },
-      (res) => {
-        next();
-      }
-    );
+    next((vm) => {
+      api.getUnderwayContestList().then((res) => {
+        vm.underway_contests = res.data.data;
+      });
+      api.getNotStartedContestList().then((res) => {
+        vm.not_start_contests = res.data.data;
+      });
+      api.getContestHistoryList(0, 5).then((res) => {
+        vm.ended_contests = res.data.data.results;
+      });
+    });
   },
   methods: {
     init() {
