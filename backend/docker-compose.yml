@@ -18,10 +18,9 @@ services:
       - "5437:5432"
 
   oj-judge:
-    image: registry.cn-hongkong.aliyuncs.com/oj-image/judge:1.6.0
+    image: juniper0917/csep-js:0.1
     restart: always
     read_only: true
-    pull_policy: never
     cap_drop:
       - SETPCAP
       - MKNOD
