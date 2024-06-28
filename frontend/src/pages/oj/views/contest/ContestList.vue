@@ -84,7 +84,7 @@
           {{ $t("m.Contest_Title") }}
         </th>
         <th>{{ $t("m.Start_Date") }}</th>
-        <th>{{ $t("m.State") }}</th>
+        <th>{{ $t("m.End_Date") }}</th>
         <th>{{ $t("m.Disclosure") }}</th>
         <th>{{ $t("m.Contest_Type") }}</th>
       </thead>
