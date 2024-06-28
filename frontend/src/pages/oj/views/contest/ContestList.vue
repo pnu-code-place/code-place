@@ -3,21 +3,10 @@
     <div class="session-title-wrapper">
       <span class="session-title">{{ $t("m.Underway_Contest") }}</span>
       <div style="display: flex; gap: 10px">
-        <Dropdown class="dropdown" @on-click="onRuleChange">
-          <span>
-            {{
-              query.rule_type === ""
-                ? this.$i18n.t("m.Contest_Type")
-                : this.$i18n.t("m." + query.rule_type)
-            }}
-            <Icon type="arrow-down-b"></Icon>
-          </span>
-          <Dropdown-menu slot="list">
-            <Dropdown-item name="">{{ $t("m.All") }}</Dropdown-item>
-            <Dropdown-item name="OI">{{ $t("m.OI") }}</Dropdown-item>
-            <Dropdown-item name="ACM">{{ $t("m.ACM") }}</Dropdown-item>
-          </Dropdown-menu>
-        </Dropdown>
+        <RuleTypeDropdown
+          :rule_type="this.query.rule_type"
+          @onRuleChange="onRuleChange"
+        />
         <SearchKeyword @onKeywordChange="onKeywordChange" />
       </div>
     </div>
@@ -169,11 +158,13 @@ import {
   CONTEST_TYPE,
 } from "@/utils/constants";
 import SearchKeyword from "./components/SearchKeyword";
+import RuleTypeDropdown from "./components/RuleTypeDropdown";
 
 export default {
   name: "contest-list",
   components: {
     SearchKeyword,
+    RuleTypeDropdown,
   },
   data() {
     return {
