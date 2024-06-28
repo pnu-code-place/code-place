@@ -3,21 +3,10 @@
     <div class="session-title-wrapper">
       <span class="session-title">{{ $t("m.Underway_Contest") }}</span>
       <div style="display: flex; gap: 10px">
-        <Dropdown class="dropdown" @on-click="onRuleChange">
-          <span>
-            {{
-              query.rule_type === ""
-                ? this.$i18n.t("m.Contest_Type")
-                : this.$i18n.t("m." + query.rule_type)
-            }}
-            <Icon type="arrow-down-b"></Icon>
-          </span>
-          <Dropdown-menu slot="list">
-            <Dropdown-item name="">{{ $t("m.All") }}</Dropdown-item>
-            <Dropdown-item name="OI">{{ $t("m.OI") }}</Dropdown-item>
-            <Dropdown-item name="ACM">{{ $t("m.ACM") }}</Dropdown-item>
-          </Dropdown-menu>
-        </Dropdown>
+        <RuleTypeDropdown
+          :rule_type="this.query.rule_type"
+          @onRuleChange="onRuleChange"
+        />
         <SearchKeyword @onKeywordChange="onKeywordChange" />
       </div>
     </div>
@@ -84,7 +73,7 @@
           {{ $t("m.Contest_Title") }}
         </th>
         <th>{{ $t("m.Start_Date") }}</th>
-        <th>{{ $t("m.State") }}</th>
+        <th>{{ $t("m.End_Date") }}</th>
         <th>{{ $t("m.Disclosure") }}</th>
         <th>{{ $t("m.Contest_Type") }}</th>
       </thead>
@@ -169,85 +158,54 @@ import {
   CONTEST_TYPE,
 } from "@/utils/constants";
 import SearchKeyword from "./components/SearchKeyword";
+import RuleTypeDropdown from "./components/RuleTypeDropdown";
 
 export default {
   name: "contest-list",
   components: {
     SearchKeyword,
+    RuleTypeDropdown,
   },
   data() {
     return {
       query: {
-        status: "",
         keyword: "",
         rule_type: "",
       },
-      total: 0,
-      rows: "",
-      contests: [],
       underway_contests: [],
       not_start_contests: [],
       ended_contests: [],
       CONTEST_STATUS_REVERSE: CONTEST_STATUS_REVERSE,
-      cur_contest_id: "",
     };
   },
   beforeRouteEnter(to, from, next) {
-    api.getContestList(0, 250).then(
-      (res) => {
-        next((vm) => {
-          vm.contests = res.data.data.results;
-          vm.underway_contests = res.data.data.results.filter(
-            (item) => item.status === CONTEST_STATUS.UNDERWAY
-          );
-          vm.not_start_contests = res.data.data.results.filter(
-            (item) => item.status === CONTEST_STATUS.NOT_START
-          );
-          vm.ended_contests = res.data.data.results
-            .filter((item) => item.status === CONTEST_STATUS.ENDED)
-            .slice(0, 5);
-          vm.total = res.data.data.total;
-        });
-      },
-      (res) => {
-        next();
-      }
-    );
+    next((vm) => {
+      api.getUnderwayContestList().then((res) => {
+        vm.underway_contests = res.data.data;
+      });
+      api.getNotStartedContestList().then((res) => {
+        vm.not_start_contests = res.data.data;
+      });
+      api.getContestHistoryList(0, 5).then((res) => {
+        vm.ended_contests = res.data.data.results;
+      });
+    });
   },
   methods: {
-    init() {
-      let route = this.$route.query;
-      this.query.status = route.status || "";
-      this.query.rule_type = route.rule_type || "";
-      this.query.keyword = route.keyword || "";
-      this.getContestList();
-    },
-    getContestList(page = 1) {
-      api.getContestList(0, 10000, this.query).then((res) => {
-        this.underway_contests = res.data.data.results.filter(
-          (item) => item.status === CONTEST_STATUS.UNDERWAY
-        );
-        this.total = res.data.data.total;
-      });
-    },
-    changeRoute() {
-      let query = Object.assign({}, this.query);
-
-      this.$router.push({
-        name: "contest-list",
-        query: utils.filterEmptyValue(query),
+    getUnderwayContestList() {
+      api.getUnderwayContestList(this.query).then((res) => {
+        this.underway_contests = res.data.data;
       });
     },
     onRuleChange(rule) {
       this.query.rule_type = rule;
-      this.changeRoute();
+      this.getUnderwayContestList();
     },
     onKeywordChange(keyword) {
       this.query.keyword = keyword;
-      this.changeRoute();
+      this.getUnderwayContestList();
     },
     goContest(contest) {
-      this.cur_contest_id = contest.id;
       if (
         contest.contest_type !== CONTEST_TYPE.PUBLIC &&
         !this.isAuthenticated
