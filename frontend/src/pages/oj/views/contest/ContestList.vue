@@ -206,39 +206,20 @@ export default {
     });
   },
   methods: {
-    init() {
-      let route = this.$route.query;
-      this.query.status = route.status || "";
-      this.query.rule_type = route.rule_type || "";
-      this.query.keyword = route.keyword || "";
-      this.getContestList();
-    },
-    getContestList(page = 1) {
-      api.getContestList(0, 10000, this.query).then((res) => {
-        this.underway_contests = res.data.data.results.filter(
-          (item) => item.status === CONTEST_STATUS.UNDERWAY
-        );
-        this.total = res.data.data.total;
-      });
-    },
-    changeRoute() {
-      let query = Object.assign({}, this.query);
-
-      this.$router.push({
-        name: "contest-list",
-        query: utils.filterEmptyValue(query),
+    getUnderwayContestList() {
+      api.getUnderwayContestList(this.query).then((res) => {
+        this.underway_contests = res.data.data;
       });
     },
     onRuleChange(rule) {
       this.query.rule_type = rule;
-      this.changeRoute();
+      this.getUnderwayContestList();
     },
     onKeywordChange(keyword) {
       this.query.keyword = keyword;
-      this.changeRoute();
+      this.getUnderwayContestList();
     },
     goContest(contest) {
-      this.cur_contest_id = contest.id;
       if (
         contest.contest_type !== CONTEST_TYPE.PUBLIC &&
         !this.isAuthenticated
