@@ -223,8 +223,16 @@ export default {
       },
     });
   },
-  getUnderwayContestList() {
-    return ajax("contest_underway", "get");
+  getUnderwayContestList(searchParams) {
+    let params = {};
+    if (searchParams !== undefined) {
+      Object.keys(searchParams).forEach((element) => {
+        if (searchParams[element]) {
+          params[element] = searchParams[element];
+        }
+      });
+    }
+    return ajax("contest_underway", "get", { params });
   },
   getNotStartedContestList() {
     return ajax("contest_not_started", "get");
