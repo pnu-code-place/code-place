@@ -178,18 +178,13 @@ export default {
   data() {
     return {
       query: {
-        status: "",
         keyword: "",
         rule_type: "",
       },
-      total: 0,
-      rows: "",
-      contests: [],
       underway_contests: [],
       not_start_contests: [],
       ended_contests: [],
       CONTEST_STATUS_REVERSE: CONTEST_STATUS_REVERSE,
-      cur_contest_id: "",
     };
   },
   beforeRouteEnter(to, from, next) {
