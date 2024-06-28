@@ -67,19 +67,6 @@ export default defineComponent({
     changeLanguage(newLang) {
       this.$emit('change-language', newLang)
     },
-    changeFontSize(value) {
-      if (value > 18) {
-        alert("최대 크기입니다")
-        return
-      }
-      if (value < 10) {
-        alert("최소 크기입니다")
-        return
-      }
-      console.log("폰트변경:", value)
-      this.$refs.myCm.changeFontSize(value)
-      this.fontSize = value
-    },
     onResetToTemplate() {
       this.$Modal.confirm({
         content: this.$i18n.t('m.Are_you_sure_you_want_to_reset_your_code'),

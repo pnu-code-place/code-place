@@ -8,6 +8,10 @@
           :month="this.query.month"
           @onMonthChange="onMonthChange"
         />
+        <RuleTypeDropdown
+          :rule_type="this.query.rule_type"
+          @onRuleChange="onRuleChange"
+        />
         <SearchKeyword @onKeywordChange="onKeywordChange" />
       </div>
     </div>
@@ -20,7 +24,7 @@
         background-color: var(--bg-color);
       "
     >
-      <div v-if="display_contests.length === 0" class="session-not-exist">
+      <div v-if="contests.length === 0" class="session-not-exist">
         {{ $t("m.Ended_Contest_Not_Exist") }}
       </div>
       <table v-else class="contest-table">
@@ -35,12 +39,7 @@
           <th>{{ $t("m.Contest_Type") }}</th>
         </thead>
         <tbody>
-          <tr
-            v-for="contest in display_contests.slice(
-              (page - 1) * limit,
-              page * limit
-            )"
-          >
+          <tr v-for="contest in contests">
             <td>{{ contest.id }}</td>
             <td class="td-title" @click="goContest(contest)">
               {{ contest.title }}
@@ -65,7 +64,7 @@
       :total="total"
       :page-size="limit"
       :current.sync="page"
-      @on-change="updateContestData"
+      @on-change="getContestHistoryList"
     ></Pagination>
   </main>
 </template>
@@ -75,6 +74,7 @@ import api from "@oj/api";
 import utils from "@/utils/utils";
 import YearDropdown from "./components/YearDropdown";
 import MonthDropdown from "./components/MonthDropdown";
+import RuleTypeDropdown from "./components/RuleTypeDropdown";
 import SearchKeyword from "./components/SearchKeyword";
 import Pagination from "@/pages/oj/components/Pagination";
 import { CONTEST_STATUS, CONTEST_TYPE, MONTH } from "@/utils/constants";
@@ -84,6 +84,7 @@ export default {
   components: {
     YearDropdown,
     MonthDropdown,
+    RuleTypeDropdown,
     SearchKeyword,
     Pagination,
   },
@@ -92,10 +93,10 @@ export default {
       query: {
         year: "",
         month: "",
+        rule_type: "",
         keyword: "",
       },
       contests: [],
-      display_contests: [],
       count: 0,
       total: 0,
       limit: 10,
@@ -103,74 +104,48 @@ export default {
     };
   },
   beforeRouteEnter(to, from, next) {
-    api.getContestList(0, 250).then(
-      (res) => {
-        next((vm) => {
+    next((vm) => {
+      api
+        .getContestHistoryList((vm.page - 1) * vm.limit, vm.limit)
+        .then((res) => {
           vm.contests = res.data.data.results;
-          vm.display_contests = res.data.data.results.filter(
-            (item) => item.status === CONTEST_STATUS.ENDED
-          );
-          vm.total = vm.display_contests.length;
+          vm.total = res.data.data.total;
         });
-      },
-      (res) => {
-        next();
-      }
-    );
+    });
   },
   methods: {
-    init() {
-      let route = this.$route.query;
-      this.query.year = route.year || "";
-      this.query.month = route.month || "";
-      this.query.keyword = route.keyword || "";
-      this.getDisplayContestList();
-    },
-    getDisplayContestList() {
-      // TODO api 호출하여 필터링하는 방식으로 바꾸기.
-    },
-    changeRoute() {
-      let contests = this.contests.filter(
-        (item) => item.status === CONTEST_STATUS.ENDED
-      );
-      if (this.query.year !== "") {
-        contests = contests.filter((item) => {
-          const date = new Date(item.start_time);
-          return date.getFullYear() === parseInt(this.query.year);
+    getContestHistoryList() {
+      const { month, ...rest } = this.query;
+      const query = {
+        ...rest,
+        month: month === "" ? month : MONTH[month].number,
+      };
+      api
+        .getContestHistoryList((this.page - 1) * this.limit, this.limit, query)
+        .then((res) => {
+          this.contests = res.data.data.results;
+          this.total = res.data.data.total;
         });
-      }
-      if (this.query.month !== "") {
-        contests = contests.filter((item) => {
-          const date = new Date(item.start_time);
-          return date.getMonth() + 1 === MONTH[this.query.month].number;
-        });
-      }
-      if (this.query.keyword !== "") {
-        contests = contests.filter((item) => {
-          const str = JSON.stringify(item);
-          return str.includes(this.query.keyword);
-        });
-      }
-      this.display_contests = contests;
-
-      // TODO api 호출하여 필터링하는 방식으로 바뀌면 주석 풀기
-      // let query = Object.assign({}, this.query);
-      // this.$router.push({
-      //   name: "contest-history-list",
-      //   query: utils.filterEmptyValue(query),
-      // });
     },
     onYearChange(year) {
+      this.page = 1;
       this.query.year = year;
-      this.changeRoute();
+      this.getContestHistoryList();
     },
     onMonthChange(month) {
+      this.page = 1;
       this.query.month = month;
-      this.changeRoute();
+      this.getContestHistoryList();
+    },
+    onRuleChange(rule) {
+      this.page = 1;
+      this.query.rule_type = rule;
+      this.getContestHistoryList();
     },
     onKeywordChange(keyword) {
+      this.page = 1;
       this.query.keyword = keyword;
-      this.changeRoute();
+      this.getContestHistoryList();
     },
     getContestDisclosure(contest) {
       return contest.contest_type === "Public"

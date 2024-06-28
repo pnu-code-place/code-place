@@ -71,7 +71,7 @@
       languages: {
         type: Array,
         default: () => {
-          return ['C', 'C++', 'Java', 'Python2']
+          return ['C', 'C++', 'Java']
         }
       },
       language: {

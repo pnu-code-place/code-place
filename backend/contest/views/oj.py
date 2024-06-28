@@ -66,6 +66,26 @@ class ContestListAPI(APIView):
                 contests = contests.filter(start_time__lte=cur, end_time__gte=cur)
         return self.success(self.paginate_data(request, contests, ContestSerializer))
 
+class ContestNotStartedListAPI(APIView):
+    def get(self, request):
+        contests = Contest.objects.select_related("created_by").filter(visible=True)
+        cur = now()
+        contests = contests.filter(start_time__gt=cur)
+        return self.success(ContestSerializer(contests, many=True).data)
+
+class ContestUnderWayListAPI(APIView):
+    def get(self, request):
+        contests = Contest.objects.select_related("created_by").filter(visible=True)
+        keyword = request.GET.get("keyword")
+        rule_type = request.GET.get("rule_type")
+        if keyword:
+            contests = contests.filter(title__contains=keyword)
+        if rule_type:
+            contests = contests.filter(rule_type=rule_type)
+        cur = now()
+        contests = contests.filter(start_time__lte=cur, end_time__gte=cur)
+        return self.success(ContestSerializer(contests, many=True).data)
+
 class ContestHistoryListAPI(APIView):
     def get(self, request):
         contests = Contest.objects.select_related("created_by").filter(visible=True)
@@ -86,6 +106,7 @@ class ContestHistoryListAPI(APIView):
         if month:
             contests = contests.filter(start_time__month=month)
         return self.success(self.paginate_data(request, contests, ContestSerializer))
+
 
 class ContestPasswordVerifyAPI(APIView):
     @validate_serializer(ContestPasswordVerifySerializer)

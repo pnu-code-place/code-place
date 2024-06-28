@@ -1,12 +1,12 @@
 <template>
   <div class="flex-container">
     <div id="main">
-      <Panel shadow>
+      <Panel dis-hover style="border-radius: 20px">
         <div slot="title">{{ title }}</div>
         <div slot="extra">
           <ul class="filter">
             <li>
-              <Dropdown @on-click="handleResultChange">
+              <Dropdown @on-click="handleResultChange" style="cursor:pointer;">
                 <span>{{ status }}
                   <Icon type="arrow-down-b"></Icon>
                 </span>
@@ -35,6 +35,7 @@
             </li>
           </ul>
         </div>
+
         <SubmissionTable :columns="columns" :data="submissions" :loading="loadingTable"></SubmissionTable>
         <!--        <Table stripe :disabled-hover="true" :columns="columns" :data="submissions" :loading="loadingTable"></Table>-->
         <Pagination :total="total" :page-size="limit" @on-change="changeRoute" :current.sync="page"></Pagination>
@@ -308,7 +309,7 @@ export default {
       }
     },
     status() {
-      return this.formFilter.result === '' ? this.$i18n.t('m.Status') : this.$i18n.t('m.' + JUDGE_STATUS[this.formFilter.result].name.replace(/ /g, '_'))
+      return this.formFilter.result === '' ? this.$i18n.t('m.Submission_State') : this.$i18n.t('m.' + JUDGE_STATUS[this.formFilter.result].name.replace(/ /g, '_'))
     },
     rejudgeColumnVisible() {
       return !this.contestID && this.user.admin_type === USER_TYPE.SUPER_ADMIN
@@ -356,5 +357,6 @@ export default {
 .refresh-button {
   background-color: #495060;
   color: white;
+  border-radius: 20px;
 }
 </style>
