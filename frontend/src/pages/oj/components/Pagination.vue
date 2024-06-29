@@ -60,11 +60,11 @@
     min-width: 85px;
   }
   .ivu-page-item-active {
-    background-color: #ffffff;
-    border: 1px solid #283143;
-    box-shadow: 0px 0px 1px 0px;
+    background-color: #ffffff!important;
+    border: 1px solid #414d61!important;
+    box-shadow: 0px 0px 2px 0px!important;
     a{
-      color: #1a1f29;
+      color: #1a1f29!important;
     }
   }
 </style>
