@@ -9,28 +9,23 @@
     </div>
     <template v-if="listVisible">
       <ul class="announcements-container" key="list">
-        <NoticeItem></NoticeItem>
-        <NoticeItem></NoticeItem>
-        <NoticeItem></NoticeItem>
-        <NoticeItem></NoticeItem>
-        <NoticeItem></NoticeItem>
-<!--        <li-->
-<!--          v-for="(announcement, idx) in announcements"-->
-<!--          v-if="idx <= 4"-->
-<!--          :key="announcement.title"-->
-<!--        >-->
-<!--          <div class="flex-container">-->
-<!--            <div class="title">-->
-<!--              <a class="entry" @click="goAnnouncement(announcement)">-->
-<!--                {{ announcement.title }}-->
-<!--              </a>-->
-<!--              <span class="newAnnotator" v-if="isWithinOneDay(announcement.create_time)">new</span>-->
-<!--            </div>-->
-<!--            <div class="date">-->
-<!--              {{ getOnlyDate(announcement.create_time) }}-->
-<!--            </div>-->
-<!--          </div>-->
-<!--        </li>-->
+        <li
+          v-for="(announcement, idx) in announcements"
+          v-if="idx <= 4"
+          :key="announcement.title"
+        >
+          <div class="flex-container">
+            <div class="title">
+              <a class="entry" @click="goAnnouncement(announcement)">
+                {{ announcement.title }}
+              </a>
+              <span class="newAnnotator" v-if="isWithinOneDay(announcement.create_time)">new</span>
+            </div>
+            <div class="date">
+              {{ getOnlyDate(announcement.create_time) }}
+            </div>
+          </div>
+        </li>
       </ul>
       <ul class="announcements-container" key="list">
 
