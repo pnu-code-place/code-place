@@ -13,36 +13,36 @@ export default {
   },
   getWebsiteConf(params) {
     return ajax("website", "get", {
-      params,
+      params
     });
   },
   getAnnouncementList(offset, limit) {
     let params = {
       offset: offset,
-      limit: limit,
+      limit: limit
     };
     return ajax("announcement", "get", {
-      params,
+      params
     });
   },
   login(data) {
     return ajax("login", "post", {
-      data,
+      data
     });
   },
   checkUsernameOrEmail(username, email) {
     return ajax("check_username_or_email", "post", {
       data: {
         username,
-        email,
-      },
+        email
+      }
     });
   },
   applyUserEmailValidCheck(email) {
     return ajax("apply_user_email_valid_check", "post", {
       data: {
-        email,
-      },
+        email
+      }
     });
   },
   userEmailValidCheck(email, code) {
@@ -50,8 +50,8 @@ export default {
     return ajax("user_email_valid_check", "post", {
       data: {
         email,
-        code,
-      },
+        code
+      }
     });
   },
   getCollegeList() {
@@ -60,14 +60,14 @@ export default {
   getMajorList(collegeID) {
     return ajax("department_list", "get", {
       params: {
-        college_id: collegeID,
-      },
+        college_id: collegeID
+      }
     });
   },
   // 注册
   register(data) {
     return ajax("register", "post", {
-      data,
+      data
     });
   },
   logout() {
@@ -79,23 +79,23 @@ export default {
   getUserInfo(username = undefined) {
     return ajax("profile", "get", {
       params: {
-        username,
-      },
+        username
+      }
     });
   },
   getDashboardInfo(username) {
     return ajax("profile/dashboard", "get", {
       params: {
-        username,
-      },
+        username
+      }
     });
   },
   getUserProblemInfo(username, query) {
     return ajax("profile/problem", "get", {
       params: {
         username,
-        ...query,
-      },
+        ...query
+      }
     });
   },
   getPersonalRecommendProblem() {
@@ -104,7 +104,7 @@ export default {
 
   updateProfile(profile) {
     return ajax("profile", "put", {
-      data: profile,
+      data: profile
     });
   },
   getHomeRealTimeRanking() {
@@ -119,20 +119,20 @@ export default {
   freshDisplayID(userID) {
     return ajax("profile/fresh_display_id", "get", {
       params: {
-        user_id: userID,
-      },
+        user_id: userID
+      }
     });
   },
   twoFactorAuth(method, data) {
     return ajax("two_factor_auth", method, {
-      data,
+      data
     });
   },
   tfaRequiredCheck(email) {
     return ajax("tfa_required", "post", {
       data: {
-        email,
-      },
+        email
+      }
     });
   },
   getSessions() {
@@ -141,28 +141,28 @@ export default {
   deleteSession(sessionKey) {
     return ajax("sessions", "delete", {
       params: {
-        session_key: sessionKey,
-      },
+        session_key: sessionKey
+      }
     });
   },
   applyResetPassword(data) {
     return ajax("apply_reset_password", "post", {
-      data,
+      data
     });
   },
   resetPassword(data) {
     return ajax("reset_password", "post", {
-      data,
+      data
     });
   },
   changePassword(data) {
     return ajax("change_password", "post", {
-      data,
+      data
     });
   },
   changeEmail(data) {
     return ajax("change_email", "post", {
-      data,
+      data
     });
   },
   getLanguages() {
@@ -175,15 +175,15 @@ export default {
     let params = {
       paging: true,
       offset,
-      limit,
+      limit
     };
-    Object.keys(searchParams).forEach((element) => {
+    Object.keys(searchParams).forEach(element => {
       if (searchParams[element]) {
         params[element] = searchParams[element];
       }
     });
     return ajax("problem", "get", {
-      params: params,
+      params: params
     });
   },
   pickone() {
@@ -192,153 +192,123 @@ export default {
   getProblem(problemID) {
     return ajax("problem", "get", {
       params: {
-        problem_id: problemID,
-      },
-    });
-  },
-  getUnderwayContestList(searchParams) {
-    let params = {};
-    if (searchParams !== undefined) {
-      Object.keys(searchParams).forEach((element) => {
-        if (searchParams[element]) {
-          params[element] = searchParams[element];
-        }
-      });
-    }
-    return ajax("contest_underway", "get", { params });
-  },
-  getNotStartedContestList() {
-    return ajax("contest_not_started", "get");
-  },
-  getContestHistoryList(offset, limit, searchParams) {
-    let params = {
-      offset,
-      limit,
-    };
-    if (searchParams !== undefined) {
-      Object.keys(searchParams).forEach((element) => {
-        if (searchParams[element]) {
-          params[element] = searchParams[element];
-        }
-      });
-    }
-    return ajax("contest_history", "get", {
-      params,
+        problem_id: problemID
+      }
     });
   },
   getContestList(offset, limit, searchParams) {
     let params = {
       offset,
-      limit,
+      limit
     };
     if (searchParams !== undefined) {
-      Object.keys(searchParams).forEach((element) => {
+      Object.keys(searchParams).forEach(element => {
         if (searchParams[element]) {
           params[element] = searchParams[element];
         }
       });
     }
     return ajax("contests", "get", {
-      params,
+      params
     });
   },
   getContest(id) {
     return ajax("contest", "get", {
       params: {
-        id,
-      },
+        id
+      }
     });
   },
   getContestAccess(contestID) {
     return ajax("contest/access", "get", {
       params: {
-        contest_id: contestID,
-      },
+        contest_id: contestID
+      }
     });
   },
   checkContestPassword(contestID, password) {
     return ajax("contest/password", "post", {
       data: {
         contest_id: contestID,
-        password,
-      },
+        password
+      }
     });
   },
   getContestAnnouncementList(contestId) {
     return ajax("contest/announcement", "get", {
       params: {
-        contest_id: contestId,
-      },
+        contest_id: contestId
+      }
     });
   },
   getContestProblemList(contestId) {
     return ajax("contest/problem", "get", {
       params: {
-        contest_id: contestId,
-      },
+        contest_id: contestId
+      }
     });
   },
   getContestProblem(problemID, contestID) {
     return ajax("contest/problem", "get", {
       params: {
         contest_id: contestID,
-        problem_id: problemID,
-      },
+        problem_id: problemID
+      }
     });
   },
   submitCode(data) {
     return ajax("submission", "post", {
-      data,
+      data
     });
   },
   getSubmissionList(offset, limit, params) {
     params.limit = limit;
     params.offset = offset;
     return ajax("submissions", "get", {
-      params,
+      params
     });
   },
   getContestSubmissionList(offset, limit, params) {
     params.limit = limit;
     params.offset = offset;
     return ajax("contest_submissions", "get", {
-      params,
+      params
     });
   },
   getSubmission(id) {
     return ajax("submission", "get", {
       params: {
-        id,
-      },
+        id
+      }
     });
   },
   submissionExists(problemID) {
     return ajax("submission_exists", "get", {
       params: {
-        problem_id: problemID,
-      },
+        problem_id: problemID
+      }
     });
   },
   submissionRejudge(id) {
     return ajax("admin/submission/rejudge", "get", {
       params: {
-        id,
-      },
+        id
+      }
     });
   },
   updateSubmission(data) {
     return ajax("submission", "put", {
-      data,
+      data
     });
   },
   getUserRank(offset, limit, rule = "ACM") {
     let params = {
       offset,
       limit,
-      rule,
+      rule
     };
     return ajax("user_rank", "get", {
-      params,
+      params
     });
   },
   getSurgeUsers(offset, limit) {
@@ -347,19 +317,19 @@ export default {
       limit,
     };
     return ajax("surge_user_rank", "get", {
-      params,
+      params
     });
   },
   getMajorRankList(offset, limit) {
     const params = {
       offset,
-      limit,
-    };
-    return ajax("major_rank", "get", { params });
+      limit
+    }
+    return ajax("major_rank", "get", {params});
   },
   getContestRank(params) {
     return ajax("contest_rank", "get", {
-      params,
+      params
     });
   },
 };
@@ -372,7 +342,7 @@ export default {
  */
 function ajax(url, method, options) {
   if (options !== undefined) {
-    var { params = {}, data = {} } = options;
+    var {params = {}, data = {}} = options;
   } else {
     params = data = {};
   }
@@ -381,9 +351,9 @@ function ajax(url, method, options) {
       url,
       method,
       params,
-      data,
+      data
     }).then(
-      (res) => {
+      res => {
         // API正常返回(status=20x), 是否错误通过有无error判断
         if (res.data.error !== null) {
           Vue.prototype.$error(res.data.data);
@@ -392,7 +362,7 @@ function ajax(url, method, options) {
           if (res.data.data.startsWith("Please login")) {
             store.dispatch("changeModalStatus", {
               mode: "login",
-              visible: true,
+              visible: true
             });
           }
         } else {
@@ -402,7 +372,7 @@ function ajax(url, method, options) {
           // }
         }
       },
-      (res) => {
+      res => {
         // API请求异常，一般为Server error 或 network error
         reject(res);
         Vue.prototype.$error(res.data.data);
