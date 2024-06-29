@@ -51,8 +51,7 @@ services:
     volumes:
       - ./deploy/nginx/nginx.conf:/etc/nginx/nginx.conf
       - ./data/backend:/data
-      - ./data/backend/certbot/conf/fullchain.pem:/etc/letsencrypt/live/csep.co.kr/fullchain.pem
-      - ./data/backend/certbot/conf/privkey.pem:/etc/letsencrypt/live/csep.co.kr/privkey.pem
+      - ./data/backend/certbot/conf:/etc/letsencrypt
       - ./data/backend/certbot/www:/var/www/certbot
     env_file:
       - .env
