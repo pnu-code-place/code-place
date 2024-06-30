@@ -8,6 +8,7 @@
           v-model="formLogin.username"
           :placeholder="$t('m.LoginUsername')"
           size="large"
+          :autofocus="true"
           @on-enter="handleLogin"
         >
         </Input>

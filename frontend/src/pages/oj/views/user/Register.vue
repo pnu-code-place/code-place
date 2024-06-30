@@ -39,8 +39,12 @@
         </Button
         >
       </FormItem>
-      <div class="inputName">
-        닉네임
+      <div class="inputNameWithDescription">
+        <span class="inputName">닉네임</span>
+        <div>
+          <Icon type="ios-information" size="13" color="#7a7a7a"></Icon>
+          <span>3글자 이상, 8글자 이하만 가능합니다.</span>
+        </div>
       </div>
       <FormItem prop="nickname">
         <Input
@@ -48,6 +52,7 @@
           v-model="formRegister.username"
           :placeholder="$t('m.RegisterNickname')"
           size="large"
+          maxlength="8"
           class="nicknameAuthInput"
           @on-enter="handleRegister"
         >
@@ -55,8 +60,8 @@
         <Button
           type="primary"
           class="nicknameAuthBtn"
-          :disabled="this.emailAuthCodeInputState"
-          @click="handleClickEmailAuthBtn"
+          @click="handleClickNicknameAuthBtn"
+          :disabled="this.nicknameVerifyCompletedState"
         >중복체크
         </Button>
       </FormItem>
@@ -94,8 +99,12 @@
         학과선택
       </div>
       <CustomDropDown :options="this.majorList" nameKey="department_name" @dropdownChange="handleMajorChange"/>
-      <div class="inputName">
-        비밀번호
+      <div class="inputNameWithDescription">
+        <span class="inputName">비밀번호</span>
+        <div>
+          <Icon type="ios-information" size="13" color="#7a7a7a"></Icon>
+          <span>8글자 이상, 영문, 숫자, 특수문자를 모두 사용해야 합니다.</span>
+        </div>
       </div>
       <FormItem prop="password">
         <Input
@@ -197,6 +206,7 @@ export default {
 
     return {
       btnRegisterLoading: false,
+      nicknameVerifyCompletedState: false,
       emailAuthCodeInputState: false,
       emailAuthCodeVerifyCompletedState: false,
       pnuAuthCode: "",
@@ -227,9 +237,40 @@ export default {
   methods: {
     ...mapActions(["changeModalStatus", "getProfile"]),
     handleClickEmailAuthBtn() {
-      api.applyUserEmailValidCheck(this.formRegister.email);
-      this.$success("인증 메일이 성공적으로 전송되었습니다.");
-      this.emailAuthCodeInputState = true;
+      api.applyUserEmailValidCheck(this.formRegister.email)
+        .then(res=>{
+          this.$success("인증 메일이 성공적으로 전송되었습니다.");
+          this.emailAuthCodeInputState = true;
+        })
+        .catch(error=>{
+          if (error.response) {
+            switch (error.response.status) {
+              case 400:
+                this.$error("중복된 이메일이 존재합니다. 다른 이메일을 이용해주세요.");
+                break;
+              default:
+                this.$error("알 수 없는 오류가 발생하였습니다.");
+            }
+          }
+        })
+    },
+    handleClickNicknameAuthBtn() {
+      api.nicknameValidCheck(this.formRegister.username)
+        .then(res => {
+          this.nicknameVerifyCompletedState = true;
+          this.$success("사용 가능한 닉네임입니다.");
+        })
+        .catch(error => {
+          if (error.response) {
+            switch (error.response.status) {
+              case 400:
+                this.$error("중복된 닉네임이 존재합니다. 다른 닉네임을 이용해주세요.");
+                break;
+              default:
+                this.$error("알 수 없는 오류가 발생하였습니다.");
+            }
+          }
+        });
     },
     async handleClickAuthCodeVerificationBtn() {
       let res = await api.userEmailValidCheck(this.formRegister.email, this.pnuAuthCode)
@@ -250,6 +291,10 @@ export default {
         this.$error("웹메일 인증이 완료되지 않았습니다.")
         return
       }
+      if (!this.nicknameVerifyCompletedState) {
+        this.$error("닉네임 중복체크가 완료되지 않았습니다.")
+        return
+      }
       this.validateForm("formRegister").then(valid => {
         let formData = Object.assign({}, this.formRegister);
         delete formData["passwordAgain"];
@@ -263,7 +308,9 @@ export default {
           _ => {
             this.btnRegisterLoading = false;
           }
-        );
+        ).catch(err=>{
+          this.$error(err.data)
+        });
       });
     },
     handleCollegeChange(collegeId) {
@@ -292,7 +339,7 @@ export default {
 .footer-modal {
   overflow: auto;
   margin-top: 20px;
-  margin-bottom: -15px;
+  margin-bottom: -20px;
   text-align: left;
 
   .btn {
@@ -317,6 +364,11 @@ export default {
   font-size: small;
   font-weight: 800;
   margin-left: 1px;
+}
+
+.inputNameWithDescription{
+  display: flex;
+  justify-content: space-between;
 }
 
 .emailAuthBtn {

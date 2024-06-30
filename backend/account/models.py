@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractBaseUser
 from django.conf import settings
+from django.core.validators import RegexValidator
 from django.db import models, transaction
 from utils.models import JSONField
 from utils.constants import Tier
@@ -133,7 +134,17 @@ class UserProfile(models.Model):
     oi_problems_status = JSONField(default=dict)
 
     real_name = models.TextField(null=True)
-    student_id = models.TextField(null=True)
+    student_id = models.CharField(
+        max_length=9,
+        null=True,
+        validators=[
+            RegexValidator(
+                regex=r'^\d{6,9}$',
+                message='학번은 6자리 이상 9자리 이하의 숫자만 입력 가능합니다.',
+                code='invalid_student_id'
+            ),
+        ]
+    )
     avatar = models.TextField(default=f"{settings.AVATAR_URI_PREFIX}/default.png")
     blog = models.URLField(null=True)
     mood = models.TextField(null=True)
