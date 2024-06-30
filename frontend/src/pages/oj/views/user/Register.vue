@@ -99,8 +99,12 @@
         학과선택
       </div>
       <CustomDropDown :options="this.majorList" nameKey="department_name" @dropdownChange="handleMajorChange"/>
-      <div class="inputName">
-        비밀번호
+      <div class="inputNameWithDescription">
+        <span class="inputName">비밀번호</span>
+        <div>
+          <Icon type="ios-information" size="13" color="#7a7a7a"></Icon>
+          <span>8글자 이상, 영문, 숫자, 특수문자를 모두 사용해야 합니다.</span>
+        </div>
       </div>
       <FormItem prop="password">
         <Input
