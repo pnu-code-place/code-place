@@ -20,8 +20,7 @@
           :disabled="this.emailAuthCodeInputState"
           @click="handleClickEmailAuthBtn"
         >인증
-        </Button
-        >
+        </Button>
       </FormItem>
       <FormItem prop="emailAuthCode" v-if="emailAuthCodeInputState">
         <Input
@@ -49,9 +48,17 @@
           v-model="formRegister.username"
           :placeholder="$t('m.RegisterNickname')"
           size="large"
+          class="nicknameAuthInput"
           @on-enter="handleRegister"
         >
         </Input>
+        <Button
+          type="primary"
+          class="nicknameAuthBtn"
+          :disabled="this.emailAuthCodeInputState"
+          @click="handleClickEmailAuthBtn"
+        >중복체크
+        </Button>
       </FormItem>
       <div class="inputName">
         학번
@@ -324,6 +331,20 @@ export default {
 .emailAuthInput {
   width: 303px;
 }
+
+.nicknameAuthInput {
+  width: 280px;
+}
+
+.nicknameAuthBtn {
+  height: 36px;
+  background-color: #32306b;
+  border: none;
+  font-weight: 600;
+  font-size: 14px;
+  border-radius: 8px;
+}
+
 
 .emailCodeInput {
   width: 280px;
