@@ -39,8 +39,12 @@
         </Button
         >
       </FormItem>
-      <div class="inputName">
-        닉네임
+      <div class="inputNameWithDescription">
+        <span class="inputName">닉네임</span>
+        <div>
+          <Icon type="ios-information" size="13" color="#7a7a7a"></Icon>
+          <span>3글자 이상, 8글자 이하만 가능합니다.</span>
+        </div>
       </div>
       <FormItem prop="nickname">
         <Input
@@ -48,6 +52,7 @@
           v-model="formRegister.username"
           :placeholder="$t('m.RegisterNickname')"
           size="large"
+          maxlength="8"
           class="nicknameAuthInput"
           @on-enter="handleRegister"
         >
@@ -55,8 +60,8 @@
         <Button
           type="primary"
           class="nicknameAuthBtn"
-          :disabled="this.emailAuthCodeInputState"
-          @click="handleClickEmailAuthBtn"
+          @click="handleClickNicknameAuthBtn"
+          :disabled="this.nicknameVerifyCompletedState"
         >중복체크
         </Button>
       </FormItem>
