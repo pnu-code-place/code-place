@@ -9,7 +9,7 @@ from ..views.oj import (ApplyResetPasswordAPI, ResetPasswordAPI, GetRankingAPI,
                         ProfileProblemDisplayIDRefreshAPI, OpenAPIAppkeyAPI, SSOAPI,
                         ApplyUserEmailValidCheckAPI, UserEmailValidCheckAPI,
                         GetCollegeListAPI, GetDepartmentListAPI, HomeRankingAPI, SurgeUserRankAPI, MajorRankAPI,
-                        GetHomeStatisticsAPI)
+                        GetHomeStatisticsAPI, NicknameValidCheckAPI)
 
 from utils.captcha.views import CaptchaAPIView
 
@@ -24,6 +24,7 @@ urlpatterns = [
     url(r"^apply_user_email_valid_check/?$", ApplyUserEmailValidCheckAPI.as_view(),
         name="apply_user_email_valid_check"),
     url(r"^user_email_valid_check/?$", UserEmailValidCheckAPI.as_view(), name="user_email_valid_check"),
+    url(r"^nickname_valid_check/?$", NicknameValidCheckAPI.as_view(), name="user_nickname_valid_check"),
     url(r"^register/?$", UserRegisterAPI.as_view(), name="user_register_api"),
     url(r"^change_password/?$", UserChangePasswordAPI.as_view(), name="user_change_password_api"),
     url(r"^change_email/?$", UserChangeEmailAPI.as_view(), name="user_change_email_api"),
