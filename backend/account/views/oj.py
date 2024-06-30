@@ -347,6 +347,9 @@ class ApplyUserEmailValidCheckAPI(APIView):
 
         email = data["email"]
 
+        if User.objects.filter(email=email).exists():
+            return HttpResponseBadRequest("email already exists")
+
         code = rand_str(6)
         # key: 이메일, value: 코드값(6자리), timeout=5분
         cache.set(email, code, timeout=60 * 5)
@@ -363,12 +366,15 @@ class ApplyUserEmailValidCheckAPI(APIView):
 class UserEmailValidCheckAPI(APIView):
     def post(self, request):
         data = request.data
+
         if not data.get('email'):
             return HttpResponseBadRequest('no email in request data')
         if not data.get('code'):
             return HttpResponseBadRequest('no code in request data')
+
         email = data["email"]
         code = data["code"]
+
         if not cache.get(email):
             return HttpResponseServerError("code expired or invalid email")
 
@@ -380,6 +386,14 @@ class UserEmailValidCheckAPI(APIView):
         else:
             return HttpResponseServerError("validation code mismatch")
 
+class NicknameValidCheckAPI(APIView):
+    def get(self, request):
+        nickname = request.GET.get("nickname")
+        if not nickname:
+            return HttpResponseBadRequest('no nickname in request')
+        if User.objects.filter(username=nickname).exists():
+            return HttpResponseBadRequest('nickname already exists')
+        return self.success("nickname validation complete")
 
 class UserRegisterAPI(APIView):
     @validate_serializer(UserRegisterSerializer)
@@ -394,6 +408,7 @@ class UserRegisterAPI(APIView):
         data["username"] = data["username"].lower()
         data["email"] = data["email"].lower()
 
+        # 중복 체크
         if User.objects.filter(username=data["username"]).exists():
             return self.error("username already exists")
         if User.objects.filter(email=data["email"]).exists():
