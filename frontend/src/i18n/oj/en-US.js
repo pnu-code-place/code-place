@@ -97,9 +97,11 @@ export const m = {
   TOP_3: "3등",
   People: "명",
   // Announcements.vue
-  SWCenter: "SW센터",
   Contest_Announcements: "대회 공지사항",
   By: "By",
+  CSEP: "CSEP",
+  SWCenter: "소프트웨어융합교육원",
+  CSEPDescription: "코딩역량강화플랫폼",
   // ApplyResetPassword.vue
   The_email_doesnt_exist: "존재하지 않는 이메일입니다.",
   Success: "Success",
