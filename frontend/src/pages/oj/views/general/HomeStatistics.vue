@@ -17,7 +17,6 @@ export default defineComponent({
     },
     loadStatistics() {
       api.getStatistics().then(res => {
-        console.log(res.data.data)
         this.statistics.totalProblems = res.data.data.total_problem_length
         this.statistics.solvedProblems = res.data.data.accepted_problem_length
         this.statistics.heldContests = res.data.data.ended_contest_length
