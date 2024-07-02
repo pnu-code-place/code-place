@@ -144,16 +144,12 @@ export default {
 .announcements-container {
   margin-top: 10px;
   margin-bottom: 10px;
-  cursor: pointer;
   padding-top: 10px;
   perspective: 800px;
   height: 100%;
-  width: 50%;
+  width: 100%;
   display: flex;
   flex-direction: column;
-  //    }
-  //  }
-  //}
   li {
     padding-top: 15px;
     list-style: none;
@@ -203,9 +199,14 @@ export default {
         font-size: small;
         color: #737373;
 
-  li:hover{
-    background-color: rgba(241, 241, 241, 0.45);
+
+      }
+    }
   }
+}
+
+li:hover {
+  background-color: rgba(241, 241, 241, 0.45);
 }
 </style>
 

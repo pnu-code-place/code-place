@@ -314,8 +314,8 @@ export default {
   getSurgeUsers(offset, limit) {
     const params = {
       offset,
-      limit
-    }
+      limit,
+    };
     return ajax("surge_user_rank", "get", {
       params
     });

@@ -80,3 +80,7 @@ venv/
 #test docker-compose
 conf/docker-compose.yml
 .env
+
+#backup file
+*.tar
+*.sql
