@@ -1,6 +1,6 @@
 <script>
 export default {
-  name: 'NoticeItem',
+  name: 'draw-card',
   props: {
     title: {
       type: String,
@@ -26,9 +26,6 @@ export default {
   computed: {
     hasLink() {
       return this.link !== 'no-link'
-    },
-    isWithinSevenDays() {
-
     },
   },
   methods: {

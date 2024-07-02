@@ -47,7 +47,7 @@ th {
   text-align: center;
   font-size: 1.0em;
   font-weight: 600;
-  background-color: rgba(208, 223, 248, 0.18);
+  background-color: var(--pale-point-color);
   padding: 10px 0;
   border-width: 0;
   border-bottom: 1px solid #e0e0e0;

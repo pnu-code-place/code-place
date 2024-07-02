@@ -25,6 +25,9 @@ export default {
       params
     });
   },
+  getSWCenterList() {
+    return ajax("sw_center_notice", "get");
+  },
   login(data) {
     return ajax("login", "post", {
       data

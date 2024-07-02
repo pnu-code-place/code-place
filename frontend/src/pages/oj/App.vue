@@ -75,6 +75,13 @@ export default {
   --header-btn-color: rgba(237, 237, 237, 0.45);
 
   --point-color: #32306b;
+  --pale-point-color: #F8F9FF;
+  // hex #024D97; to rgb 2, 77, 151
+  --pnu-green: rgb(6, 186, 110);
+  --pnu-blue: rgb(2, 77, 151);
+
+  --pale-pnu-green: rgba(6, 186, 110, 0.05);
+  --pale-pnu-blue: rgba(2, 77, 151, 0.05);
 
   /* Problem Solving Page */
   --ps-background-color: #f9fafb;

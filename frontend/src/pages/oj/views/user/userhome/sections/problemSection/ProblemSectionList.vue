@@ -37,7 +37,7 @@
       </div>
       <hr>
       <ErrorSign v-if="error !== 0" :code="this.error"></ErrorSign>
-      <ProblemSkeleton v-if="isLoading" class="loading"></ProblemSkeleton>
+      <ProblemSkeleton v-if="isLoading" class="loading-skeleton"></ProblemSkeleton>
       <div v-else class="problem-list">
         <ProblemBadge
           v-for="problem in problem_list"

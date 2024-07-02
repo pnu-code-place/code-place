@@ -17,7 +17,6 @@ export default defineComponent({
     },
     loadStatistics() {
       api.getStatistics().then(res => {
-        console.log(res.data.data)
         this.statistics.totalProblems = res.data.data.total_problem_length
         this.statistics.solvedProblems = res.data.data.accepted_problem_length
         this.statistics.heldContests = res.data.data.ended_contest_length
@@ -52,14 +51,15 @@ export default defineComponent({
 <template>
   <div class="statistics">
     <div :class="`statistics-contents ${statExtendedClass(0)}`" @mouseenter="statSelect(0)">
+      <router-link :to="{name:'problem-list'}">
       <h3>
         {{ $t('m.NumberOfProblems') }}
       </h3>
+      </router-link>
       <TotalProblems :extended="statExtended(0)" :total-problems="this.statistics.totalProblems"/>
     </div>
     <hr/>
     <div :class="`statistics-contents ${statExtendedClass(1)}`" @mouseenter="statSelect(1)">
-
       <h3>
         {{ $t('m.NumberOfSolvedProblems') }}
       </h3>
@@ -67,9 +67,11 @@ export default defineComponent({
     </div>
     <hr/>
     <div :class="`statistics-contents ${statExtendedClass(2)}`" @mouseenter="statSelect(2)">
+      <router-link :to="{name:'contest-list'}">
       <h3>
         {{ $t('m.NumberOfHeldContests') }}
       </h3>
+      </router-link>
       <HeldContests :extended="statExtended(2)" :held-contests="this.statistics.heldContests"/>
     </div>
   </div>
