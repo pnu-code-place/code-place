@@ -187,7 +187,7 @@ export default {
 
   .authenticatedFooter {
     display: flex;
-    background-color: rgba(208, 223, 248, 0.18);
+    background-color: var(--pale-point-color);
     border-radius: 5px;
     justify-content: space-around;
     align-items: center;

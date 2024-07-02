@@ -75,6 +75,7 @@ export default {
   --header-btn-color: rgba(237, 237, 237, 0.45);
 
   --point-color: #32306b;
+  --pale-point-color: #F8F9FF;
 
   /* Problem Solving Page */
   --ps-background-color: #f9fafb;
