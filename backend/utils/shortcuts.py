@@ -1,6 +1,6 @@
 import os
 import re
-# import datetime
+import datetime
 import random
 from base64 import b64encode
 from io import BytesIO
@@ -72,11 +72,6 @@ def datetime2str(value, format="iso-8601"):
             value = value[:-6] + "Z"
         return value
     return value.strftime(format)
-
-
-# def timestamp2utcstr(value):
-#     return datetime.datetime.utcfromtimestamp(value).isoformat()
-
 
 def natural_sort_key(s, _nsre=re.compile(r"(\d+)")):
     return [int(text) if text.isdigit() else text.lower()
