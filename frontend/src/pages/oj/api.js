@@ -206,6 +206,22 @@ export default {
       }
     });
   },
+  getContestList(offset, limit, searchParams) {
+    let params = {
+      offset,
+      limit
+    };
+    if (searchParams !== undefined) {
+      Object.keys(searchParams).forEach(element => {
+        if (searchParams[element]) {
+          params[element] = searchParams[element];
+        }
+      });
+    }
+    return ajax("contests", "get", {
+      params
+    });
+  },
   getUnderwayContestList(searchParams) {
     let params = {};
     if (searchParams !== undefined) {
@@ -234,23 +250,6 @@ export default {
     }
     return ajax("contest_history", "get", {
       params,
-        problem_id: problemID
-      })
-  },
-  getContestList(offset, limit, searchParams) {
-    let params = {
-      offset,
-      limit
-    };
-    if (searchParams !== undefined) {
-      Object.keys(searchParams).forEach(element => {
-        if (searchParams[element]) {
-          params[element] = searchParams[element];
-        }
-      });
-    }
-    return ajax("contests", "get", {
-      params
     });
   },
   getContest(id) {
