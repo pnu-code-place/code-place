@@ -18,10 +18,10 @@
         <div class="loading-skeleton" v-for="i in Array(2)" :key="i"></div>
       </div>
       <div class="notice-sign" v-else-if="this.errorCSPE">
-        <span>{{$t("m.Server_Error")}}</span>
+        <span>{{ $t("m.Server_Error") }}</span>
       </div>
       <div class="notice-sign" v-else-if="this.csepAnnouncements.length === 0">
-        <span>{{$t("m.No_Announcements")}}</span>
+        <span>{{ $t("m.No_Announcements") }}</span>
       </div>
       <ul class="announcements-container" key="list" v-else>
         <HomeNoticeItem
@@ -50,10 +50,10 @@
         <div class="loading-skeleton" v-for="i in Array(2)" :key="i"></div>
       </div>
       <div class="notice-sign" v-else-if="this.errorSW">
-        <span>{{$t("m.Server_Error")}}</span>
+        <span>{{ $t("m.Server_Error") }}</span>
       </div>
       <div class="notice-sign" v-else-if="this.swAnnouncements.length === 0">
-        <span>{{$t("m.No_Announcements")}}</span>
+        <span>{{ $t("m.No_Announcements") }}</span>
       </div>
       <ul class="announcements-container" key="list" v-else>
         <HomeNoticeItem
@@ -205,6 +205,7 @@ export default {
     width: 250px;
     height: auto;
     opacity: 0.7;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   }
 
   &.csep {
@@ -234,8 +235,12 @@ export default {
   &:hover {
     transform: scale(1.01);
     text-shadow: 0 0 7px rgba(255, 255, 255, 1);
-
     font-weight: 900;
+
+    img {
+      opacity: 1;
+      transform: translateY(-30%);
+    }
   }
 }
 
