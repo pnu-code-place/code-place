@@ -1,4 +1,5 @@
 from django import forms
+from django.core.validators import RegexValidator
 
 from utils.api import serializers, UsernameSerializer
 
@@ -15,6 +16,7 @@ class DepartmentSerializer(serializers.Serializer):
     department_name = serializers.CharField()
     college_id = serializers.IntegerField()
 
+
 class HomeStatistics(serializers.Serializer):
     total_problem_length = serializers.IntegerField()
     accepted_problem_length = serializers.IntegerField()
@@ -29,7 +31,6 @@ class RankingSerializer(serializers.ModelSerializer):
         fields = ["score", "fluctuation", "user", "basis"]
 
 
-
 class UserLoginSerializer(serializers.Serializer):
     username = serializers.CharField()
     password = serializers.CharField()
@@ -42,11 +43,24 @@ class UsernameOrEmailCheckSerializer(serializers.Serializer):
 
 
 class UserRegisterSerializer(serializers.Serializer):
-    username = serializers.CharField(max_length=32)
-    real_name = serializers.CharField(max_length=32)
+    username = serializers.CharField(min_length=3, max_length=8)
+    real_name = serializers.CharField(max_length=13)
     email = serializers.EmailField(max_length=64)
-    password = serializers.CharField(min_length=6)
-    student_id = serializers.CharField(min_length=6)
+    password = serializers.RegexField(
+        regex=r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$',
+        min_length=8,
+        error_messages={
+            'invalid': '비밀번호는 8글자 이상이어야 하며, 영문, 숫자, 특수문자를 모두 포함해야 합니다.'
+        }
+    )
+    student_id = serializers.RegexField(
+        regex=r'^\d{6,9}$',
+        min_length=6,
+        max_length=9,
+        error_messages={
+            'invalid': '학번은 6자리 이상 9자리 이하의 숫자만 입력 가능합니다.'
+        }
+    )
     collegeId = serializers.IntegerField()
     departmentId = serializers.IntegerField()
 
@@ -110,6 +124,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
     def get_real_name(self, obj):
         return obj.real_name if self.show_real_name else None
 
+
 class UserRankListSerializer(serializers.ModelSerializer):
     rank = serializers.SerializerMethodField()
     avatar = serializers.SerializerMethodField()
@@ -165,6 +180,7 @@ class SurgeUserSerializer(serializers.ModelSerializer):
     def get_growth(self, obj):
         return obj.userscore.fluctuation
 
+
 class MajorRankListSerializer(serializers.ModelSerializer):
     rank = serializers.IntegerField()
     major = serializers.CharField()
@@ -174,6 +190,7 @@ class MajorRankListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Department
         fields = ['rank', 'major', 'score', 'people']
+
 
 class DashboardUserInfoSerializer(serializers.ModelSerializer):
     class Meta:
@@ -205,7 +222,7 @@ class DashboardRankSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserScore
-        fields = ['tier', 'total_rank', 'total_rank_percentage', 'total_score', 'current_tier_score', 'next_tier_score' ]
+        fields = ['tier', 'total_rank', 'total_rank_percentage', 'total_score', 'current_tier_score', 'next_tier_score']
 
     def get_total_rank(self, instance):
         return instance.total_rank
@@ -213,6 +230,7 @@ class DashboardRankSerializer(serializers.ModelSerializer):
     def get_total_rank_percentage(self, instance):
         total_rank_percentage = round(instance.total_rank / self.context['total_user_count'], 2)
         return total_rank_percentage
+
 
 class DashboardFieldInfoSerializer(serializers.ModelSerializer):
     fieldInfo = serializers.SerializerMethodField()
@@ -240,6 +258,7 @@ class DashboardFieldInfoSerializer(serializers.ModelSerializer):
             }
 
         return field_info
+
 
 class DashboardDifficultyInfoSerializer(serializers.ModelSerializer):
     difficultyInfo = serializers.SerializerMethodField()

@@ -48,6 +48,13 @@ export default {
       }
     });
   },
+  nicknameValidCheck(nickname) {
+    return ajax("nickname_valid_check", "get", {
+      params: {
+        nickname: nickname
+      }
+    });
+  },
   userEmailValidCheck(email, code) {
     console.log("applyUserEmailValidCheck email: ", email, code);
     return ajax("user_email_valid_check", "post", {
@@ -198,6 +205,37 @@ export default {
         problem_id: problemID
       }
     });
+  },
+  getUnderwayContestList(searchParams) {
+    let params = {};
+    if (searchParams !== undefined) {
+      Object.keys(searchParams).forEach((element) => {
+        if (searchParams[element]) {
+          params[element] = searchParams[element];
+        }
+      });
+    }
+    return ajax("contest_underway", "get", { params });
+  },
+  getNotStartedContestList() {
+    return ajax("contest_not_started", "get");
+  },
+  getContestHistoryList(offset, limit, searchParams) {
+    let params = {
+      offset,
+      limit,
+    };
+    if (searchParams !== undefined) {
+      Object.keys(searchParams).forEach((element) => {
+        if (searchParams[element]) {
+          params[element] = searchParams[element];
+        }
+      });
+    }
+    return ajax("contest_history", "get", {
+      params,
+        problem_id: problemID
+      })
   },
   getContestList(offset, limit, searchParams) {
     let params = {
