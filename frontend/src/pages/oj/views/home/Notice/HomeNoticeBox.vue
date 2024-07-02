@@ -137,8 +137,6 @@ export default {
     },
     goAnnouncement(announcement) {
       this.$router.push({name: "notice", params: {announcement: announcement}});
-      // this.announcement = announcement;
-      // this.listVisible = false;
     }
   },
   computed: {}
