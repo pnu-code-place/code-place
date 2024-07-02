@@ -151,61 +151,61 @@ export default {
   width: 50%;
   display: flex;
   flex-direction: column;
-  //li {
-  //  padding-top: 15px;
-  //  list-style: none;
-  //  padding-bottom: 15px;
-  //  background-color: rgba(251, 251, 251, 0.38);
-  //  padding-left: 30px;
-  //  border-radius: 7px;
-  //  font-size: 16px;
-  //  margin-bottom: 5px;
-  //
-  //  &:last-child {
-  //    border-bottom: none;
-  //  }
-  //
-  //  .flex-container {
-  //    .title {
-  //      flex: 1 1;
-  //      text-align: left;
-  //      padding-left: 10px;
-  //
-  //      a.entry {
-  //        color: #495060;
-  //
-  //        &:hover {
-  //          color: #4a86c0;
-  //          //border-bottom: 1px solid #4a86c0;
-  //        }
-  //      }
-  //    }
-  //
-  //    .newAnnotator {
-  //      background-color: #fa6c6c;
-  //      border-radius: 4px;
-  //      color: #ffffff;
-  //      font-size: x-small;
-  //      text-align: center;
-  //      width: 23px;
-  //      margin: auto;
-  //      padding-left: 3px;
-  //      padding-right: 3px;
-  //    }
-  //
-  //    .date {
-  //      flex: none;
-  //      width: 200px;
-  //      text-align: center;
-  //      font-size: small;
-  //      color: #737373;
   //    }
   //  }
   //}
-  //
-  //li:hover{
-  //  background-color: rgba(241, 241, 241, 0.45);
-  //}
+  li {
+    padding-top: 15px;
+    list-style: none;
+    padding-bottom: 15px;
+    background-color: rgba(251, 251, 251, 0.38);
+    padding-left: 30px;
+    border-radius: 7px;
+    font-size: 16px;
+    margin-bottom: 5px;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    .flex-container {
+      .title {
+        flex: 1 1;
+        text-align: left;
+        padding-left: 10px;
+
+        a.entry {
+          color: #495060;
+
+          &:hover {
+            color: #4a86c0;
+            //border-bottom: 1px solid #4a86c0;
+          }
+        }
+      }
+
+      .newAnnotator {
+        background-color: #fa6c6c;
+        border-radius: 4px;
+        color: #ffffff;
+        font-size: x-small;
+        text-align: center;
+        width: 23px;
+        margin: auto;
+        padding-left: 3px;
+        padding-right: 3px;
+      }
+
+      .date {
+        flex: none;
+        width: 200px;
+        text-align: center;
+        font-size: small;
+        color: #737373;
+
+  li:hover{
+    background-color: rgba(241, 241, 241, 0.45);
+  }
 }
 </style>
 
