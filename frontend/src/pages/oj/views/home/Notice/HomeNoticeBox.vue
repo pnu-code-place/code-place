@@ -105,7 +105,6 @@ export default {
       this.loadingCSEP = true;
       api.getAnnouncementList((page - 1) * this.limit, this.limit).then(
         res => {
-          console.log(res)
           this.loadingCSEP = false;
           this.csepAnnouncements = res.data.data.results;
           this.total = res.data.data.total;
@@ -120,7 +119,6 @@ export default {
       this.loadingSW = true;
       api.getSWCenterList().then(
         res => {
-          console.log(res)
           this.loadingSW = false;
           this.swAnnouncements = res.data.data.results;
           this.total = res.data.data.total;
