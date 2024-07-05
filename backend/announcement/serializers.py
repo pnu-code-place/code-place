@@ -1,7 +1,7 @@
 from utils.api import serializers
 from utils.api._serializers import UsernameSerializer
 
-from .models import Announcement
+from .models import Announcement, LinkAnnouncement
 
 
 class CreateAnnouncementSerializer(serializers.Serializer):
@@ -23,3 +23,11 @@ class EditAnnouncementSerializer(serializers.Serializer):
     title = serializers.CharField(max_length=64)
     content = serializers.CharField(max_length=1024 * 1024 * 8)
     visible = serializers.BooleanField()
+
+class LinkAnnouncementSerializer(serializers.ModelSerializer):
+    author = serializers.CharField(default="swec")
+    id = serializers.IntegerField(source='la_id')
+
+    class Meta:
+        model = LinkAnnouncement
+        fields = ['id', 'title', 'create_time', 'author', 'url', 'new_flag']
