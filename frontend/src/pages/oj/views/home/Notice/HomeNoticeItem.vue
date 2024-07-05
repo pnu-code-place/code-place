@@ -2,10 +2,16 @@
 
 import {defineComponent} from "vue";
 import ShineWrapper from "../../../components/ShineWrapper.vue";
+import announcement from "../../../../admin/views/general/Announcement.vue";
 
 export default defineComponent({
   name: 'HomeNoticeItem',
   components: {ShineWrapper},
+  data() {
+    return {
+      DAYS_TO_BE_NEW: 3
+    }
+  },
   props: {
     announcement: {
       type: Object,
@@ -13,6 +19,7 @@ export default defineComponent({
         return {
           title: 'title',
           create_time: '2024-10-10',
+          new_flag: false
         }
       }
     },
@@ -27,14 +34,24 @@ export default defineComponent({
   },
   computed: {
     dateStr() {
-      let onlyDate = new Date(this.announcement.create_time);
-      return onlyDate.toLocaleDateString();
+      if (this.isCSEP) {
+        let onlyDate = new Date(this.announcement.create_time);
+        return onlyDate.toLocaleDateString();
+      }
+      else if (this.isSW) {
+        return this.announcement.create_time;
+      }
     },
     isNew() {
-      const currentTime = new Date().getTime();
-      const createTimestamp = new Date(this.announcement.create_time).getTime();
-      const oneDayInMilliseconds = 24 * 60 * 60 * 1000;
-      return (currentTime - createTimestamp) <= oneDayInMilliseconds;
+      if (this.isCSEP) {
+        const currentTime = new Date().getTime();
+        const createTimestamp = new Date(this.announcement.create_time).getTime();
+        const oneDayInMilliseconds = 24 * 60 * 60 * 1000 * this.DAYS_TO_BE_NEW;
+        return (currentTime - createTimestamp) <= oneDayInMilliseconds;
+      }
+      else if (this.isSW) {
+        return announcement.new_flag;
+      }
     },
     csepClass() {
       return this.isCSEP ? 'csep' : '';
