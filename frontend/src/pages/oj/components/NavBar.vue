@@ -1,6 +1,6 @@
 <template>
   <div id="header">
-    <Menu theme="default" mode="horizontal" @on-select="handleRoute" :active-name="activeMenu">
+    <Menu mode="horizontal" @on-select="handleRoute" :active-name="activeMenu">
       <LogoButton/>
       <Menu-item class="menuItemText first" name="/">
         {{ $t('m.Home') }}
@@ -23,7 +23,7 @@
 
       <template v-if="isAuthenticated">
         <Dropdown class="drop-menu" @on-click="handleRoute" placement="bottom" trigger="click">
-          <div style="display: flex; align-items: center; height: 70px">
+          <div style="display: flex; align-items: center;">
             <div>
               <img class="avatar" :src="profile.avatar"/>
             </div>
@@ -155,4 +155,16 @@ export default {
   border: 1px solid #7a7a7a;
   box-shadow: 0px 0px 1px 0px;
 }
+
+.ivu-menu-item-active{
+  color: #3c5977!important;
+  border-bottom: 2px solid #3c5977!important;
+
+}
+
+.ivu-menu-light.ivu-menu-horizontal .ivu-menu-item:hover {
+  color: #3c5977!important;
+  border-bottom: 2px solid #3c5977!important;
+}
+
 </style>

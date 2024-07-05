@@ -107,7 +107,7 @@ export default {
   --container-comment-color: #7e7e7e;
 
   /* header */
-  --header-height: 70px;
+  --header-height: 60px;
   --header-margin: 20px;
   /* footer */
   --footer-height: 200px;
