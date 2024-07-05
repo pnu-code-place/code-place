@@ -37,6 +37,8 @@ class Difficulty(Choices):
 
 CONTEST_PASSWORD_SESSION_KEY = "contest_password"
 
+LINK_NOTICE_SCRAPING_URL = "https://swedu.pusan.ac.kr/swedu/31630/subview.do"
+LINK_NOTICE_LIMIT = 5
 
 class ProblemField:
     fields = ['implementation', 'math', 'datastructure', 'search', 'sorting']
