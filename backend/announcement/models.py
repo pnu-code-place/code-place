@@ -17,13 +17,14 @@ class Announcement(models.Model):
         db_table = "announcement"
         ordering = ("-create_time",)
 
+
 class LinkAnnouncement(models.Model):
+    la_id = models.IntegerField(primary_key=True)
     title = models.TextField()
-    link = models.TextField()
-    create_time = models.DateTimeField(auto_now_add=True)
-    created_by = models.TextField()
-    last_update_time = models.DateTimeField(auto_now=True)
+    url = models.TextField()
+    create_time = models.TextField()
+    new_flag = models.BooleanField(default=False)
 
     class Meta:
         db_table = "link_announcement"
-        ordering = ("-create_time",)
+        ordering = ("-la_id",)
