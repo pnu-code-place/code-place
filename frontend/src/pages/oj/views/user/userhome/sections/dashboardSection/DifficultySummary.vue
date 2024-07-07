@@ -7,11 +7,11 @@ export default {
   data() {
     return {
       DIFFICULTY_LABEL: {
-        verylow: {label: 'Very Low', color: DIFFICULTY_MAP.VeryLow.textColor},
-        low: {label: 'Low', color: DIFFICULTY_MAP.Low.textColor},
-        mid: {label: 'Mid', color: DIFFICULTY_MAP.Mid.textColor},
-        high: {label: 'High', color: DIFFICULTY_MAP.High.textColor},
-        veryhigh: {label: 'Very High', color: DIFFICULTY_MAP.VeryHigh.textColor},
+        verylow: {label: 'Very Low', color: DIFFICULTY_MAP.VeryLow.textColor, tableLabel: '아주 쉬움'},
+        low: {label: 'Low', color: DIFFICULTY_MAP.Low.textColor, tableLabel: '쉬움'},
+        mid: {label: 'Mid', color: DIFFICULTY_MAP.Mid.textColor, tableLabel: '보통'},
+        high: {label: 'High', color: DIFFICULTY_MAP.High.textColor, tableLabel: '어려움'},
+        veryhigh: {label: 'Very High', color: DIFFICULTY_MAP.VeryHigh.textColor, tableLabel: '아주 어려움'},
       },
       DIFFICULTY_NAME_TO_CODE: {
         verylow: 'VeryLow',
@@ -117,7 +117,7 @@ export default {
         </thead>
         <tbody>
         <tr class="part-row" v-for="(difficulty, key, index) in difficultyInfo" :key="index" @click="goDifficulty(key)">
-          <td class="part-name" :style="{color:DIFFICULTY_LABEL[key].color}">{{ DIFFICULTY_LABEL[key].label }}</td>
+          <td class="part-name" :style="{color:DIFFICULTY_LABEL[key].color}">{{ DIFFICULTY_LABEL[key].tableLabel }}</td>
           <td class="solve-number">{{ difficulty.solve_number }}</td>
           <td class="difficulty-score">{{ difficulty.total_score }}
             <span class="ratio">({{ getProportion(difficulty.total_score) }}%)</span>
