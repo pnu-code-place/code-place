@@ -1,7 +1,5 @@
 <template>
-  <div>
     <ProblemSectionList></ProblemSectionList>
-  </div>
 </template>
 
 <script>

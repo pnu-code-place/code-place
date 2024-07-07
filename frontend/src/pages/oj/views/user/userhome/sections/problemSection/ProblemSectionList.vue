@@ -202,7 +202,7 @@ section {
 
   hr {
     border: 0.5px solid #dedede;
-    margin: 30px 20px 30px 0;
+    margin: 20px 0;
   }
 
   .problem-list {

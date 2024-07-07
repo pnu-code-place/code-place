@@ -76,7 +76,6 @@ select {
   border-radius: 5px;
   font-size: 14px;
   color: #495060;
-  margin-bottom: 15px;
 
   option {
     font-size: 16px;
