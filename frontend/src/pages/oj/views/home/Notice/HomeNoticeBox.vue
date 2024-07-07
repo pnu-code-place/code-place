@@ -120,7 +120,7 @@ export default {
       api.getSWCenterList().then(
         res => {
           this.loadingSW = false;
-          this.swAnnouncements = res.data.data.results;
+          this.swAnnouncements = res.data.data;
           this.total = res.data.data.total;
         },
         () => {
@@ -139,7 +139,6 @@ export default {
       this.$router.push({name: "notice", params: {announcement: announcement}});
     }
   },
-  computed: {}
 }
 </script>
 
