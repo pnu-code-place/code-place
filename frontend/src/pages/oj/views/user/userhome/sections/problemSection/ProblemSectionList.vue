@@ -133,7 +133,6 @@ export default {
       this.pushRouter()
     },
     pushRouter() {
-      console.log(utils.filterEmptyValue(this.query))
       this.$router.push({
         name: 'user-problems',
         params: {username: this.username},
