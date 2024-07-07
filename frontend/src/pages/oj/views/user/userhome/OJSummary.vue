@@ -2,8 +2,6 @@
 
 import HorizontalGauge from "./sections/dashboardSection/HorizontalGauge.vue";
 import ShineWrapper from "../../../components/ShineWrapper.vue";
-import {comma, getTier} from "../../../../../utils/utils";
-import {AwardImageSrc, TierImageSrc} from "../../../../../utils/constants";
 
 export default {
   name: 'oj-summary',
@@ -148,11 +146,10 @@ export default {
   }
 
   .miracle {
-    width: 0%;
+    width: 0;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    //background-color: rgba(213, 213, 229, 0.82);
     border-radius: 10px;
 
     .miracle-title {

@@ -2,7 +2,6 @@
 
 import {defineComponent} from "vue";
 import ShineWrapper from "../../../components/ShineWrapper.vue";
-import announcement from "../../../../admin/views/general/Announcement.vue";
 
 export default defineComponent({
   name: 'HomeNoticeItem',

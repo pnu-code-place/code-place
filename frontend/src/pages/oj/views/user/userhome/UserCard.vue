@@ -92,7 +92,7 @@ export default {
   <div class="user-card">
     <div class="user-info">
       <div class="avatar-wrapper">
-        <img class="avatar" :src="profile.avatar"/>
+        <img class="avatar" :src="profile.avatar" alt="user avatar image"/>
       </div>
       <div class="info-column">
         <div class="info-column__top">
