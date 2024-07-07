@@ -83,7 +83,7 @@ section {
   border: 1px solid #dedede;
   border-radius: 7px;
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  padding: 40px 40px 60px;
+  padding: 15px 30px 15px;
   gap: 15px;
   display: flex;
   background-color: var(--box-background-color);
@@ -91,14 +91,14 @@ section {
 
   hr {
     border: 0.5px solid #dedede;
-    margin: 40px 10px 40px 0;
+    margin: 15px 10px 15px 0;
   }
 
   h1 {
     text-align: left;
     font-size: 22px;
     margin-left: 10px;
-    margin-bottom: 30px;
+    margin-bottom: 15px;
   }
 }
 </style>
