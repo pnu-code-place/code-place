@@ -278,7 +278,7 @@ export default {
 
   .tier-info {
     width: 50%;
-    gap: 10px;
+    gap: 15px;
     display: flex;
     flex-direction: column;
 
