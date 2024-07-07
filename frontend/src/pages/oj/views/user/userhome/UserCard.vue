@@ -181,7 +181,7 @@ export default {
   background-color: var(--box-background-color);
   border: 1px var(--container-border-color) solid;
   border-radius: 7px;
-  padding: 15px 30px 15px;
+  padding: 30px 30px 30px;
 
   .user-info {
     width: 50%;
