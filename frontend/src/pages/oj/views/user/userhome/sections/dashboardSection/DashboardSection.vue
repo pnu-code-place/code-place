@@ -1,5 +1,5 @@
 <script>
-import OjSummary from "./OJSummary.vue";
+import OjSummary from "../../OJSummary.vue";
 import FieldSummary from "./FieldSummary.vue";
 import DifficultySummary from "./DifficultySummary.vue";
 import ChallengeSummary from "./AchievementSummary.vue";
@@ -61,10 +61,6 @@ export default {
   <section>
     <ErrorSign v-if="error !== 0" :code="this.error"></ErrorSign>
     <div v-else>
-      <h1>{{ $t('m.OJ_Summary') }}</h1>
-      <OjSummary v-if="this.dashboardInfo.ojStatus" :ojStatus="this.dashboardInfo.ojStatus"></OjSummary>
-      <DashboardSkeleton v-else-if="this.isLoading"></DashboardSkeleton>
-      <hr/>
       <h1>{{ $t('m.Field_Based_Distribution') }}</h1>
       <FieldSummary v-if="this.dashboardInfo.fieldInfo" :fieldInfo="this.dashboardInfo.fieldInfo"></FieldSummary>
       <DashboardSkeleton v-else-if="this.isLoading"></DashboardSkeleton>

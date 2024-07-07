@@ -1,29 +1,19 @@
 <script>
 
-import HorizontalGauge from "./HorizontalGauge.vue";
-import ShineWrapper from "../../../../../components/ShineWrapper.vue";
-import {comma, getTier} from "../../../../../../../utils/utils";
-import {AwardImageSrc, TierImageSrc} from "../../../../../../../utils/constants";
+import HorizontalGauge from "./sections/dashboardSection/HorizontalGauge.vue";
+import ShineWrapper from "../../../components/ShineWrapper.vue";
+import {comma, getTier} from "../../../../../utils/utils";
+import {AwardImageSrc, TierImageSrc} from "../../../../../utils/constants";
 
 export default {
   name: 'oj-summary',
   components: {ShineWrapper, HorizontalGauge},
   props: ['ojStatus'],
   computed: {
-    TierImageSrc() {
-      return TierImageSrc
-    },
-    gaugeWidth() {
-      return (this.ojStatus.total_score - this.ojStatus.current_tier_score) / (this.ojStatus.next_tier_score - this.ojStatus.current_tier_score);
-    },
-    rankPercent() {
-      // 소숫점 1자리까지
-      return Math.round(this.ojStatus.total_rank_percentage * 1000) / 10;
-    }
+
   },
   methods :{
-    getTier,
-    comma,
+
   }
 }
 </script>
