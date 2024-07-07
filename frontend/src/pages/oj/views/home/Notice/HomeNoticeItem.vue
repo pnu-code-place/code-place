@@ -37,8 +37,7 @@ export default defineComponent({
       if (this.isCSEP) {
         let onlyDate = new Date(this.announcement.create_time);
         return onlyDate.toLocaleDateString();
-      }
-      else if (this.isSW) {
+      } else if (this.isSW) {
         return this.announcement.create_time;
       }
     },
@@ -48,9 +47,8 @@ export default defineComponent({
         const createTimestamp = new Date(this.announcement.create_time).getTime();
         const oneDayInMilliseconds = 24 * 60 * 60 * 1000 * this.DAYS_TO_BE_NEW;
         return (currentTime - createTimestamp) <= oneDayInMilliseconds;
-      }
-      else if (this.isSW) {
-        return announcement.new_flag;
+      } else if (this.isSW) {
+        return this.announcement.new_flag;
       }
     },
     csepClass() {
@@ -83,25 +81,25 @@ export default defineComponent({
 
 <template>
   <li :class="this.itemClass" @click="clickHandler">
-      <div class="flex-container">
-        <div class="left">
-          <div class="title">
-            {{ announcement.title }}
-          </div>
-          <span class="csep-annotator" v-if="isCSEP">
+    <div class="flex-container">
+      <div class="left">
+        <div class="title">
+          {{ announcement.title }}
+        </div>
+        <span class="new-annotator" v-if="isNew"><span>NEW</span></span>
+        <span class="csep-annotator" v-if="isCSEP">
                   <shine-wrapper>CSEP</shine-wrapper>
           </span>
-          <span class="sw-center-annotator" v-if="isSW">
+        <span class="sw-center-annotator" v-if="isSW">
                   <shine-wrapper>SW</shine-wrapper>
           </span>
-          <span class="new-annotator" v-if="isNew">new</span>
-        </div>
-        <div class="right">
-          <div class="date">
-            {{ dateStr }}
-          </div>
+      </div>
+      <div class="right">
+        <div class="date">
+          {{ dateStr }}
         </div>
       </div>
+    </div>
   </li>
 </template>
 
@@ -129,7 +127,7 @@ li {
     .left {
       width: calc(100% - var(--announcement-date-width));
       display: flex;
-      gap: 10px;
+      gap: 6px;
       justify-content: space-between;
 
       .title {
@@ -148,9 +146,9 @@ li {
         background-color: #fa6c6c;
         border-radius: 4px;
         color: #ffffff;
-        font-size: x-small;
+        font-size: 10px;
         text-align: center;
-        width: 26px;
+        width: 35px;
         margin: auto;
         font-weight: 600;
       }
@@ -159,7 +157,7 @@ li {
         background-color: var(--point-color);
         border-radius: 4px;
         color: #ffffff;
-        font-size: x-small;
+        font-size: 10px;
         text-align: center;
         width: 35px;
         margin: auto;
@@ -170,7 +168,7 @@ li {
         background-image: linear-gradient(45deg, var(--pnu-blue), var(--pnu-green));
         border-radius: 4px;
         color: #ffffff;
-        font-size: x-small;
+        font-size: 10px;
         text-align: center;
         width: 35px;
         margin: auto;
@@ -201,7 +199,7 @@ li {
 
   &:hover {
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
-    transform : scale(1.01);
+    transform: scale(1.01);
   }
 }
 </style>
