@@ -4,7 +4,8 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from django.utils import timezone
 
 from account.models import UserScore
-from problem.utils import call_update_weekly_stats, call_update_bonus_problem, scrap_and_update
+from announcement.tasks import scrap_and_update
+from problem.utils import call_update_weekly_stats, call_update_bonus_problem
 
 
 class Scheduler:
