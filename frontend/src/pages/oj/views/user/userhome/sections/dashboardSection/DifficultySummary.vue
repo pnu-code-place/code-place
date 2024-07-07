@@ -117,7 +117,7 @@ export default {
         </thead>
         <tbody>
         <tr class="part-row" v-for="(difficulty, key, index) in difficultyInfo" :key="index" @click="goDifficulty(key)">
-          <td class="part-name" :style="{color:DIFFICULTY_LABEL[key].color}">{{ DIFFICULTY_LABEL[key].tableLabel }}</td>
+          <td class="part-name-wrapper" :style="{color:DIFFICULTY_LABEL[key].color}">{{ DIFFICULTY_LABEL[key].tableLabel }}</td>
           <td class="solve-number">{{ difficulty.solve_number }}</td>
           <td class="difficulty-score">{{ difficulty.total_score }}
             <span class="ratio">({{ getProportion(difficulty.total_score) }}%)</span>
@@ -199,7 +199,7 @@ export default {
           padding: 7px 0;
         }
 
-        .part-name {
+        .part-name-wrapper {
           font-weight: 600;
           text-align: left
         }
