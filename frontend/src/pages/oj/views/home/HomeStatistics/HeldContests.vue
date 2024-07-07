@@ -112,17 +112,17 @@ export default {
       }
 
       &:nth-child(1) {
-        background-color: #f0f0f0;
+        background: linear-gradient(var(--pale-silver-color), white 100%);
         height: 80px;
       }
 
       &:nth-child(2) {
-        background-color: #e0e0e0;
+        background: linear-gradient(var(--pale-gold-color), white 100%);
         height: 100px;
       }
 
       &:nth-child(3) {
-        background-color: #d0d0d0;
+        background: linear-gradient(var(--pale-bronze-color), white  100%);
         height: 60px;
       }
     }
