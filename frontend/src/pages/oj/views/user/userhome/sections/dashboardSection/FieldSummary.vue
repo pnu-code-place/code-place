@@ -7,11 +7,31 @@ export default {
   data() {
     return {
       CATEGORY_LABEL: {
-        datastructure: {label: FIELD_MAP["2"].value, color: FIELD_MAP["2"].boxColor},
-        math: {label: FIELD_MAP["1"].value, color: FIELD_MAP["1"].boxColor},
-        sorting: {label: FIELD_MAP["4"].value, color: FIELD_MAP["4"].boxColor},
-        implementation: {label: FIELD_MAP["0"].value, color: FIELD_MAP["0"].boxColor},
-        search: {label: FIELD_MAP["3"].value, color: FIELD_MAP["3"].boxColor},
+        datastructure: {
+          label: FIELD_MAP["2"].value,
+          color: FIELD_MAP["2"].boxColor,
+          bgImg: require('@/assets/fieldBackground/datastructure.svg')
+        },
+        math: {
+          label: FIELD_MAP["1"].value,
+          color: FIELD_MAP["1"].boxColor,
+          bgImg: require('@/assets/fieldBackground/math.svg')
+        },
+        sorting: {
+          label: FIELD_MAP["4"].value,
+          color: FIELD_MAP["4"].boxColor,
+          bgImg: require('@/assets/fieldBackground/sort.svg')
+        },
+        implementation: {
+          label: FIELD_MAP["0"].value,
+          color: FIELD_MAP["0"].boxColor,
+          bgImg: require('@/assets/fieldBackground/implement.svg')
+        },
+        search: {
+          label: FIELD_MAP["3"].value,
+          color: FIELD_MAP["3"].boxColor,
+          bgImg: require('@/assets/fieldBackground/search.svg')
+        },
       },
       CATEGORY_NAME_TO_CODE: {
         datastructure: 2,
@@ -33,7 +53,11 @@ export default {
       return (value / this.totalScore * 100).toFixed(1);
     },
     goField(category) {
-      this.$router.push({name: 'user-problems', params: {username: this.$route.params.username}, query: {field: this.CATEGORY_NAME_TO_CODE[category]}})
+      this.$router.push({
+        name: 'user-problems',
+        params: {username: this.$route.params.username},
+        query: {field: this.CATEGORY_NAME_TO_CODE[category]}
+      })
       window.location.reload()
     }
   },
@@ -134,7 +158,7 @@ export default {
           <th>{{ $t('m.Field') }}</th>
           <th>
             <span class="score">{{ $t('m.Ranking') }}</span>
-            <span class="ratio">({{$t('m.Percent') }})</span>
+            <span class="ratio">({{ $t('m.Percent') }})</span>
           </th>
           <th>
             <span class="score">{{ $t('m.UserHomeScore') }}</span>
@@ -144,8 +168,9 @@ export default {
         </thead>
         <tbody>
         <tr class="part-row" v-for="(category, category_name) in fieldInfo" @click="goField(category_name)">
-          <td class="part-name">
-            <span :style="{backgroundColor:CATEGORY_LABEL[category_name].color}" >
+          <td class="part-name-wrapper">
+            <img :src="CATEGORY_LABEL[category_name].bgImg" alt="">
+            <span class="part-name">
               {{ CATEGORY_LABEL[category_name].label }}
             </span>
           </td>
@@ -179,6 +204,7 @@ export default {
     transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     font-size: 14px;
     border-top: 1px solid #dedede;
+
     &:hover {
       background-color: #f5f5f5;
     }
@@ -186,7 +212,6 @@ export default {
 
   .graph-column {
     width: 30%;
-    //height: 100%;
   }
 
   .table-wrapper {
@@ -228,25 +253,43 @@ export default {
           }
         }
 
-        td {
-          font-size: 14px;
-          padding: 7px 0;
-        }
-
-        .part-name {
-          font-weight: 700;
-          text-align: left;
-          color: #fff;
-
-          span {
-            padding: 2px 5px;
-            border-radius: 5px;
-          }
-        }
-
         .ratio {
           font-size: 12px;
         }
+      }
+    }
+  }
+}
+
+.part-row {
+  .part-name-wrapper {
+    font-size: 14px;
+    padding: 7px 0;
+    font-weight: 700;
+    text-align: left;
+    color: var(--ps-content-text-color);
+    position: relative;
+    overflow: hidden;
+
+    .part-name {
+      z-index: 10;
+      position: relative;
+    }
+
+    img {
+      position: absolute;
+      left: 0;
+      top: -10px;
+      width: 200px;
+      z-index: 0;
+      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+  }
+
+  &:hover {
+    .part-name-wrapper {
+      img {
+        transform: translateY(-40%);
       }
     }
   }

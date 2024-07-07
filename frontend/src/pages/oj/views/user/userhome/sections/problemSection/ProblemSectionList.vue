@@ -133,7 +133,6 @@ export default {
       this.pushRouter()
     },
     pushRouter() {
-      console.log(utils.filterEmptyValue(this.query))
       this.$router.push({
         name: 'user-problems',
         params: {username: this.username},
@@ -169,7 +168,7 @@ section {
   flex-direction: column;
   background-color: var(--box-background-color);
   border: 1px solid #dedede;
-  border-radius: 0 0 7px 7px;
+  border-radius: 7px;
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   padding: 20px;
 
@@ -203,7 +202,7 @@ section {
 
   hr {
     border: 0.5px solid #dedede;
-    margin: 30px 20px 30px 0;
+    margin: 20px 0;
   }
 
   .problem-list {

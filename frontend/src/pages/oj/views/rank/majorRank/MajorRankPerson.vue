@@ -70,8 +70,7 @@ export default {
 <style scoped lang="less">
 
 .extend-badge {
-  --user-avatar-size: 45px;
-
+  --user-avatar-size: var(--major-info-height);
   display: flex;
   overflow: hidden;
   max-width: var(--user-avatar-size);
@@ -82,6 +81,7 @@ export default {
   box-shadow: 0 3px 3px rgba(0, 0, 0, 0.50);
   padding-right: 10px;
   cursor: pointer;
+  background-color: var(--box-background-color);
 
   &:hover {
     max-width: 400px;

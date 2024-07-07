@@ -83,6 +83,10 @@ export default {
   --pale-pnu-green: rgba(6, 186, 110, 0.05);
   --pale-pnu-blue: rgba(2, 77, 151, 0.05);
 
+  --pale-gold-color : #FAF882;
+  --pale-silver-color : #F4F4F4;
+  --pale-bronze-color: #D6C68B;
+
   /* Problem Solving Page */
   --ps-background-color: #f9fafb;
   /* Problem Solving Page - Inner Content */
@@ -107,7 +111,7 @@ export default {
   --container-comment-color: #7e7e7e;
 
   /* header */
-  --header-height: 70px;
+  --header-height: 60px;
   --header-margin: 20px;
   /* footer */
   --footer-height: 200px;

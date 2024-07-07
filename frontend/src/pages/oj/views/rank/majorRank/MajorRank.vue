@@ -66,7 +66,6 @@ export default {
 <template>
   <div class="content-wrapper">
     <ErrorSign v-if="error" :code="this.error.code || 404" :solution="this.error.solution || ''" :description="this.error.description || ''"/>
-
     <div class="major-rank" v-else>
       <div class="table">
         <div class="table-header">
@@ -81,7 +80,7 @@ export default {
           </div>
         </div>
         <div class="table-body" v-else>
-          <major-rank-item v-for="(major, index) in this.majorRankList" :major="major" :key="index"/>
+          <major-rank-item v-for="(major, index) in this.majorRankList" :major="major" :key="index" :ranking="index+1"/>
         </div>
       </div>
       <Pagination
@@ -144,6 +143,13 @@ export default {
       width: 15%;
       text-align: center;
     }
+  }
+
+  .table-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px 0;
   }
 }
 

@@ -1,5 +1,5 @@
 <script>
-import OjSummary from "./OJSummary.vue";
+import OjSummary from "../../OJSummary.vue";
 import FieldSummary from "./FieldSummary.vue";
 import DifficultySummary from "./DifficultySummary.vue";
 import ChallengeSummary from "./AchievementSummary.vue";
@@ -61,10 +61,6 @@ export default {
   <section>
     <ErrorSign v-if="error !== 0" :code="this.error"></ErrorSign>
     <div v-else>
-      <h1>{{ $t('m.OJ_Summary') }}</h1>
-      <OjSummary v-if="this.dashboardInfo.ojStatus" :ojStatus="this.dashboardInfo.ojStatus"></OjSummary>
-      <DashboardSkeleton v-else-if="this.isLoading"></DashboardSkeleton>
-      <hr/>
       <h1>{{ $t('m.Field_Based_Distribution') }}</h1>
       <FieldSummary v-if="this.dashboardInfo.fieldInfo" :fieldInfo="this.dashboardInfo.fieldInfo"></FieldSummary>
       <DashboardSkeleton v-else-if="this.isLoading"></DashboardSkeleton>
@@ -87,7 +83,7 @@ section {
   border: 1px solid #dedede;
   border-radius: 7px;
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  padding: 40px 40px 60px;
+  padding: 20px 30px 20px;
   gap: 15px;
   display: flex;
   background-color: var(--box-background-color);
@@ -95,14 +91,14 @@ section {
 
   hr {
     border: 0.5px solid #dedede;
-    margin: 40px 10px 40px 0;
+    margin: 20px 10px 20px;
   }
 
   h1 {
     text-align: left;
     font-size: 22px;
     margin-left: 10px;
-    margin-bottom: 30px;
+    margin-bottom: 15px;
   }
 }
 </style>

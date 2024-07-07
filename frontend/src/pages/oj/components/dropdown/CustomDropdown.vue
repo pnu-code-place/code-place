@@ -49,7 +49,7 @@ export default {
       this.$emit('dropdownChange', newVal); // localSelected이 변경될 때 부모 컴포넌트에게 이벤트 emit
     },
     options: {
-      handler(newVal, oldVal) {
+      handler(newVal) {
         this.items = newVal
       },
       deep: true
@@ -76,7 +76,6 @@ select {
   border-radius: 5px;
   font-size: 14px;
   color: #495060;
-  margin-bottom: 15px;
 
   option {
     font-size: 16px;

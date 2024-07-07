@@ -7,10 +7,6 @@ export default {
   components: {MajorRankPerson},
   methods: {
     comma,
-    printUsers() {
-      console.log(this.major)
-      console.log(this.major.people.length)
-    }
   },
   data() {
     return {
@@ -22,11 +18,27 @@ export default {
       type: Object,
       default: () => {
       }
+    },
+    ranking: {
+      type: Number,
+      default: 0
     }
   },
   computed: {
     peopleNum() {
       return this.major.people.length
+    },
+    rankingClass() {
+      if (this.ranking === 1) {
+        return 'first'
+      } else if (this.ranking === 2) {
+        return 'second'
+      } else if (this.ranking === 3) {
+        return 'third'
+      }
+    },
+    majorRankClass() {
+      return `major-info ${this.rankingClass}`
     }
   }
 }
@@ -34,7 +46,7 @@ export default {
 
 <template>
   <div class="major-rank-item">
-    <div class="major-info" @click="printUsers">
+    <div :class="this.majorRankClass">
       <div class="rank vertical-center horizontal-center">{{ major.rank }}{{$t("m.Th")}}</div>
       <div class="major vertical-center">{{ major.major }}
         <div class="users">
@@ -59,13 +71,18 @@ export default {
   justify-content: center;
 }
 .major-info {
-  border-top: 1px solid #dedede;
+  --major-info-height: 40px;
+  border-radius: calc(var(--major-info-height) / 2);
+  border: 1px solid #dedede;
+  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
   padding: 5px 0;
   font-size: 15px;
   font-weight: 500;
   color: #666;
   display: flex;
   justify-content: space-around;
+  opacity: 0.8;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 
   & > .rank {
     width: 15%;
@@ -77,6 +94,7 @@ export default {
     display: flex;
     justify-content: space-between;
     padding: 0 10px;
+    font-weight: 600;
 
     .users{
       display:flex;
@@ -94,6 +112,23 @@ export default {
     width: 15%;
     text-align: center;
     justify-content: center;
+  }
+
+  &:hover {
+    opacity: 1;
+    transform: scale(1.02);
+  }
+
+  &.first {
+    background: linear-gradient(90deg, #FAF882, #FFFFFF);
+  }
+
+  &.second {
+    background: linear-gradient(90deg, #F4F4F4, #FFFFFF);
+  }
+
+  &.third {
+    background: linear-gradient(90deg, #D6C68B, #FFFFFF);
   }
 }
 </style>

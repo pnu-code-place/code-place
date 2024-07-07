@@ -1,9 +1,11 @@
 <template>
-  <error404 v-if="error"></error404>
+  <error404 v-if="this.cardError"></error404>
   <div v-else class="container">
     <side-nav-bar></side-nav-bar>
     <main>
-      <user-card :profile="profile"></user-card>
+      <div class="user-home-header">
+        <user-card :profile="profile" :oj-status="this.ojStatus"></user-card>
+      </div>
       <keep-alive>
         <router-view></router-view>
       </keep-alive>
@@ -16,15 +18,21 @@ import SideNavBar from "./SideNavBar.vue";
 import UserCard from "./UserCard.vue";
 import router from "../../../router";
 import Error404 from "../../general/404.vue";
+import OjSummary from "./OJSummary.vue";
 
 export default {
-  components: {Error404, UserCard, SideNavBar},
+  components: {OjSummary, Error404, UserCard, SideNavBar},
   name: "user-home",
   data() {
     return {
       profile: {},
-      problems: [],
-      error: null
+      ojStatus: {},
+
+      cardError: null,
+      statusError: null,
+
+      cardLoading: false,
+      statusLoading: false,
     }
   },
   mounted() {
@@ -32,12 +40,23 @@ export default {
   },
   methods: {
     init() {
+      this.statusLoading = true
+      this.cardLoading = true
       api.getUserInfo(this.username)
         .then(res => {
           this.profile = res.data.data
+          this.cardLoading = false
         })
         .catch(error => {
-          this.error = error
+          this.cardError = error
+        })
+      api.getDashboardInfo(this.username)
+        .then(res => {
+          this.ojStatus = res.data.data.ojStatus
+          this.statusLoading = false
+        })
+        .catch(error => {
+          this.statusError = error
         })
     },
   },
@@ -55,6 +74,12 @@ export default {
         router.push({name: 'login'})
       }
       return username;
+    },
+    error() {
+      return this.statusError || this.cardError
+    },
+    loading() {
+      return this.statusLoading || this.cardLoading
     }
   },
   watch: {
@@ -82,11 +107,23 @@ export default {
     gap: 30px;
     display: flex;
     flex-direction: column;
+
+    .user-home-header {
+      display: flex;
+      gap: 30px;
+
+      .status-wrapper {
+        flex: 1;
+      }
+
+      .card-wrapper {
+        flex: 1;
+      }
+    }
   }
 
   p {
-    margin-top: 8px;
-    margin-bottom: 8px;
+    margin: 8px 0;
   }
 
   .emphasis {
@@ -101,8 +138,7 @@ export default {
 
   #problems {
     margin-top: 40px;
-    padding-left: 30px;
-    padding-right: 30px;
+    padding: 0 30px;
     font-size: 18px;
 
     .btns {
