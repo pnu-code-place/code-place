@@ -112,3 +112,49 @@ class AdminBannerAPIView(APIView):
 
 
 
+    @super_admin_required
+    def put(self, request):
+        """
+        어드민 페이지-홈 배너 관리 페이지에서 등록된 배너를 수정합니다.
+        다음과 같은 수정 기능을 포함합니다.
+        - 배너 활성화/비활성화
+        - 배너 순서 조정
+        """
+        banners = Banner.objects.filter(order__isnull=False)
+        id = request.GET.get('id')
+        visible = request.data.get('visible', None)
+        reorder = request.data.get('reorder', None)
+        # 수정 타겟
+        try:
+            target_banner = Banner.objects.get(id=id)
+        except Banner.DoesNotExist:
+            return self.error("Invalid Banner")
+
+        # 활성화/비활성화
+        if visible is not None:
+            # BANNER_VISIBLE_LIMIT 한계 수치를 넘어서 visible로 등록하면 오류 발생
+            if visible and len(banners) == BANNER_VISIBLE_LIMIT:
+                return self.error("You have exceeded the limit of the banner you can activate.")
+            if target_banner.visible == visible:
+                return self.error("Visible state is same")
+
+            try:
+                if visible:
+                    Banner.insert(target_banner)
+                else:
+                    Banner.reorder_swap(target_banner, banners.count())
+                    target_banner.order = None
+                target_banner.visible = visible
+                target_banner.save()
+            except Exception as e:
+                logger.exception(e)
+                return self.error("something went wrong")
+
+        if reorder is not None:
+            try:
+                Banner.reorder_swap(target_banner, reorder)
+            except Exception as e:
+                logger.exception(e)
+                return self.error(e)
+
+        return self.success(BannerAdminSerializer(target_banner).data)
