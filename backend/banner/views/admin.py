@@ -110,7 +110,7 @@ class EditAdminBannerAPIView(APIView):
         다음과 같은 수정 기능을 포함합니다.
         - 배너 이미지, 연결 링크 수정
         """
-        data = request.data
+        link_url = request.data.get('link_url', None)
         form = ImageUploadForm(request.POST, request.FILES)
 
         # 수정 타겟
@@ -120,14 +120,14 @@ class EditAdminBannerAPIView(APIView):
             return self.error("Invalid Banner")
 
         # 연결 링크 변경
-        if data["link_url"]:
+        if link_url is not None:
             url_validator = URLValidator()
             # URL 유효성 검사
             try:
-                url_validator(data["link_url"])
+                url_validator(link_url)
             except ValidationError:
                 return self.error("Invalid URL")
-            target_banner.link_url = data["link_url"]
+            target_banner.link_url = link_url
 
         # 이미지 변경 사항이 있는 경우
         if form.is_valid():
