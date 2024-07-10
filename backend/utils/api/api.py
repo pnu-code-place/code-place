@@ -1,6 +1,8 @@
+import cgi
 import functools
 import json
 import logging
+from io import BytesIO
 
 from django.http import HttpResponse, QueryDict
 from django.utils.decorators import method_decorator
@@ -39,6 +41,19 @@ class URLEncodedParser(object):
     def parse(body):
         return QueryDict(body)
 
+class MultiPartParser:
+    content_type = "multipart/form-data"
+
+    @staticmethod
+    def parse(body):
+        env = {
+            'REQUEST_METHOD': 'POST',
+            'CONTENT_TYPE': 'multipart/form-data',
+            'CONTENT_LENGTH': len(body),
+        }
+        parsed = cgi.FieldStorage(fp=BytesIO(body), environ=env, keep_blank_values=True)
+        return {k: parsed[k].value for k in parsed.keys()}
+
 
 class JSONResponse(object):
     content_type = ContentType.json_response
@@ -59,7 +74,7 @@ class APIView(View):
      - self.response 返回一个django HttpResponse, 具体在self.response_class中实现
      - parse请求的类需要定义在request_parser中, 目前只支持json和urlencoded的类型, 用来解析请求的数据
     """
-    request_parsers = (JSONParser, URLEncodedParser)
+    request_parsers = (JSONParser, URLEncodedParser, MultiPartParser)
     response_class = JSONResponse
 
     def _get_request_data(self, request):
@@ -68,6 +83,8 @@ class APIView(View):
             content_type = request.META.get("CONTENT_TYPE")
             if not content_type:
                 raise ValueError("content_type is required")
+            if content_type.startswith('multipart/form-data'):
+                return request.POST.dict()  # Django already parses multipart data
             for parser in self.request_parsers:
                 if content_type.startswith(parser.content_type):
                     break

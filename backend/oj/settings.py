@@ -49,6 +49,7 @@ LOCAL_APPS = [
     'conf',
     'problem',
     'contest',
+    'banner',
     'utils',
     'submission',
     'options',
@@ -136,6 +137,9 @@ AVATAR_UPLOAD_DIR = f"{DATA_DIR}{AVATAR_URI_PREFIX}"
 
 UPLOAD_PREFIX = "/public/upload"
 UPLOAD_DIR = f"{DATA_DIR}{UPLOAD_PREFIX}"
+
+BANNER_URI_PREFIX = "/public/banner"
+BANNER_DIR = f"{DATA_DIR}{BANNER_URI_PREFIX}"
 
 STATICFILES_DIRS = [os.path.join(DATA_DIR, "public")]
 
