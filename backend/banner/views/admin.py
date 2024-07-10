@@ -19,6 +19,7 @@ class AdminBannerAPIView(APIView):
     어드민 페이지( 홈 배너 관리 )
     배너 CRUD API
     """
+
     @super_admin_required
     def get(self, request):
         """
@@ -41,15 +42,13 @@ class AdminBannerAPIView(APIView):
 
         link_url = request.data.get('link_url')
         form = ImageUploadForm(request.POST, request.FILES)
-        banner_image = None
-        suffix = None
 
         # URL 유효성 검사
         url_validator = URLValidator()
         try:
             url_validator(link_url)
         except ValidationError:
-            self.error("Invalid URL")
+            return self.error("Invalid URL")
 
         # 이미지 폼 유효성 검사
         if form.is_valid():
@@ -57,14 +56,15 @@ class AdminBannerAPIView(APIView):
 
             # 파일 크기 검사
             if banner_image.size > 2 * 1024 * 1024:
-                self.error("Picture is too large")
+                return self.error("Picture is too large")
 
             # 파일 확장자 검사
             suffix = os.path.splitext(banner_image.name)[-1].lower()
             if suffix not in [".gif", ".jpg", ".jpeg", ".bmp", ".png"]:
                 return self.error("Unsupported file format")
+
         else:
-            self.error("Invalid file content")
+            return self.error("Invalid file content")
 
         # 배너 이미지 주소를 랜덤으로 생성
         name = rand_str(10) + suffix
