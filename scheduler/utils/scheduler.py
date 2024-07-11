@@ -18,7 +18,7 @@ class Scheduler:
         self.scheduler.add_job(UserScore.calculate_fluctuation, 'interval', minutes=1)
         self.scheduler.add_job(update_weekly_stats, 'interval', minutes=1)
         self.scheduler.add_job(update_bonus_problem, 'interval', minutes=1)
-        self.scheduler.add_job(scrap_link_announcement, 'interval', minutes=10)
+        self.scheduler.add_job(scrap_link_announcement, 'interval', minutes=30)
 
     def start(self):
         self.scheduler.start()

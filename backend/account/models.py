@@ -199,23 +199,6 @@ class UserScore(models.Model):
     current_tier_score = models.IntegerField(default=get_default_current_tier_score)
     next_tier_score = models.IntegerField(default=get_default_next_tier_score)
 
-    @classmethod
-    def calculate_basis(cls):
-        with transaction.atomic():
-            scores = cls.objects.select_for_update().all()
-            for user_score in scores:
-                user_score.yesterday_score = user_score.total_score
-                user_score.fluctuation = 0
-                user_score.save()
-
-    @classmethod
-    def calculate_fluctuation(cls):
-        with transaction.atomic():
-            scores = cls.objects.select_for_update().all()
-            for user_score in scores:
-                user_score.fluctuation = user_score.total_score - user_score.yesterday_score
-                user_score.save()
-
     class Meta:
         db_table = "user_score"
 
