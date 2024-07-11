@@ -2,9 +2,6 @@ from django.contrib.auth.base_user import AbstractBaseUser
 from django.db import models, transaction
 from django.db.models import JSONField
 
-from utils.constants import Tier
-
-
 class AdminType(object):
     REGULAR_USER = "Regular User"
     ADMIN = "Admin"
@@ -64,18 +61,6 @@ class User(AbstractBaseUser):
         db_table = "user"
 
 
-def get_default_tier():
-    return next(iter(Tier.tiers.keys()))
-
-
-def get_default_current_tier_score():
-    return 0
-
-
-def get_default_next_tier_score():
-    return Tier.tiers['bronze3']
-
-
 class UserScore(models.Model):
     user = models.OneToOneField(User, primary_key=True, unique=True, on_delete=models.CASCADE)
 
@@ -83,24 +68,9 @@ class UserScore(models.Model):
     total_score = models.IntegerField(default=0)
     fluctuation = models.IntegerField(default=0)
 
-    math_score = models.BigIntegerField(default=0)
-    implementation_score = models.BigIntegerField(default=0)
-    datastructure_score = models.BigIntegerField(default=0)
-    search_score = models.BigIntegerField(default=0)
-    sorting_score = models.BigIntegerField(default=0)
-
-    VeryLow_score = models.BigIntegerField(default=0)
-    Low_score = models.BigIntegerField(default=0)
-    Mid_score = models.BigIntegerField(default=0)
-    High_score = models.BigIntegerField(default=0)
-    VeryHigh_score = models.BigIntegerField(default=0)
-
-    tier = models.TextField(default=get_default_tier)
-    current_tier_score = models.IntegerField(default=get_default_current_tier_score)
-    next_tier_score = models.IntegerField(default=get_default_next_tier_score)
-
     @classmethod
     def calculate_basis(cls):
+        print("calculate_basis called")
         with transaction.atomic():
             scores = cls.objects.select_for_update().all()
             for user_score in scores:
@@ -110,6 +80,7 @@ class UserScore(models.Model):
 
     @classmethod
     def calculate_fluctuation(cls):
+        print("calculate_fluctuation called")
         with transaction.atomic():
             scores = cls.objects.select_for_update().all()
             for user_score in scores:
@@ -118,4 +89,5 @@ class UserScore(models.Model):
 
     class Meta:
         db_table = "user_score"
+
 

@@ -109,17 +109,3 @@ class Problem(models.Model):
         unique_together = (("_id", "contest"),)
         ordering = ("create_time",)
 
-    def add_submission_number(self):
-        self.submission_number = models.F("submission_number") + 1
-        self.save(update_fields=["submission_number"])
-
-    def add_ac_number(self):
-        self.accepted_number = models.F("accepted_number") + 1
-        self.save(update_fields=["accepted_number"])
-
-    def calculate_success_rate(self):
-        if self.curr_week_info['submission'] != 0:
-            self.curr_week_info['success_rate'] = (self.curr_week_info['accepted'] / self.curr_week_info['submission']) \
-                                                  * 100
-            self.save(update_fields=["curr_week_info"])
-

@@ -8,6 +8,7 @@ from utils.constants import Difficulty
 
 
 def update_weekly_stats():
+    print("update_weekly_stats called")
     problems = Problem.objects.filter(difficulty__in=['High', 'VeryHigh'], accepted_number__gte=1)
 
     if not problems:
@@ -29,6 +30,7 @@ def update_weekly_stats():
         most_difficult_problem.save(update_fields=['is_most_difficult'])
 
 def update_bonus_problem():
+    print("update_bonus_problem called")
     """보너스문제를 업데이트합니다.
 
     Scheduler에 의해 매주 한번씩 실행되며 난이도 그룹별로 한 문제씩, 총 3문제를 보너스문제로 설정합니다.
