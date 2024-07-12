@@ -14,11 +14,11 @@ class Scheduler:
         self.add_jobs()
 
     def add_jobs(self):
-        self.scheduler.add_job(UserScore.calculate_basis, 'interval', minutes=1)
+        self.scheduler.add_job(UserScore.calculate_basis, 'cron', hour=0)
         self.scheduler.add_job(UserScore.calculate_fluctuation, 'interval', minutes=1)
-        self.scheduler.add_job(update_weekly_stats, 'interval', minutes=1)
-        self.scheduler.add_job(update_bonus_problem, 'interval', minutes=1)
-        self.scheduler.add_job(scrap_link_announcement, 'interval', minutes=30)
+        self.scheduler.add_job(update_weekly_stats, 'cron', day_of_week='mon', hour=0, minute=0)
+        self.scheduler.add_job(update_bonus_problem, 'cron', day_of_week='mon', hour=0, minute=0)
+        self.scheduler.add_job(scrap_link_announcement, 'interval', minutes=10)
 
     def start(self):
-        self.scheduler.start()
+            self.scheduler.start()
