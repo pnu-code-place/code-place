@@ -21,13 +21,6 @@ if [ ! -f "$DATA/public/website/favicon.ico" ]; then
     cp data/public/website/favicon.ico $DATA/public/website
 fi
 
-# SSL 인증서 및 키가 없다면, 생성
-SSL="$DATA/ssl"
-if [ ! -f "$SSL/server.key" ]; then
-    openssl req -x509 -newkey rsa:2048 -keyout "$SSL/server.key" -out "$SSL/server.crt" -days 1000 \
-        -subj "/C=CN/ST=Beijing/L=Beijing/O=Beijing OnlineJudge Technology Co., Ltd./OU=Service Infrastructure Department/CN=`hostname`" -nodes
-fi
-
 # Nginx 구성파일의 심볼릭 링크 생성, Https 강제 설정 여부에 따라 다름. default는 false
 cd $APP/deploy/nginx
 ln -sf locations.conf https_locations.conf
