@@ -19,8 +19,7 @@ logger = logging.getLogger(__name__)
 
 def get_browser_by_env():
     options = webdriver.ChromeOptions()
-    # options.add_argument("--headless")
-
+    options.add_argument("--headless")
     production_env = get_env("OJ_ENV", "dev") == "production"
     if production_env:
         options.add_argument("--no-sandbox")
