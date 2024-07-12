@@ -1,18 +1,35 @@
-import dramatiq
+import os
+
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 import time
 from django.db import transaction
 from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium import webdriver
 import logging
 
 from announcement.models import LinkAnnouncement
 from utils.constants import LINK_NOTICE_LIMIT, LINK_NOTICE_SCRAPING_URL
+from utils.shortcuts import get_env
 
 logger = logging.getLogger(__name__)
 
-def scrap_and_update():
-    scrap_link_announcement.send()
+
+def get_browser_by_env():
+    options = webdriver.ChromeOptions()
+    # options.add_argument("--headless")
+
+    production_env = get_env("OJ_ENV", "dev") == "production"
+    if production_env:
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-gpu")
+        options.add_argument("--disable-dev-shm-usage")
+        options.binary_location = os.environ.get("CHROME_BIN", "/usr/bin/chromium-browser")
+        service = Service(executable_path=os.environ.get("CHROMEDRIVER_PATH", "/usr/bin/chromedriver"))
+        return webdriver.Chrome(service=service, options=options)
+    return webdriver.Chrome(options=options)
 
 def is_element_exist(item, by, locator):
     try:
@@ -43,8 +60,6 @@ def update_link_announcement(rows, diff_cnt):
             else:
                 link_announcement.save(update_fields=['new_flag'])
 
-
-@dramatiq.actor()
 def scrap_link_announcement():
     """
     일정 주기(2시간) 마다 소프트웨어융합교육원 공지사항을 최대 LINK_NOTICE_LIMIT개 만큼 크롤링 후 데이터베이스 업데이트
@@ -55,12 +70,9 @@ def scrap_link_announcement():
     기존 링크 공지사항 테이블에 존재하는 pk(링크 공지사항 번호)와 대비하여 새로운 공지사항 번호가 사이트에 생겼다면, 차이나는 개수(diff_cnt)만큼 테이블에 신규 데이터를 삽입합니다.
     이후 새글 태그 업데이트를 위해서 크롤링한 전체 데이터의 길이 - diff_cnt 만큼 새글 태그 플래그(new_flag)를 업데이트합니다.
     """
-    # 브라우저를 열지 않고 실행
-    options = webdriver.ChromeOptions()
-    options.add_argument("headless")
 
     # 공지사항 접속
-    browser = webdriver.Chrome(options=options)
+    browser = get_browser_by_env()
     browser.get(LINK_NOTICE_SCRAPING_URL)
     time.sleep(7)
 
@@ -101,17 +113,20 @@ def scrap_link_announcement():
     cnt = 0
     for row in rows:
         # 번호
-        id = row.find_element(By.CLASS_NAME, "_artclTdNum").text
+        # id = row.find_element(By.CLASS_NAME, "_artclTdNum").text
+        id = WebDriverWait(row, 10).until(EC.presence_of_element_located((By.CLASS_NAME, "_artclTdNum"))).text
         # 작성일
-        create_time = row.find_element(By.CLASS_NAME, "_artclTdRdate").text
+        # create_time = row.find_element(By.CLASS_NAME, "_artclTdRdate").text
+        create_time = WebDriverWait(row, 10).until(EC.presence_of_element_located((By.CLASS_NAME, "_artclTdRdate"))).text
         # 새 글
         new_flag = is_element_exist(row, By.CLASS_NAME, "newArtcl")
         logger.info("{} {} {}".format(id, create_time, new_flag))
+        print("{} {} {}".format(id, create_time, new_flag))
         title = curr_url = None
 
         if cnt < diff_cnt:
             # 내부 컨텐츠 진입
-            a_title_element = row.find_element(By.CLASS_NAME, "artclLinkView")
+            a_title_element = WebDriverWait(row, 10).until(EC.presence_of_element_located((By.CLASS_NAME, "artclLinkView")))
             a_title_element.click()
             time.sleep(3)
 
@@ -138,5 +153,6 @@ def scrap_link_announcement():
         update_link_announcement(target_list, diff_cnt)
 
     logger.info("Scrap and update done")
+    print("Scrap and update done")
 
     browser.close()
