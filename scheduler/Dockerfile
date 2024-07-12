@@ -17,3 +17,16 @@ ENV CHROME_BIN=/usr/bin/chromedriver \
 
 # Selenium 캐시 폴더 생성 및 권한 설정
 RUN mkdir -p /root/.cache/selenium && chmod 777 /root/.cache/selenium
+
+COPY ./deploy/requirements.txt /app/deploy/
+
+# psycog2 의존 모듈 libpq-dev 설치
+RUN apk add gcc libc-dev python3-dev libpq-dev
+
+# Django 의존성 설치
+RUN pip install -r /app/deploy/requirements.txt
+
+COPY ./ /app/
+
+EXPOSE 8090
+ENTRYPOINT ["python3", "manage.py", "runserver", "8090"]
