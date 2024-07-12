@@ -70,6 +70,7 @@ services:
       - oj-postgres
       - backend
     volumes:
-      - ../scheduler/logs:/logs
-    ports:
-      - "8090:8090"
+      - ../scheduler/logs:/app/logs
+    env_file:
+      - .env
+
