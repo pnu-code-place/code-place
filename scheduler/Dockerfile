@@ -28,5 +28,7 @@ RUN pip install -r /app/deploy/requirements.txt
 
 COPY ./ /app/
 
+RUN chmod +x /app/deploy/exec_gunicorn.sh
+
 EXPOSE 8090
 ENTRYPOINT ["/app/deploy/exec_gunicorn.sh"]
