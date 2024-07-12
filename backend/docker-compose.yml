@@ -62,3 +62,14 @@ services:
     ports:
       - "0.0.0.0:80:8000"
       - "0.0.0.0:443:1443"
+
+  scheduler:
+    image: juniper0917/csep-scheduler:latest
+    restart: always
+    depends_on:
+      - oj-postgres
+      - backend
+    volumes:
+      - ../scheduler/logs:/logs
+    ports:
+      - "8090:8090"
