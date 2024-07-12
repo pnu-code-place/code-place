@@ -25,9 +25,7 @@ def get_browser_by_env():
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-gpu")
         options.add_argument("--disable-dev-shm-usage")
-        options.binary_location = os.environ.get("CHROME_BIN", "/usr/bin/chromium-browser")
-        service = Service(executable_path=os.environ.get("CHROMEDRIVER_PATH", "/usr/bin/chromedriver"))
-        return webdriver.Chrome(service=service, options=options)
+        return webdriver.Chrome(options=options)
     return webdriver.Chrome(options=options)
 
 def is_element_exist(item, by, locator):
