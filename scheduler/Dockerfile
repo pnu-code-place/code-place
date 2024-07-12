@@ -29,4 +29,4 @@ RUN pip install -r /app/deploy/requirements.txt
 COPY ./ /app/
 
 EXPOSE 8090
-ENTRYPOINT ["python3", "manage.py", "runserver", "8090"]
+ENTRYPOINT ["/app/deploy/exec_gunicorn.sh"]
