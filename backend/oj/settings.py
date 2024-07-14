@@ -37,8 +37,6 @@ VENDOR_APPS = [
     'django_dbconn_retry',
 ]
 
-SCHEDULER_CLASS = 'utils.scheduler.Scheduler'
-
 if production_env:
     VENDOR_APPS.append('raven.contrib.django.raven_compat')
 
@@ -50,6 +48,7 @@ LOCAL_APPS = [
     'problem',
     'contest',
     'banner',
+    'profile',
     'utils',
     'submission',
     'options',
