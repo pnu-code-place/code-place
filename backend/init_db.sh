@@ -16,4 +16,9 @@ if [ "$1" = "--migrate" ]; then
     echo `cat /dev/urandom | head -1 | md5sum | head -c 32` > data/config/secret.key
     python3 manage.py migrate
     python3 manage.py inituser --username root --password rootroot --action create_super_admin
+
+    echo "Loading Fixtures..."
+    sleep 2
+    python3 manage.py loaddata fixtures/*.json
+    echo "Fixtures loaded!"
 fi
