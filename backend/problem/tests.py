@@ -104,7 +104,7 @@ class TestCaseUploadAPITest(APITestCase):
 
     def test_upload_spj_test_case_zip(self):
         with open(self.make_test_case_zip(), "rb") as f:
-            resp = self.client.parent_post(self.url,
+            resp = self.client.post(self.url,
                                            data={"spj": "true", "file": f}, format="multipart")
             self.assertSuccess(resp)
             data = resp.data["data"]
@@ -118,7 +118,7 @@ class TestCaseUploadAPITest(APITestCase):
 
     def test_upload_test_case_zip(self):
         with open(self.make_test_case_zip(), "rb") as f:
-            resp = self.client.parent_post(self.url,
+            resp = self.client.post(self.url,
                                            data={"spj": "false", "file": f}, format="multipart")
             self.assertSuccess(resp)
             data = resp.data["data"]
@@ -138,25 +138,25 @@ class ProblemAdminAPITest(APITestCase):
         self.data = copy.deepcopy(DEFAULT_PROBLEM_DATA)
 
     def test_create_problem(self):
-        resp = self.client.parent_post(self.url, data=self.data)
+        resp = self.client.post(self.url, data=self.data)
         self.assertSuccess(resp)
         return resp
 
     def test_duplicate_display_id(self):
         self.test_create_problem()
 
-        resp = self.client.parent_post(self.url, data=self.data)
+        resp = self.client.post(self.url, data=self.data)
         self.assertFailed(resp, "Display ID already exists")
 
     def test_spj(self):
         data = copy.deepcopy(self.data)
         data["spj"] = True
 
-        resp = self.client.parent_post(self.url, data)
+        resp = self.client.post(self.url, data)
         self.assertFailed(resp, "Invalid spj")
 
         data["spj_code"] = "test"
-        resp = self.client.parent_post(self.url, data=data)
+        resp = self.client.post(self.url, data=data)
         self.assertSuccess(resp)
 
     def test_get_problem(self):
@@ -197,12 +197,12 @@ class ContestProblemAdminTest(APITestCase):
     def setUp(self):
         self.url = self.reverse("contest_problem_admin_api")
         self.create_admin()
-        self.contest = self.client.parent_post(self.reverse("contest_admin_api"), data=DEFAULT_CONTEST_DATA).data["data"]
+        self.contest = self.client.post(self.reverse("contest_admin_api"), data=DEFAULT_CONTEST_DATA).data["data"]
 
     def test_create_contest_problem(self):
         data = copy.deepcopy(DEFAULT_PROBLEM_DATA)
         data["contest_id"] = self.contest["id"]
-        resp = self.client.parent_post(self.url, data=data)
+        resp = self.client.post(self.url, data=data)
         self.assertSuccess(resp)
         return resp.data["data"]
 
@@ -228,7 +228,7 @@ class ContestProblemTest(ProblemCreateTestBase):
         contest_data = copy.deepcopy(DEFAULT_CONTEST_DATA)
         contest_data["password"] = ""
         contest_data["start_time"] = contest_data["start_time"] + timedelta(hours=1)
-        self.contest = self.client.parent_post(url, data=contest_data).data["data"]
+        self.contest = self.client.post(url, data=contest_data).data["data"]
         self.problem = self.add_problem(DEFAULT_PROBLEM_DATA, admin)
         self.problem.contest_id = self.contest["id"]
         self.problem.save()
@@ -267,7 +267,7 @@ class AddProblemFromPublicProblemAPITest(ProblemCreateTestBase):
         contest_data = copy.deepcopy(DEFAULT_CONTEST_DATA)
         contest_data["password"] = ""
         contest_data["start_time"] = contest_data["start_time"] + timedelta(hours=1)
-        self.contest = self.client.parent_post(url, data=contest_data).data["data"]
+        self.contest = self.client.post(url, data=contest_data).data["data"]
         self.problem = self.add_problem(DEFAULT_PROBLEM_DATA, admin)
         self.url = self.reverse("add_contest_problem_from_public_api")
         self.data = {
@@ -277,7 +277,7 @@ class AddProblemFromPublicProblemAPITest(ProblemCreateTestBase):
         }
 
     def test_add_contest_problem(self):
-        resp = self.client.parent_post(self.url, data=self.data)
+        resp = self.client.post(self.url, data=self.data)
         self.assertSuccess(resp)
         self.assertTrue(Problem.objects.all().exists())
         self.assertTrue(Problem.objects.filter(contest_id=self.contest["id"]).exists())

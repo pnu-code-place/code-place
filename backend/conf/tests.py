@@ -18,7 +18,7 @@ class SMTPConfigTest(APITestCase):
     def test_create_smtp_config(self):
         data = {"server": "smtp.test.com", "email": "test@test.com", "port": 465,
                 "tls": True, "password": self.password}
-        resp = self.client.parent_post(self.url, data=data)
+        resp = self.client.post(self.url, data=data)
         self.assertSuccess(resp)
         self.assertTrue("password" not in resp.data)
         return resp
@@ -48,7 +48,7 @@ class SMTPConfigTest(APITestCase):
     def test_test_smtp(self, mocked_send_email):
         url = self.reverse("smtp_test_api")
         self.test_create_smtp_config()
-        resp = self.client.parent_post(url, data={"email": "test@test.com"})
+        resp = self.client.post(url, data={"email": "test@test.com"})
         self.assertSuccess(resp)
         mocked_send_email.assert_called_once()
 
@@ -60,7 +60,7 @@ class WebsiteConfigAPITest(APITestCase):
         data = {"website_base_url": "http://test.com", "website_name": "test name",
                 "website_name_shortcut": "test oj", "website_footer": "<a>test</a>",
                 "allow_register": True, "submission_list_show_all": False}
-        resp = self.client.parent_post(url, data=data)
+        resp = self.client.post(url, data=data)
         self.assertSuccess(resp)
 
     def test_edit_website_config(self):
@@ -69,7 +69,7 @@ class WebsiteConfigAPITest(APITestCase):
         data = {"website_base_url": "http://test.com", "website_name": "test name",
                 "website_name_shortcut": "test oj", "website_footer": "<img onerror=alert(1) src=#>",
                 "allow_register": True, "submission_list_show_all": False}
-        resp = self.client.parent_post(url, data=data)
+        resp = self.client.post(url, data=data)
         self.assertSuccess(resp)
         self.assertEqual(SysOptions.website_footer, '<img src="#" />')
 
@@ -91,7 +91,7 @@ class JudgeServerHeartbeatTest(APITestCase):
         self.headers = {"HTTP_X_JUDGE_SERVER_TOKEN": self.hashed_token, settings.IP_HEADER: "1.2.3.4"}
 
     def test_new_heartbeat(self):
-        resp = self.client.parent_post(self.url, data=self.data, **self.headers)
+        resp = self.client.post(self.url, data=self.data, **self.headers)
         self.assertSuccess(resp)
         server = JudgeServer.objects.first()
         self.assertEqual(server.ip, "127.0.0.1")
@@ -100,7 +100,7 @@ class JudgeServerHeartbeatTest(APITestCase):
         self.test_new_heartbeat()
         data = self.data
         data["judger_version"] = "2.0.0"
-        resp = self.client.parent_post(self.url, data=data, **self.headers)
+        resp = self.client.post(self.url, data=data, **self.headers)
         self.assertSuccess(resp)
         self.assertEqual(JudgeServer.objects.get(hostname=self.data["hostname"]).judger_version, data["judger_version"])
 

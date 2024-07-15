@@ -42,25 +42,25 @@ class DuplicateUserCheckAPITest(APITestCase):
         self.url = self.reverse("check_username_or_email")
 
     def test_duplicate_username(self):
-        resp = self.client.parent_post(self.url, data={"username": "test"})
+        resp = self.client.post(self.url, data={"username": "test"})
         data = resp.data["data"]
         self.assertEqual(data["username"], True)
-        resp = self.client.parent_post(self.url, data={"username": "Test"})
+        resp = self.client.post(self.url, data={"username": "Test"})
         self.assertEqual(resp.data["data"]["username"], True)
 
     def test_ok_username(self):
-        resp = self.client.parent_post(self.url, data={"username": "test1"})
+        resp = self.client.post(self.url, data={"username": "test1"})
         data = resp.data["data"]
         self.assertFalse(data["username"])
 
     def test_duplicate_email(self):
-        resp = self.client.parent_post(self.url, data={"email": "test@test.com"})
+        resp = self.client.post(self.url, data={"email": "test@test.com"})
         self.assertEqual(resp.data["data"]["email"], True)
-        resp = self.client.parent_post(self.url, data={"email": "Test@Test.com"})
+        resp = self.client.post(self.url, data={"email": "Test@Test.com"})
         self.assertTrue(resp.data["data"]["email"])
 
     def test_ok_email(self):
-        resp = self.client.parent_post(self.url, data={"email": "aa@test.com"})
+        resp = self.client.post(self.url, data={"email": "aa@test.com"})
         self.assertFalse(resp.data["data"]["email"])
 
 
@@ -70,7 +70,7 @@ class TFARequiredCheckAPITest(APITestCase):
         self.create_user("test", "test123", login=False)
 
     def test_not_required_tfa(self):
-        resp = self.client.parent_post(self.url, data={"username": "test"})
+        resp = self.client.post(self.url, data={"username": "test"})
         self.assertSuccess(resp)
         self.assertEqual(resp.data["data"]["result"], False)
 
@@ -78,13 +78,14 @@ class TFARequiredCheckAPITest(APITestCase):
         user = User.objects.first()
         user.two_factor_auth = True
         user.save()
-        resp = self.client.parent_post(self.url, data={"username": "test"})
+        resp = self.client.post(self.url, data={"username": "test"})
         self.assertEqual(resp.data["data"]["result"], True)
 
 
 class UserLoginAPITest(APITestCase):
     def setUp(self):
-        self.username = self.password = "test"
+        self.username = "test@test.com"
+        self.password = "seung8869@"
         self.user = self.create_user(username=self.username, password=self.password, login=False)
         self.login_url = self.reverse("user_login_api")
 
@@ -96,7 +97,7 @@ class UserLoginAPITest(APITestCase):
         return tfa_token
 
     def test_login_with_correct_info(self):
-        response = self.client.parent_post(self.login_url,
+        response = self.client.post(self.login_url,
                                            data={"username": self.username, "password": self.password})
         self.assertDictEqual(response.data, {"error": None, "data": "Succeeded"})
 
@@ -104,13 +105,13 @@ class UserLoginAPITest(APITestCase):
         self.assertTrue(user.is_authenticated)
 
     def test_login_with_correct_info_upper_username(self):
-        resp = self.client.parent_post(self.login_url, data={"username": self.username.upper(), "password": self.password})
+        resp = self.client.post(self.login_url, data={"username": self.username.upper(), "password": self.password})
         self.assertDictEqual(resp.data, {"error": None, "data": "Succeeded"})
         user = auth.get_user(self.client)
         self.assertTrue(user.is_authenticated)
 
     def test_login_with_wrong_info(self):
-        response = self.client.parent_post(self.login_url,
+        response = self.client.post(self.login_url,
                                            data={"username": self.username, "password": "invalid_password"})
         self.assertDictEqual(response.data, {"error": "error", "data": "Invalid username or password"})
 
@@ -122,7 +123,7 @@ class UserLoginAPITest(APITestCase):
         code = OtpAuth(token).totp()
         if len(str(code)) < 6:
             code = (6 - len(str(code))) * "0" + str(code)
-        response = self.client.parent_post(self.login_url,
+        response = self.client.post(self.login_url,
                                            data={"username": self.username,
                                           "password": self.password,
                                           "tfa_code": code})
@@ -133,7 +134,7 @@ class UserLoginAPITest(APITestCase):
 
     def test_tfa_login_wrong_code(self):
         self._set_tfa()
-        response = self.client.parent_post(self.login_url,
+        response = self.client.post(self.login_url,
                                            data={"username": self.username,
                                           "password": self.password,
                                           "tfa_code": "qqqqqq"})
@@ -144,7 +145,7 @@ class UserLoginAPITest(APITestCase):
 
     def test_tfa_login_without_code(self):
         self._set_tfa()
-        response = self.client.parent_post(self.login_url,
+        response = self.client.post(self.login_url,
                                            data={"username": self.username,
                                           "password": self.password})
         self.assertDictEqual(response.data, {"error": "error", "data": "tfa_required"})
@@ -155,7 +156,7 @@ class UserLoginAPITest(APITestCase):
     def test_user_disabled(self):
         self.user.is_disabled = True
         self.user.save()
-        resp = self.client.parent_post(self.login_url, data={"username": self.username,
+        resp = self.client.post(self.login_url, data={"username": self.username,
                                                       "password": self.password})
         self.assertDictEqual(resp.data, {"error": "error", "data": "Your account has been disabled"})
 
@@ -173,11 +174,10 @@ class UserRegisterAPITest(CaptchaTest):
     def setUp(self):
         self.client = APIClient()
         self.register_url = self.reverse("user_register_api")
-        self.captcha = rand_str(4)
+        # self.captcha = rand_str(4)
 
-        self.data = {"username": "test_user", "password": "testuserpassword",
-                     "real_name": "real_name", "email": "test@qduoj.com",
-                     "captcha": self._set_captcha(self.client.session)}
+        self.data = {"username": "test1234@test.com", "password": "test1234@",
+                     "real_name": "real_name", "email": "test@qduoj.com",}
 
     def test_website_config_limit(self):
         SysOptions.allow_register = False
@@ -220,7 +220,7 @@ class SessionManagementAPITest(APITestCase):
         self.url = self.reverse("session_management_api")
         # launch a request to provide session data
         login_url = self.reverse("user_login_api")
-        self.client.parent_post(login_url, data={"username": "test", "password": "test123"})
+        self.client.post(login_url, data={"username": "test", "password": "test123"})
 
     def test_get_sessions(self):
         resp = self.client.get(self.url)
@@ -279,20 +279,20 @@ class TwoFactorAuthAPITest(APITestCase):
 
     def test_open_tfa_with_invalid_code(self):
         self.test_get_image()
-        resp = self.client.parent_post(self.url, data={"code": "000000"})
+        resp = self.client.post(self.url, data={"code": "000000"})
         self.assertDictEqual(resp.data, {"error": "error", "data": "Invalid code"})
 
     def test_open_tfa_with_correct_code(self):
         self.test_get_image()
         code = self._get_tfa_code()
-        resp = self.client.parent_post(self.url, data={"code": code})
+        resp = self.client.post(self.url, data={"code": code})
         self.assertSuccess(resp)
         user = User.objects.first()
         self.assertEqual(user.two_factor_auth, True)
 
     def test_close_tfa_with_invalid_code(self):
         self.test_open_tfa_with_correct_code()
-        resp = self.client.parent_post(self.url, data={"code": "000000"})
+        resp = self.client.post(self.url, data={"code": "000000"})
         self.assertDictEqual(resp.data, {"error": "error", "data": "Invalid code"})
 
     def test_close_tfa_with_correct_code(self):
@@ -318,7 +318,7 @@ class ApplyResetPasswordAPITest(CaptchaTest):
         self.data["captcha"] = self._set_captcha(self.client.session)
 
     def test_apply_reset_password(self, send_email_send):
-        resp = self.client.parent_post(self.url, data=self.data)
+        resp = self.client.post(self.url, data=self.data)
         self.assertSuccess(resp)
         send_email_send.assert_called()
 
@@ -326,7 +326,7 @@ class ApplyResetPasswordAPITest(CaptchaTest):
         self.test_apply_reset_password()
         send_email_send.reset_mock()
         self._refresh_captcha()
-        resp = self.client.parent_post(self.url, data=self.data)
+        resp = self.client.post(self.url, data=self.data)
         self.assertDictEqual(resp.data, {"error": "error", "data": "You can only reset password once per 20 minutes"})
         send_email_send.assert_not_called()
 
@@ -352,20 +352,20 @@ class ResetPasswordAPITest(CaptchaTest):
                      "password": "test456"}
 
     def test_reset_password_with_correct_token(self):
-        resp = self.client.parent_post(self.url, data=self.data)
+        resp = self.client.post(self.url, data=self.data)
         self.assertSuccess(resp)
         self.assertTrue(self.client.login(username="test", password="test456"))
 
     def test_reset_password_with_invalid_token(self):
         self.data["token"] = "aaaaaaaaaaa"
-        resp = self.client.parent_post(self.url, data=self.data)
+        resp = self.client.post(self.url, data=self.data)
         self.assertDictEqual(resp.data, {"error": "error", "data": "Token does not exist"})
 
     def test_reset_password_with_expired_token(self):
         user = User.objects.first()
         user.reset_password_token_expire_time = now() - timedelta(seconds=30)
         user.save()
-        resp = self.client.parent_post(self.url, data=self.data)
+        resp = self.client.post(self.url, data=self.data)
         self.assertDictEqual(resp.data, {"error": "error", "data": "Token has expired"})
 
 
@@ -377,19 +377,19 @@ class UserChangeEmailAPITest(APITestCase):
         self.data = {"password": "test123", "new_email": self.new_mail}
 
     def test_change_email_success(self):
-        resp = self.client.parent_post(self.url, data=self.data)
+        resp = self.client.post(self.url, data=self.data)
         self.assertSuccess(resp)
 
     def test_wrong_password(self):
         self.data["password"] = "aaaa"
-        resp = self.client.parent_post(self.url, data=self.data)
+        resp = self.client.post(self.url, data=self.data)
         self.assertDictEqual(resp.data, {"error": "error", "data": "Wrong password"})
 
     def test_duplicate_email(self):
         u = self.create_user("aa", "bb", login=False)
         u.email = self.new_mail
         u.save()
-        resp = self.client.parent_post(self.url, data=self.data)
+        resp = self.client.post(self.url, data=self.data)
         self.assertDictEqual(resp.data, {"error": "error", "data": "The email is owned by other account"})
 
 
@@ -413,19 +413,19 @@ class UserChangePasswordAPITest(APITestCase):
         return code
 
     def test_login_required(self):
-        response = self.client.parent_post(self.url, data=self.data)
+        response = self.client.post(self.url, data=self.data)
         self.assertEqual(response.data, {"error": "permission-denied", "data": "Please login first"})
 
     def test_valid_ola_password(self):
         self.assertTrue(self.client.login(username=self.username, password=self.old_password))
-        response = self.client.parent_post(self.url, data=self.data)
+        response = self.client.post(self.url, data=self.data)
         self.assertEqual(response.data, {"error": None, "data": "Succeeded"})
         self.assertTrue(self.client.login(username=self.username, password=self.new_password))
 
     def test_invalid_old_password(self):
         self.assertTrue(self.client.login(username=self.username, password=self.old_password))
         self.data["old_password"] = "invalid"
-        response = self.client.parent_post(self.url, data=self.data)
+        response = self.client.post(self.url, data=self.data)
         self.assertEqual(response.data, {"error": "error", "data": "Invalid old password"})
 
     def test_tfa_code_required(self):
@@ -434,11 +434,11 @@ class UserChangePasswordAPITest(APITestCase):
         self.user.save()
         self.assertTrue(self.client.login(username=self.username, password=self.old_password))
         self.data["tfa_code"] = rand_str(6)
-        resp = self.client.parent_post(self.url, data=self.data)
+        resp = self.client.post(self.url, data=self.data)
         self.assertEqual(resp.data, {"error": "error", "data": "Invalid two factor verification code"})
 
         self.data["tfa_code"] = self._get_tfa_code()
-        resp = self.client.parent_post(self.url, data=self.data)
+        resp = self.client.post(self.url, data=self.data)
         self.assertSuccess(resp)
 
 
@@ -577,7 +577,7 @@ class AdminUserTest(APITestCase):
         data = {"users": [["user1", "pass1", "eami1@e.com", "user1"],
                           ["user2", "pass3", "eamil3@e.com", "user2"]]
                 }
-        resp = self.client.parent_post(self.url, data)
+        resp = self.client.post(self.url, data)
         self.assertSuccess(resp)
         # successfully created 2 users
         self.assertEqual(User.objects.all().count(), 4)
@@ -586,7 +586,7 @@ class AdminUserTest(APITestCase):
         data = {"users": [["user1", "pass1", "eami1@e.com", "user1"],
                           ["user1", "pass1", "eami1@e.com", "user1"]]
                 }
-        resp = self.client.parent_post(self.url, data)
+        resp = self.client.post(self.url, data)
         self.assertFailed(resp, "DETAIL:  Key (username)=(user1) already exists.")
         # no user is created
         self.assertEqual(User.objects.all().count(), 2)
@@ -615,17 +615,17 @@ class GenerateUserAPITest(APITestCase):
         data = deepcopy(self.data)
         data["prefix"] = "t" * 16
         data["suffix"] = "s" * 14
-        resp = self.client.parent_post(self.url, data=data)
+        resp = self.client.post(self.url, data=data)
         self.assertEqual(resp.data["data"], "Username should not more than 32 characters")
 
         data2 = deepcopy(self.data)
         data2["number_from"] = 106
-        resp = self.client.parent_post(self.url, data=data2)
+        resp = self.client.post(self.url, data=data2)
         self.assertEqual(resp.data["data"], "Start number must be lower than end number")
 
     @mock.patch("account.views.admin.xlsxwriter.Workbook")
     def test_generate_user_success(self, mock_workbook):
-        resp = self.client.parent_post(self.url, data=self.data)
+        resp = self.client.post(self.url, data=self.data)
         self.assertSuccess(resp)
         mock_workbook.assert_called()
 
@@ -636,11 +636,11 @@ class OpenAPIAppkeyAPITest(APITestCase):
         self.url = self.reverse("open_api_appkey_api")
 
     def test_reset_appkey(self):
-        resp = self.client.parent_post(self.url, data={})
+        resp = self.client.post(self.url, data={})
         self.assertFailed(resp)
 
         self.user.open_api = True
         self.user.save()
-        resp = self.client.parent_post(self.url, data={})
+        resp = self.client.post(self.url, data={})
         self.assertSuccess(resp)
         self.assertEqual(resp.data["data"]["appkey"], User.objects.get(username=self.user.username).open_api_appkey)
