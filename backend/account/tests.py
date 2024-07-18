@@ -363,7 +363,21 @@ class ResetPasswordAPITest(CaptchaTest):
         user.save()
         self.data = {"token": user.reset_password_token,
                      "captcha": self._set_captcha(self.client.session),
-                     "password": "test456"}
+                     "password": "test1111!"}
+
+    def test_reset_password_with_invalid_password(self):
+        # 8자보다 짧은 비밀번호
+        self.data["password"] = "invalid"
+        resp = self.client.post(self.url, data=self.data)
+        self.assertDictEqual(resp.data, {"error": "invalid-password", "data": "password: Ensure this field has at least 8 characters."})
+        # 특수문자 없는 비밀번호
+        self.data["password"] = "aaaaa33234"
+        resp = self.client.post(self.url, data=self.data)
+        self.assertDictEqual(resp.data, {"error": "invalid-password", "data": "password: This value does not match the required pattern."})
+        # 숫자 없는 비밀번호
+        self.data["password"] = "aaaaa!!!!!"
+        resp = self.client.post(self.url, data=self.data)
+        self.assertDictEqual(resp.data, {"error": "invalid-password", "data": "password: This value does not match the required pattern."})
 
     def test_reset_password_with_correct_token(self):
         resp = self.client.post(self.url, data=self.data)
