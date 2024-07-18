@@ -175,9 +175,9 @@ class UserRegisterAPITest(CaptchaTest):
         self.client = APIClient()
         self.register_url = self.reverse("user_register_api")
         # self.captcha = rand_str(4)
-
-        self.data = {"username": "test1234@test.com", "password": "test1234@",
-                     "real_name": "real_name", "email": "test@qduoj.com",}
+        self.create_school_fixtures(1, "공과대학", 1, "정보컴퓨터공학")
+        self.data = {"email": "test1234@naver.com", "password": "test1234@", "username": "testtest",
+                     "real_name": "realname", "student_id":"202400000", "collegeId": 1, "departmentId": 1}
 
     def test_website_config_limit(self):
         SysOptions.allow_register = False
@@ -199,7 +199,6 @@ class UserRegisterAPITest(CaptchaTest):
 
     def test_username_already_exists(self):
         self.test_register_with_correct_info()
-
         self.data["captcha"] = self._set_captcha(self.client.session)
         self.data["email"] = "test1@qduoj.com"
         response = self.client.post(self.register_url, data=self.data)
