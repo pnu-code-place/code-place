@@ -8,10 +8,6 @@ class Difficulty(Choices):
     HIGH = "High"
     VERYHIGH = "VeryHigh"
 
-
-LINK_NOTICE_SCRAPING_URL = "https://swedu.pusan.ac.kr/swedu/31630/subview.do"
-LINK_NOTICE_LIMIT = 5
-
 class Tier:
     tiers = {   # 티어별 시작 점수
         'sprout': 0,
