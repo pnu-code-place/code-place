@@ -9,15 +9,6 @@ ARG TARGETVARIANT
 
 WORKDIR /app
 
-# Chromedriver 설치
-RUN apk update
-RUN apk add chromium chromium-chromedriver
-ENV CHROME_BIN=/usr/bin/chromedriver \
-    CHROMEDRIVER_PATH=/usr/lib/chromium/
-
-# Selenium 캐시 폴더 생성 및 권한 설정
-RUN mkdir -p /root/.cache/selenium && chmod 777 /root/.cache/selenium
-
 COPY ./deploy/requirements.txt /app/deploy/
 
 # psycog2 의존 모듈 libpq-dev 설치
