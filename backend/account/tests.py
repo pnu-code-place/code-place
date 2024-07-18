@@ -17,6 +17,9 @@ from utils.constants import ContestRuleType
 
 
 class PermissionDecoratorTest(APITestCase):
+    """
+    데코레이터 테스트
+    """
     def setUp(self):
         self.regular_user = User.objects.create(username="regular_user")
         self.admin = User.objects.create(username="admin")
@@ -35,6 +38,9 @@ class PermissionDecoratorTest(APITestCase):
 
 
 class DuplicateUserCheckAPITest(APITestCase):
+    """
+    닉네임 또는 이메일 유효성 검사 API 테스트
+    """
     def setUp(self):
         user = self.create_user("test", "test123", login=False)
         user.email = "test@test.com"
@@ -83,6 +89,9 @@ class TFARequiredCheckAPITest(APITestCase):
 
 
 class UserLoginAPITest(APITestCase):
+    """
+    로그인 API 테스트
+    """
     def setUp(self):
         self.username = "test@test.com"
         self.password = "seung8869@"
@@ -305,6 +314,9 @@ class TwoFactorAuthAPITest(APITestCase):
 
 @mock.patch("account.views.oj.send_email_async.send")
 class ApplyResetPasswordAPITest(CaptchaTest):
+    """
+    비밀번호 재설정 (로그인 전) 이메일 발송 API 테스트
+    """
     def setUp(self):
         self.create_user("test", "test123", login=False)
         user = User.objects.first()
@@ -339,6 +351,9 @@ class ApplyResetPasswordAPITest(CaptchaTest):
 
 
 class ResetPasswordAPITest(CaptchaTest):
+    """
+    비밀번호 재설정 (로그인 전) API 테스트
+    """
     def setUp(self):
         self.create_user("test", "test123", login=False)
         self.url = self.reverse("reset_password_api")
