@@ -14,7 +14,6 @@ urlpatterns = [
     url(r"^api/", include("submission.urls.oj")),
     url(r"^api/admin/", include("submission.urls.admin")),
     url(r"^api/admin/", include("utils.urls")),
-    url(r"^api/", include("community.urls.oj")),
     url(r"^api/", include("banner.urls.oj")),
     url(r"^api/admin/", include("banner.urls.admin")),
     url(r"^api/", include("profile.urls.oj")),

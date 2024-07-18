@@ -65,13 +65,13 @@ class SubmissionAPITest(SubmissionPrepare):
         self.url = self.reverse("submission_api")
 
     def test_create_submission(self, judge_task):
-        resp = self.client.parent_post(self.url, self.submission_data)
+        resp = self.client.post(self.url, self.submission_data)
         self.assertSuccess(resp)
         judge_task.assert_called()
 
     def test_create_submission_with_wrong_language(self, judge_task):
         self.submission_data.update({"language": "Python3"})
-        resp = self.client.parent_post(self.url, self.submission_data)
+        resp = self.client.post(self.url, self.submission_data)
         self.assertFailed(resp)
         self.assertDictEqual(resp.data, {"error": "error",
                                          "data": "Python3 is now allowed in the problem"})
