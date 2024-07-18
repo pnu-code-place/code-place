@@ -431,29 +431,6 @@ class UserRegisterAPI(APIView):
             user_solved.save()
         return self.success("Succeeded")
 
-
-class UserChangeEmailAPI(APIView):
-    @validate_serializer(UserChangeEmailSerializer)
-    @login_required
-    def post(self, request):
-        data = request.data
-        user = auth.authenticate(username=request.user.username, password=data["password"])
-        if user:
-            if user.two_factor_auth:
-                if "tfa_code" not in data:
-                    return self.error("tfa_required")
-                if not OtpAuth(user.tfa_token).valid_totp(data["tfa_code"]):
-                    return self.error("Invalid two factor verification code")
-            data["new_email"] = data["new_email"].lower()
-            if User.objects.filter(email=data["new_email"]).exists():
-                return self.error("The email is owned by other account")
-            user.email = data["new_email"]
-            user.save()
-            return self.success("Succeeded")
-        else:
-            return self.error("Wrong password")
-
-
 class UserChangePasswordAPI(APIView):
     @validate_serializer(UserChangePasswordSerializer)
     @login_required
@@ -538,6 +515,7 @@ class SessionManagementAPI(APIView):
         session_store = engine.SessionStore
         current_session = request.session.session_key
         session_keys = request.user.session_keys
+
         result = []
         modified = False
         for key in session_keys[:]:
@@ -547,7 +525,6 @@ class SessionManagementAPI(APIView):
                 session_keys.remove(key)
                 modified = True
                 continue
-
             s = {}
             if current_session == key:
                 s["current_session"] = True

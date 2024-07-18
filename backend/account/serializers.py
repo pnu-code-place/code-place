@@ -333,7 +333,10 @@ class ApplyResetPasswordSerializer(serializers.Serializer):
 
 class ResetPasswordSerializer(serializers.Serializer):
     token = serializers.CharField()
-    password = serializers.CharField(min_length=6)
+    password = serializers.RegexField(
+        regex=r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$',
+        min_length=8
+    )
     captcha = serializers.CharField()
 
 
