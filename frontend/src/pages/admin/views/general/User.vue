@@ -194,7 +194,7 @@
           </el-col>
           <el-col :span="12">
             <el-form-item :label="$t('m.User_New_Password')">
-              <el-input v-model="user.password"></el-input>
+              <input class="user-password-input" v-model="user.password"></input>
             </el-form-item>
           </el-col>
           <el-col :span="12">
@@ -410,6 +410,24 @@
 </script>
 
 <style scoped lang="less">
+  .user-password-input {
+    -webkit-appearance: none;
+    background-color: #fff;
+    background-image: none;
+    border-radius: 4px;
+    border: 1px solid #dcdfe6;
+    box-sizing: border-box;
+    color: #606266;
+    display: inline-block;
+    height: 40px;
+    line-height: 40px;
+    outline: 0;
+    padding: 0 15px;
+    -webkit-transition: border-color .2s cubic-bezier(.645,.045,.355,1);
+    transition: border-color .2s cubic-bezier(.645,.045,.355,1);
+    width: 100%;
+  }
+
   .import-user-icon {
     color: #555555;
     margin-left: 4px;
