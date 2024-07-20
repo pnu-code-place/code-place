@@ -14,3 +14,17 @@ class GetHomeStatisticsAPITest(APITestCase):
     def test_get_home_ranking_with_sufficient_data(self):
         resp = self.client.get(self.url)
         self.assertSuccess(resp)
+
+class GetHomeRSSNoticeAPITest(APITestCase):
+    """
+    RSS 공지사항을 JSON으로 파싱하여 반환하는 API 테스트
+    """
+    def setUp(self):
+        self.url = self.reverse("home_rss_notice")
+
+    def test_get_home_rss_notice(self):
+        resp = self.client.get(self.url)
+        self.assertSuccess(resp)
+        self.assertTrue(len(resp.data) <= 5)
+
+
