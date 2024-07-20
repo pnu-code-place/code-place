@@ -9,11 +9,11 @@ from utils.api import APIView
 class HomeRankingAPI(APIView):
     def get(self, request):
         # rank, avatar, tier, total_score, fluctuation
-        limit = request.GET.get('limit', 100)
+        limit = request.GET.get('limit', 3)
         try:
             ranking = UserScore.objects.all().order_by('-total_score')[:limit]
         except UserScore.DoesNotExist:
-            return HttpResponseNotFound('no user score table')
+            return self.error('no user score table')
         return self.success(HomeRankingSerializer(ranking, many=True).data)
 
 
