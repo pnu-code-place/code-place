@@ -1,6 +1,6 @@
 [
   {
-    "model": "account.department",
+    "model": "school.department",
     "pk": 98,
     "fields": {
       "department_name": "의예과",
@@ -8,7 +8,7 @@
     }
   },
   {
-    "model": "account.department",
+    "model": "school.department",
     "pk": 99,
     "fields": {
       "department_name": "의학과",

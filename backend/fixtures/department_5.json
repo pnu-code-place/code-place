@@ -1,6 +1,6 @@
 [
   {
-    "model": "account.department",
+    "model": "school.department",
     "pk": 46,
     "fields": {
       "department_name": "국어교육과",
@@ -8,7 +8,7 @@
     }
   },
   {
-    "model": "account.department",
+    "model": "school.department",
     "pk": 47,
     "fields": {
       "department_name": "영어교육과",
@@ -16,7 +16,7 @@
     }
   },
   {
-    "model": "account.department",
+    "model": "school.department",
     "pk": 48,
     "fields": {
       "department_name": "독어교육과",
@@ -24,7 +24,7 @@
     }
   },
   {
-    "model": "account.department",
+    "model": "school.department",
     "pk": 49,
     "fields": {
       "department_name": "불어교육과",
@@ -32,7 +32,7 @@
     }
   },
   {
-    "model": "account.department",
+    "model": "school.department",
     "pk": 50,
     "fields": {
       "department_name": "교육학과",
@@ -40,7 +40,7 @@
     }
   },
   {
-    "model": "account.department",
+    "model": "school.department",
     "pk": 51,
     "fields": {
       "department_name": "유아교육과",
@@ -48,7 +48,7 @@
     }
   },
   {
-    "model": "account.department",
+    "model": "school.department",
     "pk": 52,
     "fields": {
       "department_name": "특수교육과",
@@ -56,7 +56,7 @@
     }
   },
   {
-    "model": "account.department",
+    "model": "school.department",
     "pk": 53,
     "fields": {
       "department_name": "일반사회교육과",
@@ -64,7 +64,7 @@
     }
   },
   {
-    "model": "account.department",
+    "model": "school.department",
     "pk": 54,
     "fields": {
       "department_name": "역사교육과",
@@ -72,7 +72,7 @@
     }
   },
   {
-    "model": "account.department",
+    "model": "school.department",
     "pk": 55,
     "fields": {
       "department_name": "지리교육과",
@@ -80,7 +80,7 @@
     }
   },
   {
-    "model": "account.department",
+    "model": "school.department",
     "pk": 56,
     "fields": {
       "department_name": "윤리교육과",
@@ -88,7 +88,7 @@
     }
   },
   {
-    "model": "account.department",
+    "model": "school.department",
     "pk": 57,
     "fields": {
       "department_name": "수학교육과",
@@ -96,7 +96,7 @@
     }
   },
   {
-    "model": "account.department",
+    "model": "school.department",
     "pk": 58,
     "fields": {
       "department_name": "물리교육과",
@@ -104,7 +104,7 @@
     }
   },
   {
-    "model": "account.department",
+    "model": "school.department",
     "pk": 59,
     "fields": {
       "department_name": "화학교육과",
@@ -112,7 +112,7 @@
     }
   },
   {
-    "model": "account.department",
+    "model": "school.department",
     "pk": 60,
     "fields": {
       "department_name": "생물교육과",
@@ -120,7 +120,7 @@
     }
   },
   {
-    "model": "account.department",
+    "model": "school.department",
     "pk": 61,
     "fields": {
       "department_name": "지구과학교육과",
@@ -128,7 +128,7 @@
     }
   },
   {
-    "model": "account.department",
+    "model": "school.department",
     "pk": 62,
     "fields": {
       "department_name": "체육교육과",
