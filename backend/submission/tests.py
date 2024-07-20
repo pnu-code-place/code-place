@@ -32,7 +32,8 @@ DEFAULT_SUBMISSION_DATA = {
 
 class SubmissionPrepare(APITestCase):
     def _create_problem_and_submission(self):
-        user = self.create_admin("test", "test123", login=False)
+        self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
+        user = self.create_admin(email="test@test.com", username="test", password="test1234!", login=False)
         problem_data = deepcopy(DEFAULT_PROBLEM_DATA)
         tags = problem_data.pop("tags")
         problem_data["created_by"] = user
@@ -49,7 +50,7 @@ class SubmissionPrepare(APITestCase):
 class SubmissionListTest(SubmissionPrepare):
     def setUp(self):
         self._create_problem_and_submission()
-        self.create_user("123", "345")
+        self.create_user(email="testu@test.com", username="testu", password="test1234!")
         self.url = self.reverse("submission_list_api")
 
     def test_get_submission_list(self):
