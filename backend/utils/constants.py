@@ -39,6 +39,8 @@ CONTEST_PASSWORD_SESSION_KEY = "contest_password"
 
 BANNER_VISIBLE_LIMIT = 5
 
+RSS_FEED_URL = "https://swedu.pusan.ac.kr/bbs/swedu/6906/rssList.do?row=50"
+
 class ProblemField:
     fields = ['implementation', 'math', 'datastructure', 'search', 'sorting']
     strToInt = {
