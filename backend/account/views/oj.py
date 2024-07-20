@@ -20,18 +20,18 @@ from django.db import transaction
 
 from contest.models import Contest
 from problem.models import Problem
+from school.models import College, Department
 from utils.constants import ContestRuleType
 from options.options import SysOptions
 from utils.api import APIView, validate_serializer, CSRFExemptAPIView
 from utils.captcha import Captcha
 from utils.shortcuts import rand_str, img2base64, datetime2str
 from ..decorators import login_required
-from ..models import User, UserProfile, AdminType, College, Department, UserScore, UserSolved
+from ..models import User, UserProfile, AdminType, UserScore, UserSolved
 from ..serializers import (ApplyResetPasswordSerializer, ResetPasswordSerializer,
                            UserChangePasswordSerializer, UserLoginSerializer,
                            UserRegisterSerializer, UsernameOrEmailCheckSerializer,
                            RankInfoSerializer, UserChangeEmailSerializer, SSOSerializer,
-                           CollegeListSerializer, DepartmentSerializer,
                            DashboardSubmissionSerializer,
                            DashboardDepartmentSerializer, DashboardCollegeSerializer, DashboardRankSerializer,
                            DashboardUserInfoSerializer, DashboardFieldInfoSerializer,
@@ -40,25 +40,6 @@ from ..serializers import (ApplyResetPasswordSerializer, ResetPasswordSerializer
 from ..serializers import (TwoFactorAuthCodeSerializer, UserProfileSerializer,
                            EditUserProfileSerializer, ImageUploadForm)
 from ..tasks import send_email_async
-
-
-class GetCollegeListAPI(APIView):
-    def get(self, request):
-        try:
-            college_list = College.objects.all()
-        except College.DoesNotExist:
-            return self.error("failed to get college list")
-        return self.success(CollegeListSerializer(college_list, many=True).data)
-
-class GetDepartmentListAPI(APIView):
-
-    def get(self, request):
-        try:
-            college_id = request.GET.get("college_id")
-            department_list = Department.objects.filter(college=college_id).order_by('id')
-        except Department.DoesNotExist:
-            return self.error("failed to get department list")
-        return self.success(DepartmentSerializer(department_list, many=True).data)
 
 class GetHomeStatisticsAPI(APIView):
     def get(self, request):

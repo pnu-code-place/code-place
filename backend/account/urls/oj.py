@@ -8,14 +8,11 @@ from ..views.oj import (ApplyResetPasswordAPI, ResetPasswordAPI,
                         CheckTFARequiredAPI, SessionManagementAPI,
                         ProfileProblemDisplayIDRefreshAPI, OpenAPIAppkeyAPI, SSOAPI,
                         ApplyUserEmailValidCheckAPI, UserEmailValidCheckAPI,
-                        GetCollegeListAPI, GetDepartmentListAPI,
                         GetHomeStatisticsAPI, NicknameValidCheckAPI)
 
 from utils.captcha.views import CaptchaAPIView
 
 urlpatterns = [
-    url(r"^college_list/?$", GetCollegeListAPI.as_view(), name="college_list"),
-    url(r"^department_list/?$", GetDepartmentListAPI.as_view(), name="department_list"),
     url(r"^home_statistics/?$", GetHomeStatisticsAPI.as_view(), name="home_statistics"),
     url(r"^login/?$", UserLoginAPI.as_view(), name="user_login_api"),
     url(r"^logout/?$", UserLogoutAPI.as_view(), name="user_logout_api"),
