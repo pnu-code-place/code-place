@@ -47,6 +47,7 @@ LOCAL_APPS = [
     'conf',
     'problem',
     'contest',
+    'ranking',
     'banner',
     'profile',
     'utils',
