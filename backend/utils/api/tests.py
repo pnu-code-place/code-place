@@ -2,7 +2,7 @@ from django.urls import reverse
 from django.test.testcases import TestCase
 from rest_framework.test import APIClient
 
-from account.models import AdminType, ProblemPermission, User, UserProfile, College, Department
+from account.models import AdminType, ProblemPermission, User, UserProfile, College, Department, UserSolved, UserScore
 
 
 class APITestCase(TestCase):
@@ -15,6 +15,8 @@ class APITestCase(TestCase):
         school = College.objects.get(id=college_id)
         major = Department.objects.get(id=department_id)
         UserProfile.objects.create(user=user, real_name=real_name, student_id=student_id, college_id=college_id, department_id=department_id, school=school, major=major)
+        UserScore.objects.create(user=user)
+        UserSolved.objects.create(user=user)
         user.save()
         if login:
             self.client.login(email=email, password=password)
