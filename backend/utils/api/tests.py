@@ -2,7 +2,8 @@ from django.urls import reverse
 from django.test.testcases import TestCase
 from rest_framework.test import APIClient
 
-from account.models import AdminType, ProblemPermission, User, UserProfile, College, Department, UserSolved, UserScore
+from account.models import AdminType, ProblemPermission, User, UserProfile, UserSolved, UserScore
+from school.models import College, Department
 
 
 class APITestCase(TestCase):

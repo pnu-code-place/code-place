@@ -1,20 +1,9 @@
 from django import forms
 
+from school.models import College, Department
 from utils.api import serializers, UsernameSerializer
 
-from .models import AdminType, ProblemPermission, User, UserProfile, UserScore, Department, College, UserSolved
-
-
-class CollegeListSerializer(serializers.Serializer):
-    id = serializers.IntegerField()
-    college_name = serializers.CharField()
-
-
-class DepartmentSerializer(serializers.Serializer):
-    id = serializers.IntegerField()
-    department_name = serializers.CharField()
-    college_id = serializers.IntegerField()
-
+from .models import AdminType, ProblemPermission, User, UserProfile, UserScore, UserSolved
 
 class HomeStatistics(serializers.Serializer):
     total_problem_length = serializers.IntegerField()

@@ -1,6 +1,6 @@
 [
   {
-    "model": "account.department",
+    "model": "school.department",
     "pk": 97,
     "fields": {
       "department_name": "간호학과",

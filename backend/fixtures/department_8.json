@@ -1,6 +1,6 @@
 [
   {
-    "model": "account.department",
+    "model": "school.department",
     "pk": 69,
     "fields": {
       "department_name": "약학대학-약학전공",
@@ -8,7 +8,7 @@
     }
   },
   {
-    "model": "account.department",
+    "model": "school.department",
     "pk": 70,
     "fields": {
       "department_name": "약학대학-제약학전공",

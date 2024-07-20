@@ -1,6 +1,6 @@
 [
   {
-    "model": "account.department",
+    "model": "school.department",
     "pk": 102,
     "fields": {
       "department_name": "교양교육원",

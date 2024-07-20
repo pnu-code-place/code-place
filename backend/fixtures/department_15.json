@@ -1,6 +1,6 @@
 [
   {
-    "model": "account.department",
+    "model": "school.department",
     "pk": 100,
     "fields": {
       "department_name": "컴퓨터공학전공-인공지능전공",
@@ -8,7 +8,7 @@
     }
   },
   {
-    "model": "account.department",
+    "model": "school.department",
     "pk": 101,
     "fields": {
       "department_name": "컴퓨터공학전공-의생명융합공학부",

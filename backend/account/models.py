@@ -2,6 +2,8 @@ from django.contrib.auth.models import AbstractBaseUser
 from django.conf import settings
 from django.core.validators import RegexValidator
 from django.db import models
+
+from school.models import College, Department
 from utils.models import JSONField
 from utils.constants import Tier
 
@@ -16,22 +18,6 @@ class ProblemPermission(object):
     NONE = "None"
     OWN = "Own"
     ALL = "All"
-
-
-class College(models.Model):
-    college_name = models.CharField(max_length=255)
-
-    class Meta:
-        db_table = 'college'
-
-
-class Department(models.Model):
-    college = models.ForeignKey(College, null=True, on_delete=models.SET_NULL)
-    department_name = models.CharField(max_length=255)
-
-    class Meta:
-        db_table = 'department'
-
 
 class UserManager(models.Manager):
     use_in_migrations = True
