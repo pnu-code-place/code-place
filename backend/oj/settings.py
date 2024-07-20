@@ -50,6 +50,7 @@ LOCAL_APPS = [
     'ranking',
     'banner',
     'profile',
+    'contents',
     'school',
     'utils',
     'submission',

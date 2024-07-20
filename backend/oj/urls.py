@@ -19,4 +19,5 @@ urlpatterns = [
     url(r"^api/", include("profile.urls.oj")),
     url(r"^api/", include("ranking.urls.oj")),
     url(r"^api/", include("school.urls.oj")),
+    url(r"^api/", include("contents.urls.oj")),
 ]

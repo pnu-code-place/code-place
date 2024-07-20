@@ -7,13 +7,11 @@ from ..views.oj import (ApplyResetPasswordAPI, ResetPasswordAPI,
                         UserProfileDashBoardAPI,
                         CheckTFARequiredAPI, SessionManagementAPI,
                         ProfileProblemDisplayIDRefreshAPI, OpenAPIAppkeyAPI, SSOAPI,
-                        ApplyUserEmailValidCheckAPI, UserEmailValidCheckAPI,
-                        GetHomeStatisticsAPI, NicknameValidCheckAPI)
+                        ApplyUserEmailValidCheckAPI, UserEmailValidCheckAPI, NicknameValidCheckAPI)
 
 from utils.captcha.views import CaptchaAPIView
 
 urlpatterns = [
-    url(r"^home_statistics/?$", GetHomeStatisticsAPI.as_view(), name="home_statistics"),
     url(r"^login/?$", UserLoginAPI.as_view(), name="user_login_api"),
     url(r"^logout/?$", UserLogoutAPI.as_view(), name="user_logout_api"),
     url(r"^apply_user_email_valid_check/?$", ApplyUserEmailValidCheckAPI.as_view(),
