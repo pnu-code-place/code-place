@@ -35,7 +35,7 @@ class SubmissionSafeModelSerializer(serializers.ModelSerializer):
 class SubmissionListSerializer(serializers.ModelSerializer):
     problem = serializers.SlugRelatedField(read_only=True, slug_field="_id")
     show_link = serializers.SerializerMethodField()
-    user_avatar = serializers.SerializerMethodField()
+    # user_avatar = serializers.SerializerMethodField()
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop("user", None)
