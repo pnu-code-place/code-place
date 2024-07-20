@@ -5,11 +5,6 @@ from utils.api import serializers, UsernameSerializer
 
 from .models import AdminType, ProblemPermission, User, UserProfile, UserScore, UserSolved
 
-class HomeStatistics(serializers.Serializer):
-    total_problem_length = serializers.IntegerField()
-    accepted_problem_length = serializers.IntegerField()
-    ended_contest_length = serializers.IntegerField()
-
 
 class UserLoginSerializer(serializers.Serializer):
     username = serializers.CharField()
