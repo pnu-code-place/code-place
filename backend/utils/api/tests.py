@@ -20,7 +20,7 @@ class APITestCase(TestCase):
         UserSolved.objects.create(user=user)
         user.save()
         if login:
-            self.client.login(email=email, password=password)
+            self.client.login(username=email, password=password)
         return user
 
     def create_school_fixtures(self, college_id, college_name, department_id, department_name):

@@ -5,6 +5,7 @@ from .models import Announcement
 
 class AnnouncementAdminTest(APITestCase):
     def setUp(self):
+        self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
         self.user = self.create_super_admin()
         self.url = self.reverse("announcement_admin_api")
 
@@ -39,6 +40,7 @@ class AnnouncementAdminTest(APITestCase):
 
 class AnnouncementAPITest(APITestCase):
     def setUp(self):
+        self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
         self.user = self.create_super_admin()
         Announcement.objects.create(title="title", content="content", visible=True, created_by=self.user)
         self.url = self.reverse("announcement_api")

@@ -11,6 +11,7 @@ from .models import JudgeServer
 
 class SMTPConfigTest(APITestCase):
     def setUp(self):
+        self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
         self.user = self.create_super_admin()
         self.url = self.reverse("smtp_admin_api")
         self.password = "testtest"
@@ -55,6 +56,7 @@ class SMTPConfigTest(APITestCase):
 
 class WebsiteConfigAPITest(APITestCase):
     def test_create_website_config(self):
+        self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
         self.create_super_admin()
         url = self.reverse("website_config_api")
         data = {"website_base_url": "http://test.com", "website_name": "test name",
@@ -64,6 +66,7 @@ class WebsiteConfigAPITest(APITestCase):
         self.assertSuccess(resp)
 
     def test_edit_website_config(self):
+        self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
         self.create_super_admin()
         url = self.reverse("website_config_api")
         data = {"website_base_url": "http://test.com", "website_name": "test name",
@@ -107,6 +110,7 @@ class JudgeServerHeartbeatTest(APITestCase):
 
 class JudgeServerAPITest(APITestCase):
     def setUp(self):
+        self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
         self.server = JudgeServer.objects.create(**{"hostname": "testhostname", "judger_version": "1.0.4",
                                                     "cpu_core": 4, "cpu_usage": 90.5, "memory_usage": 80.3,
                                                     "last_heartbeat": timezone.now()})
@@ -137,6 +141,7 @@ class LanguageListAPITest(APITestCase):
 
 class TestCasePruneAPITest(APITestCase):
     def setUp(self):
+        self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
         self.url = self.reverse("prune_test_case_api")
         self.create_super_admin()
 
@@ -158,6 +163,7 @@ class TestCasePruneAPITest(APITestCase):
 
 class ReleaseNoteAPITest(APITestCase):
     def setUp(self):
+        self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
         self.url = self.reverse("get_release_notes_api")
         self.create_super_admin()
         self.latest_data = {"update": [
@@ -176,6 +182,7 @@ class ReleaseNoteAPITest(APITestCase):
 
 class DashboardInfoAPITest(APITestCase):
     def setUp(self):
+        self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
         self.url = self.reverse("dashboard_info_api")
         self.create_admin()
 
