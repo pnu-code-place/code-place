@@ -32,7 +32,8 @@ DEFAULT_SUBMISSION_DATA = {
 
 class SubmissionPrepare(APITestCase):
     def _create_problem_and_submission(self):
-        user = self.create_admin("test", "test123", login=False)
+        self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
+        user = self.create_admin(email="test@test.com", username="test", password="test1234!", login=False)
         problem_data = deepcopy(DEFAULT_PROBLEM_DATA)
         tags = problem_data.pop("tags")
         problem_data["created_by"] = user
@@ -49,8 +50,12 @@ class SubmissionPrepare(APITestCase):
 class SubmissionListTest(SubmissionPrepare):
     def setUp(self):
         self._create_problem_and_submission()
-        self.create_user("123", "345")
+        self.create_user(email="testu@test.com", username="testu", password="test1234!")
         self.url = self.reverse("submission_list_api")
+
+    def test_get_submission_list_with_no_limit(self):
+        resp = self.client.get(self.url, data={})
+        self.assertDictEqual(resp.data, {"error": "error", "data": "Limit is needed"})
 
     def test_get_submission_list(self):
         resp = self.client.get(self.url, data={"limit": "10"})
@@ -61,7 +66,7 @@ class SubmissionListTest(SubmissionPrepare):
 class SubmissionAPITest(SubmissionPrepare):
     def setUp(self):
         self._create_problem_and_submission()
-        self.user = self.create_user("123", "test123")
+        self.user = self.create_user(email="testuser@test.com", username="testuser", password="test1234!")
         self.url = self.reverse("submission_api")
 
     def test_create_submission(self, judge_task):

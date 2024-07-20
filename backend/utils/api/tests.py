@@ -1,3 +1,5 @@
+import random
+
 from django.urls import reverse
 from django.test.testcases import TestCase
 from rest_framework.test import APIClient
@@ -9,7 +11,7 @@ from school.models import College, Department
 class APITestCase(TestCase):
     client_class = APIClient
 
-    def create_user(self, email, username, password, real_name="real", student_id="202412345", college_id="1", department_id="1", admin_type=AdminType.REGULAR_USER, login=True,
+    def create_user(self, email, username, password, real_name="real", student_id="2024" + str(random.randint(9999,99999)), college_id="1", department_id="1", admin_type=AdminType.REGULAR_USER, login=True,
                     problem_permission=ProblemPermission.NONE):
         user = User.objects.create(email=email, username=username, admin_type=admin_type, problem_permission=problem_permission)
         user.set_password(password)
