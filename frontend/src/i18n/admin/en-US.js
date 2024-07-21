@@ -19,6 +19,7 @@ export const m = {
   System_Config: '시스템 환경',
   Judge_Server: '저지 서버',
   Prune_Test_Case: '테스트 케이스 목록',
+  Home_Banner_Management : '홈 배너 관리',
   Problem: '문제',
   Problem_List: '문제 목록',
   Create_Problem: '문제 생성',
