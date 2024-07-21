@@ -4,7 +4,7 @@ import sys
 
 opts, args = getopt.getopt(sys.argv[1:], "cm:", ["coverage=", "module="])
 
-is_coverage = False
+is_coverage = True
 test_module = ""
 setting = "oj.settings"
 

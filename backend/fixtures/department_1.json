@@ -1,6 +1,6 @@
 [
   {
-    "model": "account.department",
+    "model": "school.department",
     "pk": 1,
     "fields": {
       "department_name": "국어국문학과",
@@ -8,7 +8,7 @@
     }
   },
   {
-    "model": "account.department",
+    "model": "school.department",
     "pk": 2,
     "fields": {
       "department_name": "일어일문학과",
@@ -16,7 +16,7 @@
     }
   },
   {
-    "model": "account.department",
+    "model": "school.department",
     "pk": 3,
     "fields": {
       "department_name": "불어불문학과",
@@ -24,7 +24,7 @@
     }
   },
   {
-    "model": "account.department",
+    "model": "school.department",
     "pk": 4,
     "fields": {
       "department_name": "노어노문학과",
@@ -32,7 +32,7 @@
     }
   },
   {
-    "model": "account.department",
+    "model": "school.department",
     "pk": 5,
     "fields": {
       "department_name": "중어중문학과",
@@ -40,7 +40,7 @@
     }
   },
   {
-    "model": "account.department",
+    "model": "school.department",
     "pk": 6,
     "fields": {
       "department_name": "영어영문학과",
@@ -48,7 +48,7 @@
     }
   },
   {
-    "model": "account.department",
+    "model": "school.department",
     "pk": 7,
     "fields": {
       "department_name": "독어독문학과",
@@ -56,7 +56,7 @@
     }
   },
   {
-    "model": "account.department",
+    "model": "school.department",
     "pk": 8,
     "fields": {
       "department_name": "한문학과",
@@ -64,7 +64,7 @@
     }
   },
   {
-    "model": "account.department",
+    "model": "school.department",
     "pk": 9,
     "fields": {
       "department_name": "언어정보학과",
@@ -72,7 +72,7 @@
     }
   },
   {
-    "model": "account.department",
+    "model": "school.department",
     "pk": 10,
     "fields": {
       "department_name": "사학과",
@@ -80,7 +80,7 @@
     }
   },
   {
-    "model": "account.department",
+    "model": "school.department",
     "pk": 11,
     "fields": {
       "department_name": "철학과",
@@ -88,7 +88,7 @@
     }
   },
   {
-    "model": "account.department",
+    "model": "school.department",
     "pk": 12,
     "fields": {
       "department_name": "고고학과",

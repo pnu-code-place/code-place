@@ -37,8 +37,6 @@ VENDOR_APPS = [
     'django_dbconn_retry',
 ]
 
-SCHEDULER_CLASS = 'utils.scheduler.Scheduler'
-
 if production_env:
     VENDOR_APPS.append('raven.contrib.django.raven_compat')
 
@@ -49,12 +47,15 @@ LOCAL_APPS = [
     'conf',
     'problem',
     'contest',
+    'ranking',
     'banner',
+    'profile',
+    'contents',
+    'school',
     'utils',
     'submission',
     'options',
     'judge',
-    'community',
 ]
 
 INSTALLED_APPS = VENDOR_APPS + LOCAL_APPS
@@ -62,7 +63,7 @@ INSTALLED_APPS = VENDOR_APPS + LOCAL_APPS
 MIDDLEWARE = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    # 'django.middleware.csrf.CsrfViewMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'account.middleware.APITokenAuthMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',

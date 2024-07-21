@@ -18,18 +18,19 @@ DEFAULT_CONTEST_DATA = {"title": "test title", "description": "test description"
 
 class ContestAdminAPITest(APITestCase):
     def setUp(self):
+        self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
         self.create_super_admin()
         self.url = self.reverse("contest_admin_api")
         self.data = copy.deepcopy(DEFAULT_CONTEST_DATA)
 
     def test_create_contest(self):
-        response = self.client.parent_post(self.url, data=self.data)
+        response = self.client.post(self.url, data=self.data)
         self.assertSuccess(response)
         return response
 
     def test_create_contest_with_invalid_cidr(self):
         self.data["allowed_ip_ranges"] = ["127.0.0"]
-        resp = self.client.parent_post(self.url, data=self.data)
+        resp = self.client.post(self.url, data=self.data)
         self.assertTrue(resp.data["data"].endswith("is not a valid cidr network"))
 
     def test_update_contest(self):
@@ -61,6 +62,7 @@ class ContestAdminAPITest(APITestCase):
 
 class ContestAPITest(APITestCase):
     def setUp(self):
+        self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
         user = self.create_admin()
         self.contest = Contest.objects.create(created_by=user, **DEFAULT_CONTEST_DATA)
         self.url = self.reverse("contest_api") + "?id=" + str(self.contest.id)
@@ -76,22 +78,22 @@ class ContestAPITest(APITestCase):
         self.assertSuccess(resp)
 
     def test_regular_user_validate_contest_password(self):
-        self.create_user("test", "test123")
+        self.create_user(email="test@test.com", username="test", password="test1234!")
         url = self.reverse("contest_password_api")
-        resp = self.client.parent_post(url, {"contest_id": self.contest.id, "password": "error_password"})
+        resp = self.client.post(url, {"contest_id": self.contest.id, "password": "error_password"})
         self.assertDictEqual(resp.data, {"error": "error", "data": "Wrong password or password expired"})
 
-        resp = self.client.parent_post(url, {"contest_id": self.contest.id, "password": DEFAULT_CONTEST_DATA["password"]})
+        resp = self.client.post(url, {"contest_id": self.contest.id, "password": DEFAULT_CONTEST_DATA["password"]})
         self.assertSuccess(resp)
 
     def test_regular_user_access_contest(self):
-        self.create_user("test", "test123")
+        self.create_user(email="test@test.com", username="test", password="test1234!")
         url = self.reverse("contest_access_api")
         resp = self.client.get(url + "?contest_id=" + str(self.contest.id))
         self.assertFalse(resp.data["data"]["access"])
 
         password_url = self.reverse("contest_password_api")
-        resp = self.client.parent_post(password_url,
+        resp = self.client.post(password_url,
                                        {"contest_id": self.contest.id, "password": DEFAULT_CONTEST_DATA["password"]})
         self.assertSuccess(resp)
         resp = self.client.get(self.url)
@@ -100,6 +102,7 @@ class ContestAPITest(APITestCase):
 
 class ContestAnnouncementAdminAPITest(APITestCase):
     def setUp(self):
+        self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
         self.create_super_admin()
         self.url = self.reverse("contest_announcement_admin_api")
         contest_id = self.create_contest().data["data"]["id"]
@@ -108,10 +111,10 @@ class ContestAnnouncementAdminAPITest(APITestCase):
     def create_contest(self):
         url = self.reverse("contest_admin_api")
         data = DEFAULT_CONTEST_DATA
-        return self.client.parent_post(url, data=data)
+        return self.client.post(url, data=data)
 
     def test_create_contest_announcement(self):
-        response = self.client.parent_post(self.url, data=self.data)
+        response = self.client.post(self.url, data=self.data)
         self.assertSuccess(response)
         return response
 
@@ -134,14 +137,15 @@ class ContestAnnouncementAdminAPITest(APITestCase):
 
 class ContestAnnouncementListAPITest(APITestCase):
     def setUp(self):
+        self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
         self.create_super_admin()
         self.url = self.reverse("contest_announcement_api")
 
     def create_contest_announcements(self):
-        contest_id = self.client.parent_post(self.reverse("contest_admin_api"), data=DEFAULT_CONTEST_DATA).data["data"]["id"]
+        contest_id = self.client.post(self.reverse("contest_admin_api"), data=DEFAULT_CONTEST_DATA).data["data"]["id"]
         url = self.reverse("contest_announcement_admin_api")
-        self.client.parent_post(url, data={"title": "test title1", "content": "test content1", "contest_id": contest_id})
-        self.client.parent_post(url, data={"title": "test title2", "content": "test content2", "contest_id": contest_id})
+        self.client.post(url, data={"title": "test title1", "content": "test content1", "contest_id": contest_id})
+        self.client.post(url, data={"title": "test title2", "content": "test content2", "contest_id": contest_id})
         return contest_id
 
     def test_get_contest_announcement_list(self):
@@ -152,9 +156,10 @@ class ContestAnnouncementListAPITest(APITestCase):
 
 class ContestRankAPITest(APITestCase):
     def setUp(self):
+        self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
         user = self.create_admin()
         self.acm_contest = Contest.objects.create(created_by=user, **DEFAULT_CONTEST_DATA)
-        self.create_user("test", "test123")
+        self.create_user(email="test@test.com", username="test", password="test1234!")
         self.url = self.reverse("contest_rank_api")
 
     def get_contest_rank(self):

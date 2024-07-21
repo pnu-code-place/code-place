@@ -20,84 +20,25 @@ from django.db import transaction
 
 from contest.models import Contest
 from problem.models import Problem
+from school.models import College, Department
 from utils.constants import ContestRuleType
 from options.options import SysOptions
 from utils.api import APIView, validate_serializer, CSRFExemptAPIView
 from utils.captcha import Captcha
 from utils.shortcuts import rand_str, img2base64, datetime2str
 from ..decorators import login_required
-from ..models import User, UserProfile, AdminType, College, Department, UserScore, UserSolved
+from ..models import User, UserProfile, AdminType, UserScore, UserSolved
 from ..serializers import (ApplyResetPasswordSerializer, ResetPasswordSerializer,
                            UserChangePasswordSerializer, UserLoginSerializer,
                            UserRegisterSerializer, UsernameOrEmailCheckSerializer,
                            RankInfoSerializer, UserChangeEmailSerializer, SSOSerializer,
-                           CollegeListSerializer, DepartmentSerializer, RankingSerializer,
                            DashboardSubmissionSerializer,
                            DashboardDepartmentSerializer, DashboardCollegeSerializer, DashboardRankSerializer,
-                           HomeRankingSerializer, DashboardUserInfoSerializer, DashboardFieldInfoSerializer,
-                           DashboardDifficultyInfoSerializer, UserRankListSerializer, SurgeUserSerializer,
-                           HomeStatistics)
+                           DashboardUserInfoSerializer, DashboardFieldInfoSerializer,
+                           DashboardDifficultyInfoSerializer)
 from ..serializers import (TwoFactorAuthCodeSerializer, UserProfileSerializer,
                            EditUserProfileSerializer, ImageUploadForm)
 from ..tasks import send_email_async
-
-
-class GetCollegeListAPI(APIView):
-    def get(self, request):
-        try:
-            college_list = College.objects.all()
-        except College.DoesNotExist:
-            return self.error("failed to get college list")
-        return self.success(CollegeListSerializer(college_list, many=True).data)
-
-class GetDepartmentListAPI(APIView):
-
-    def get(self, request):
-        try:
-            college_id = request.GET.get("college_id")
-            department_list = Department.objects.filter(college=college_id).order_by('id')
-        except Department.DoesNotExist:
-            return self.error("failed to get department list")
-        return self.success(DepartmentSerializer(department_list, many=True).data)
-
-class GetHomeStatisticsAPI(APIView):
-    def get(self, request):
-        """
-        총 문제 수, 채점이 완료된 문제 수, 마감된 대회 수를 반환하는 API
-        """
-        problems = Problem.objects.all().filter(visible=True)
-
-        # 총 문제 수
-        total_problem_length = problems.count()
-
-        # 한번이라도 accept가 된 문제 수
-        accepted_problem_length = problems.filter(accepted_number__lt=0).count()
-
-        # 마감된 대회 수
-        contests = Contest.objects.select_related("created_by").filter(visible=True)
-        cur = now()
-        contests = contests.filter(end_time__lt=cur)
-        ended_contest_length = contests.count()
-
-        home_statistics = {
-            "total_problem_length": total_problem_length,
-            "accepted_problem_length": accepted_problem_length,
-            "ended_contest_length": ended_contest_length,
-        }
-
-        return self.success(HomeStatistics(home_statistics).data)
-
-class GetRankingAPI(APIView):
-    def get(self, request):
-        try:
-            limit = int(request.GET.get("limit", None))
-            if limit:
-                ranking = UserScore.objects.all().order_by('-score')[:limit]
-            else:
-                ranking = UserScore.objects.all().order_by('-score')
-            return self.success(RankingSerializer(ranking, many=True).data)
-        except UserScore.DoesNotExist:
-            return HttpResponseNotFound("no ranking table")
 
 
 class UserProfileAPI(APIView):
@@ -181,17 +122,6 @@ class UserProfileDashBoardAPI(APIView):
             'difficultyInfo': difficultyInfo
         }
         return self.success(response_data)
-
-
-class HomeRankingAPI(APIView):
-    def get(self, request):
-        # rank, avatar, tier, total_score, fluctuation
-        limit = request.GET.get('limit', 100)
-        try:
-            ranking = UserScore.objects.all().order_by('-total_score')[:limit]
-        except UserScore.DoesNotExist:
-            return HttpResponseNotFound('no user score table')
-        return self.success(HomeRankingSerializer(ranking, many=True).data)
 
 
 class AvatarUploadAPI(APIView):
@@ -431,29 +361,6 @@ class UserRegisterAPI(APIView):
             user_solved.save()
         return self.success("Succeeded")
 
-
-class UserChangeEmailAPI(APIView):
-    @validate_serializer(UserChangeEmailSerializer)
-    @login_required
-    def post(self, request):
-        data = request.data
-        user = auth.authenticate(username=request.user.username, password=data["password"])
-        if user:
-            if user.two_factor_auth:
-                if "tfa_code" not in data:
-                    return self.error("tfa_required")
-                if not OtpAuth(user.tfa_token).valid_totp(data["tfa_code"]):
-                    return self.error("Invalid two factor verification code")
-            data["new_email"] = data["new_email"].lower()
-            if User.objects.filter(email=data["new_email"]).exists():
-                return self.error("The email is owned by other account")
-            user.email = data["new_email"]
-            user.save()
-            return self.success("Succeeded")
-        else:
-            return self.error("Wrong password")
-
-
 class UserChangePasswordAPI(APIView):
     @validate_serializer(UserChangePasswordSerializer)
     @login_required
@@ -538,6 +445,7 @@ class SessionManagementAPI(APIView):
         session_store = engine.SessionStore
         current_session = request.session.session_key
         session_keys = request.user.session_keys
+
         result = []
         modified = False
         for key in session_keys[:]:
@@ -547,7 +455,6 @@ class SessionManagementAPI(APIView):
                 session_keys.remove(key)
                 modified = True
                 continue
-
             s = {}
             if current_session == key:
                 s["current_session"] = True
@@ -572,98 +479,6 @@ class SessionManagementAPI(APIView):
             return self.success("Succeeded")
         else:
             return self.error("Invalid session_key")
-
-
-class UserRankAPI(APIView):
-    # def get(self, request):
-    #     rule_type = request.GET.get("rule")
-    #     if rule_type not in ContestRuleType.choices():
-    #         rule_type = ContestRuleType.ACM
-    #     profiles = UserProfile.objects.filter(user__admin_type=AdminType.REGULAR_USER, user__is_disabled=False) \
-    #         .select_related("user")
-    #     if rule_type == ContestRuleType.ACM:
-    #         profiles = profiles.filter(submission_number__gt=0).order_by("-accepted_number", "submission_number")
-    #     else:
-    #         profiles = profiles.filter(total_score__gt=0).order_by("-total_score")
-    #     return self.success(self.paginate_data(request, profiles, RankInfoSerializer))
-    def get(self, request):
-
-        offset = int(request.GET.get("offset", 0))
-        limit = int(request.GET.get("limit", 10))
-
-        users = User.objects.prefetch_related('userprofile', 'userscore', 'usersolved') \
-                    .order_by('-userscore__total_score')[offset:offset + limit]
-
-        total_users = User.objects.count()
-
-        results = []
-        for rank, user in enumerate(users, start=offset + 1):
-            serializer = UserRankListSerializer(user, context={'rank': rank})
-            results.append(serializer.data)
-
-        data = {
-            'total': total_users,
-            'results': results
-        }
-
-        return self.success(data)
-
-class SurgeUserRankAPI(APIView):
-    def get(self, request):
-        offset = int(request.GET.get("offset", 0))
-        limit = int(request.GET.get("limit", 10))
-
-        users = User.objects.prefetch_related('userprofile', 'userscore', 'usersolved') \
-                            .order_by('-userscore__fluctuation')[offset:offset+limit]
-
-        total_users = User.objects.count()
-
-        results = []
-        for rank, user in enumerate(users, start=offset+1):
-            serializer = SurgeUserSerializer(user, context={'rank': rank})
-            results.append(serializer.data)
-
-        data = {
-            'total': total_users,
-            'results': results
-        }
-
-        return self.success(data)
-
-class MajorRankAPI(APIView):
-    def get(self, request):
-        limit = int(request.GET.get("limit", 7))
-
-        major_ranks = Department.objects.annotate(
-            score=Sum('userprofile__user__userscore__total_score'),
-            people=Count('userprofile__user')
-        ).filter(score__isnull=False).order_by('-score')[:limit]
-
-        total_majors = major_ranks.count()
-
-        results = []
-        for rank, major in enumerate(major_ranks, start=1):
-            people_data = major.userprofile_set.select_related('user', 'user__userscore').annotate(
-                avatar_url=F('user__userprofile__avatar'),
-                username=F('user__username'),
-                score=F('user__userscore__total_score'),
-                tier=F('user__userscore__tier')
-            ).order_by('-user__userscore__total_score').values('avatar_url', 'username', 'mood', 'score', 'tier')
-
-            data = {
-                'rank': rank,
-                'major': major.department_name,
-                'score': major.score,
-                'people': list(people_data)
-            }
-            results.append(data)
-
-        data = {
-            'total': total_majors,
-            'results': results
-        }
-
-        return self.success(data)
 
 class ProfileProblemDisplayIDRefreshAPI(APIView):
     @login_required
