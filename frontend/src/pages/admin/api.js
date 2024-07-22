@@ -24,6 +24,16 @@ export default {
   getProfile () {
     return ajax('profile', 'get')
   },
+  getCollegeList() {
+    return ajax("college_list", "get");
+  },
+  getMajorList(collegeID) {
+    return ajax("department_list", "get", {
+      params: {
+        college_id: collegeID
+      }
+    });
+  },
   // 获取公告列表
   getAnnouncementList (offset, limit) {
     return ajax('admin/announcement', 'get', {

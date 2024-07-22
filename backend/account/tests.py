@@ -285,6 +285,37 @@ class ResetPasswordAPITest(CaptchaTest):
         resp = self.client.post(self.url, data=self.data)
         self.assertDictEqual(resp.data, {"error": "error", "data": "Token has expired"})
 
+
+
+class GenerateUserAPITest(APITestCase):
+    def setUp(self):
+        self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
+        self.create_super_admin()
+        self.url = self.reverse("generate_user_api")
+        self.data = {
+            "college": 1,
+            "department": 1,
+            "prefix": "pre",
+            "num_of_mock": 10,
+        }
+
+    def test_error_case(self):
+        data = deepcopy(self.data)
+        data["prefix"] = "a" * 11
+        resp = self.client.post(self.url, data=data)
+        self.assertEqual(resp.data["data"], "prefix: Ensure this field has no more than 10 characters.")
+
+        data2 = deepcopy(self.data)
+        data2["num_of_mock"] = 21
+        resp = self.client.post(self.url, data=data2)
+        self.assertEqual(resp.data["data"], "num_of_mock: Ensure this value is less than or equal to 20.")
+
+    @mock.patch("account.views.admin.xlsxwriter.Workbook")
+    def test_generate_user_success(self, mock_workbook):
+        resp = self.client.post(self.url, data=self.data)
+        self.assertSuccess(resp)
+        mock_workbook.assert_called()
+
 # class UserChangePasswordAPITest(APITestCase):
 #     def setUp(self):
 #         self.url = self.reverse("user_change_password_api")
@@ -487,33 +518,3 @@ class ResetPasswordAPITest(CaptchaTest):
 #         resp = self.client.delete(self.url + "?id=" + user_ids)
 #         self.assertSuccess(resp)
 #         self.assertEqual(User.objects.all().count(), 2)
-
-#
-# class GenerateUserAPITest(APITestCase):
-#     def setUp(self):
-#         self.create_super_admin()
-#         self.url = self.reverse("generate_user_api")
-#         self.data = {
-#             "number_from": 100, "number_to": 105,
-#             "prefix": "pre", "suffix": "suf",
-#             "default_email": "test@test.com",
-#             "password_length": 8
-#         }
-#
-#     def test_error_case(self):
-#         data = deepcopy(self.data)
-#         data["prefix"] = "t" * 16
-#         data["suffix"] = "s" * 14
-#         resp = self.client.post(self.url, data=data)
-#         self.assertEqual(resp.data["data"], "Username should not more than 32 characters")
-#
-#         data2 = deepcopy(self.data)
-#         data2["number_from"] = 106
-#         resp = self.client.post(self.url, data=data2)
-#         self.assertEqual(resp.data["data"], "Start number must be lower than end number")
-#
-#     @mock.patch("account.views.admin.xlsxwriter.Workbook")
-#     def test_generate_user_success(self, mock_workbook):
-#         resp = self.client.post(self.url, data=self.data)
-#         self.assertSuccess(resp)
-#         mock_workbook.assert_called()

@@ -53,11 +53,10 @@ class UserChangeEmailSerializer(serializers.Serializer):
 
 
 class GenerateUserSerializer(serializers.Serializer):
-    prefix = serializers.CharField(max_length=16, allow_blank=True)
-    suffix = serializers.CharField(max_length=16, allow_blank=True)
-    number_from = serializers.IntegerField()
-    number_to = serializers.IntegerField()
-    password_length = serializers.IntegerField(max_value=16, default=8)
+    college = serializers.IntegerField()
+    department = serializers.IntegerField()
+    prefix = serializers.CharField(max_length=10)
+    num_of_mock = serializers.IntegerField(min_value=1, max_value=20)
 
 
 class ImportUserSeralizer(serializers.Serializer):
