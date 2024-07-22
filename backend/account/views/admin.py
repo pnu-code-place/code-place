@@ -126,6 +126,15 @@ class UserAdminAPI(APIView):
             user = user.filter(Q(username__icontains=keyword) |
                                Q(userprofile__real_name__icontains=keyword) |
                                Q(email__icontains=keyword))
+
+        college = request.GET.get("college", None)
+        if college:
+            user = user.filter(Q(userprofile__college_id=college))
+
+        department = request.GET.get("department", None)
+        if department:
+            user = user.filter(Q(userprofile__department_id=department))
+
         return self.success(self.paginate_data(request, user, UserAdminSerializer))
 
     @super_admin_required
