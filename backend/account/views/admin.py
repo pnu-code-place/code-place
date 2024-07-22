@@ -1,5 +1,9 @@
 import os
+import random
 import re
+import string
+
+import requests
 import xlsxwriter
 
 from django.db import transaction, IntegrityError
@@ -7,12 +11,14 @@ from django.db.models import Q
 from django.http import HttpResponse
 from django.contrib.auth.hashers import make_password
 
+from school.models import College, Department
 from submission.models import Submission
 from utils.api import APIView, validate_serializer
+from utils.constants import EMAIL_SUFFIX, GENERATE_MOCK_USERNAME_URL
 from utils.shortcuts import rand_str
 
 from ..decorators import super_admin_required
-from ..models import AdminType, ProblemPermission, User, UserProfile
+from ..models import AdminType, ProblemPermission, User, UserProfile, UserScore, UserSolved
 from ..serializers import EditUserSerializer, UserAdminSerializer, GenerateUserSerializer
 from ..serializers import ImportUserSeralizer
 
@@ -191,14 +197,12 @@ class GenerateUserAPI(APIView):
     @super_admin_required
     def post(self, request):
         """
-        Generate User
+        더미 사용자 생성 API
         """
         data = request.data
-        number_max_length = max(len(str(data["number_from"])), len(str(data["number_to"])))
-        if number_max_length + len(data["prefix"]) + len(data["suffix"]) > 32:
-            return self.error("Username should not more than 32 characters")
-        if data["number_from"] > data["number_to"]:
-            return self.error("Start number must be lower than end number")
+
+        college = College.objects.get(id=data["college"])
+        department = Department.objects.get(id=data["department"])
 
         file_id = rand_str(8)
         filename = f"/tmp/{file_id}.xlsx"
@@ -206,24 +210,31 @@ class GenerateUserAPI(APIView):
         worksheet = workbook.add_worksheet()
         worksheet.set_column("A:B", 20)
         worksheet.write("A1", "Username")
-        worksheet.write("B1", "Password")
+        worksheet.write("B1", "Email")
+        worksheet.write("C1", "Password")
         i = 1
 
         user_list = []
-        for number in range(data["number_from"], data["number_to"] + 1):
-            raw_password = rand_str(data["password_length"])
-            user = User(username=f"{data['prefix']}{number}{data['suffix']}", password=make_password(raw_password))
+        for number in range(1, data["num_of_mock"] + 1):
+            mock_email = f"{data['prefix']}{number}_{rand_str(5)}{EMAIL_SUFFIX}"
+            raw_password = self.generateMockPassword()
+            mock_username = self.generateMockUsername()
+            user = User(email=mock_email, username=mock_username, password=make_password(raw_password))
             user.raw_password = raw_password
             user_list.append(user)
 
         try:
             with transaction.atomic():
-
                 ret = User.objects.bulk_create(user_list)
-                UserProfile.objects.bulk_create([UserProfile(user=user) for user in ret])
+                UserProfile.objects.bulk_create([UserProfile(user=user, school=college.college_name, major=department.department_name, \
+                                                             college=college, department=department, \
+                                                             real_name=rand_str(3), student_id="2000" + str(random.randint(9999,99999))) for user in ret])
+                UserScore.objects.bulk_create([UserScore(user=user) for user in ret])
+                UserSolved.objects.bulk_create([UserSolved(user=user) for user in ret])
                 for item in user_list:
                     worksheet.write_string(i, 0, item.username)
-                    worksheet.write_string(i, 1, item.raw_password)
+                    worksheet.write_string(i, 1, item.email)
+                    worksheet.write_string(i, 2, item.raw_password)
                     i += 1
                 workbook.close()
                 return self.success({"file_id": file_id})
