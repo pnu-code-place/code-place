@@ -23,9 +23,13 @@
         style="width: 100%">
         <el-table-column type="selection" width="55"></el-table-column>
 
-        <el-table-column prop="id" :label="$t('m.User_Table_ID')"></el-table-column>
+        <el-table-column prop="id" width="55" :label="$t('m.User_Table_ID')"></el-table-column>
 
-        <el-table-column prop="username" :label="$t('m.User_Table_Username')"></el-table-column>
+        <el-table-column prop="username" width="100" :label="$t('m.User_Table_Username')"></el-table-column>
+
+        <el-table-column prop="email" :label="$t('m.User_Table_Email')"></el-table-column>
+
+        <el-table-column prop="real_name" width="80" :label="$t('m.User_Table_Real_Name')"></el-table-column>
 
         <el-table-column prop="create_time" :label="$t('m.User_Table_Create_Time')">
           <template slot-scope="scope">
@@ -38,10 +42,6 @@
             {{scope.row.last_login | localtime }}
           </template>
         </el-table-column>
-
-        <el-table-column prop="real_name" :label="$t('m.User_Table_Real_Name')"></el-table-column>
-
-        <el-table-column prop="email" :label="$t('m.User_Table_Email')"></el-table-column>
 
         <el-table-column prop="admin_type" :label="$t('m.User_Table_User_Type')">
           <template slot-scope="scope">
@@ -129,48 +129,51 @@
 
     <Panel :title="$t('m.Generate_User')">
       <el-form :model="formGenerateUser" ref="formGenerateUser">
-        <el-row type="flex" justify="space-between">
-          <el-col :span="4">
-            <el-form-item :label="$t('m.Create_User_Table_Prefix')" prop="prefix">
+        <el-row style="margin-bottom: 10px">
+          <span style="color: #5c6773; font-weight: 800; font-size: medium">{{ $t('m.Create_User_Table_Option_School') }}</span>
+        </el-row>
+        <el-row type="flex">
+          <el-col :span="4" style="margin-right: 15px">
+            <el-form-item :label="$t('m.Create_User_Table_College')">
+              <el-select v-model="formGenerateUser.college">
+                <template v-for="(item, index) in collegeList">
+                  <el-option :label="item.college_name" :value="item.id"></el-option>
+                </template>
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="4" style="margin-right: 15px">
+            <el-form-item :label="$t('m.Create_User_Table_Department')">
+              <el-select v-model="formGenerateUser.department">
+                <template v-for="(item, index) in departmentList">
+                  <el-option :label="item.department_name" :value="item.id"></el-option>
+                </template>
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row style="margin-bottom: 10px">
+          <span style="color: #5c6773; font-weight: 800; font-size: medium">{{ $t('m.Create_User_Table_Option_Account') }}</span>
+        </el-row>
+        <el-row type="flex">
+          <el-col :span="4" style="margin-right: 15px">
+            <el-form-item :label="$t('m.Create_User_Table_Prefix')" prop="prefix" required>
               <el-input v-model="formGenerateUser.prefix" :placeholder="$t('m.Create_User_Table_Prefix')"></el-input>
             </el-form-item>
           </el-col>
-          <el-col :span="4">
-            <el-form-item :label="$t('m.Create_User_Table_Suffix')" prop="suffix">
-              <el-input v-model="formGenerateUser.suffix" :placeholder="$t('m.Create_User_Table_Suffix')"></el-input>
+          <el-col :span="4" style="margin-right: 15px">
+            <el-form-item :label="$t('m.Create_User_Table_Number_Of_Mock')" required>
+              <el-input-number v-model="formGenerateUser.num_of_mock" style="width: 100%"></el-input-number>
             </el-form-item>
           </el-col>
-          <el-col :span="4">
-            <el-form-item :label="$t('m.Create_User_Table_Start_Number')" prop="number_from" required>
-              <el-input-number v-model="formGenerateUser.number_from" style="width: 100%"></el-input-number>
-            </el-form-item>
-          </el-col>
-          <el-col :span="4">
-            <el-form-item :label="$t('m.Create_User_Table_End_Number')" prop="number_to" required>
-              <el-input-number v-model="formGenerateUser.number_to" style="width: 100%"></el-input-number>
-            </el-form-item>
-          </el-col>
-          <el-col :span="4">
-            <el-form-item :label="$t('m.Create_User_Table_Password_Length')" prop="password_length" required>
-              <el-input v-model="formGenerateUser.password_length"
-                        placeholder="Password Length"></el-input>
-            </el-form-item>
-          </el-col>
+        </el-row>
+        <el-row style="margin-bottom: 10px">
+          <span style="color: #6d88b6"> {{$t('m.Create_User_Table_Notice')}} </span>
         </el-row>
 
         <el-form-item>
           <el-button type="primary" @click="generateUser" icon="el-icon-fa-users" :loading="loadingGenerate">{{$t('m.Button_Generate_Export')}}
           </el-button>
-          <span class="userPreview" v-if="formGenerateUser.number_from && formGenerateUser.number_to &&
-                                          formGenerateUser.number_from <= formGenerateUser.number_to">
-            {{$t('m.Create_User_Annotation')}} {{formGenerateUser.prefix + formGenerateUser.number_from + formGenerateUser.suffix}},
-            <span v-if="formGenerateUser.number_from + 1 < formGenerateUser.number_to">
-              {{formGenerateUser.prefix + (formGenerateUser.number_from + 1) + formGenerateUser.suffix + '...'}}
-            </span>
-            <span v-if="formGenerateUser.number_from + 1 <= formGenerateUser.number_to">
-              {{formGenerateUser.prefix + formGenerateUser.number_to + formGenerateUser.suffix}}
-            </span>
-          </span>
         </el-form-item>
       </el-form>
     </Panel>
@@ -276,15 +279,20 @@
         selectedUsers: [],
         formGenerateUser: {
           prefix: '',
-          suffix: '',
-          number_from: 0,
-          number_to: 0,
-          password_length: 8
-        }
+          // suffix: '',
+          // number_from: 0,
+          // number_to: 0,
+          num_of_mock: 0,
+          college: 'Select',
+          department: 'Select'
+        },
+        collegeList: [],
+        departmentList: []
       }
     },
     mounted () {
       this.getUserList(1)
+      this.getCollegeList()
     },
     methods: {
       currentChange (page) {
@@ -306,6 +314,14 @@
           this.user.password = ''
           this.user.real_tfa = this.user.two_factor_auth
         })
+      },
+      async getCollegeList() {
+        let res = await api.getCollegeList()
+        this.collegeList = res.data.data
+      },
+      async getDepartmentList(collegeId) {
+        let res = await api.getMajorList(collegeId)
+        this.departmentList = res.data.data
       },
       getUserList (page) {
         this.loadingTable = true
@@ -336,6 +352,10 @@
         this.$refs['formGenerateUser'].validate((valid) => {
           if (!valid) {
             this.$error('Please validate the error fields')
+            return
+          }
+          if (this.formGenerateUser.num_of_mock === 0){
+            this.$error('Please validate the Num of Mock User fields')
             return
           }
           this.loadingGenerate = true
@@ -394,6 +414,11 @@
     watch: {
       'keyword' () {
         this.currentChange(1)
+      },
+      'formGenerateUser.college' (collegeId) {
+        this.formGenerateUser.department = 'Select'
+        if(collegeId === 'Select') return
+        this.getDepartmentList(collegeId)
       },
       'user.admin_type' () {
         if (this.user.admin_type === 'Super Admin') {
