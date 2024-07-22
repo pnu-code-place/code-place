@@ -64,12 +64,19 @@ export default {
       data
     })
   },
-  // 获取用户列表
-  getUserList (offset, limit, keyword) {
+  getUserList (offset, limit, query) {
     let params = {paging: true, offset, limit}
+    let { keyword, college, department } = query
     if (keyword) {
       params.keyword = keyword
     }
+    if (college !== "-1") {
+      params.college = college
+    }
+    if (department !== "-1"){
+      params.department = department
+    }
+    params.admin_type="Regular User"
     return ajax('admin/user', 'get', {
       params: params
     })
