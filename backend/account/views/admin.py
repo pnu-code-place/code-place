@@ -118,7 +118,8 @@ class UserAdminAPI(APIView):
                 return self.error("User does not exist")
             return self.success(UserAdminSerializer(user).data)
 
-        user = User.objects.all().order_by("-create_time")
+        admin_type = request.GET.get("admin_type", None)
+        user = User.objects.all().order_by("-create_time").filter(admin_type=admin_type)
 
         keyword = request.GET.get("keyword", None)
         if keyword:
