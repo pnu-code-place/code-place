@@ -134,10 +134,38 @@ class UserAdminAPI(APIView):
 
 
 class GenerateUserAPI(APIView):
+
     @staticmethod
     def generateMockUsername():
         resp = requests.post(GENERATE_MOCK_USERNAME_URL)
         return resp.json()['data']
+
+    @staticmethod
+    def generateMockPassword():
+        # 문자 집합 정의
+        lowercase = string.ascii_lowercase
+        uppercase = string.ascii_uppercase
+        digits = string.digits
+        special_chars = "@$!%*#?&"
+
+        # 각 문자 유형에서 최소 1개씩 선택
+        password = [
+            random.choice(lowercase),
+            random.choice(uppercase),
+            random.choice(digits),
+            random.choice(special_chars)
+        ]
+
+        # 나머지 4개 문자를 모든 가능한 문자에서 랜덤하게 선택
+        all_chars = lowercase + uppercase + digits + special_chars
+        password.extend(random.choice(all_chars) for _ in range(4))
+
+        # 문자열 순서를 섞음
+        random.shuffle(password)
+
+        # 리스트를 문자열로 변환
+        return ''.join(password)
+
     @super_admin_required
     def get(self, request):
         """
