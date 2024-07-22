@@ -134,6 +134,10 @@ class UserAdminAPI(APIView):
 
 
 class GenerateUserAPI(APIView):
+    @staticmethod
+    def generateMockUsername():
+        resp = requests.post(GENERATE_MOCK_USERNAME_URL)
+        return resp.json()['data']
     @super_admin_required
     def get(self, request):
         """
