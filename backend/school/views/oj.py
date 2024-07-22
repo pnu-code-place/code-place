@@ -14,8 +14,11 @@ class GetCollegeListAPI(APIView):
 class GetDepartmentListAPI(APIView):
 
     def get(self, request):
+        college_id = request.GET.get("college_id", None)
+        if not college_id:
+            departments = Department.objects.all()
+            return self.success(DepartmentSerializer(departments, many=True).data)
         try:
-            college_id = request.GET.get("college_id")
             department_list = Department.objects.filter(college=college_id).order_by('id')
         except Department.DoesNotExist:
             return self.error("failed to get department list")

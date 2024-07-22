@@ -118,13 +118,23 @@ class UserAdminAPI(APIView):
                 return self.error("User does not exist")
             return self.success(UserAdminSerializer(user).data)
 
-        user = User.objects.all().order_by("-create_time")
+        admin_type = request.GET.get("admin_type", None)
+        user = User.objects.all().order_by("-create_time").filter(admin_type=admin_type)
 
         keyword = request.GET.get("keyword", None)
         if keyword:
             user = user.filter(Q(username__icontains=keyword) |
                                Q(userprofile__real_name__icontains=keyword) |
                                Q(email__icontains=keyword))
+
+        college = request.GET.get("college", None)
+        if college:
+            user = user.filter(Q(userprofile__college_id=college))
+
+        department = request.GET.get("department", None)
+        if department:
+            user = user.filter(Q(userprofile__department_id=department))
+
         return self.success(self.paginate_data(request, user, UserAdminSerializer))
 
     @super_admin_required

@@ -66,15 +66,30 @@ class ImportUserSeralizer(serializers.Serializer):
 
 class UserAdminSerializer(serializers.ModelSerializer):
     real_name = serializers.SerializerMethodField()
+    college = serializers.SerializerMethodField()
+    department = serializers.SerializerMethodField()
+    avatar = serializers.SerializerMethodField()
+    student_id = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ["id", "username", "email", "admin_type", "problem_permission", "real_name",
-                  "create_time", "last_login", "two_factor_auth", "open_api", "is_disabled"]
+        fields = ["id", "username", "email", "admin_type", "problem_permission", "real_name","college", "department",
+                  "create_time", "last_login", "two_factor_auth", "open_api", "is_disabled", "avatar", "student_id"]
 
     def get_real_name(self, obj):
         return obj.userprofile.real_name
 
+    def get_college(self, obj):
+        return obj.userprofile.school
+
+    def get_department(self, obj):
+        return obj.userprofile.major
+
+    def get_avatar(self, obj):
+        return obj.userprofile.avatar
+
+    def get_student_id(self, obj):
+        return obj.userprofile.student_id
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -195,9 +210,16 @@ class DashboardDifficultyInfoSerializer(serializers.ModelSerializer):
 
 class EditUserSerializer(serializers.Serializer):
     id = serializers.IntegerField()
-    username = serializers.CharField(max_length=32)
-    real_name = serializers.CharField(max_length=32, allow_blank=True, allow_null=True)
-    password = serializers.CharField(min_length=6, allow_blank=True, required=False, default=None)
+    username = serializers.CharField(min_length=3, max_length=8)
+    real_name = serializers.CharField(max_length=13)
+    password = serializers.RegexField(
+        allow_null=True,
+        regex=r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$',
+        min_length=8,
+        error_messages={
+            'invalid': '비밀번호는 8글자 이상이어야 하며, 영문, 숫자, 특수문자를 모두 포함해야 합니다.'
+        }
+    )
     email = serializers.EmailField(max_length=64)
     admin_type = serializers.ChoiceField(choices=(AdminType.REGULAR_USER, AdminType.ADMIN, AdminType.SUPER_ADMIN))
     problem_permission = serializers.ChoiceField(choices=(ProblemPermission.NONE, ProblemPermission.OWN,
