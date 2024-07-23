@@ -18,10 +18,6 @@ export default {
         <div class="left">
           {{ $t("m.PNUCSEP") }}
         </div>
-        <div class="family-site">
-          <a href="https://swedu.pusan.ac.kr/swedu/index.do">소프트웨어융합교육원</a>
-          <a href="https://csep.co.kr">코딩역량강화플랫폼</a>
-        </div>
       </div>
       <div class="row2">
         <div class="left">
@@ -45,7 +41,11 @@ export default {
               개발진
             </a>
           </p>
-          <p>{{ $t("m.UserGuide") }}</p>
+          <p>
+            <a href="https://pusanackr-my.sharepoint.com/:p:/g/personal/ehdwls1638_pusan_ac_kr/ETpnehh_9y1Hkk7LZjvp0JYBdwjSEUyNp8ARkodOpDvczA?rtime=FIVByG-q3Eg">
+              {{ $t("m.UserGuide") }}
+            </a>
+          </p>
         </div>
       </div>
     </div>
@@ -88,8 +88,8 @@ footer {
       }
 
       .family-site {
-        display: flex;
-        justify-content: end;
+        //display: flex;
+        //justify-content: end;
         gap: 10px;
         a {
           color: var(--footer-text-color);
