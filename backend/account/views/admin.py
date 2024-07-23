@@ -2,12 +2,14 @@ import os
 import random
 import re
 import string
+from datetime import datetime, timedelta
 
 import requests
 import xlsxwriter
 
 from django.db import transaction, IntegrityError
-from django.db.models import Q, Case, When, Value, IntegerField
+from django.db.models import Q, Case, When, Value, IntegerField, Count, F
+from django.db.models.functions import TruncMonth, ExtractWeekDay
 from django.http import HttpResponse
 from django.contrib.auth.hashers import make_password
 
@@ -19,8 +21,21 @@ from utils.shortcuts import rand_str
 
 from ..decorators import super_admin_required
 from ..models import AdminType, ProblemPermission, User, UserProfile, UserScore, UserSolved
-from ..serializers import EditUserSerializer, UserAdminSerializer, GenerateUserSerializer
+from ..serializers import EditUserSerializer, UserAdminSerializer, GenerateUserSerializer, UserAdminStatisticsSerializer
 from ..serializers import ImportUserSeralizer
+
+class UserAdminStatisticAPI(APIView):
+    @super_admin_required
+    def get(self, request):
+        all_user = User.objects.all()
+
+        stats_data = {
+            "all_users": all_user.count(),
+            "super_admins": all_user.filter(admin_type=AdminType.SUPER_ADMIN).count(),
+            "admins": all_user.filter(admin_type=AdminType.ADMIN).count(),
+            "regular_users": all_user.filter(admin_type=AdminType.REGULAR_USER).count(),
+            "disabled_users": all_user.filter(is_disabled=True).count()
+        }
 
 
 class UserAdminAPI(APIView):
