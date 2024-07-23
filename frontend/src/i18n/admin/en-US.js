@@ -46,7 +46,7 @@ export const m = {
   Admin_Import_Tooltip_Reference: '참조',
 
   // User.vue
-  User_Statistic: '사용자 통계',
+  User_Statistic: '사용자 통계 대시보드',
   User_User: '일반 사용자 목록',
   Import_User: '사용자 가져오기',
   Generate_User: '더미 사용자 생성',

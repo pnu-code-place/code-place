@@ -64,6 +64,9 @@ export default {
       data
     })
   },
+  getStats () {
+    return ajax('admin/stat', 'get')
+  },
   getUserList (offset, limit, query) {
     let params = {paging: true, offset, limit}
     let { keyword, college, department } = query

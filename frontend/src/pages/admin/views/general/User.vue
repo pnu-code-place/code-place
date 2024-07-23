@@ -1,7 +1,35 @@
 <template>
   <div class="view">
     <Panel :title="$t('m.User_Statistic')">
-
+      <el-row type="flex">
+        <el-col :span="6" style="border-right: 1px solid #eeeeee; padding: 10px">
+          <span style="color: #5c6773; font-weight: 800; font-size: medium; margin-bottom: 30px">인원 개요</span>
+          <ul>
+            <li><span style="color: #457dd3; font-weight: 800; font-size: small">총 사용자 수 {{this.stat.all_users}}명</span></li>
+            <li><span style="color: #5c6773; font-weight: 800; font-size: small">최고 관리자 {{this.stat.super_admins}}명</span></li>
+            <li><span style="color: #5c6773; font-weight: 800; font-size: small">관리자 {{this.stat.admins}}명</span></li>
+            <li><span style="color: #5c6773; font-weight: 800; font-size: small">일반 사용자 {{this.stat.regular_users}}명</span></li>
+          </ul>
+        </el-col>
+        <el-col :span="9" style="border-right: 1px solid #eeeeee; padding: 10px;">
+          <span style="color: #5c6773; font-weight: 800; font-size: medium">학과별 가입자 수 현황</span>
+          <div style="height: 170px; display: flex; justify-content: center; padding-top: 30px">
+            <ECharts :options="chartOption" ref="line" style="width: 100%; height: 100%"/>
+          </div>
+        </el-col>
+        <el-col :span="9" style="border-right: 1px solid #eeeeee; padding: 10px">
+          <span style="color: #5c6773; font-weight: 800; font-size: medium">월별 가입자 수 현황</span>
+          <div style="height: 200px; padding-top: 20px">
+            <ECharts :options="options" ref="line" style="width: 100%; height: 100%"/>
+          </div>
+        </el-col>
+        <el-col :span="9" style="border-right: 1px solid #eeeeee; padding: 10px">
+          <span style="color: #5c6773; font-weight: 800; font-size: medium">주간 가입자 수 현황</span>
+          <div style="height: 200px; padding-top: 20px">
+            <ECharts :options="weekOptions" ref="line" style="width: 100%; height: 100%"/>
+          </div>
+        </el-col>
+      </el-row>
     </Panel>
 
     <Panel :title="$t('m.User_User')">
@@ -318,13 +346,18 @@
   import papa from 'papaparse'
   import api from '../../api.js'
   import utils from '@/utils/utils'
+  import ECharts from "vue-echarts/components/ECharts.vue";
 
   export default {
     name: 'User',
+    components:{
+      ECharts
+    },
     data () {
       return {
         pageSize: 10,
         total: 0,
+        stat: {},
         userList: [],
         uploadUsers: [],
         uploadUsersPage: [],
@@ -355,6 +388,7 @@
     },
     mounted () {
       this.getUserList(1)
+      this.getStats()
       this.getCollegeList()
       this.getDepartmentList()
     },
@@ -410,6 +444,11 @@
           this.userList = res.data.data.results
         }, res => {
           this.loadingTable = false
+        })
+      },
+      getStats () {
+        api.getStats().then(res => {
+          this.stat = res.data.data
         })
       },
       deleteUsers (ids) {
@@ -506,6 +545,88 @@
           return []
         }
         return this.departmentList.filter(item => item.college_id === this.user.college);
+      },
+      chartOption() {
+        return {
+          tooltip: {
+            trigger: 'item'
+          },
+          label: {
+            show: false,
+            position: 'center'
+          },
+          emptyCircleStyle: {
+            color: "lightgray",
+            opacity: 1
+          },
+          emphasis: {
+            label: {
+              show: true,
+              fontSize: 40,
+            }
+          },
+          series: [
+            {
+              name: '학과',
+              type: 'pie',
+              radius: "55%",
+              padAngle: 10,
+              data: this.stat.department_statistics,
+              color: ['#e8508f','#5470c6', '#91cc75', '#fac858', '#ee6666', '#73c0de', '#3ba272', '#fc8452', '#9a60b4'],
+              emphasis: {
+                itemStyle: {
+                  shadowBlur: 10,
+                  shadowOffsetX: 0,
+                  shadowColor: 'rgba(172,84,84,0.5)',
+                  borderJoin: "round",
+                }
+              },
+            }
+          ]
+        };
+      },
+      options(){
+        return{
+          title: {
+            text: `${this.stat.monthly_statistics.year}년`,
+          },
+          xAxis: {
+            type: 'category',
+            data: this.stat.monthly_statistics.xAxis
+          },
+          yAxis: {
+            type: 'value',
+          },
+          series: [
+            {
+              data: this.stat.monthly_statistics.series,
+              type: 'line',
+              smooth: true,
+              color: "#121c3c"
+            }
+          ]
+        }
+      },
+      weekOptions(){
+        return{
+          title: {
+            text: `${this.stat.weekly_statistics.week_info}`,
+            subtext: `${this.stat.weekly_statistics.date_range.start} ~ ${this.stat.weekly_statistics.date_range.end}`
+          },
+          xAxis: {
+            type: 'category',
+            data: this.stat.weekly_statistics.xAxis
+          },
+          yAxis: {
+            type: 'value'
+          },
+          series: [
+            {
+              data: this.stat.weekly_statistics.series,
+              type: 'bar'
+            }
+          ]
+        }
       }
     },
     watch: {

@@ -2,12 +2,14 @@ import os
 import random
 import re
 import string
+from datetime import datetime, timedelta
 
 import requests
 import xlsxwriter
 
 from django.db import transaction, IntegrityError
-from django.db.models import Q, Case, When, Value, IntegerField
+from django.db.models import Q, Case, When, Value, IntegerField, Count, F
+from django.db.models.functions import TruncMonth, ExtractWeekDay
 from django.http import HttpResponse
 from django.contrib.auth.hashers import make_password
 
@@ -19,8 +21,115 @@ from utils.shortcuts import rand_str
 
 from ..decorators import super_admin_required
 from ..models import AdminType, ProblemPermission, User, UserProfile, UserScore, UserSolved
-from ..serializers import EditUserSerializer, UserAdminSerializer, GenerateUserSerializer
+from ..serializers import EditUserSerializer, UserAdminSerializer, GenerateUserSerializer, UserAdminStatisticsSerializer
 from ..serializers import ImportUserSeralizer
+
+class UserAdminStatisticAPI(APIView):
+    @super_admin_required
+    def get(self, request):
+        all_user = User.objects.all()
+
+        stats_data = {
+            "all_users": all_user.count(),
+            "super_admins": all_user.filter(admin_type=AdminType.SUPER_ADMIN).count(),
+            "admins": all_user.filter(admin_type=AdminType.ADMIN).count(),
+            "regular_users": all_user.filter(admin_type=AdminType.REGULAR_USER).count(),
+            "disabled_users": all_user.filter(is_disabled=True).count()
+        }
+
+        # 학과별 사용자 수 통계
+        department_stats = (
+            User.objects.values('userprofile__major')
+            .annotate(value=Count('id'))
+            .values('value', name=F('userprofile__major'))
+            .order_by('-value')
+        )
+
+        # None 값 처리 (학과가 지정되지 않은 사용자)
+        department_stats = list(department_stats)
+        for stat in department_stats:
+            if stat['name'] is None:
+                stat['name'] = '미지정'
+
+        stats_data['department_statistics'] = department_stats
+
+        # 월별 가입자 수 통계
+        current_year = datetime.now().year
+        start_date = datetime(current_year, 1, 1)
+        end_date = datetime(current_year, 12, 31)
+
+        monthly_stats = (
+            User.objects.filter(create_time__range=(start_date, end_date))
+            .annotate(month=TruncMonth('create_time'))
+            .values('month')
+            .annotate(count=Count('id'))
+            .order_by('month')
+        )
+
+        months = ['1월', '2월', '3월', '4월', '5월', '6월',
+                  '7월', '8월', '9월', '10월', '11월', '12월']
+        counts = [0] * 12
+
+        for stat in monthly_stats:
+            month_index = stat['month'].month - 1
+            counts[month_index] = stat['count']
+
+        stats_data['monthly_statistics'] = {
+            'year': current_year,
+            'xAxis': months,
+            'series': counts
+        }
+
+        # 주간 가입자 수 통계
+        today = datetime.now().date()
+        start_of_week = today - timedelta(days=today.weekday())  # 이번 주 월요일
+        end_of_week = start_of_week + timedelta(days=6)  # 이번 주 일요일
+
+        weekly_stats = (
+            User.objects.filter(create_time__date__range=(start_of_week, end_of_week))
+            .annotate(weekday=ExtractWeekDay('create_time'))
+            .values('weekday')
+            .annotate(count=Count('id'))
+            .order_by('weekday')
+        )
+
+        weekdays = ['월', '화', '수', '목', '금', '토', '일']
+        counts = [0] * 7
+
+        for stat in weekly_stats:
+            index = (stat['weekday'] - 2) % 7
+            counts[index] = stat['count']
+
+        # 주차 정보 계산
+        year = today.year
+        month = today.month
+        month_names = ['1월', '2월', '3월', '4월', '5월', '6월',
+                       '7월', '8월', '9월', '10월', '11월', '12월']
+        month_name = month_names[month - 1]
+
+        # 해당 월의 첫 날
+        first_day_of_month = today.replace(day=1)
+        # 첫 주의 월요일 (이전 달의 날짜가 될 수 있음)
+        first_monday = first_day_of_month - timedelta(days=first_day_of_month.weekday())
+        # 현재 날짜가 첫 주의 월요일로부터 몇 주 떨어져 있는지 계산
+        week_of_month = ((today - first_monday).days // 7) + 1
+
+        week_info = f"{year}년 {month_name} {week_of_month}주차"
+
+        stats_data['weekly_statistics'] = {
+            'week_info': week_info,
+            'date_range': {
+                'start': start_of_week.strftime('%Y-%m-%d'),
+                'end': end_of_week.strftime('%Y-%m-%d'),
+            },
+            'xAxis': weekdays,
+            'series': counts
+        }
+
+        serializer = UserAdminStatisticsSerializer(stats_data)
+
+        return self.success(serializer.data)
+
 
 
 class UserAdminAPI(APIView):
@@ -63,8 +172,8 @@ class UserAdminAPI(APIView):
             return self.error("User does not exist")
         if User.objects.filter(username=data["username"].lower()).exclude(id=user.id).exists():
             return self.error("Username already exists")
-        if UserProfile.objects.filter(student_id=data["student_id"]).exists():
-            return self.error("Student Id already exists")
+        # if UserProfile.objects.filter(student_id=data["student_id"]).exists():
+        #     return self.error("Student Id already exists")
         # if User.objects.filter(email=data["email"].lower()).exclude(id=user.id).exists():
         #     return self.error("Email already exists")
 

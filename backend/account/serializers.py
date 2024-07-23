@@ -64,7 +64,30 @@ class GenerateUserSerializer(serializers.Serializer):
 class ImportUserSeralizer(serializers.Serializer):
     users = serializers.ListField(
         child=serializers.ListField(child=serializers.CharField(max_length=64)))
-
+class DateRangeSerializer(serializers.Serializer):
+    start = serializers.DateField()
+    end = serializers.DateField()
+class WeeklyStatisticsSerializer(serializers.Serializer):
+    week_info = serializers.CharField()
+    date_range = DateRangeSerializer()
+    xAxis = serializers.ListField(child=serializers.CharField())
+    series = serializers.ListField(child=serializers.IntegerField())
+class MonthlyStatisticsSerializer(serializers.Serializer):
+    year = serializers.IntegerField()
+    xAxis = serializers.ListField(child=serializers.CharField())
+    series = serializers.ListField(child=serializers.IntegerField())
+class DepartmentStatSerializer(serializers.Serializer):
+    value = serializers.IntegerField()
+    name = serializers.CharField()
+class UserAdminStatisticsSerializer(serializers.Serializer):
+    all_users = serializers.IntegerField()
+    super_admins = serializers.IntegerField()
+    admins = serializers.IntegerField()
+    regular_users = serializers.IntegerField()
+    disabled_users = serializers.IntegerField()
+    department_statistics = DepartmentStatSerializer(many=True)
+    monthly_statistics = MonthlyStatisticsSerializer()
+    weekly_statistics = WeeklyStatisticsSerializer()
 
 class UserAdminSerializer(serializers.ModelSerializer):
     real_name = serializers.SerializerMethodField()
