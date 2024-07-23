@@ -80,6 +80,51 @@ class UserAdminStatisticAPI(APIView):
             'series': counts
         }
 
+        # 주간 가입자 수 통계
+        today = datetime.now().date()
+        start_of_week = today - timedelta(days=today.weekday())  # 이번 주 월요일
+        end_of_week = start_of_week + timedelta(days=6)  # 이번 주 일요일
+
+        weekly_stats = (
+            User.objects.filter(create_time__date__range=(start_of_week, end_of_week))
+            .annotate(weekday=ExtractWeekDay('create_time'))
+            .values('weekday')
+            .annotate(count=Count('id'))
+            .order_by('weekday')
+        )
+
+        weekdays = ['월', '화', '수', '목', '금', '토', '일']
+        counts = [0] * 7
+
+        for stat in weekly_stats:
+            index = (stat['weekday'] - 2) % 7
+            counts[index] = stat['count']
+
+        # 주차 정보 계산
+        year = today.year
+        month = today.month
+        month_names = ['1월', '2월', '3월', '4월', '5월', '6월',
+                       '7월', '8월', '9월', '10월', '11월', '12월']
+        month_name = month_names[month - 1]
+
+        # 해당 월의 첫 날
+        first_day_of_month = today.replace(day=1)
+        # 첫 주의 월요일 (이전 달의 날짜가 될 수 있음)
+        first_monday = first_day_of_month - timedelta(days=first_day_of_month.weekday())
+        # 현재 날짜가 첫 주의 월요일로부터 몇 주 떨어져 있는지 계산
+        week_of_month = ((today - first_monday).days // 7) + 1
+
+        week_info = f"{year}년 {month_name} {week_of_month}주차"
+
+        stats_data['weekly_statistics'] = {
+            'week_info': week_info,
+            'date_range': {
+                'start': start_of_week.strftime('%Y-%m-%d'),
+                'end': end_of_week.strftime('%Y-%m-%d'),
+            },
+            'xAxis': weekdays,
+            'series': counts
+        }
 
 class UserAdminAPI(APIView):
     @validate_serializer(ImportUserSeralizer)
