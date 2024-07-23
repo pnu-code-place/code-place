@@ -247,9 +247,11 @@ class GenerateUserAPI(APIView):
         try:
             with transaction.atomic():
                 ret = User.objects.bulk_create(user_list)
-                UserProfile.objects.bulk_create([UserProfile(user=user, school=college.college_name, major=department.department_name, \
-                                                             college=college, department=department, \
-                                                             real_name=rand_str(3), student_id="2000" + str(random.randint(9999,99999))) for user in ret])
+                UserProfile.objects.bulk_create(
+                    [UserProfile(user=user, school=college.college_name, major=department.department_name, \
+                                 college=college, department=department, \
+                                 real_name=rand_str(3), student_id="2000" + str(random.randint(9999, 99999))) for user
+                     in ret])
                 UserScore.objects.bulk_create([UserScore(user=user) for user in ret])
                 UserSolved.objects.bulk_create([UserSolved(user=user) for user in ret])
                 for item in user_list:
