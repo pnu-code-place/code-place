@@ -53,6 +53,34 @@ class UserAdminStatisticAPI(APIView):
 
         stats_data['department_statistics'] = department_stats
 
+        # 월별 가입자 수 통계
+        current_year = datetime.now().year
+        start_date = datetime(current_year, 1, 1)
+        end_date = datetime(current_year, 12, 31)
+
+        monthly_stats = (
+            User.objects.filter(create_time__range=(start_date, end_date))
+            .annotate(month=TruncMonth('create_time'))
+            .values('month')
+            .annotate(count=Count('id'))
+            .order_by('month')
+        )
+
+        months = ['1월', '2월', '3월', '4월', '5월', '6월',
+                  '7월', '8월', '9월', '10월', '11월', '12월']
+        counts = [0] * 12
+
+        for stat in monthly_stats:
+            month_index = stat['month'].month - 1
+            counts[month_index] = stat['count']
+
+        stats_data['monthly_statistics'] = {
+            'year': current_year,
+            'xAxis': months,
+            'series': counts
+        }
+
+
 class UserAdminAPI(APIView):
     @validate_serializer(ImportUserSeralizer)
     @super_admin_required
