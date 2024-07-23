@@ -7,7 +7,7 @@ import requests
 import xlsxwriter
 
 from django.db import transaction, IntegrityError
-from django.db.models import Q
+from django.db.models import Q, Case, When, Value, IntegerField
 from django.http import HttpResponse
 from django.contrib.auth.hashers import make_password
 
@@ -129,8 +129,21 @@ class UserAdminAPI(APIView):
                 return self.error("User does not exist")
             return self.success(UserAdminSerializer(user).data)
 
+        user = User.objects.all().order_by("-create_time")
+
         admin_type = request.GET.get("admin_type", None)
-        user = User.objects.all().order_by("-create_time").filter(admin_type=admin_type)
+
+        if admin_type == "Regular":
+            user = user.filter(admin_type=AdminType.REGULAR_USER)
+        if admin_type == "Admin":
+            user = user.exclude(admin_type=AdminType.REGULAR_USER).order_by(
+                Case(
+                    When(admin_type=AdminType.SUPER_ADMIN, then=Value(0)),
+                    default=Value(1),
+                    output_field=IntegerField()
+                ),
+                'id'
+            )
 
         keyword = request.GET.get("keyword", None)
         if keyword:

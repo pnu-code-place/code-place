@@ -1,8 +1,10 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 // 引入 view 组件
-import { Announcement, Conf, Contest, ContestList, Home, JudgeServer, Login,
-  Problem, ProblemList, User, PruneTestCase, Dashboard, ProblemImportOrExport } from './views'
+import {
+  Announcement, Conf, Contest, ContestList, Home, JudgeServer, Login,
+  Problem, ProblemList, User, PruneTestCase, Dashboard, ProblemImportOrExport, AdminCatalog
+} from './views'
 Vue.use(VueRouter)
 
 export default new VueRouter({
@@ -33,6 +35,11 @@ export default new VueRouter({
           path: '/user',
           name: 'user',
           component: User
+        },
+        {
+          path: '/admin-catalog',
+          name: 'admin-catalog',
+          component: AdminCatalog
         },
         {
           path: '/conf',
