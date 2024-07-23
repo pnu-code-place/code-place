@@ -14,7 +14,7 @@ export const m = {
   // SideMenu.vue
   Dashboard: '대시보드',
   General: '일반',
-  Admin: '관리자',
+  Admin: '관리자 목록',
   User: '일반 사용자',
   Announcement: '공지사항',
   System_Config: '시스템 환경',
@@ -27,6 +27,23 @@ export const m = {
   Contest: '대회',
   Contest_List: '대회 목록',
   Create_Contest: '대회 생성',
+
+  // AdminCatalog.vue
+  Admin_Catalog: '관리자 목록',
+  Admin_Table_ID: 'ID',
+  Admin_Table_Username: '사용자명',
+  Admin_Table_Create_Time: '계정 생성일/마지막 로그인',
+  Admin_Table_Last_Login: '마지막 로그인',
+  Admin_Table_Real_Name: '실명',
+  Admin_Table_Student_Id: '학번',
+  Admin_Table_Email: '학교 이메일',
+  Admin_Table_User_Type: '타입',
+  Admin_Table_User_Avatar: '아바타',
+  Admin_Table_User_College: '단과대학',
+  Admin_Table_User_Department: '전공',
+  Admin_Table_Option: '옵션',
+  Admin_Import_Tooltip_Content: '헤더가 없는 CSV 파일만을 제공합니다.',
+  Admin_Import_Tooltip_Reference: '참조',
 
   // User.vue
   User_Statistic: '사용자 통계',
@@ -58,6 +75,7 @@ export const m = {
   Create_User_Table_Password_Length: '비밀번호 길이',
   Create_User_Table_College: '단과대학',
   Create_User_Table_Department: '전공명',
+  Create_User_Table_Student_Id: '학번',
   Create_User_Table_Notice: '※ {접두사}{1~생성인원+1}_{구분용 랜덤 문자열}@pusan.ac.kr 의 형태로 Mock 유저가 생성됩니다',
   Delete_User_Modal_Title: '사용자 삭제',
   Delete_User_Modal_Content: '정말로 이 사용자를 삭제하겠습니까? 이 계정으로 생성된 모든 공지사항, 문제, 대회 등이 삭제됩니다.',
@@ -67,7 +85,7 @@ export const m = {
   User_Placeholder_Department: '전공 선택',
 
   // User.vue-dialog
-  User_Info: '사용자 정보',
+  User_Info: '사용자 정보 수정',
   User_Username: '사용자 닉네임',
   User_Real_Name: '사용자 이름(실명)',
   User_Email: '사용자 이메일',
@@ -75,7 +93,7 @@ export const m = {
   User_Type: '사용자 유형',
   Problem_Permission: '문제 권한',
   Two_Factor_Auth: '이중 인증',
-  Is_Disabled: '비황성화 상태',
+  Is_Disabled: '비활성화 상태',
 
   // Announcement.vue
   General_Announcement: '공지사항',
