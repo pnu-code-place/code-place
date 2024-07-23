@@ -41,7 +41,8 @@ class UserAdminAPI(APIView):
         try:
             with transaction.atomic():
                 ret = User.objects.bulk_create(user_list)
-                UserProfile.objects.bulk_create([UserProfile(user=ret[i], real_name=data[i][3]) for i in range(len(ret))])
+                UserProfile.objects.bulk_create(
+                    [UserProfile(user=ret[i], real_name=data[i][3]) for i in range(len(ret))])
             return self.success()
         except IntegrityError as e:
             # Extract detail from exception message
@@ -62,8 +63,8 @@ class UserAdminAPI(APIView):
             return self.error("User does not exist")
         if User.objects.filter(username=data["username"].lower()).exclude(id=user.id).exists():
             return self.error("Username already exists")
-        if User.objects.filter(email=data["email"].lower()).exclude(id=user.id).exists():
-            return self.error("Email already exists")
+        if UserProfile.objects.filter(student_id=data["student_id"]).exists():
+            return self.error("Student Id already exists")
         # if User.objects.filter(email=data["email"].lower()).exclude(id=user.id).exists():
         #     return self.error("Email already exists")
 
@@ -82,6 +83,14 @@ class UserAdminAPI(APIView):
 
         if data["password"]:
             user.set_password(data["password"])
+
+        if data["college"] and data["department"]:
+            college = College.objects.get(id=data["college"])
+            department = Department.objects.get(id=data["department"])
+            UserProfile.objects.filter(user=user).update(college=college, department=department, school=college.college_name, major=department.department_name)
+
+        if data["student_id"]:
+            UserProfile.objects.filter(user=user).update(student_id=data["student_id"])
 
         if data["open_api"]:
             # Avoid reset user appkey after saving changes
