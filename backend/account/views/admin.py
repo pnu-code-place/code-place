@@ -126,6 +126,12 @@ class UserAdminStatisticAPI(APIView):
             'series': counts
         }
 
+        serializer = UserAdminStatisticsSerializer(stats_data)
+
+        return self.success(serializer.data)
+
+
+
 class UserAdminAPI(APIView):
     @validate_serializer(ImportUserSeralizer)
     @super_admin_required
@@ -166,8 +172,8 @@ class UserAdminAPI(APIView):
             return self.error("User does not exist")
         if User.objects.filter(username=data["username"].lower()).exclude(id=user.id).exists():
             return self.error("Username already exists")
-        if UserProfile.objects.filter(student_id=data["student_id"]).exists():
-            return self.error("Student Id already exists")
+        # if UserProfile.objects.filter(student_id=data["student_id"]).exists():
+        #     return self.error("Student Id already exists")
         # if User.objects.filter(email=data["email"].lower()).exclude(id=user.id).exists():
         #     return self.error("Email already exists")
 
