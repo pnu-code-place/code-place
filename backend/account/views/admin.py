@@ -37,6 +37,21 @@ class UserAdminStatisticAPI(APIView):
             "disabled_users": all_user.filter(is_disabled=True).count()
         }
 
+        # 학과별 사용자 수 통계
+        department_stats = (
+            User.objects.values('userprofile__major')
+            .annotate(value=Count('id'))
+            .values('value', name=F('userprofile__major'))
+            .order_by('-value')
+        )
+
+        # None 값 처리 (학과가 지정되지 않은 사용자)
+        department_stats = list(department_stats)
+        for stat in department_stats:
+            if stat['name'] is None:
+                stat['name'] = '미지정'
+
+        stats_data['department_statistics'] = department_stats
 
 class UserAdminAPI(APIView):
     @validate_serializer(ImportUserSeralizer)
