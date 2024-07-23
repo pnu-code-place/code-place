@@ -207,6 +207,9 @@
     </Panel>
     <el-dialog :title="$t('m.User_Info')" :visible.sync="showUserDialog" :close-on-click-modal="false">
       <el-form :model="user" label-width="120px" label-position="left">
+        <el-col style="margin-bottom: 20px">
+          <span style="font-weight: bold;font-size: medium">계정 정보</span>
+        </el-col>
         <el-row :gutter="20">
           <el-col :span="12">
             <el-form-item :label="$t('m.User_Email')">
@@ -214,12 +217,12 @@
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item :label="$t('m.User_Username')" required>
+            <el-form-item :label="$t('m.User_Username')">
               <el-input v-model="user.username"></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item :label="$t('m.User_Real_Name')" required>
+            <el-form-item :label="$t('m.User_Real_Name')">
               <el-input v-model="user.real_name"></el-input>
             </el-form-item>
           </el-col>
@@ -245,6 +248,35 @@
                 <el-option label="All" value="All"></el-option>
               </el-select>
             </el-form-item>
+          </el-col>
+          <el-col style="margin-bottom: 20px; margin-top: 20px">
+           <span style="font-weight: bold;font-size: medium">학과 정보</span>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item :label="$t('m.Create_User_Table_College')">
+              <el-select v-model="user.college" :placeholder="$t('m.User_Placeholder_College')">
+                <template v-for="(item, index) in collegeList">
+                  <el-option :label="item.college_name" :value="item.id"></el-option>
+                </template>
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item :label="$t('m.Create_User_Table_Department')">
+              <el-select v-model="user.department" :placeholder="$t('m.User_Placeholder_Department')">
+                <template v-for="(item, index) in filteredDepartmentListForEdit">
+                  <el-option :label="item.department_name" :value="item.id"></el-option>
+                </template>
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item :label="$t('m.Create_User_Table_Student_Id')">
+              <el-input v-model="user.student_id"></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col style="margin-bottom: 20px; margin-top: 10px">
+            <span style="font-weight: bold;font-size: medium">기타 정보</span>
           </el-col>
           <el-col :span="8">
             <el-form-item :label="$t('m.Two_Factor_Auth')">
@@ -332,6 +364,7 @@
         this.getUserList(page)
       },
       saveUser () {
+        console.log(this.user)
         api.editUser(this.user).then(res => {
           this.getUserList(this.currentPage)
         }).then(() => {
@@ -345,6 +378,8 @@
           this.user = res.data.data
           this.user.password = ''
           this.user.real_tfa = this.user.two_factor_auth
+          this.user.college = null
+          this.user.department = null
         })
       },
       async getCollegeList() {
@@ -456,15 +491,21 @@
       },
       filteredDepartmentListForQuery() {
         if(this.query.college === "-1"){
-          return this.departmentList
+          return []
         }
         return this.departmentList.filter(item => item.college_id === this.query.college);
       },
       filteredDepartmentListForDummy() {
         if(this.formGenerateUser.college === "-1"){
-          return this.departmentList
+          return []
         }
         return this.departmentList.filter(item => item.college_id === this.formGenerateUser.college);
+      },
+      filteredDepartmentListForEdit() {
+        if(this.user.college === "-1"){
+          return []
+        }
+        return this.departmentList.filter(item => item.college_id === this.user.college);
       }
     },
     watch: {
@@ -480,6 +521,9 @@
       },
       'query.college' (){
         this.query.department = ''
+      },
+      'user.college' (){
+        this.user.department = null
       },
       'user.admin_type' () {
         if (this.user.admin_type === 'Super Admin') {
