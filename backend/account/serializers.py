@@ -1,4 +1,6 @@
 from django import forms
+from django.core.validators import RegexValidator
+from django.db import models
 
 from school.models import College, Department
 from utils.api import serializers, UsernameSerializer
@@ -214,16 +216,31 @@ class EditUserSerializer(serializers.Serializer):
     real_name = serializers.CharField(max_length=13)
     password = serializers.RegexField(
         allow_null=True,
+        allow_blank=True,
         regex=r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$',
         min_length=8,
         error_messages={
             'invalid': '비밀번호는 8글자 이상이어야 하며, 영문, 숫자, 특수문자를 모두 포함해야 합니다.'
         }
     )
-    email = serializers.EmailField(max_length=64)
+    # email = serializers.EmailField(max_length=64)
     admin_type = serializers.ChoiceField(choices=(AdminType.REGULAR_USER, AdminType.ADMIN, AdminType.SUPER_ADMIN))
     problem_permission = serializers.ChoiceField(choices=(ProblemPermission.NONE, ProblemPermission.OWN,
                                                           ProblemPermission.ALL))
+    college = serializers.IntegerField(allow_null=True)
+    department = serializers.IntegerField(allow_null=True)
+    student_id = serializers.CharField(
+        max_length=9,
+        allow_null=True,
+        allow_blank=True,
+        validators=[
+            RegexValidator(
+                regex=r'^\d{6,9}$',
+                message='학번은 6자리 이상 9자리 이하의 숫자만 입력 가능합니다.',
+                code='invalid_student_id'
+            ),
+        ]
+    )
     open_api = serializers.BooleanField()
     two_factor_auth = serializers.BooleanField()
     is_disabled = serializers.BooleanField()
