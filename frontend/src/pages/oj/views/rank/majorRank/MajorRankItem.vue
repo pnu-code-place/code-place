@@ -54,7 +54,7 @@ export default {
         </div>
       </div>
       <div class="score vertical-center">{{ comma(major.score) }}{{$t("m.Point")}}</div>
-      <div class="people vertical-center">{{ comma(major.people.length) }}{{$t("m.People")}}</div>
+      <div class="people vertical-center">{{ comma(major.population) }}{{$t("m.People")}}</div>
     </div>
   </div>
 </template>
