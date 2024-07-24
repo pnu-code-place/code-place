@@ -78,7 +78,7 @@
               <icon-btn
                 :name="$t('m.Icon_Delete')"
                 icon="trash"
-                @click.native="handleModifyButtonClick(banner.id)"
+                @click.native="handleDeleteButtonClick(banner.id)"
               ></icon-btn>
             </div>
           </li>
@@ -93,31 +93,36 @@
       >
         <i class="el-icon-plus"></i> {{ $t("m.Add") }}
       </button>
-      <button
-        class="button"
-        style="color: #409eff; border: 1px solid #409eff"
-        @click="handleSaveOrderButtonClick"
-      >
-        {{ $t("m.Save_Order") }}
-      </button>
     </section>
+    <AddBannerModal v-if="addModalOpen" @onClose="handleModalClose" />
+    <ModifyBannerModal
+      v-if="modifyModalOpen"
+      @onClose="handleModalClose"
+      :banner="this.currentBanner"
+    />
   </div>
 </template>
 
 <script>
 import draggable from "vuedraggable";
+import AddBannerModal from "./HomeBanner/AddBannerModal";
+import ModifyBannerModal from "./HomeBanner/ModifyBannerModal";
 
 export default {
   name: "home-banner-management",
   components: {
     draggable,
+    AddBannerModal,
+    ModifyBannerModal,
   },
   data() {
     return {
+      addModalOpen: false,
+      modifyModalOpen: false,
       banners: [
         {
           id: 4,
-          banner_image: "/public/banner/a846633f83.png",
+          banner_image: "@/assets/banner1.svg",
           link_url: "https://www.naver.com",
           visible: false,
           order: null,
@@ -126,7 +131,7 @@ export default {
         },
         {
           id: 5,
-          banner_image: "/public/banner/f45ebadcfc.png",
+          banner_image: "@/assets/banner1.svg",
           link_url: "https://www.naver.com",
           visible: false,
           order: null,
@@ -144,13 +149,18 @@ export default {
       // alert("handleBannerOrderChange changed");
     },
     handleAddButtonClick() {
-      alert("handleAddButtonClick clicked");
+      this.addModalOpen = true;
     },
     handleModifyButtonClick(banner) {
-      alert(`handleModifyButtonClick clicked ${banner.id}`);
+      this.currentBanner = banner;
+      this.modifyModalOpen = true;
     },
     handleDeleteButtonClick(id) {
       alert(`handleDeleteButtonClick clicked ${id}`);
+    },
+    handleModalClose() {
+      this.addModalOpen = false;
+      this.modifyModalOpen = false;
     },
   },
   computed: {
