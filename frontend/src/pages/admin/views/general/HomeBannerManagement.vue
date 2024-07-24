@@ -24,12 +24,12 @@
         "
       >
         <p></p>
-        <p class="title">{{ $t("m.Home_Banner_ID") }}</p>
-        <p class="title">{{ $t("m.Banner_Image") }}</p>
-        <p class="title">{{ $t("m.Create_Time") }}</p>
-        <p class="title">{{ $t("m.Last_Update_Time") }}</p>
-        <p class="title">{{ $t("m.Enable_Disable") }}</p>
-        <p class="title">{{ $t("m.Setting") }}</p>
+        <p class="table-title">{{ $t("m.Home_Banner_ID") }}</p>
+        <p class="table-title">{{ $t("m.Banner_Image") }}</p>
+        <p class="table-title">{{ $t("m.Create_Time") }}</p>
+        <p class="table-title">{{ $t("m.Last_Update_Time") }}</p>
+        <p class="table-title">{{ $t("m.Enable_Disable") }}</p>
+        <p class="table-title">{{ $t("m.Setting") }}</p>
       </div>
       <div>
         <draggable tag="ul" :list="banners" handle=".handle">
@@ -146,14 +146,15 @@ export default {
   font-weight: 500;
 }
 
-.title {
+.table-title {
   color: #666;
   font-size: 18px;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 ul,
-li {
+li,
+p {
   margin: 0;
   padding: 0;
 }
