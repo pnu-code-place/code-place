@@ -1,9 +1,13 @@
 <template>
-  <div v-if="isOpen" class="modal-wrapper" @click="onCloseEmit">
-    <div class="modal-container" :style="modalStyles">
+  <div v-if="open" class="modal-wrapper" @click="onCloseEmit">
+    <div class="modal-container" :style="modalStyles" @click.stop>
       <div class="modal-title">
-        {{ title }}
-        <i class="el-icon-close" style="width: 20px; cursor: pointer"></i>
+        {{ $t("m." + title) }}
+        <i
+          class="el-icon-close"
+          style="width: 20px; cursor: pointer"
+          @click="onCloseEmit"
+        ></i>
       </div>
       <div class="modal-content">
         <slot></slot>
@@ -23,7 +27,7 @@
           style="background-color: #409eff; color: white"
           @click="onConfirmButtonClickEmit"
         >
-          {{ confirmButtonText }}
+          {{ $t("m." + confirmButtonText) }}
         </button>
       </div>
     </div>
@@ -34,7 +38,7 @@
 export default {
   name: "ConfirmModal",
   props: {
-    isOpen: Boolean,
+    open: Boolean,
     title: String,
     confirmButtonText: String,
     width: { type: Number, default: 400 },
