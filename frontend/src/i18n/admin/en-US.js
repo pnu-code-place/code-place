@@ -291,6 +291,7 @@ export const m = {
   Add: "추가",
   Save_Order: "순서 저장하기",
   Add_Home_Banner: "홈 배너 추가",
+  Modify_Home_Banner: "홈 배너 수정",
   Connect_Banner_Link: "배너에 연결할 링크",
   Link: "링크",
 
