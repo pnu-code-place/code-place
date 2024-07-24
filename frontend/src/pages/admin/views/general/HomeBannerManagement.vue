@@ -50,17 +50,21 @@
             <span class="drag-item-text">
               {{ banner.last_update_time | localtime }}
             </span>
-            <el-switch v-model="banner.visible"> </el-switch>
+            <el-switch
+              v-model="banner.visible"
+              @change="handleVisibleSwitchChange(banner.id)"
+            >
+            </el-switch>
             <div>
               <icon-btn
                 :name="$t('m.Icon_Edit')"
                 icon="edit"
-                @click.native="openUserDialog(row.id)"
+                @click.native="handleModifyButtonClick(banner)"
               ></icon-btn>
               <icon-btn
                 :name="$t('m.Icon_Delete')"
                 icon="trash"
-                @click.native="deleteUsers([row.id])"
+                @click.native="handleModifyButtonClick(banner.id)"
               ></icon-btn>
             </div>
           </li>
@@ -68,10 +72,18 @@
       </div>
     </section>
     <section style="margin: 12px">
-      <button class="button" style="color: white; background-color: #409eff">
+      <button
+        class="button"
+        style="color: white; background-color: #409eff"
+        @click="handleAddButtonClick"
+      >
         <i class="el-icon-plus"></i> {{ $t("m.Add") }}
       </button>
-      <button class="button" style="color: #409eff; border: 1px solid #409eff">
+      <button
+        class="button"
+        style="color: #409eff; border: 1px solid #409eff"
+        @click="handleSaveOrderButtonClick"
+      >
         {{ $t("m.Save_Order") }}
       </button>
     </section>
@@ -110,7 +122,23 @@ export default {
       ],
     };
   },
-  methods: {},
+  methods: {
+    handleVisibleSwitchChange(id) {
+      alert(`handleVisibleSwitchChange changed ${id}`);
+    },
+    handleSaveOrderButtonClick() {
+      alert("handleSaveOrderButtonClick clicked");
+    },
+    handleAddButtonClick() {
+      alert("handleAddButtonClick clicked");
+    },
+    handleModifyButtonClick(banner) {
+      alert(`handleModifyButtonClick clicked ${banner.id}`);
+    },
+    handleDeleteButtonClick(id) {
+      alert(`handleDeleteButtonClick clicked ${id}`);
+    },
+  },
 };
 </script>
 
