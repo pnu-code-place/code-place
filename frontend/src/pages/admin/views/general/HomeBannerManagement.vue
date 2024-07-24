@@ -39,7 +39,14 @@
         >
           {{ $t("m.Home_Banner_Does_Not_Exist") }}
         </div>
-        <draggable v-else tag="ul" :list="banners" handle=".handle">
+        <draggable
+          v-else
+          tag="ul"
+          :list="banners"
+          handle=".handle"
+          v-bind="dragOptions"
+          @end="handleBannerOrderChange"
+        >
           <li
             v-for="(banner, idx) in banners"
             :key="banner.id"
@@ -133,8 +140,8 @@ export default {
     handleVisibleSwitchChange(id) {
       alert(`handleVisibleSwitchChange changed ${id}`);
     },
-    handleSaveOrderButtonClick() {
-      alert("handleSaveOrderButtonClick clicked");
+    handleBannerOrderChange() {
+      // alert("handleBannerOrderChange changed");
     },
     handleAddButtonClick() {
       alert("handleAddButtonClick clicked");
@@ -144,6 +151,13 @@ export default {
     },
     handleDeleteButtonClick(id) {
       alert(`handleDeleteButtonClick clicked ${id}`);
+    },
+  },
+  computed: {
+    dragOptions() {
+      return {
+        ghostClass: "ghost",
+      };
     },
   },
 };
@@ -202,5 +216,10 @@ p {
   &:hover {
     opacity: 70%;
   }
+}
+
+.ghost {
+  opacity: 0.1;
+  background: #409eff;
 }
 </style>
