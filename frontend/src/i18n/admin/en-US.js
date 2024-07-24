@@ -290,6 +290,9 @@ export const m = {
   Setting: "설정",
   Add: "추가",
   Save_Order: "순서 저장하기",
+  Add_Home_Banner: "홈 배너 추가",
+  Connect_Banner_Link: "배너에 연결할 링크",
+  Link: "링크",
 
   // Login.vue
   GO: "로그인",
