@@ -2,7 +2,7 @@
   <ConfirmModal
     :title="$t('m.Add_Home_Banner')"
     :confirmButtonText="$t('m.Save')"
-    :open="this.open"
+    open
     @onClose="handleClose"
     @onConfirmButtonClick="handleConfirmButtonClick"
   >
@@ -15,7 +15,7 @@
         type="text"
         :placeholder="$t('m.Link')"
         style="margin-bottom: 20px"
-        v-model="urlLink"
+        v-model="linkUrl"
       />
       <span class="text">
         <span style="color: #ed4b4b">*</span>
@@ -41,7 +41,7 @@ export default {
   name: "AddBannerModal",
   data() {
     return {
-      urlLink: "",
+      linkUrl: "",
       imageUrl: "",
       imageFile: null,
     };
@@ -49,9 +49,6 @@ export default {
   components: {
     ConfirmModal,
     ImageDragAndDropBox,
-  },
-  props: {
-    open: Boolean,
   },
   methods: {
     handleClose() {
@@ -65,7 +62,7 @@ export default {
       this.$emit("onClose");
     },
     resetData() {
-      this.urlLink = "";
+      this.linkUrl = "";
       this.imageFile = null;
       this.imageUrl = "";
     },
