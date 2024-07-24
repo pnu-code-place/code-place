@@ -287,6 +287,8 @@ export const m = {
   Last_Update_Time: "마지막 수정일",
   Enable_Disable: "활성화/비활성화",
   Setting: "설정",
+  Add: "추가",
+  Save_Order: "순서 저장하기",
 
   // Login.vue
   GO: "로그인",

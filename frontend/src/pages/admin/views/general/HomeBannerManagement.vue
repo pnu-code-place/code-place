@@ -67,6 +67,14 @@
         </draggable>
       </div>
     </section>
+    <section style="margin: 12px">
+      <button class="button" style="color: white; background-color: #409eff">
+        <i class="el-icon-plus"></i> {{ $t("m.Add") }}
+      </button>
+      <button class="button" style="color: #409eff; border: 1px solid #409eff">
+        {{ $t("m.Save_Order") }}
+      </button>
+    </section>
   </div>
 </template>
 
@@ -98,33 +106,6 @@ export default {
           order: null,
           create_time: "2024-07-10T07:43:50.566984Z",
           last_update_time: "2024-07-10T07:43:50.566998Z",
-        },
-        {
-          id: 6,
-          banner_image: "/public/banner/8c3c7a048f.png",
-          link_url: "https://www.naver.com",
-          visible: false,
-          order: null,
-          create_time: "2024-07-10T07:44:44.757389Z",
-          last_update_time: "2024-07-10T07:44:44.757405Z",
-        },
-        {
-          id: 7,
-          banner_image: "/public/banner/7532e4aaf6.png",
-          link_url: "https://www.naver.com",
-          visible: false,
-          order: null,
-          create_time: "2024-07-10T07:44:46.481548Z",
-          last_update_time: "2024-07-10T07:44:46.481582Z",
-        },
-        {
-          id: 8,
-          banner_image: "/public/banner/d29abda52b.png",
-          link_url: "https://www.naver.com",
-          visible: false,
-          order: null,
-          create_time: "2024-07-10T07:44:47.986667Z",
-          last_update_time: "2024-07-10T07:44:47.986731Z",
         },
       ],
     };
@@ -173,5 +154,18 @@ p {
   color: #606266;
   font-size: 15px;
   font-weight: 600;
+}
+
+.button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 5px;
+  background-color: white;
+  font-size: 13px;
+  font-weight: 450;
+  cursor: pointer;
+  &:hover {
+    opacity: 70%;
+  }
 }
 </style>
