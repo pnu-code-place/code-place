@@ -75,8 +75,7 @@ export default {
       }
     },
     checkFileSize(file) {
-      // const limitSize = 1024 ** 2 * 10; // 10MB
-      const limitSize = 1024 * 10; // 10MB
+      const limitSize = 1024 ** 2 * 10; // 10MB
       if (file.size > limitSize) {
         alert(this.$t("m.Image_Max_Size_Alert"));
         return false;
