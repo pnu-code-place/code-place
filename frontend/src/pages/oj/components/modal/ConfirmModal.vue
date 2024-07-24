@@ -2,7 +2,7 @@
   <div v-if="open" class="modal-wrapper" @click="onCloseEmit">
     <div class="modal-container" :style="modalStyles" @click.stop>
       <div class="modal-title">
-        {{ $t("m." + title) }}
+        {{ title }}
         <i
           class="el-icon-close"
           style="width: 20px; cursor: pointer"
@@ -27,7 +27,7 @@
           style="background-color: #409eff; color: white"
           @click="onConfirmButtonClickEmit"
         >
-          {{ $t("m." + confirmButtonText) }}
+          {{ confirmButtonText }}
         </button>
       </div>
     </div>
