@@ -462,7 +462,13 @@ export const m = {
   Button_Enter: "확인",
 
   // footer.vue
-  PNUCSEP : "부산대학교 코딩역량강화플랫폼",
-  AddressPNUCSEP : "부산광역시 금정구 부산대학로63번길 2 (장전동) 부산대학교 소프트웨어융합교육원",
-  UserGuide: "사용자 가이드"
+  PNUCSEP: "부산대학교 코딩역량강화플랫폼",
+  AddressPNUCSEP:
+    "부산광역시 금정구 부산대학로63번길 2 (장전동) 부산대학교 소프트웨어융합교육원",
+  UserGuide: "사용자 가이드",
+
+  // ImageDragAndDrop.vue
+  Image_Max_Size_Notice: "최대 10MB 이하 jpeg, png 첨부 가능",
+  Image_Max_Size_Alert: "10MB 이하의 사진을 올려주세요.",
+  Bring_Image: "이미지 가져오기",
 };
