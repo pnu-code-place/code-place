@@ -282,6 +282,7 @@ export const m = {
 
   // HomeBannerManagement.vue
   Home_Banner_Notice: "배너 활성화는 최대 5개까지 가능합니다.",
+  Home_Banner_Does_Not_Exist: "배너가 존재하지 않습니다.",
   Home_Banner_ID: "ID",
   Banner_Image: "배너 이미지",
   Last_Update_Time: "마지막 수정일",

@@ -32,7 +32,14 @@
         <p class="table-title">{{ $t("m.Setting") }}</p>
       </div>
       <div>
-        <draggable tag="ul" :list="banners" handle=".handle">
+        <div
+          v-if="banners.length === 0"
+          class="table-title"
+          style="width: 100%; text-align: center; margin: 50px 0px"
+        >
+          {{ $t("m.Home_Banner_Does_Not_Exist") }}
+        </div>
+        <draggable v-else tag="ul" :list="banners" handle=".handle">
           <li
             v-for="(banner, idx) in banners"
             :key="banner.id"
