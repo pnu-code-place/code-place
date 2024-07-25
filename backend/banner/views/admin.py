@@ -30,8 +30,7 @@ class AdminBannerAPIView(APIView):
         Banner 모델 데이터를 가져옵니다.
         """
         banners = Banner.objects.all().order_by('order')
-        if banners:
-            return self.success(BannerAdminSerializer(banners, many=True).data)
+        return self.success(BannerAdminSerializer(banners, many=True).data)
 
     @super_admin_required
     def post(self, request):
