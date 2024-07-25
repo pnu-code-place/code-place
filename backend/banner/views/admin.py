@@ -73,7 +73,10 @@ class AdminBannerAPIView(APIView):
         name = rand_str(10) + suffix
 
         # 배너 이미지 저장
-        with open(os.path.join(settings.BANNER_DIR, name), "wb") as img:
+        banner_path = os.path.join(settings.BANNER_DIR, name)
+        os.makedirs(os.path.dirname(banner_path), exist_ok=True)
+
+        with open(banner_path, "wb") as img:
             for chunk in banner_image:
                 img.write(chunk)
 
