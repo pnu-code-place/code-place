@@ -54,7 +54,7 @@
     </template>
     <Modal v-model="uploadModalVisible"
            title="Upload the avatar"
-           :styles="{zIndex: 1003}"
+           :styles="{zIndex: 2000}"
     >
       <div class="upload-modal">
         <p class="notice">{{ $t('m.Avatar_Preview') }}</p>
@@ -78,6 +78,7 @@ export default {
   components: {
     VueCropper
   },
+  emits: ['finishCrop'],
   data() {
     return {
       loadingSaveBtn: false,
@@ -158,6 +159,7 @@ export default {
         this.uploadImgSrc = data
         this.uploadModalVisible = true
       })
+      this.$emit('finishCrop')
     },
     uploadAvatar() {
       this.$refs.cropper.getCropBlob(blob => {

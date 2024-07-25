@@ -229,7 +229,7 @@ export default {
         <Modal v-model="avatarUploadModal"
                :footer-hide="true"
                :width="800">
-          <ChangeAvatar/>
+          <ChangeAvatar @finishCrop="this.closeAvatarModal"/>
         </Modal>
       </div>
     </div>
