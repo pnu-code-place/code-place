@@ -11,6 +11,9 @@ export const m = {
   Grading: '채점중..',
   Correct: '정답!',
 
+  // HomeFamilySiteBanner.vue
+  FamilySites: '패밀리 사이트',
+
   // SideMenu.vue
   Dashboard: '대시보드',
   General: '일반',

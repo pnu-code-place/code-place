@@ -13,6 +13,7 @@
       </div>
     </div>
     <HomeStatusBox/>
+    <HomeFamilySiteBanner/>
   </div>
 
 </template>
@@ -30,6 +31,7 @@ import HomeProblemRecommendationBox from "../home/HomeProblemRecommendationBox.v
 import HomeRankingBox from "../home/HomeRankingBox.vue";
 import HomeProfileBox from "../home/HomeProfileBox.vue";
 import HomeStatusBox from "../home/HomeStatistics/HomeLanguages.vue";
+import HomeFamilySiteBanner from "../home/HomeFamilySiteBanner/HomeFamilySiteBanner.vue"
 import Statistics from "./HomeStatistics.vue";
 
 export default {
@@ -40,6 +42,7 @@ export default {
     HomeProfileBox,
     HomeRankingBox,
     HomeProblemRecommendationBox,
+    HomeFamilySiteBanner,
     HomeNoticeBox,
     HomeBannerListBox,
     Announcements
