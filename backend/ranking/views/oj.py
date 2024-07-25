@@ -98,7 +98,8 @@ class MajorRankAPI(APIView):
                 'rank': rank,
                 'major': major.department_name,
                 'score': major.score,
-                'people': list(people_data)
+                'population': len(people_data),
+                'people': list(people_data)[:5]
             }
             results.append(data)
 

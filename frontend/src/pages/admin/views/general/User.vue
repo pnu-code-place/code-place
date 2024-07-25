@@ -1,16 +1,62 @@
 <template>
   <div class="view">
-    <Panel :title="$t('m.User_User') ">
+    <Panel :title="$t('m.User_Statistic')">
+      <el-row type="flex">
+        <el-col :span="6" style="border-right: 1px solid #eeeeee; padding: 10px">
+          <span style="color: #5c6773; font-weight: 800; font-size: medium; margin-bottom: 30px">인원 개요</span>
+          <ul>
+            <li><span style="color: #457dd3; font-weight: 800; font-size: small">총 사용자 수 {{this.stat.all_users}}명</span></li>
+            <li><span style="color: #5c6773; font-weight: 800; font-size: small">최고 관리자 {{this.stat.super_admins}}명</span></li>
+            <li><span style="color: #5c6773; font-weight: 800; font-size: small">관리자 {{this.stat.admins}}명</span></li>
+            <li><span style="color: #5c6773; font-weight: 800; font-size: small">일반 사용자 {{this.stat.regular_users}}명</span></li>
+          </ul>
+        </el-col>
+        <el-col :span="9" style="border-right: 1px solid #eeeeee; padding: 10px;">
+          <span style="color: #5c6773; font-weight: 800; font-size: medium">학과별 가입자 수 현황</span>
+          <div style="height: 170px; display: flex; justify-content: center; padding-top: 30px">
+            <ECharts :options="chartOption" ref="line" style="width: 100%; height: 100%"/>
+          </div>
+        </el-col>
+        <el-col :span="9" style="border-right: 1px solid #eeeeee; padding: 10px">
+          <span style="color: #5c6773; font-weight: 800; font-size: medium">월별 가입자 수 현황</span>
+          <div style="height: 200px; padding-top: 20px">
+            <ECharts :options="options" ref="line" style="width: 100%; height: 100%"/>
+          </div>
+        </el-col>
+        <el-col :span="9" style="border-right: 1px solid #eeeeee; padding: 10px">
+          <span style="color: #5c6773; font-weight: 800; font-size: medium">주간 가입자 수 현황</span>
+          <div style="height: 200px; padding-top: 20px">
+            <ECharts :options="weekOptions" ref="line" style="width: 100%; height: 100%"/>
+          </div>
+        </el-col>
+      </el-row>
+    </Panel>
+
+    <Panel :title="$t('m.User_User')">
       <div slot="header">
-        <el-row :gutter="20">
+        <el-row type="flex">
           <el-col :span="8">
             <el-button v-show="selectedUsers.length"
                        type="warning" icon="el-icon-fa-trash"
                        @click="deleteUsers(selectedUserIDs)">{{$t('m.Icon_Delete')}}
             </el-button>
           </el-col>
+          <el-col style="margin-right: 15px">
+              <el-select v-model="query.college" :placeholder="$t('m.User_Placeholder_College')">
+                <template v-for="(item, index) in collegeList">
+                  <el-option :label="item.college_name" :value="item.id"></el-option>
+                </template>
+              </el-select>
+          </el-col>
+          <el-col style="margin-right: 15px">
+            <el-select v-model="query.department" :placeholder="$t('m.User_Placeholder_Department')">
+              <template v-for="(item, index) in filteredDepartmentListForQuery">
+                <el-option :label="item.department_name" :value="item.id"></el-option>
+              </template>
+            </el-select>
+          </el-col>
           <el-col :span="selectedUsers.length ? 16: 24">
-            <el-input v-model="keyword" prefix-icon="el-icon-search" placeholder="Keywords"></el-input>
+            <el-input v-model="query.keyword" prefix-icon="el-icon-search" placeholder="Keywords"></el-input>
           </el-col>
         </el-row>
       </div>
@@ -20,36 +66,46 @@
         @selection-change="handleSelectionChange"
         ref="table"
         :data="userList"
-        style="width: 100%">
+        style="width: 100%;">
         <el-table-column type="selection" width="55"></el-table-column>
 
-        <el-table-column prop="id" :label="$t('m.User_Table_ID')"></el-table-column>
+        <el-table-column prop="id" width="55" :label="$t('m.User_Table_ID')"></el-table-column>
 
-        <el-table-column prop="username" :label="$t('m.User_Table_Username')"></el-table-column>
-
-        <el-table-column prop="create_time" :label="$t('m.User_Table_Create_Time')">
+        <el-table-column width="60" :label="$t('m.User_Table_User_Avatar')">
           <template slot-scope="scope">
-            {{scope.row.create_time | localtime }}
+            <img class="avatar" :src="scope.row.avatar"/>
           </template>
         </el-table-column>
 
-        <el-table-column prop="last_login" :label="$t('m.User_Table_Last_Login')">
-          <template slot-scope="scope">
-            {{scope.row.last_login | localtime }}
-          </template>
-        </el-table-column>
-
-        <el-table-column prop="real_name" :label="$t('m.User_Table_Real_Name')"></el-table-column>
+        <el-table-column prop="username" width="100" :label="$t('m.User_Table_Username')"></el-table-column>
 
         <el-table-column prop="email" :label="$t('m.User_Table_Email')"></el-table-column>
 
-        <el-table-column prop="admin_type" :label="$t('m.User_Table_User_Type')">
+        <el-table-column prop="real_name" width="80" :label="$t('m.User_Table_Real_Name')"></el-table-column>
+
+        <el-table-column prop="student_id" width="100" :label="$t('m.User_Table_Student_Id')"></el-table-column>
+
+        <el-table-column width="100"  :label="$t('m.User_Table_User_College')">
           <template slot-scope="scope">
-            {{ scope.row.admin_type }}
+            {{ scope.row.college }}
           </template>
         </el-table-column>
 
-        <el-table-column fixed="right" :label="$t('m.User_Table_Option')" width="200">
+        <el-table-column :label="$t('m.User_Table_User_Department')">
+          <template slot-scope="scope">
+            {{ scope.row.department }}
+          </template>
+        </el-table-column>
+
+        <el-table-column :label="$t('m.User_Table_Create_Time')">
+          <template slot-scope="scope">
+            {{scope.row.create_time | localtime }}
+            <br>
+            <span style="color: #2d8cf0">{{scope.row.last_login | localtime }}</span>
+          </template>
+        </el-table-column>
+
+        <el-table-column fixed="right" :label="$t('m.User_Table_Option')" width="120">
           <template slot-scope="{row}">
             <icon-btn :name="$t('m.Icon_Edit')" icon="edit" @click.native="openUserDialog(row.id)"></icon-btn>
             <icon-btn :name="$t('m.Icon_Delete')" icon="trash" @click.native="deleteUsers([row.id])"></icon-btn>
@@ -67,129 +123,135 @@
       </div>
     </Panel>
 
-    <Panel>
-      <span slot="title">{{$t('m.Import_User')}}
-        <el-popover placement="right" trigger="hover">
-          <i slot="reference" class="el-icon-fa-question-circle import-user-icon"></i>
-          <p>{{$t('m.User_Import_Tooltip_Content')}}</p>
-          <p>{{$t('m.User_Import_Tooltip_Reference')}}: <a href="http://docs.onlinejudge.me/#/onlinejudge/guide/import_users" target="_blank">
-            http://docs.onlinejudge.me/#/onlinejudge/guide/import_users</a>
-          </p>
-        </el-popover>
-      </span>
-      <el-upload v-if="!uploadUsers.length"
-                 action=""
-                 :show-file-list="false"
-                 accept=".csv"
-                 :before-upload="handleUsersCSV">
-        <el-button size="small" icon="el-icon-fa-upload" type="primary">{{$t('m.Button_Choose_File')}}</el-button>
-      </el-upload>
-      <template v-else>
-        <el-table :data="uploadUsersPage">
-          <el-table-column :label="$t('m.Import_User_Table_Username')">
-            <template slot-scope="{row}">
-              {{row[0]}}
-            </template>
-          </el-table-column>
-          <el-table-column :label="$t('m.Import_User_Table_Password')">
-            <template slot-scope="{row}">
-              {{row[1]}}
-            </template>
-          </el-table-column>
-          <el-table-column :label="$t('m.Import_User_Table_Email')">
-            <template slot-scope="{row}">
-              {{row[2]}}
-            </template>
-          </el-table-column>
-          <el-table-column :label="$t('m.Import_User_Table_RealName')">
-            <template slot-scope="{row}">
-              {{row[3]}}
-            </template>
-          </el-table-column>
-        </el-table>
-        <div class="panel-options">
-          <el-button type="primary" size="small"
-                     icon="el-icon-fa-upload"
-                     @click="handleUsersUpload">{{$t('m.Button_Import_All')}}
-          </el-button>
-          <el-button type="warning" size="small"
-                     icon="el-icon-fa-undo"
-                     @click="handleResetData">{{$t('m.Button_Reset_Data')}}
-          </el-button>
-          <el-pagination
-            class="page"
-            layout="prev, pager, next"
-            :page-size="uploadUsersPageSize"
-            :current-page.sync="uploadUsersCurrentPage"
-            :total="uploadUsers.length">
-          </el-pagination>
-        </div>
-      </template>
-    </Panel>
+<!--    <Panel>-->
+<!--      <span slot="title">{{$t('m.Import_User')}}-->
+<!--        <el-popover placement="right" trigger="hover">-->
+<!--          <i slot="reference" class="el-icon-fa-question-circle import-user-icon"></i>-->
+<!--          <p>{{$t('m.User_Import_Tooltip_Content')}}</p>-->
+<!--          <p>{{$t('m.User_Import_Tooltip_Reference')}}: <a href="http://docs.onlinejudge.me/#/onlinejudge/guide/import_users" target="_blank">-->
+<!--            http://docs.onlinejudge.me/#/onlinejudge/guide/import_users</a>-->
+<!--          </p>-->
+<!--        </el-popover>-->
+<!--      </span>-->
+<!--      <el-upload v-if="!uploadUsers.length"-->
+<!--                 action=""-->
+<!--                 :show-file-list="false"-->
+<!--                 accept=".csv"-->
+<!--                 :before-upload="handleUsersCSV">-->
+<!--        <el-button size="small" icon="el-icon-fa-upload" type="primary">{{$t('m.Button_Choose_File')}}</el-button>-->
+<!--      </el-upload>-->
+<!--      <template v-else>-->
+<!--        <el-table :data="uploadUsersPage">-->
+<!--          <el-table-column :label="$t('m.Import_User_Table_Username')">-->
+<!--            <template slot-scope="{row}">-->
+<!--              {{row[0]}}-->
+<!--            </template>-->
+<!--          </el-table-column>-->
+<!--          <el-table-column :label="$t('m.Import_User_Table_Password')">-->
+<!--            <template slot-scope="{row}">-->
+<!--              {{row[1]}}-->
+<!--            </template>-->
+<!--          </el-table-column>-->
+<!--          <el-table-column :label="$t('m.Import_User_Table_Email')">-->
+<!--            <template slot-scope="{row}">-->
+<!--              {{row[2]}}-->
+<!--            </template>-->
+<!--          </el-table-column>-->
+<!--          <el-table-column :label="$t('m.Import_User_Table_RealName')">-->
+<!--            <template slot-scope="{row}">-->
+<!--              {{row[3]}}-->
+<!--            </template>-->
+<!--          </el-table-column>-->
+<!--        </el-table>-->
+<!--        <div class="panel-options">-->
+<!--          <el-button type="primary" size="small"-->
+<!--                     icon="el-icon-fa-upload"-->
+<!--                     @click="handleUsersUpload">{{$t('m.Button_Import_All')}}-->
+<!--          </el-button>-->
+<!--          <el-button type="warning" size="small"-->
+<!--                     icon="el-icon-fa-undo"-->
+<!--                     @click="handleResetData">{{$t('m.Button_Reset_Data')}}-->
+<!--          </el-button>-->
+<!--          <el-pagination-->
+<!--            class="page"-->
+<!--            layout="prev, pager, next"-->
+<!--            :page-size="uploadUsersPageSize"-->
+<!--            :current-page.sync="uploadUsersCurrentPage"-->
+<!--            :total="uploadUsers.length">-->
+<!--          </el-pagination>-->
+<!--        </div>-->
+<!--      </template>-->
+<!--    </Panel>-->
 
     <Panel :title="$t('m.Generate_User')">
       <el-form :model="formGenerateUser" ref="formGenerateUser">
-        <el-row type="flex" justify="space-between">
-          <el-col :span="4">
-            <el-form-item :label="$t('m.Create_User_Table_Prefix')" prop="prefix">
+        <el-row style="margin-bottom: 10px">
+          <span style="color: #5c6773; font-weight: 800; font-size: medium">{{ $t('m.Create_User_Table_Option_School') }}</span>
+        </el-row>
+        <el-row type="flex">
+          <el-col :span="4" style="margin-right: 15px">
+            <el-form-item :label="$t('m.Create_User_Table_College')">
+              <el-select v-model="formGenerateUser.college" :placeholder="$t('m.User_Placeholder_College')">
+                <template v-for="(item, index) in collegeList">
+                  <el-option :label="item.college_name" :value="item.id"></el-option>
+                </template>
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="4" style="margin-right: 15px">
+            <el-form-item :label="$t('m.Create_User_Table_Department')">
+              <el-select v-model="formGenerateUser.department" :placeholder="$t('m.User_Placeholder_Department')">
+                <template v-for="(item, index) in filteredDepartmentListForDummy">
+                  <el-option :label="item.department_name" :value="item.id"></el-option>
+                </template>
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row style="margin-bottom: 10px">
+          <span style="color: #5c6773; font-weight: 800; font-size: medium">{{ $t('m.Create_User_Table_Option_Account') }}</span>
+        </el-row>
+        <el-row type="flex">
+          <el-col :span="4" style="margin-right: 15px">
+            <el-form-item :label="$t('m.Create_User_Table_Prefix')" prop="prefix" required>
               <el-input v-model="formGenerateUser.prefix" :placeholder="$t('m.Create_User_Table_Prefix')"></el-input>
             </el-form-item>
           </el-col>
-          <el-col :span="4">
-            <el-form-item :label="$t('m.Create_User_Table_Suffix')" prop="suffix">
-              <el-input v-model="formGenerateUser.suffix" :placeholder="$t('m.Create_User_Table_Suffix')"></el-input>
+          <el-col :span="4" style="margin-right: 15px">
+            <el-form-item :label="$t('m.Create_User_Table_Number_Of_Mock')" required>
+              <el-input-number v-model="formGenerateUser.num_of_mock" style="width: 100%"></el-input-number>
             </el-form-item>
           </el-col>
-          <el-col :span="4">
-            <el-form-item :label="$t('m.Create_User_Table_Start_Number')" prop="number_from" required>
-              <el-input-number v-model="formGenerateUser.number_from" style="width: 100%"></el-input-number>
-            </el-form-item>
-          </el-col>
-          <el-col :span="4">
-            <el-form-item :label="$t('m.Create_User_Table_End_Number')" prop="number_to" required>
-              <el-input-number v-model="formGenerateUser.number_to" style="width: 100%"></el-input-number>
-            </el-form-item>
-          </el-col>
-          <el-col :span="4">
-            <el-form-item :label="$t('m.Create_User_Table_Password_Length')" prop="password_length" required>
-              <el-input v-model="formGenerateUser.password_length"
-                        placeholder="Password Length"></el-input>
-            </el-form-item>
-          </el-col>
+        </el-row>
+        <el-row style="margin-bottom: 10px">
+          <span style="color: #6d88b6"> {{$t('m.Create_User_Table_Notice')}} </span>
         </el-row>
 
         <el-form-item>
           <el-button type="primary" @click="generateUser" icon="el-icon-fa-users" :loading="loadingGenerate">{{$t('m.Button_Generate_Export')}}
           </el-button>
-          <span class="userPreview" v-if="formGenerateUser.number_from && formGenerateUser.number_to &&
-                                          formGenerateUser.number_from <= formGenerateUser.number_to">
-            {{$t('m.Create_User_Annotation')}} {{formGenerateUser.prefix + formGenerateUser.number_from + formGenerateUser.suffix}},
-            <span v-if="formGenerateUser.number_from + 1 < formGenerateUser.number_to">
-              {{formGenerateUser.prefix + (formGenerateUser.number_from + 1) + formGenerateUser.suffix + '...'}}
-            </span>
-            <span v-if="formGenerateUser.number_from + 1 <= formGenerateUser.number_to">
-              {{formGenerateUser.prefix + formGenerateUser.number_to + formGenerateUser.suffix}}
-            </span>
-          </span>
         </el-form-item>
       </el-form>
     </Panel>
     <el-dialog :title="$t('m.User_Info')" :visible.sync="showUserDialog" :close-on-click-modal="false">
       <el-form :model="user" label-width="120px" label-position="left">
+        <el-col style="margin-bottom: 20px">
+          <span style="font-weight: bold;font-size: medium">계정 정보</span>
+        </el-col>
         <el-row :gutter="20">
           <el-col :span="12">
-            <el-form-item :label="$t('m.User_Username')" required>
+            <el-form-item :label="$t('m.User_Email')">
+              <el-input v-model="user.email" :disabled="true"></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item :label="$t('m.User_Username')">
               <el-input v-model="user.username"></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item :label="$t('m.User_Real_Name')" required>
+            <el-form-item :label="$t('m.User_Real_Name')">
               <el-input v-model="user.real_name"></el-input>
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item :label="$t('m.User_Email')" required>
-              <el-input v-model="user.email"></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="12">
@@ -214,6 +276,35 @@
                 <el-option label="All" value="All"></el-option>
               </el-select>
             </el-form-item>
+          </el-col>
+          <el-col style="margin-bottom: 20px; margin-top: 20px">
+           <span style="font-weight: bold;font-size: medium">학과 정보</span>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item :label="$t('m.Create_User_Table_College')">
+              <el-select v-model="user.college" :placeholder="$t('m.User_Placeholder_College')">
+                <template v-for="(item, index) in collegeList">
+                  <el-option :label="item.college_name" :value="item.id"></el-option>
+                </template>
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item :label="$t('m.Create_User_Table_Department')">
+              <el-select v-model="user.department" :placeholder="$t('m.User_Placeholder_Department')">
+                <template v-for="(item, index) in filteredDepartmentListForEdit">
+                  <el-option :label="item.department_name" :value="item.id"></el-option>
+                </template>
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item :label="$t('m.Create_User_Table_Student_Id')">
+              <el-input v-model="user.student_id"></el-input>
+            </el-form-item>
+          </el-col>
+          <el-col style="margin-bottom: 20px; margin-top: 10px">
+            <span style="font-weight: bold;font-size: medium">기타 정보</span>
           </el-col>
           <el-col :span="8">
             <el-form-item :label="$t('m.Two_Factor_Auth')">
@@ -255,19 +346,29 @@
   import papa from 'papaparse'
   import api from '../../api.js'
   import utils from '@/utils/utils'
+  import ECharts from "vue-echarts/components/ECharts.vue";
 
   export default {
     name: 'User',
+    components:{
+      ECharts
+    },
     data () {
       return {
         pageSize: 10,
         total: 0,
+        stat: {},
         userList: [],
         uploadUsers: [],
         uploadUsersPage: [],
         uploadUsersCurrentPage: 1,
         uploadUsersPageSize: 15,
-        keyword: '',
+        query:{
+          keyword: '',
+          college: '',
+          department: '',
+          active: true
+        },
         showUserDialog: false,
         user: {},
         loadingTable: false,
@@ -276,15 +377,20 @@
         selectedUsers: [],
         formGenerateUser: {
           prefix: '',
-          suffix: '',
-          number_from: 0,
-          number_to: 0,
-          password_length: 8
-        }
+          num_of_mock: 0,
+          college: '',
+          department: ''
+        },
+        collegeList: [],
+        departmentList: [],
+        departmentItems: []
       }
     },
     mounted () {
       this.getUserList(1)
+      this.getStats()
+      this.getCollegeList()
+      this.getDepartmentList()
     },
     methods: {
       currentChange (page) {
@@ -292,6 +398,7 @@
         this.getUserList(page)
       },
       saveUser () {
+        console.log(this.user)
         api.editUser(this.user).then(res => {
           this.getUserList(this.currentPage)
         }).then(() => {
@@ -305,16 +412,43 @@
           this.user = res.data.data
           this.user.password = ''
           this.user.real_tfa = this.user.two_factor_auth
+          this.user.college = null
+          this.user.department = null
         })
+      },
+      async getCollegeList() {
+        let res = await api.getCollegeList()
+        this.collegeList = [
+          {
+            id: "-1",
+            college_name: "전체"
+          },
+          ...res.data.data
+        ];
+      },
+      async getDepartmentList() {
+        let res = await api.getMajorList()
+        this.departmentList = [
+          {
+            id: "-1",
+            department_name: "전체"
+          },
+          ...res.data.data
+        ];
       },
       getUserList (page) {
         this.loadingTable = true
-        api.getUserList((page - 1) * this.pageSize, this.pageSize, this.keyword).then(res => {
+        api.getUserList((page - 1) * this.pageSize, this.pageSize, this.query).then(res => {
           this.loadingTable = false
           this.total = res.data.data.total
           this.userList = res.data.data.results
         }, res => {
           this.loadingTable = false
+        })
+      },
+      getStats () {
+        api.getStats().then(res => {
+          this.stat = res.data.data
         })
       },
       deleteUsers (ids) {
@@ -336,6 +470,10 @@
         this.$refs['formGenerateUser'].validate((valid) => {
           if (!valid) {
             this.$error('Please validate the error fields')
+            return
+          }
+          if (this.formGenerateUser.num_of_mock === 0){
+            this.$error('Please validate the Num of Mock User fields')
             return
           }
           this.loadingGenerate = true
@@ -389,11 +527,124 @@
           ids.push(user.id)
         }
         return ids
+      },
+      filteredDepartmentListForQuery() {
+        if(this.query.college === "-1"){
+          return []
+        }
+        return this.departmentList.filter(item => item.college_id === this.query.college);
+      },
+      filteredDepartmentListForDummy() {
+        if(this.formGenerateUser.college === "-1"){
+          return []
+        }
+        return this.departmentList.filter(item => item.college_id === this.formGenerateUser.college);
+      },
+      filteredDepartmentListForEdit() {
+        if(this.user.college === "-1"){
+          return []
+        }
+        return this.departmentList.filter(item => item.college_id === this.user.college);
+      },
+      chartOption() {
+        return {
+          tooltip: {
+            trigger: 'item'
+          },
+          label: {
+            show: false,
+            position: 'center'
+          },
+          emptyCircleStyle: {
+            color: "lightgray",
+            opacity: 1
+          },
+          emphasis: {
+            label: {
+              show: true,
+              fontSize: 40,
+            }
+          },
+          series: [
+            {
+              name: '학과',
+              type: 'pie',
+              radius: "55%",
+              padAngle: 10,
+              data: this.stat.department_statistics,
+              color: ['#e8508f','#5470c6', '#91cc75', '#fac858', '#ee6666', '#73c0de', '#3ba272', '#fc8452', '#9a60b4'],
+              emphasis: {
+                itemStyle: {
+                  shadowBlur: 10,
+                  shadowOffsetX: 0,
+                  shadowColor: 'rgba(172,84,84,0.5)',
+                  borderJoin: "round",
+                }
+              },
+            }
+          ]
+        };
+      },
+      options(){
+        return{
+          title: {
+            text: `${this.stat.monthly_statistics.year}년`,
+          },
+          xAxis: {
+            type: 'category',
+            data: this.stat.monthly_statistics.xAxis
+          },
+          yAxis: {
+            type: 'value',
+          },
+          series: [
+            {
+              data: this.stat.monthly_statistics.series,
+              type: 'line',
+              smooth: true,
+              color: "#121c3c"
+            }
+          ]
+        }
+      },
+      weekOptions(){
+        return{
+          title: {
+            text: `${this.stat.weekly_statistics.week_info}`,
+            subtext: `${this.stat.weekly_statistics.date_range.start} ~ ${this.stat.weekly_statistics.date_range.end}`
+          },
+          xAxis: {
+            type: 'category',
+            data: this.stat.weekly_statistics.xAxis
+          },
+          yAxis: {
+            type: 'value'
+          },
+          series: [
+            {
+              data: this.stat.weekly_statistics.series,
+              type: 'bar'
+            }
+          ]
+        }
       }
     },
     watch: {
-      'keyword' () {
-        this.currentChange(1)
+      query: {
+        handler() {
+          this.currentChange(1);
+        },
+        deep: true,
+        immediate: false
+      },
+      'formGenerateUser.college' (){
+        this.formGenerateUser.department = ''
+      },
+      'query.college' (){
+        this.query.department = ''
+      },
+      'user.college' (){
+        this.user.department = null
       },
       'user.admin_type' () {
         if (this.user.admin_type === 'Super Admin') {
@@ -442,5 +693,13 @@
       margin: 0;
       text-align: left;
     }
+  }
+
+  @avatar-radius: 50%;
+
+  .avatar {
+    width: 30px;
+    border-radius: @avatar-radius;
+    box-shadow: 0px 0px 1px 0px;
   }
 </style>

@@ -138,7 +138,7 @@ class ContestProblemAPI(APIView):
 
 
 class RecommendProblemAPI(APIView):
-    @login_required
+    # @login_required
     def get(self, request):
         """사용자의 실력에 맞는 3문제를 추천합니다.
 
@@ -171,6 +171,8 @@ class RecommendProblemAPI(APIView):
         #         "recommend_problems": RecommendBonusProblemSerializer(recommend_problems, many=True).data})
         # else:
         #     return HttpResponseBadRequest("No Recommendation because of insufficient problems.")
+        if not request.user.is_authenticated:
+            return self.success("Not authenticated")
         user_score = self.get_user_score(request.user)
         user_solved_problem = self.get_user_solved_problems(request.user)
         field_scores = self.get_field_scores(user_score)

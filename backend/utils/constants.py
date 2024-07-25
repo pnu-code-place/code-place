@@ -41,6 +41,11 @@ BANNER_VISIBLE_LIMIT = 5
 
 RSS_FEED_URL = "https://swedu.pusan.ac.kr/bbs/swedu/6906/rssList.do?row=50"
 
+GENERATE_MOCK_USERNAME_URL = "https://www.rivestsoft.com/nickname/getRandomNickname.ajax"
+
+EMAIL_SUFFIX="@pusan.ac.kr"
+
+
 class ProblemField:
     fields = ['implementation', 'math', 'datastructure', 'search', 'sorting']
     strToInt = {

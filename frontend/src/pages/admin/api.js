@@ -24,6 +24,16 @@ export default {
   getProfile() {
     return ajax("profile", "get");
   },
+  getCollegeList() {
+    return ajax("college_list", "get");
+  },
+  getMajorList(collegeID) {
+    return ajax("department_list", "get", {
+      params: {
+        college_id: collegeID,
+      },
+    });
+  },
   // 获取公告列表
   getAnnouncementList(offset, limit) {
     return ajax("admin/announcement", "get", {
@@ -54,12 +64,39 @@ export default {
       data,
     });
   },
-  // 获取用户列表
-  getUserList(offset, limit, keyword) {
+  getStats() {
+    return ajax("admin/stat", "get");
+  },
+  getUserList(offset, limit, query) {
     let params = { paging: true, offset, limit };
+    let { keyword, college, department } = query;
     if (keyword) {
       params.keyword = keyword;
     }
+    if (college !== "-1") {
+      params.college = college;
+    }
+    if (department !== "-1") {
+      params.department = department;
+    }
+    params.admin_type = "Regular";
+    return ajax("admin/user", "get", {
+      params: params,
+    });
+  },
+  getAdminList(offset, limit, query) {
+    let params = { paging: true, offset, limit };
+    let { keyword, college, department } = query;
+    if (keyword) {
+      params.keyword = keyword;
+    }
+    if (college !== "-1") {
+      params.college = college;
+    }
+    if (department !== "-1") {
+      params.department = department;
+    }
+    params.admin_type = "Admin";
     return ajax("admin/user", "get", {
       params: params,
     });
