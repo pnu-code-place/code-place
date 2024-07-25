@@ -104,6 +104,7 @@
 </template>
 
 <script>
+import api from "../../api.js";
 import draggable from "vuedraggable";
 import AddBannerModal from "./HomeBanner/AddBannerModal";
 import ModifyBannerModal from "./HomeBanner/ModifyBannerModal";
@@ -140,6 +141,13 @@ export default {
         },
       ],
     };
+  },
+  beforeRouteEnter(to, from, next) {
+    next((vm) => {
+      api.getBanners().then((res) => {
+        console.log(res);
+      });
+    });
   },
   methods: {
     handleVisibleSwitchChange(id) {
