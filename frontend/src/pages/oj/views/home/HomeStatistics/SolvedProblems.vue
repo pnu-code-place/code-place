@@ -104,7 +104,7 @@ export default {
   .number-wrapper {
     height: 75px;
     .number {
-      font-size: 50px;
+      font-size: 40px;
       font-weight: 900;
     }
   }
