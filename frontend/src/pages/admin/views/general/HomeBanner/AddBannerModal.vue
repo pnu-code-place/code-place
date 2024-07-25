@@ -34,6 +34,8 @@
 </template>
 
 <script>
+import api from "../../../api.js";
+
 import ConfirmModal from "@/pages/oj/components/modal/ConfirmModal";
 import ImageDragAndDropBox from "@/pages/oj/components/ImageDragAndDropBox";
 
@@ -58,6 +60,14 @@ export default {
     handleConfirmButtonClick() {
       // TODO: 검증 로직 추가.
       // TODO: 배너 추가 api 연결.
+      const formData = new FormData();
+      formData.append("link_url", this.linkUrl);
+      formData.append("image", this.imageFile);
+
+      api.addBanner(formData).then((res) => {
+        console.log(res);
+      });
+
       this.resetData();
       this.$emit("onClose");
     },
