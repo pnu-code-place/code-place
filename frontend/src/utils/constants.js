@@ -235,13 +235,13 @@ export const FamilySiteContentSrc = {
   },
   sw_edwith: {
     "src": require("@/assets/familyContents/micon_3.svg"),
-    "banner_name": "온라인강좌:EdWith",
+    "banner_name": "온라인강좌:인프런",
     "url": "https://inflearn.com/users/1370319"
   },
   sw_css: {
     "src": require("@/assets/familyContents/micon_4.svg"),
     "banner_name": "부산대학교:SW역량지원시스템",
-    "url": "https://naver.com"
+    "url": "https://pnuswedu.org/main/index.php"
   },
 };
 
