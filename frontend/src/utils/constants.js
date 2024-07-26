@@ -217,6 +217,34 @@ export const TierImageSrc = {
   diamond3: require("@/assets/tiers/diamond/diamond3.svg"),
 };
 
+export const FamilySiteContentSrc = {
+  sw_convergence: {
+    "src": require("@/assets/familyContents/micon_0.svg"),
+    "banner_name": "부산대학교:소프트웨어융합교육원",
+    "url": "https://swedu.pusan.ac.kr/"
+  },
+  sw_support: {
+    "src": require("@/assets/familyContents/micon_1.svg"),
+    "banner_name": "부산대학교:학생지원시스템",
+    "url": "https://onestop.pusan.ac.kr/"
+  },
+  sw_plato: {
+    "src": require("@/assets/familyContents/micon_2.svg"),
+    "banner_name": "스마트교육플랫폼:PLATO",
+    "url": "https://plato.pusan.ac.kr/"
+  },
+  sw_edwith: {
+    "src": require("@/assets/familyContents/micon_3.svg"),
+    "banner_name": "온라인강좌:인프런",
+    "url": "https://inflearn.com/users/1370319"
+  },
+  sw_css: {
+    "src": require("@/assets/familyContents/micon_4.svg"),
+    "banner_name": "부산대학교:SW역량지원시스템",
+    "url": "https://pnuswedu.org/main/index.php"
+  },
+};
+
 export const AwardImageSrc = {
   1: require("@/assets/awards/first.svg"),
   2: require("@/assets/awards/second.svg"),
