@@ -56,8 +56,7 @@
             <span class="drag-item-text" style="font-size: 18px">
               {{ banner.id }}
             </span>
-            <img src="@/assets/banner1.svg" width="100%" />
-            <!-- <img :src="banner.banner_image" width="100%" /> -->
+            <img :src="banner.banner_image" width="100%" />
             <span class="drag-item-text">
               {{ banner.create_time | localtime }}
             </span>
@@ -66,7 +65,7 @@
             </span>
             <el-switch
               v-model="banner.visible"
-              @change="handleVisibleSwitchChange(banner.id)"
+              @change="handleVisibleSwitchChange(banner.id, banner.visible)"
             >
             </el-switch>
             <div>
@@ -131,10 +130,18 @@ export default {
     });
   },
   methods: {
-    handleVisibleSwitchChange(id) {
-      alert(`handleVisibleSwitchChange changed ${id}`);
+    getBanners() {
+      api.getBanners().then((res) => {
+        this.banners = res.data.data;
+      });
     },
-    handleBannerOrderChange() {
+    handleVisibleSwitchChange(id, visible) {
+      api.editEnableBanner(id, { visible: visible }).then((res) => {
+        if (res.status === 200) this.getBanners();
+      });
+    },
+    handleBannerOrderChange(id) {
+      // TODO: 배너 순서 변경 api 연결
       // alert("handleBannerOrderChange changed");
     },
     handleAddButtonClick() {
@@ -146,13 +153,11 @@ export default {
     },
     handleDeleteButtonClick(id) {
       api.deleteBanner(id).then((res) => {
-        console.log(res);
-      });
-      api.getBanners().then((res) => {
-        this.banners = res.data;
+        if (res.status === 200) this.getBanners();
       });
     },
     handleModalClose() {
+      this.getBanners();
       this.addModalOpen = false;
       this.modifyModalOpen = false;
     },
