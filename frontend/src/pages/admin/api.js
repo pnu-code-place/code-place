@@ -345,6 +345,14 @@ export default {
   getBanners() {
     return ajax("admin/banner", "get");
   },
+  addBanner(data) {
+    return ajax("admin/banner", "post", { data });
+  },
+  deleteBanner(id) {
+    return ajax("admin/banner", "delete", {
+      params: { id },
+    });
+  },
   modifyBanner(id, data) {
     return ajax("admin/banner/edit", "post", {
       params: { id },
@@ -362,14 +370,6 @@ export default {
       params: { id },
       data,
     });
-  },
-  editEnableBanner(id) {
-    return ajax("admin/banner", "delete", {
-      params: { id },
-    });
-  },
-  addBanner(data) {
-    return ajax("admin/banner", "post", { data });
   },
 };
 
