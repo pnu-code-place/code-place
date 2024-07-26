@@ -120,32 +120,13 @@ export default {
     return {
       addModalOpen: false,
       modifyModalOpen: false,
-      banners: [
-        {
-          id: 4,
-          banner_image: "@/assets/banner1.svg",
-          link_url: "https://www.naver.com",
-          visible: false,
-          order: null,
-          create_time: "2024-07-10T07:17:15.289541Z",
-          last_update_time: "2024-07-10T07:17:15.289581Z",
-        },
-        {
-          id: 5,
-          banner_image: "@/assets/banner1.svg",
-          link_url: "https://www.naver.com",
-          visible: false,
-          order: null,
-          create_time: "2024-07-10T07:43:50.566984Z",
-          last_update_time: "2024-07-10T07:43:50.566998Z",
-        },
-      ],
+      banners: [],
     };
   },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
       api.getBanners().then((res) => {
-        console.log(res);
+        vm.banners = res.data.data;
       });
     });
   },
@@ -164,7 +145,12 @@ export default {
       this.modifyModalOpen = true;
     },
     handleDeleteButtonClick(id) {
-      alert(`handleDeleteButtonClick clicked ${id}`);
+      api.deleteBanner(id).then((res) => {
+        console.log(res);
+      });
+      api.getBanners().then((res) => {
+        this.banners = res.data;
+      });
     },
     handleModalClose() {
       this.addModalOpen = false;
