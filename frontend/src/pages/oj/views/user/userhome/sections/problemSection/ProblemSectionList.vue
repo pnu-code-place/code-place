@@ -38,6 +38,7 @@
       <hr>
       <ErrorSign v-if="error !== 0" :code="this.error"></ErrorSign>
       <ProblemSkeleton v-if="isLoading" class="loading-skeleton"></ProblemSkeleton>
+      <ErrorSign v-else-if="problem_list.length === 0" code="" :solution="this.$t('m.There_Is_No_Solved_Problem')"></ErrorSign>
       <div v-else class="problem-list">
         <ProblemBadge
           v-for="problem in problem_list"
@@ -147,15 +148,12 @@ export default {
   computed: {
     username() {
       let username = '';
-
       if (this.$route && this.$route.params && typeof this.$route.params.username === 'string') {
         username = this.$route.params.username;
       }
-
       if (!username && this.$store && this.$store.state.user && this.$store.state.user.profile && this.$store.state.user.profile.user && typeof this.$store.state.user.profile.user.username === 'string') {
         username = this.$store.state.user.profile.user.username;
       }
-
       return username;
     }
   },

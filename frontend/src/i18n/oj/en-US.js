@@ -9,6 +9,7 @@ export const m = {
   Reload_Page: "페이지를 새로고침하거나, 나중에 다시 시도해주세요",
   Try_Again_Later: "나중에 다시 시도해주세요.",
   // Problem.vue
+  There_Is_No_Solved_Problem: "해결한 문제가 없습니다.",
   Description: "설명",
   Input: "입력",
   Output: "출력",
