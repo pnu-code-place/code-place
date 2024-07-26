@@ -32,6 +32,8 @@
 </template>
 
 <script>
+import api from "../../../api.js";
+
 import ConfirmModal from "@/pages/oj/components/modal/ConfirmModal";
 import ImageDragAndDropBox from "@/pages/oj/components/ImageDragAndDropBox";
 
@@ -52,7 +54,6 @@ export default {
     banner: Object,
   },
   mounted() {
-    // TODO: 배너 이미지 잘 뜨는지 확인하기.
     this.imageUrl = this.banner.banner_image;
     this.linkUrl = this.banner.link_url;
   },
@@ -63,9 +64,16 @@ export default {
     },
     handleConfirmButtonClick() {
       // TODO: 검증 로직 추가.
-      // TODO: 배너 추가 api 연결.
-      this.resetData();
-      this.$emit("onClose");
+      const formData = new FormData();
+      formData.append("link_url", this.linkUrl);
+      formData.append("image", this.imageFile);
+
+      api.modifyBanner(this.banner.id, formData).then((res) => {
+        if (res.status === 200) {
+          this.resetData();
+          this.$emit("onClose");
+        }
+      });
     },
     resetData() {
       this.linkUrl = "";
