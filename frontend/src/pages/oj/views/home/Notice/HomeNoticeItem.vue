@@ -37,7 +37,7 @@ export default defineComponent({
         let onlyDate = new Date(this.announcement.create_time);
         return onlyDate.toLocaleDateString();
       } else if (this.isSW) {
-        return this.announcement.create_time;
+        return this.announcement.pubDate.split(' ')[0];
       }
     },
     isNew() {
@@ -47,7 +47,7 @@ export default defineComponent({
         const oneDayInMilliseconds = 24 * 60 * 60 * 1000 * this.DAYS_TO_BE_NEW;
         return (currentTime - createTimestamp) <= oneDayInMilliseconds;
       } else if (this.isSW) {
-        return this.announcement.new_flag;
+        this.dateStr === new Date().toISOString().split('T')[0];
       }
     },
     csepClass() {
@@ -65,7 +65,7 @@ export default defineComponent({
       this.$router.push({name: 'notice', params: {announcement: this.announcement}});
     },
     goSW() {
-      window.open(this.announcement.url);
+      window.open(this.announcement.link);
     },
     clickHandler() {
       if (this.isCSEP) {
