@@ -94,14 +94,6 @@ export default {
       languages: languages,
     }
   },
-  mounted() {
-    let profile = this.$store.state.user.profile
-    Object.keys(this.formProfile).forEach(element => {
-      if (profile[element] !== undefined) {
-        this.formProfile[element] = profile[element]
-      }
-    })
-  },
   methods: {
     checkFileType(file) {
       if (!/\.(gif|jpg|jpeg|png|bmp|GIF|JPG|PNG)$/.test(file.name)) {

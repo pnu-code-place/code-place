@@ -388,6 +388,7 @@ export const m = {
 
   // UserHome.vue
   UserHomeserSubmissions: "Submissions",
+  Demo_Setting: "데모 수정",
   UserHomeScore: "점수",
   List_Solved_Problems: "List of solved problems",
   UserHomeIntro: "The guy is so lazy that has not solved any problem yet.",

@@ -142,6 +142,7 @@ export default {
   },
   mounted() {
     let profile = this.$store.state.user.profile
+    console.log(profile)
     Object.keys(this.formProfile).forEach(element => {
       if (profile[element] !== undefined) {
         this.formProfile[element] = profile[element]

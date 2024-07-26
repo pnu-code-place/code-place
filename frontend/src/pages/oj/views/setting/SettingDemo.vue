@@ -4,6 +4,7 @@ import api from "../../api";
 import PasswordReset from "./ChangePassword.vue";
 import ResetPassword from "../user/ResetPassword.vue";
 import ChangeAvatar from "./ChangeAvatar.vue";
+import {mapGetters} from "vuex";
 
 export default {
   components: {ChangeAvatar, ResetPassword, PasswordReset, CustomDropDown},
@@ -22,6 +23,17 @@ export default {
       collegeList: [],
       majorList: [],
       formSetting: {
+        username: "",
+        favoriteLanguage: "",
+        collegeId: "",
+        majorId: "",
+        github: "",
+        mood: ""
+      },
+
+      userAvatar: "",
+
+      origin: {
         username: "",
         favoriteLanguage: "",
         collegeId: "",
@@ -67,17 +79,27 @@ export default {
       let res = await api.getMajorList(collegeId)
       this.majorList = res.data.data
     },
+    initForm() {
+      let profile = this.$store.getters.profile
+      console.log(profile)
+      this.formSetting.mood = profile.mood
+      this.formSetting.username = profile.user.username
+      if (profile.github !== null && profile.github !== undefined) {
+        this.formSetting.github = profile.github.split("github.com/")[1]
+      }
+      this.origin = this.formSetting
+      this.userAvatar = profile.avatar
+    },
     init() {
       this.getCollegeList()
-      let profile = this.$store.state.user.profile
-      console.log(object.keys(profile))
-
-      this.formSetting.username = profile.username
-      this.formSetting.favoriteLanguage = profile.favoriteLanguage
-      this.formSetting.collegeId = profile.collegeId
-      this.formSetting.majorId = profile.majorId
-      this.formSetting.github = profile.github
-      this.formSetting.mood = profile.mood
+      this.initForm()
+      //
+      // this.formSetting.username = profile.username
+      // this.formSetting.favoriteLanguage = profile.favoriteLanguage
+      // this.formSetting.collegeId = profile.collegeId
+      // this.formSetting.majorId = profile.majorId
+      // this.formSetting.github = profile.github
+      // this.formSetting.mood = profile.mood
 
       // console.log(username)
       // Object.keys(this.formProfile).forEach(element => {
@@ -103,6 +125,17 @@ export default {
         .catch(error => {
           this.$error("프로필 수정에 실패했습니다.")
         })
+    },
+    updateProfile() {
+      this.loadingSaveBtn = true
+      let updateData = utils.filterEmptyValue(Object.assign({}, this.formProfile))
+      api.updateProfile(updateData).then(res => {
+        this.$success('Success')
+        this.$store.commit(types.CHANGE_PROFILE, {profile: res.data.data})
+        this.loadingSaveBtn = false
+      }, _ => {
+        this.loadingSaveBtn = false
+      })
     },
     handleClickNicknameAuthBtn() {
       if (this.formSetting.username === "") {
@@ -222,7 +255,7 @@ export default {
         <h3 class="avatar__title label">{{ $t('m.Profile_Avatar') }}</h3>
         <div class="avatar__contents">
           <div class="avatar-preview">
-            <img src="https://via.placeholder.com/150" alt="avatar"/>
+            <img :src="this.userAvatar" alt="avatar"/>
             <div class="avatar-overlay" @click="this.openAvatarModal">{{ $t('m.Change_Avatar') }}</div>
           </div>
         </div>
