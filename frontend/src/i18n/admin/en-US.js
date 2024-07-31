@@ -11,7 +11,7 @@ export const m = {
   Correct: "정답!",
 
   // HomeFamilySiteBanner.vue
-  FamilySites: '패밀리 사이트',
+  FamilySites: "패밀리 사이트",
 
   // SideMenu.vue
   Dashboard: "대시보드",
@@ -325,6 +325,8 @@ export const m = {
   Add_Home_Banner: "홈 배너 추가",
   Modify_Home_Banner: "홈 배너 수정",
   Connect_Banner_Link: "배너에 연결할 링크",
+  URL_Link_Has_Error: "url 링크 형식이 올바르지 않습니다.",
+  Image_File_Has_Error: "배너 이미지를 등록하지 않았습니다.",
   Link: "링크",
 
   // Login.vue

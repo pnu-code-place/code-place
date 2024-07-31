@@ -14,15 +14,28 @@
       <input
         type="text"
         :placeholder="$t('m.Link')"
-        style="margin-bottom: 20px"
+        :style="[hasLinkUrlError && { 'border-color': '#ed4b4b' }]"
         v-model="linkUrl"
+        @click="hasLinkUrlError = false"
       />
-      <span class="text">
+      <span v-if="hasLinkUrlError" style="color: #ed4b4b; font-size: 13px">
+        {{ $t("m.URL_Link_Has_Error") }}
+      </span>
+      <span class="text" style="margin-top: 20px">
         <span style="color: #ed4b4b">*</span>
         {{ $t("m.Banner_Image") }}
       </span>
-      <ImageDragAndDropBox @onBannerImageChange="handleBannerImageChange">
-      </ImageDragAndDropBox>
+      <div
+        style="border-radius: 10px"
+        :style="[hasImageFileError && { border: '1px solid #ed4b4b' }]"
+        @click="hasImageFileError = false"
+      >
+        <ImageDragAndDropBox @onBannerImageChange="handleBannerImageChange">
+        </ImageDragAndDropBox>
+      </div>
+      <span v-if="hasImageFileError" style="color: #ed4b4b; font-size: 13px">
+        {{ $t("m.Image_File_Has_Error") }}
+      </span>
 
       <img
         v-if="imageUrl !== ''"
@@ -46,6 +59,8 @@ export default {
       linkUrl: "",
       imageUrl: "",
       imageFile: null,
+      hasLinkUrlError: false,
+      hasImageFileError: false,
     };
   },
   components: {
@@ -58,17 +73,26 @@ export default {
       this.$emit("onClose");
     },
     handleConfirmButtonClick() {
-      // TODO: 검증 로직 추가.
+      if (this.linkUrl === "") this.hasLinkUrlError = true;
+      if (this.imageFile === null) this.hasImageFileError = true;
+
+      if (this.hasLinkUrlError || this.hasImageFileError) return;
+
       const formData = new FormData();
       formData.append("link_url", this.linkUrl);
       formData.append("image", this.imageFile);
 
-      api.addBanner(formData).then((res) => {
-        if (res.status === 200) {
-          this.resetData();
-          this.$emit("onClose");
-        }
-      });
+      api
+        .addBanner(formData)
+        .then((res) => {
+          if (res.status === 200) {
+            this.resetData();
+            this.$emit("onClose");
+          }
+        })
+        .catch((res) => {
+          if (res.data.data === "Invalid URL") this.hasLinkUrlError = true;
+        });
     },
     resetData() {
       this.linkUrl = "";
