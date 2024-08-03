@@ -211,3 +211,24 @@ class ReOrderAdminBannerAPIView(APIView):
             if item1 != item2:
                 return i, item1
         return None
+    @super_admin_required
+    def post(self, request):
+        banners = Banner.objects.filter(order__isnull=False)
+        reorder_list = list(request.data.get('reorder_list', None))
+        curr_order_list = list(banners.values_list('id', flat=True).order_by('order'))
+
+        result = self.find_first_difference(curr_order_list, reorder_list)
+        if result is None:
+            return self.success("no difference")
+
+        index, target_banner_id = result
+        reorder_num = reorder_list.index(target_banner_id) + 1
+
+        target_banner = Banner.objects.get(id=target_banner_id)
+
+        Banner.reorder_swap(target_banner, reorder_num)
+
+        banners = Banner.objects.all()
+
+        return self.success(BannerAdminSerializer(banners, many=True).data)
+
