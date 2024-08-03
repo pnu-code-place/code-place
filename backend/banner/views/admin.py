@@ -108,7 +108,7 @@ class EditAdminBannerAPIView(APIView):
     @super_admin_required
     def post(self, request):
         """
-        어드민 페이지-홈 배너 관리 페이지에서 등록된 배너를 수정합니다.
+        어드민 페이지-홈 배너 관리 페이지(모달창)에서 등록된 배너를 수정합니다.
         다음과 같은 수정 기능을 포함합니다.
         - 배너 이미지, 연결 링크 수정
         """
