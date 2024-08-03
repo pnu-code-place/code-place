@@ -201,21 +201,26 @@ class EditAdminBannerAPIView(APIView):
 
         return self.success(BannerAdminSerializer(target_banner).data)
 
+
 class ReOrderAdminBannerAPIView(APIView):
     """
     어드민 페이지-홈 배너 관리 페이지에서 등록된 배너의 순서를 조정합니다.
     """
+
     @staticmethod
     def find_first_difference(list1, list2):
         for i, (item1, item2) in enumerate(zip(list1, list2)):
             if item1 != item2:
                 return i, item1
         return None
+
     @super_admin_required
     def post(self, request):
-        banners = Banner.objects.filter(order__isnull=False)
+        banners = Banner.objects.all()
+
+        banners_with_order = banners.filter(order__isnull=False)
         reorder_list = list(request.data.get('reorder_list', None))
-        curr_order_list = list(banners.values_list('id', flat=True).order_by('order'))
+        curr_order_list = list(banners_with_order.values_list('id', flat=True).order_by('order'))
 
         result = self.find_first_difference(curr_order_list, reorder_list)
         if result is None:
@@ -226,9 +231,10 @@ class ReOrderAdminBannerAPIView(APIView):
 
         target_banner = Banner.objects.get(id=target_banner_id)
 
-        Banner.reorder_swap(target_banner, reorder_num)
+        try:
+            Banner.reorder_swap(target_banner, reorder_num)
+        except Exception as e:
+            logger.exception(e)
+            return self.error(BannerAdminSerializer(banners, many=True).data)
 
-        banners = Banner.objects.all()
-
-        return self.success(BannerAdminSerializer(banners, many=True).data)
-
+        return self.success("reorder succeed")
