@@ -200,3 +200,14 @@ class EditAdminBannerAPIView(APIView):
                 return self.error("something went wrong")
 
         return self.success(BannerAdminSerializer(target_banner).data)
+
+class ReOrderAdminBannerAPIView(APIView):
+    """
+    어드민 페이지-홈 배너 관리 페이지에서 등록된 배너의 순서를 조정합니다.
+    """
+    @staticmethod
+    def find_first_difference(list1, list2):
+        for i, (item1, item2) in enumerate(zip(list1, list2)):
+            if item1 != item2:
+                return i, item1
+        return None
