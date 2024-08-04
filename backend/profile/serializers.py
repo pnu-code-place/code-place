@@ -22,6 +22,15 @@ class UserProfileSerializer(serializers.ModelSerializer):
         return obj.real_name if self.show_real_name else None
 
 
+class EditUserProfileSerializer(serializers.Serializer):
+    real_name = serializers.CharField(max_length=32, allow_null=True, required=False)
+    avatar = serializers.CharField(max_length=256, allow_blank=True, required=False)
+    mood = serializers.CharField(max_length=256, allow_blank=True, required=False)
+    github = serializers.URLField(max_length=256, allow_blank=True, required=False)
+    college = serializers.IntegerField(allow_null=True, required=False)
+    department = serializers.IntegerField(allow_null=True, required=False)
+    language = serializers.ChoiceField(allow_null=True, allow_blank=True, required=False, choices=["C", "C++", "Java", "Python3", "JavaScript"])
+
 class ProfileProblemSerializer(serializers.Serializer):
     id = serializers.CharField()
     title = serializers.CharField()
