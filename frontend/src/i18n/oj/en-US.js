@@ -9,6 +9,7 @@ export const m = {
   Reload_Page: "페이지를 새로고침하거나, 나중에 다시 시도해주세요",
   Try_Again_Later: "나중에 다시 시도해주세요.",
   // Problem.vue
+  There_Is_No_Solved_Problem: "해결한 문제가 없습니다.",
   Description: "설명",
   Input: "입력",
   Output: "출력",
@@ -29,7 +30,7 @@ export const m = {
   Tags: "태그",
   Show: "Show",
   Submit: "제출",
-  Submitting: "Submitting",
+  Submitting: "처리중",
   Judging: "Judging",
   Wrong_Answer: "Wrong Answer",
   Statistic: "Statistic",
@@ -387,6 +388,7 @@ export const m = {
 
   // UserHome.vue
   UserHomeserSubmissions: "Submissions",
+  Demo_Setting: "데모 수정",
   UserHomeScore: "점수",
   List_Solved_Problems: "List of solved problems",
   UserHomeIntro: "The guy is so lazy that has not solved any problem yet.",
@@ -437,15 +439,30 @@ export const m = {
   NotAchieved: "미달성",
 
   // ProfileSetting.vue
+  Nickname: "닉네임",
+  Nickname_Description:
+    "다른 사람들에게 보여지며 마이페이지 주소로 사용됩니다.",
+  MajorAndDeparture: "단과대학/학과",
+  FavoriteLanguage: "주로 사용하는 언어",
+  CheckDuplicate: "중복확인",
+
   Current_Password: "현재 비밀번호",
   New_Password: "새 비밀번호",
   New_Email: "새 이메일",
   Real_Name: "이름",
   School: "단과대학",
   Mood: "소개",
+  Mood_Description: "256자까지 입력이 가능하며, 마이페이지에 노출됩니다.",
+  Github_Description:
+    "Github 아이디를 입력해주세요. 마이페이지에 링크와 함께 표시됩니다.",
+  Nickname_Duplicated: "이미 사용중인 닉네임입니다.",
+  Nickname_Required: "닉네임을 입력해주세요.",
+  College_Required: "단과대학을 먼저 선택해주세요.",
   Blog: "블로그",
+  Confirm_Link: "링크 확인",
 
   // 아바타
+  Profile_Avatar: "프로필 사진",
   Upload_Image: "이미지를 끌어다 놓거나, 클릭하여 선택하세요",
   Avatar_Preview: "프로필이 다음과 같이 보입니다.",
 
@@ -466,6 +483,21 @@ export const m = {
   AddressPNUCSEP:
     "부산광역시 금정구 부산대학로63번길 2 (장전동) 부산대학교 소프트웨어융합교육원",
   UserGuide: "사용자 가이드",
+
+  Unknown_Error: "알 수 없는 오류가 발생했습니다.",
+
+  Change_Avatar: "사진 변경하기",
+  Click_To_Change: "클릭하여 변경",
+
+  Change_Password_Success: "비밀번호가 변경되었습니다. 다시 로그인해 주세요.",
+  Please_Input_Current_Password: "현재 비밀번호를 입력해 주세요.",
+  Please_Input_New_Password: "새 비밀번호를 입력해 주세요.",
+  Please_Input_New_Password_Again: "새 비밀번호를 다시 입력해 주세요.",
+  New_Password_Cannot_Be_The_Same_As_The_Current_Password:
+    "새 비밀번호는 현재 비밀번호와 같을 수 없습니다.",
+  Invalid_Password_Format:
+    "비밀번호는 8자 이상, 영문, 숫자, 특수문자를 포함해야 합니다.",
+  You_Will_Be_Logged_Out_In_5_Seconds: "5초 후 로그아웃됩니다...",
 
   // ImageDragAndDrop.vue
   Image_Max_Size_Notice: "최대 10MB 이하 jpeg, png 첨부 가능",

@@ -111,6 +111,9 @@ export default {
             <router-link class="modify-button" v-if="isMyProfile" :to="{name : 'default-setting'}">
               {{ $t('m.User_Setting') }}
             </router-link>
+            <router-link class="modify-button" v-if="isMyProfile" :to="{name: 'demo-setting'}">
+                {{ $t('m.Demo_Setting') }}
+            </router-link>
           </div>
           <div class="icons">
             <a :href="'mailto:'+ profile.user.email">

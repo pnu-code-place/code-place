@@ -1,6 +1,7 @@
 import os
 from django.conf import settings
-from account.serializers import ImageUploadForm, FileUploadForm
+from account.serializers import FileUploadForm
+from profile.serializers import ImageUploadForm
 from utils.shortcuts import rand_str
 from utils.api import CSRFExemptAPIView
 import logging

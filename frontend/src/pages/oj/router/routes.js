@@ -26,79 +26,80 @@ import AchievementSection from "../views/user/userhome/sections/achievementSecti
 import SoaringRank from "../views/rank/SurgeRank.vue";
 import MajorRank from "../views/rank/majorRank/MajorRank.vue";
 import UserRank from "../views/rank/UserRank.vue";
+import SettingDemo from "../views/setting/SettingDemo.vue";
 
 export default [
   {
     name: "home",
     path: "/",
-    meta: { title: "Home" },
+    meta: {title: "Home"},
     component: Home,
   },
   {
     name: "notice",
     path: "/notice",
-    meta: { title: "notice" },
+    meta: {title: "notice"},
     component: Notice,
   },
   {
     name: "logout",
     path: "/logout",
-    meta: { title: "Logout" },
+    meta: {title: "Logout"},
     component: Logout,
   },
   {
     name: "apply-reset-password",
     path: "/apply-reset-password",
-    meta: { title: "Apply Reset Password" },
+    meta: {title: "Apply Reset Password"},
     component: ApplyResetPassword,
   },
   {
     name: "reset-password",
     path: "/reset-password/:token",
-    meta: { title: "Reset Password" },
+    meta: {title: "Reset Password"},
     component: ResetPassword,
   },
   {
     name: "problem-list",
     path: "/problem",
-    meta: { title: "Problem List" },
+    meta: {title: "Problem List"},
     component: ProblemList,
   },
   {
     name: "problem-details",
     path: "/problem/:problemID",
-    meta: { title: "Problem Details" },
+    meta: {title: "Problem Details"},
     component: Problem,
   },
   {
     name: "submission-list",
     path: "/status",
-    meta: { title: "Submission List" },
+    meta: {title: "Submission List"},
     component: SubmissionList,
   },
   {
     name: "submission-details",
     path: "/status/:id/",
-    meta: { title: "Submission Details" },
+    meta: {title: "Submission Details"},
     component: SubmissionDetails,
   },
   {
     name: "contest-list",
     path: "/contest",
-    meta: { title: "Contest List" },
+    meta: {title: "Contest List"},
     component: Contest.ContestList,
   },
   {
     name: "contest-history-list",
     path: "/contest-history",
-    meta: { title: "Contest List" },
+    meta: {title: "Contest List"},
     component: Contest.ContestHistory,
   },
   {
     name: "contest-details",
     path: "/contest/:contestID",
     component: Contest.ContestDetails,
-    meta: { title: "Contest Details" },
+    meta: {title: "Contest Details"},
     children: [
       {
         name: "contest-overview",
@@ -135,26 +136,26 @@ export default [
   {
     name: "acm-rank",
     path: "/acm-rank",
-    redirect: { name: "user-rank" },
-    meta: { title: "ACM Rankings" },
+    redirect: {name: "user-rank"},
+    meta: {title: "ACM Rankings"},
     component: ACMRank,
     children: [
       {
         name: "user-rank",
         path: "user-rank",
-        meta: { title: "User Rank" },
+        meta: {title: "User Rank"},
         component: UserRank,
       },
       {
         name: "surge-rank",
         path: "surge-rank",
-        meta: { title: "Surge-Rank" },
+        meta: {title: "Surge-Rank"},
         component: SoaringRank,
       },
       {
         name: "major-rank",
         path: "major-rank",
-        meta: { title: "Major Rank" },
+        meta: {title: "Major Rank"},
         component: MajorRank,
       },
     ],
@@ -162,70 +163,76 @@ export default [
   {
     name: "oi-rank",
     path: "/oi-rank",
-    meta: { title: "OI Rankings" },
+    meta: {title: "OI Rankings"},
     component: OIRank,
   },
   {
     path: "/user-home",
     name: "user-home",
-    redirect: { name: "user-dashboard" },
+    redirect: {name: "user-dashboard"},
     component: UserHome,
-    meta: { title: "User Home" },
+    meta: {title: "User Home"},
     children: [
       {
         name: "user-dashboard",
         path: "dashboard/:username?",
         component: DashboardSection,
-        meta: { title: "Main" },
+        meta: {title: "Main"},
       },
       {
         name: "user-problems",
         path: "problems/:username?",
         component: ProblemSection,
-        meta: { title: "User Problems" },
+        meta: {title: "User Problems"},
       },
       {
         name: "user-community",
         path: "community/:username?",
         component: communitySection,
-        meta: { title: "Community" },
+        meta: {title: "Community"},
       },
       {
         name: "user-achievements",
         path: "achievements/:username?",
         props: true,
         component: AchievementSection,
-        meta: { title: "Challenges" },
+        meta: {title: "Challenges"},
       },
     ],
   },
   {
+    name: "demo-setting",
+    path: "/demo",
+    meta: {requiresAuth: true, title: "Demo Settings"},
+    component: SettingDemo,
+  },
+  {
     path: "/setting",
     component: Setting.Settings,
-    redirect: { name: "profile-setting" },
+    redirect: {name: "profile-setting"},
     children: [
       {
         name: "default-setting",
         path: "",
-        meta: { requiresAuth: true, title: "Default Settings" },
+        meta: {requiresAuth: true, title: "Default Settings"},
         component: Setting.ProfileSetting,
       },
       {
         name: "profile-setting",
         path: "profile",
-        meta: { requiresAuth: true, title: "Profile Settings" },
+        meta: {requiresAuth: true, title: "Profile Settings"},
         component: Setting.ProfileSetting,
       },
       {
         name: "account-setting",
         path: "account",
-        meta: { requiresAuth: true, title: "Account Settings" },
+        meta: {requiresAuth: true, title: "Account Settings"},
         component: Setting.AccountSetting,
       },
       {
         name: "security-setting",
         path: "security",
-        meta: { requiresAuth: true, title: "Security Settings" },
+        meta: {requiresAuth: true, title: "Security Settings"},
         component: Setting.SecuritySetting,
       },
     ],
@@ -233,18 +240,18 @@ export default [
   {
     path: "/about",
     name: "about",
-    meta: { title: "About" },
+    meta: {title: "About"},
     component: About,
   },
   {
     path: "/faq",
     name: "faq",
-    meta: { title: "FAQ" },
+    meta: {title: "FAQ"},
     component: FAQ,
   },
   {
     path: "*",
-    meta: { title: "404" },
+    meta: {title: "404"},
     component: NotFound,
   },
 ];

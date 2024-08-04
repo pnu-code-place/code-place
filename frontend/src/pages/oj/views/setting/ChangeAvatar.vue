@@ -1,6 +1,6 @@
 <template>
   <div class="setting-main">
-    <h2>{{$t('m.Avatar_Setting')}}</h2>
+    <h2>{{ $t('m.Avatar_Setting') }}</h2>
     <template v-if="!avatarOption.imgSrc">
       <Upload type="drag"
               class="mini-container"
@@ -15,8 +15,9 @@
     </template>
     <template v-else>
       <div class="flex-container">
-        <div class="cropper-main inline">
-          <vueCropper
+        <div class="cropper-wrapper">
+          <div class="cropper-main inline">
+            <vueCropper
               ref="cropper"
               autoCrop
               fixed
@@ -27,31 +28,34 @@
               :outputType="avatarOption.outputType"
               :info="true"
               @realTime="realTime">
-          </vueCropper>
+            </vueCropper>
+          </div>
+          <ButtonGroup vertical class="cropper-btn">
+            <Button @click="rotate('left')">
+              <Icon type="arrow-return-left" size="20"></Icon>
+            </Button>
+            <Button @click="rotate('right')">
+              <Icon type="arrow-return-right" size="20"></Icon>
+            </Button>
+            <Button @click="reselect">
+              <Icon type="refresh" size="20"></Icon>
+            </Button>
+          </ButtonGroup>
         </div>
-        <ButtonGroup vertical class="cropper-btn">
-          <Button @click="rotate('left')">
-            <Icon type="arrow-return-left" size="20"></Icon>
-          </Button>
-          <Button @click="rotate('right')">
-            <Icon type="arrow-return-right" size="20"></Icon>
-          </Button>
-          <Button @click="reselect">
-            <Icon type="refresh" size="20"></Icon>
-          </Button>
-          <Button @click="finishCrop">
-            <Icon type="checkmark-round" size="20"></Icon>
-          </Button>
-        </ButtonGroup>
-        <div class="cropper-preview" :style="previewStyle">
-          <div :style=" preview.div">
-            <img :src="avatarOption.imgSrc" :style="preview.img">
+        <div class="preview-wrapper">
+          <div class="cropper-preview" :style="previewStyle">
+            <div :style=" preview.div">
+              <img :src="avatarOption.imgSrc" :style="preview.img">
+            </div>
           </div>
         </div>
+        <button @click="finishCrop">{{$t('m.Save')}}</button>
       </div>
     </template>
     <Modal v-model="uploadModalVisible"
-           title="Upload the avatar">
+           title="Upload the avatar"
+           :styles="{zIndex: 2000}"
+    >
       <div class="upload-modal">
         <p class="notice">{{ $t('m.Avatar_Preview') }}</p>
         <img :src="uploadImgSrc"/>
@@ -60,48 +64,6 @@
         <Button @click="uploadAvatar" :loading="loadingUploadBtn" type="primary">{{ $t('m.Confirm') }}</Button>
       </div>
     </Modal>
-    <Form ref="formProfile" :model="formProfile">
-      <div class="form">
-        <h2>{{$t('m.User_Setting')}}</h2>
-        <div class="form-top">
-          <div class="form-column">
-            <label>{{ $t('m.Real_Name') }}</label>
-            <FormItem>
-              <Input v-model="formProfile.real_name"/>
-            </FormItem>
-            <label>{{ $t('m.Mood') }}</label>
-            <Form-item>
-              <Input v-model="formProfile.mood"/>
-            </Form-item>
-            <label>{{ $t('m.Blog') }}</label>
-            <Form-item>
-              <Input v-model="formProfile.blog"/>
-            </Form-item>
-          </div>
-          <div class="form-column">
-            <label>{{ $t('m.School') }}</label>
-            <Form-item>
-              <Input v-model="formProfile.school"/>
-            </Form-item>
-            <label>{{ $t('m.Major') }}</label>
-            <Form-item>
-              <Input v-model="formProfile.major"/>
-            </Form-item>
-            <label>Github</label>
-            <Form-item>
-              <Input v-model="formProfile.github"/>
-            </Form-item>
-          </div>
-        </div>
-        <label>language</label>
-        <FormItem>
-          <Select v-model="formProfile.language">
-            <Option v-for="lang in languages" :key="lang.value" :value="lang.value">{{ lang.label }}</Option>
-          </Select>
-        </FormItem>
-        <Button type="primary" @click="updateProfile" :loading="loadingSaveBtn">{{ $t('m.Save') }}</Button>
-      </div>
-    </Form>
   </div>
 </template>
 
@@ -116,6 +78,7 @@ export default {
   components: {
     VueCropper
   },
+  emits: ['finishCrop'],
   data() {
     return {
       loadingSaveBtn: false,
@@ -129,25 +92,7 @@ export default {
         outputType: 'png'
       },
       languages: languages,
-      formProfile: {
-        real_name: '',
-        mood: '',
-        major: '',
-        blog: '',
-        school: '',
-        github: '',
-        language: ''
-      }
     }
-  },
-  mounted() {
-    let profile = this.$store.state.user.profile
-    console.log(profile)
-    Object.keys(this.formProfile).forEach(element => {
-      if (profile[element] !== undefined) {
-        this.formProfile[element] = profile[element]
-      }
-    })
   },
   methods: {
     checkFileType(file) {
@@ -206,6 +151,7 @@ export default {
         this.uploadImgSrc = data
         this.uploadModalVisible = true
       })
+      this.$emit('finishCrop')
     },
     uploadAvatar() {
       this.$refs.cropper.getCropBlob(blob => {
@@ -255,16 +201,14 @@ export default {
 
 <style lang="less" scoped>
 
-h2{
+h2 {
   font-size: 20px;
-  margin-bottom: 20px;
-
 }
 
 .setting-main {
-  margin-top: 50px;
   background-color: var(--bg-color);
 }
+
 label {
   font-size: 13px;
   font-weight: bold;
@@ -278,31 +222,60 @@ label {
 }
 
 .copper-img {
-  width: 400px;
-  height: 300px;
+  width: 100%;
+  height: 250px;
 }
 
 .flex-container {
   flex-wrap: wrap;
-  justify-content: flex-start;
-  margin-bottom: 10px;
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap:10px;
 
-  .cropper-main {
-    flex: none;
-    .copper-img;
+
+  .cropper-wrapper {
+    width: 100%;
+    position: relative;
+
+    .cropper-main {
+      flex: none;
+      .copper-img;
+    }
+
+    .cropper-btn {
+      position: absolute;
+      right: 0;
+      flex: none;
+      vertical-align: top;
+    }
   }
 
-  .cropper-btn {
-    flex: none;
-    vertical-align: top;
+  .preview-wrapper {
+    min-height: 250px;
+    width: 100%;
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+
+    .cropper-preview {
+      flex: none;
+      box-shadow: 0 0 1px 0;
+      .copper-img;
+    }
   }
 
-  .cropper-preview {
-    flex: none;
-    /*margin: 10px;*/
-    margin-left: 20px;
-    box-shadow: 0 0 1px 0;
-    .copper-img;
+  button {
+    background-color: var(--point-color);
+    text-align: center;
+    width: 80px;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 700;
   }
 }
 
@@ -318,36 +291,6 @@ label {
   img {
     box-shadow: 0 0 1px 0;
     border-radius: 50%;
-  }
-}
-
-.form {
-  margin-top: 20px;
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-
-  .form-top {
-    width: 100%;
-    display: flex;
-    flex-direction: row;
-    gap: 5%;
-
-    .form-column {
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-
-      .ivu-form-item {
-        display: block;
-        width: 100%;
-      }
-    }
-  }
-
-  button {
-    align-self: flex-end;
   }
 }
 </style>
