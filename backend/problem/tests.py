@@ -76,6 +76,7 @@ class ProblemTagListAPITest(APITestCase):
 
 class TestCaseUploadAPITest(APITestCase):
     def setUp(self):
+        self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
         self.api = TestCaseAPI()
         self.url = self.reverse("test_case_api")
         self.create_super_admin()
@@ -133,6 +134,7 @@ class TestCaseUploadAPITest(APITestCase):
 
 class ProblemAdminAPITest(APITestCase):
     def setUp(self):
+        self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
         self.url = self.reverse("problem_admin_api")
         self.create_super_admin()
         self.data = copy.deepcopy(DEFAULT_PROBLEM_DATA)
@@ -179,6 +181,7 @@ class ProblemAdminAPITest(APITestCase):
 
 class ProblemAPITest(ProblemCreateTestBase):
     def setUp(self):
+        self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
         self.url = self.reverse("problem_api")
         admin = self.create_admin(login=False)
         self.problem = self.add_problem(DEFAULT_PROBLEM_DATA, admin)
@@ -195,6 +198,7 @@ class ProblemAPITest(ProblemCreateTestBase):
 
 class ContestProblemAdminTest(APITestCase):
     def setUp(self):
+        self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
         self.url = self.reverse("contest_problem_admin_api")
         self.create_admin()
         self.contest = self.client.post(self.reverse("contest_admin_api"), data=DEFAULT_CONTEST_DATA).data["data"]
@@ -223,6 +227,7 @@ class ContestProblemAdminTest(APITestCase):
 
 class ContestProblemTest(ProblemCreateTestBase):
     def setUp(self):
+        self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
         admin = self.create_admin()
         url = self.reverse("contest_admin_api")
         contest_data = copy.deepcopy(DEFAULT_CONTEST_DATA)
@@ -262,6 +267,7 @@ class ContestProblemTest(ProblemCreateTestBase):
 
 class AddProblemFromPublicProblemAPITest(ProblemCreateTestBase):
     def setUp(self):
+        self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
         admin = self.create_admin()
         url = self.reverse("contest_admin_api")
         contest_data = copy.deepcopy(DEFAULT_CONTEST_DATA)
