@@ -1,4 +1,5 @@
-from contents.serializers import HomeStatistics, RSSItemSerializer
+from announcement.models import Announcement
+from contents.serializers import HomeStatistics, RSSItemSerializer, HomeAnnouncementsSerializer
 from contest.models import Contest
 from problem.models import Problem
 from utils.api import APIView
@@ -35,6 +36,15 @@ class GetHomeStatisticsAPI(APIView):
         }
 
         return self.success(HomeStatistics(home_statistics).data)
+
+
+class GetHomeAnnouncementAPI(APIView):
+    """
+    홈에서 보여지는 CSEP 공지사항의 id, title, create_time 정보를 반환하는 API
+    """
+    def get(self, request):
+        home_announcements = Announcement.objects.filter(visible=True)[:2]
+        return self.success(HomeAnnouncementsSerializer(home_announcements, many=True).data)
 
 
 class GetHomeRSSNoticeAPI(APIView):
