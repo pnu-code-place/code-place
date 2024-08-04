@@ -20,12 +20,12 @@ class GetHomeStatisticsAPI(APIView):
         total_problem_length = problems.count()
 
         # 한번이라도 accept가 된 문제 수
-        accepted_problem_length = problems.filter(accepted_number__lt=0).count()
+        accepted_problem_length = problems.filter(accepted_number__gt=0).count()
 
         # 마감된 대회 수
         contests = Contest.objects.select_related("created_by").filter(visible=True)
         cur = now()
-        contests = contests.filter(end_time__lt=cur)
+        contests = contests.filter(end_time__gt=cur)
         ended_contest_length = contests.count()
 
         home_statistics = {
