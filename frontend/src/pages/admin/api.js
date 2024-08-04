@@ -359,9 +359,8 @@ export default {
       data,
     });
   },
-  reorderBanner(id, data) {
-    return ajax("admin/banner/edit", "put", {
-      params: { id },
+  reorderBanner(data) {
+    return ajax("admin/banner/reorder", "post", {
       data,
     });
   },

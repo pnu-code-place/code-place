@@ -141,8 +141,11 @@ export default {
       });
     },
     handleBannerOrderChange(id) {
-      // TODO: 배너 순서 변경 api 연결
-      // alert("handleBannerOrderChange changed");
+      const reorder_list = this.banners.map((banner) => banner.id);
+
+      api.reorderBanner({ reorder_list: reorder_list }).catch((err) => {
+        this.banners = err.data.data;
+      });
     },
     handleAddButtonClick() {
       this.addModalOpen = true;
