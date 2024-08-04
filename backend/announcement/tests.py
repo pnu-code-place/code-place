@@ -42,9 +42,13 @@ class AnnouncementAPITest(APITestCase):
     def setUp(self):
         self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
         self.user = self.create_super_admin()
-        Announcement.objects.create(title="title", content="content", visible=True, created_by=self.user)
+        self.announcement = Announcement.objects.create(title="title", content="content", visible=True, created_by=self.user)
         self.url = self.reverse("announcement_api")
 
     def test_get_announcement_list(self):
         resp = self.client.get(self.url)
         self.assertSuccess(resp)
+
+    def test_announcement_detail(self):
+        response = self.client.get(self.url + f"?id={self.announcement.id}")
+        self.assertSuccess(response)
