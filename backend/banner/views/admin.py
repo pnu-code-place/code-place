@@ -222,6 +222,9 @@ class ReOrderAdminBannerAPIView(APIView):
         reorder_list = list(request.data.get('reorder_list', None))
         curr_order_list = list(banners_with_order.values_list('id', flat=True).order_by('order'))
 
+        if sorted(reorder_list) != sorted(curr_order_list):
+            return self.error("Invalid order")
+
         result = self.find_first_difference(curr_order_list, reorder_list)
         if result is None:
             return self.success("no difference")
