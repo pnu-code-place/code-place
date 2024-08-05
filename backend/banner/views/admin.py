@@ -235,6 +235,6 @@ class ReOrderAdminBannerAPIView(APIView):
             Banner.reorder_swap(target_banner, reorder_num)
         except Exception as e:
             logger.exception(e)
-            return self.error(BannerAdminSerializer(banners, many=True).data)
+            return self.error("reorder failed")
 
         return self.success("reorder succeed")
