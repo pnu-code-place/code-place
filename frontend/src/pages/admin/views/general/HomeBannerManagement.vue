@@ -144,7 +144,7 @@ export default {
       const reorder_list = this.banners.map((banner) => banner.id);
 
       api.reorderBanner({ reorder_list: reorder_list }).catch((err) => {
-        this.banners = err.data.data;
+        getBanners();
       });
     },
     handleAddButtonClick() {
