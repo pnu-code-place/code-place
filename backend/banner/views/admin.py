@@ -199,7 +199,7 @@ class EditAdminBannerAPIView(APIView):
                 logger.exception(e)
                 return self.error("something went wrong")
 
-        return self.success(BannerAdminSerializer(target_banner).data)
+        return self.success(BannerAdminSerializer(Banner.objects.all(), many=True).data)
 
 
 class ReOrderAdminBannerAPIView(APIView):
