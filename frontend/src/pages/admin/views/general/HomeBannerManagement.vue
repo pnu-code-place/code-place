@@ -137,14 +137,16 @@ export default {
     },
     handleVisibleSwitchChange(id, visible) {
       api.editEnableBanner(id, { visible: visible }).then((res) => {
-        if (res.status === 200) this.getBanners();
+        if (res.status === 200) {
+          this.banners = res.data.data;
+        }
       });
     },
     handleBannerOrderChange(id) {
       const reorder_list = this.banners.map((banner) => banner.id);
 
       api.reorderBanner({ reorder_list: reorder_list }).catch((err) => {
-        getBanners();
+        this.getBanners();
       });
     },
     handleAddButtonClick() {
