@@ -108,7 +108,7 @@ class EditAdminBannerAPIView(APIView):
     @super_admin_required
     def post(self, request):
         """
-        어드민 페이지-홈 배너 관리 페이지에서 등록된 배너를 수정합니다.
+        어드민 페이지-홈 배너 관리 페이지(모달창)에서 등록된 배너를 수정합니다.
         다음과 같은 수정 기능을 포함합니다.
         - 배너 이미지, 연결 링크 수정
         """
@@ -167,15 +167,12 @@ class EditAdminBannerAPIView(APIView):
     @super_admin_required
     def put(self, request):
         """
-        어드민 페이지-홈 배너 관리 페이지에서 등록된 배너를 수정합니다.
-        다음과 같은 수정 기능을 포함합니다.
-        - 배너 활성화/비활성화
-        - 배너 순서 조정
+        어드민 페이지-홈 배너 관리 페이지에서 등록된 배너를 활성화/비활성화합니다.
         """
         banners = Banner.objects.filter(order__isnull=False)
         id = request.GET.get('id')
         visible = request.data.get('visible', None)
-        reorder = request.data.get('reorder', None)
+
         # 수정 타겟
         try:
             target_banner = Banner.objects.get(id=id)
@@ -202,11 +199,42 @@ class EditAdminBannerAPIView(APIView):
                 logger.exception(e)
                 return self.error("something went wrong")
 
-        if reorder is not None:
-            try:
-                Banner.reorder_swap(target_banner, reorder)
-            except Exception as e:
-                logger.exception(e)
-                return self.error(e)
-
         return self.success(BannerAdminSerializer(target_banner).data)
+
+
+class ReOrderAdminBannerAPIView(APIView):
+    """
+    어드민 페이지-홈 배너 관리 페이지에서 등록된 배너의 순서를 조정합니다.
+    """
+
+    @staticmethod
+    def find_first_difference(list1, list2):
+        for i, (item1, item2) in enumerate(zip(list1, list2)):
+            if item1 != item2:
+                return i, item1
+        return None
+
+    @super_admin_required
+    def post(self, request):
+        banners = Banner.objects.all()
+
+        banners_with_order = banners.filter(order__isnull=False)
+        reorder_list = list(request.data.get('reorder_list', None))
+        curr_order_list = list(banners_with_order.values_list('id', flat=True).order_by('order'))
+
+        result = self.find_first_difference(curr_order_list, reorder_list)
+        if result is None:
+            return self.success("no difference")
+
+        index, target_banner_id = result
+        reorder_num = reorder_list.index(target_banner_id) + 1
+
+        target_banner = Banner.objects.get(id=target_banner_id)
+
+        try:
+            Banner.reorder_swap(target_banner, reorder_num)
+        except Exception as e:
+            logger.exception(e)
+            return self.error(BannerAdminSerializer(banners, many=True).data)
+
+        return self.success("reorder succeed")
