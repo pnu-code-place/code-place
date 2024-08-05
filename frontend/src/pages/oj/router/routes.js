@@ -27,6 +27,7 @@ import SoaringRank from "../views/rank/SurgeRank.vue";
 import MajorRank from "../views/rank/majorRank/MajorRank.vue";
 import UserRank from "../views/rank/UserRank.vue";
 import SettingDemo from "../views/setting/SettingDemo.vue";
+import AnnouncementDetail from "../views/notice/AnnouncementDetail.vue";
 
 export default [
   {
@@ -40,6 +41,12 @@ export default [
     path: "/notice",
     meta: {title: "notice"},
     component: Notice,
+  },
+  {
+    name: "notice-details",
+    path: "/notice/:noticeID",
+    meta: {title: "Notice Details"},
+    component: AnnouncementDetail,
   },
   {
     name: "logout",

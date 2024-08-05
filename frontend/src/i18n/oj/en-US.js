@@ -247,6 +247,10 @@ export const m = {
   Refresh: "새로고침",
   Back: "뒤로가기",
   No_Announcements: "공지사항이 없습니다",
+  Next_Announcement: "다음 공지",
+  Before_Announcement: "이전 공지",
+  NoBeforeAnnouncement: "첫번째 공지입니다.",
+  NoNextAnnouncement: "마지막 공지입니다.",
   // Setting.vue
   Profile: "프로필",
   Account: "계정",
@@ -361,7 +365,7 @@ export const m = {
   Signal: "Signal",
   // SubmissionList.vue
   When: "제출시각",
-  ID: "제출ID",
+  ID: "ID",
   Time: "Time",
   Memory: "메모리",
   Author: "작성자",

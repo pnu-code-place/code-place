@@ -62,7 +62,7 @@ export default defineComponent({
   },
   methods: {
     goAnnouncement() {
-      this.$router.push({name: 'notice', params: {announcement: this.announcement}});
+      this.$router.push({name: 'notice-details', params: {noticeID: this.announcement.id}});
     },
     goSW() {
       window.open(this.announcement.link);
