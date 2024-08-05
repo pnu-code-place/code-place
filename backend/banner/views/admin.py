@@ -199,7 +199,7 @@ class EditAdminBannerAPIView(APIView):
                 logger.exception(e)
                 return self.error("something went wrong")
 
-        return self.success(BannerAdminSerializer(target_banner).data)
+        return self.success(BannerAdminSerializer(Banner.objects.all(), many=True).data)
 
 
 class ReOrderAdminBannerAPIView(APIView):
@@ -222,6 +222,9 @@ class ReOrderAdminBannerAPIView(APIView):
         reorder_list = list(request.data.get('reorder_list', None))
         curr_order_list = list(banners_with_order.values_list('id', flat=True).order_by('order'))
 
+        if sorted(reorder_list) != sorted(curr_order_list):
+            return self.error("Invalid order")
+
         result = self.find_first_difference(curr_order_list, reorder_list)
         if result is None:
             return self.success("no difference")
@@ -235,6 +238,6 @@ class ReOrderAdminBannerAPIView(APIView):
             Banner.reorder_swap(target_banner, reorder_num)
         except Exception as e:
             logger.exception(e)
-            return self.error(BannerAdminSerializer(banners, many=True).data)
+            return self.error("reorder failed")
 
         return self.success("reorder succeed")
