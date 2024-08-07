@@ -136,11 +136,17 @@ export default {
       });
     },
     handleVisibleSwitchChange(id, visible) {
-      api.editEnableBanner(id, { visible: visible }).then((res) => {
-        if (res.status === 200) {
-          this.banners = res.data.data;
-        }
-      });
+      api
+        .editEnableBanner(id, { visible: visible })
+        .then((res) => {
+          if (res.status === 200) {
+            this.banners = res.data.data;
+          }
+        })
+        .catch((err) => {
+          const bannerIdx = this.banners.findIndex((e) => e.id === id);
+          this.banners[bannerIdx].visible = false;
+        });
     },
     handleBannerOrderChange(id) {
       const reorder_list = this.banners.map((banner) => banner.id);
