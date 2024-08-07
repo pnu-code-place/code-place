@@ -3,7 +3,7 @@
     <input
       type="file"
       ref="fileInput"
-      accept=".png,.jpg,.jpeg"
+      accept=".png,.jpg,.jpeg,.svg"
       id="input-file"
       style="display: none"
       @change="onFileChange"

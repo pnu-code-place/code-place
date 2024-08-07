@@ -1,14 +1,19 @@
 <template>
   <div class="bannerBox">
-    <Carousel autoplay loop arrow="never" :radius-dot="true" :autoplaySpeed="3000">
-      <CarouselItem>
+    <Carousel
+      autoplay
+      loop
+      arrow="never"
+      :radius-dot="true"
+      :autoplaySpeed="3000"
+    >
+      <CarouselItem v-for="banner in banners">
         <div class="demo-carousel">
-          <img src="@/assets/banner1.svg" width="100%"/>
-        </div>
-      </CarouselItem>
-      <CarouselItem>
-        <div class="demo-carousel">
-          <img src="@/assets/banner2.svg" width="100%"/>
+          <img
+            :src="banner.banner_image"
+            width="100%"
+            @click="goBannerLink(banner.link_url)"
+          />
         </div>
       </CarouselItem>
     </Carousel>
@@ -16,9 +21,26 @@
 </template>
 
 <script>
+import api from "@oj/api";
+
 export default {
-  name: 'HomeBannerListBox',
-}
+  name: "HomeBannerListBox",
+  data() {
+    return {
+      banners: [],
+    };
+  },
+  mounted() {
+    api.getBanners().then((res) => {
+      this.banners = res.data.data;
+    });
+  },
+  methods: {
+    goBannerLink(link) {
+      window.open(link);
+    },
+  },
+};
 </script>
 
 <style scoped lang="less">
