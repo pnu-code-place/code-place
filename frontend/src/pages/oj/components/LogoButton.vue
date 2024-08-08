@@ -5,7 +5,7 @@
     </div>
     <div class="headerIcon">
       <p class="pnuName">부산대학교</p>
-      <p class="systemTitle">코딩역량강화플랫폼</p>
+      <p class="systemTitle code">Code Place</p>
     </div>
   </div>
 </template>
@@ -49,4 +49,5 @@ export default {
     }
   }
 }
+
 </style>

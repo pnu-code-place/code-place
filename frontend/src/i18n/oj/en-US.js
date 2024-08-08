@@ -102,7 +102,7 @@ export const m = {
   By: "By",
   CSEP: "코드플레이스",
   SWCenter: "소프트웨어융합교육원",
-  CSEPDescription: "코딩역량강화플랫폼",
+  CSEPDescription: "코드플레이스",
   // ApplyResetPassword.vue
   The_email_doesnt_exist: "존재하지 않는 이메일입니다.",
   Success: "Success",
@@ -484,7 +484,7 @@ export const m = {
   Button_Enter: "확인",
 
   // footer.vue
-  PNUCSEP: "부산대학교 코딩역량강화플랫폼",
+  PNUCSEP: "부산대학교 코드플레이스",
   AddressPNUCSEP:
     "부산광역시 금정구 부산대학로63번길 2 (장전동) 부산대학교 소프트웨어융합교육원",
   UserGuide: "사용자 가이드",

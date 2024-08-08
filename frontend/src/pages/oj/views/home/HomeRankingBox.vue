@@ -7,7 +7,7 @@
         <span>{{ $t('m.More_Home_Ranking') }}</span>
       </div>
     </div>
-      <div class="rankingBoxBody">
+    <div class="rankingBoxBody">
       <template v-if="this.rankingItems.length <= 1">
         <div class="noData">
           {{ $t('m.No_Sufficient_Data_Home_Ranking') }}
@@ -24,16 +24,16 @@
           <tbody>
           <tr v-for="(user, index) in this.rankingItems" :key="index" v-if="index <= 2">
             <td class="idx">
-              {{index + 1 + '위'}}
+              {{ index + 1 + '위' }}
             </td>
             <td class="name">
-                <div class="user-wrapper" @click="goUserInfo(user.username)">
-                  <img class="avatar" :src="user.avatar" alt="user avatar image"/>
-                  <span>
+              <div class="user-wrapper" @click="goUserInfo(user.username)">
+                <img class="avatar" :src="user.avatar" alt="user avatar image"/>
+                <span>
                 {{ user.username }}
               </span>
-                </div>
-              </td>
+              </div>
+            </td>
             <template v-if="(index + 1) <= 3">
               <td class="tier">
                 <ShineWrapper>
@@ -44,10 +44,10 @@
             <td class="score">
               <div class="user-score">
                 <span class="user-score__score">{{ user.total_score }}</span>
-                <span class="user-score__growth">{{user.fluctuation===0? "-":("▲" + user.fluctuation) }}
+                <span class="user-score__growth">{{ user.fluctuation === 0 ? "-" : ("▲" + user.fluctuation) }}
               </span>
               </div>
-              </td>
+            </td>
           </tr>
           </tbody>
         </table>
@@ -64,7 +64,7 @@ import ShineWrapper from "../../components/ShineWrapper.vue";
 export default {
   name: 'HomeRankingBox',
   components: {ShineWrapper},
-  data () {
+  data() {
     return {
       rankingItems: [],
       isLoading: true,
@@ -73,7 +73,7 @@ export default {
   mounted() {
     this.init()
   },
-  methods:{
+  methods: {
     handleRoute(route) {
       this.$router.push({name: route});
     },
@@ -82,12 +82,12 @@ export default {
     },
     init() {
       api.getHomeRealTimeRanking()
-        .then((res)=>{
+        .then((res) => {
           this.rankingItems = res.data.data
         })
     }
   },
-  computed:{
+  computed: {
     TierImageSrc() {
       return TierImageSrc
     },
@@ -126,14 +126,15 @@ h2 {
       font-size: 12px;
     }
 
-    .plusDiv{
+    .plusDiv {
       cursor: pointer;
     }
   }
 
-  .rankingBoxBody{
+  .rankingBoxBody {
     padding: 10px;
-    .noData{
+
+    .noData {
       text-align: center;
       height: 80%;
       display: flex;
@@ -142,20 +143,22 @@ h2 {
     }
   }
 }
-.rankingBox:hover{
+
+.rankingBox:hover {
   border: 1px solid #cccccc;
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
+
   th {
     padding: 1px 0;
     border-bottom: 1px solid #f0f0f0;
     font-size: 14px;
     color: #666;
 
-    &.idx{
+    &.idx {
       width: 15%;
     }
 
@@ -185,7 +188,7 @@ table {
         color: #666;
         text-align: center;
 
-        &.idx{
+        &.idx {
           font-weight: 560;
           font-size: 13px;
         }
@@ -200,12 +203,12 @@ table {
           font-weight: 560;
           font-size: 14px;
 
-          .user-wrapper{
+          .user-wrapper {
             display: flex;
             align-items: center;
             cursor: pointer;
 
-            span{
+            span {
               padding-left: 10px;
             }
           }
@@ -220,10 +223,12 @@ table {
             font-size: 13px;
             font-weight: 700;
             color: #666;
+
             .user-score__score {
               font-size: 13px;
               color: #333;
             }
+
             .user-score__growth {
               font-size: 10px;
               color: #00aaaa;
@@ -237,13 +242,11 @@ table {
 
 .gradientSpan {
   font-weight: bold;
-  background: linear-gradient(
-    to right,
-    #6266dc 20%,
-    #39408e 30%,
-    #3d3580 70%,
-    #20345c 80%
-  );
+  background: linear-gradient(to right,
+  #6266dc 20%,
+  #39408e 30%,
+  #3d3580 70%,
+  #20345c 80%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -251,6 +254,7 @@ table {
   background-size: 500% auto;
   animation: textShine 3s ease-in-out infinite alternate;
 }
+
 @keyframes textShine {
   0% {
     background-position: 0 50%;
@@ -259,6 +263,7 @@ table {
     background-position: 100% 50%;
   }
 }
+
 @keyframes animate {
   0% {
     transform: scale(1);
