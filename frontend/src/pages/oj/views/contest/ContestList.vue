@@ -54,7 +54,7 @@
     </table>
 
     <div class="session-title-wrapper">
-      <span class="session-title">{{ $t("m.Ended_Contest") }}</span>
+      <h1 class="session-title">{{ $t("m.Ended_Contest") }}</h1>
       <span
         style="font-size: 15px; cursor: pointer"
         @click="goContestHistory()"
@@ -100,7 +100,7 @@
     </table>
 
     <div class="session-title-wrapper">
-      <span class="session-title">{{ $t("m.Not_Start_Contest") }}</span>
+      <h1 class="session-title">{{ $t("m.Not_Start_Contest") }}</h1>
     </div>
     <div v-if="not_start_contests.length === 0" class="session-not-exist">
       {{ $t("m.Not_Start_Contest_Not_Exist") }}
@@ -274,6 +274,7 @@ main {
   .session-not-exist {
     width: 100%;
     height: 120px;
+    margin-bottom: 20px;
     line-height: 120px;
     text-align: center;
     font-size: 18px;
@@ -311,7 +312,7 @@ main {
   }
 
   .contest-table {
-    margin-bottom: 40px;
+    margin-bottom: 20px;
     border: 1px solid var(--container-border-color);
     border-radius: var(--container-border-radius);
     background-color: white;
