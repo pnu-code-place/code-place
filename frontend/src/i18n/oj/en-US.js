@@ -264,6 +264,7 @@ export const m = {
   Avatar_Setting: "아바타 변경",
   Profile_Setting: "회원정보 변경",
   Confirm: "확인",
+  Profile_Update_Success: "회원정보가 변경되었습니다.",
   // SecuritySettig
   Sessions: "Sessions",
   Two_Factor_Authentication: "Two Factor Authentication",
