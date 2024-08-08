@@ -41,8 +41,8 @@ export default {
   methods: {
     init() {
       this.getAnnouncement()
-      this.findNextAnnouncement(this.$route.params.noticeID)
-      this.findBeforeAnnouncement(this.$route.params.noticeID)
+      // this.findNextAnnouncement(this.$route.params.noticeID)
+      // this.findBeforeAnnouncement(this.$route.params.noticeID)
     },
     getAnnouncement() {
       this.loading = true
@@ -189,30 +189,30 @@ export default {
         </div>
       </div>
     </div>
-    <div class="other-announcements">
-      <div class="other-announcement-wrapper">
-        <div class="announcement-skeleton" v-if="this.loadingNext">
-          <div class="skeleton"></div>
-        </div>
-        <div v-else-if="this.existNextAnnouncement" class="other-announcement__title" @click="this.goAfterAnnouncement">
-          {{ this.nextAnnouncementTitle }}
-        </div>
-        <div v-else>
-          <div class="no-announcement">{{ $t('m.NoNextAnnouncement') }}</div>
-        </div>
-      </div>
-      <div class="other-announcement-wrapper">
-        <div class="announcement-skeleton" v-if="this.loadingBefore">
-          <div class="skeleton"></div>
-        </div>
-        <div v-else-if="this.existBeforeAnnouncement" class="other-announcement__title"
-             @click="this.goBeforeAnnouncement">{{ this.beforeAnnouncementTitle }}
-        </div>
-        <div v-else>
-          <div class="no-announcement">{{ $t('m.NoBeforeAnnouncement') }}</div>
-        </div>
-      </div>
-    </div>
+<!--    <div class="other-announcements">-->
+<!--      <div class="other-announcement-wrapper">-->
+<!--        <div class="announcement-skeleton" v-if="this.loadingNext">-->
+<!--          <div class="skeleton"></div>-->
+<!--        </div>-->
+<!--        <div v-else-if="this.existNextAnnouncement" class="other-announcement__title" @click="this.goAfterAnnouncement">-->
+<!--          {{ this.nextAnnouncementTitle }}-->
+<!--        </div>-->
+<!--        <div v-else>-->
+<!--          <div class="no-announcement">{{ $t('m.NoNextAnnouncement') }}</div>-->
+<!--        </div>-->
+<!--      </div>-->
+<!--      <div class="other-announcement-wrapper">-->
+<!--        <div class="announcement-skeleton" v-if="this.loadingBefore">-->
+<!--          <div class="skeleton"></div>-->
+<!--        </div>-->
+<!--        <div v-else-if="this.existBeforeAnnouncement" class="other-announcement__title"-->
+<!--             @click="this.goBeforeAnnouncement">{{ this.beforeAnnouncementTitle }}-->
+<!--        </div>-->
+<!--        <div v-else>-->
+<!--          <div class="no-announcement">{{ $t('m.NoBeforeAnnouncement') }}</div>-->
+<!--        </div>-->
+<!--      </div>-->
+<!--    </div>-->
   </div>
 </template>
 

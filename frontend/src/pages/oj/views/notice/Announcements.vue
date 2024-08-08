@@ -7,7 +7,7 @@
       <div class="no-announcement" v-if="!announcements.length" key="no-announcement">
         <p>{{ $t('m.No_Announcements') }}</p>
       </div>
-      <table class="announcement-table" key="list">
+      <table v-else class="announcement-table" key="list">
         <thead>
         <tr>
           <th class="id">{{ $t('m.ID') }}</th>
@@ -158,6 +158,8 @@ export default {
 
 .no-announcement {
   text-align: center;
-  font-size: 16px;
+  font-size: 18px;
+  padding: 20px;
+
 }
 </style>
