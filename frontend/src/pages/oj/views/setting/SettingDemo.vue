@@ -5,13 +5,14 @@ import PasswordReset from "./ChangePassword.vue";
 import ResetPassword from "../user/ResetPassword.vue";
 import ChangeAvatar from "./ChangeAvatar.vue";
 import {mapGetters} from "vuex";
+import ErrorSign from "../general/ErrorSign.vue";
+import {types} from "../../../../store";
 
 export default {
-  components: {ChangeAvatar, ResetPassword, PasswordReset, CustomDropDown},
+  components: {ErrorSign, ChangeAvatar, ResetPassword, PasswordReset, CustomDropDown},
   data() {
     return {
       MOOD_MAX_LENGTH: 256,
-      GITHUB_DOMAIN: "https://github.com/",
 
       languageList: [
         {languageName: "C", id: "C",},
@@ -24,23 +25,15 @@ export default {
       majorList: [],
       formSetting: {
         username: "",
-        favoriteLanguage: "",
-        collegeId: "",
-        majorId: "",
+        language: "",
+        college: "",
+        department: "",
         github: "",
         mood: ""
       },
 
       userAvatar: "",
 
-      origin: {
-        username: "",
-        favoriteLanguage: "",
-        collegeId: "",
-        majorId: "",
-        github: "",
-        mood: ""
-      },
       formError: {
         majorWithoutCollege: false,
         username: "",
@@ -48,71 +41,61 @@ export default {
 
       avatarUploadModal: false,
       isDuplicateChecked: false,
-      //
-      // formProfile: {
-      //   real_name: '',
-      //   mood: '',
-      //   major: '',
-      //   blog: '',
-      //   school: '',
-      //   github: '',
-      //   language: ''
-      // }
+      loadingSaveBtn: false,
+
+      loading : false,
+      error : false,
     }
   },
   methods: {
     handleCollegeChange(collegeId) {
-      this.formSetting.collegeId = collegeId
-      this.getMajorList(collegeId)
+      this.formSetting.college = collegeId
+      this.getDepartmentList(collegeId)
     },
     handleMajorChange(majorId) {
-      this.formSetting.departmentId = majorId
+      this.formSetting. department= majorId
     },
     handleLanguageChange(language) {
-      this.formSetting.favoriteLanguage = language
+      this.formSetting.language = language
     },
     async getCollegeList() {
       let res = await api.getCollegeList()
       this.collegeList = res.data.data
     },
-    async getMajorList(collegeId) {
+    async getDepartmentList(collegeId) {
       let res = await api.getMajorList(collegeId)
       this.majorList = res.data.data
     },
-    initForm() {
-      let profile = this.$store.getters.profile
-      console.log(profile)
-      this.formSetting.mood = profile.mood
-      this.formSetting.username = profile.user.username
-      if (profile.github !== null && profile.github !== undefined) {
-        this.formSetting.github = profile.github.split("github.com/")[1]
-      }
-      this.origin = this.formSetting
-      this.userAvatar = profile.avatar
+    getUserProfile() {
+      this.loading = true
+      this.error = false
+      api.getUserInfo()
+        .then(async res => {
+          this.formSetting.username = res.data.data.user.username
+          this.formSetting.language = res.data.data.language
+          this.formSetting.mood = res.data.data.mood
+          this.formSetting.github = res.data.data.github
+          this.userAvatar = res.data.data.avatar
+          this.formSetting.college = res.data.data.college
+          await this.getDepartmentList(this.formSetting.college)
+          this.formSetting.department = res.data.data.department
+          this.loading = false
+        })
+        .catch(error => {
+          this.$error("프로필을 불러오는데 실패했습니다.")
+          this.error = error
+          this.loading = false
+        })
     },
     init() {
       this.getCollegeList()
-      this.initForm()
-      //
-      // this.formSetting.username = profile.username
-      // this.formSetting.favoriteLanguage = profile.favoriteLanguage
-      // this.formSetting.collegeId = profile.collegeId
-      // this.formSetting.majorId = profile.majorId
-      // this.formSetting.github = profile.github
-      // this.formSetting.mood = profile.mood
-
-      // console.log(username)
-      // Object.keys(this.formProfile).forEach(element => {
-      //   if (profile[element] !== undefined) {
-      //     this.formProfile[element] = profile[element]
-      //   }
-      // })
+      this.getUserProfile()
     },
     removeErrorSign(error) {
       this.formError[error] = false
     },
     handleClickMajor() {
-      if (this.formSetting.collegeId === "") {
+      if (this.formSetting.college === "") {
         this.formError.majorWithoutCollege = true
       }
     },
@@ -128,7 +111,9 @@ export default {
     },
     updateProfile() {
       this.loadingSaveBtn = true
-      let updateData = utils.filterEmptyValue(Object.assign({}, this.formProfile))
+      console.log(this.formSetting)
+      let updateData = this.formSetting
+      // let updateData = utils.filterEmptyValue(Object.assign({}, this.formSetting))
       api.updateProfile(updateData).then(res => {
         this.$success('Success')
         this.$store.commit(types.CHANGE_PROFILE, {profile: res.data.data})
@@ -166,20 +151,23 @@ export default {
     },
     closeAvatarModal() {
       this.avatarUploadModal = false;
-    }
+    },
   },
   mounted() {
     this.init()
   },
   computed: {
     moodLength() {
+      if (this.formSetting.mood === null) {
+        return 0
+      }
       return this.formSetting.mood.length
     },
     moodLengthExceedClass() {
       return this.moodLength > this.MOOD_MAX_LENGTH ? "exceed" : ""
     },
     githubLink() {
-      return this.GITHUB_DOMAIN + this.formSetting.github
+      return this.formSetting.github
     },
   }
 }
@@ -188,6 +176,16 @@ export default {
 
 <template>
   <main class="setting">
+    <div v-if="loading" class="loading">
+      <Spin size="large"/>
+    </div>
+    <div v-else-if="error" class="error">
+      <ErrorSign :code="this.error"/>
+    </div>
+    <div v-else>
+      {{this.formSetting.department}}
+      and
+      {{this.formSetting.college}}
     <h1 class="user-setting">{{ $t('m.User_Setting') }}</h1>
     <div class="contents">
       <div class="left-column">
@@ -210,12 +208,12 @@ export default {
             </div>
             <div class="major__contents">
               <div class="college">
-                <CustomDropDown :options="this.collegeList" nameKey="college_name"
+                <CustomDropDown :options="this.collegeList" nameKey="college_name" :selected="this.formSetting.college"
                                 @dropdownChange="handleCollegeChange"
                                 @click="removeErrorSign('majorWithoutCollege')"/>
               </div>
               <div class="major">
-                <CustomDropDown :options="this.majorList" nameKey="department_name"
+                <CustomDropDown :options="this.majorList" nameKey="department_name" :selected="this.formSetting.department"
                                 @dropdownChange="handleMajorChange" @click="handleClickMajor"/>
               </div>
             </div>
@@ -223,7 +221,7 @@ export default {
           <div class="language">
             <label class="language__title label" for="language">{{ $t('m.FavoriteLanguage') }}</label>
             <div class="language__contents">
-              <CustomDropDown :options="this.languageList" nameKey="languageName"
+              <CustomDropDown :options="this.languageList" nameKey="languageName" :selected="this.formSetting.language"
                               @dropdownChange="handleLanguageChange" id="language"/>
             </div>
           </div>
@@ -231,7 +229,7 @@ export default {
         <div class="github">
           <label class="github__title label" for="github">Github</label>
           <div class="github__contents">
-            <span>https://github.com/</span><input v-model="formSetting.github" type="text" id="github"/>
+            <input v-model="formSetting.github" type="text" id="github"/>
           </div>
           <p class="github__description">{{ $t('m.Github_Description') }}<a target="_blank"
                                                                             :href="this.githubLink">{{
@@ -249,7 +247,8 @@ export default {
             <span :class="moodLengthExceedClass">{{ this.moodLength }} / {{ this.MOOD_MAX_LENGTH }}</span>
           </div>
         </div>
-        <button @click="handleSubmit" class="submit-button">{{ $t('m.Submit') }}</button>
+        <button v-if="this.loadingSaveBtn" class="submit-button loading">{{ $t('m.Submit') }}</button>
+        <button v-else @click="handleSubmit" class="submit-button">{{ $t('m.Submit') }}</button>
       </div>
       <div class="right-column">
         <h3 class="avatar__title label">{{ $t('m.Profile_Avatar') }}</h3>
@@ -268,6 +267,7 @@ export default {
     </div>
     <hr/>
     <PasswordReset/>
+    </div>
   </main>
 </template>
 
@@ -463,6 +463,11 @@ input {
   cursor: pointer;
   font-size: 14px;
   font-weight: 700;
+
+  &.loading {
+    cursor: not-allowed;
+    background-color: var(--pale-point-color);
+  }
 }
 
 .exceed {
