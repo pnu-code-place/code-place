@@ -207,6 +207,7 @@ export default {
                        @focusout="() => this.formError.username = ''" id="nickname"/>
                 <button v-if="!this.isDuplicateChecked" @click="handleClickNicknameAuthBtn" class="submit-button">{{ $t('m.CheckDuplicate') }}</button>
                 <button v-else class="submit-button loading">{{ $t('m.CheckDuplicate') }}</button>
+
               </div>
               <p class="nickname__description">{{ $t('m.Nickname_Description') }} <span
                 v-if="this.formError.username" class="form-error">{{ this.formError.username }}</span></p>

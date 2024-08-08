@@ -136,15 +136,23 @@ export default {
       });
     },
     handleVisibleSwitchChange(id, visible) {
-      api.editEnableBanner(id, { visible: visible }).then((res) => {
-        if (res.status === 200) this.getBanners();
-      });
+      api
+        .editEnableBanner(id, { visible: visible })
+        .then((res) => {
+          if (res.status === 200) {
+            this.banners = res.data.data;
+          }
+        })
+        .catch((err) => {
+          const bannerIdx = this.banners.findIndex((e) => e.id === id);
+          this.banners[bannerIdx].visible = false;
+        });
     },
     handleBannerOrderChange(id) {
       const reorder_list = this.banners.map((banner) => banner.id);
 
       api.reorderBanner({ reorder_list: reorder_list }).catch((err) => {
-        this.banners = err.data.data;
+        this.getBanners();
       });
     },
     handleAddButtonClick() {

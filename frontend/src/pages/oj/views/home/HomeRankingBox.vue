@@ -30,6 +30,7 @@
               <div class="user-wrapper" @click="goUserInfo(user.username)">
                 <img class="avatar" :src="user.avatar" alt="user avatar image"/>
                 <span>
+
                 {{ user.username }}
               </span>
               </div>
