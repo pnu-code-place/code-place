@@ -87,7 +87,7 @@ h3 {
   border-radius: var(--container-border-radius);
   background-color: var(--box-background-color);
   margin-top: 20px;
-  height: 428px;
+  height: 440px;
 }
 
 .languages {

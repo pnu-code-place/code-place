@@ -17,9 +17,10 @@ export default {
         {languageName: "C", id: "C",},
         {languageName: "C++", id: "C++",},
         {languageName: "Java", id: "Java",},
-        {languageName: "Javascript", id: "Javascript",},
+        {languageName: "JavaScript", id: "JavaScript",},
         {languageName: "Python3", id: "Python3",},
       ],
+
       collegeList: [],
       majorList: [],
       formSetting: {
@@ -30,6 +31,7 @@ export default {
         github: "",
         mood: ""
       },
+      oldUsername: "",
 
       userAvatar: "",
 
@@ -71,6 +73,7 @@ export default {
       api.getUserInfo()
         .then(async res => {
           this.formSetting.username = res.data.data.user.username
+          this.oldUsername = res.data.data.user.username
           this.formSetting.language = res.data.data.language
           this.formSetting.mood = res.data.data.mood
           this.formSetting.github = res.data.data.github
@@ -78,11 +81,13 @@ export default {
           this.formSetting.college = res.data.data.college
           await this.getDepartmentList(this.formSetting.college)
           this.formSetting.department = res.data.data.department
-          this.loading = false
         })
         .catch(error => {
           this.$error("프로필을 불러오는데 실패했습니다.")
           this.error = error
+        })
+        .finally(() => {
+          this.isDuplicateChecked = true
           this.loading = false
         })
     },
@@ -99,22 +104,21 @@ export default {
       }
     },
     handleSubmit() {
-      let form = this.trimForm()
-      api.updateProfile(form)
-        .then(() => {
-          this.$success("프로필이 성공적으로 수정되었습니다.")
-        })
-        .catch(() => {
-          this.$error("프로필 수정에 실패했습니다.")
-        })
-    },
-    updateProfile() {
       this.loadingSaveBtn = true
-      console.log(this.formSetting)
+      if (this.formSetting.username === "") {
+        this.formError.username = this.$t('m.Nickname_Required');
+        this.loadingSaveBtn = false
+        return;
+      }
+      if (!this.isDuplicateChecked) {
+        this.$error("닉네임 중복 확인을 해주세요.")
+        this.loadingSaveBtn = false
+        return;
+      }
       let updateData = this.formSetting
       // let updateData = utils.filterEmptyValue(Object.assign({}, this.formSetting))
       api.updateProfile(updateData).then(res => {
-        this.$success('Success')
+        this.$success(this.$t('m.Profile_Update_Success'))
         this.$store.commit(types.CHANGE_PROFILE, {profile: res.data.data})
         this.loadingSaveBtn = false
       }, _ => {
@@ -126,9 +130,15 @@ export default {
         this.formError.username = this.$t('m.Nickname_Required');
         return;
       }
-      api.nicknameValidCheck(this.formRegister.username)
+      if (this.formSetting.username === this.oldUsername) {
+        this.$success("사용 가능한 닉네임입니다.");
+        this.isDuplicateChecked = true;
+        return;
+      }
+      api.nicknameValidCheck(this.formSetting.username)
         .then(() => {
           this.$success("사용 가능한 닉네임입니다.");
+          this.isDuplicateChecked = true;
         })
         .catch(error => {
           if (error.response) {
@@ -141,9 +151,6 @@ export default {
             }
           }
         });
-    },
-    trimForm() {
-      return Object.fromEntries(Object.entries(this.formSetting).filter(([_, v]) => v !== ""))
     },
     openAvatarModal() {
       this.avatarUploadModal = true;
@@ -168,6 +175,13 @@ export default {
     githubLink() {
       return this.formSetting.github
     },
+  },
+  watch: {
+    'formSetting.username': function (newVal, oldVal) {
+      if (newVal !== oldVal) {
+        this.isDuplicateChecked = false
+      }
+    }
   }
 }
 
@@ -191,7 +205,9 @@ export default {
               <div class="nickname__contents row-flex-box">
                 <input placeholder="" type="text" v-model="formSetting.username"
                        @focusout="() => this.formError.username = ''" id="nickname"/>
-                <button @click="handleClickNicknameAuthBtn" class="submit-button">{{ $t('m.CheckDuplicate') }}</button>
+                <button v-if="!this.isDuplicateChecked" @click="handleClickNicknameAuthBtn" class="submit-button">{{ $t('m.CheckDuplicate') }}</button>
+                <button v-else class="submit-button loading">{{ $t('m.CheckDuplicate') }}</button>
+
               </div>
               <p class="nickname__description">{{ $t('m.Nickname_Description') }} <span
                 v-if="this.formError.username" class="form-error">{{ this.formError.username }}</span></p>
@@ -475,7 +491,7 @@ input {
 
   &.loading {
     cursor: not-allowed;
-    background-color: var(--pale-point-color);
+    opacity: 0.3;
   }
 }
 
