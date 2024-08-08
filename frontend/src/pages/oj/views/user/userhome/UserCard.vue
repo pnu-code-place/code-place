@@ -116,7 +116,7 @@ export default {
 <!--            <router-link class="modify-button" v-if="isMyProfile" :to="{name : 'default-setting'}">-->
 <!--              {{ $t('m.User_Setting') }}-->
 <!--            </router-link>-->
-            <router-link class="modify-button" v-if="isMyProfile" :to="{name: 'demo-setting'}">
+            <router-link class="modify-button" v-if="isMyProfile" :to="{name: 'user-setting'}">
                 {{ $t('m.User_Setting') }}
             </router-link>
           </div>

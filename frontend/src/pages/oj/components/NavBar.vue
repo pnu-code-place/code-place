@@ -25,7 +25,7 @@
         <Dropdown class="drop-menu" @on-click="handleRoute" placement="bottom" trigger="click">
           <div style="display: flex; align-items: center;">
             <div>
-              <img class="avatar" :src="profile.avatar"/>
+              <img class="avatar" :src="profile.avatar" alt="avatar of the user"/>
             </div>
             <div style="margin-left: 10px">
               <Icon type="arrow-down-b" style="cursor: pointer"></Icon>
@@ -34,16 +34,16 @@
           <Dropdown-menu slot="list">
             <Dropdown-item :name="`/user-home/dashboard/${user.username}`">{{ $t('m.MyHome') }}</Dropdown-item>
             <Dropdown-item name="/status?myself=1">{{ $t('m.MySubmissions') }}</Dropdown-item>
-            <Dropdown-item name="/setting/profile">{{ $t('m.Settings') }}</Dropdown-item>
+            <Dropdown-item name="/user-setting">{{ $t('m.Settings') }}</Dropdown-item>
             <Dropdown-item v-if="isAdminRole" name="/admin">{{ $t('m.Management') }}</Dropdown-item>
             <Dropdown-item divided name="/logout">{{ $t('m.Logout') }}</Dropdown-item>
           </Dropdown-menu>
         </Dropdown>
       </template>
     </Menu>
-    <Modal v-model="modalVisible" :maskClosable="false" :width="400" :styles="{'top': modalStatus.mode == 'login' ? '10%' : '2%'}">
+    <Modal v-model="modalVisible" :maskClosable="false" :width="400" :styles="{'top': modalStatus.mode === 'login' ? '10%' : '2%'}">
       <div slot="header" class="modal-title" style="text-align: center">
-        {{ modalStatus.mode == 'login' ? $t('m.LoginModalHeader') : $t('m.RegisterModalHeader') }}
+        {{ modalStatus.mode === 'login' ? $t('m.LoginModalHeader') : $t('m.RegisterModalHeader') }}
       </div>
       <component :is="modalStatus.mode" v-if="modalVisible"></component>
       <div slot="footer" style="display: none"></div>
@@ -153,7 +153,7 @@ export default {
   display: block;
   border-radius: @avatar-radius;
   border: 1px solid #7a7a7a;
-  box-shadow: 0px 0px 1px 0px;
+  box-shadow: 0 0 1px 0;
 }
 
 .ivu-menu-item-active{

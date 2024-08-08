@@ -26,7 +26,7 @@ import AchievementSection from "../views/user/userhome/sections/achievementSecti
 import SoaringRank from "../views/rank/SurgeRank.vue";
 import MajorRank from "../views/rank/majorRank/MajorRank.vue";
 import UserRank from "../views/rank/UserRank.vue";
-import SettingDemo from "../views/setting/SettingDemo.vue";
+import SettingDemo from "../views/setting/UserSetting.vue";
 import AnnouncementDetail from "../views/notice/AnnouncementDetail.vue";
 
 export default [
@@ -208,9 +208,9 @@ export default [
     ],
   },
   {
-    name: "demo-setting",
-    path: "/demo",
-    meta: {requiresAuth: true, title: "Demo Settings"},
+    name: "user-setting",
+    path: "/user-setting",
+    meta: {requiresAuth: true, title: "User Setting"},
     component: SettingDemo,
   },
   {
