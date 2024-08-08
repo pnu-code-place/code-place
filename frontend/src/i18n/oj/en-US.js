@@ -447,7 +447,7 @@ export const m = {
   Nickname_Description:
     "다른 사람들에게 보여지며 마이페이지 주소로 사용됩니다.",
   MajorAndDeparture: "단과대학/학과",
-  FavoriteLanguage: "주로 사용하는 언어",
+  FavoriteLanguage: "선호하는 언어",
   CheckDuplicate: "중복확인",
 
   Current_Password: "현재 비밀번호",

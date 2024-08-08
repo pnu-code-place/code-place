@@ -1,6 +1,6 @@
 <template>
   <div class="announcements">
-    <h1 class="title">
+    <h1 class="title main-title">
       {{ $t('m.Announcements') }}
     </h1>
     <div class="announcement-container">
@@ -107,7 +107,6 @@ export default {
   width: var(--global-width);
 
   .title {
-    font-size: 18px;
     margin-bottom: 20px;
   }
 

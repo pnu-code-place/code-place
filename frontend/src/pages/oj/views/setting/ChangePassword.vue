@@ -229,7 +229,7 @@ export default {
 }
 
 .label {
-  font-size: 14px;
+  font-size: 18px;
   font-weight: 700;
 }
 </style>

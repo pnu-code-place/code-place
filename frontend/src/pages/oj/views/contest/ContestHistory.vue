@@ -1,7 +1,7 @@
 <template>
   <main>
     <div class="title-wrapper">
-      <span class="title">{{ $t("m.Contest_History") }}</span>
+      <h1 class="title">{{ $t("m.Contest_History") }}</h1>
       <div style="display: flex; gap: 12px">
         <YearDropdown :year="this.query.year" @onYearChange="onYearChange" />
         <MonthDropdown
@@ -188,7 +188,6 @@ main {
     justify-content: space-between;
   }
   .title {
-    font-size: 18px;
     font-weight: 700;
   }
 

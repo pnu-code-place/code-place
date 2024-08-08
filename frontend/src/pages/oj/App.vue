@@ -65,6 +65,12 @@ export default {
   position: relative;
 }
 
+h1 {
+  font-size : var(--title_font-size);
+  font-weight: var(--title_font-weight);
+  color: var(--title-font-color);
+}
+
 :root {
   /* Site Global Variable */
   --box-background-color: #ffffff;
@@ -73,6 +79,10 @@ export default {
   --custom-btn-hover-color: #ffffff;
   --border-color: #e7e7e7;
   --header-btn-color: rgba(237, 237, 237, 0.45);
+  --title-font-color: var(--container-font-color);
+  --title_font-size: 24px;
+  --title_font-weight: 700;
+
 
   --point-color: #32306b;
   --pale-point-color: #F8F9FF;
