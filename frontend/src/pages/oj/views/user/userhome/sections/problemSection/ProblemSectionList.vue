@@ -3,7 +3,7 @@
     <section>
       <div class="problem-tab">
         <header class="problem-tab__header">
-          <h1>{{ $t('m.Problem_Status') }}</h1>
+          <h1 class="main-title">{{ $t('m.Problem_Status') }}</h1>
           <ul class="query-dropdowns">
             <li>
               <CustomDropdown

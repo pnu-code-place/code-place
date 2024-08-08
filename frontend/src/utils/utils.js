@@ -15,6 +15,7 @@ export function toRoman(num) {
 }
 
 export function comma(value) {
+  if (value === undefined || value === null) return 'null'
   if (typeof value === 'string') {
     return value.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
   } else {
@@ -24,6 +25,7 @@ export function comma(value) {
 
 export function getTier(tier) {
   // 첫 글자 대문자로, 마지막 글자가 숫자일 경우 띄어쓰기, 숫자를 로마자로 변환, 나머지는 소문자로
+  if (tier === undefined || tier === null) return '--'
   const firstUppercase = tier[0].toUpperCase() + tier.slice(1).toLowerCase();
   const lastChar = firstUppercase[tier.length - 1];
   if (isNaN(lastChar)) {

@@ -84,6 +84,11 @@ export default {
     goRanking() {
       this.$router.push({name: 'user-rank', query:this.rankQuery})
     }
+  },
+  data() {
+    return {
+      githubIcon: require('../../../../../assets/github.png')
+    }
   }
 };
 </script>
@@ -108,19 +113,16 @@ export default {
         </div>
         <div class="info-column__bottom">
           <div class="modify-button-wrapper">
-            <router-link class="modify-button" v-if="isMyProfile" :to="{name : 'default-setting'}">
-              {{ $t('m.User_Setting') }}
-            </router-link>
-            <router-link class="modify-button" v-if="isMyProfile" :to="{name: 'demo-setting'}">
-                {{ $t('m.Demo_Setting') }}
+<!--            <router-link class="modify-button" v-if="isMyProfile" :to="{name : 'default-setting'}">-->
+<!--              {{ $t('m.User_Setting') }}-->
+<!--            </router-link>-->
+            <router-link class="modify-button" v-if="isMyProfile" :to="{name: 'user-setting'}">
+                {{ $t('m.User_Setting') }}
             </router-link>
           </div>
           <div class="icons">
-            <a :href="'mailto:'+ profile.user.email">
-              <Icon class="icon" type="ios-email-outline" size="30"></Icon>
-            </a>
             <a :href="profile.github">
-              <Icon type="social-github-outline" size="30"></Icon>
+              <img class="github-icon" :src="this.githubIcon" alt="icon of github, it's so cute"/>
             </a>
           </div>
         </div>
@@ -373,6 +375,17 @@ export default {
         }
       }
     }
+  }
+}
+
+.github-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+
+  &:hover {
+    transform: scale(1.1);
   }
 }
 </style>

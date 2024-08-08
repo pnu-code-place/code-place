@@ -1,6 +1,6 @@
 <template>
   <div class="acm-rank">
-    <h1>{{ $t('m.Top_Users') }}</h1>
+    <h1 class="main-title">{{ $t('m.Top_Users') }}</h1>
     <div class="main-contents">
       <header class="routers">
         <router-link class="" to="user-rank">{{ $t('m.User_Rank') }}</router-link>
@@ -23,7 +23,6 @@ export default {}
 .acm-rank {
   width: var(--global-width);
   h1 {
-    font-size: 18px;
     margin: 0 0 25px 1%;
   }
 

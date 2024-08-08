@@ -61,11 +61,11 @@ export default {
   <section>
     <ErrorSign v-if="error !== 0" :code="this.error"></ErrorSign>
     <div v-else>
-      <h1>{{ $t('m.Field_Based_Distribution') }}</h1>
+      <h2>{{ $t('m.Field_Based_Distribution') }}</h2>
       <FieldSummary v-if="this.dashboardInfo.fieldInfo" :fieldInfo="this.dashboardInfo.fieldInfo"></FieldSummary>
       <DashboardSkeleton v-else-if="this.isLoading"></DashboardSkeleton>
       <hr/>
-      <h1>{{ $t('m.Difficulty_Based_Distribution') }}</h1>
+      <h2>{{ $t('m.Difficulty_Based_Distribution') }}</h2>
       <DifficultySummary v-if="this.dashboardInfo.difficultyInfo"
                          :difficultyInfo="this.dashboardInfo.difficultyInfo"></DifficultySummary>
       <DashboardSkeleton v-else-if="this.isLoading"></DashboardSkeleton>
@@ -94,7 +94,7 @@ section {
     margin: 20px 10px 20px;
   }
 
-  h1 {
+  h2 {
     text-align: left;
     font-size: 22px;
     margin-left: 10px;

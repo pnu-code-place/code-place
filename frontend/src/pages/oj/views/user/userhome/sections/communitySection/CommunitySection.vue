@@ -8,7 +8,7 @@ export default {
 
 <template>
   <section>
-    <h1>커뮤니티</h1>
+    <h1 class="main-title">커뮤니티</h1>
   </section>
 </template>
 

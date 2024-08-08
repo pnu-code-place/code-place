@@ -281,6 +281,13 @@ export default {
       },
     });
   },
+  getAnnouncement(announcementId) {
+    return ajax("announcement", "get", {
+      params: {
+        id: announcementId
+      }
+    });
+  },
   getContestProblemList(contestId) {
     return ajax("contest/problem", "get", {
       params: {

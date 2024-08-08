@@ -1,7 +1,7 @@
 <template>
   <main>
     <div class="session-title-wrapper">
-      <span class="session-title">{{ $t("m.Underway_Contest") }}</span>
+      <h1 class="session-title main-title">{{ $t("m.Underway_Contest") }}</h1>
       <div style="display: flex; gap: 10px">
         <RuleTypeDropdown
           :rule_type="this.query.rule_type"
@@ -284,13 +284,12 @@ main {
   }
 
   .session-title-wrapper {
-    margin: 20px 4px;
+    margin: 0 4px 20px;
     display: flex;
     align-items: center;
     justify-content: space-between;
   }
   .session-title {
-    font-size: 18px;
     font-weight: 700;
   }
   .dropdown {

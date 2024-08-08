@@ -1,6 +1,6 @@
 <template>
   <div class="problemListTableHeader">
-    <p>{{ $t('m.Problem_List') }}</p>
+    <h1 class="main-title">{{ $t('m.Problem_List') }}</h1>
     <div style="display: flex; align-items: center; justify-content: center">
       <li style="list-style-type: none; margin-left: 3px;">
         <Input v-model="query.keyword"

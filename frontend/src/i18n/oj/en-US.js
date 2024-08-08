@@ -100,7 +100,7 @@ export const m = {
   // Announcements.vue
   Contest_Announcements: "대회 공지사항",
   By: "By",
-  CSEP: "CSEP",
+  CSEP: "코드플레이스",
   SWCenter: "소프트웨어융합교육원",
   CSEPDescription: "코딩역량강화플랫폼",
   // ApplyResetPassword.vue
@@ -247,6 +247,10 @@ export const m = {
   Refresh: "새로고침",
   Back: "뒤로가기",
   No_Announcements: "공지사항이 없습니다",
+  Next_Announcement: "다음 공지",
+  Before_Announcement: "이전 공지",
+  NoBeforeAnnouncement: "첫번째 공지입니다.",
+  NoNextAnnouncement: "마지막 공지입니다.",
   // Setting.vue
   Profile: "프로필",
   Account: "계정",
@@ -361,7 +365,7 @@ export const m = {
   Signal: "Signal",
   // SubmissionList.vue
   When: "제출시각",
-  ID: "제출ID",
+  ID: "ID",
   Time: "Time",
   Memory: "메모리",
   Author: "작성자",
@@ -443,7 +447,7 @@ export const m = {
   Nickname_Description:
     "다른 사람들에게 보여지며 마이페이지 주소로 사용됩니다.",
   MajorAndDeparture: "단과대학/학과",
-  FavoriteLanguage: "주로 사용하는 언어",
+  FavoriteLanguage: "선호하는 언어",
   CheckDuplicate: "중복확인",
 
   Current_Password: "현재 비밀번호",
@@ -454,7 +458,7 @@ export const m = {
   Mood: "소개",
   Mood_Description: "256자까지 입력이 가능하며, 마이페이지에 노출됩니다.",
   Github_Description:
-    "Github 아이디를 입력해주세요. 마이페이지에 링크와 함께 표시됩니다.",
+    "Github 링크를 입력해주세요. 마이페이지에서 연결됩니다.",
   Nickname_Duplicated: "이미 사용중인 닉네임입니다.",
   Nickname_Required: "닉네임을 입력해주세요.",
   College_Required: "단과대학을 먼저 선택해주세요.",
