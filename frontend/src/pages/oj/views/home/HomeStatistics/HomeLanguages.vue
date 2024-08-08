@@ -73,7 +73,7 @@ export default {
 
 <style scoped lang="less">
 h3 {
-  font-size: 15px;
+  font-size: 18px;
   padding: 15px 0;
   font-weight: 650;
   color: var(--ps-content-text-color)

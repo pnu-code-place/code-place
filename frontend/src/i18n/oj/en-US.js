@@ -100,7 +100,7 @@ export const m = {
   // Announcements.vue
   Contest_Announcements: "대회 공지사항",
   By: "By",
-  CSEP: "CSEP",
+  CSEP: "코드플레이스",
   SWCenter: "소프트웨어융합교육원",
   CSEPDescription: "코딩역량강화플랫폼",
   // ApplyResetPassword.vue

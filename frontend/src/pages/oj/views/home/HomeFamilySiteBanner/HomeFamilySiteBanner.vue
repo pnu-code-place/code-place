@@ -4,7 +4,7 @@
       {{ $t('m.FamilySites') }}
     </h3>
     <div class="home-family-site-banner-content-wrapper">
-      <template v-for="(item, idx) in FamilySiteContentSrc">
+      <template v-for="(item) in FamilySiteContentSrc">
         <FamilySiteContent :content="item"/>
       </template>
     </div>
@@ -38,6 +38,12 @@ export default {
   background-color: #F3F6FF;
   overflow: hidden;
   border: 1px solid #DEDEDE;
+
+  h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--ps-content-text-color)
+  }
   .home-family-site-banner-content-wrapper{
     padding-left: 20px;
     display: flex;

@@ -1,7 +1,7 @@
 <template>
   <div class="rankingBox">
     <div class="rankingBoxHeader">
-      <span>{{ $t('m.Title_Home_Ranking') }} <span class="gradientSpan">{{ $t('m.Top_Three_Home_Ranking') }}</span></span>
+      <h2>{{ $t('m.Title_Home_Ranking') }} <span class="gradientSpan">{{ $t('m.Top_Three_Home_Ranking') }}</span></h2>
       <div class="plusDiv" @click="handleRoute('acm-rank')" v-if="this.rankingItems.length >= 3">
         <Icon type="android-add" size="13" color="#7a7a7a"></Icon>
         <span>{{ $t('m.More_Home_Ranking') }}</span>
@@ -28,7 +28,7 @@
             </td>
             <td class="name">
                 <div class="user-wrapper" @click="goUserInfo(user.username)">
-                  <img class="avatar" :src="user.avatar"/>
+                  <img class="avatar" :src="user.avatar" alt="user avatar image"/>
                   <span>
                 {{ user.username }}
               </span>
@@ -96,6 +96,10 @@ export default {
 </script>
 
 <style scoped lang="less">
+
+h2 {
+  font-size: 18px;
+}
 
 .rankingBox {
   background-color: #ffffff;
@@ -249,7 +253,7 @@ table {
 }
 @keyframes textShine {
   0% {
-    background-position: 0% 50%;
+    background-position: 0 50%;
   }
   100% {
     background-position: 100% 50%;
@@ -272,6 +276,6 @@ table {
 .avatar {
   width: 30px;
   border-radius: @avatar-radius;
-  box-shadow: 0px 0px 1px 0px;
+  box-shadow: 0 0 1px 0;
 }
 </style>

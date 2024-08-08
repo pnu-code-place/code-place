@@ -162,7 +162,7 @@ export default {
 
     span:first-child {
       font-weight: 650;
-      font-size: 15px;
+      font-size: 18px;
     }
   }
 }
