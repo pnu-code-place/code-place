@@ -17,7 +17,7 @@ export default {
         {languageName: "C", id: "C",},
         {languageName: "C++", id: "C++",},
         {languageName: "Java", id: "Java",},
-        {languageName: "Javascript", id: "Javascript",},
+        {languageName: "JavaScript", id: "JavaScript",},
         {languageName: "Python3", id: "Python3",},
       ],
       collegeList: [],
