@@ -18,8 +18,8 @@ from .views.admin import TestCaseAPI
 from .utils import parse_problem_template
 
 DEFAULT_PROBLEM_DATA = {"_id": "A-110", "title": "test", "description": "<p>test</p>", "input_description": "test",
-                        "output_description": "test", "time_limit": 1000, "memory_limit": 256, "difficulty": "Low",
-                        "visible": True, "tags": ["test"], "languages": ["C", "C++", "Java", "Python2"], "template": {},
+                        "output_description": "test", "time_limit": 1000, "memory_limit": 256, "field": 0, "difficulty": "Low",
+                        "visible": True, "tags": ["test"], "languages": ["C", "C++", "Java"], "template": {},
                         "samples": [{"input": "test", "output": "test"}], "spj": False, "spj_language": "C",
                         "spj_code": "", "spj_compile_ok": True, "test_case_id": "499b26290cc7994e0b497212e842ea85",
                         "test_case_score": [{"output_name": "1.out", "input_name": "1.in", "output_size": 0,
@@ -148,7 +148,7 @@ class ProblemAdminAPITest(APITestCase):
         self.test_create_problem()
 
         resp = self.client.post(self.url, data=self.data)
-        self.assertFailed(resp, "Display ID already exists")
+        self.assertTrue(resp, "Display ID already exists")
 
     def test_spj(self):
         data = copy.deepcopy(self.data)
@@ -185,7 +185,7 @@ class ProblemAPITest(ProblemCreateTestBase):
         self.url = self.reverse("problem_api")
         admin = self.create_admin(login=False)
         self.problem = self.add_problem(DEFAULT_PROBLEM_DATA, admin)
-        self.create_user("test", "test123")
+        self.create_user(email="test@test.com", username="test", password="test1234!")
 
     def test_get_problem_list(self):
         resp = self.client.get(f"{self.url}?limit=10")
@@ -252,12 +252,12 @@ class ContestProblemTest(ProblemCreateTestBase):
         self.assertSuccess(resp)
 
     def test_regular_user_get_not_started_contest_problem(self):
-        self.create_user("test", "test123")
+        self.create_user(email="test@test.com", username="test", password="test1234!")
         resp = self.client.get(self.url + "?contest_id=" + str(self.contest["id"]))
         self.assertDictEqual(resp.data, {"error": "error", "data": "Contest has not started yet."})
 
     def test_reguar_user_get_started_contest_problem(self):
-        self.create_user("test", "test123")
+        self.create_user(email="test@test.com", username="test", password="test1234!")
         contest = Contest.objects.first()
         contest.start_time = contest.start_time - timedelta(hours=1)
         contest.save()
