@@ -97,10 +97,7 @@ class APIView(View):
         #     return {}
         # return request.GET
         if request.method not in ["GET", "DELETE"]:
-            body = request.body
-            content_type = request.META.get("CONTENT_TYPE")
-            if not content_type:
-                raise ValueError("content_type is required")
+            content_type = request.META.get("CONTENT_TYPE", "")
             if content_type.startswith('multipart/form-data'):
                 return request.POST.dict()  # Django already parses multipart data
             for parser in self.request_parsers:
@@ -113,6 +110,8 @@ class APIView(View):
                 return parser.parse(body)
             return {}
         return request.GET
+                request.data = request.POST.copy()
+                request.data.update(request.FILES)
 
     def response(self, data):
         return self.response_class.response(data)
