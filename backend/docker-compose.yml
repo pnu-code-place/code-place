@@ -50,9 +50,8 @@ services:
       - oj-judge
     volumes:
       - ./data/backend:/data
-      - ./data/backend/certbot/www:/var/www/certbot
-      - /etc/letsencrypt/live/csep.pusan.ac.kr/fullchain.pem:/etc/letsencrypt/live/csep.pusan.ac.kr/fullchain.pem
-      - /etc/letsencrypt/live/csep.pusan.ac.kr/privkey.pem:/etc/letsencrypt/live/csep.pusan.ac.kr/privkey.pem
+      - /etc/letsencrypt/live/code.pusan.ac.kr/fullchain.pem:/etc/letsencrypt/live/code.pusan.ac.kr/fullchain.pem
+      - /etc/letsencrypt/live/code.pusan.ac.kr/privkey.pem:/etc/letsencrypt/live/code.pusan.ac.kr/privkey.pem
     env_file:
       - .env
     environment:
