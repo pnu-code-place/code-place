@@ -43,7 +43,7 @@ class AdminBannerAPIView(APIView):
         """
 
         link_url = request.data.get('link_url')
-        form = ImageUploadForm(request.POST, request.FILES)
+        banner_image = request.data.get('image')
 
         # URL 유효성 검사
         url_validator = URLValidator()
@@ -52,24 +52,15 @@ class AdminBannerAPIView(APIView):
         except ValidationError:
             return self.error("Invalid URL")
 
-        # 이미지 폼 유효성 검사
-        if form.is_valid():
-            banner_image = form.cleaned_data["image"]
+        if banner_image.size > 2 * 1024 * 1024:
+            return self.error("Picture is too large")
 
-            # 파일 크기 검사
-            if banner_image.size > 2 * 1024 * 1024:
-                return self.error("Picture is too large")
-
-            # 파일 확장자 검사
-            suffix = os.path.splitext(banner_image.name)[-1].lower()
-            if suffix not in [".gif", ".jpg", ".jpeg", ".bmp", ".png"]:
-                return self.error("Unsupported file format")
-
-        else:
-            return self.error("Invalid file content")
+        banner_image_suffix = os.path.splitext(banner_image.name)[-1].lower()
+        if banner_image_suffix not in [".gif", ".jpg", ".jpeg", ".bmp", ".png"]:
+            return self.error("Unsupported file format")
 
         # 배너 이미지 주소를 랜덤으로 생성
-        name = rand_str(10) + suffix
+        name = rand_str(10) + banner_image_suffix
 
         # 배너 이미지 저장
         banner_path = os.path.join(settings.BANNER_DIR, name)
