@@ -112,6 +112,8 @@ class APIView(View):
         return request.GET
                 request.data = request.POST.copy()
                 request.data.update(request.FILES)
+                request.data = request.POST.copy()
+                request.data.update(request.FILES)
 
     def response(self, data):
         return self.response_class.response(data)
