@@ -214,8 +214,10 @@ export default [
     component: SettingDemo,
   },
   {
-    path: "/setting",
-    component: Setting.Settings,
+    name: "setting",
+    path: "/no-link",
+    // component: Setting.Settings,
+    component: NotFound,
     redirect: {name: "profile-setting"},
     children: [
       {
