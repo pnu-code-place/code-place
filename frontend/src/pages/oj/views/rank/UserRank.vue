@@ -110,6 +110,12 @@ export default {
       })
     },
   },
+  watch: {
+    '$route.query': {
+      handler: 'init',
+      immediate: true
+    }
+  }
 }
 </script>
 
