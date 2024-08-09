@@ -3,13 +3,8 @@
 APP=/app # 앱 데이터 경로 설정
 DATA=/data # 데이터 디렉토리 경로 설정
 
-# log, config, ssl, test_case, avatar 디렉토리 생성
-mkdir -p $DATA/log $DATA/config $DATA/ssl $DATA/test_case $DATA/public/upload $DATA/public/avatar $DATA/public/website
-
-#secret key가 존재하지 않는 경우 생성
-if [ ! -f "$DATA/config/secret.key" ]; then
-    echo $(cat /dev/urandom | head -1 | md5sum | head -c 32) > "$DATA/config/secret.key"
-fi
+# log, config, test_case, avatar, banner 디렉토리 생성
+mkdir -p $DATA/log $DATA/config $DATA/test_case $DATA/public/upload $DATA/public/avatar $DATA/public/website $DATA/public/banner
 
 # avatar default 이미지가 존재하지 않는 경우 기존 디렉토리에서 복사 및 생성
 if [ ! -f "$DATA/public/avatar/default.png" ]; then
@@ -60,7 +55,6 @@ cd $APP
 n=0
 while [ $n -lt 5 ]
 do
-    python3 manage.py migrate contest 0011
     python3 manage.py migrate --no-input
     python manage.py inituser --username=root --password=rootroot --action=create_super_admin &&
     echo "from options.options import SysOptions; SysOptions.judge_server_token='$JUDGE_SERVER_TOKEN'" | python manage.py shell &&
@@ -83,5 +77,4 @@ chown -R server:spj $DATA $APP/dist
 find $DATA/test_case -type d -exec chmod 710 {} \;
 find $DATA/test_case -type f -exec chmod 640 {} \;
 
-# supervisord 프로세스 관리자를 실행
 exec supervisord -c /app/deploy/supervisord.conf
