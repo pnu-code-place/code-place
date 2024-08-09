@@ -43,7 +43,7 @@
         <div class="authenticatedFooter">
           <span @click="goRouter('user-home')"><router-link
               :to="{name:'user-home', params:{username:user.username}}">{{ $t('m.MyHome') }}</router-link></span>
-          <span v-if="!isAdminRole">정보수정</span>
+          <router-link :to="{name:'user-setting'}" v-if="!isAdminRole">정보수정</router-link>
           <span v-else @click="goRouter('admin')">관리</span>
           <span @click="goRouter('profile-setting')"><router-link
               :to="{name:'default-setting'}">{{ $t('m.Settings') }}</router-link></span>
