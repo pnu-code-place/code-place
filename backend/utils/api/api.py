@@ -78,23 +78,41 @@ class APIView(View):
     response_class = JSONResponse
 
     def _get_request_data(self, request):
+        # if request.method not in ["GET", "DELETE"]:
+        #     body = request.body
+        #     content_type = request.META.get("CONTENT_TYPE")
+        #     print(content_type)
+        #     if not content_type:
+        #         raise ValueError("content_type is required")
+        #     for parser in self.request_parsers:
+        #         print(parser)
+        #         if content_type.startswith(parser.content_type):
+        #             break
+        #     # else means the for loop is not interrupted by break
+        #     else:
+        #         print(content_type)
+        #         raise ValueError("unknown content_type '%s'" % content_type)
+        #     if body:
+        #         return parser.parse(body)
+        #     return {}
+        # return request.GET
         if request.method not in ["GET", "DELETE"]:
-            body = request.body
-            content_type = request.META.get("CONTENT_TYPE")
-            if not content_type:
-                raise ValueError("content_type is required")
+            content_type = request.META.get("CONTENT_TYPE", "")
             if content_type.startswith('multipart/form-data'):
-                return request.POST.dict()  # Django already parses multipart data
-            for parser in self.request_parsers:
-                if content_type.startswith(parser.content_type):
-                    break
-            # else means the for loop is not interrupted by break
+                request.data = request.POST.copy()
+                request.data.update(request.FILES)
             else:
-                raise ValueError("unknown content_type '%s'" % content_type)
-            if body:
-                return parser.parse(body)
-            return {}
-        return request.GET
+                body = request.body
+                for parser in self.request_parsers:
+                    if content_type.startswith(parser.content_type):
+                        request.data = parser.parse(body)
+                        break
+                else:
+                    raise ValueError(f"Unknown content-type: {content_type}")
+        else:
+            request.data = request.GET
+
+        return request.data
 
     def response(self, data):
         return self.response_class.response(data)
