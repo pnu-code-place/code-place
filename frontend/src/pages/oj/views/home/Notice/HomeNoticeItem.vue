@@ -87,7 +87,7 @@ export default defineComponent({
         </div>
         <span class="new-annotator" v-if="isNew"><span>NEW</span></span>
         <span class="csep-annotator" v-if="isCSEP">
-                  <shine-wrapper>CSEP</shine-wrapper>
+                  <shine-wrapper>COPL</shine-wrapper>
           </span>
         <span class="sw-center-annotator" v-if="isSW">
                   <shine-wrapper>SW</shine-wrapper>
