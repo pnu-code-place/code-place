@@ -64,12 +64,11 @@ data/log/*
 !data/log/.gitkeep
 data/test_case/*
 !data/test_case/.gitkeep
-data/ssl/*
-!data/ssl/.gitkeep
 data/public/upload/*
 !data/public/upload/.gitkeep
 data/public/avatar/*
 !data/public/avatar/default.png
+data/public/banner/*
 data/config/*
 !data/config/.gitkeep
 
