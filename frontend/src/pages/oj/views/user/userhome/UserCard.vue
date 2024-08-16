@@ -243,18 +243,22 @@ export default {
       .info-column__bottom {
         display: flex;
         justify-content: space-between;
+        align-content: center;
         gap: 10px;
 
         .modify-button-wrapper {
-          width: 30%;
+          width: 100px;
           display: flex;
+          flex-direction: column;
+          justify-content: center;
 
           .modify-button {
             width: 100%;
-            height: 100%;
+            height: 30px;
             padding: 5px 10px;
             font-size: 14px;
             font-weight: 600;
+            text-align: center;
             color: var(--box-background-color);
             background-color: var(--point-color);
             border-radius: 7px;
@@ -271,7 +275,13 @@ export default {
           width: 70%;
           display: flex;
           justify-content: end;
+          align-content: center;
           gap: 15px;
+
+          a {
+            display: flex;
+            justify-content: center;
+          }
         }
       }
 
