@@ -26,7 +26,7 @@
               </template>
             </div>
           </td>
-          <td class="td-third" style="font-weight: bold; font-size: 14px">{{ DIFFICULTY_MAP[problem.difficulty].value }}</td>
+          <td class="td-third" style="font-weight: bold; font-size: 14px"><div class="difficulty-badge" :style="{borderColor:DIFFICULTY_MAP[problem.difficulty].textColor}">{{ DIFFICULTY_MAP[problem.difficulty].value }}</div></td>
           <td class="td-fourth" style="font-size: 13px">{{ problem.accepted_number+'명' }}</td>
           <td class="td-fifth" style="font-size: 13px">{{ problem.submission_number == 0 ? "없음" : Math.floor((problem.accepted_number / problem.submission_number ) * 100) + '%' }}</td>
         </tr>
@@ -164,6 +164,11 @@ td {
 
 td:nth-child(2) {
   cursor: pointer;
+}
+
+.difficulty-badge {
+  border-radius: 5px;
+  border: 2px solid #dedede;
 }
 </style>
 
