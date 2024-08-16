@@ -85,10 +85,10 @@ export default {
     radarIndicator() {
       return [
         {text: FIELD_MAP["2"].value, max: 1, color: '#000000',},
-        {text: FIELD_MAP["0"].value, max: 1, color: '#000000',},
         {text: FIELD_MAP["1"].value, max: 1, color: '#000000',},
-        {text: FIELD_MAP["3"].value, max: 1, color: '#000000',},
         {text: FIELD_MAP["4"].value, max: 1, color: '#000000',},
+        {text: FIELD_MAP["0"].value, max: 1, color: '#000000',},
+        {text: FIELD_MAP["3"].value, max: 1, color: '#000000',},
       ]
     },
     tooltip() {
