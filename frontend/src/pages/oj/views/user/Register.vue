@@ -5,22 +5,27 @@
         부산대학교 웹메일
       </div>
       <FormItem prop="pnuWebMail">
-        <Input
-          v-model="formRegister.email"
-          :placeholder="$t('m.Email_Address')"
-          size="large"
-          @on-enter="handleRegister"
-          class="emailAuthInput"
-          :autofocus="true"
-        >
-        </Input>
-        <Button
-          type="primary"
-          class="emailAuthBtn"
-          :disabled="this.emailAuthCodeInputState"
-          @click="handleClickEmailAuthBtn"
-        >인증
-        </Button>
+        <div class="email-form">
+          <div class="email-input">
+            <Input
+              v-model="formRegister.email"
+              :placeholder="$t('m.Email_Address')"
+              size="large"
+              @on-enter="handleRegister"
+              class="emailAuthInput"
+              :autofocus="true"
+            >
+            </Input>
+            <span class="pusan-ac-kr">{{ this.pusanDomain }}</span>
+          </div>
+          <Button
+            type="primary"
+            class="emailAuthBtn"
+            :disabled="this.emailAuthCodeInputState"
+            @click="handleClickEmailAuthBtn"
+          >인증
+          </Button>
+        </div>
       </FormItem>
       <FormItem prop="emailAuthCode" v-if="emailAuthCodeInputState">
         <Input
@@ -205,6 +210,7 @@ export default {
     };
 
     return {
+      pusanDomain: "@pusan.ac.kr",
       btnRegisterLoading: false,
       nicknameVerifyCompletedState: false,
       emailAuthCodeInputState: false,
@@ -237,12 +243,12 @@ export default {
   methods: {
     ...mapActions(["changeModalStatus", "getProfile"]),
     handleClickEmailAuthBtn() {
-      api.applyUserEmailValidCheck(this.formRegister.email)
-        .then(res=>{
+      api.applyUserEmailValidCheck(this.pusanEmail)
+        .then(res => {
           this.$success("인증 메일이 성공적으로 전송되었습니다.");
           this.emailAuthCodeInputState = true;
         })
-        .catch(error=>{
+        .catch(error => {
           if (error.response) {
             switch (error.response.status) {
               case 400:
@@ -273,7 +279,7 @@ export default {
         });
     },
     async handleClickAuthCodeVerificationBtn() {
-      let res = await api.userEmailValidCheck(this.formRegister.email, this.pnuAuthCode)
+      let res = await api.userEmailValidCheck(this.pusanEmail, this.pnuAuthCode)
       if (res.status === 200) {
         this.emailAuthCodeVerifyCompletedState = true
         this.$success("인증 완료되었습니다.");
@@ -308,7 +314,7 @@ export default {
           _ => {
             this.btnRegisterLoading = false;
           }
-        ).catch(err=>{
+        ).catch(err => {
           this.$error(err.data)
         });
       });
@@ -330,6 +336,9 @@ export default {
     }
   },
   computed: {
+    pusanEmail() {
+      return this.formRegister.email + this.pusanDomain;
+    },
     ...mapGetters(["website", "modalStatus"])
   }
 };
@@ -366,7 +375,7 @@ export default {
   margin-left: 1px;
 }
 
-.inputNameWithDescription{
+.inputNameWithDescription {
   display: flex;
   justify-content: space-between;
 }
@@ -378,10 +387,16 @@ export default {
   font-weight: 600;
   font-size: 14px;
   border-radius: 8px;
+  width: 78px;
 }
 
 .emailAuthInput {
-  width: 303px;
+  display: flex;
+
+}
+
+button:disabled {
+  background-color: #f5f5f5;
 }
 
 .nicknameAuthInput {
@@ -395,6 +410,7 @@ export default {
   font-weight: 600;
   font-size: 14px;
   border-radius: 8px;
+  width: 78px;
 }
 
 
@@ -409,6 +425,7 @@ export default {
   animation: fadeIn;
   animation-duration: 0.5s;
   animation-timing-function: ease-in-out;
+  width: 78px;
 }
 
 .redirectLogin {
@@ -422,6 +439,22 @@ export default {
   }
   100% {
     opacity: 1;
+  }
+}
+
+.email-form {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  .email-input {
+    display: flex;
+    align-items: center;
+  }
+
+  .pusan-ac-kr {
+    font-size: 16px;
+    font-weight: 600;
   }
 }
 </style>

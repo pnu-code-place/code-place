@@ -245,6 +245,15 @@ export const FamilySiteContentSrc = {
   },
 };
 
+export const LanguageImageSrc = {
+  'C++' : require('@/assets/languages/cpp.png'),
+  'Java' : require('@/assets/languages/java.png'),
+  'Python3' : require('@/assets/languages/python.png'),
+  'C' : require('@/assets/languages/c.png'),
+  'JavaScript' : require('@/assets/languages/javascript.png'),
+  'undefined' : require('@/assets/languages/c.png'),
+};
+
 export const AwardImageSrc = {
   1: require("@/assets/awards/first.svg"),
   2: require("@/assets/awards/second.svg"),

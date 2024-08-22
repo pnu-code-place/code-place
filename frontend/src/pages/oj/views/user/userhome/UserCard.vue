@@ -1,5 +1,5 @@
 <script>
-import {TierImageSrc} from "../../../../../utils/constants";
+import {LanguageImageSrc, TierImageSrc} from "../../../../../utils/constants";
 import HorizontalGauge from "./sections/dashboardSection/HorizontalGauge.vue";
 import {comma, getTier} from "../../../../../utils/utils";
 import ShineWrapper from "../../../components/ShineWrapper.vue";
@@ -44,6 +44,15 @@ export default {
     }
   },
   computed: {
+    languageImage() {
+      return LanguageImageSrc
+    },
+    languageImageSrc() {
+      if (this.profile.language) {
+        return LanguageImageSrc[this.profile.language]
+      }
+      return LanguageImageSrc['undefined']
+    },
     TierImageSrc() {
       return TierImageSrc
     },
@@ -121,8 +130,9 @@ export default {
             </router-link>
           </div>
           <div class="icons">
+            <img class="language-badge icon" :src="this.languageImageSrc" alt="user language"/>
             <a :href="profile.github">
-              <img class="github-icon" :src="this.githubIcon" alt="icon of github, it's so cute"/>
+              <img class="icon__github icon" :src="this.githubIcon" alt="icon of github, it's so cute"/>
             </a>
           </div>
         </div>
@@ -243,18 +253,22 @@ export default {
       .info-column__bottom {
         display: flex;
         justify-content: space-between;
+        align-content: center;
         gap: 10px;
 
         .modify-button-wrapper {
-          width: 30%;
+          width: 100px;
           display: flex;
+          flex-direction: column;
+          justify-content: center;
 
           .modify-button {
             width: 100%;
-            height: 100%;
+            height: 30px;
             padding: 5px 10px;
             font-size: 14px;
             font-weight: 600;
+            text-align: center;
             color: var(--box-background-color);
             background-color: var(--point-color);
             border-radius: 7px;
@@ -271,7 +285,14 @@ export default {
           width: 70%;
           display: flex;
           justify-content: end;
-          gap: 15px;
+          align-content: center;
+          gap: 7px;
+
+          a {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+          }
         }
       }
 
@@ -378,11 +399,15 @@ export default {
   }
 }
 
-.github-icon {
+.icon {
   width: 30px;
-  height: 30px;
-  border-radius: 50%;
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+
+
+  &__github {
+    border-radius: 50%;
+    height: 30px;
+  }
 
   &:hover {
     transform: scale(1.1);

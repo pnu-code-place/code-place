@@ -77,7 +77,7 @@ export default {
       this.isLoading = true
       api.getUserRank(offset, this.limit, RULE_TYPE.ACM)
         .then(res => {
-          this.total = res.data.data.total
+          this.total = res.data.data.total-3
           this.dataRank = res.data.data.results
           if (this.dataRank.length === 0) {
             this.error = {code: 404, description: '충분한 데이터가 없습니다.', solution: '잠시 후 다시 시도해 주세요.'}
@@ -110,6 +110,12 @@ export default {
       })
     },
   },
+  watch: {
+    '$route.query': {
+      handler: 'init',
+      immediate: true
+    }
+  }
 }
 </script>
 
@@ -121,15 +127,15 @@ export default {
       <div class="top-users">
         <div class="top-user sub-top">
           <h2>{{ $t('m.TOP_2') }}</h2>
-          <TopRanker :rank=2></TopRanker>
+          <TopRanker :user="this.topUsers[1]" :loading="isLoading" :rank="2"></TopRanker>
         </div>
         <div class="top-user">
           <h2>{{ $t('m.TOP_1') }}</h2>
-          <TopRanker :rank=1></TopRanker>
+          <TopRanker :user="this.topUsers[0]" :loading="isLoading" :rank="1"></TopRanker>
         </div>
         <div class="top-user sub-top">
           <h2>{{ $t('m.TOP_3') }}</h2>
-          <TopRanker :rank=3></TopRanker>
+          <TopRanker :user=this.topUsers[2] :loading="isLoading" :rank="3"></TopRanker>
         </div>
       </div>
       <UserList :userList="dataRank" :is-loading="isLoading" :limit="limit"/>

@@ -205,8 +205,8 @@ export default {
               <div class="nickname__contents row-flex-box">
                 <input placeholder="" type="text" v-model="formSetting.username"
                        @focusout="() => this.formError.username = ''" id="nickname"/>
-                <button v-if="!this.isDuplicateChecked" @click="handleClickNicknameAuthBtn" class="submit-button">{{ $t('m.CheckDuplicate') }}</button>
-                <button v-else class="submit-button loading">{{ $t('m.CheckDuplicate') }}</button>
+                <button v-if="!this.isDuplicateChecked" @click="handleClickNicknameAuthBtn" class="button">{{ $t('m.CheckDuplicate') }}</button>
+                <button v-else class="button check-button loading">{{ $t('m.CheckDuplicate') }}</button>
 
               </div>
               <p class="nickname__description">{{ $t('m.Nickname_Description') }} <span
@@ -263,8 +263,8 @@ export default {
                 <span :class="moodLengthExceedClass">{{ this.moodLength }} / {{ this.MOOD_MAX_LENGTH }}</span>
               </div>
             </div>
-            <button v-if="this.loadingSaveBtn" class="submit-button loading">{{ $t('m.Submit') }}</button>
-            <button v-else @click="handleSubmit" class="submit-button">{{ $t('m.Submit') }}</button>
+            <button v-if="this.loadingSaveBtn" class="button loading">{{ $t('m.Submit') }}</button>
+            <button v-else @click="handleSubmit" class="button">{{ $t('m.Submit') }}</button>
           </div>
           <div class="right-column">
             <h3 class="avatar__title label">{{ $t('m.Profile_Avatar') }}</h3>
@@ -477,7 +477,9 @@ input {
   font-size: 14px;
 }
 
-.submit-button {
+
+
+.button {
   background-color: var(--point-color);
   text-align: center;
   width: 80px;
@@ -488,6 +490,10 @@ input {
   cursor: pointer;
   font-size: 14px;
   font-weight: 700;
+
+  &.check-button {
+    width: 100px
+  }
 
   &.loading {
     cursor: not-allowed;
