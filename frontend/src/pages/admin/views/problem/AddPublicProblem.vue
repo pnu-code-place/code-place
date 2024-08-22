@@ -27,7 +27,7 @@
         fixed="right">
         <template slot-scope="{row}">
           <icon-btn icon="plus" :name="$t('m.Icon_Add')"
-                    @click.native="handleAddProblem(row.id)"></icon-btn>
+                    @click.native="handleAddProblem(row)"></icon-btn>
         </template>
       </el-table-column>
     </el-table>
@@ -81,18 +81,30 @@
         }).catch(() => {
         })
       },
-      handleAddProblem (problemID) {
-        this.$prompt(this.$t('m.AddProblem_Modal_Content'), this.$t('m.AddProblem_Modal_Title')).then(({value}) => {
-          let data = {
-            problem_id: problemID,
-            contest_id: this.contestID,
-            display_id: value
-          }
-          api.addProblemFromPublic(data).then(() => {
-            this.$emit('on-change')
-          }, () => {
-          })
-        }, () => {
+      handleAddProblem (problemToAdd) {
+        // console.log(this.problems)
+        // console.log(problemID)
+        // this.$prompt(this.$t('m.AddProblem_Modal_Content'), this.$t('m.AddProblem_Modal_Title')).then(({value}) => {
+        //   let data = {
+        //     problem_id: problemID,
+        //     contest_id: this.contestID,
+        //     display_id: value
+        //   }
+        //   api.addProblemFromPublic(data).then(() => {
+        //     this.$emit('on-change')
+        //   }, () => {
+        //   })
+        // }, () => {
+        // })
+        let data = {
+          problem_id: problemToAdd.id,
+          contest_id: this.contestID,
+          display_id: problemToAdd._id
+        }
+        api.addProblemFromPublic(data).then(() => {
+          this.$emit('on-change')
+        }).catch((error) => {
+          this.$error(error)
         })
       }
     },
