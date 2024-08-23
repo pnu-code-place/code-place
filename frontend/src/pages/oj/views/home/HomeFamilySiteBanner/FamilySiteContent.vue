@@ -28,6 +28,7 @@ export default {
 
 <style scoped lang="less">
 .home-family-site-banner-content{
+  padding: 15px 0;
   width: 100%;
   justify-content: center;
   .home-family-site-banner-image-div{
@@ -36,8 +37,8 @@ export default {
     display: flex;
     justify-content: center;
     .home-family-site-banner-image-wrapper{
-      width: 60px;
-      height: 60px;
+      width: 80px;
+      height: 80px;
       padding: 10px;
       background-color: #FFFFFF;
       border-radius: 50%;
@@ -51,7 +52,7 @@ export default {
     justify-content: center;
     .home-family-site-name{
       color: #4C515F;
-      font-size: 12px;
+      font-size: 14px;
       font-weight: bold;
     }
   }
