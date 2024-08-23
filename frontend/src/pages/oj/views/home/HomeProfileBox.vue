@@ -25,13 +25,13 @@
                   </span>
             <template v-if="!isAdminRole">
               <br>
-              <span>{{profile.school}}</span>
+              <span>{{ profile.school }}</span>
               <br>
-              <span>{{profile.major}}</span>
+              <span>{{ profile.major }}</span>
             </template>
             <template v-else>
               <br>
-              <span v-if="isAdminRole">관리자({{user.admin_type}})</span>
+              <span v-if="isAdminRole">관리자({{ user.admin_type }})</span>
             </template>
           </div>
           <div class="logoutBtn">
@@ -42,11 +42,12 @@
         </div>
         <div class="authenticatedFooter">
           <span @click="goRouter('user-home')"><router-link
-              :to="{name:'user-home', params:{username:user.username}}">{{ $t('m.MyHome') }}</router-link></span>
-          <router-link :to="{name:'user-setting'}" v-if="!isAdminRole">정보수정</router-link>
-          <span v-else @click="goRouter('admin')">관리</span>
-          <span @click="goRouter('profile-setting')"><router-link
-              :to="{name:'default-setting'}">{{ $t('m.Settings') }}</router-link></span>
+            :to="{name:'user-home', params:{username:user.username}}">{{ $t('m.MyHome') }}</router-link></span>
+          <router-link :to="{name:'user-setting'}">정보수정</router-link>
+          <span v-if="isAdminRole" @click="goRouter('admin')">관리</span>
+          <span v-else @click="alertUndeveloped" class="unclickable">내 강의</span>
+          <!--          <span @click="goRouter('profile-setting')"><router-link-->
+          <!--              :to="{name:'default-setting'}">{{ $t('m.Settings') }}</router-link></span>-->
         </div>
       </div>
     </template>
@@ -64,6 +65,9 @@ export default {
     return {}
   },
   methods: {
+    alertUndeveloped() {
+      this.$error('개발중인 기능입니다.')
+    },
     getTierImageSrc,
     ...mapActions(['getProfile', 'changeModalStatus']),
     handleLoginBtnClick(mode) {
@@ -125,6 +129,7 @@ export default {
     display: flex;
     justify-content: right;
 
+
     span {
       cursor: pointer;
     }
@@ -134,7 +139,8 @@ export default {
     }
   }
 }
-.profileBox:hover{
+
+.profileBox:hover {
   border: 1px solid #cccccc;
 }
 
@@ -192,16 +198,35 @@ export default {
     justify-content: space-around;
     align-items: center;
     height: 40px;
+    color: var(--ps-content-text-color);
+
+    a {
+      color: var(--ps-content-text-color);
+      font-weight: 600;
+
+      &:hover {
+        font-weight: 500;
+      }
+    }
+
     span {
       cursor: pointer;
       font-weight: 600;
+
+      &.unclickable {
+        cursor: not-allowed;
+      }
+
       a {
         color: inherit;
       }
     }
-    span:hover{
+
+    span:hover {
       font-weight: 500;
     }
   }
 }
+
+
 </style>
