@@ -104,7 +104,7 @@
         api.addProblemFromPublic(data).then(() => {
           this.$emit('on-change')
         }).catch((error) => {
-          this.$error(error)
+          // this.$error(error)
         })
       }
     },
