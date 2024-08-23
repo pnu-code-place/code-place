@@ -28,7 +28,7 @@ export default {
 
 <style scoped lang="less">
 .home-family-site-banner-box {
-  width: 50%;
+  width: 100%;
   float: right;
   margin-top: 20px;
   padding: 20px;

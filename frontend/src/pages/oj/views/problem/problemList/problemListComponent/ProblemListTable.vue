@@ -166,9 +166,9 @@ td:nth-child(2) {
   cursor: pointer;
 }
 
-.difficulty-badge {
-  border-radius: 5px;
-  border: 2px solid #dedede;
-}
+//.difficulty-badge {
+//  border-radius: 5px;
+//  border: 2px solid #dedede;
+//}
 </style>
 
