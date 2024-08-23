@@ -65,7 +65,7 @@ export default {
   position: relative;
 }
 
-h1 {
+h1.main-title {
   font-size : var(--title_font-size);
   font-weight: var(--title_font-weight);
   color: var(--title-font-color);
