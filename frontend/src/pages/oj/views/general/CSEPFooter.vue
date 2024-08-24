@@ -5,6 +5,8 @@ export default {
       version: process.env.VERSION,
       github_icon: require('@/assets/github.png'),
       github_url: "https://github.com/PNU-CSEP"
+      report_icon: require("@/assets/icon_bug.png"),
+      report_url:
     };
   },
 }
@@ -46,6 +48,16 @@ export default {
               {{ $t("m.UserGuide") }}
             </a>
           </p>
+          <p>
+            <a :href="this.report_url" style="padding-left: 5px">
+              <img
+                class="report-icon"
+                :src="this.report_icon"
+                alt="report icon"
+              />
+              {{ $t("m.ReportBugAndInconvenience") }}
+            </a>
+          </p>
         </div>
       </div>
     </div>
@@ -57,6 +69,11 @@ export default {
 .github-icon {
   width: 18px;
   height: 18px;
+}
+
+.report-icon {
+  width: 20px;
+  height: 20px;
 }
 
 footer {
