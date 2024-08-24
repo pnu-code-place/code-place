@@ -489,6 +489,7 @@ export const m = {
     "부산광역시 금정구 부산대학로63번길 2 (장전동) 부산대학교 소프트웨어융합교육원",
   UserGuide: "사용자 가이드",
   ReportBugAndInconvenience: "버그 및 불편사항 제보",
+  Developer: "개발진",
 
   Unknown_Error: "알 수 없는 오류가 발생했습니다.",
 

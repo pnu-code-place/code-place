@@ -3,10 +3,12 @@ export default {
   data() {
     return {
       version: process.env.VERSION,
-      github_icon: require('@/assets/github.png'),
-      github_url: "https://github.com/PNU-CSEP"
+      github_icon: require("@/assets/github.png"),
+      github_url:
+        "https://github.com/pnu-code-place/code-place?tab=readme-ov-file#-%EA%B5%AC%EC%84%B1%EC%9B%90",
       report_icon: require("@/assets/icon_bug.png"),
       report_url:
+        "https://evening-mirror-c09.notion.site/a7568fd7e0334a509c081567223cd454?pvs=4",
     };
   },
 }
@@ -39,8 +41,12 @@ export default {
         <div class="right">
           <p>
             <a :href="this.github_url">
-              <img class="github-icon" :src="this.github_icon" alt="github icon">
-              개발진
+              <img
+                class="github-icon"
+                :src="this.github_icon"
+                alt="github icon"
+              />
+              {{ $t("m.Developer") }}
             </a>
           </p>
           <p>
