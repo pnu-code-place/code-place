@@ -78,7 +78,7 @@ https_locations.conf
 venv/
 #test docker-compose
 conf/docker-compose.yml
-.env
+deploy/swarm/.env
 
 #backup file
 *.tar
