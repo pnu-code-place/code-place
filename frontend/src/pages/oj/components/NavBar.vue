@@ -116,6 +116,7 @@ export default {
 
   .drop-menu {
     float: right;
+    margin-right: 5%;
     z-index: 1000;
   }
 }

@@ -29,6 +29,7 @@ export default {
 .logo {
   cursor: pointer;
   float: left;
+  margin-left: 4%;
   height: 60px;
   display: flex;
   justify-content: space-between;
