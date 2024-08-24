@@ -34,6 +34,7 @@
             {{ $t("m.Contest_Title") }}
           </th>
           <th>{{ $t("m.Start_Date") }}</th>
+          <th>{{ $t("m.End_Date") }}</th>
           <th>{{ $t("m.State") }}</th>
           <th>{{ $t("m.Disclosure") }}</th>
           <th>{{ $t("m.Contest_Type") }}</th>
@@ -44,11 +45,17 @@
             <td class="td-title" @click="goContest(contest)">
               {{ contest.title }}
             </td>
-            <td style="font-size: 13px; width: 100">
+            <td style="font-size: 13px; width: 100px">
               {{ contest.start_time | localtime("YYYY/MM/DD") }}
             </td>
-            <td style="font-size: 13px; width: 100">
+            <td style="font-size: 13px; width: 100px">
               {{ contest.end_time | localtime("YYYY/MM/DD") }}
+            </td>
+            <td>
+              <div class="state-tag">
+                {{ CONTEST_STATUS_REVERSE[contest.status].name }}
+                <div :style="contestStateStyle(contest.status)"></div>
+              </div>
             </td>
             <td>
               {{ getContestDisclosure(contest) }}
@@ -78,9 +85,15 @@ import RuleTypeDropdown from "./components/RuleTypeDropdown";
 import SearchKeyword from "./components/SearchKeyword";
 import Pagination from "@/pages/oj/components/Pagination";
 import { CONTEST_STATUS, CONTEST_TYPE, MONTH } from "@/utils/constants";
+import {CONTEST_STATUS_REVERSE} from "../../../../utils/constants";
 
 export default {
   name: "contest-history-list",
+  computed: {
+    CONTEST_STATUS_REVERSE() {
+      return CONTEST_STATUS_REVERSE
+    }
+  },
   components: {
     YearDropdown,
     MonthDropdown,
@@ -126,6 +139,14 @@ export default {
           this.contests = res.data.data.results;
           this.total = res.data.data.total;
         });
+    },
+    contestStateStyle(state) {
+      return {
+        width: "16px",
+        height: "16px",
+        "border-radius": "100%",
+        "background-color": CONTEST_STATUS_REVERSE[state].color,
+      };
     },
     onYearChange(year) {
       this.page = 1;
@@ -214,6 +235,12 @@ main {
       font-size: 15px;
       color: black;
       border-top: 1px solid var(--container-border-color);
+      .state-tag {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        justify-content: center;
+      }
       .rule-type-style {
         width: 50px;
         margin: auto;
