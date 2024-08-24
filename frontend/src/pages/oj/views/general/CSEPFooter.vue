@@ -11,8 +11,7 @@ export default {
         "https://evening-mirror-c09.notion.site/a7568fd7e0334a509c081567223cd454?pvs=4",
     };
   },
-}
-
+};
 </script>
 
 <template>
@@ -26,12 +25,10 @@ export default {
       <div class="row2">
         <div class="left">
           <address>
-            {{ $t("m.AddressPNUCSEP") }} <br/>
-            TEL : 051-510-3737, 3738, 3624 <br/>
+            {{ $t("m.AddressPNUCSEP") }} <br />
+            TEL : 051-510-3737, 3738, 3624 <br />
           </address>
-          <p>
-            Copyright© Pusan National Univ. All Right Reserved.
-          </p>
+          <p>Copyright© Pusan National Univ. All Right Reserved.</p>
           <p>
             Powered by
             <a href="https://github.com/QingdaoU/OnlineJudge">OnlineJudge</a>
@@ -50,7 +47,9 @@ export default {
             </a>
           </p>
           <p>
-            <a href="https://pusanackr-my.sharepoint.com/:p:/g/personal/ehdwls1638_pusan_ac_kr/ETpnehh_9y1Hkk7LZjvp0JYBdwjSEUyNp8ARkodOpDvczA?rtime=FIVByG-q3Eg">
+            <a
+              href="https://pusanackr-my.sharepoint.com/:p:/g/personal/ehdwls1638_pusan_ac_kr/ETpnehh_9y1Hkk7LZjvp0JYBdwjSEUyNp8ARkodOpDvczA?rtime=FIVByG-q3Eg"
+            >
               {{ $t("m.UserGuide") }}
             </a>
           </p>
@@ -71,7 +70,6 @@ export default {
 </template>
 
 <style scoped lang="less">
-
 .github-icon {
   width: 18px;
   height: 18px;
@@ -111,8 +109,6 @@ footer {
       }
 
       .family-site {
-        //display: flex;
-        //justify-content: end;
         gap: 10px;
         a {
           color: var(--footer-text-color);
@@ -147,12 +143,12 @@ footer {
             align-items: center;
             text-decoration: none;
             color: var(--footer-text-color);
-            gap:5px;
+            gap: 5px;
+            font-weight: bold;
           }
         }
       }
     }
   }
 }
-
 </style>

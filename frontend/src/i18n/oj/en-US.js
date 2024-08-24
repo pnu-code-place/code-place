@@ -458,8 +458,7 @@ export const m = {
   School: "단과대학",
   Mood: "소개",
   Mood_Description: "256자까지 입력이 가능하며, 마이페이지에 노출됩니다.",
-  Github_Description:
-    "Github 링크를 입력해주세요. 마이페이지에서 연결됩니다.",
+  Github_Description: "Github 링크를 입력해주세요. 마이페이지에서 연결됩니다.",
   Nickname_Duplicated: "이미 사용중인 닉네임입니다.",
   Nickname_Required: "닉네임을 입력해주세요.",
   College_Required: "단과대학을 먼저 선택해주세요.",
