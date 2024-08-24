@@ -1,0 +1,58 @@
+[
+  {
+    "model": "school.department",
+    "pk": 13,
+    "fields": {
+      "department_name": "행정학과",
+      "college_id": 2
+    }
+  },
+  {
+    "model": "school.department",
+    "pk": 14,
+    "fields": {
+      "department_name": "정치외교학과",
+      "college_id": 2
+    }
+  },
+  {
+    "model": "school.department",
+    "pk": 15,
+    "fields": {
+      "department_name": "사회복지학과",
+      "college_id": 2
+    }
+  },
+  {
+    "model": "school.department",
+    "pk": 16,
+    "fields": {
+      "department_name": "사회학과",
+      "college_id": 2
+    }
+  },
+  {
+    "model": "school.department",
+    "pk": 17,
+    "fields": {
+      "department_name": "심리학과",
+      "college_id": 2
+    }
+  },
+  {
+    "model": "school.department",
+    "pk": 18,
+    "fields": {
+      "department_name": "문헌정보학과",
+      "college_id": 2
+    }
+  },
+  {
+    "model": "school.department",
+    "pk": 19,
+    "fields": {
+      "department_name": "미디어커뮤니케이션학과",
+      "college_id": 2
+    }
+  }
+]

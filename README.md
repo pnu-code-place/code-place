@@ -1,105 +1,135 @@
-# CSEP Back End
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/90913ed2-5fba-4c0b-9b8b-b1e55e6d36aa" width="800" alt="Code Place Logo"/>
+</div>
 
-![banner1.png](data%2Fassets%2Fbanner1.png)
-
-[![Python](https://img.shields.io/badge/python-3.8.0-blue.svg?style=flat-square)](https://www.python.org/downloads/release/python-362/)
-[![Django](https://img.shields.io/badge/django-3.2.9-blue.svg?style=flat-square)](https://www.djangoproject.com/)
-[![Django Rest Framework](https://img.shields.io/badge/django_rest_framework-3.12.0-blue.svg?style=flat-square)](http://www.django-rest-framework.org/)
-
-## 1. 프로젝트 소개
-[기존의 운영중인 부산대학교 온라인 저지 웹페이지](http://oj.pusan.ac.kr/)를 개선하는 프로젝트입니다.
-
-[베타 사이트](http://10.125.121.115:8080/)는 현재 부산대학교 내부 네트워크에서만 접속이 가능합니다.
-
-부산대학교 코딩역량강화플랫폼의 백엔드 레포지토리입니다.
-
-이 프로젝트는 기존 [QingdaoU의 OnlineJudge](https://github.com/QingdaoU/OnlineJudge)를 기반으로 개발되었습니다.
-
-### 개발 환경
-<details>
-  <summary>Python <strong>3.8.0</strong></summary>
-  기본 QingdaoU의 Online Judge에 사용된 Python 버전은 <strong>3.8.0</strong> 입니다.
-  이 프로젝트는 <strong>3.8.0</strong> 버전으로 개발되었습니다.
-</details>
-
-<details>
-  <summary>Django <strong>3.2.9</strong></summary>
-  기존 QingdaoU Online Judge에 사용된 버전인 <strong>3.2.9</strong> 버전을 사용합니다.
-</details>
-
-<details>
-  <summary>Django Rest Framework <strong>3.12.0</strong></summary>
-  기존 QingdaoU Online Judge에 사용된 버전인 <strong>3.12.0</strong> 버전을 사용합니다.
-</details>
-
-### 개발 기간
-2023.12 ~ 2024.3 (현재 진행 중)
-
-### 개발 인원
-| github                              | 사진                                                              | 역할               | 이메일 주소                | 소속       |
-|-------------------------------------|-----------------------------------------------------------------|------------------|-----------------------|----------|
-| [hunsy9](https://github.com/hunsy9) | ![유저 아바타](https://avatars.githubusercontent.com/u/101303791?v=4)  | PM, 백엔드 개발 및 배포  | juniper0917@gmail.com | 정보컴퓨터공학부 |
-| [Boksam](https://github.com/Boksam) | ![유저 아바타](https://avatars.githubusercontent.com/u/82745129?v=4) | 프로젝트 기획 및 백엔드 개발 | boksam1017@gmail.com  | 정보컴퓨터공학부 |
-
-## 2. 프로젝트 설치
-CSEP BE는 기본적으로 Docker, Docker-Compose에 기반합니다.
-
-[Docker Desktop](https://www.docker.com/products/docker-desktop/)을 미리 설치해두고 프로젝트를 설치하는 것을 권장합니다.
-
-### Linux
-```bash
-
-# 의존 라이브러리 설치
-cd deploy
-pip3 install -r requirements.txt
-
-# 데이터베이스 배포 스크립트 실행
-sh init_db.sh
-
-# md5sum secret key 초기화 및 django migrate 실행
-# super admin 생성(아이디 root, 비밀번호 rootroot로 자동생성됩니다.)
-sh init_db.sh --migrate
-
-# 프로젝트를 실행합니다. localhost:8080으로 접속할 수 있습니다.
-python3 manage.py runserver
+# <div align="center">PNU Code Place</div>
+> 부산대학교 학생들의 코딩 역량을 강화에 도움을 주는 플랫폼 개발
+>
+> 개발기간 : 2023.12 ~ 2024.8 (현재 진행 중)
+<br/>
 
 
-```
+## 🔗 배포 주소
+> 이전 운영 서버 주로 : https://oj.pusan.ac.kr/
+>
+> 운영 서버 주소 : https://code.pusan.ac.kr/
+<br/>
+  
+## 👨‍💻 구성원
+### BE 개발 인원
+<table>
+  <tr>
+    <td align="center">
+      <a href="https://github.com/hunsy9"> <img src="https://github.com/hunsy9.png" width="80" alt="main manager"/> </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/Boksam"> <img src="https://github.com/Boksam.png" width="80" alt="main manager"/> </a>
+    </td>
+  </tr>
+  <tr>
+    <td align="center"> <a href="mailto:juniper0917@gmail.com">juniper0917@gmail.com</a> </td>
+    <td align="center"> <a href="mailto:boksam1017@gmail.com">boksam1017@gmail.com</a> </td>
+  </tr>
+  <tr>
+    <td align="left" width="350">
+      <div>&nbsp&nbsp&nbsp&nbsp•&nbsp PM, 백엔드 개발 및 배포</div>
+    </td>
+    <td align="left" width="350">
+      <div>&nbsp&nbsp&nbsp&nbsp•&nbsp 프로젝트 기획 및 백엔드 개발</div>
+    </td>
+  </tr>
+</table>
 
-아래는 문제 채점 및 제출과 같은 비동기 작업을 처리하는 **dramatiq**를 실행시키는 방법입니다. 
+### FE 개발 인원
+<table>
+  <tr>
+    <td align="center">
+      <a href="https://github.com/hunsy9"> <img src="https://github.com/hunsy9.png" width="80" alt="main manager"/> </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/minmunui"> <img src="https://github.com/minmunui.png" width="80" alt="main manager"/> </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/llddang"> <img src="https://github.com/llddang.png" width="80" alt="main manager"/> </a>
+    </td>
+  </tr>
+  <tr>
+    <td align="center"> <a href="mailto:juniper0917@gmail.com">juniper0917@gmail.com</a> </td>
+    <td align="center"> <a href="mailto:ehdwls1638@pusan.ac.kr">ehdwls1638@pusan.ac.kr</a> </td>
+    <td align="center"> <a href="mailto:laliddang@gmail.com">laliddang@gmail.com</a> </td>
+  </tr>
+  <tr>
+    <td width="350">
+      <div>&nbsp&nbsp&nbsp&nbsp•&nbsp PM, 프론트/백엔드 기획 및 개발</div>
+    </td>
+    <td width="350">
+      <div>&nbsp&nbsp&nbsp&nbsp•&nbsp 프론트엔드(Client) 기획 및 개발</div>
+    </td>
+    <td width="350">
+      <div>&nbsp&nbsp&nbsp&nbsp•&nbsp 프론트엔드(Admin) 기획 및 개발</div>
+    </td>
+  </tr>
+</table>
+<br />
 
-```bash
-# 1. 터미널을 하나 더 생성합니다.
+## 👀 프로젝트 배경
+> 프로젝트 배경 작성해줘...
+<br/>
 
-# 2. dramitiq를 실행합니다.
-python3 manage.py rundramatiq
-```
+## 🚀 프로젝트 목적
+> 프로젝트 목적 작성해줘...
+<br/>
 
-## 3. Package, 디렉토리 구성
+## 🔧 기술 스택
+### 🛠 BE Skill & Tool
+<img src="https://img.shields.io/badge/Python-3.8.0-3776AB?style=flat-square&logo=Python&logoColor=white" /> <img src="https://img.shields.io/badge/django-3.2.9-092E20?style=flat-square&logo=django&logoColor=white"/> <img src="https://img.shields.io/badge/django--rest--framework-3.12.4-092e20?style=flat-square&logo=django&logoColor=white" />
 
-Python Package 구성은 다음과 같습니다.
+### 🛠 FE Skill & Tool
+<img src="https://img.shields.io/badge/Vue.js-2.5.13-4FC08D?style=flat-square&logo=Vue.js&logoColor=white" /> <img src="https://img.shields.io/badge/Vuex-3.0.1-4FC08D?style=flat-square&logo=Vue.js&logoColor=white" /> <img src="https://img.shields.io/badge/Node.js-16.16.0-339933?style=flat-square&logo=Node.js&logoColor=white" /> <img src="https://img.shields.io/badge/ECharts-3.8.3-F72C5B?style=flat-square" /> <img src="https://img.shields.io/badge/iView-2.8.0-2d8cf0?style=flat-square" /> <img src="https://img.shields.io/badge/Element-2.0.9-409eff?style=flat-square" />
 
-```bash
-├── account/                      # 회원 관련 패키지
-├── announcement/                 # 공지사항 관련 패키지
-├── community/                    # 커뮤니티 관련 패키지
-├── contest/                      # 컨테스트 패키지
-├── problem/                      # 문제 관련 패키지
-├── submission/                   # 문제 제출 관련 패키지
-├── utils/                        # 기타 util용 패키지
-├── conf/                         # JudgeServer Heartbeat, SMTP등 환경 구성
-├── fps/                          # 문제 등록 시 사용되는 데이터 파싱 
-├── judge/                        # 문제 채점 시 사용되는 비동기 태스크
-├── oj/                           # 개발환경 설정(Dev, Production)
-```
+### 🧩 Communication Tool
+<img src="https://img.shields.io/badge/GitHub-181717?style=flatsquare&logo=GitHub&logoColor=white" /> <img src="https://img.shields.io/badge/Slack-4A154B?style=flatsquare&logo=Slack&logoColor=white" /> <img src="https://img.shields.io/badge/Figma-F24E1E?style=flat-square&logo=Figma&logoColor=white" /> <img src="https://img.shields.io/badge/Notion-eeeeee?style=flat-square&logo=Notion&logoColor=black" />
 
-Python Package를 제외한 폴더 구조는 다음과 같습니다.
+<br />
 
-```bash
-├── deploy/                      # 배포 설정 파일
-├── docs/                        # 문서 파일
-├── data/                        # static 파일 및 로그 저장
-```
+## 💡 시작 가이드
+- Backend 기본
+  ```bash
+  # 의존 라이브러리 설치
+  cd backend/deploy
+  pip3 install -r requirements.txt
+  
+  # 데이터베이스 배포 스크립트 실행
+  sh init_db.sh
+  
+  # md5sum secret key 초기화 및 django migrate 실행
+  # super admin 생성(아이디 root, 비밀번호 rootroot로 자동생성됩니다.)
+  sh init_db.sh --migrate
+  
+  # 프로젝트를 실행합니다. localhost:8080으로 접속할 수 있습니다.
+  python3 manage.py runserver
+  ```
+- Backend **dramatiq** 실행 (문제 채점 및 제출과 같은 비동기 작업을 위해 필요)
+  ```bash
+  cd backend
+  python3 manage.py rundramatiq
+  ```
+- Frontend
+  ```
+  cd frontend
+  npm install
+  sh run_develop.sh
+  ```
+<br/>
 
-## 4. 라이센스
-[MIT](http://opensource.org/licenses/MIT)
+## 💎 라이센스
+해당 프로젝트는 [MIT LICENSE](https://opensource.org/license/MIT) 를 따릅니다.
+The MIT License (MIT)
+
+Copyright (c) Code Place Developers
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE A

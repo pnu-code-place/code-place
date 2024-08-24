@@ -1,0 +1,58 @@
+[
+  {
+    "model": "school.department",
+    "pk": 76,
+    "fields": {
+      "department_name": "음악학과",
+      "college_id": 10
+    }
+  },
+  {
+    "model": "school.department",
+    "pk": 77,
+    "fields": {
+      "department_name": "한국음악학과",
+      "college_id": 10
+    }
+  },
+  {
+    "model": "school.department",
+    "pk": 78,
+    "fields": {
+      "department_name": "미술학과",
+      "college_id": 10
+    }
+  },
+  {
+    "model": "school.department",
+    "pk": 79,
+    "fields": {
+      "department_name": "조형학과",
+      "college_id": 10
+    }
+  },
+  {
+    "model": "school.department",
+    "pk": 80,
+    "fields": {
+      "department_name": "디자인학과",
+      "college_id": 10
+    }
+  },
+  {
+    "model": "school.department",
+    "pk": 81,
+    "fields": {
+      "department_name": "무용학과",
+      "college_id": 10
+    }
+  },
+  {
+    "model": "school.department",
+    "pk": 82,
+    "fields": {
+      "department_name": "예술문화영상학과",
+      "college_id": 10
+    }
+  }
+]

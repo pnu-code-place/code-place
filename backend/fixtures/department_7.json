@@ -1,0 +1,10 @@
+[
+  {
+    "model": "school.department",
+    "pk": 68,
+    "fields": {
+      "department_name": "경영학과",
+      "college_id": 7
+    }
+  }
+]

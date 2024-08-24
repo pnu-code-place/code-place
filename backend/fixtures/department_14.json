@@ -1,0 +1,18 @@
+[
+  {
+    "model": "school.department",
+    "pk": 98,
+    "fields": {
+      "department_name": "의예과",
+      "college_id": 14
+    }
+  },
+  {
+    "model": "school.department",
+    "pk": 99,
+    "fields": {
+      "department_name": "의학과",
+      "college_id": 14
+    }
+  }
+]

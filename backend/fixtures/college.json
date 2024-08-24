@@ -1,0 +1,114 @@
+[
+  {
+    "model": "school.college",
+    "pk": 1,
+    "fields": {
+      "college_name": "인문대학"
+    }
+  },
+  {
+    "model": "school.college",
+    "pk": 2,
+    "fields": {
+      "college_name": "사회과학대학"
+    }
+  },
+  {
+    "model": "school.college",
+    "pk": 3,
+    "fields": {
+      "college_name": "자연과학대학"
+    }
+  },
+  {
+    "model": "school.college",
+    "pk": 4,
+    "fields": {
+      "college_name": "공과대학"
+    }
+  },
+  {
+    "model": "school.college",
+    "pk": 5,
+    "fields": {
+      "college_name": "사범대학"
+    }
+  },
+  {
+    "model": "school.college",
+    "pk": 6,
+    "fields": {
+      "college_name": "경제통상대학"
+    }
+  },
+  {
+    "model": "school.college",
+    "pk": 7,
+    "fields": {
+      "college_name": "경영대학"
+    }
+  },
+  {
+    "model": "school.college",
+    "pk": 8,
+    "fields": {
+      "college_name": "약학대학"
+    }
+  },
+  {
+    "model": "school.college",
+    "pk": 9,
+    "fields": {
+      "college_name": "생활과학대학"
+    }
+  },
+  {
+    "model": "school.college",
+    "pk": 10,
+    "fields": {
+      "college_name": "예술대학"
+    }
+  },
+  {
+    "model": "school.college",
+    "pk": 11,
+    "fields": {
+      "college_name": "나노과학기술대학"
+    }
+  },
+  {
+    "model": "school.college",
+    "pk": 12,
+    "fields": {
+      "college_name": "생명자원과학대학"
+    }
+  },
+  {
+    "model": "school.college",
+    "pk": 13,
+    "fields": {
+      "college_name": "간호대학"
+    }
+  },
+  {
+    "model": "school.college",
+    "pk": 14,
+    "fields": {
+      "college_name": "의과대학"
+    }
+  },
+  {
+    "model": "school.college",
+    "pk": 15,
+    "fields": {
+      "college_name": "정보의생명공학대학"
+    }
+  },
+  {
+    "model": "school.college",
+    "pk": 16,
+    "fields": {
+      "college_name": "기타"
+    }
+  }
+]

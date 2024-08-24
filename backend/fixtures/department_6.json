@@ -1,0 +1,42 @@
+[
+  {
+    "model": "school.department",
+    "pk": 63,
+    "fields": {
+      "department_name": "무역학부",
+      "college_id": 6
+    }
+  },
+  {
+    "model": "school.department",
+    "pk": 64,
+    "fields": {
+      "department_name": "경제학부",
+      "college_id": 6
+    }
+  },
+  {
+    "model": "school.department",
+    "pk": 65,
+    "fields": {
+      "department_name": "관광컨벤션학과",
+      "college_id": 6
+    }
+  },
+  {
+    "model": "school.department",
+    "pk": 66,
+    "fields": {
+      "department_name": "국제학부",
+      "college_id": 6
+    }
+  },
+  {
+    "model": "school.department",
+    "pk": 67,
+    "fields": {
+      "department_name": "공공정책학부",
+      "college_id": 6
+    }
+  }
+]

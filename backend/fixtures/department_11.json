@@ -1,0 +1,26 @@
+[
+  {
+    "model": "school.department",
+    "pk": 83,
+    "fields": {
+      "department_name": "나노메카트로닉스공학과",
+      "college_id": 11
+    }
+  },
+  {
+    "model": "school.department",
+    "pk": 84,
+    "fields": {
+      "department_name": "나노에너지공학과",
+      "college_id": 11
+    }
+  },
+  {
+    "model": "school.department",
+    "pk": 85,
+    "fields": {
+      "department_name": "광메카트로닉스공학과",
+      "college_id": 11
+    }
+  }
+]
