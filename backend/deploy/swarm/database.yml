@@ -1,0 +1,25 @@
+services:
+  oj-redis:
+    image: redis:4.0-alpine
+    restart: always
+    volumes:
+      - ../../data/redis:/data
+    networks:
+      - prod-network
+
+  oj-postgres:
+    image: postgres:10-alpine
+    restart: always
+    volumes:
+      - ../../data/postgres:/var/lib/postgresql/data
+    env_file:
+      - .env
+    ports:
+      - "5437:5432"
+    networks:
+      - prod-network
+
+networks:
+  prod-network:
+    external: true
+    name: code-place-prod-network

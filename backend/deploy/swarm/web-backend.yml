@@ -1,0 +1,26 @@
+services:
+  backend:
+    image: copl-test-backend:latest
+    restart: always
+#    depends_on:
+#      - oj-redis
+#      - oj-postgres
+#      - oj-judge
+    volumes:
+      - data_volume:/data
+    env_file:
+      - .env
+    environment:
+      - JUDGE_SERVER_TOKEN=CHANGE_THIS # secret.key
+    networks:
+      - prod-network
+
+volumes:
+  data_volume:
+    external: true
+    name: backend_data
+
+networks:
+  prod-network:
+    external: true
+    name: code-place-prod-network
