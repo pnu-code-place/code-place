@@ -106,8 +106,6 @@ export default {
 #header {
   min-width: var(--global-width);
   position: fixed;
-  padding-left: 5%;
-  padding-right: 4%;
   top: 0;
   left: 0;
   height: var(header-height);
