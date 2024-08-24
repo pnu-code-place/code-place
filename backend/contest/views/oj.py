@@ -88,7 +88,8 @@ class ContestUnderWayListAPI(APIView):
 
 class ContestHistoryListAPI(APIView):
     def get(self, request):
-        contests = Contest.objects.select_related("created_by").filter(visible=True)
+        cur = now()
+        contests = Contest.objects.select_related("created_by").filter(visible=True, end_time__lte=cur)
         keyword = request.GET.get("keyword")
         rule_type = request.GET.get("rule_type")
         status = request.GET.get("status")
