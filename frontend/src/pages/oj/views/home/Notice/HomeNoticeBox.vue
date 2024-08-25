@@ -91,7 +91,7 @@ export default {
       swAnnouncements: [],
       swUrl: 'https://swedu.pusan.ac.kr/swedu/index.do',
       logos: {
-        csep: require('@/assets/pojLogo.png'),
+        csep: require('@/assets/code-place-logo.svg'),
         sw: require('@/assets/pnu.png')
       }
     }

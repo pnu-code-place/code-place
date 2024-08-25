@@ -1,8 +1,8 @@
 <template>
   <div id="header">
-    <Menu mode="horizontal" theme="primary" @on-select="handleRoute" :active-name="activeMenu" class="oj-menu">
+    <Menu mode="horizontal" theme="primary" @on-select="handleRoute" :active-name="activeMenu" class="oj-problem-menu">
       <div class="logo" @click="goHeadPage()">
-        <img class="solvingLogo" src="@/assets/pojLogo.png"/>
+        <img class="solvingLogo" src="@/assets/code-place-logo.svg"/>
         <template v-if="this.$route.name === 'problem-details'">
           <p class="pnuName">{{ '문제 풀이' }}</p>
         </template>
@@ -74,7 +74,7 @@ export default {
     goHeadPage() {
       if(this.$route.name === 'problem-details')
         this.handleRoute('/problem');
-      else 
+      else
         this.handleRoute(`/contest/${this.$route.params.contestID}/problems`);
     }
   },
@@ -104,7 +104,7 @@ export default {
   width: 100%;
   z-index: 1000;
 
-  .oj-menu{
+  .oj-problem-menu{
     transition: 0.3s;
     display: flex;
     padding-left: 20px;
@@ -131,7 +131,7 @@ export default {
 
 .solvingLogo{
   display: block;
-  width: 35px;
+  width: 25px;
 }
 
 @avatar-radius: 50%;
