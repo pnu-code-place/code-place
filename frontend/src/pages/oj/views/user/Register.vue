@@ -387,7 +387,7 @@ export default {
   font-weight: 600;
   font-size: 14px;
   border-radius: 8px;
-  width: 78px;
+  width: 94px;
 }
 
 .emailAuthInput {
@@ -446,15 +446,20 @@ button:disabled {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap : 5px;
 
   .email-input {
     display: flex;
     align-items: center;
-  }
+    width: 100%;
+    position: relative;
 
-  .pusan-ac-kr {
-    font-size: 16px;
-    font-weight: 600;
+    .pusan-ac-kr {
+      position: absolute;
+      font-size: 15px;
+      right: 10px;
+      color: var(--point-color)
+    }
   }
 }
 </style>
