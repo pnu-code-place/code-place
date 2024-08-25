@@ -5,7 +5,7 @@
     </div>
     <div>
       <div class="announcement-header csep" @click="goAnnouncement('')">
-        <img :src="this.logos.csep" alt="">
+        <img :src="this.logos.csep" alt="" class="cople-logo">
         <span class="facility-name">{{ $t("m.CSEP") }}</span>
         <span class="facility-description">
           <span class="plusDiv">
@@ -201,6 +201,14 @@ export default {
     height: auto;
     opacity: 0.7;
     transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  }
+
+  img.cople-logo {
+    top: 0;
+    width: 80px;
+    height: auto;
+    opacity: 0.5;
+    right: 100px;
   }
 
   &.csep {
