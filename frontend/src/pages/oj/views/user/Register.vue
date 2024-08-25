@@ -303,6 +303,7 @@ export default {
       }
       this.validateForm("formRegister").then(valid => {
         let formData = Object.assign({}, this.formRegister);
+        formData["email"] = this.pusanEmail
         delete formData["passwordAgain"];
         this.btnRegisterLoading = true;
         api.register(formData).then(
@@ -458,7 +459,7 @@ button:disabled {
       position: absolute;
       font-size: 15px;
       right: 10px;
-      color: var(--point-color)
+      color: var(--point-color);
     }
   }
 }
