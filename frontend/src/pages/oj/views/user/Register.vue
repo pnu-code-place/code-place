@@ -99,11 +99,11 @@
       <div class="inputName">
         단과대학 선택
       </div>
-      <CustomDropDown :options="this.collegeList" nameKey="college_name" @dropdownChange="handleCollegeChange"/>
+      <CustomDropDown style="margin-bottom: 20px" :options="this.collegeList" nameKey="college_name" @dropdownChange="handleCollegeChange"/>
       <div class="inputName">
         학과선택
       </div>
-      <CustomDropDown :options="this.majorList" nameKey="department_name" @dropdownChange="handleMajorChange"/>
+      <CustomDropDown style="margin-bottom: 20px" :options="this.majorList" nameKey="department_name" @dropdownChange="handleMajorChange"/>
       <div class="inputNameWithDescription">
         <span class="inputName">비밀번호</span>
         <div>
