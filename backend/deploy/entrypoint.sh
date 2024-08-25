@@ -16,23 +16,7 @@ if [ ! -f "$DATA/public/website/favicon.ico" ]; then
     cp data/public/website/favicon.ico $DATA/public/website
 fi
 
-# Nginx 구성파일의 심볼릭 링크 생성, Https 강제 설정 여부에 따라 다름. default는 false
-cd $APP/deploy/nginx
-ln -sf locations.conf https_locations.conf
-if [ -z "$FORCE_HTTPS" ]; then
-    ln -sf locations.conf http_locations.conf
-else
-    ln -sf https_redirect.conf http_locations.conf
-fi
-
-# API 프록시 구성 파일에서 IP 헤더 설정
-if [ ! -z "$LOWER_IP_HEADER" ]; then
-    sed -i "s/__IP_HEADER__/\$http_$LOWER_IP_HEADER/g" api_proxy.conf;
-else
-    sed -i "s/__IP_HEADER__/\$remote_addr/g" api_proxy.conf;
-fi
-
-# CPU 코어 수에따른 최대 워커 프로세스 수 조정
+# CPU 코어 수에 따른 최대 워커 프로세스 수 조정
 if [ -z "$MAX_WORKER_NUM" ]; then
     export CPU_CORE_NUM=$(grep -c ^processor /proc/cpuinfo)
     if [[ $CPU_CORE_NUM -lt 2 ]]; then
@@ -40,14 +24,6 @@ if [ -z "$MAX_WORKER_NUM" ]; then
     else
         export MAX_WORKER_NUM=$(($CPU_CORE_NUM))
     fi
-fi
-
-# static contents 전송을 위한 CDN 호스트 설정
-cd $APP/dist
-if [ ! -z "$STATIC_CDN_HOST" ]; then
-    find . -name "*.*" -type f -exec sed -i "s/__STATIC_CDN_HOST__/\/$STATIC_CDN_HOST/g" {} \;
-else
-    find . -name "*.*" -type f -exec sed -i "s/__STATIC_CDN_HOST__\///g" {} \;
 fi
 
 cd $APP
@@ -73,7 +49,7 @@ echo "Fixtures loaded!"
 addgroup -g 903 spj
 adduser -u 900 -S -G spj server
 
-chown -R server:spj $DATA $APP/dist
+#chown -R server:spj $DATA $APP/dist
 find $DATA/test_case -type d -exec chmod 710 {} \;
 find $DATA/test_case -type f -exec chmod 640 {} \;
 

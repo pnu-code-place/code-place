@@ -1,0 +1,30 @@
+services:
+  web-frontend:
+    image: copl-test:latest
+    ports:
+      - "80:8000"
+      - "443:1443"
+    environment:
+      - FORCE_HTTPS=1
+      # - STATIC_CDN_HOST=cdn.oj.com
+    volumes:
+      - ../log:/data/log
+      - data_volume:/data:ro
+      - /etc/letsencrypt/live/code.pusan.ac.kr/fullchain.pem:/etc/letsencrypt/live/code.pusan.ac.kr/fullchain.pem:ro
+      - /etc/letsencrypt/live/code.pusan.ac.kr/privkey.pem:/etc/letsencrypt/live/code.pusan.ac.kr/privkey.pem:ro
+      - /etc/letsencrypt/live/copl-dev.site/fullchain.pem:/etc/letsencrypt/live/copl-dev.site/fullchain.pem:ro
+      - /etc/letsencrypt/live/copl-dev.site/privkey.pem:/etc/letsencrypt/live/copl-dev.site/privkey.pem:ro
+      - /etc/letsencrypt/live/registry.copl-dev.site/fullchain.pem:/etc/letsencrypt/live/registry.copl-dev.site/fullchain.pem:ro
+      - /etc/letsencrypt/live/registry.copl-dev.site/privkey.pem:/etc/letsencrypt/live/registry.copl-dev.site/privkey.pem:ro
+    networks:
+      - prod-network
+
+volumes:
+  data_volume:
+    external: true
+    name: backend_data
+
+networks:
+  prod-network:
+    external: true
+    name: code-place-prod-network
