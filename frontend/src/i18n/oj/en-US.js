@@ -409,6 +409,7 @@ export const m = {
   //OJSummary.vue
   Ranking: "랭킹",
   OJ_Summary: "랭킹 및 티어",
+  Admin_Manual: "관리자 메뉴얼",
   TOP: "상위",
   Th: "위",
   UserHomeSolved: "해결한 문제",
