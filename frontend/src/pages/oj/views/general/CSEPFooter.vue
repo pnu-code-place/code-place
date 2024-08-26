@@ -48,7 +48,7 @@ export default {
           </p>
           <p>
             <a
-              href="https://pusanackr-my.sharepoint.com/:p:/g/personal/ehdwls1638_pusan_ac_kr/ETpnehh_9y1Hkk7LZjvp0JYBdwjSEUyNp8ARkodOpDvczA?rtime=FIVByG-q3Eg"
+              href="https://www.notion.so/swei2024/PNU-CodePlace-Menual-0-1-4d2098fe5b4b4dcd9d63fbfea65b3d65?pvs=4"
             >
               {{ $t("m.UserGuide") }}
             </a>
