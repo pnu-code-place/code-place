@@ -156,7 +156,7 @@ export const m = {
   Announcements: "공지사항",
   Submissions: "제출물",
   Rankings: "랭킹",
-  Overview: "대회",
+  Contest_Overview: "대회 개요",
   Admin_Helper: "채점 현황",
   StartAt: "StartAt",
   EndAt: "EndAt",
