@@ -99,7 +99,7 @@ const getters = {
       if (duration.minutes() > 0) result += duration.minutes() + "분 ";
       if (duration.seconds() > 0) result += duration.seconds() + "초";
 
-      return "시작 " + result + " 전";
+      return "시작까지 " + result + " 전";
     } else if (getters.contestStatus === CONTEST_STATUS.UNDERWAY) {
       let duration = moment.duration(
         getters.contestEndTime.diff(state.now, "seconds"),
@@ -111,7 +111,7 @@ const getters = {
       if (duration.minutes() > 0) result += duration.minutes() + "분 ";
       if (duration.seconds() > 0) result += duration.seconds() + "초";
 
-      return "종료 " + result + " 전";
+      return "종료까지 " + result + " 전";
     } else {
       return "종료";
     }

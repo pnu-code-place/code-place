@@ -160,6 +160,7 @@ export const m = {
   Admin_Helper: "채점 현황",
   StartAt: "StartAt",
   EndAt: "EndAt",
+  Contest_Created_by: "대회 개최자",
   ContestType: "ContestType",
   Creator: "Creator",
   Public: "공개",
