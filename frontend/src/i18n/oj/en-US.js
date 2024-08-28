@@ -409,6 +409,7 @@ export const m = {
   //OJSummary.vue
   Ranking: "랭킹",
   OJ_Summary: "랭킹 및 티어",
+  Admin_Manual: "관리자 메뉴얼",
   TOP: "상위",
   Th: "위",
   UserHomeSolved: "해결한 문제",
@@ -458,8 +459,7 @@ export const m = {
   School: "단과대학",
   Mood: "소개",
   Mood_Description: "256자까지 입력이 가능하며, 마이페이지에 노출됩니다.",
-  Github_Description:
-    "Github 링크를 입력해주세요. 마이페이지에서 연결됩니다.",
+  Github_Description: "Github 링크를 입력해주세요. 마이페이지에서 연결됩니다.",
   Nickname_Duplicated: "이미 사용중인 닉네임입니다.",
   Nickname_Required: "닉네임을 입력해주세요.",
   College_Required: "단과대학을 먼저 선택해주세요.",
@@ -488,6 +488,8 @@ export const m = {
   AddressPNUCSEP:
     "부산광역시 금정구 부산대학로63번길 2 (장전동) 부산대학교 소프트웨어융합교육원",
   UserGuide: "사용자 가이드",
+  ReportBugAndInconvenience: "버그 및 불편사항 제보",
+  Developer: "개발진",
 
   Unknown_Error: "알 수 없는 오류가 발생했습니다.",
 

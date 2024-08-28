@@ -66,8 +66,8 @@ class ProblemField:
 
 class ProblemScore:
     score = {
-        'VeryLow': 20,      # VeryLow
-        'Low': 40,      # Low
+        'VeryLow': 10,      # VeryLow
+        'Low': 20,      # Low
         'Mid': 160,      # Mid
         'High': 640,     # High
         'VeryHigh': 1280,    # VeryHigh

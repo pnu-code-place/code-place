@@ -228,6 +228,10 @@ export default {
   mounted() {
     this.$store.commit(types.CHANGE_CONTEST_ITEM_VISIBLE, {menu: false})
     this.init()
+    window.addEventListener('beforeunload', this.unLoadEvent);
+  },
+  beforeUnmount() {
+    window.removeEventListener('beforeunload', this.unLoadEvent);
   },
   destroyed() {
     this.changeProblemSolvingState(false)
@@ -267,6 +271,23 @@ export default {
       }, () => {
         this.$Loading.error()
       })
+    },
+    unLoadEvent: function (event) {
+      if (this.isLeaveSite) return;
+
+      storage.set(buildProblemCodeKey(this.problem._id, this.contestID), {
+        code: this.code,
+        language: this.language,
+      })
+
+      storage.set("ProblemSolvingSettings", {
+        theme: this.theme,
+        fontsize: this.fontSize
+      })
+
+
+      event.preventDefault();
+      event.returnValue = '';
     },
     changeLanguage(newLang) {
       if (this.problem.template[newLang]) {
