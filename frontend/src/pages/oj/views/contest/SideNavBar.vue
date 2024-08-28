@@ -11,12 +11,6 @@
         <Icon type="ios-photos"></Icon> {{ $t("m.Problems") }}
       </router-link>
       <router-link
-        :to="{ name: 'contest-submission-list' }"
-        v-if="OIContestRealTimePermission"
-      >
-        <Icon type="navicon-round"></Icon> {{ $t("m.Submissions") }}
-      </router-link>
-      <router-link
         :to="{ name: 'contest-rank' }"
         v-if="OIContestRealTimePermission"
       >
