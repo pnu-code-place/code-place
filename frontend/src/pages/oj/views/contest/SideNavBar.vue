@@ -1,60 +1,62 @@
 <template>
   <nav v-show="showMenu" class="side-nav sticky">
     <ul class="nav-content">
-      <router-link :to="{name: 'contest-overview'}"> 
-        <Icon type="home"></Icon> {{$t('m.Overview')}}
+      <router-link :to="{ name: 'contest-overview' }">
+        <Icon type="home"></Icon> {{ $t("m.Contest_Overview") }}
       </router-link>
-      <router-link :to="{name: 'contest-announcement-list'}"> 
-        <Icon type="chatbubble-working"></Icon> {{$t('m.Announcements')}}
+      <router-link :to="{ name: 'contest-announcement-list' }">
+        <Icon type="chatbubble-working"></Icon> {{ $t("m.Announcements") }}
       </router-link>
-      <router-link :to="{name: 'contest-problem-list'}"> 
-        <Icon type="ios-photos"></Icon> {{$t('m.Problems')}}
+      <router-link :to="{ name: 'contest-problem-list' }">
+        <Icon type="ios-photos"></Icon> {{ $t("m.Problems") }}
       </router-link>
-      <router-link :to="{name: 'contest-submission-list'}" v-if="OIContestRealTimePermission">
-        <Icon type="navicon-round"></Icon> {{$t('m.Submissions')}}
-      </router-link>
-      <router-link :to="{name: 'contest-rank'}" v-if="OIContestRealTimePermission">
-        <Icon type="stats-bars"></Icon> {{$t('m.Rankings')}}
+      <router-link
+        :to="{ name: 'contest-rank' }"
+        v-if="OIContestRealTimePermission"
+      >
+        <Icon type="stats-bars"></Icon> {{ $t("m.Rankings") }}
       </router-link>
     </ul>
   </nav>
 </template>
 
 <script>
-  import SideNavBar from "./SideNavBar.vue";
-  import moment from 'moment'
-  import { mapState, mapGetters, mapActions } from 'vuex'
-  import { types } from '@/store'
-  import time from '@/utils/time'
+import SideNavBar from "./SideNavBar.vue";
+import moment from "moment";
+import { mapState, mapGetters, mapActions } from "vuex";
+import { types } from "@/store";
+import time from "@/utils/time";
 
-  export default {
-    name: 'side-nav-bar',
-    data () {
-      return {
-        btnLoading: false,
-        contestID: '',
-      }
+export default {
+  name: "side-nav-bar",
+  data() {
+    return {
+      btnLoading: false,
+      contestID: "",
+    };
+  },
+  mounted() {
+    this.contestID = this.$route.params.contestID;
+  },
+  methods: {
+    handleRoute(route) {
+      this.$router.push(route);
     },
-    mounted () {
-      this.contestID = this.$route.params.contestID
+  },
+  computed: {
+    ...mapState({
+      showMenu: (state) => state.contest.itemVisible.menu,
+    }),
+    ...mapGetters([
+      "contestRuleType",
+      "isContestAdmin",
+      "OIContestRealTimePermission",
+    ]),
+    showAdminHelper() {
+      return this.isContestAdmin && this.contestRuleType === "ACM";
     },
-    methods: {
-      handleRoute (route) {
-        this.$router.push(route)
-      },
-    },
-    computed: {
-      ...mapState({
-        showMenu: state => state.contest.itemVisible.menu,
-      }),
-      ...mapGetters(
-        ['contestRuleType', 'isContestAdmin', 'OIContestRealTimePermission']
-      ),
-      showAdminHelper () {
-        return this.isContestAdmin && this.contestRuleType === 'ACM'
-      }
-    },
-  }
+  },
+};
 </script>
 
 <style scoped lang="less">
@@ -67,7 +69,7 @@
   border: 1px solid #e9ece9;
   border-radius: 7px;
   padding: 10px;
-  
+
   .nav-content {
     padding: 4px;
     margin: 0;
