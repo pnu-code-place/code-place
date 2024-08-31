@@ -70,7 +70,7 @@ class CreateOrEditProblemSerializer(serializers.Serializer):
     hint = serializers.CharField(allow_blank=True, allow_null=True)
     source = serializers.CharField(max_length=256, allow_blank=True, allow_null=True)
     share_submission = serializers.BooleanField()
-    field = serializers.IntegerField(min_value=0, max_value=4)
+    field = serializers.IntegerField(min_value=0, max_value=5)
 
 
 class CreateProblemSerializer(CreateOrEditProblemSerializer):

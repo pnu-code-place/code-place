@@ -32,6 +32,11 @@ export default {
           color: FIELD_MAP["3"].boxColor,
           bgImg: require('@/assets/fieldBackground/search.svg')
         },
+        algorithm: {
+          label: FIELD_MAP["5"].value,
+          color: FIELD_MAP["5"].boxColor,
+          bgImg: require('@/assets/fieldBackground/algorithm.svg')
+        },
       },
       CATEGORY_NAME_TO_CODE: {
         datastructure: 2,
@@ -39,6 +44,7 @@ export default {
         sorting: 4,
         implementation: 0,
         search: 3,
+        algorithm: 5
       }
     }
   },
@@ -80,7 +86,8 @@ export default {
               ${this.getTooltipRow('구현', this.fieldInfo.implementation.score)}
               ${this.getTooltipRow('수학', this.fieldInfo.math.score)}
               ${this.getTooltipRow('탐색', this.fieldInfo.search.score)}
-              ${this.getTooltipRow('정렬', this.fieldInfo.sorting.score)} </div>`
+              ${this.getTooltipRow('정렬', this.fieldInfo.sorting.score)}
+              ${this.getTooltipRow('알고리즘', this.fieldInfo.algorithm.score)} </div>`
     },
     radarIndicator() {
       return [
@@ -89,6 +96,7 @@ export default {
         {text: FIELD_MAP["4"].value, max: 1, color: '#000000',},
         {text: FIELD_MAP["0"].value, max: 1, color: '#000000',},
         {text: FIELD_MAP["3"].value, max: 1, color: '#000000',},
+        {text: FIELD_MAP["5"].value, max: 1, color: '#000000',},
       ]
     },
     tooltip() {
@@ -119,7 +127,7 @@ export default {
             }
           },
           splitNumber: 4,
-          center: ['50%', '55%'],
+          center: ['46%', '50%'],
         },
         series: [
           {
@@ -148,7 +156,7 @@ export default {
 <template>
   <div class="category-summary">
     <div class="graph-column">
-      <ECharts :options="chartOption" style="width: 100%; height: 100%"/>
+      <ECharts :options="chartOption" style="width: 100%; height: 100%;"/>
     </div>
 
     <div class="table-wrapper">

@@ -185,6 +185,12 @@ export const FIELD_MAP = {
     backgroundImage: require("../assets/fieldBackground/sort.svg"),
     maxScore: 25600,
   },
+  5: {
+    value: "알고리즘",
+    boxColor: "#facbcb",
+    backgroundImage: require("../assets/fieldBackground/algorithm.svg"),
+    maxScore: 25600,
+  },
 };
 
 export const TierImageSrc = {

@@ -175,8 +175,6 @@ class CompileSPJAPI(APIView):
 class ProblemBase(APIView):
     def common_checks(self, request):
         data = request.data
-        if Problem.objects.filter(_id=data["_id"]).exists():
-            return "Display id cannot be duplicated"
         if data["spj"]:
             if not data["spj_language"] or not data["spj_code"]:
                 return "Invalid spj"

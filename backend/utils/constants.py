@@ -47,13 +47,14 @@ EMAIL_SUFFIX="@pusan.ac.kr"
 
 
 class ProblemField:
-    fields = ['implementation', 'math', 'datastructure', 'search', 'sorting']
+    fields = ['implementation', 'math', 'datastructure', 'search', 'sorting', 'algorithm']
     strToInt = {
         'implementation': 0,
         'math': 1,
         'datastructure': 2,
         'search': 3,
         'sorting': 4,
+        'algorithm': 5,
     }
     intToStr = {
         0: 'implementation',
@@ -61,6 +62,7 @@ class ProblemField:
         2: 'datastructure',
         3: 'search',
         4: 'sorting',
+        5: 'algorithm'
     }
 
 
