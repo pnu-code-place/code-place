@@ -6,7 +6,6 @@
         <Input v-model="query.keyword"
                @on-enter="filterByKeyword"
                @on-click="filterByKeyword"
-               @input="filterByKeyword"
                :placeholder="$t('m.Search_Problem')"
                icon="ios-search-strong"/>
       </li>
