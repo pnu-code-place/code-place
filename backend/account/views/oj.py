@@ -173,10 +173,9 @@ class ApplyUserEmailValidCheckAPI(APIView):
         send_email_async.send(from_name=SysOptions.website_name_shortcut,
                               to_email=email,
                               to_name=email,
-                              subject="[PNU Online Judge] 이메일 확인 인증번호입니다.",
+                              subject="[부산대학교 코드플레이스] 이메일 확인 인증번호입니다.",
                               content=email_html)
         return self.success('email validation code sent')
-
 
 class UserEmailValidCheckAPI(APIView):
     def post(self, request):
