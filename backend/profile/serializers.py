@@ -88,7 +88,7 @@ class DashboardFieldInfoSerializer(serializers.ModelSerializer):
 
     def get_fieldInfo(self, instance):
         field_info = {}
-        fields = ['datastructure', 'math', 'sorting', 'implementation', 'search']
+        fields = ['datastructure', 'math', 'sorting', 'implementation', 'search', 'algorithm']
 
         for field in fields:
             field_name_score = f"{field}_score"
