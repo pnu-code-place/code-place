@@ -80,11 +80,12 @@
           <el-col :span="8">
             <el-form-item :label="$t('m.Field')" :error="error.tags" required>
               <el-select class="difficulty-select" size="small" :placeholder="$t('m.Field')" v-model="problem.field">
-                <el-option :label="$t('m.Field_Impl')" value="0"></el-option>
-                <el-option :label="$t('m.Field_Math')" value="1"></el-option>
-                <el-option :label="$t('m.Field_DataStructure')" value="2"></el-option>
-                <el-option :label="$t('m.Field_Search')" value="3"></el-option>
-                <el-option :label="$t('m.Field_Sorting')" value="4"></el-option>
+                <el-option :label="$t('m.Field_Impl')" :value="0"></el-option>
+                <el-option :label="$t('m.Field_Math')" :value="1"></el-option>
+                <el-option :label="$t('m.Field_DataStructure')" :value="2"></el-option>
+                <el-option :label="$t('m.Field_Search')" :value="3"></el-option>
+                <el-option :label="$t('m.Field_Sorting')" :value="4"></el-option>
+                <el-option :label="$t('m.Field_Algorithm')" :value="5"></el-option>
               </el-select>
             </el-form-item>
             <el-form-item :label="$t('m.Tag')" :error="error.tags" required>
@@ -281,9 +282,15 @@ import Simditor from '../../components/Simditor'
 import Accordion from '../../components/Accordion'
 import CodeMirror from '../../components/CodeMirror'
 import api from '../../api'
+import {FIELD_MAP} from "../../../../utils/constants";
 
 export default {
   name: 'Problem',
+  computed: {
+    FIELD_MAP() {
+      return FIELD_MAP
+    }
+  },
   components: {
     Simditor,
     Accordion,
@@ -414,6 +421,9 @@ export default {
         }
       }
       this.template = data
+    },
+    'problem.field' (newVal) {
+      console.log(this.problem)
     },
     'problem.spj_language' (newVal) {
       this.spjMode = this.allLanguage.spj_languages.find(item => {

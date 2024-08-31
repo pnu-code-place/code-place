@@ -37,6 +37,7 @@
           <Dropdown-item name="1">{{ $t('m.Field_Math') }}</Dropdown-item>
           <Dropdown-item name="3">{{ $t('m.Field_Search') }}</Dropdown-item>
           <Dropdown-item name="4">{{ $t('m.Field_Sorting') }}</Dropdown-item>
+          <Dropdown-item name="5">{{ $t('m.Field_Algorithm') }}</Dropdown-item>
         </Dropdown-menu>
       </Dropdown>
       <Dropdown @on-click="filterByCategory" trigger="click" class="dropdown difficultyDropdown">
