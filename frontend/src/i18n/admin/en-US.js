@@ -215,6 +215,7 @@ export const m = {
   Field_DataStructure: "자료구조",
   Field_Search: "탐색",
   Field_Sorting: "정렬",
+  Field_Algorithm: "알고리즘",
   Tag: "태그",
   New_Tag: "새 태그",
 
