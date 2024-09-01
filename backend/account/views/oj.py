@@ -224,7 +224,7 @@ class UserRegisterAPI(APIView):
 
         # 중복 체크
         if User.objects.filter(username=data["username"]).exists():
-            return self.error("username already exists")
+            return self.error("nickname already exists")
         if User.objects.filter(email=data["email"]).exists():
             return self.error("email already exists")
         if User.objects.filter(email=data["student_id"]).exists():
