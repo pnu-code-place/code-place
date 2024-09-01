@@ -66,7 +66,6 @@
           type="primary"
           class="nicknameAuthBtn"
           @click="handleClickNicknameAuthBtn"
-          :disabled="this.nicknameVerifyCompletedState"
         >중복체크
         </Button>
       </FormItem>
@@ -112,14 +111,20 @@
         </div>
       </div>
       <FormItem prop="password">
-        <Input
-          type="password"
-          v-model="formRegister.password"
-          :placeholder="$t('m.RegisterPassword')"
-          size="large"
-          @on-enter="handleRegister"
-        >
-        </Input>
+        <div class="password-input">
+          <Input
+            :type="passwordFieldType"
+            v-model="formRegister.password"
+            :placeholder="$t('m.RegisterPassword')"
+            size="large"
+            @on-enter="handleRegister"
+          >
+          </Input>
+          <i
+            :class="['fa', 'fa-lg', passwordFieldType === 'password' ? 'fa-eye' : 'fa-eye-slash']"
+            @click="togglePasswordVisibility"
+          ></i>
+        </div>
       </FormItem>
       <div class="inputName">
         비밀번호 확인
@@ -212,6 +217,7 @@ export default {
     return {
       pusanDomain: "@pusan.ac.kr",
       btnRegisterLoading: false,
+      passwordFieldType: 'password',
       nicknameVerifyCompletedState: false,
       emailAuthCodeInputState: false,
       emailAuthCodeVerifyCompletedState: false,
@@ -229,7 +235,7 @@ export default {
       },
       ruleRegister: {
         password: [
-          {required: true, trigger: "blur", min: 6, max: 20},
+          {required: true, trigger: "blur", min: 8, max: 20},
           {validator: CheckPassword, trigger: "blur"}
         ],
         passwordAgain: [
@@ -261,9 +267,12 @@ export default {
         })
     },
     handleClickNicknameAuthBtn() {
+      if(this.formRegister.username.length < 3 || this.formRegister.username.length > 8){
+        this.$error("3글자 이상, 8글자 이하만 가능합니다.");
+        return
+      }
       api.nicknameValidCheck(this.formRegister.username)
         .then(res => {
-          this.nicknameVerifyCompletedState = true;
           this.$success("사용 가능한 닉네임입니다.");
         })
         .catch(error => {
@@ -292,13 +301,12 @@ export default {
         visible: true
       });
     },
+    togglePasswordVisibility() {
+      this.passwordFieldType = this.passwordFieldType === 'password' ? 'text' : 'password'
+    },
     handleRegister() {
       if (!this.emailAuthCodeVerifyCompletedState) {
         this.$error("웹메일 인증이 완료되지 않았습니다.")
-        return
-      }
-      if (!this.nicknameVerifyCompletedState) {
-        this.$error("닉네임 중복체크가 완료되지 않았습니다.")
         return
       }
       this.validateForm("formRegister").then(valid => {
@@ -402,6 +410,23 @@ button:disabled {
 
 .nicknameAuthInput {
   width: 280px;
+}
+
+.password-input {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  position: relative;
+
+  i {
+    position: absolute;
+    font-size: 15px;
+    right: 10px;
+  }
+}
+
+.passwordAuthInput {
+  width: 320px;
 }
 
 .nicknameAuthBtn {
