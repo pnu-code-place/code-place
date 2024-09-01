@@ -66,7 +66,6 @@
           type="primary"
           class="nicknameAuthBtn"
           @click="handleClickNicknameAuthBtn"
-          :disabled="this.nicknameVerifyCompletedState"
         >중복체크
         </Button>
       </FormItem>
