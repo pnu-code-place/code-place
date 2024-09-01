@@ -64,7 +64,7 @@
   font-weight: normal;
   font-style: normal;
   text-decoration: none;
-  color: #6f42c1; }
+  color: #ffd580; }
 
 .cm-s-github-light span.cm-keyword {
   font-weight: normal;
@@ -79,7 +79,7 @@
   font-weight: normal;
   font-style: normal;
   text-decoration: none;
-  color: #032f62; }
+  color: #599a00; }
 
 .cm-s-github-light .cm-support {
   font-weight: normal;
@@ -106,7 +106,8 @@
   color: #24292e; }
 
 .cm-operator ~ .cm-type ~.cm-operator ~.cm-variable {
-  color: #6f42c1; }
+  /*color: #6f42c1;  Java에서 변수 색상을 제거하기 위해 주석처리됨*/
+}
 
 .cm-keyword + .cm-variable + .cm-type {
   font-weight: normal;
@@ -118,7 +119,8 @@
   font-weight: normal;
   font-style: normal;
   text-decoration: none;
-  color: #6f42c1; }
+  /*color: #6f42c1;  일부 변수 색상처리 제거하기 위해 주석처리됨 cpp의 선언변수 중 일부만 반영되었음*/
+}
 
 .cm-keyword + .cm-variable + .cm-type + .cm-variable {
   font-weight: normal;
@@ -131,16 +133,28 @@
   font-weight: normal;
   font-style: normal;
   text-decoration: none;
-  color: #24292e; }
+  color: #d73a49; }
 
+.cm-variable-2 {
+  color: #d73a49;
+}
 
 .cm-keyword + .cm-keyword + .cm-variable{
 
-  color: #d73a49; }
+  /*color: #d73a49;  일부 함수에 하이라이팅방지를 위해서 주석처리됨*/
+}
 
 .cm-s-github-light .cm-def {
-  color: #6f42c1; }
+  color: #8553df; }
 
 .cm-s-github-light .cm-number {
   color: #005cc5;
+}
+
+.cm-meta {
+  color: #aea00d; /* 전처리지시자 */
+}
+
+.cm-atom {
+  color: #d73a49; /* Java에서 불리안값*/
 }
