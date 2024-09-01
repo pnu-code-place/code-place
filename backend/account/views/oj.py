@@ -227,8 +227,6 @@ class UserRegisterAPI(APIView):
             return self.error("nickname already exists")
         if User.objects.filter(email=data["email"]).exists():
             return self.error("email already exists")
-        if User.objects.filter(email=data["student_id"]).exists():
-            return self.error("student_id already exists")
 
         college = College.objects.get(id=data['collegeId'])
         department = Department.objects.get(id=data['departmentId'])
