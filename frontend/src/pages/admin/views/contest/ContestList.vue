@@ -101,32 +101,32 @@
               :name="$t('m.Icon_Submission_State')"
               icon="file"
               @click.native="goSubmission(scope.row.id)"
-            ></icon-btn>
+            />
             <icon-btn
               :name="$t('m.Icon_Edit')"
               icon="edit"
               @click.native="goEdit(scope.row.id)"
-            ></icon-btn>
+            />
             <icon-btn
               :name="$t('m.Icon_Problem')"
               icon="list-ol"
               @click.native="goContestProblemList(scope.row.id)"
-            ></icon-btn>
+            />
             <icon-btn
               :name="$t('m.Icon_Announcement')"
               icon="info-circle"
               @click.native="goContestAnnouncement(scope.row.id)"
-            ></icon-btn>
+            />
             <icon-btn
               :name="$t('m.Icon_Submission_Download')"
               icon="download"
               @click.native="openDownloadOptions(scope.row.id)"
-            ></icon-btn>
+            />
             <icon-btn
               :name="$t('m.Icon_Delete')"
               icon="remove"
               @click.native="deleteContest(scope.row.id)"
-            ></icon-btn>
+            />
           </div>
         </el-table-column>
       </el-table>
