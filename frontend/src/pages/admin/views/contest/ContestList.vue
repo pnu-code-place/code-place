@@ -98,6 +98,11 @@
         >
           <div slot-scope="scope">
             <icon-btn
+              :name="$t('m.Icon_Submission_State')"
+              icon="file"
+              @click.native="goSubmission(scope.row.id)"
+            ></icon-btn>
+            <icon-btn
               :name="$t('m.Icon_Edit')"
               icon="edit"
               @click.native="goEdit(scope.row.id)"
@@ -206,6 +211,11 @@ export default {
     openDownloadOptions(contestId) {
       this.downloadDialogVisible = true;
       this.currentId = contestId;
+    },
+    downloadSubmissions() {
+      let excludeAdmin = this.excludeAdmin ? "1" : "0";
+      let url = `/admin/download_submissions?contest_id=${this.currentId}&exclude_admin=${excludeAdmin}`;
+      utils.downloadFile(url);
     },
     goSubmission(contestId) {
       this.$router.push({ name: "contest-submission", params: { contestId } });
