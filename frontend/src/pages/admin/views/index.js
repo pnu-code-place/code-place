@@ -8,6 +8,7 @@ import PruneTestCase from "./general/PruneTestCase.vue";
 import HomeBannerManagement from "./general/HomeBannerManagement.vue";
 import Problem from "./problem/Problem.vue";
 import ProblemList from "./problem/ProblemList.vue";
+import ContestSubmission from "./contest/ContestSubmission.vue";
 import ContestList from "./contest/ContestList.vue";
 import Contest from "./contest/Contest.vue";
 import Login from "./general/Login.vue";
@@ -24,6 +25,7 @@ export {
   ProblemList,
   Contest,
   ContestList,
+  ContestSubmission,
   Login,
   Home,
   PruneTestCase,

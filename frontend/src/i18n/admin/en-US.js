@@ -348,6 +348,8 @@ export const m = {
   Icon_Download_TestCase: "테스트케이스 다운로드",
   Icon_Make_Public: "공개",
   Icon_Add: "추가",
+  Icon_Submission_State: "제출 현황",
+  Icon_Submission_Download: "제출물 다운로드",
 
   // Button
   Button_Choose_File: "파일 선택",
