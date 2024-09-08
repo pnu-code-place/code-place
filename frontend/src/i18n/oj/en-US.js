@@ -466,6 +466,8 @@ export const m = {
   College_Required: "단과대학을 먼저 선택해주세요.",
   Blog: "블로그",
   Confirm_Link: "링크 확인",
+  Submit_Profile: "정보 변경하기",
+  Submit_Password: "비밀번호 변경하기",
 
   // 아바타
   Profile_Avatar: "프로필 사진",
