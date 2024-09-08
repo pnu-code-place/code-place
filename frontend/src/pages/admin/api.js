@@ -257,6 +257,11 @@ export default {
       data,
     });
   },
+  checkDuplicateProblemId(data) {
+    return ajax("admin/problem/check_duplicate_id", "post", {
+      data,
+    });
+  },
   createProblem(data) {
     return ajax("admin/problem", "post", {
       data,
