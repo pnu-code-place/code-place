@@ -286,7 +286,7 @@ export const m = {
 
   // ContestSubmission.vue
   Contest_Submission_Title: "대회 제출물 관리",
-  Contest_Submission_User_Title: "대회 참가 인원",
+  Contest_Submission_User_Title: "대회 참가 인원 목록",
 
   // constants.js
   Contest_Status_Not_Started: "시작 전",
@@ -368,4 +368,14 @@ export const m = {
   // Search
   Search_Keywords: "검색어",
   Search_Author: "작성자 검색",
+
+  // Comment
+  Comment_No_Participant: "대회에 참가한 회원이 없습니다.",
+
+  // General
+  Avatar: "아바타",
+  Username: "사용자명",
+  School_Email: "학교 이메일",
+  College: "단과대학",
+  Major: "전공",
 };

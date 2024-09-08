@@ -17,7 +17,7 @@
           {{ $t("m.No_Submissions") }}
         </div>
         <div v-else>
-          <table class="submissionContent">
+          <table>
             <thead>
               <th>{{ $t("m.When") }}</th>
               <th>{{ $t("m.Status") }}</th>
@@ -38,10 +38,10 @@
                   "
                 >
                   <span>
-                    {{ submission.time_cost | localtime("YYYY-M-D") }}
+                    {{ submission.create_time | localtime("YYYY-M-D") }}
                   </span>
                   <span>
-                    {{ submission.time_cost | localtime("HH:mm:SS") }}
+                    {{ submission.create_time | localtime("HH:mm:SS") }}
                   </span>
                 </td>
                 <td>
@@ -70,14 +70,49 @@
             </tbody>
           </table>
           <Pagination
-            :total="total"
+            :total="totalSubmission"
             :page-size="limit"
-            :current.sync="page"
+            :current.sync="pageSubmission"
+            @on-change="changeRoute"
           ></Pagination>
         </div>
       </div>
     </section>
-    <Panel :title="$t('m.Contest_Submission_User_Title')"> </Panel>
+    <section>
+      <div class="section-title">
+        {{ $t("m.Contest_Submission_User_Title") }}
+      </div>
+      <div class="section-body">
+        <div
+          v-if="participants.length === 0"
+          style="text-align: center; font-size: 1rem"
+        >
+          {{ $t("m.Comment_No_Participant") }}
+        </div>
+        <div v-else>
+          <table>
+            <thead>
+              <th>{{ $t("m.ID") }}</th>
+              <th>{{ $t("m.Avatar") }}</th>
+              <th>{{ $t("m.Username") }}</th>
+              <th>{{ $t("m.School_Email") }}</th>
+              <th>{{ $t("m.College") }}</th>
+              <th>{{ $t("m.Major") }}</th>
+            </thead>
+            <tbody>
+              <tr v-for="(participant, idx) in participants">
+                <td>{{ idx + 1 }}</td>
+                <td><img class="avatar" :src="participant.avatar" /></td>
+                <td>{{ participant.username }}</td>
+                <td>{{ participant.email }}</td>
+                <td>{{ participant.school }}</td>
+                <td>{{ participant.major }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
   </div>
 </template>
 
@@ -96,11 +131,13 @@ export default {
   },
   data() {
     return {
-      loadingTable: false,
       submissions: [],
-      total: 0,
+      participants: [],
+      totalSubmission: 0,
+      totalParticipant: 0,
       limit: 5,
-      page: 1,
+      pageSubmission: 1,
+      pageParticipant: 0,
       contestID: 0,
       JUDGE_STATUS: "",
       rejudge_column: false,
@@ -114,36 +151,42 @@ export default {
     init() {
       this.contestID = this.$route.params.contestId;
       let query = this.$route.query;
-      this.page = parseInt(query.page) || 1;
-      if (this.page < 1) {
-        this.page = 1;
-      }
+      this.pageSubmission = parseInt(query.pageSubmission) || 1;
+      this.pageParticipant = parseInt(query.pageParticipant) || 1;
+      if (this.pageSubmission < 1) this.pageSubmission = 1;
+      if (this.pageParticipant < 1) this.pageParticipant = 1;
       this.getSubmissions();
+      this.getParticipants();
+    },
+    changeRoute() {
+      let query = {
+        pageSubmission: this.pageSubmission,
+      };
+      this.$router.push({
+        name: "contest-submission",
+        params: { contestId: this.contestID },
+        query: utils.filterEmptyValue(query),
+      });
     },
     buildQuery() {
       return {
-        page: this.page,
+        page: this.pageSubmission,
         contest_id: this.contestID,
       };
     },
     getSubmissions() {
       let params = this.buildQuery();
-      let offset = (this.page - 1) * this.limit;
-      this.loadingTable = true;
-      api
-        .getContestSubmissionList(offset, this.limit, params)
-        .then((res) => {
-          let data = res.data.data;
-          for (let v of data.results) {
-            v.loading = false;
-          }
-          this.loadingTable = false;
-          this.submissions = data.results;
-          this.total = data.total;
-        })
-        .catch(() => {
-          this.loadingTable = false;
-        });
+      let offset = (this.pageSubmission - 1) * this.limit;
+      api.getContestSubmissionList(offset, this.limit, params).then((res) => {
+        let data = res.data.data;
+        this.submissions = data.results;
+        this.totalSubmission = data.total;
+      });
+    },
+    getParticipants() {
+      api.getContestParticipantList(this.contestID).then((res) => {
+        this.participants = res.data.data;
+      });
     },
     submissionMemoryFormat(memory) {
       return utils.submissionMemoryFormat(memory);
@@ -184,7 +227,7 @@ section {
     padding: 10px;
   }
 }
-.submissionContent {
+table {
   width: 100%;
   text-align: center;
   th {
@@ -202,5 +245,11 @@ section {
   tr {
     font-size: 1.05em;
   }
+}
+
+.avatar {
+  width: 30px;
+  border-radius: 50%;
+  box-shadow: 0px 0px 1px 0px;
 }
 </style>

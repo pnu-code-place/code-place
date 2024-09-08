@@ -254,6 +254,11 @@ export default {
       params,
     });
   },
+  getContestParticipantList(contest_id) {
+    return ajax("admin/contest_participants", "get", {
+      params: { contest_id: contest_id },
+    });
+  },
   getProblemTagList(params) {
     return ajax("problem/tags", "get", {
       params,
