@@ -175,6 +175,12 @@ class CompileSPJAPI(APIView):
 class ProblemBase(APIView):
     def common_checks(self, request):
         data = request.data
+        if not data["_id"].isdigit():
+            return "Problem Id should be a number"
+
+        if Problem.objects.filter(_id=data["_id"]).exists():
+            return "Problem ID already exists"
+
         if data["spj"]:
             if not data["spj_language"] or not data["spj_code"]:
                 return "Invalid spj"
@@ -196,12 +202,20 @@ class ProblemBase(APIView):
         data["languages"] = list(data["languages"])
 
 
+class ProblemIdDuplicateCheckAPI(APIView):
+    def post(self, request):
+        data = request.data
+        if not data["_id"].isdigit():
+            return self.error("Problem Id should be a number")
+        if Problem.objects.filter(_id=data["_id"]).exists():
+            return self.error("Problem ID already exists")
+        return self.success("Valid Problem ID")
+
 class ProblemAPI(ProblemBase):
     @problem_permission_required
     @validate_serializer(CreateProblemSerializer)
     def post(self, request):
         data = request.data
-        print(data)
 
         error_info = self.common_checks(request)
         if error_info:
