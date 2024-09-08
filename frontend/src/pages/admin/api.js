@@ -247,6 +247,18 @@ export default {
       data,
     });
   },
+  getContestSubmissionList(offset, limit, params) {
+    params.limit = limit;
+    params.offset = offset;
+    return ajax("admin/contest_submissions", "get", {
+      params,
+    });
+  },
+  getContestRank(params) {
+    return ajax("admin/contest_rank", "get", {
+      params,
+    });
+  },
   getProblemTagList(params) {
     return ajax("problem/tags", "get", {
       params,

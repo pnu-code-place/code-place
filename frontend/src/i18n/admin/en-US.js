@@ -23,7 +23,7 @@ export const m = {
   Judge_Server: "저지 서버",
   Prune_Test_Case: "테스트 케이스 목록",
   Home_Banner_Management: "홈 배너 관리",
-  Problem: "문제",
+  Problem: "문제 번호",
   Problem_List: "문제 목록",
   Create_Problem: "문제 생성",
   Export_Import_Problem: "문제 내보내기/가져오기",
@@ -283,6 +283,10 @@ export const m = {
   Contest_List_DownloadModal_Title: "대회 제출물 다운로드",
   Contest_List_DownloadModal_Exclude: "관리자 제출 제외",
   Contest_List_DownloadModal_Execute: "확인",
+
+  // ContestSubmission.vue
+  Contest_Submission_Title: "대회 제출물 관리",
+  Contest_Submission_User_Title: "대회 참가 인원",
 
   // constants.js
   Contest_Status_Not_Started: "시작 전",
