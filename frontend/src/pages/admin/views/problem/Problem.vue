@@ -1,13 +1,21 @@
 <template>
   <div class="problem">
-
     <Panel :title="title">
       <el-form ref="form" :model="problem" label-position="top" label-width="70px">
         <el-row :gutter="20">
           <el-col :span="6">
             <el-form-item prop="_id" :label="$t('m.Display_ID')"
                           :required="this.routeName === 'create-contest-problem' || this.routeName === 'edit-contest-problem'">
-              <el-input :placeholder="$t('m.Display_ID')" v-model="problem._id"></el-input>
+              <el-row>
+                <el-col :span="16">
+                  <el-input :placeholder="$t('m.Display_ID')" v-model="problem._id"></el-input>
+                </el-col>
+                <el-col :span="2">
+                  <el-button type="primary" @click="checkDuplicateProblemId">
+                    중복확인
+                  </el-button>
+                </el-col>
+              </el-row>
             </el-form-item>
           </el-col>
           <el-col :span="18">
@@ -498,6 +506,18 @@ export default {
     uploadFailed () {
       this.$error('Upload failed')
     },
+    checkDuplicateProblemId() {
+      if(!this.problem._id){
+        this.$error("Problem ID is required")
+        return
+      }
+      let data = {
+        _id : this.problem._id
+      }
+      api.checkDuplicateProblemId(data).then((res) => {
+      }).catch(() => {
+      })
+    },
     compileSPJ () {
       let data = {
         id: this.problem.id,
@@ -524,7 +544,7 @@ export default {
       })
     },
     submit () {
-      if(!this.problem.field){
+      if(this.problem.field == null){
         this.$error('Field is required')
         return;
       }

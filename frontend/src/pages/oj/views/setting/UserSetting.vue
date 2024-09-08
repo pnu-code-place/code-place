@@ -263,8 +263,8 @@ export default {
                 <span :class="moodLengthExceedClass">{{ this.moodLength }} / {{ this.MOOD_MAX_LENGTH }}</span>
               </div>
             </div>
-            <button v-if="this.loadingSaveBtn" class="button loading">{{ $t('m.Submit') }}</button>
-            <button v-else @click="handleSubmit" class="button">{{ $t('m.Submit') }}</button>
+            <button v-if="this.loadingSaveBtn" class="button loading">{{ $t('m.Submit_Profile') }}</button>
+            <button v-else @click="handleSubmit" class="button">{{ $t('m.Submit_Profile') }}</button>
           </div>
           <div class="right-column">
             <h3 class="avatar__title label">{{ $t('m.Profile_Avatar') }}</h3>
@@ -482,7 +482,7 @@ input {
 .button {
   background-color: var(--point-color);
   text-align: center;
-  width: 80px;
+  width: 100px;
   color: white;
   border: none;
   border-radius: 5px;

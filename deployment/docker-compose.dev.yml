@@ -1,0 +1,8 @@
+services:
+  web-frontend:
+    ports:
+      - "8001:8000"
+      - "1444:1443"
+    volumes:
+      - /etc/letsencrypt/live/copl-dev.site/fullchain.pem:/etc/letsencrypt/live/copl-dev.site/fullchain.pem:ro
+      - /etc/letsencrypt/live/copl-dev.site/privkey.pem:/etc/letsencrypt/live/copl-dev.site/privkey.pem:ro

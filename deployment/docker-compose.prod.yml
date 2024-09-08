@@ -1,0 +1,26 @@
+services:
+  frontend:
+    image: registry.copl-dev.site/code-place-prod/frontend:latest
+    ports:
+      - "8000:8000"
+      - "1443:1443"
+    volumes:
+      - data_volume:/data:ro
+      - /etc/letsencrypt/live/code.pusan.ac.kr/fullchain.pem:/etc/letsencrypt/live/code.pusan.ac.kr/fullchain.pem:ro
+      - /etc/letsencrypt/live/code.pusan.ac.kr/privkey.pem:/etc/letsencrypt/live/code.pusan.ac.kr/privkey.pem:ro
+
+  backend:
+    image: registry.copl-dev.site/code-place-prod/backend:latest
+    volumes:
+      - data_volume:/data:rw
+
+  scheduler:
+    image: registry.copl-dev.site/code-place-prod/scheduler:latest
+
+  oj-judge:
+    image: registry.copl-dev.site/code-place-prod/judge-server:1.0.0-beta
+
+volumes:
+  data_volume:
+    external: true
+    name: backend-data

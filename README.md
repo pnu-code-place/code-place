@@ -1,18 +1,18 @@
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/90913ed2-5fba-4c0b-9b8b-b1e55e6d36aa" width="800" alt="Code Place Logo"/>
+  <img src="./frontend/src/assets/thumbnail.svg" width="800" alt="Code Place Logo"/>
 </div>
 
 # <div align="center">PNU Code Place</div>
-> 부산대학교 학생들의 코딩 역량을 강화에 도움을 주는 플랫폼 개발
->
-> 개발기간 : 2023.12 ~ 2024.8 (현재 진행 중)
+>  [QingdaoU OJ](https://github.com/QingdaoU/OnlineJudge)를 기반으로, 부산대학교 학생들의 코딩 역량 강화에 도움을 주는 플랫폼 개발
+> 
+> 개발기간 : 2023.12 ~ 현재
 <br/>
 
-
 ## 🔗 배포 주소
-> 이전 운영 서버 주로 : https://oj.pusan.ac.kr/
->
 > 운영 서버 주소 : https://code.pusan.ac.kr/
+> 
+> 개발(베타) 서버 주소 : https://copl-dev.site/
+
 <br/>
   
 ## 👨‍💻 구성원
@@ -72,15 +72,10 @@
 </table>
 <br />
 
-## 👀 프로젝트 배경
-> 프로젝트 배경 작성해줘...
-<br/>
-
-## 🚀 프로젝트 목적
-> 프로젝트 목적 작성해줘...
-<br/>
-
 ## 🔧 기술 스택
+### 🛠 Infra Skill & Tool
+<img src="https://img.shields.io/badge/Nginx-1.18.0-3776AB?style=flat-square&logo=Nginx&logoColor=white" /> <img src="https://img.shields.io/badge/Docker-25.0.3-2d8cf0?style=flat-square&logo=docker&logoColor=white"/> <img src="https://img.shields.io/badge/Harbor-F24E1E?style=flat-square&logo=harbor&logoColor=white"/> 
+
 ### 🛠 BE Skill & Tool
 <img src="https://img.shields.io/badge/Python-3.8.0-3776AB?style=flat-square&logo=Python&logoColor=white" /> <img src="https://img.shields.io/badge/django-3.2.9-092E20?style=flat-square&logo=django&logoColor=white"/> <img src="https://img.shields.io/badge/django--rest--framework-3.12.4-092e20?style=flat-square&logo=django&logoColor=white" />
 
@@ -91,36 +86,6 @@
 <img src="https://img.shields.io/badge/GitHub-181717?style=flatsquare&logo=GitHub&logoColor=white" /> <img src="https://img.shields.io/badge/Slack-4A154B?style=flatsquare&logo=Slack&logoColor=white" /> <img src="https://img.shields.io/badge/Figma-F24E1E?style=flat-square&logo=Figma&logoColor=white" /> <img src="https://img.shields.io/badge/Notion-eeeeee?style=flat-square&logo=Notion&logoColor=black" />
 
 <br />
-
-## 💡 시작 가이드
-- Backend 기본
-  ```bash
-  # 의존 라이브러리 설치
-  cd backend/deploy
-  pip3 install -r requirements.txt
-  
-  # 데이터베이스 배포 스크립트 실행
-  sh init_db.sh
-  
-  # md5sum secret key 초기화 및 django migrate 실행
-  # super admin 생성(아이디 root, 비밀번호 rootroot로 자동생성됩니다.)
-  sh init_db.sh --migrate
-  
-  # 프로젝트를 실행합니다. localhost:8080으로 접속할 수 있습니다.
-  python3 manage.py runserver
-  ```
-- Backend **dramatiq** 실행 (문제 채점 및 제출과 같은 비동기 작업을 위해 필요)
-  ```bash
-  cd backend
-  python3 manage.py rundramatiq
-  ```
-- Frontend
-  ```
-  cd frontend
-  npm install
-  sh run_develop.sh
-  ```
-<br/>
 
 ## 💎 라이센스
 해당 프로젝트는 [MIT LICENSE](https://opensource.org/license/MIT) 를 따릅니다.

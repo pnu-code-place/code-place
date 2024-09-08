@@ -66,7 +66,7 @@ export default {
   },
   methods: {
     alertUndeveloped() {
-      this.$error('개발중인 기능입니다.')
+      this.$error('개발 중인 기능입니다.')
     },
     getTierImageSrc,
     ...mapActions(['getProfile', 'changeModalStatus']),

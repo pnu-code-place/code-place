@@ -6,7 +6,7 @@
       <span style="font-size: 15px; font-weight: bold; margin-bottom: 5px">
       데이터가 부족해서 통계를 볼 수 없어요</span>
         <br>
-        <span style="font-size: medium; font-weight: bold">문제를 <span style="font-weight: bolder">3</span>문제 이상 풀어주세요</span>
+        <span style="font-size: medium; font-weight: bold">문제를 더 많이 풀어주세요</span>
       </div>
     </template>
     <template v-else>

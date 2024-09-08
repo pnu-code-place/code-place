@@ -247,7 +247,7 @@ export const FamilySiteContentSrc = {
   sw_css: {
     "src": require("@/assets/familyContents/micon_4.svg"),
     "banner_name": "부산대학교:SW역량지원시스템",
-    "url": "https://pnuswedu.org/main/index.php"
+    "url": "https://swcss.pusan.ac.kr/"
   },
 };
 
