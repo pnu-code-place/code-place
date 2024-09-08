@@ -1,68 +1,82 @@
 <template>
   <div class="view">
-    <Panel :title="$t('m.Contest_Submission_Title')">
-      <div
-        v-if="submissions.length === 0"
-        style="text-align: center; font-size: 1rem"
-      >
-        {{ $t("m.No_Submissions") }}
+    <section>
+      <div class="section-title">
+        {{ $t("m.Contest_Submission_Title") }}
+        <icon-btn
+          :name="$t('m.Icon_Contest_Rank_Download')"
+          icon="download"
+          @click.native="downloadRankCSV()"
+        />
       </div>
-      <div v-else>
-        <table class="submissionContent">
-          <thead>
-            <th>{{ $t("m.When") }}</th>
-            <th>{{ $t("m.Status") }}</th>
-            <th>{{ $t("m.Problem") }}</th>
-            <th>{{ $t("m.Time") }}</th>
-            <th>{{ $t("m.Memory") }}</th>
-            <th>{{ $t("m.Language") }}</th>
-            <th>{{ $t("m.Submission_Table_Author") }}</th>
-          </thead>
-          <tbody>
-            <tr v-for="submission in submissions">
-              <td
-                style="
-                  cursor: default;
-                  display: flex;
-                  flex-direction: column;
-                  justify-content: center;
-                "
-              >
-                <span>
-                  {{ submission.time_cost | localtime("YYYY-M-D") }}
-                </span>
-                <span>
-                  {{ submission.time_cost | localtime("HH:mm:SS") }}
-                </span>
-              </td>
-              <td>
-                <Tag
-                  style="cursor: default"
-                  :color="JUDGE_STATUS[submission.result].color"
-                  >{{ JUDGE_STATUS[submission.result].name }}</Tag
+      <div class="section-body">
+        <div
+          v-if="submissions.length === 0"
+          style="text-align: center; font-size: 1rem"
+        >
+          {{ $t("m.No_Submissions") }}
+        </div>
+        <div v-else>
+          <table class="submissionContent">
+            <thead>
+              <th>{{ $t("m.When") }}</th>
+              <th>{{ $t("m.Status") }}</th>
+              <th>{{ $t("m.Problem") }}</th>
+              <th>{{ $t("m.Time") }}</th>
+              <th>{{ $t("m.Memory") }}</th>
+              <th>{{ $t("m.Language") }}</th>
+              <th>{{ $t("m.Submission_Table_Author") }}</th>
+            </thead>
+            <tbody>
+              <tr v-for="submission in submissions">
+                <td
+                  style="
+                    cursor: default;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                  "
                 >
-              </td>
-              <td>{{ submission.problem }}</td>
-              <td>
-                {{ submissionTimeFormat(submission.statistic_info.time_cost) }}
-              </td>
-              <td>
-                {{
-                  submissionMemoryFormat(submission.statistic_info.memory_cost)
-                }}
-              </td>
-              <td>{{ submission.language }}</td>
-              <td>{{ submission.username }}</td>
-            </tr>
-          </tbody>
-        </table>
-        <Pagination
-          :total="total"
-          :page-size="limit"
-          :current.sync="page"
-        ></Pagination>
+                  <span>
+                    {{ submission.time_cost | localtime("YYYY-M-D") }}
+                  </span>
+                  <span>
+                    {{ submission.time_cost | localtime("HH:mm:SS") }}
+                  </span>
+                </td>
+                <td>
+                  <Tag
+                    style="cursor: default"
+                    :color="JUDGE_STATUS[submission.result].color"
+                    >{{ JUDGE_STATUS[submission.result].name }}</Tag
+                  >
+                </td>
+                <td>{{ submission.problem }}</td>
+                <td>
+                  {{
+                    submissionTimeFormat(submission.statistic_info.time_cost)
+                  }}
+                </td>
+                <td>
+                  {{
+                    submissionMemoryFormat(
+                      submission.statistic_info.memory_cost
+                    )
+                  }}
+                </td>
+                <td>{{ submission.language }}</td>
+                <td>{{ submission.username }}</td>
+              </tr>
+            </tbody>
+          </table>
+          <Pagination
+            :total="total"
+            :page-size="limit"
+            :current.sync="page"
+          ></Pagination>
+        </div>
       </div>
-    </Panel>
+    </section>
     <Panel :title="$t('m.Contest_Submission_User_Title')"> </Panel>
   </div>
 </template>
@@ -137,6 +151,11 @@ export default {
     submissionTimeFormat(time) {
       return utils.submissionTimeFormat(time);
     },
+    downloadRankCSV() {
+      utils.downloadFile(
+        `admin/contest_rank?download_csv=1&contest_id=${this.contestID}`
+      );
+    },
   },
   watch: {
     $route(newVal, oldVal) {
@@ -149,6 +168,22 @@ export default {
 </script>
 
 <style scoped lang="less">
+section {
+  width: 100%;
+  padding: 15px;
+  .section-title {
+    font-weight: 300;
+    font-size: 1.2rem;
+    padding: 10px 15px;
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+  }
+  .section-body {
+    margin-top: 5px;
+    padding: 10px;
+  }
+}
 .submissionContent {
   width: 100%;
   text-align: center;

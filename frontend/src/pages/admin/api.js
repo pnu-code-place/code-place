@@ -254,11 +254,6 @@ export default {
       params,
     });
   },
-  getContestRank(params) {
-    return ajax("admin/contest_rank", "get", {
-      params,
-    });
-  },
   getProblemTagList(params) {
     return ajax("problem/tags", "get", {
       params,

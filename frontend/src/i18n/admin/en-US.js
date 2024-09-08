@@ -354,6 +354,7 @@ export const m = {
   Icon_Add: "추가",
   Icon_Submission_State: "제출 현황",
   Icon_Submission_Download: "제출물 다운로드",
+  Icon_Contest_Rank_Download: "대회 랭킹 다운로드",
 
   // Button
   Button_Choose_File: "파일 선택",
