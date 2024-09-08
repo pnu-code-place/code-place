@@ -1,7 +1,19 @@
+from account.models import User
+from submission.models import Submission
 from utils.api import UsernameSerializer, serializers
 
 from .models import Contest, ContestAnnouncement, ContestRuleType
 from .models import ACMContestRank, OIContestRank
+
+class ContestUserSubmissionSummarySerializer(serializers.Serializer):
+    user_id = serializers.IntegerField()
+    username = serializers.CharField()
+    email = serializers.EmailField()
+    avatar = serializers.CharField()
+    school = serializers.CharField()
+    major = serializers.CharField()
+    submission_count = serializers.IntegerField()
+    last_submission_ip = serializers.CharField()
 
 
 class CreateConetestSeriaizer(serializers.Serializer):
