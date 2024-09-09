@@ -201,6 +201,19 @@ class ProblemBase(APIView):
 
 
 class ProblemIdDuplicateCheckAPI(APIView):
+
+    def _check_edit_mode(self, _id, problem_id):
+        existing_problem = get_object_or_404(Problem, id=problem_id)
+        if existing_problem._id != _id:
+            duplicate_exists = Problem.objects.exclude(id=problem_id).filter(_id=_id).exists()
+            if duplicate_exists:
+                return self.error("Problem ID already exists")
+        return self.success("Valid Problem ID")
+
+    def _check_create_mode(self, _id):
+        if Problem.objects.filter(_id=_id).exists():
+            return self.error("Problem ID already exists")
+        return self.success("Valid Problem ID")
     def post(self, request):
         data = request.data
         if Problem.objects.filter(_id=data["_id"]).exists():
