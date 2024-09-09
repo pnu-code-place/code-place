@@ -175,8 +175,6 @@ class CompileSPJAPI(APIView):
 class ProblemBase(APIView):
     def common_checks(self, request):
         data = request.data
-        if not data["_id"].isdigit():
-            return "Problem Id should be a number"
 
         if Problem.objects.filter(_id=data["_id"]).exists():
             return "Problem ID already exists"
@@ -205,8 +203,6 @@ class ProblemBase(APIView):
 class ProblemIdDuplicateCheckAPI(APIView):
     def post(self, request):
         data = request.data
-        if not data["_id"].isdigit():
-            return self.error("Problem Id should be a number")
         if Problem.objects.filter(_id=data["_id"]).exists():
             return self.error("Problem ID already exists")
         return self.success("Valid Problem ID")
