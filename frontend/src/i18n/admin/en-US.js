@@ -23,7 +23,7 @@ export const m = {
   Judge_Server: "저지 서버",
   Prune_Test_Case: "테스트 케이스 목록",
   Home_Banner_Management: "홈 배너 관리",
-  Problem: "문제 번호",
+  Problem: "문제",
   Problem_List: "문제 목록",
   Create_Problem: "문제 생성",
   Export_Import_Problem: "문제 내보내기/가져오기",
