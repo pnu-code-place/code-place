@@ -10,6 +10,7 @@ from django.conf import settings
 from django.db import transaction
 from django.db.models import Q
 from django.http import StreamingHttpResponse, FileResponse
+from django.shortcuts import get_object_or_404
 
 from account.decorators import problem_permission_required, ensure_created_by
 from contest.models import Contest, ContestStatus
@@ -176,9 +177,6 @@ class ProblemBase(APIView):
     def common_checks(self, request):
         data = request.data
 
-        if Problem.objects.filter(_id=data["_id"]).exists():
-            return "Problem ID already exists"
-
         if data["spj"]:
             if not data["spj_language"] or not data["spj_code"]:
                 return "Invalid spj"
@@ -201,17 +199,39 @@ class ProblemBase(APIView):
 
 
 class ProblemIdDuplicateCheckAPI(APIView):
-    def post(self, request):
-        data = request.data
-        if Problem.objects.filter(_id=data["_id"]).exists():
+
+    def _check_edit_mode(self, _id, problem_id):
+        existing_problem = get_object_or_404(Problem, id=problem_id)
+        if existing_problem._id != _id:
+            duplicate_exists = Problem.objects.exclude(id=problem_id).filter(_id=_id).exists()
+            if duplicate_exists:
+                return self.error("Problem ID already exists")
+        return self.success("Valid Problem ID")
+
+    def _check_create_mode(self, _id):
+        if Problem.objects.filter(_id=_id).exists():
             return self.error("Problem ID already exists")
         return self.success("Valid Problem ID")
+    def post(self, request):
+
+        data = request.data
+        _id = data.get("_id")
+        problem_id = data.get("problem_id")
+        edit_status = data.get("edit_status", False)
+
+        if edit_status:
+            return self._check_edit_mode(_id, problem_id)
+        else:
+            return self._check_create_mode(_id)
 
 class ProblemAPI(ProblemBase):
     @problem_permission_required
     @validate_serializer(CreateProblemSerializer)
     def post(self, request):
         data = request.data
+
+        if Problem.objects.filter(_id=data["_id"]).exists():
+            return "Problem ID already exists"
 
         error_info = self.common_checks(request)
         if error_info:
@@ -264,6 +284,9 @@ class ProblemAPI(ProblemBase):
     def put(self, request):
         data = request.data
         problem_id = data.pop("id")
+
+        if Problem.objects.get(id=problem_id)._id != data["_id"] and Problem.objects.exclude(_id=data["_id"]).filter(_id=data["_id"]).exists():
+            return "Problem ID already exists"
 
         try:
             problem = Problem.objects.get(id=problem_id)

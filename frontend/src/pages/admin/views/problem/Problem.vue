@@ -507,13 +507,24 @@ export default {
       this.$error('Upload failed')
     },
     checkDuplicateProblemId() {
+
+      let editStatus = false
+      this.$route.path.split("/").map((value)=>{
+        if(value==="edit"){
+          editStatus = true
+        }
+      })
+
       if(!this.problem._id){
         this.$error("Problem ID is required")
         return
       }
       let data = {
-        _id : this.problem._id
+        _id : this.problem._id,
+        edit_status : editStatus,
+        problem_id : this.problem.id
       }
+
       api.checkDuplicateProblemId(data).then((res) => {
       }).catch(() => {
       })
