@@ -44,6 +44,7 @@ class UserProfileAPI(APIView):
             user = User.objects.get(username=request.user.username)
             user.username = data["username"]
             user.save()
+            request.user.username = data["username"]
         user_profile = request.user.userprofile
         for k, v in data.items():
             if k == "college" and v is not None:
