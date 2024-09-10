@@ -40,6 +40,10 @@ class UserProfileAPI(APIView):
     @login_required
     def put(self, request):
         data = request.data
+        if data["username"]:
+            user = User.objects.get(username=request.user.username)
+            user.username = data["username"]
+            user.save()
         user_profile = request.user.userprofile
         for k, v in data.items():
             if k == "college" and v is not None:
