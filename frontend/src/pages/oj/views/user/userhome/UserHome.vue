@@ -4,7 +4,7 @@
     <side-nav-bar></side-nav-bar>
     <main>
       <div class="user-home-header">
-        <user-card :profile="profile" :oj-status="this.ojStatus"></user-card>
+        <user-card :profile="profile" :oj-status="this.ojStatus" :loading="this.cardLoading || this.statusLoading"></user-card>
       </div>
       <keep-alive>
         <router-view></router-view>
@@ -71,6 +71,7 @@ export default {
         router.push({name: 'user-home', params: {username: this.$store.state.user.profile.user.username}})
       } else {
         //로그인이 되어있지 않은 경우
+        console.log("76")
         router.push({name: 'login'})
       }
       return username;
