@@ -4,11 +4,13 @@ from rest_framework import serializers
 class UsernameSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     username = serializers.CharField()
+    admin_type = serializers.CharField()
     email = serializers.EmailField()
     real_name = serializers.SerializerMethodField()
     student_id = serializers.SerializerMethodField()
     school = serializers.SerializerMethodField()
     major = serializers.SerializerMethodField()
+    avatar = serializers.SerializerMethodField()
 
     def __init__(self, *args, **kwargs):
         self.need_real_name = kwargs.pop("need_real_name", False)
@@ -25,3 +27,6 @@ class UsernameSerializer(serializers.Serializer):
 
     def get_major(self, obj):
         return obj.userprofile.major
+
+    def get_avatar(self, obj):
+        return obj.userprofile.avatar
