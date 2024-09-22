@@ -4,7 +4,7 @@
       <div class="ACMRankTitle">
         <p>{{ $t("m.Rank") }}</p>
         <CustomTooltip
-          content="ACM 대회는 제출 결과가 통과 또는 실패로만 구분되며 총점은 표시되지 않습니다."
+          :content="$t('m.ACM_Contest_Information')"
           placement="right"
         >
           <Icon
