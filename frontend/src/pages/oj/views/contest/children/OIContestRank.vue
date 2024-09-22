@@ -6,7 +6,7 @@
       </div>
       <div
         v-if="!myDataRank.length"
-        style="text-align: center; font-size: 16px"
+        style="text-align: center; font-size: 16px; padding-top: 50px"
       >
         {{ $t("m.No_Submissions") }}
       </div>
@@ -16,18 +16,42 @@
           <th>{{ $t("m.User_User") }}</th>
           <th>{{ $t("m.Total_Score") }}</th>
           <th v-for="problem in contestProblems">
-            <a style="color: #6ccbff" @click="goProblemPage(problem._id)">{{
-              problem._id
-            }}</a>
+            <CustomTooltip :content="problem._id" placement="top">
+              <a
+                style="
+                  color: #6ccbff;
+                  display: block;
+                  max-width: 100px;
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                  white-space: nowrap;
+                "
+                @click="goProblemPage(problem._id)"
+              >
+                {{ problem._id }}
+              </a>
+            </CustomTooltip>
           </th>
         </thead>
         <tbody>
           <tr v-for="rank in myDataRank">
             <td>{{ rank.idx }}</td>
             <td>
-              <a @click="goUserPage(rank.user.username)">{{
-                rank.user.username
-              }}</a>
+              <a
+                @click="goUserPage(rank.user.username)"
+                style="display: flex; align-items: center; gap: 10px"
+              >
+                <img
+                  :src="rank.user.avatar"
+                  style="
+                    width: 36px;
+                    height: 36px;
+                    border-radius: 100%;
+                    border: 2px solid #eaeefb;
+                  "
+                />
+                {{ rank.user.username }}
+              </a>
             </td>
             <td>{{ rank.total_score }}</td>
             <td v-for="problem in contestProblems">
@@ -55,11 +79,13 @@ import api from "@oj/api";
 import Pagination from "@oj/components/Pagination";
 import ContestRankMixin from "./contestRankMixin";
 import utils from "@/utils/utils";
+import CustomTooltip from "@oj/components/CustomTooltip";
 
 export default {
   name: "acm-contest-rank",
   components: {
     Pagination,
+    CustomTooltip,
   },
   mixins: [ContestRankMixin],
   data() {
@@ -130,14 +156,12 @@ export default {
 <style scoped lang="less">
 .OIRankBox {
   border: 1px solid #e9ece9;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
   background: var(--box-background-color);
-  padding: 15px 20px;
+  padding: 15px 20px 40px;
   border-radius: 7px;
 }
 .OIRankTitle {
+  position: absolute;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -149,11 +173,16 @@ export default {
 }
 .OIRankContent {
   text-align: center;
+  display: block;
+  padding-top: 50px;
+  max-width: 928px;
+  overflow-y: visible;
+  overflow-x: scroll;
+  white-space: nowrap;
   th {
-    width: 80px;
     color: #7e7e7e;
     font-size: 1.3em;
-    padding-bottom: 10px;
+    padding: 0px 15px 10px 0px;
   }
   td {
     border-top: 1px solid rgba(0, 0, 0, 0.1);
