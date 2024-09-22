@@ -4,18 +4,35 @@
       <div class="ACMRankTitle">
         <p>{{ $t("m.Rank") }}</p>
       </div>
-      <div v-if="!dataRank.length" style="text-align: center; font-size: 16px">
+      <div
+        v-if="dataRank.length"
+        style="text-align: center; font-size: 16px; padding-top: 50px"
+      >
         {{ $t("m.No_Submissions") }}
       </div>
       <table v-else class="ACMRankContent">
         <thead>
-          <th style="width: 50px">#</th>
+          <th style="min-width: 50px">#</th>
           <th>{{ $t("m.User_User") }}</th>
-          <th>{{ $t("m.Solved_Problems") }}</th>
+          <th>
+            {{ $t("m.Solved_Problems") }}
+          </th>
           <th v-for="problem in contestProblems">
-            <a style="color: #6ccbff" @click="goProblemPage(problem._id)">{{
-              problem._id
-            }}</a>
+            <CustomTooltip :content="problem._id" placement="top">
+              <a
+                style="
+                  color: #6ccbff;
+                  display: block;
+                  max-width: 200px;
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                  white-space: nowrap;
+                "
+                @click="goProblemPage(problem._id)"
+              >
+                {{ problem._id }}
+              </a>
+            </CustomTooltip>
           </th>
         </thead>
         <tbody>
@@ -73,11 +90,13 @@ import Pagination from "@oj/components/Pagination";
 import ContestRankMixin from "./contestRankMixin";
 import time from "@/utils/time";
 import utils from "@/utils/utils";
+import CustomTooltip from "@oj/components/CustomTooltip";
 
 export default {
   name: "acm-contest-rank",
   components: {
     Pagination,
+    CustomTooltip,
   },
   mixins: [ContestRankMixin],
   data() {
@@ -151,14 +170,13 @@ export default {
 <style scoped lang="less">
 .ACMRankBox {
   border: 1px solid #e9ece9;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
   background: var(--box-background-color);
-  padding: 15px 20px;
+  padding: 15px 20px 40px;
   border-radius: 7px;
 }
 .ACMRankTitle {
+  position: absolute;
+  width: 928px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -170,11 +188,17 @@ export default {
 }
 .ACMRankContent {
   text-align: center;
+  display: block;
+  padding-top: 50px;
+  max-width: 928px;
+  overflow-y: visible;
+  overflow-x: scroll;
+  white-space: nowrap;
   th {
-    width: 80px;
+    display: inline-block;
     color: #7e7e7e;
     font-size: 1.3em;
-    padding-bottom: 10px;
+    padding: 0px 15px 10px 0px;
   }
   td {
     border-top: 1px solid rgba(0, 0, 0, 0.1);
@@ -182,6 +206,18 @@ export default {
   }
   tr {
     font-size: 1.05em;
+  }
+}
+.ProblemIdTag {
+  color: #6ccbff;
+  display: block;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  position: relative;
+  &:hover {
+    max-width: 10000px;
   }
 }
 </style>
