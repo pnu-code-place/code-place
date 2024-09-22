@@ -14,7 +14,7 @@
         </CustomTooltip>
       </div>
       <div
-        v-if="dataRank.length"
+        v-if="!dataRank.length"
         style="text-align: center; font-size: 16px; padding-top: 50px"
       >
         {{ $t("m.No_Submissions") }}
@@ -214,18 +214,6 @@ export default {
   }
   tr {
     font-size: 1.05em;
-  }
-}
-.ProblemIdTag {
-  color: #6ccbff;
-  display: block;
-  max-width: 200px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  position: relative;
-  &:hover {
-    max-width: 10000px;
   }
 }
 </style>
