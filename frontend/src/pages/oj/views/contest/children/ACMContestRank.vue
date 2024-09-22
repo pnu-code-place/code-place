@@ -3,6 +3,15 @@
     <div class="ACMRankBox">
       <div class="ACMRankTitle">
         <p>{{ $t("m.Rank") }}</p>
+        <CustomTooltip
+          content="ACM 대회는 제출 결과가 통과 또는 실패로만 구분되며 총점은 표시되지 않습니다."
+          placement="right"
+        >
+          <Icon
+            type="ios-information-outline"
+            style="font-size: 20px; font-weight: 900"
+          ></Icon>
+        </CustomTooltip>
       </div>
       <div
         v-if="dataRank.length"
@@ -176,10 +185,9 @@ export default {
 }
 .ACMRankTitle {
   position: absolute;
-  width: 928px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 12px;
   p {
     text-decoration: none;
     font-size: 24px;
