@@ -21,7 +21,7 @@ from django.db import transaction
 from contest.models import Contest
 from problem.models import Problem
 from school.models import College, Department
-from utils.constants import ContestRuleType
+from utils.constants import ContestRuleType, UNDEFINED_SMTP_USER
 from options.options import SysOptions
 from utils.api import APIView, validate_serializer, CSRFExemptAPIView
 from utils.captcha import Captcha
@@ -172,7 +172,7 @@ class ApplyUserEmailValidCheckAPI(APIView):
         email_html = render_to_string("email_valid_email.html", {'code': code})
         send_email_async.send(from_name=SysOptions.website_name_shortcut,
                               to_email=email,
-                              to_name=email,
+                              to_name=UNDEFINED_SMTP_USER,
                               subject="[부산대학교 코드플레이스] 이메일 확인 인증번호입니다.",
                               content=email_html)
         return self.success('email validation code sent')
