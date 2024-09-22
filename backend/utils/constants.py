@@ -43,7 +43,9 @@ RSS_FEED_URL = "https://swedu.pusan.ac.kr/bbs/swedu/6906/rssList.do?row=50"
 
 GENERATE_MOCK_USERNAME_URL = "https://www.rivestsoft.com/nickname/getRandomNickname.ajax"
 
-EMAIL_SUFFIX="@pusan.ac.kr"
+EMAIL_SUFFIX = "@pusan.ac.kr"
+
+UNDEFINED_SMTP_USER = "Client"
 
 
 class ProblemField:
