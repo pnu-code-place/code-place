@@ -32,7 +32,7 @@
                 style="
                   color: #6ccbff;
                   display: block;
-                  max-width: 200px;
+                  max-width: 100px;
                   overflow: hidden;
                   text-overflow: ellipsis;
                   white-space: nowrap;
@@ -48,9 +48,21 @@
           <tr v-for="rank in dataRank">
             <td>{{ rank.idx }}</td>
             <td>
-              <a @click="goUserPage(rank.user.username)">{{
-                rank.user.username
-              }}</a>
+              <a
+                @click="goUserPage(rank.user.username)"
+                style="display: flex; align-items: center; gap: 10px"
+              >
+                <img
+                  :src="rank.user.avatar"
+                  style="
+                    width: 36px;
+                    height: 36px;
+                    border-radius: 100%;
+                    border: 2px solid #eaeefb;
+                  "
+                />
+                {{ rank.user.username }}
+              </a>
             </td>
             <td>{{ rank.accepted_number }}</td>
             <td v-for="problem in contestProblems">
@@ -203,7 +215,6 @@ export default {
   overflow-x: scroll;
   white-space: nowrap;
   th {
-    display: inline-block;
     color: #7e7e7e;
     font-size: 1.3em;
     padding: 0px 15px 10px 0px;
