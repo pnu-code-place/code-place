@@ -3,15 +3,6 @@
     <div class="ACMRankBox">
       <div class="ACMRankTitle">
         <p>{{ $t("m.Rank") }}</p>
-        <CustomTooltip
-          :content="$t('m.ACM_Contest_Information')"
-          placement="right"
-        >
-          <Icon
-            type="ios-information-outline"
-            style="font-size: 20px; font-weight: 900"
-          ></Icon>
-        </CustomTooltip>
       </div>
       <div
         v-if="!dataRank.length"
@@ -197,9 +188,6 @@ export default {
 }
 .ACMRankTitle {
   position: absolute;
-  display: flex;
-  align-items: center;
-  gap: 12px;
   p {
     text-decoration: none;
     font-size: 24px;

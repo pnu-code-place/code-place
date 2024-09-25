@@ -9,7 +9,7 @@
       >
         <Icon
           type="ios-information-outline"
-          style="font-size: 20px; font-weight: 900"
+          style="font-size: 16px; font-weight: 900"
         ></Icon>
       </CustomTooltip>
     </div>
@@ -133,7 +133,7 @@ export default {
 .problemTitle {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   p {
     text-decoration: none;
     font-size: 24px;
