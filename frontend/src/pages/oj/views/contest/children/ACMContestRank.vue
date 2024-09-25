@@ -151,6 +151,7 @@ export default {
       dataRank.forEach((rank, i) => {
         let info = rank.submission_info;
         Object.keys(info).forEach((problemID) => {
+          if (!dataRank[i][problemID]) return;
           dataRank[i][problemID].ac_time = moment(this.contest.start_time)
             .add(info[problemID].ac_time, "seconds")
             .format();
