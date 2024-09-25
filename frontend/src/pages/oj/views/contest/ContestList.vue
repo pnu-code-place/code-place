@@ -224,12 +224,16 @@ export default {
         name: "contest-history-list",
       });
     },
-    dateFormat(date) {
-      const formattedDate = new Date(date);
+    dateFormat(dateUtc) {
+      const date = new Date(dateUtc);
 
-      const hour = formattedDate.getHours();
-      const min = formattedDate.getMinutes();
-      const sec = formattedDate.getSeconds();
+      const newDate = new Date(
+        date.getTime() - date.getTimezoneOffset() * 60 * 1000
+      );
+
+      const hour = newDate.getHours();
+      const min = newDate.getMinutes();
+      const sec = newDate.getSeconds();
 
       let result = "";
       if (hour > 12) result = "오후 " + (hour - 12) + "시 ";
