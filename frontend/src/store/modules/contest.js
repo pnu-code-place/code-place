@@ -81,35 +81,52 @@ const getters = {
     );
   },
   contestStartTime: (state) => {
-    return moment(state.contest.start_time);
+    const date = new Date(state.contest.start_time);
+
+    return new Date(date.getTime() - date.getTimezoneOffset() * 60 * 1000);
   },
   contestEndTime: (state) => {
-    return moment(state.contest.end_time);
+    const date = new Date(state.contest.end_time);
+
+    return new Date(date.getTime() - date.getTimezoneOffset() * 60 * 1000);
   },
   countdown: (state, getters) => {
     if (getters.contestStatus === CONTEST_STATUS.NOT_START) {
-      let duration = moment.duration(
-        getters.contestStartTime.diff(state.now, "seconds"),
-        "seconds"
-      );
-      if (duration.days() > 0) return "시작 " + duration.days() + "일 전";
+      let duration = getters.contestStartTime - new Date();
+
+      duration = parseInt(duration / 1000);
+      const sec = duration % 60;
+      duration = parseInt(duration / 60);
+      const min = duration % 60;
+      duration = parseInt(duration / 60);
+      const hours = duration % 24;
+      duration = parseInt(duration / 24);
+      const days = duration;
 
       let result = "";
-      if (duration.hours() > 0) result += duration.hours() + "시간 ";
-      if (duration.minutes() > 0) result += duration.minutes() + "분 ";
-      if (duration.seconds() > 0) result += duration.seconds() + "초";
+      if (days > 0) result += days + "일 ";
+      if (hours > 0) result += hours + "시간 ";
+      if (min > 0) result += min + "분 ";
+      if (sec > 0) result += sec + "초";
 
       return "시작까지 " + result + " 전";
     } else if (getters.contestStatus === CONTEST_STATUS.UNDERWAY) {
-      let duration = moment.duration(
-        getters.contestEndTime.diff(state.now, "seconds"),
-        "seconds"
-      );
+      let duration = getters.contestEndTime - new Date();
+
+      duration = parseInt(duration / 1000);
+      const sec = duration % 60;
+      duration = parseInt(duration / 60);
+      const min = duration % 60;
+      duration = parseInt(duration / 60);
+      const hours = duration % 24;
+      duration = parseInt(duration / 24);
+      const days = duration;
+
       let result = "";
-      if (duration.days() > 0) result += duration.days() + "일 ";
-      if (duration.hours() > 0) result += duration.hours() + "시간 ";
-      if (duration.minutes() > 0) result += duration.minutes() + "분 ";
-      if (duration.seconds() > 0) result += duration.seconds() + "초";
+      if (days > 0) result += days + "일 ";
+      if (hours > 0) result += hours + "시간 ";
+      if (min > 0) result += min + "분 ";
+      if (sec > 0) result += sec + "초";
 
       return "종료까지 " + result + " 전";
     } else {
