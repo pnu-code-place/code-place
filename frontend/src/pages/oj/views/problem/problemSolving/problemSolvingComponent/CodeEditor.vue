@@ -104,10 +104,36 @@ export default {
         ch: this.codemirror.doc.getCursor().ch
       })
     },
-    blockPasteFromExternalSource(){
-      this.codemirror.on("beforeChange", function(_, change) { // block paste
-        if (change.origin == "paste") change.cancel()
-      })
+    blockPasteFromExternalSource() {
+      let lastInternalText = '';
+
+      // 내부 복사 이벤트 감지
+      this.codemirror.on("copy", (cm, e) => {
+        lastInternalText = cm.getSelection();
+      });
+
+      // 잘라내기 이벤트 감지
+      this.codemirror.on("cut", (cm, e) => {
+        lastInternalText = cm.getSelection();
+      });
+
+      // 붙여넣기 이벤트 처리
+      this.codemirror.on("paste", (cm, e) => {
+        // 기본 붙여넣기 동작 방지
+        e.preventDefault();
+
+        // 클립보드의 내용 가져오기
+        navigator.clipboard.readText().then(clipText => {
+          // 클립보드 내용이 마지막으로 내부에서 복사 또는 잘라내기한 텍스트와 일치하는지 확인
+          if (clipText === lastInternalText) {
+            // 내부에서 복사 또는 잘라내기한 텍스트라면 붙여넣기 허용
+            cm.replaceSelection(clipText);
+          } else {
+            // 외부 텍스트라면 경고 메시지 표시
+            alert("외부 소스로부터의 붙여넣기는 허용되지 않습니다.");
+          }
+        });
+      });
     },
     resetCM() {
       this.value = ''
@@ -146,8 +172,10 @@ export default {
       this.codemirror.setOption('mode', this.mode[this.language])
     })
 
-
-    // this.blockPasteFromExternalSource()
+    let checkContest = this.$route.path.split("/").indexOf("contest") > 0
+    if (checkContest){
+      this.blockPasteFromExternalSource()
+    }
     this.$emit('update:cursorPos', {
       ln: this.codemirror.doc.getCursor().line,
       ch: this.codemirror.doc.getCursor().ch
