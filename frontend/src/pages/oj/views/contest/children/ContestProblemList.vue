@@ -29,7 +29,9 @@
         </th>
         <th class="TableTitle">{{ $t("m.Th_Problem_Title") }}</th>
         <th>{{ $t("m.Th_Problem_Difficulty") }}</th>
-        <th>{{ $t("m.Th_Problem_Total_Score") }}</th>
+        <th v-if="contestRuleType !== 'ACM'">
+          {{ $t("m.Th_Problem_Total_Score") }}
+        </th>
         <th>{{ $t("m.Th_Problem_AC_Rate") }}</th>
       </thead>
       <tbody>
@@ -41,7 +43,7 @@
             {{ problem.title }}
           </td>
           <td>{{ DIFFICULTY_MAP[problem.difficulty].value }}</td>
-          <td>{{ problem.total_score }}</td>
+          <td v-if="contestRuleType !== 'ACM'">{{ problem.total_score }}</td>
           <td>
             {{ getACRate(problem.accepted_number, problem.submission_number) }}
           </td>
