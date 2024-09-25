@@ -12,8 +12,8 @@
       </div>
       <table v-else class="OIRankContent">
         <thead>
-          <th style="width: 50px">#</th>
-          <th>{{ $t("m.User_User") }}</th>
+          <th style="width: 50px">{{ $t("m.Contest_Rank") }}</th>
+          <th>{{ $t("m.Contest_Participant") }}</th>
           <th>{{ $t("m.Total_Score") }}</th>
           <th v-for="problem in contestProblems">
             <CustomTooltip :content="problem._id" placement="top">
@@ -182,7 +182,7 @@ export default {
   th {
     color: #7e7e7e;
     font-size: 1.3em;
-    padding: 0px 15px 10px 0px;
+    padding: 0px 7.5px 10px 7.5px;
   }
   td {
     border-top: 1px solid rgba(0, 0, 0, 0.1);

@@ -75,6 +75,8 @@ export const m = {
   save_as_image: "save as image",
   ACM_Contest_Information:
     "ACM 대회는 제출 결과가 성공 또는 실패로만 구분되며 총점은 표시되지 않습니다.",
+  Contest_Rank: "순위",
+  Contest_Participant: "대회 참가자",
   // ACMHelper.vue
   ACM_Helper: "ACM Helper",
   AC_Time: "문제 해결 시간",
