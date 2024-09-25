@@ -24,88 +24,6 @@
         <StickyLnCol :cursorPos="cursorPos"/>
       </pane>
     </splitpanes>
-    <!--        <Card :padding="20" id="submit-code" dis-hover>-->
-    <!--          <CodeMirror :value.sync="code"-->
-    <!--                      :languages="problem.languages"-->
-    <!--                      :language="language"-->
-    <!--                      :theme="theme"-->
-    <!--                      @resetCode="onResetToTemplate"-->
-    <!--                      @changeTheme="onChangeTheme"-->
-    <!--                      @changeLang="onChangeLang"></CodeMirror>-->
-    <!--          <Row type="flex" justify="space-between">-->
-    <!--            <Col :span="10">-->
-    <!--              <div class="status" v-if="statusVisible">-->
-    <!--                <template v-if="!this.contestID || (this.contestID && OIContestRealTimePermission)">-->
-    <!--                  <span>{{$t('m.Status')}}</span>-->
-    <!--                  <Tag type="dot" :color="submissionStatus.color" @click.native="handleRoute('/status/'+submissionId)">-->
-    <!--                    {{$t('m.' + submissionStatus.text.replace(/ /g, "_"))}}-->
-    <!--                  </Tag>-->
-    <!--                </template>-->
-    <!--                <template v-else-if="this.contestID && !OIContestRealTimePermission">-->
-    <!--                  <Alert type="success" show-icon>{{$t('m.Submitted_successfully')}}</Alert>-->
-    <!--                </template>-->
-    <!--              </div>-->
-    <!--              <div v-else-if="problem.my_status === 0">-->
-    <!--                <Alert type="success" show-icon>{{$t('m.You_have_solved_the_problem')}}</Alert>-->
-    <!--              </div>-->
-    <!--              <div v-else-if="this.contestID && !OIContestRealTimePermission && submissionExists">-->
-    <!--                <Alert type="success" show-icon>{{$t('m.You_have_submitted_a_solution')}}</Alert>-->
-    <!--              </div>-->
-    <!--              <div v-if="contestEnded">-->
-    <!--                <Alert type="warning" show-icon>{{$t('m.Contest_has_ended')}}</Alert>-->
-    <!--              </div>-->
-    <!--            </Col>-->
-
-    <!--            <Col :span="12">-->
-    <!--              <template v-if="captchaRequired">-->
-    <!--                <div class="captcha-container">-->
-    <!--                  <Tooltip v-if="captchaRequired" content="Click to refresh" placement="top">-->
-    <!--                    <img :src="captchaSrc" @click="getCaptchaSrc"/>-->
-    <!--                  </Tooltip>-->
-    <!--                  <Input v-model="captchaCode" class="captcha-code"/>-->
-    <!--                </div>-->
-    <!--              </template>-->
-    <!--              <Button type="warning" icon="edit" :loading="submitting" @click="submitCode"-->
-    <!--                      :disabled="problemSubmitDisabled || submitted"-->
-    <!--                      class="fl-right">-->
-    <!--                <span v-if="submitting">{{$t('m.Submitting')}}</span>-->
-    <!--                <span v-else>{{$t('m.Submit')}}</span>-->
-    <!--              </Button>-->
-    <!--            </Col>-->
-    <!--          </Row>-->
-    <!--        </Card>-->
-
-    <!--          <div id="right-column">-->
-    <!--            <VerticalMenu @on-click="handleRoute">-->
-    <!--              <template v-if="this.contestID">-->
-    <!--                <VerticalMenu-item :route="{name: 'contest-problem-list', params: {contestID: contestID}}">-->
-    <!--                  <Icon type="ios-photos"></Icon>-->
-    <!--                  {{$t('m.Problems')}}-->
-    <!--                </VerticalMenu-item>-->
-
-    <!--                <VerticalMenu-item :route="{name: 'contest-announcement-list', params: {contestID: contestID}}">-->
-    <!--                  <Icon type="chatbubble-working"></Icon>-->
-    <!--                  {{$t('m.Announcements')}}-->
-    <!--                </VerticalMenu-item>-->
-    <!--              </template>-->
-
-    <!--              <VerticalMenu-item v-if="!this.contestID || OIContestRealTimePermission" :route="submissionRoute">-->
-    <!--                <Icon type="navicon-round"></Icon>-->
-    <!--                 {{$t('m.Submissions')}}-->
-    <!--              </VerticalMenu-item>-->
-
-    <!--              <template v-if="this.contestID">-->
-    <!--                <VerticalMenu-item v-if="!this.contestID || OIContestRealTimePermission"-->
-    <!--                                   :route="{name: 'contest-rank', params: {contestID: contestID}}">-->
-    <!--                  <Icon type="stats-bars"></Icon>-->
-    <!--                  {{$t('m.Rankings')}}-->
-    <!--                </VerticalMenu-item>-->
-    <!--                <VerticalMenu-item :route="{name: 'contest-details', params: {contestID: contestID}}">-->
-    <!--                  <Icon type="home"></Icon>-->
-    <!--                  {{$t('m.View_Contest')}}-->
-    <!--                </VerticalMenu-item>-->
-    <!--              </template>-->
-    <!--            </VerticalMenu>-->
   </div>
 </template>
 
@@ -284,7 +202,6 @@ export default {
         theme: this.theme,
         fontsize: this.fontSize
       })
-
 
       event.preventDefault();
       event.returnValue = '';
