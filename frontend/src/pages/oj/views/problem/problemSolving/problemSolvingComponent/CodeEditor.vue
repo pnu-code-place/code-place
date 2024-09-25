@@ -180,9 +180,6 @@ export default {
       ln: this.codemirror.doc.getCursor().line,
       ch: this.codemirror.doc.getCursor().ch
     })
-
-    console.log('this is current codemirror object', this.codemirror)
-    console.log("In Codemirror",this.value)
   },
   watch:{
     isDarkMode(value){
