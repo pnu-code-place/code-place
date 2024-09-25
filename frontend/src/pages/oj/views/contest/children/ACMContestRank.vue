@@ -3,15 +3,6 @@
     <div class="ACMRankBox">
       <div class="ACMRankTitle">
         <p>{{ $t("m.Rank") }}</p>
-        <CustomTooltip
-          :content="$t('m.ACM_Contest_Information')"
-          placement="right"
-        >
-          <Icon
-            type="ios-information-outline"
-            style="font-size: 20px; font-weight: 900"
-          ></Icon>
-        </CustomTooltip>
       </div>
       <div
         v-if="!dataRank.length"
@@ -21,8 +12,8 @@
       </div>
       <table v-else class="ACMRankContent">
         <thead>
-          <th style="min-width: 50px">#</th>
-          <th>{{ $t("m.User_User") }}</th>
+          <th style="min-width: 50px">{{ $t("m.Contest_Rank") }}</th>
+          <th>{{ $t("m.Contest_Participant") }}</th>
           <th>
             {{ $t("m.Solved_Problems") }}
           </th>
@@ -160,6 +151,7 @@ export default {
       dataRank.forEach((rank, i) => {
         let info = rank.submission_info;
         Object.keys(info).forEach((problemID) => {
+          if (!dataRank[i][problemID]) return;
           dataRank[i][problemID].ac_time = moment(this.contest.start_time)
             .add(info[problemID].ac_time, "seconds")
             .format();
@@ -197,9 +189,6 @@ export default {
 }
 .ACMRankTitle {
   position: absolute;
-  display: flex;
-  align-items: center;
-  gap: 12px;
   p {
     text-decoration: none;
     font-size: 24px;
@@ -217,7 +206,7 @@ export default {
   th {
     color: #7e7e7e;
     font-size: 1.3em;
-    padding: 0px 15px 10px 0px;
+    padding: 0px 7.5px 10px 7.5px;
   }
   td {
     border-top: 1px solid rgba(0, 0, 0, 0.1);

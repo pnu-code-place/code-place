@@ -2,6 +2,16 @@
   <div class="problemBox">
     <div class="problemTitle">
       <p>{{ $t("m.Problems_List") }}</p>
+      <CustomTooltip
+        v-if="contestRuleType === 'ACM'"
+        :content="$t('m.ACM_Contest_Information')"
+        placement="right"
+      >
+        <Icon
+          type="ios-information-outline"
+          style="font-size: 16px; font-weight: 900"
+        ></Icon>
+      </CustomTooltip>
     </div>
     <div
       v-if="problems.length === 0"
@@ -19,7 +29,9 @@
         </th>
         <th class="TableTitle">{{ $t("m.Th_Problem_Title") }}</th>
         <th>{{ $t("m.Th_Problem_Difficulty") }}</th>
-        <th>{{ $t("m.Th_Problem_Total_Score") }}</th>
+        <th v-if="contestRuleType !== 'ACM'">
+          {{ $t("m.Th_Problem_Total_Score") }}
+        </th>
         <th>{{ $t("m.Th_Problem_AC_Rate") }}</th>
       </thead>
       <tbody>
@@ -31,7 +43,7 @@
             {{ problem.title }}
           </td>
           <td>{{ DIFFICULTY_MAP[problem.difficulty].value }}</td>
-          <td>{{ problem.total_score }}</td>
+          <td v-if="contestRuleType !== 'ACM'">{{ problem.total_score }}</td>
           <td>
             {{ getACRate(problem.accepted_number, problem.submission_number) }}
           </td>
@@ -121,6 +133,9 @@ export default {
   border-radius: 7px;
 }
 .problemTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   p {
     text-decoration: none;
     font-size: 24px;
