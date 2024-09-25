@@ -2,6 +2,16 @@
   <div class="problemBox">
     <div class="problemTitle">
       <p>{{ $t("m.Problems_List") }}</p>
+      <CustomTooltip
+        v-if="contestRuleType === 'ACM'"
+        :content="$t('m.ACM_Contest_Information')"
+        placement="right"
+      >
+        <Icon
+          type="ios-information-outline"
+          style="font-size: 20px; font-weight: 900"
+        ></Icon>
+      </CustomTooltip>
     </div>
     <div
       v-if="problems.length === 0"
@@ -121,6 +131,9 @@ export default {
   border-radius: 7px;
 }
 .problemTitle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   p {
     text-decoration: none;
     font-size: 24px;
