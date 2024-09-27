@@ -2,8 +2,8 @@
   <img src="./frontend/src/assets/thumbnail.svg" width="400" alt="Code Place Logo"/>
 </div>
 
-# 프로젝트 소개
-본 프로젝트는 부산대학교 학생들의 프로그래밍 역량 향상을 위해 개발되었습니다.
+## 프로젝트 소개
+본 프로젝트는 부산대학교 학생들의 프로그래밍 역량 향상을 위해 개발되었으며,
 
 부산대학교의 학생들이 전공과 관계 없이 프로그래밍에 쉽게 접근하고 성장할 수 있는 학습 환경을 조성하는 것이 목표입니다.
 
@@ -11,12 +11,37 @@
 > 위 프로젝트는 QingdaoU OJ 오픈소스 기반으로 개발되었습니다.
 <br/>
 
-## 🔗 배포 주소
+## 프로젝트 주요 기능
+- **코딩테스트 및 대회**: 실력 향상을 위한 실전 환경 제공
+- **수준별 알고리즘 문제**: 다양한 난이도의 문제로 단계별 학습 제공
+- **온라인 코드 에디터**: 웹에서 바로 코딩과 실행이 가능한 통합 개발 환경 제공
+- **개인화된 마이페이지**: 학습 진행 상황 추적 및 개인별 역량 분석 제공
+
+<br/>
+
+## 배포 주소
 > 운영 서버 주소 : https://code.pusan.ac.kr/
 > 
 > 개발(베타) 서버 주소 : https://copl-dev.site/
 
 <br/>
+
+## 프로젝트 아키텍처
+
+## 개발 스택
+
+**Infra Skill**
+
+<img src="https://img.shields.io/badge/Nginx-1.18.0-3776AB?style=flat-square&logo=Nginx&logoColor=white" /> <img src="https://img.shields.io/badge/Docker-25.0.3-2d8cf0?style=flat-square&logo=docker&logoColor=white"/> <img src="https://img.shields.io/badge/Harbor-F24E1E?style=flat-square&logo=harbor&logoColor=white"/> 
+
+**BE Skill**
+
+<img src="https://img.shields.io/badge/Python-3.8.0-3776AB?style=flat-square&logo=Python&logoColor=white" /> <img src="https://img.shields.io/badge/django-3.2.9-092E20?style=flat-square&logo=django&logoColor=white"/> <img src="https://img.shields.io/badge/django--rest--framework-3.12.4-092e20?style=flat-square&logo=django&logoColor=white" />
+
+**FE Skill**
+
+<img src="https://img.shields.io/badge/Vue.js-2.5.13-4FC08D?style=flat-square&logo=Vue.js&logoColor=white" /> <img src="https://img.shields.io/badge/Vuex-3.0.1-4FC08D?style=flat-square&logo=Vue.js&logoColor=white" /> <img src="https://img.shields.io/badge/Node.js-16.16.0-339933?style=flat-square&logo=Node.js&logoColor=white" /> <img src="https://img.shields.io/badge/ECharts-3.8.3-F72C5B?style=flat-square" /> <img src="https://img.shields.io/badge/iView-2.8.0-2d8cf0?style=flat-square" /> <img src="https://img.shields.io/badge/Element-2.0.9-409eff?style=flat-square" />
+
   
 ## 👨‍💻 구성원
 ### BE 개발 인원
