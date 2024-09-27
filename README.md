@@ -30,18 +30,16 @@
 
 ## 개발 스택
 
-**Infra Skill**
+**Infra Skill** &nbsp;
+<img src="https://img.shields.io/badge/Nginx_1.18.0-3776AB?style=flat-square&logo=Nginx&logoColor=white" /> <img src="https://img.shields.io/badge/Docker_25.0.3-2d8cf0?style=flat-square&logo=docker&logoColor=white"/> <img src="https://img.shields.io/badge/Harbor-F24E1E?style=flat-square&logo=harbor&logoColor=white"/> 
 
-<img src="https://img.shields.io/badge/Nginx-1.18.0-3776AB?style=flat-square&logo=Nginx&logoColor=white" /> <img src="https://img.shields.io/badge/Docker-25.0.3-2d8cf0?style=flat-square&logo=docker&logoColor=white"/> <img src="https://img.shields.io/badge/Harbor-F24E1E?style=flat-square&logo=harbor&logoColor=white"/> 
+**BE Skill** &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<img src="https://img.shields.io/badge/Python_3.8.0-3776AB?style=flat-square&logo=Python&logoColor=white" /> <img src="https://img.shields.io/badge/django_3.2.9-092E20?style=flat-square&logo=django&logoColor=white"/> <img src="https://img.shields.io/badge/django--rest--framework_3.12.4-092e20?style=flat-square&logo=django&logoColor=white" />
 
-**BE Skill**
+**FE Skill** &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<img src="https://img.shields.io/badge/Vue.js_2.5.13-4FC08D?style=flat-square&logo=Vue.js&logoColor=white" /> <img src="https://img.shields.io/badge/Vuex_3.0.1-4FC08D?style=flat-square&logo=Vue.js&logoColor=white" /> <img src="https://img.shields.io/badge/Node.js_16.16.0-339933?style=flat-square&logo=Node.js&logoColor=white" /> <img src="https://img.shields.io/badge/ECharts_3.8.3-F72C5B?style=flat-square" /> <img src="https://img.shields.io/badge/iView_2.8.0-2d8cf0?style=flat-square" /> <img src="https://img.shields.io/badge/Element_2.0.9-409eff?style=flat-square" />
 
-<img src="https://img.shields.io/badge/Python-3.8.0-3776AB?style=flat-square&logo=Python&logoColor=white" /> <img src="https://img.shields.io/badge/django-3.2.9-092E20?style=flat-square&logo=django&logoColor=white"/> <img src="https://img.shields.io/badge/django--rest--framework-3.12.4-092e20?style=flat-square&logo=django&logoColor=white" />
-
-**FE Skill**
-
-<img src="https://img.shields.io/badge/Vue.js-2.5.13-4FC08D?style=flat-square&logo=Vue.js&logoColor=white" /> <img src="https://img.shields.io/badge/Vuex-3.0.1-4FC08D?style=flat-square&logo=Vue.js&logoColor=white" /> <img src="https://img.shields.io/badge/Node.js-16.16.0-339933?style=flat-square&logo=Node.js&logoColor=white" /> <img src="https://img.shields.io/badge/ECharts-3.8.3-F72C5B?style=flat-square" /> <img src="https://img.shields.io/badge/iView-2.8.0-2d8cf0?style=flat-square" /> <img src="https://img.shields.io/badge/Element-2.0.9-409eff?style=flat-square" />
-
+<br/>
   
 ## 👨‍💻 구성원
 ### BE 개발 인원
@@ -98,21 +96,6 @@
     </td>
   </tr>
 </table>
-<br />
-
-## 🔧 기술 스택
-### 🛠 Infra Skill & Tool
-<img src="https://img.shields.io/badge/Nginx-1.18.0-3776AB?style=flat-square&logo=Nginx&logoColor=white" /> <img src="https://img.shields.io/badge/Docker-25.0.3-2d8cf0?style=flat-square&logo=docker&logoColor=white"/> <img src="https://img.shields.io/badge/Harbor-F24E1E?style=flat-square&logo=harbor&logoColor=white"/> 
-
-### 🛠 BE Skill & Tool
-<img src="https://img.shields.io/badge/Python-3.8.0-3776AB?style=flat-square&logo=Python&logoColor=white" /> <img src="https://img.shields.io/badge/django-3.2.9-092E20?style=flat-square&logo=django&logoColor=white"/> <img src="https://img.shields.io/badge/django--rest--framework-3.12.4-092e20?style=flat-square&logo=django&logoColor=white" />
-
-### 🛠 FE Skill & Tool
-<img src="https://img.shields.io/badge/Vue.js-2.5.13-4FC08D?style=flat-square&logo=Vue.js&logoColor=white" /> <img src="https://img.shields.io/badge/Vuex-3.0.1-4FC08D?style=flat-square&logo=Vue.js&logoColor=white" /> <img src="https://img.shields.io/badge/Node.js-16.16.0-339933?style=flat-square&logo=Node.js&logoColor=white" /> <img src="https://img.shields.io/badge/ECharts-3.8.3-F72C5B?style=flat-square" /> <img src="https://img.shields.io/badge/iView-2.8.0-2d8cf0?style=flat-square" /> <img src="https://img.shields.io/badge/Element-2.0.9-409eff?style=flat-square" />
-
-### 🧩 Communication Tool
-<img src="https://img.shields.io/badge/GitHub-181717?style=flatsquare&logo=GitHub&logoColor=white" /> <img src="https://img.shields.io/badge/Slack-4A154B?style=flatsquare&logo=Slack&logoColor=white" /> <img src="https://img.shields.io/badge/Figma-F24E1E?style=flat-square&logo=Figma&logoColor=white" /> <img src="https://img.shields.io/badge/Notion-eeeeee?style=flat-square&logo=Notion&logoColor=black" />
-
 <br />
 
 ## 💎 라이센스
