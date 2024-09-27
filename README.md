@@ -7,7 +7,7 @@
 
 부산대학교의 학생들이 전공과 관계 없이 프로그래밍에 쉽게 접근하고 성장할 수 있는 학습 환경을 조성하는 것이 목표입니다.
 
-현재 부산대학교의 교양필수 과목인 ‘**기초컴퓨터프로그래밍**’ 수업에서 학생들에게 코딩실습 환경을 제공하기 위해 활용되고 있습니다.
+현재 부산대학교의 교양필수 과목인 ‘**기초컴퓨터프로그래밍**’ 수업에서 학생들에게 코딩 실습 환경을 제공하기 위해 활용되고 있습니다.
 > 위 프로젝트는 QingdaoU OJ 오픈소스 기반으로 개발되었습니다.
 <br/>
 
@@ -40,7 +40,30 @@
 <img src="https://img.shields.io/badge/Vue.js_2.5.13-4FC08D?style=flat-square&logo=Vue.js&logoColor=white" /> <img src="https://img.shields.io/badge/Vuex_3.0.1-4FC08D?style=flat-square&logo=Vue.js&logoColor=white" /> <img src="https://img.shields.io/badge/Node.js_16.16.0-339933?style=flat-square&logo=Node.js&logoColor=white" /> <img src="https://img.shields.io/badge/ECharts_3.8.3-F72C5B?style=flat-square" /> <img src="https://img.shields.io/badge/iView_2.8.0-2d8cf0?style=flat-square" /> <img src="https://img.shields.io/badge/Element_2.0.9-409eff?style=flat-square" />
 
 <br/>
-  
+
+## 세부 기능 소개
+
+**문제 추천 기능**
+- 보너스 점수 문제와 지난 주에 가장 어려웠던 문제를 선별 후 주 마다 제공
+- 사용자가 푼 문제의 난이도, 부족한 영역을 반영한 개인 맞춤 문제 추천
+
+**랭킹 및 티어 시스템**
+- 총 점수 기준 사용자 랭킹 제공
+- 오늘의 급상승 랭킹(당일 점수가 가장 많이 상승한 사용자 기준) 제공
+- 학과별 점수 랭킹 및 상위 5명의 기여자 표기
+- 새싹 ~ 다이아몬드 등급의 티어 제공
+
+**문제 풀이 기능**
+- 다크모드 및 코드 하이라이팅 지원
+- 오픈소스 채점서버를 통한 채점 기능 제공
+
+**어드민(CMS) 기능**
+- 홈 배너 관리 기능 
+- 사용자 관리 및 통계 대시보드
+- 대회 관리 및 모니터링 시스템
+
+<br/>
+
 ## 👨‍💻 구성원
 ### BE 개발 인원
 <table>
