@@ -46,53 +46,51 @@
 <table>
   <tr>
     <td align="center">
-      <a href="https://github.com/hunsy9"> <img src="https://github.com/hunsy9.png" width="80" alt="main manager"/> </a>
+      <a href="https://github.com/hunsy9">
+        <img src="https://github.com/hunsy9.png" width="80" alt="hunsy9"/>
+        <br />
+        <sub><b>hunsy9</b></sub>
+      </a>
+      <br />
     </td>
     <td align="center">
-      <a href="https://github.com/Boksam"> <img src="https://github.com/Boksam.png" width="80" alt="main manager"/> </a>
-    </td>
-  </tr>
-  <tr>
-    <td align="center"> <a href="mailto:juniper0917@gmail.com">juniper0917@gmail.com</a> </td>
-    <td align="center"> <a href="mailto:boksam1017@gmail.com">boksam1017@gmail.com</a> </td>
-  </tr>
-  <tr>
-    <td align="left" width="350">
-      <div>&nbsp&nbsp&nbsp&nbsp•&nbsp PM, 백엔드 개발 및 배포</div>
-    </td>
-    <td align="left" width="350">
-      <div>&nbsp&nbsp&nbsp&nbsp•&nbsp 프로젝트 기획 및 백엔드 개발</div>
+      <a href="https://github.com/Boksam">
+      <img src="https://github.com/Boksam.png" width="80" alt="Boksam"/>
+      <br />
+      <sub><b>Boksam</b></sub>
+      </a>
+      <br />
     </td>
   </tr>
 </table>
+
 
 ### FE 개발 인원
 <table>
   <tr>
     <td align="center">
-      <a href="https://github.com/hunsy9"> <img src="https://github.com/hunsy9.png" width="80" alt="main manager"/> </a>
+      <a href="https://github.com/hunsy9">
+        <img src="https://github.com/hunsy9.png" width="80" alt="hunsy9"/>
+        <br />
+        <sub><b>hunsy9</b></sub>
+      </a>
+      <br />
     </td>
     <td align="center">
-      <a href="https://github.com/minmunui"> <img src="https://github.com/minmunui.png" width="80" alt="main manager"/> </a>
+      <a href="https://github.com/minmunui">
+      <img src="https://github.com/minmunui.png" width="80" alt="minmunui"/>
+      <br />
+      <sub><b>minmunui</b></sub>
+      </a>
+      <br />
     </td>
     <td align="center">
-      <a href="https://github.com/llddang"> <img src="https://github.com/llddang.png" width="80" alt="main manager"/> </a>
-    </td>
-  </tr>
-  <tr>
-    <td align="center"> <a href="mailto:juniper0917@gmail.com">juniper0917@gmail.com</a> </td>
-    <td align="center"> <a href="mailto:ehdwls1638@pusan.ac.kr">ehdwls1638@pusan.ac.kr</a> </td>
-    <td align="center"> <a href="mailto:laliddang@gmail.com">laliddang@gmail.com</a> </td>
-  </tr>
-  <tr>
-    <td width="350">
-      <div>&nbsp&nbsp&nbsp&nbsp•&nbsp PM, 프론트/백엔드 기획 및 개발</div>
-    </td>
-    <td width="350">
-      <div>&nbsp&nbsp&nbsp&nbsp•&nbsp 프론트엔드(Client) 기획 및 개발</div>
-    </td>
-    <td width="350">
-      <div>&nbsp&nbsp&nbsp&nbsp•&nbsp 프론트엔드(Admin) 기획 및 개발</div>
+      <a href="https://github.com/llddang">
+      <img src="https://github.com/llddang.png" width="80" alt="llddang"/>
+      <br />
+      <sub><b>llddang</b></sub>
+      </a>
+      <br />
     </td>
   </tr>
 </table>
