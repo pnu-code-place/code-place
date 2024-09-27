@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="./frontend/src/assets/thumbnail.svg" width="400" alt="Code Place Logo"/>
+  <img src="./frontend/src/assets/thumbnail.svg" width="830" alt="Code Place Logo"/>
 </div>
 
 ## 프로젝트 소개
