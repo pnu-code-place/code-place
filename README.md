@@ -1,11 +1,14 @@
 <div align="center">
-  <img src="./frontend/src/assets/thumbnail.svg" width="800" alt="Code Place Logo"/>
+  <img src="./frontend/src/assets/thumbnail.svg" width="400" alt="Code Place Logo"/>
 </div>
 
-# <div align="center">PNU Code Place</div>
->  [QingdaoU OJ](https://github.com/QingdaoU/OnlineJudge)를 기반으로, 부산대학교 학생들의 코딩 역량 강화에 도움을 주는 플랫폼 개발
-> 
-> 개발기간 : 2023.12 ~ 현재
+# 프로젝트 소개
+본 프로젝트는 부산대학교 학생들의 프로그래밍 역량 향상을 위해 개발되었습니다.
+
+부산대학교의 학생들이 전공과 관계 없이 프로그래밍에 쉽게 접근하고 성장할 수 있는 학습 환경을 조성하는 것이 목표입니다.
+
+현재 부산대학교의 교양필수 과목인 ‘**기초컴퓨터프로그래밍**’ 수업에서 학생들에게 코딩실습 환경을 제공하기 위해 활용되고 있습니다.
+> 위 프로젝트는 QingdaoU OJ 오픈소스 기반으로 개발되었습니다.
 <br/>
 
 ## 🔗 배포 주소
