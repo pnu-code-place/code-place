@@ -1,19 +1,17 @@
 ARG SERVER_NAME
 
 # Build stage
-FROM node:16 as build-stage
+FROM node:16 AS build-stage
 
 WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
 
-ENV NODE_ENV development
-RUN npm run build:dll
-
 ARG APP_VERSION
 ENV VUE_APP_VERSION=$APP_VERSION
 
+RUN npm run build:dll
 RUN npm run build
 
 # Production stage
