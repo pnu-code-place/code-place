@@ -130,6 +130,9 @@ class ContestProblemAPI(APIView):
 
         contest_problems = Problem.objects.select_related("created_by").filter(contest=self.contest, visible=True)
 
+        query = request.GET.get("query", "").strip()
+        if query:
+            contest_problems = contest_problems.filter(Q(title__icontains=query) | Q(_id__icontains=query) | Q(tags__name__icontains=query)).distinct()
 
         submission_state_info = {}
         if request.user:
