@@ -1,0 +1,14 @@
+name: Change detection and Image tagging with github sha (DEV)
+
+on:
+  push:
+    paths-ignore:
+      - 'deployment/**'
+      - 'scripts/**'
+    branches: [ develop ]
+  pull_request:
+    paths-ignore:
+      - 'deployment/**'
+      - 'scripts/**'
+    branches: [ develop ]
+  workflow_dispatch:
