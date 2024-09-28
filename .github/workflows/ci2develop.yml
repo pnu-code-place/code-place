@@ -62,7 +62,7 @@ jobs:
             ${{ secrets.HARBOR_REGISTRY }}/code-place-dev/backend:latest
 
   ci-scheduler-dev:
-    needs: [versioning, detect-changes-by-component]
+    needs: [detect-changes-by-component]
     if: ${{ needs.detect-changes-by-component.outputs.scheduler == 'true' }}
     runs-on: ubuntu-latest
     steps:
@@ -90,7 +90,7 @@ jobs:
             ${{ secrets.HARBOR_REGISTRY }}/code-place-dev/scheduler:latest
 
   ci-frontend-dev:
-    needs: [versioning, detect-changes-by-component]
+    needs: [detect-changes-by-component]
     if: ${{ needs.detect-changes-by-component.outputs.frontend == 'true' }}
     runs-on: ubuntu-latest
     steps:
