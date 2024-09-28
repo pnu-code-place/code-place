@@ -120,21 +120,42 @@ class ProblemAdminSerializer(BaseProblemSerializer):
 
 class ProblemSerializer(BaseProblemSerializer):
     template = serializers.SerializerMethodField("get_public_template")
+    mine_submission_state = serializers.SerializerMethodField(default=None)
 
     class Meta:
         model = Problem
         exclude = ("test_case_score", "test_case_id", "visible", "is_public",
                    "spj_code", "spj_version", "spj_compile_ok")
 
+    def get_mine_submission_state(self, obj):
+        if not self.context:
+            return None
+        if obj.id in self.context["accepted"]:
+            return "Accepted"
+        if obj.id in self.context["partially_accepted"]:
+            return "Partially_Accepted"
+        if obj.id in self.context["failed"]:
+            return "Failed"
+
 
 class ProblemSafeSerializer(BaseProblemSerializer):
     template = serializers.SerializerMethodField("get_public_template")
+    mine_submission_state = serializers.SerializerMethodField(default=None)
 
     class Meta:
         model = Problem
         exclude = ("test_case_score", "test_case_id", "visible", "is_public",
                    "spj_code", "spj_version", "spj_compile_ok",
                    "difficulty", "submission_number", "accepted_number", "statistic_info")
+    def get_mine_submission_state(self, obj):
+        if not self.context:
+            return None
+        if obj.id in self.context["accepted"]:
+            return "Accepted"
+        if obj.id in self.context["partially_accepted"]:
+            return "Partially_Accepted"
+        if obj.id in self.context["failed"]:
+            return "Failed"
 
 
 class ContestProblemMakePublicSerializer(serializers.Serializer):

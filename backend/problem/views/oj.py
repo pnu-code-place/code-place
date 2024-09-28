@@ -6,7 +6,7 @@ from ..models import ProblemTag, Problem, ProblemRuleType
 from ..serializers import ProblemSerializer, TagSerializer, ProblemSafeSerializer, RecommendBonusProblemSerializer,MostDifficultProblemSerializer
 from contest.models import ContestRuleType
 from account.models import UserProfile, UserScore
-from submission.models import JudgeStatus
+from submission.models import JudgeStatus, Submission
 from django.http import HttpResponseNotFound, HttpResponseBadRequest
 from utils.constants import ProblemField, Difficulty, Tier
 
@@ -129,11 +129,36 @@ class ContestProblemAPI(APIView):
             return self.success(problem_data)
 
         contest_problems = Problem.objects.select_related("created_by").filter(contest=self.contest, visible=True)
+
+
+        submission_state_info = {}
+        if request.user:
+            contest_user_submissions = Submission.objects.filter(contest=self.contest, username__exact=request.user.username)
+            accepted_submissions = set()
+            partially_accepted_submissions = set()
+            failed_submissions = set()
+
+            for i in contest_user_submissions.values():
+                res = i.get("result")
+                problem_id = i["problem_id"]
+                if res == JudgeStatus.ACCEPTED:
+                    accepted_submissions.add(problem_id)
+                elif res == JudgeStatus.PARTIALLY_ACCEPTED:
+                    partially_accepted_submissions.add(problem_id)
+                else:
+                    failed_submissions.add(problem_id)
+
+            submission_state_info = {
+                "accepted": accepted_submissions,
+                "partially_accepted": partially_accepted_submissions,
+                "failed": failed_submissions
+            }
+
         if self.contest.problem_details_permission(request.user):
-            data = ProblemSerializer(contest_problems, many=True).data
+            data = ProblemSerializer(contest_problems, many=True, context=submission_state_info).data
             self._add_problem_status(request, data)
         else:
-            data = ProblemSafeSerializer(contest_problems, many=True).data
+            data = ProblemSafeSerializer(contest_problems, many=True, context=submission_state_info).data
         return self.success(data)
 
 
