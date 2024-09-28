@@ -1,3 +1,5 @@
+ARG SERVER_NAME
+
 # Build stage
 FROM node:16 as build-stage
 
@@ -15,10 +17,16 @@ ENV VUE_APP_VERSION=$APP_VERSION
 RUN npm run build
 
 # Production stage
-FROM nginx:stable-alpine as production-stage
+FROM nginx:stable-alpine AS production-stage
+
+ARG SERVER_NAME
+ENV SERVER_NAME=$SERVER_NAME
+
 WORKDIR /app
 COPY ./ /app/
 COPY --from=build-stage /app/dist /usr/share/nginx/html
+
+RUN echo ${SERVER_NAME}
 #COPY --from=build-stage /app/deploy/nginx /etc/nginx
 #COPY --from=build-stage /app/deploy/entrypoint.sh /app/deploy/entrypoint.sh
 RUN chmod -R u=rwX,go=rX ./
