@@ -12,3 +12,23 @@ on:
       - 'scripts/**'
     branches: [ develop ]
   workflow_dispatch:
+
+jobs:
+  detect-changes-by-component:
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      scheduler: ${{ steps.filter.outputs.scheduler }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'backend/**'
+            scheduler:
+              - 'scheduler/**'
+            frontend:
+              - 'frontend/**'
