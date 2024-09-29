@@ -19,3 +19,18 @@ jobs:
           else
             echo "is_release=false" >> $GITHUB_OUTPUT
           fi
+
+  production-pr-notification:
+    needs: [check-branch-name]
+    if: needs.check-branch-name.outputs.is_release == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: action-slack
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          author_name: code-place
+          fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
+          if_mention: failure,cancelled
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
