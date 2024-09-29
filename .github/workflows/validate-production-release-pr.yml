@@ -1,0 +1,21 @@
+name: Production Pull Request Checks
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  check-branch-name:
+    runs-on: ubuntu-latest
+    outputs:
+      is_release: ${{ steps.check_name.outputs.is_release }}
+    steps:
+      - name: Check if PR is from a release branch
+        id: check_name
+        run: |
+          if [[ ${{ github.head_ref }} =~ ^release- ]]; then
+            echo "is_release=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_release=false" >> $GITHUB_OUTPUT
+          fi
