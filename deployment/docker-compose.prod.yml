@@ -1,3 +1,5 @@
+version: "3.9"
+
 services:
   frontend:
     image: registry.copl-dev.site/code-place-prod/frontend:latest
