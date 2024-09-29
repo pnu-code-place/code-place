@@ -1,0 +1,34 @@
+name: Continuous Integration to production registry and release (PROD)
+
+on:
+  push:
+    paths-ignore:
+      - 'deployment/**'
+      - 'scripts/**'
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  check-release-branch:
+    runs-on: ubuntu-latest
+    outputs:
+      is_release: ${{ steps.check_branch.outputs.is_release }}
+      version: ${{ steps.extract_version.outputs.version }}
+    steps:
+      - name: Check if merged from release branch
+        id: check_branch
+        run: |
+          commit_message="${{ github.event.head_commit.message }}"
+          if [[ "$commit_message" =~ ^Merge\ pull\ request.*from.*release- ]]; then
+            echo "is_release=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_release=false" >> $GITHUB_OUTPUT
+          fi
+        shell: bash
+
+      - name: Extract version from merge commit message
+        if: steps.check_branch.outputs.is_release == 'true'
+        id: extract_version
+        run: |
+          VERSION=$(echo "${{ github.event.head_commit.message }}" | grep -oP 'release-\K[0-9]+\.[0-9]+\.[0-9]+')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
