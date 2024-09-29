@@ -1,28 +1,24 @@
+version: "3.9"
+
 services:
   frontend:
-    image: registry.copl-dev.site/code-place-dev/frontend:latest
     environment:
       - FORCE_HTTPS=1
-      # - STATIC_CDN_HOST=cdn.oj.com
     volumes:
       - ../frontend/deploy/nginx/log:/data/log
 
   backend:
-    image: registry.copl-dev.site/code-place-dev/backend:latest
     restart: always
     depends_on:
       - oj-redis
       - oj-postgres
       - oj-judge
-    volumes:
-      - data_volume:/data:rw
     env_file:
       - .env
     environment:
       - JUDGE_SERVER_TOKEN=CHANGE_THIS # secret.key
 
   scheduler:
-    image: registry.copl-dev.site/code-place-dev/scheduler:latest
     restart: always
     depends_on:
       - oj-postgres
@@ -33,7 +29,6 @@ services:
       - .env
 
   oj-judge:
-    image: registry.copl-dev.site/code-place-dev/judge-server:1.0.0-beta
     restart: always
     #    read_only: true
     cap_drop:
@@ -68,5 +63,3 @@ services:
       - ../backend/data/postgres:/var/lib/postgresql/data
     env_file:
       - .env
-    ports:
-      - "5437:5432"
