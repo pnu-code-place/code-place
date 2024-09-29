@@ -1,8 +1,32 @@
+version: "3.9"
+
 services:
-  web-frontend:
+  frontend:
+    image: registry.copl-dev.site/code-place-dev/frontend:latest
     ports:
       - "8001:8000"
       - "1444:1443"
     volumes:
       - /etc/letsencrypt/live/copl-dev.site/fullchain.pem:/etc/letsencrypt/live/copl-dev.site/fullchain.pem:ro
       - /etc/letsencrypt/live/copl-dev.site/privkey.pem:/etc/letsencrypt/live/copl-dev.site/privkey.pem:ro
+      - data_volume:/data:ro
+
+  backend:
+    image: registry.copl-dev.site/code-place-dev/backend:latest
+    volumes:
+      - data_volume:/data:rw
+
+  scheduler:
+    image: registry.copl-dev.site/code-place-dev/scheduler:latest
+
+  oj-judge:
+    image: registry.copl-dev.site/code-place-dev/judge-server:1.0.0-beta
+
+  oj-postgres:
+    ports:
+      - "5438:5432"
+
+volumes:
+  data_volume:
+    external: true
+    name: backend-data-dev
