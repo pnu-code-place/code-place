@@ -23,6 +23,13 @@ services:
     image: registry.copl-dev.site/code-place-prod/backend:latest
     volumes:
       - data_volume:/data:rw
+    deploy:
+      replicas: 4
+      update_config:
+        parallelism: 2
+        order: stop-first
+      restart_policy:
+        condition: on-failure
 
   scheduler:
     image: registry.copl-dev.site/code-place-prod/scheduler:latest
