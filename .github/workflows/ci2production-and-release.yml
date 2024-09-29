@@ -56,3 +56,90 @@ jobs:
               - 'scheduler/**'
             frontend:
               - 'frontend/**'
+
+  ci-backend:
+    needs: [detect-changes-by-component]
+    if: ${{ needs.detect-changes-by-component.outputs.backend == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Login to Harbor
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ secrets.HARBOR_REGISTRY }}
+          username: ${{ secrets.HARBOR_USERNAME }}
+          password: ${{ secrets.HARBOR_PASSWORD }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v2
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.HARBOR_REGISTRY }}/code-place-prod/backend:${{ github.sha }}-prod
+            ${{ secrets.HARBOR_REGISTRY }}/code-place-prod/backend:latest
+
+  ci-scheduler:
+    needs: [detect-changes-by-component]
+    if: ${{ needs.detect-changes-by-component.outputs.scheduler == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Login to Harbor
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ secrets.HARBOR_REGISTRY }}
+          username: ${{ secrets.HARBOR_USERNAME }}
+          password: ${{ secrets.HARBOR_PASSWORD }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v2
+        with:
+          context: ./scheduler
+          file: ./scheduler/Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.HARBOR_REGISTRY }}/code-place-prod/scheduler:${{ github.sha }}-prod
+            ${{ secrets.HARBOR_REGISTRY }}/code-place-prod/scheduler:latest
+
+  ci-frontend:
+    needs: [detect-changes-by-component]
+    if: ${{ needs.detect-changes-by-component.outputs.frontend == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Login to Harbor
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ secrets.HARBOR_REGISTRY }}
+          username: ${{ secrets.HARBOR_USERNAME }}
+          password: ${{ secrets.HARBOR_PASSWORD }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v2
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.HARBOR_REGISTRY }}/code-place-prod/frontend:${{ github.sha }}-prod
+            ${{ secrets.HARBOR_REGISTRY }}/code-place-prod/frontend:latest
+          build-args: |
+            SERVER_NAME=${{ secrets.PROD_SERVER_NAME }}
+            APP_VERSION=${{ github.sha }}
