@@ -36,6 +36,9 @@ services:
 
   oj-judge:
     image: registry.copl-dev.site/code-place-prod/judge-server:1.0.0-beta
+  oj-postgres:
+    ports:
+      - "5437:5432"
 
 volumes:
   data_volume:
