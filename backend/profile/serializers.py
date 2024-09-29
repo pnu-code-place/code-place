@@ -23,10 +23,10 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
 
 class EditUserProfileSerializer(serializers.Serializer):
-    real_name = serializers.CharField(max_length=32, allow_null=True, required=False)
+    username = serializers.CharField(min_length=3, max_length=8)
     avatar = serializers.CharField(max_length=256, allow_blank=True, required=False)
-    mood = serializers.CharField(max_length=256, allow_blank=True, required=False)
-    github = serializers.URLField(max_length=256, allow_blank=True, required=False)
+    mood = serializers.CharField(max_length=256, allow_blank=True, required=False, allow_null=True)
+    github = serializers.URLField(max_length=256, allow_blank=True, required=False, allow_null=True)
     college = serializers.IntegerField(allow_null=True, required=False)
     department = serializers.IntegerField(allow_null=True, required=False)
     language = serializers.ChoiceField(allow_null=True, allow_blank=True, required=False, choices=["C", "C++", "Java", "Python3", "JavaScript"])
@@ -71,11 +71,19 @@ class DashboardRankSerializer(serializers.ModelSerializer):
         model = UserScore
         fields = ['tier', 'total_rank', 'total_rank_percentage', 'total_score', 'current_tier_score', 'next_tier_score']
 
+    def _get_user_rank(self, instance):
+        if not hasattr(self, '_rank_cache'):
+            queryset = UserScore.objects.order_by('-total_score')
+            user_list = list(queryset)
+            self._rank_cache = user_list.index(instance) + 1
+        return self._rank_cache
+
     def get_total_rank(self, instance):
-        return instance.total_rank
+        return self._get_user_rank(instance)
 
     def get_total_rank_percentage(self, instance):
-        total_rank_percentage = round(instance.total_rank / self.context['total_user_count'], 2)
+        rank = self._get_user_rank(instance)
+        total_rank_percentage = round(rank / self.context['total_user_count'], 2)
         return total_rank_percentage
 
 
@@ -88,7 +96,7 @@ class DashboardFieldInfoSerializer(serializers.ModelSerializer):
 
     def get_fieldInfo(self, instance):
         field_info = {}
-        fields = ['datastructure', 'math', 'sorting', 'implementation', 'search']
+        fields = ['datastructure', 'math', 'sorting', 'implementation', 'search', 'algorithm']
 
         for field in fields:
             field_name_score = f"{field}_score"

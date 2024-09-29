@@ -1,11 +1,11 @@
 <template>
   <div class="logo" @click="handleRoute('/')">
     <div>
-      <img src="@/assets/pojLogo.png" width="48" style="vertical-align:middle;margin-right: 10px"/>
+      <img src="@/assets/code-place-logo.svg" width="30" style="vertical-align:middle;margin-right: 10px"/>
     </div>
     <div class="headerIcon">
       <p class="pnuName">부산대학교</p>
-      <p class="systemTitle code">Code Place</p>
+      <p class="systemTitle code">코드플레이스</p>
     </div>
   </div>
 </template>
@@ -25,7 +25,7 @@ export default {
 }
 </script>
 
-<style lang="less">
+<style scoped lang="less">
 .logo {
   cursor: pointer;
   float: left;

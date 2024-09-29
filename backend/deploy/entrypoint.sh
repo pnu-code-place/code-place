@@ -6,6 +6,10 @@ DATA=/data # 데이터 디렉토리 경로 설정
 # log, config, test_case, avatar, banner 디렉토리 생성
 mkdir -p $DATA/log $DATA/config $DATA/test_case $DATA/public/upload $DATA/public/avatar $DATA/public/website $DATA/public/banner
 
+if [ ! -f "$DATA/config/secret.key" ]; then
+    echo `cat /dev/urandom | head -1 | md5sum | head -c 32` > $DATA/config/secret.key
+fi
+
 # avatar default 이미지가 존재하지 않는 경우 기존 디렉토리에서 복사 및 생성
 if [ ! -f "$DATA/public/avatar/default.png" ]; then
     cp data/public/avatar/default.png $DATA/public/avatar
@@ -49,7 +53,7 @@ echo "Fixtures loaded!"
 addgroup -g 903 spj
 adduser -u 900 -S -G spj server
 
-#chown -R server:spj $DATA $APP/dist
+chown -R server:spj $DATA $APP/dist
 find $DATA/test_case -type d -exec chmod 710 {} \;
 find $DATA/test_case -type f -exec chmod 640 {} \;
 

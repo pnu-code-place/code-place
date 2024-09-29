@@ -40,6 +40,11 @@ class UserProfileAPI(APIView):
     @login_required
     def put(self, request):
         data = request.data
+        if data["username"]:
+            user = User.objects.get(username=request.user.username)
+            user.username = data["username"]
+            user.save()
+            request.user.username = data["username"]
         user_profile = request.user.userprofile
         for k, v in data.items():
             if k == "college" and v is not None:
@@ -76,7 +81,9 @@ class UserProfileDashBoardAPI(APIView):
                 search_rank=Count('search_score',
                                   filter=Q(search_score__gt=F('search_score'))) + 1,
                 sorting_rank=Count('sorting_score',
-                                   filter=Q(search_score__gt=F('sorting_score'))) + 1
+                                   filter=Q(sorting_score__gt=F('sorting_score'))) + 1,
+                algorithm_rank=Count('algorithm_score',
+                                   filter=Q(algorithm_score__gt=F('algorithm_score'))) + 1
             ).first()
             user_solved = UserSolved.objects.filter(user_id=user_id).first()
         except User.DoesNotExist or UserProfile.DoesNotExist:
@@ -86,12 +93,12 @@ class UserProfileDashBoardAPI(APIView):
         except UserScore.DoesNotExist:
             return HttpResponseNotFound('user_score does not exist')
 
-        total_submitted_user_count = UserScore.objects.count()
+        total_user_count = UserScore.objects.filter(user__is_disabled=False).count()
 
         """ Build oj_status """
         ojStatus = {}
         ojStatus.update(DashboardSubmissionSerializer(user_profile).data)
-        ojStatus.update(DashboardRankSerializer(user_score, context={'total_user_count': total_submitted_user_count}).data)
+        ojStatus.update(DashboardRankSerializer(user_score, context={'total_user_count': total_user_count}).data)
 
         """ Build fieldInfo """
         fieldInfo = DashboardFieldInfoSerializer(user_score).data['fieldInfo']

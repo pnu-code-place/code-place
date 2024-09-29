@@ -215,6 +215,7 @@ export const m = {
   Field_DataStructure: "자료구조",
   Field_Search: "탐색",
   Field_Sorting: "정렬",
+  Field_Algorithm: "알고리즘",
   Tag: "태그",
   New_Tag: "새 태그",
 
@@ -283,6 +284,10 @@ export const m = {
   Contest_List_DownloadModal_Exclude: "관리자 제출 제외",
   Contest_List_DownloadModal_Execute: "확인",
 
+  // ContestSubmission.vue
+  Contest_Submission_Title: "대회 제출물 관리",
+  Contest_Submission_User_Title: "대회 참가 인원 목록",
+
   // constants.js
   Contest_Status_Not_Started: "시작 전",
   Contest_Status_Underway: "진행중",
@@ -347,6 +352,9 @@ export const m = {
   Icon_Download_TestCase: "테스트케이스 다운로드",
   Icon_Make_Public: "공개",
   Icon_Add: "추가",
+  Icon_Submission_State: "제출 현황",
+  Icon_Submission_Download: "제출물 다운로드",
+  Icon_Contest_Rank_Download: "대회 랭킹 다운로드",
 
   // Button
   Button_Choose_File: "파일 선택",
@@ -360,4 +368,14 @@ export const m = {
   // Search
   Search_Keywords: "검색어",
   Search_Author: "작성자 검색",
+
+  // Comment
+  Comment_No_Participant: "대회에 참가한 회원이 없습니다.",
+
+  // General
+  Avatar: "아바타",
+  Username: "사용자명",
+  School_Email: "학교 이메일",
+  College: "단과대학",
+  Major: "전공",
 };

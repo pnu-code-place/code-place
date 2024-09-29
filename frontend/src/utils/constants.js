@@ -185,6 +185,12 @@ export const FIELD_MAP = {
     backgroundImage: require("../assets/fieldBackground/sort.svg"),
     maxScore: 25600,
   },
+  5: {
+    value: "알고리즘",
+    boxColor: "#facbcb",
+    backgroundImage: require("../assets/fieldBackground/algorithm.svg"),
+    maxScore: 25600,
+  },
 };
 
 export const TierImageSrc = {
@@ -241,7 +247,7 @@ export const FamilySiteContentSrc = {
   sw_css: {
     "src": require("@/assets/familyContents/micon_4.svg"),
     "banner_name": "부산대학교:SW역량지원시스템",
-    "url": "https://pnuswedu.org/main/index.php"
+    "url": "https://swcss.pusan.ac.kr/"
   },
 };
 

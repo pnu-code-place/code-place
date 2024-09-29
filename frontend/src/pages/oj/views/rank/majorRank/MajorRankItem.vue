@@ -74,7 +74,7 @@ export default {
   --major-info-height: 40px;
   border-radius: calc(var(--major-info-height) / 2);
   border: 1px solid #dedede;
-  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+  //box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
   padding: 5px 0;
   font-size: 15px;
   font-weight: 500;
@@ -119,16 +119,16 @@ export default {
     transform: scale(1.02);
   }
 
-  &.first {
-    background: linear-gradient(90deg, #FAF882, #FFFFFF);
-  }
-
-  &.second {
-    background: linear-gradient(90deg, #F4F4F4, #FFFFFF);
-  }
-
-  &.third {
-    background: linear-gradient(90deg, #D6C68B, #FFFFFF);
-  }
+  //&.first {
+  //  background: linear-gradient(90deg, #FAF882, #FFFFFF);
+  //}
+  //
+  //&.second {
+  //  background: linear-gradient(90deg, #F4F4F4, #FFFFFF);
+  //}
+  //
+  //&.third {
+  //  background: linear-gradient(90deg, #D6C68B, #FFFFFF);
+  //}
 }
 </style>

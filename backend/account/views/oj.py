@@ -21,7 +21,7 @@ from django.db import transaction
 from contest.models import Contest
 from problem.models import Problem
 from school.models import College, Department
-from utils.constants import ContestRuleType
+from utils.constants import ContestRuleType, UNDEFINED_SMTP_USER
 from options.options import SysOptions
 from utils.api import APIView, validate_serializer, CSRFExemptAPIView
 from utils.captcha import Captcha
@@ -172,11 +172,10 @@ class ApplyUserEmailValidCheckAPI(APIView):
         email_html = render_to_string("email_valid_email.html", {'code': code})
         send_email_async.send(from_name=SysOptions.website_name_shortcut,
                               to_email=email,
-                              to_name=email,
-                              subject="[PNU Online Judge] 이메일 확인 인증번호입니다.",
+                              to_name=UNDEFINED_SMTP_USER,
+                              subject="[부산대학교 코드플레이스] 이메일 확인 인증번호입니다.",
                               content=email_html)
         return self.success('email validation code sent')
-
 
 class UserEmailValidCheckAPI(APIView):
     def post(self, request):
@@ -225,11 +224,9 @@ class UserRegisterAPI(APIView):
 
         # 중복 체크
         if User.objects.filter(username=data["username"]).exists():
-            return self.error("username already exists")
+            return self.error("nickname already exists")
         if User.objects.filter(email=data["email"]).exists():
             return self.error("email already exists")
-        if User.objects.filter(email=data["student_id"]).exists():
-            return self.error("student_id already exists")
 
         college = College.objects.get(id=data['collegeId'])
         department = Department.objects.get(id=data['departmentId'])

@@ -99,7 +99,7 @@ export default {
       if (this.btnLoading) {
         return this.$t('m.Submitting')
       }
-      return this.$t('m.Save')
+      return this.$t('m.Submit_Password')
     },
     willLogout() {
       return this.$t('m.You_Will_Be_Logged_Out_In_5_Seconds')
@@ -197,7 +197,7 @@ export default {
 .submit-button {
   background-color: var(--point-color);
   text-align: center;
-  width: 80px;
+  width: 140px;
   color: white;
   border: none;
   border-radius: 5px;

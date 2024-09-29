@@ -8,6 +8,11 @@ export default {
   name: "user-card",
   components: {HorizontalGauge, ShineWrapper},
   props: {
+    loading: {
+      type: Boolean,
+      required: true,
+      default: false
+    },
     profile: {
       type: Object,
       required: true,
@@ -106,7 +111,8 @@ export default {
   <div class="user-card">
     <div class="user-info">
       <div class="avatar-wrapper">
-        <img class="avatar" :src="profile.avatar" alt="user avatar image"/>
+        <img v-if="!this.loading" class="avatar" :src="profile.avatar" alt="user avatar image"/>
+        <div v-else class="avatar skeleton"/>
       </div>
       <div class="info-column">
         <div class="info-column__top">
@@ -141,16 +147,19 @@ export default {
     <div class="tier-info">
       <div class="tier-info__top">
         <div class="tier-mark-wrapper">
-          <shine-wrapper>
+          <shine-wrapper v-if="!this.loading">
             <img :src="TierImageSrc[ojStatus.tier]" class="rank-mark" alt="rank emblem"/>
           </shine-wrapper>
+          <div class="skeleton" v-else/>
         </div>
         <div class="tier-progress">
-          <div class="tier-name">{{ getTier(ojStatus.tier) }}</div>
-          <div class="progress-container">
-            <span class="progress-info">
+          <div class="tier-name" v-if="!this.loading">{{ getTier(ojStatus.tier) }}</div>
+          <div class="skeleton" v-else/>
+          <div class="progress-container" v-if="!this.loading">
+            <span v-if="!this.loading" class="progress-info">
               {{ comma(ojStatus.total_score) }} / {{ comma(ojStatus.next_tier_score) }}
             </span>
+            <div v-else class="skeleton"></div>
             <div class="gauge-wrapper">
               <horizontal-gauge :progress="gaugeWidth"></horizontal-gauge>
             </div>
@@ -162,24 +171,30 @@ export default {
               {{ $t('m.Until_Promotion_After') }}
             </span>
           </div>
+          <div v-else class="skeleton">
+          </div>
         </div>
       </div>
       <div class="tier-info__bottom">
         <div class="content score">
           <span class="header">{{ $t('m.UserHomeScore') }}</span>
-          <span class="value">{{ comma(ojStatus.total_score) }}</span>
+          <span class="value" v-if="!this.loading">{{ comma(ojStatus.total_score) }}</span>
+          <div class="skeleton" v-else/>
         </div>
         <div class="content ranking clickable" @click="goRanking">
           <span class="header">{{ $t('m.Ranking') }}</span>
-          <span class="value">{{ ojStatus.total_rank }} ({{ $t('m.TOP') }} {{ rankPercent }}%)</span>
+          <span class="value" v-if="!this.loading">{{ ojStatus.total_rank }} ({{ $t('m.TOP') }} {{ rankPercent }}%)</span>
+          <div class="skeleton" v-else/>
         </div>
         <div class="content submission clickable" @click="goSubmission">
           <span class="header">{{ $t('m.Submit') }}</span>
-          <span class="value">{{ ojStatus.submission_number }}</span>
+          <span class="value" v-if="!this.loading">{{ ojStatus.submission_number }}</span>
+          <div class="skeleton" v-else/>
         </div>
         <div class="content solve clickable" @click="goSolved">
           <span class="header">{{ $t('m.UserHomeSolved') }}</span>
-          <span class="value">{{ ojStatus.accepted_number }}</span>
+          <span class="value" v-if="!this.loading">{{ ojStatus.accepted_number }}</span>
+          <div class="skeleton" v-else/>
         </div>
       </div>
     </div>
@@ -213,6 +228,11 @@ export default {
 
       img {
         width: 100%;
+      }
+
+      div {
+        width: 100%;
+        height: 100%;
       }
     }
 
@@ -411,6 +431,25 @@ export default {
 
   &:hover {
     transform: scale(1.1);
+  }
+}
+
+.skeleton {
+  width: 100%;
+  height: 100%;
+  background-color: var(--skeleton-color);
+  animation: skeleton 1s infinite alternate;
+  border-radius: 7px;
+  align-self: center;
+  justify-self: center;
+
+  @keyframes skeleton {
+    0% {
+      background-color: var(--skeleton-color);
+    }
+    100% {
+      background-color: var(--pale-point-color);
+    }
   }
 }
 </style>

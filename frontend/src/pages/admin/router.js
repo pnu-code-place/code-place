@@ -6,6 +6,7 @@ import {
   Conf,
   Contest,
   ContestList,
+  ContestSubmission,
   Home,
   JudgeServer,
   Login,
@@ -103,6 +104,11 @@ export default new VueRouter({
           path: "/contest",
           name: "contest-list",
           component: ContestList,
+        },
+        {
+          path: "/contest/:contestId/submission",
+          name: "contest-submission",
+          component: ContestSubmission,
         },
         {
           path: "/contest/:contestId/edit",

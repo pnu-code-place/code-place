@@ -1,0 +1,61 @@
+version: "3.9"
+
+services:
+  frontend:
+    image: registry.copl-dev.site/code-place-prod/frontend:latest
+    ports:
+      - "8000:8000"
+      - "1443:1443"
+    volumes:
+      - data_volume:/data:ro
+      - /etc/letsencrypt/live/code.pusan.ac.kr/fullchain.pem:/etc/letsencrypt/live/code.pusan.ac.kr/fullchain.pem:ro
+      - /etc/letsencrypt/live/code.pusan.ac.kr/privkey.pem:/etc/letsencrypt/live/code.pusan.ac.kr/privkey.pem:ro
+    deploy:
+      replicas: 2
+      update_config:
+        parallelism: 1
+        order: stop-first
+      rollback_config:
+        parallelism: 2
+        order: start-first
+
+  backend:
+    image: registry.copl-dev.site/code-place-prod/backend:latest
+    volumes:
+      - data_volume:/data:rw
+    deploy:
+      replicas: 4
+      update_config:
+        parallelism: 2
+        order: stop-first
+      restart_policy:
+        condition: on-failure
+
+  scheduler:
+    image: registry.copl-dev.site/code-place-prod/scheduler:latest
+
+  oj-judge:
+    image: registry.copl-dev.site/code-place-prod/judge-server:1.0.0-beta
+    deploy:
+      replicas: 6
+      update_config:
+        parallelism: 2
+        order: stop-first
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 1GB
+        reservations:
+          cpus: '0.10'
+          memory: 300M
+
+  oj-postgres:
+    ports:
+      - "5437:5432"
+
+volumes:
+  data_volume:
+    external: true
+    name: backend-data-prod

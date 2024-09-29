@@ -174,6 +174,7 @@ class UserScore(models.Model):
     datastructure_score = models.BigIntegerField(default=0)
     search_score = models.BigIntegerField(default=0)
     sorting_score = models.BigIntegerField(default=0)
+    algorithm_score = models.BigIntegerField(default=0)
 
     VeryLow_score = models.BigIntegerField(default=0)
     Low_score = models.BigIntegerField(default=0)

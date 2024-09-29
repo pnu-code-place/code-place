@@ -1,126 +1,123 @@
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/90913ed2-5fba-4c0b-9b8b-b1e55e6d36aa" width="800" alt="Code Place Logo"/>
+  <img src="./frontend/src/assets/thumbnail.svg" width="830" alt="Code Place Logo"/>
 </div>
 
-# <div align="center">PNU Code Place</div>
-> 부산대학교 학생들의 코딩 역량을 강화에 도움을 주는 플랫폼 개발
->
-> 개발기간 : 2023.12 ~ 2024.8 (현재 진행 중)
+## 프로젝트 소개
+본 프로젝트는 부산대학교 학생들의 프로그래밍 역량 향상을 위해 개발되었으며,
+
+부산대학교의 학생들이 전공과 관계 없이 프로그래밍에 쉽게 접근하고 성장할 수 있는 학습 환경을 조성하는 것이 목표입니다.
+
+현재 부산대학교의 교양필수 과목인 ‘**기초컴퓨터프로그래밍**’ 수업에서 학생들에게 코딩 실습 환경을 제공하기 위해 활용되고 있습니다.
+> 위 프로젝트는 QingdaoU OJ 오픈소스 기반으로 개발되었습니다.
 <br/>
 
+## 프로젝트 주요 기능
+- **코딩테스트 및 대회**: 실력 향상을 위한 실전 환경 제공
+- **수준별 알고리즘 문제**: 다양한 난이도의 문제로 단계별 학습 제공
+- **온라인 코드 에디터**: 웹에서 바로 코딩과 실행이 가능한 통합 개발 환경 제공
+- **개인화된 마이페이지**: 학습 진행 상황 추적 및 개인별 역량 분석 제공
 
-## 🔗 배포 주소
-> 이전 운영 서버 주로 : https://oj.pusan.ac.kr/
->
+<br/>
+
+## 배포 주소
 > 운영 서버 주소 : https://code.pusan.ac.kr/
+> 
+> 개발(베타) 서버 주소 : https://copl-dev.site/
+
 <br/>
-  
+
+## 프로젝트 아키텍처
+
+## 개발 스택
+
+**Infra Skill** &nbsp;
+<img src="https://img.shields.io/badge/Nginx_1.18.0-3776AB?style=flat-square&logo=Nginx&logoColor=white" /> <img src="https://img.shields.io/badge/Docker_25.0.3-2d8cf0?style=flat-square&logo=docker&logoColor=white"/> <img src="https://img.shields.io/badge/Harbor-F24E1E?style=flat-square&logo=harbor&logoColor=white"/> 
+
+**BE Skill** &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<img src="https://img.shields.io/badge/Python_3.8.0-3776AB?style=flat-square&logo=Python&logoColor=white" /> <img src="https://img.shields.io/badge/django_3.2.9-092E20?style=flat-square&logo=django&logoColor=white"/> <img src="https://img.shields.io/badge/django--rest--framework_3.12.4-092e20?style=flat-square&logo=django&logoColor=white" />
+
+**FE Skill** &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<img src="https://img.shields.io/badge/Vue.js_2.5.13-4FC08D?style=flat-square&logo=Vue.js&logoColor=white" /> <img src="https://img.shields.io/badge/Vuex_3.0.1-4FC08D?style=flat-square&logo=Vue.js&logoColor=white" /> <img src="https://img.shields.io/badge/Node.js_16.16.0-339933?style=flat-square&logo=Node.js&logoColor=white" /> <img src="https://img.shields.io/badge/ECharts_3.8.3-F72C5B?style=flat-square" /> <img src="https://img.shields.io/badge/iView_2.8.0-2d8cf0?style=flat-square" /> <img src="https://img.shields.io/badge/Element_2.0.9-409eff?style=flat-square" />
+
+<br/>
+
+## 세부 기능 소개
+
+**문제 추천 기능**
+- 보너스 점수 문제와 지난 주에 가장 어려웠던 문제를 선별 후 주 마다 제공
+- 사용자가 푼 문제의 난이도, 부족한 영역을 반영한 개인 맞춤 문제 추천
+
+**랭킹 및 티어 시스템**
+- 총 점수 기준 사용자 랭킹 제공
+- 오늘의 급상승 랭킹(당일 점수가 가장 많이 상승한 사용자 기준) 제공
+- 학과별 점수 랭킹 및 상위 5명의 기여자 표기
+- 새싹 ~ 다이아몬드 등급의 티어 제공
+
+**문제 풀이 기능**
+- 다크모드 및 코드 하이라이팅 지원
+- 오픈소스 채점서버를 통한 채점 기능 제공
+
+**어드민(CMS) 기능**
+- 홈 배너 관리 기능 
+- 사용자 관리 및 통계 대시보드
+- 대회 관리 및 모니터링 시스템
+
+<br/>
+
 ## 👨‍💻 구성원
 ### BE 개발 인원
 <table>
   <tr>
     <td align="center">
-      <a href="https://github.com/hunsy9"> <img src="https://github.com/hunsy9.png" width="80" alt="main manager"/> </a>
+      <a href="https://github.com/hunsy9">
+        <img src="https://github.com/hunsy9.png" width="80" alt="hunsy9"/>
+        <br />
+        <sub><b>hunsy9</b></sub>
+      </a>
+      <br />
     </td>
     <td align="center">
-      <a href="https://github.com/Boksam"> <img src="https://github.com/Boksam.png" width="80" alt="main manager"/> </a>
-    </td>
-  </tr>
-  <tr>
-    <td align="center"> <a href="mailto:juniper0917@gmail.com">juniper0917@gmail.com</a> </td>
-    <td align="center"> <a href="mailto:boksam1017@gmail.com">boksam1017@gmail.com</a> </td>
-  </tr>
-  <tr>
-    <td align="left" width="350">
-      <div>&nbsp&nbsp&nbsp&nbsp•&nbsp PM, 백엔드 개발 및 배포</div>
-    </td>
-    <td align="left" width="350">
-      <div>&nbsp&nbsp&nbsp&nbsp•&nbsp 프로젝트 기획 및 백엔드 개발</div>
+      <a href="https://github.com/Boksam">
+      <img src="https://github.com/Boksam.png" width="80" alt="Boksam"/>
+      <br />
+      <sub><b>Boksam</b></sub>
+      </a>
+      <br />
     </td>
   </tr>
 </table>
+
 
 ### FE 개발 인원
 <table>
   <tr>
     <td align="center">
-      <a href="https://github.com/hunsy9"> <img src="https://github.com/hunsy9.png" width="80" alt="main manager"/> </a>
+      <a href="https://github.com/hunsy9">
+        <img src="https://github.com/hunsy9.png" width="80" alt="hunsy9"/>
+        <br />
+        <sub><b>hunsy9</b></sub>
+      </a>
+      <br />
     </td>
     <td align="center">
-      <a href="https://github.com/minmunui"> <img src="https://github.com/minmunui.png" width="80" alt="main manager"/> </a>
+      <a href="https://github.com/minmunui">
+      <img src="https://github.com/minmunui.png" width="80" alt="minmunui"/>
+      <br />
+      <sub><b>minmunui</b></sub>
+      </a>
+      <br />
     </td>
     <td align="center">
-      <a href="https://github.com/llddang"> <img src="https://github.com/llddang.png" width="80" alt="main manager"/> </a>
-    </td>
-  </tr>
-  <tr>
-    <td align="center"> <a href="mailto:juniper0917@gmail.com">juniper0917@gmail.com</a> </td>
-    <td align="center"> <a href="mailto:ehdwls1638@pusan.ac.kr">ehdwls1638@pusan.ac.kr</a> </td>
-    <td align="center"> <a href="mailto:laliddang@gmail.com">laliddang@gmail.com</a> </td>
-  </tr>
-  <tr>
-    <td width="350">
-      <div>&nbsp&nbsp&nbsp&nbsp•&nbsp PM, 프론트/백엔드 기획 및 개발</div>
-    </td>
-    <td width="350">
-      <div>&nbsp&nbsp&nbsp&nbsp•&nbsp 프론트엔드(Client) 기획 및 개발</div>
-    </td>
-    <td width="350">
-      <div>&nbsp&nbsp&nbsp&nbsp•&nbsp 프론트엔드(Admin) 기획 및 개발</div>
+      <a href="https://github.com/llddang">
+      <img src="https://github.com/llddang.png" width="80" alt="llddang"/>
+      <br />
+      <sub><b>llddang</b></sub>
+      </a>
+      <br />
     </td>
   </tr>
 </table>
 <br />
-
-## 👀 프로젝트 배경
-> 프로젝트 배경 작성해줘...
-<br/>
-
-## 🚀 프로젝트 목적
-> 프로젝트 목적 작성해줘...
-<br/>
-
-## 🔧 기술 스택
-### 🛠 BE Skill & Tool
-<img src="https://img.shields.io/badge/Python-3.8.0-3776AB?style=flat-square&logo=Python&logoColor=white" /> <img src="https://img.shields.io/badge/django-3.2.9-092E20?style=flat-square&logo=django&logoColor=white"/> <img src="https://img.shields.io/badge/django--rest--framework-3.12.4-092e20?style=flat-square&logo=django&logoColor=white" />
-
-### 🛠 FE Skill & Tool
-<img src="https://img.shields.io/badge/Vue.js-2.5.13-4FC08D?style=flat-square&logo=Vue.js&logoColor=white" /> <img src="https://img.shields.io/badge/Vuex-3.0.1-4FC08D?style=flat-square&logo=Vue.js&logoColor=white" /> <img src="https://img.shields.io/badge/Node.js-16.16.0-339933?style=flat-square&logo=Node.js&logoColor=white" /> <img src="https://img.shields.io/badge/ECharts-3.8.3-F72C5B?style=flat-square" /> <img src="https://img.shields.io/badge/iView-2.8.0-2d8cf0?style=flat-square" /> <img src="https://img.shields.io/badge/Element-2.0.9-409eff?style=flat-square" />
-
-### 🧩 Communication Tool
-<img src="https://img.shields.io/badge/GitHub-181717?style=flatsquare&logo=GitHub&logoColor=white" /> <img src="https://img.shields.io/badge/Slack-4A154B?style=flatsquare&logo=Slack&logoColor=white" /> <img src="https://img.shields.io/badge/Figma-F24E1E?style=flat-square&logo=Figma&logoColor=white" /> <img src="https://img.shields.io/badge/Notion-eeeeee?style=flat-square&logo=Notion&logoColor=black" />
-
-<br />
-
-## 💡 시작 가이드
-- Backend 기본
-  ```bash
-  # 의존 라이브러리 설치
-  cd backend/deploy
-  pip3 install -r requirements.txt
-  
-  # 데이터베이스 배포 스크립트 실행
-  sh init_db.sh
-  
-  # md5sum secret key 초기화 및 django migrate 실행
-  # super admin 생성(아이디 root, 비밀번호 rootroot로 자동생성됩니다.)
-  sh init_db.sh --migrate
-  
-  # 프로젝트를 실행합니다. localhost:8080으로 접속할 수 있습니다.
-  python3 manage.py runserver
-  ```
-- Backend **dramatiq** 실행 (문제 채점 및 제출과 같은 비동기 작업을 위해 필요)
-  ```bash
-  cd backend
-  python3 manage.py rundramatiq
-  ```
-- Frontend
-  ```
-  cd frontend
-  npm install
-  sh run_develop.sh
-  ```
-<br/>
 
 ## 💎 라이센스
 해당 프로젝트는 [MIT LICENSE](https://opensource.org/license/MIT) 를 따릅니다.

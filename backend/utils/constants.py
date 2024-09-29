@@ -43,17 +43,20 @@ RSS_FEED_URL = "https://swedu.pusan.ac.kr/bbs/swedu/6906/rssList.do?row=50"
 
 GENERATE_MOCK_USERNAME_URL = "https://www.rivestsoft.com/nickname/getRandomNickname.ajax"
 
-EMAIL_SUFFIX="@pusan.ac.kr"
+EMAIL_SUFFIX = "@pusan.ac.kr"
+
+UNDEFINED_SMTP_USER = "Client"
 
 
 class ProblemField:
-    fields = ['implementation', 'math', 'datastructure', 'search', 'sorting']
+    fields = ['implementation', 'math', 'datastructure', 'search', 'sorting', 'algorithm']
     strToInt = {
         'implementation': 0,
         'math': 1,
         'datastructure': 2,
         'search': 3,
         'sorting': 4,
+        'algorithm': 5,
     }
     intToStr = {
         0: 'implementation',
@@ -61,13 +64,14 @@ class ProblemField:
         2: 'datastructure',
         3: 'search',
         4: 'sorting',
+        5: 'algorithm'
     }
 
 
 class ProblemScore:
     score = {
-        'VeryLow': 20,      # VeryLow
-        'Low': 40,      # Low
+        'VeryLow': 10,      # VeryLow
+        'Low': 20,      # Low
         'Mid': 160,      # Mid
         'High': 640,     # High
         'VeryHigh': 1280,    # VeryHigh

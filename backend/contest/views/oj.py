@@ -1,20 +1,22 @@
 import io
 
 import xlsxwriter
+from django.db.models import OuterRef, Count, Subquery, F, Max
 from django.http import HttpResponse
 from django.utils.timezone import now
 from django.core.cache import cache
 
 from problem.models import Problem
+from submission.models import Submission
 from utils.api import APIView, validate_serializer
 from utils.constants import CacheKey, CONTEST_PASSWORD_SESSION_KEY
 from utils.shortcuts import datetime2str, check_is_id
-from account.models import AdminType
+from account.models import AdminType, User, UserProfile
 from account.decorators import login_required, check_contest_permission, check_contest_password
 
 from utils.constants import ContestRuleType, ContestStatus
 from ..models import ContestAnnouncement, Contest, OIContestRank, ACMContestRank
-from ..serializers import ContestAnnouncementSerializer
+from ..serializers import ContestAnnouncementSerializer, ContestUserSubmissionSummarySerializer
 from ..serializers import ContestSerializer, ContestPasswordVerifySerializer
 from ..serializers import OIContestRankSerializer, ACMContestRankSerializer
 
@@ -140,16 +142,53 @@ class ContestAccessAPI(APIView):
         return self.success({"access": check_contest_password(session_pass, contest.password)})
 
 
+class ContestParticipantsAPI(APIView):
+    @login_required
+    def get(self, request):
+        contest_id = request.GET.get("contest_id")
+
+        submissions = Submission.objects.filter(contest_id=contest_id)
+
+        user_submissions = submissions.values('user_id', 'username').annotate(
+            submission_count=Count('id'),
+            last_submission_ip=Max('ip')
+        ).order_by('user_id')
+
+        # UserProfile 정보 가져오기
+        user_profiles = UserProfile.objects.filter(user_id__in=[sub['user_id'] for sub in user_submissions])
+        user_profile_dict = {profile.user_id: profile for profile in user_profiles}
+
+        # User 정보 가져오기
+        users = User.objects.filter(id__in=[sub['user_id'] for sub in user_submissions])
+        user_dict = {user.id: user for user in users}
+
+        result = []
+        for submission in user_submissions:
+            user = user_dict.get(submission['user_id'])
+            profile = user_profile_dict.get(submission['user_id'])
+            result.append({
+                'user_id': submission['user_id'],
+                'username': submission['username'],
+                'email': user.email if user else None,
+                'avatar': profile.avatar if profile else None,
+                'school': profile.school if profile else None,
+                'major': profile.major if profile else None,
+                'submission_count': submission['submission_count'],
+                'last_submission_ip': submission['last_submission_ip']
+            })
+
+        serializer = ContestUserSubmissionSummarySerializer(result, many=True)
+        return self.success(serializer.data)
+
+
 class ContestRankAPI(APIView):
     def get_rank(self):
         if self.contest.rule_type == ContestRuleType.ACM:
             return ACMContestRank.objects.filter(contest=self.contest,
-                                                 user__admin_type=AdminType.REGULAR_USER,
                                                  user__is_disabled=False).\
                 select_related("user").order_by("-accepted_number", "total_time")
         else:
             return OIContestRank.objects.filter(contest=self.contest,
-                                                user__admin_type=AdminType.REGULAR_USER,
                                                 user__is_disabled=False). \
                 select_related("user").order_by("-total_score")
 

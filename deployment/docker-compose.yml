@@ -1,0 +1,65 @@
+version: "3.9"
+
+services:
+  frontend:
+    environment:
+      - FORCE_HTTPS=1
+    volumes:
+      - ../frontend/deploy/nginx/log:/data/log
+
+  backend:
+    restart: always
+    depends_on:
+      - oj-redis
+      - oj-postgres
+      - oj-judge
+    env_file:
+      - .env
+    environment:
+      - JUDGE_SERVER_TOKEN=CHANGE_THIS # secret.key
+
+  scheduler:
+    restart: always
+    depends_on:
+      - oj-postgres
+      - backend
+    volumes:
+      - ../scheduler/logs:/app/logs
+    env_file:
+      - .env
+
+  oj-judge:
+    restart: always
+    #    read_only: true
+    cap_drop:
+      - SETPCAP
+      - MKNOD
+      - NET_BIND_SERVICE
+      - SYS_CHROOT
+      - SETFCAP
+      - FSETID
+    tmpfs:
+      - /tmp
+    volumes:
+      - ../backend/data/backend/test_case:/test_case:ro
+      - ../backend/data/judge_server/log:/log
+      - ../backend/data/judge_server/run:/judger
+    environment:
+      - SERVICE_URL=http://oj-judge:8080
+      - BACKEND_URL=http://backend:8080/api/judge_server_heartbeat/
+      - TOKEN=CHANGE_THIS # secret.key
+      # - judger_debug=1
+
+  oj-redis:
+    image: redis:4.0-alpine
+    restart: always
+    volumes:
+      - ../backend/data/redis:/data
+
+  oj-postgres:
+    image: postgres:10-alpine
+    restart: always
+    volumes:
+      - ../backend/data/postgres:/var/lib/postgresql/data
+    env_file:
+      - .env
