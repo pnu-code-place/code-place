@@ -40,4 +40,4 @@ services:
 volumes:
   data_volume:
     external: true
-    name: backend-data
+    name: backend-data-prod
