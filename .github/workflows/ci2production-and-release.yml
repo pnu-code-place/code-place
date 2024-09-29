@@ -143,3 +143,35 @@ jobs:
           build-args: |
             SERVER_NAME=${{ secrets.PROD_SERVER_NAME }}
             APP_VERSION=${{ github.sha }}
+
+  create-release:
+    needs: [check-release-branch, ci-frontend, ci-backend, ci-scheduler]
+    if: |
+      always() &&
+      needs.check-release-branch.outputs.is_release == 'true' &&
+      (needs.ci-frontend.result == 'success' || needs.ci-frontend.result == 'skipped') &&
+      (needs.ci-backend.result == 'success' || needs.ci-backend.result == 'skipped') &&
+      (needs.ci-scheduler.result == 'success' || needs.ci-scheduler.result == 'skipped')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Debug Info
+        run: |
+          echo "Is Release: ${{ needs.check-release-branch.outputs.is_release }}"
+          echo "Version: ${{ needs.check-release-branch.outputs.version }}"
+          echo "CI Backend: ${{ needs.ci-backend.result }}"
+          echo "CI Frontend: ${{ needs.ci-frontend.result }}"
+          echo "CI Scheduler: ${{ needs.ci-scheduler.result }}"
+
+      - name: Create Release
+        if: needs.check-release-branch.outputs.version != ''
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACTION_TOKEN }}
+        with:
+          tag_name: ${{ needs.check-release-branch.outputs.version }}
+          release_name: Release ${{ needs.check-release-branch.outputs.version }}
+          draft: false
+          prerelease: false
