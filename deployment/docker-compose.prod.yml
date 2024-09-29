@@ -10,6 +10,14 @@ services:
       - data_volume:/data:ro
       - /etc/letsencrypt/live/code.pusan.ac.kr/fullchain.pem:/etc/letsencrypt/live/code.pusan.ac.kr/fullchain.pem:ro
       - /etc/letsencrypt/live/code.pusan.ac.kr/privkey.pem:/etc/letsencrypt/live/code.pusan.ac.kr/privkey.pem:ro
+    deploy:
+      replicas: 2
+      update_config:
+        parallelism: 1
+        order: stop-first
+      rollback_config:
+        parallelism: 2
+        order: start-first
 
   backend:
     image: registry.copl-dev.site/code-place-prod/backend:latest
