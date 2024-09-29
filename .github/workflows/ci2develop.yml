@@ -5,11 +5,7 @@ on:
     paths-ignore:
       - 'deployment/**'
       - 'scripts/**'
-    branches: [ develop ]
-  pull_request:
-    paths-ignore:
-      - 'deployment/**'
-      - 'scripts/**'
+      - '.github/**'
     branches: [ develop ]
   workflow_dispatch:
 
@@ -60,6 +56,8 @@ jobs:
           tags: |
             ${{ secrets.HARBOR_REGISTRY }}/code-place-dev/backend:${{ github.sha }}-dev
             ${{ secrets.HARBOR_REGISTRY }}/code-place-dev/backend:latest
+    
+  
 
   ci-scheduler-dev:
     needs: [detect-changes-by-component]
