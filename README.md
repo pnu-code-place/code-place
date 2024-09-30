@@ -28,15 +28,28 @@
 
 ## 프로젝트 아키텍처
 
+### 서비스 아키텍처
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/7c613ce4-5272-48d4-9b3d-a37adcad3457" alt="service architecture"/>
+</div>
+
+### 인프라 아키텍처
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/f971f7dd-1f3d-492f-b955-37c4e17bb9c0" alt="infra architecture"/>
+</div>
+
 ## 개발 스택
 
-**Infra Skill** &nbsp;
-<img src="https://img.shields.io/badge/Nginx_1.18.0-3776AB?style=flat-square&logo=Nginx&logoColor=white" /> <img src="https://img.shields.io/badge/Docker_25.0.3-2d8cf0?style=flat-square&logo=docker&logoColor=white"/> <img src="https://img.shields.io/badge/Harbor-F24E1E?style=flat-square&logo=harbor&logoColor=white"/> 
+**Devops/Infra** &nbsp;
+<img src="https://img.shields.io/badge/Nginx_1.18.0-3776AB?style=flat-square&logo=Nginx&logoColor=white" /> <img src="https://img.shields.io/badge/Docker_25.0.3-2d8cf0?style=flat-square&logo=docker&logoColor=white"/> <img src="https://img.shields.io/badge/Docker_Compose_3.9-2d8cf0?style=flat-square&logo=docker&logoColor=white"/> <img src="https://img.shields.io/badge/Harbor-F24E1E?style=flat-square&logo=harbor&logoColor=white"/> <img src="https://img.shields.io/badge/Github_Action-000000?style=flat-square&logo=github&logoColor=white"/>
 
-**BE Skill** &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+**Database** &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<img src="https://img.shields.io/badge/PostgreSQL_10-302E50?style=flat-square&logo=postgresql&logoColor=white"/> <img src="https://img.shields.io/badge/Redis_4.0-C3002F?style=flat-square&logo=redis&logoColor=white"/>
+
+**Backend** &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <img src="https://img.shields.io/badge/Python_3.8.0-3776AB?style=flat-square&logo=Python&logoColor=white" /> <img src="https://img.shields.io/badge/django_3.2.9-092E20?style=flat-square&logo=django&logoColor=white"/> <img src="https://img.shields.io/badge/django--rest--framework_3.12.4-092e20?style=flat-square&logo=django&logoColor=white" />
 
-**FE Skill** &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+**Frontend** &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <img src="https://img.shields.io/badge/Vue.js_2.5.13-4FC08D?style=flat-square&logo=Vue.js&logoColor=white" /> <img src="https://img.shields.io/badge/Vuex_3.0.1-4FC08D?style=flat-square&logo=Vue.js&logoColor=white" /> <img src="https://img.shields.io/badge/Node.js_16.16.0-339933?style=flat-square&logo=Node.js&logoColor=white" /> <img src="https://img.shields.io/badge/ECharts_3.8.3-F72C5B?style=flat-square" /> <img src="https://img.shields.io/badge/iView_2.8.0-2d8cf0?style=flat-square" /> <img src="https://img.shields.io/badge/Element_2.0.9-409eff?style=flat-square" />
 
 <br/>
