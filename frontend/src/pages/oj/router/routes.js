@@ -28,6 +28,7 @@ import MajorRank from "../views/rank/majorRank/MajorRank.vue";
 import UserRank from "../views/rank/UserRank.vue";
 import SettingDemo from "../views/setting/UserSetting.vue";
 import AnnouncementDetail from "../views/notice/AnnouncementDetail.vue";
+import TierInfo from "../views/help/info/TierInfo.vue";
 
 export default [
   {
@@ -252,6 +253,12 @@ export default [
     name: "faq",
     meta: { title: "FAQ" },
     component: FAQ,
+  },
+  {
+    path: "/tier-info",
+    name: "tier-info",
+    meta: { title: "info"},
+    component: TierInfo
   },
   {
     path: "*",
