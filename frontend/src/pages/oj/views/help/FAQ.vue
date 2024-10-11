@@ -1,6 +1,14 @@
 <template>
   <div class="faq">
     <div class="section-title">{{ $t('m.Frequently_Asked_Questions') }}</div>
+
+    <nav class="faq-nav">
+      <div class="nav-item">채점 프로그램</div>
+      <div class="nav-item">문제</div>
+      <div class="nav-item">대회</div>
+      <div class="nav-item">계정</div>
+    </nav>
+
     <ul class="content markdown-body">
       <FAQItem :question="this.$t('m.Where_is_the_input_and_the_output')">
         <div class="markdown-body">
@@ -37,7 +45,7 @@
       </FAQItem>
       <FAQItem :question="$t('m.How_to_report_bugs')">
         <p>{{ $t('m.How_to_report_bugs_answer_part_1') }} <a
-          href="https://evening-mirror-c09.notion.site/a7568fd7e0334a509c081567223cd454?pvs=4">Notion Link</a>
+          href="https://evening-mirror-c09.notion.site/a7568fd7e0334a509c081567223cd454?pvs=4" target="_blank">Notion Link</a>
           {{ $t('m.How_to_report_bugs_answer_part_2') }}
         </p>
       </FAQItem>
@@ -57,28 +65,39 @@ export default defineComponent({
 <style lang="less" scoped>
 .faq {
   width: var(--global-width);
+
+  .faq-nav {
+    width: 100%;
+    border: 1px solid #dedede;
+    border-radius: 7px;
+    display: flex;
+    background-color: var(--box-background-color);
+    margin-bottom: 20px;
+
+    .nav-item {
+      font-size: 16px;
+      padding: 10px;
+      width: 100%;
+      text-align: center;
+      border-right: 1px solid #dedede;
+
+      &:last-child {
+        border-right: none
+      }
+    }
+  }
 }
 
 .content {
   font-size: 16px;
   display: flex;
   flex-direction: column;
+  border-radius: 7px;
+  overflow: hidden;
+  border: 1px solid #dedede;
 
   > ul {
     list-style: disc;
-
-    li {
-      font-size: 16px;
-      margin-top: 20px;
-
-      &:first-child {
-        margin-top: 0;
-      }
-
-      p {
-        font-size: 14px;
-      }
-    }
   }
 }
 </style>

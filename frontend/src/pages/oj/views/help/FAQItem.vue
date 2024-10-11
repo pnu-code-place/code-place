@@ -31,7 +31,7 @@ export default {
 <template>
   <li class="faq-item">
     <div :class="`question ${this.contentClass}`" @click="toggleExtend">
-      {{ $props.question }}
+      Q. {{ $props.question }}
     </div>
     <div class="answer" v-if="this.extended">
       <slot>
@@ -44,14 +44,17 @@ export default {
 <style scoped lang="less">
 .faq-item {
   width: 100%;
-  border: 1px solid #dedede;
+  border-bottom: 1px solid #dedede;
   background-color: var(--box-background-color);
+
+  &:last-child {
+    border-bottom: none;
+  }
 }
 
 .question {
   cursor: pointer;
   padding: 10px;
-  border-bottom: 1px solid #dedede;
   font-weight: bold;
 }
 
