@@ -21,7 +21,7 @@
         <div class="hardProblemInfo" style="margin-top: 15px">
           <div style="display: flex; justify-content: space-between; width: 50%; float: right">
             <span>{{ $t('m.Th_Problem_AC_Rate') }}</span>
-            <span>{{ problem.submission_number == 0 ? "없음" : (problem.accepted_number / problem.submission_number ) * 100 + '%' }}</span>
+            <span>{{ problem.submission_number == 0 ? "없음" : Math.floor((problem.accepted_number / problem.submission_number) * 100) + '%' }}</span>
           </div>
         </div>
         <br>
