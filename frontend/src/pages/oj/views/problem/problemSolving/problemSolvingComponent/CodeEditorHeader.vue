@@ -50,7 +50,10 @@ import SubmissionBtn from "./SubmissionBtn.vue";
 export default defineComponent({
   props: {
     problem: Object,
-    language: String,
+    language: {
+      type: String,
+      default: 'C++'
+    },
     statusVisible: Boolean,
     contestID: String,
     result: Object,
