@@ -58,11 +58,6 @@ export default defineComponent({
     isSubmitting: Boolean
   },
   components: {SubmissionBtn, SubmissionStatus, CustomIconBtn, FieldCategoryBox},
-  data() {
-    return {
-      language: 'C++',
-    }
-  },
   methods: {
     changeLanguage(newLang) {
       this.$emit('change-language', newLang)

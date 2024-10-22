@@ -62,9 +62,6 @@ export default {
     cursorPos:{
       type: Object
     },
-    fontSize:{
-      type: Number
-    },
     theme:{
       type: Boolean
     }
@@ -145,10 +142,6 @@ export default {
     toggleTheme(value){
         this.codemirror.setOption('theme', value)
     },
-    changeFontSize(value){
-      this.fontSize = value
-      // this.key++
-    }
   },
   computed: {
     ...mapGetters(['isDarkMode']),

@@ -18,7 +18,6 @@
                         :languages="problem.languages"
                         :language="language"
                         :cursorPos.sync="cursorPos"
-                        :fontSize.sync="fontSize"
                         :theme.sync="theme"
                         ref="myCm"/>
         <StickyLnCol :cursorPos="cursorPos"/>
