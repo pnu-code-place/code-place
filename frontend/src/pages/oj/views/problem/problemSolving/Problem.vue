@@ -76,7 +76,6 @@ export default {
       problemID: '',
       submitting: false,
       code: '',
-      fontSize: 16,
       language: 'C++',
       languages: {
         type: Array,
@@ -127,7 +126,6 @@ export default {
     let psSettings = storage.get("ProblemSolvingSettings")
     if (psSettings) {
       next(vm => {
-        vm.fontSize = psSettings.fontSize
         vm.theme = psSettings.theme
       })
     } else {
@@ -170,11 +168,7 @@ export default {
         })
         problem.languages = problem.languages.sort()
         this.problem = problem
-        // if (problem.statistic_info) {
-        //   this.changePie(problem)
-        // }
 
-        // 在beforeRouteEnter中修改了, 说明本地有code，无需加载template
         if (this.code !== '') {
           return
         }
@@ -199,7 +193,6 @@ export default {
 
       storage.set("ProblemSolvingSettings", {
         theme: this.theme,
-        fontsize: this.fontSize
       })
 
       event.preventDefault();
@@ -222,7 +215,6 @@ export default {
     },
     check() {
       alert(this.code)
-      alert(this.fontSize)
     },
     onChangeTheme(newTheme) {
       this.theme = newTheme
@@ -317,12 +309,6 @@ export default {
         submitFunc(data, true)
       }
     },
-    onCopy(event) {
-      this.$success('Code copied')
-    },
-    onCopyError(e) {
-      this.$error('Failed to copy code')
-    },
   },
   computed: {
     FIELD_MAP() {
@@ -361,7 +347,6 @@ export default {
     })
     storage.set("ProblemSolvingSettings", {
       theme: this.theme,
-      fontsize: this.fontSize
     })
     next()
   },
