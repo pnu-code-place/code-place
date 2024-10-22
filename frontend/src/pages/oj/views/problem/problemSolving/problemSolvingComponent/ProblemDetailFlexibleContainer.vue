@@ -9,7 +9,7 @@
         <div style="display: flex; justify-content: space-between;">
           <div style="display: flex">
             <div class="headerDetailBtn" style="background-color: var(--difficulty-color)">
-              {{ DIFFICULTY_MAP[problem.difficulty].value }}
+              {{ this.getDifficulty }}
             </div>
             <div class="headerDetailBtn" @click="scrollField">
               <Icon type="ios-pie" color="#F8B193"/>
@@ -183,6 +183,12 @@ export default defineComponent({
       }
       this.dropdown.openCategoryDropdown = !this.dropdown.openCategoryDropdown
     },
+    onCopy(event) {
+      this.$success('Code copied')
+    },
+    onCopyError(e) {
+      this.$error('Failed to copy code')
+    },
   },
   computed: {
     FIELD_MAP() {
@@ -190,6 +196,10 @@ export default defineComponent({
     },
     DIFFICULTY_MAP() {
       return DIFFICULTY_MAP
+    },
+    getDifficulty(){
+      let difficultyInfo = DIFFICULTY_MAP[this.problem.difficulty]
+      return difficultyInfo.value
     }
   }
 })
