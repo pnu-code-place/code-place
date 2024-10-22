@@ -31,6 +31,9 @@ import 'codemirror/mode/javascript/javascript.js'
 import 'codemirror/addon/selection/active-line.js'
 import utils from "../../../../../../utils/utils";
 
+// match-bracket
+import 'codemirror/addon/edit/matchbrackets.js'
+
 // foldGutter
 import 'codemirror/addon/fold/foldgutter.css'
 import 'codemirror/addon/fold/foldgutter.js'
@@ -84,6 +87,7 @@ export default {
         autoResize: true,
         gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter'],
         scrollbarStyle: 'native',
+        matchBrackets: true,
       },
       mode: {
         'C++': 'text/x-csrc'
