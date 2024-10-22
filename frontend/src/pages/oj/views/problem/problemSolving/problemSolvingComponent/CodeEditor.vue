@@ -70,6 +70,7 @@ export default {
     return {
       key: 0,
       code: "",
+      fontSize: 14,
       cmOptions: {
         tabSize: 4,
         mode: 'text/x-csrc',
