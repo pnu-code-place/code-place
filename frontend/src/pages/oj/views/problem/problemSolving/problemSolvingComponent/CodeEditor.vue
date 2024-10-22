@@ -80,6 +80,7 @@ export default {
         theme: this.isDarkMode ? 'ayu-mirage' : 'github-light',
         lineNumbers: true,
         line: true,
+        styleActiveLine: true,
         foldGutter: true,
         smartIndent: true,
         autofocus: true,
