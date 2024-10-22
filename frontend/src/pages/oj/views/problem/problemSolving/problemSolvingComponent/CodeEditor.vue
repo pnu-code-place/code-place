@@ -203,6 +203,9 @@ export default {
   border: 1px solid var(--border-color);
 }
 
+.cm-s-ayu-mirage .CodeMirror-matchingbracket {
+  text-decoration: none; color:white !important;background: #283a61;;
+}
 </style>
 
 
