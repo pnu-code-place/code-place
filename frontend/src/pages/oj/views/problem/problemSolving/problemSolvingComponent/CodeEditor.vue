@@ -81,6 +81,8 @@ export default {
         lineNumbers: true,
         line: true,
         styleActiveLine: true,
+        // 인덴트 사이즈
+        indentUnit: 4,
         foldGutter: true,
         smartIndent: true,
         autofocus: true,
