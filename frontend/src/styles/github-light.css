@@ -46,8 +46,8 @@
   background: #fafbfc; }
 
 .cm-s-github-light .CodeMirror-matchingbracket {
-  text-decoration: underline;
-  color: #24292e !important; }
+  color:black !important;
+  background: #e0e7ef; }
 
 .cm-s-github-light .CodeMirror-lines {
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;

@@ -50,7 +50,10 @@ import SubmissionBtn from "./SubmissionBtn.vue";
 export default defineComponent({
   props: {
     problem: Object,
-    language: String,
+    language: {
+      type: String,
+      default: 'C++'
+    },
     statusVisible: Boolean,
     contestID: String,
     result: Object,
@@ -58,11 +61,6 @@ export default defineComponent({
     isSubmitting: Boolean
   },
   components: {SubmissionBtn, SubmissionStatus, CustomIconBtn, FieldCategoryBox},
-  data() {
-    return {
-      language: 'C++',
-    }
-  },
   methods: {
     changeLanguage(newLang) {
       this.$emit('change-language', newLang)
