@@ -83,6 +83,10 @@ export default {
         styleActiveLine: true,
         // 인덴트 사이즈
         indentUnit: 4,
+        // 여러 라인을 동시에 탭할때 인덴트 함
+        extraKeys: {
+          "Tab": "indentMore"
+        },
         foldGutter: true,
         smartIndent: true,
         autofocus: true,
