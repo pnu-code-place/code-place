@@ -191,6 +191,9 @@ export default {
       let customTheme = value ? 'ayu-mirage' : 'github-light'
       this.toggleTheme(customTheme)
       this.theme = value
+    },
+    language(value){
+      this.codemirror.setOption('mode', this.mode[value])
     }
   }
 }
