@@ -7,7 +7,7 @@
       :radius-dot="true"
       :autoplaySpeed="3000"
     >
-      <CarouselItem v-for="banner in banners">
+      <CarouselItem v-for="banner in banners" :key="banner">
         <div class="demo-carousel">
           <img
             :src="banner.banner_image"
