@@ -3,7 +3,6 @@ import api from '@oj/api'
 import storage from '@/utils/storage'
 import i18n from '@/i18n'
 import { STORAGE_KEY, USER_TYPE, PROBLEM_PERMISSION } from '@/utils/constants'
-import {stat} from "copy-webpack-plugin/dist/utils/promisify";
 
 const state = {
   profile: {},
