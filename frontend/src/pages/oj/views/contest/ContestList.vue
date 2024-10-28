@@ -227,13 +227,9 @@ export default {
     dateFormat(dateUtc) {
       const date = new Date(dateUtc);
 
-      const newDate = new Date(
-        date.getTime() - date.getTimezoneOffset() * 60 * 1000
-      );
-
-      const hour = newDate.getHours();
-      const min = newDate.getMinutes();
-      const sec = newDate.getSeconds();
+      const hour = date.getHours();
+      const min = date.getMinutes();
+      const sec = date.getSeconds();
 
       let result = "";
       if (hour > 12) result = "오후 " + (hour - 12) + "시 ";
