@@ -188,8 +188,9 @@ class JudgeDispatcher(DispatcherBase):
                 self.submission.result = error_test_case[0]["result"]
             else:
                 self.submission.result = JudgeStatus.PARTIALLY_ACCEPTED
+            self._compute_statistic_info(resp["data"])
+
         self.submission.info = resp
-        self._compute_statistic_info(resp["data"])
         self.submission.save()
 
         if self.contest_id:
