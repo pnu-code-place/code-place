@@ -30,7 +30,7 @@
           <td class="td-title" @click.stop="goContest(contest)">
             <p class="contest-title">{{ contest.title }}</p>
             <div class="contest-description">
-              <p v-html="contest.description"></p>
+              <p v-html="formatDescription(contest.description)"></p>
             </div>
           </td>
           <td style="font-size: 13px">
@@ -192,6 +192,17 @@ export default {
     });
   },
   methods: {
+    formatDescription(oldDescription) {
+      let s = oldDescription.indexOf("<img"), e = 0;
+      while (s !== -1) {
+        e = oldDescription.indexOf("/>", s);
+        oldDescription = oldDescription.substring(0, s) + oldDescription.substring(e);
+
+        e = s;
+        s = oldDescription.indexOf("<img", e);
+      }
+      return oldDescription;
+    },
     getUnderwayContestList() {
       api.getUnderwayContestList(this.query).then((res) => {
         this.underway_contests = res.data.data;
@@ -227,13 +238,9 @@ export default {
     dateFormat(dateUtc) {
       const date = new Date(dateUtc);
 
-      const newDate = new Date(
-        date.getTime() - date.getTimezoneOffset() * 60 * 1000
-      );
-
-      const hour = newDate.getHours();
-      const min = newDate.getMinutes();
-      const sec = newDate.getSeconds();
+      const hour = date.getHours();
+      const min = date.getMinutes();
+      const sec = date.getSeconds();
 
       let result = "";
       if (hour > 12) result = "오후 " + (hour - 12) + "시 ";

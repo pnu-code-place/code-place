@@ -92,7 +92,8 @@ const getters = {
   },
   countdown: (state, getters) => {
     if (getters.contestStatus === CONTEST_STATUS.NOT_START) {
-      let duration = getters.contestStartTime - new Date();
+      const offset = getters.contestStartTime.getTimezoneOffset() * 60 * 1000;
+      let duration = getters.contestStartTime - new Date() + offset;
 
       duration = parseInt(duration / 1000);
       const sec = duration % 60;
@@ -111,7 +112,8 @@ const getters = {
 
       return "시작까지 " + result + " 전";
     } else if (getters.contestStatus === CONTEST_STATUS.UNDERWAY) {
-      let duration = getters.contestEndTime - new Date();
+      const offset = getters.contestEndTime.getTimezoneOffset() * 60 * 1000;
+      let duration = getters.contestEndTime - new Date() + offset;
 
       duration = parseInt(duration / 1000);
       const sec = duration % 60;
@@ -127,6 +129,8 @@ const getters = {
       if (hours > 0) result += hours + "시간 ";
       if (min > 0) result += min + "분 ";
       if (sec > 0) result += sec + "초";
+
+      console.log(days, hours, min, sec)
 
       return "종료까지 " + result + " 전";
     } else {
