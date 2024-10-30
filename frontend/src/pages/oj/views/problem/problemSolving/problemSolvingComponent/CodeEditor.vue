@@ -207,7 +207,9 @@ export default {
 }
 
 .cm-s-ayu-mirage .CodeMirror-matchingbracket {
-  text-decoration: none; color:white !important;background: #283a61;;
+  text-decoration: none !important;
+  color:white !important;
+  background: #283a61;;
 }
 </style>
 
