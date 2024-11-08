@@ -18,6 +18,7 @@ import {
   Dashboard,
   ProblemImportOrExport,
   AdminCatalog,
+  PopupManagement,
 } from "./views";
 Vue.use(VueRouter);
 
@@ -74,6 +75,11 @@ export default new VueRouter({
           path: "/home-banner-management",
           name: "home-banner-management",
           component: HomeBannerManagement,
+        },
+        {
+          path: "/popup-management",
+          name: "popup-management",
+          component: PopupManagement,
         },
         {
           path: "/problems",

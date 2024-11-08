@@ -10,32 +10,32 @@ axios.defaults.xsrfCookieName = "csrftoken";
 export default {
   getPopup() {
 
-    // const dummyPopup = [{
-    //   id: 0,
-    //   link: 'https://www.naver.com',
-    //   image: 'https://picsum.photos/500/300',
-    //   alt: '이미지가 팝업을 초과하는 경우입니다.',
-    //   width: 300
-    // }, {
-    //   id: 1,
-    //   link: 'https://www.youtube.com',
-    //   image: 'https://picsum.photos/400/400',
-    //   alt: '팝업이 이미지를 초과하는 경우입니다.',
-    //   width: 1000,
-    // }, {
-    //   id: 2,
-    //   link: 'https://www.google.com',
-    //   image: 'https://picsum.photos/1000/1000',
-    //   alt: '자동인 경우'
-    // }]
+    const dummyPopup = [{
+      id: 0,
+      link: 'https://www.naver.com',
+      image: 'https://picsum.photos/500/300',
+      alt: '이미지가 팝업을 초과하는 경우입니다.',
+      width: 300
+    }, {
+      id: 1,
+      link: 'https://www.youtube.com',
+      image: 'https://picsum.photos/400/400',
+      alt: '팝업이 이미지를 초과하는 경우입니다.',
+      width: 1000,
+    }, {
+      id: 2,
+      link: 'https://www.google.com',
+      image: 'https://picsum.photos/1000/1000',
+      alt: '자동인 경우'
+    }]
     // const dummyPopup = []
-    //
-    // return new Promise((resolve, reject) => {
-    //   setTimeout(() => {
-    //     resolve({data: {data: dummyPopup}})
-    //   }, 1000)
-    // })
-    return ajax("popup", "get");
+
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        resolve({data: {data: dummyPopup}})
+      }, 1000)
+    })
+    // return ajax("popup", "get");
   },
   getStatistics() {
     return ajax("home_statistics", "get");
