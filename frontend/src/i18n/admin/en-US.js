@@ -335,6 +335,12 @@ export const m = {
   Image_File_Has_Error: "배너 이미지를 등록하지 않았습니다.",
   Link: "링크",
 
+  // PopupManagement.vue
+  Popup_Image: "팝업 이미지",
+  Popup_Does_Not_Exist: "팝업이 존재하지 않습니다.",
+  Popup_Notice: "팝업은 최대 2개까지 가능합니다.",
+
+
   // Login.vue
   GO: "로그인",
   username: "아이디",

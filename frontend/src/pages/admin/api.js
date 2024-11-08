@@ -387,6 +387,34 @@ export default {
       data,
     });
   },
+  getPopups() {
+    return ajax("admin/banner", "get");
+  },
+  addPopups(data) {
+    return ajax("admin/banner", "post", { data });
+  },
+  deletePopups(id) {
+    return ajax("admin/banner", "delete", {
+      params: { id },
+    });
+  },
+  modifyPopups(id, data) {
+    return ajax("admin/banner/edit", "post", {
+      params: { id },
+      data,
+    });
+  },
+  reorderPopups(data) {
+    return ajax("admin/banner/reorder", "post", {
+      data,
+    });
+  },
+  editEnablePopups(id, data) {
+    return ajax("admin/banner/edit", "put", {
+      params: { id },
+      data,
+    });
+  },
 };
 
 /**
