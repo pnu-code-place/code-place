@@ -18,6 +18,17 @@
         v-model="linkUrl"
         @click="hasLinkUrlError = false"
       />
+      <span class="text">
+        <span style="color: #ed4b4b">*</span>
+        {{ $t("m.Width") }}
+      </span>
+      <input
+        type="number"
+        :placeholder="$t('m.Width')"
+        :style="[hasWidthError && { 'border-color': '#ed4b4b' }]"
+        v-model="width"
+        @click="hasWidthError = false"
+      />
       <span v-if="hasLinkUrlError" style="color: #ed4b4b; font-size: 13px">
         {{ $t("m.URL_Link_Has_Error") }}
       </span>
@@ -61,6 +72,7 @@ export default {
       imageFile: null,
       hasLinkUrlError: false,
       hasImageFileError: false,
+      width: 300,
     };
   },
   components: {
@@ -77,10 +89,19 @@ export default {
       if (this.imageFile === null) this.hasImageFileError = true;
 
       if (this.hasLinkUrlError || this.hasImageFileError) return;
+      if (this.width === "") {
+        alert("너비를 입력해주세요.");
+        return;
+      }
+      if (this.width < 50) {
+        alert("너비는 50 이상이어야 합니다.");
+        return;
+      }
 
       const formData = new FormData();
       formData.append("link_url", this.linkUrl);
       formData.append("image", this.imageFile);
+      formData.append("width", this.width)
 
       api
         .addPopup(formData)
