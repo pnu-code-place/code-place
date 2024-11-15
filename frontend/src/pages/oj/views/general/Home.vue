@@ -1,5 +1,11 @@
 <template>
   <div class="mainBox">
+    <PopUp v-for="(popup, index) in this.filteredPopup" :key="popup.id" :id="popup.id" :link="popup.link_url"
+           :width="popup.width === null || popup.width <=50 ? 0 : popup.width"
+           :p_position="{x: 100 + index * 50, y: 100 + index * 50}">
+      <img :src="popup.popup_image" :alt="popup.alt" draggable="false"
+           :style="{width:'100%', objectFit:'contain'}"/>
+    </PopUp>
     <div class="boxWrapper">
       <div class="left-container">
         <HomeBannerListBox/>
@@ -33,10 +39,12 @@ import HomeProfileBox from "../home/HomeProfileBox.vue";
 import HomeStatusBox from "../home/HomeStatistics/HomeLanguages.vue";
 import HomeFamilySiteBanner from "../home/HomeFamilySiteBanner/HomeFamilySiteBanner.vue"
 import Statistics from "./HomeStatistics.vue";
+import PopUp from "../../components/modal/PopUp.vue";
 
 export default {
   name: "home",
   components: {
+    PopUp,
     Statistics,
     HomeStatusBox,
     HomeProfileBox,
@@ -53,9 +61,11 @@ export default {
       index: 0,
       listVisible: true,
       btnLoading: false,
+      popupData: []
     };
   },
   mounted() {
+
     let params = {status: CONTEST_STATUS.NOT_START};
     api.getContestList(0, 5, params).then(res => {
       this.contests = res.data.data.results;
@@ -65,6 +75,10 @@ export default {
   methods: {
     ...mapActions(['getProfile', 'changeModalStatus']),
     init() {
+      api.getPopup().then((res) => {
+        this.$store.commit('refreshPopup')
+        this.popupData = res.data.data
+      })
       if (this.isContest) {
         this.getContestAnnouncementList();
       }
@@ -80,7 +94,10 @@ export default {
     },
   },
   computed: {
-    ...mapGetters(['website', 'isAdminRole']),
+    ...mapGetters(['website', 'isAdminRole',"removedPopupId"]),
+    filteredPopup() {
+      return this.popupData.filter(popup => !this.removedPopupId.includes(popup.id))
+    },
     isContest() {
       return !!this.$route.params.contestID;
     },
