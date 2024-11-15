@@ -1,55 +1,16 @@
 <script>
-import {TierImageSrc} from "../../../../../utils/constants";
+import {TIER_SCORE} from "../../../../../../utils/constants";
 
 export default {
   name: "TierTable",
-  data() {
-    return {
-      tierInfo: [
-        {
-          name: "Sprout",
-          minScore: 0,
-          maxScore: 1000,
-          imageSrc: TierImageSrc.sprout
-        },
-        {
-          name: "Bronze1",
-          minScore: 1000,
-          maxScore: 2000,
-          imageSrc: TierImageSrc.bronze1
-        },
-        {
-          name: "Silver1",
-          minScore: 2000,
-          maxScore: 3000,
-          imageSrc: TierImageSrc.silver1
-        },
-        {
-          name: "Gold1",
-          minScore: 3000,
-          maxScore: 4000,
-          imageSrc: TierImageSrc.gold1
-        },
-        {
-          name: "Platinum1",
-          minScore: 4000,
-          maxScore: 5000,
-          imageSrc: TierImageSrc.platinum1
-        },
-        {
-          name: "Diamond1",
-          minScore: 5000,
-          maxScore: 6000,
-          imageSrc: TierImageSrc.diamond1
-        }
-      ],
+  methods: {
+    TIER_SCORE() {
+      return TIER_SCORE
     }
   },
-  methods: {
-    getTierRange(tier) {
-      return `${tier.minScore} ~ ${tier.maxScore}`;
-    }
-  }
+  data() {
+    return {}
+  },
 }
 </script>
 
@@ -58,16 +19,20 @@ export default {
     <thead>
     <tr>
       <th class="header-tier">티어</th>
-      <th class="header-description">점수</th>
+      <th class="header-description">티어 1 점수</th>
+      <th class="header-description">티어 2 점수</th>
+      <th class="header-description">티어 3 점수</th>
     </tr>
     </thead>
     <tbody>
-    <tr v-for="tier in tierInfo">
-      <td>
+    <tr v-for="tier in TIER_SCORE()">
+      <td rowspan="3">
         <img :src="tier.imageSrc" alt="tier mark">
         {{ tier.name }}
       </td>
-      <td class="tier-range">{{ getTierRange(tier) }}</td>
+      <td class="tier-range">{{ tier.score[1] }}</td>
+      <td class="tier-range">{{ tier.score[2] }}</td>
+      <td class="tier-range">{{ tier.score[3] }}</td>
     </tr>
     </tbody>
   </table>
@@ -85,6 +50,7 @@ table {
     font-size: 16px;
     text-align: center;
     border-bottom: 1px solid #dedede;
+
     tr {
       th {
         padding: 10px;
@@ -115,7 +81,7 @@ table {
           }
         }
 
-        &.tier-range{
+        &.tier-range {
           padding: 10px;
           font-size: 16px;
           font-weight: bold;
@@ -129,4 +95,6 @@ table {
     }
   }
 }
+
+
 </style>
