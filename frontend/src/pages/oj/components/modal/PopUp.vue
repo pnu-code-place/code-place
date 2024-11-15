@@ -112,7 +112,7 @@ export default {
   top: 100px;
   background-color: white;
   border: 1px solid var(--point-color);
-  z-index: 1000;
+  z-index: 10;
   display: flex;
   flex-direction: column;
 
