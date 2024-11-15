@@ -19,9 +19,9 @@ export default {
     <thead>
     <tr>
       <th class="header-tier">티어</th>
-      <th class="header-description">티어 1 점수</th>
-      <th class="header-description">티어 2 점수</th>
       <th class="header-description">티어 3 점수</th>
+      <th class="header-description">티어 2 점수</th>
+      <th class="header-description">티어 1 점수</th>
     </tr>
     </thead>
     <tbody>
@@ -30,9 +30,9 @@ export default {
         <img :src="tier.imageSrc" alt="tier mark">
         {{ tier.name }}
       </td>
-      <td class="tier-range">{{ tier.score[1] }}</td>
-      <td class="tier-range">{{ tier.score[2] }}</td>
       <td class="tier-range">{{ tier.score[3] }}</td>
+      <td class="tier-range">{{ tier.score[2] }}</td>
+      <td class="tier-range">{{ tier.score[1] }}</td>
     </tr>
     </tbody>
   </table>
