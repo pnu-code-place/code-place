@@ -376,6 +376,12 @@ export default {
       data,
     });
   },
+  modifyPopup(id, data) {
+    return ajax("admin/popup/edit", "post", {
+      params: { id },
+      data,
+    })
+  },
   reorderBanner(data) {
     return ajax("admin/banner/reorder", "post", {
       data,
@@ -388,29 +394,23 @@ export default {
     });
   },
   getPopups() {
-    return ajax("admin/banner", "get");
+    return ajax("admin/popup", "get");
   },
-  addPopups(data) {
-    return ajax("admin/banner", "post", { data });
+  addPopup(data) {
+    return ajax("admin/popup", "post", { data });
   },
-  deletePopups(id) {
-    return ajax("admin/banner", "delete", {
+  deletePopup(id) {
+    return ajax("admin/popup", "delete", {
       params: { id },
     });
   },
-  modifyPopups(id, data) {
-    return ajax("admin/banner/edit", "post", {
-      params: { id },
+  reorderPopup(data) {
+    return ajax("admin/popup/reorder", "post", {
       data,
     });
   },
-  reorderPopups(data) {
-    return ajax("admin/banner/reorder", "post", {
-      data,
-    });
-  },
-  editEnablePopups(id, data) {
-    return ajax("admin/banner/edit", "put", {
+  editEnablePopup(id, data) {
+    return ajax("admin/popup/edit", "put", {
       params: { id },
       data,
     });

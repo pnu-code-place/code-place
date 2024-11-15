@@ -26,6 +26,7 @@
         <p></p>
         <p class="table-title">{{ $t("m.Home_Banner_ID") }}</p>
         <p class="table-title">{{ $t("m.Popup_Image") }}</p>
+<!--        <p class="table-title">{{ $t("m.Width") }}</p>-->
         <p class="table-title">{{ $t("m.Create_Time") }}</p>
         <p class="table-title">{{ $t("m.Enable_Disable") }}</p>
         <p class="table-title">{{ $t("m.Setting") }}</p>
@@ -56,6 +57,9 @@
               {{ banner.id }}
             </span>
             <img :src="banner.popup_image" width="100%" />
+<!--            <span class="drag-item-text">-->
+<!--              <el-input-number class="width-size" max="2000" type="number" placeholder="이미지 width"/>-->
+<!--            </span>-->
             <span class="drag-item-text">
               {{ banner.create_time | localtime }}
             </span>
@@ -92,8 +96,8 @@
         <i class="el-icon-plus"></i> {{ $t("m.Add") }}
       </button>
     </section>
-    <AddBannerModal v-if="addModalOpen" @onClose="handleModalClose" />
-    <ModifyBannerModal
+    <AddPopupModal v-if="addModalOpen" @onClose="handleModalClose" />
+    <ModifyPopupModal
       v-if="modifyModalOpen"
       @onClose="handleModalClose"
       :banner="this.currentBanner"
@@ -104,15 +108,15 @@
 <script>
 import api from "../../api.js";
 import draggable from "vuedraggable";
-import AddBannerModal from "./HomeBanner/AddBannerModal";
-import ModifyBannerModal from "./HomeBanner/ModifyBannerModal";
+import ModifyPopupModal from "./Modal/ModifyPopupModal.vue";
+import AddPopupModal from "./Modal/AddPopupModal.vue";
 
 export default {
   name: "popup-management",
   components: {
+    AddPopupModal,
+    ModifyPopupModal,
     draggable,
-    AddBannerModal,
-    ModifyBannerModal,
   },
   data() {
     return {
@@ -129,14 +133,14 @@ export default {
     });
   },
   methods: {
-    getBanners() {
+    getPopups() {
       api.getPopups().then((res) => {
         this.banners = res.data.data;
       });
     },
     handleVisibleSwitchChange(id, visible) {
       api
-        .editEnablePopups(id, {visible: visible})
+        .editEnablePopup(id, {visible: visible})
         .then((res) => {
           if (res.status === 200) {
             this.banners = res.data.data;
@@ -150,8 +154,8 @@ export default {
     handleBannerOrderChange(id) {
       const reorder_list = this.banners.map((banner) => banner.id);
 
-      api.reorderPopups({reorder_list: reorder_list}).catch((err) => {
-        this.getBanners();
+      api.reorderPopup({reorder_list: reorder_list}).catch((err) => {
+        this.getPopups();
       });
     },
     handleAddButtonClick() {
@@ -162,12 +166,12 @@ export default {
       this.modifyModalOpen = true;
     },
     handleDeleteButtonClick(id) {
-      api.deletePopups(id).then((res) => {
-        if (res.status === 200) this.getBanners();
+      api.deletePopup(id).then((res) => {
+        if (res.status === 200) this.getPopups();
       });
     },
     handleModalClose() {
-      this.getBanners();
+      this.getPopups();
       this.addModalOpen = false;
       this.modifyModalOpen = false;
     },
@@ -243,5 +247,9 @@ p {
 .ghost {
   opacity: 0.1;
   background: #409eff;
+}
+
+.width-size {
+  margin: 0 5px;
 }
 </style>

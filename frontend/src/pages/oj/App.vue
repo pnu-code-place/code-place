@@ -1,9 +1,9 @@
 <template>
   <div id="wrapper">
-    <PopUp v-for="(popup, index) in this.filteredPopup" :key="popup.id" :id="popup.id" :link="popup.link"
+    <PopUp v-for="(popup, index) in this.filteredPopup" :key="popup.id" :id="popup.id" :link="popup.link_url"
            :width="popup.width === null || popup.width <=50 ? 0 : popup.width"
            :p_position="{x: 100 + index * 50, y: 100 + index * 50}">
-      <img :src="popup.image" :alt="popup.alt" draggable="false"
+      <img :src="popup.popup_image" :alt="popup.alt" draggable="false"
            :style="{width:'100%', objectFit:'contain'}"/>
     </PopUp>
     <template v-if="isProblemSolving">

@@ -105,8 +105,8 @@
 <script>
 import api from "../../api.js";
 import draggable from "vuedraggable";
-import AddBannerModal from "./HomeBanner/AddBannerModal";
-import ModifyBannerModal from "./HomeBanner/ModifyBannerModal";
+import AddBannerModal from "./Modal/AddBannerModal";
+import ModifyBannerModal from "./Modal/ModifyBannerModal";
 
 export default {
   name: "home-banner-management",

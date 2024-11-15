@@ -334,11 +334,16 @@ export const m = {
   URL_Link_Has_Error: "url 링크 형식이 올바르지 않습니다.",
   Image_File_Has_Error: "배너 이미지를 등록하지 않았습니다.",
   Link: "링크",
+  Width: "너비 (px)",
 
   // PopupManagement.vue
   Popup_Image: "팝업 이미지",
   Popup_Does_Not_Exist: "팝업이 존재하지 않습니다.",
   Popup_Notice: "팝업은 최대 2개까지 가능합니다.",
+
+  Add_Home_Popup: "홈 팝업 추가",
+  Connect_Popup_Link : "팝업에 연결할 링크",
+
 
 
   // Login.vue
