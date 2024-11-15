@@ -25,8 +25,8 @@ export default {
       <div class="row2">
         <div class="left">
           <address>
-            {{ $t("m.AddressPNUCSEP") }} <br />
-            TEL : 051-510-3737, 3738, 3624 <br />
+            {{ $t("m.AddressPNUCSEP") }} <br/>
+            TEL : 051-510-3737, 3738, 3624 <br/>
           </address>
           <p>Copyright© Pusan National Univ. All Right Reserved.</p>
           <p>
@@ -36,6 +36,11 @@ export default {
           </p>
         </div>
         <div class="right">
+          <p>
+            <router-link class="footer-link" :to="{name : 'faq'}">
+              FAQ
+            </router-link>
+          </p>
           <p>
             <a :href="this.github_url">
               <img
@@ -99,6 +104,7 @@ footer {
   .footer-contents {
     width: var(--global-width);
     margin: auto;
+
     .row1 {
       display: flex;
       justify-content: space-between;
@@ -110,6 +116,7 @@ footer {
 
       .family-site {
         gap: 10px;
+
         a {
           color: var(--footer-text-color);
         }
@@ -129,6 +136,7 @@ footer {
           font-weight: bold;
         }
       }
+
       .right {
         display: flex;
         flex-direction: column;
