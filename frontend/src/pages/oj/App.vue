@@ -1,5 +1,11 @@
 <template>
   <div id="wrapper">
+    <PopUp v-for="(popup, index) in this.filteredPopup" :key="popup.id" :id="popup.id" :link="popup.link_url"
+           :width="popup.width === null || popup.width <=50 ? 0 : popup.width"
+           :p_position="{x: 100 + index * 50, y: 100 + index * 50}">
+      <img :src="popup.popup_image" :alt="popup.alt" draggable="false"
+           :style="{width:'100%', objectFit:'contain'}"/>
+    </PopUp>
     <template v-if="isProblemSolving">
       <NavBar_Problem></NavBar_Problem>
     </template>
@@ -24,10 +30,18 @@ import {mapActions, mapGetters, mapState} from "vuex";
 import NavBar from "./components/NavBar.vue";
 import NavBar_Problem from "./views/problem/problemSolving/problemSolvingNavbar/NavBar_Problem.vue";
 import CSEPFooter from "./views/general/CSEPFooter.vue";
+import PopUp from "./components/modal/PopUp.vue";
+import api from "./api";
 
 export default {
+  data() {
+    return {
+      popupData: []
+    }
+  },
   name: "app",
   components: {
+    PopUp,
     CSEPFooter,
     NavBar_Problem,
     NavBar,
@@ -40,13 +54,23 @@ export default {
   },
   mounted() {
     this.getWebsiteConfig();
+    this.init()
   },
   methods: {
+    init() {
+      api.getPopup().then((res) => {
+        this.$store.commit('refreshPopup')
+        this.popupData = res.data.data
+      })
+    },
     ...mapActions(["getWebsiteConfig", "changeDomTitle"]),
   },
   computed: {
     ...mapState(["website"]),
-    ...mapGetters(["isProblemSolving"]),
+    ...mapGetters(["isProblemSolving", "removedPopupId"]),
+    filteredPopup() {
+      return this.popupData.filter(popup => !this.removedPopupId.includes(popup.id))
+    }
   },
   watch: {
     website() {
@@ -66,7 +90,7 @@ export default {
 }
 
 h1.main-title {
-  font-size : var(--title_font-size);
+  font-size: var(--title_font-size);
   font-weight: var(--title_font-weight);
   color: var(--title-font-color);
 }
@@ -93,8 +117,8 @@ h1.main-title {
   --pale-pnu-green: rgba(6, 186, 110, 0.05);
   --pale-pnu-blue: rgba(2, 77, 151, 0.05);
 
-  --pale-gold-color : #FAF882;
-  --pale-silver-color : #F4F4F4;
+  --pale-gold-color: #FAF882;
+  --pale-silver-color: #F4F4F4;
   --pale-bronze-color: #D6C68B;
 
   /* Problem Solving Page */
@@ -172,7 +196,8 @@ a {
     outline-width: 0;
   }
 }
-.footer-dummy{
+
+.footer-dummy {
   height: calc(var(--footer-height) + var(--footer-margin));
 }
 

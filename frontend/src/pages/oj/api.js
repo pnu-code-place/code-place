@@ -8,6 +8,9 @@ axios.defaults.xsrfHeaderName = "X-CSRFToken";
 axios.defaults.xsrfCookieName = "csrftoken";
 
 export default {
+  getPopup() {
+    return ajax("popup", "get");
+  },
   getStatistics() {
     return ajax("home_statistics", "get");
   },
@@ -231,7 +234,7 @@ export default {
         }
       });
     }
-    return ajax("contest_underway", "get", { params });
+    return ajax("contest_underway", "get", {params});
   },
   getNotStartedContestList() {
     return ajax("contest_not_started", "get");
@@ -279,13 +282,6 @@ export default {
       params: {
         contest_id: contestId,
       },
-    });
-  },
-  getAnnouncement(announcementId) {
-    return ajax("announcement", "get", {
-      params: {
-        id: announcementId
-      }
     });
   },
   getAnnouncement(announcementId) {
@@ -372,7 +368,7 @@ export default {
       offset,
       limit,
     };
-    return ajax("major_rank", "get", { params });
+    return ajax("major_rank", "get", {params});
   },
   getContestRank(params) {
     return ajax("contest_rank", "get", {
@@ -392,7 +388,7 @@ export default {
  */
 function ajax(url, method, options) {
   if (options !== undefined) {
-    var { params = {}, data = {} } = options;
+    var {params = {}, data = {}} = options;
   } else {
     params = data = {};
   }
