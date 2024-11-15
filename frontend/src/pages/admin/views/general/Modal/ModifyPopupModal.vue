@@ -69,7 +69,7 @@ export default {
     banner: Object,
   },
   mounted() {
-    this.imageUrl = this.banner.banner_image;
+    this.imageUrl = this.banner.popup_image;
     this.linkUrl = this.banner.link_url;
   },
   methods: {
