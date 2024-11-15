@@ -2,7 +2,7 @@
   <div class="contestBox">
     <div class="contestTitle">
       <p>{{ contest.title }}</p>
-      <div slot="extra">
+      <div slot="extra" style="flex-shrink: 0;">
         <Tag type="dot" :color="countdownColor">
           <span id="countdown">{{ countdown }}</span>
         </Tag>

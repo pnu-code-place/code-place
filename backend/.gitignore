@@ -69,6 +69,7 @@ data/public/upload/*
 data/public/avatar/*
 !data/public/avatar/default.png
 data/public/banner/*
+data/public/popup/*
 data/config/*
 !data/config/.gitkeep
 

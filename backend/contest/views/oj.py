@@ -185,11 +185,13 @@ class ContestRankAPI(APIView):
     def get_rank(self):
         if self.contest.rule_type == ContestRuleType.ACM:
             return ACMContestRank.objects.filter(contest=self.contest,
-                                                 user__is_disabled=False).\
+                                                 user__is_disabled=False,
+                                                 user__admin_type__exact=AdminType.REGULAR_USER).\
                 select_related("user").order_by("-accepted_number", "total_time")
         else:
             return OIContestRank.objects.filter(contest=self.contest,
-                                                user__is_disabled=False). \
+                                                user__is_disabled=False,
+                                                user__admin_type__exact=AdminType.REGULAR_USER). \
                 select_related("user").order_by("-total_score")
 
     def column_string(self, n):
@@ -202,14 +204,12 @@ class ContestRankAPI(APIView):
     @check_contest_permission(check_type="ranks")
     def get(self, request):
         download_csv = request.GET.get("download_csv")
-        force_refresh = request.GET.get("force_refresh")
         is_contest_admin = request.user.is_authenticated and request.user.is_contest_admin(self.contest)
         if self.contest.rule_type == ContestRuleType.OI:
             serializer = OIContestRankSerializer
         else:
             serializer = ACMContestRankSerializer
-
-        if force_refresh == "1" and is_contest_admin:
+        if is_contest_admin:
             qs = self.get_rank()
         else:
             cache_key = f"{CacheKey.contest_rank_cache}:{self.contest.id}"

@@ -31,6 +31,9 @@ import 'codemirror/mode/javascript/javascript.js'
 import 'codemirror/addon/selection/active-line.js'
 import utils from "../../../../../../utils/utils";
 
+// match-bracket
+import 'codemirror/addon/edit/matchbrackets.js'
+
 // foldGutter
 import 'codemirror/addon/fold/foldgutter.css'
 import 'codemirror/addon/fold/foldgutter.js'
@@ -62,9 +65,6 @@ export default {
     cursorPos:{
       type: Object
     },
-    fontSize:{
-      type: Number
-    },
     theme:{
       type: Boolean
     }
@@ -73,12 +73,20 @@ export default {
     return {
       key: 0,
       code: "",
+      fontSize: 14,
       cmOptions: {
         tabSize: 4,
         mode: 'text/x-csrc',
         theme: this.isDarkMode ? 'ayu-mirage' : 'github-light',
         lineNumbers: true,
         line: true,
+        styleActiveLine: true,
+        // 인덴트 사이즈
+        indentUnit: 4,
+        // 여러 라인을 동시에 탭할때 인덴트 함
+        extraKeys: {
+          "Tab": "indentMore"
+        },
         foldGutter: true,
         smartIndent: true,
         autofocus: true,
@@ -86,6 +94,7 @@ export default {
         autoResize: true,
         gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter'],
         scrollbarStyle: 'native',
+        matchBrackets: true,
       },
       mode: {
         'C++': 'text/x-csrc'
@@ -145,10 +154,6 @@ export default {
     toggleTheme(value){
         this.codemirror.setOption('theme', value)
     },
-    changeFontSize(value){
-      this.fontSize = value
-      // this.key++
-    }
   },
   computed: {
     ...mapGetters(['isDarkMode']),
@@ -186,6 +191,9 @@ export default {
       let customTheme = value ? 'ayu-mirage' : 'github-light'
       this.toggleTheme(customTheme)
       this.theme = value
+    },
+    language(value){
+      this.codemirror.setOption('mode', this.mode[value])
     }
   }
 }
@@ -198,6 +206,11 @@ export default {
   border: 1px solid var(--border-color);
 }
 
+.cm-s-ayu-mirage .CodeMirror-matchingbracket {
+  text-decoration: none !important;
+  color:white !important;
+  background: #283a61;;
+}
 </style>
 
 

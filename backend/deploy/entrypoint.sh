@@ -3,8 +3,8 @@
 APP=/app # 앱 데이터 경로 설정
 DATA=/data # 데이터 디렉토리 경로 설정
 
-# log, config, test_case, avatar, banner 디렉토리 생성
-mkdir -p $DATA/log $DATA/config $DATA/test_case $DATA/public/upload $DATA/public/avatar $DATA/public/website $DATA/public/banner
+# log, config, test_case, avatar, banner, popup 디렉토리 생성
+mkdir -p $DATA/log $DATA/config $DATA/test_case $DATA/public/upload $DATA/public/avatar $DATA/public/website $DATA/public/banner $DATA/public/popup
 
 if [ ! -f "$DATA/config/secret.key" ]; then
     echo `cat /dev/urandom | head -1 | md5sum | head -c 32` > $DATA/config/secret.key

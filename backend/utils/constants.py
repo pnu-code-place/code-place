@@ -39,6 +39,8 @@ CONTEST_PASSWORD_SESSION_KEY = "contest_password"
 
 BANNER_VISIBLE_LIMIT = 5
 
+POPUP_VISIBLE_LIMIT = 3
+
 RSS_FEED_URL = "https://swedu.pusan.ac.kr/bbs/swedu/6906/rssList.do?row=50"
 
 GENERATE_MOCK_USERNAME_URL = "https://www.rivestsoft.com/nickname/getRandomNickname.ajax"
