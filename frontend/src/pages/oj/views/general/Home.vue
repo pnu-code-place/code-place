@@ -1,7 +1,7 @@
 <template>
   <div class="mainBox">
     <PopUp v-for="(popup, index) in this.filteredPopup" :key="popup.id" :id="popup.id" :link="popup.link_url"
-           :width="popup.width === null || popup.width <=50 ? 0 : popup.width"
+           :width="popup.popup_image_width === null || popup.popup_image_width <=50 ? 0 : popup.popup_image_width"
            :p_position="{x: 100 + index * 50, y: 100 + index * 50}">
       <img :src="popup.popup_image" :alt="popup.alt" draggable="false"
            :style="{width:'100%', objectFit:'contain'}"/>

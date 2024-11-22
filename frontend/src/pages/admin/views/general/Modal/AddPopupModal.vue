@@ -101,7 +101,7 @@ export default {
       const formData = new FormData();
       formData.append("link_url", this.linkUrl);
       formData.append("image", this.imageFile);
-      formData.append("width", this.width)
+      formData.append("image_width", this.width)
 
       api
         .addPopup(formData)
