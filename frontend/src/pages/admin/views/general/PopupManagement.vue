@@ -28,6 +28,7 @@
         <p class="table-title">{{ $t("m.Popup_Image") }}</p>
 <!--        <p class="table-title">{{ $t("m.Width") }}</p>-->
         <p class="table-title">{{ $t("m.Create_Time") }}</p>
+        <p class="table-title">{{ $t("m.Last_Update_Time") }}</p>
         <p class="table-title">{{ $t("m.Enable_Disable") }}</p>
         <p class="table-title">{{ $t("m.Setting") }}</p>
       </div>
