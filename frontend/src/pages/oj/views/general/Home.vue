@@ -2,7 +2,7 @@
   <div class="mainBox">
     <PopUp v-for="(popup, index) in this.filteredPopup" :key="popup.id" :id="popup.id" :link="popup.link_url"
            :width="popup.popup_image_width === null || popup.popup_image_width <=50 ? 0 : popup.popup_image_width"
-           :p_position="{x: 100 + index * 50, y: 100 + index * 50}">
+           :p_position="{x: 100 + index * 50, y: 100 + index * 50}" :is-top-popup="topPopupId === popup.id" @selected="popupSelect">
       <img :src="popup.popup_image" :alt="popup.alt" draggable="false"
            :style="{width:'100%', objectFit:'contain'}"/>
     </PopUp>
@@ -61,11 +61,11 @@ export default {
       index: 0,
       listVisible: true,
       btnLoading: false,
-      popupData: []
+      popupData: [],
+      topPopupId: 0,
     };
   },
   mounted() {
-
     let params = {status: CONTEST_STATUS.NOT_START};
     api.getContestList(0, 5, params).then(res => {
       this.contests = res.data.data.results;
@@ -83,20 +83,18 @@ export default {
         this.getContestAnnouncementList();
       }
     },
-    getDuration(startTime, endTime) {
-      return time.duration(startTime, endTime);
-    },
-    goContest() {
-      this.$router.push({
-        name: "contest-details",
-        params: {contestID: this.contests[this.index].id}
-      });
-    },
+    popupSelect(value) {  // 매개변수를 value로 직접 받음
+      this.topPopupId = value
+    }
   },
   computed: {
     ...mapGetters(['website', 'isAdminRole',"removedPopupId"]),
     filteredPopup() {
-      return this.popupData.filter(popup => !this.removedPopupId.includes(popup.id))
+      const filtered = this.popupData.filter(popup => !this.removedPopupId.includes(popup.id))
+      if (filtered.length > 0) {  // 배열이 비어있지 않은 경우에만 topPopupId 설정
+        // this.topPopupId = filtered[filtered.length - 1].id  // .id 추가
+      }
+      return filtered
     },
     isContest() {
       return !!this.$route.params.contestID;

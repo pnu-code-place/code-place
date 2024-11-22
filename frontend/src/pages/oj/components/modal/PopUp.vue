@@ -17,7 +17,8 @@ export default {
       }
     },
     link: '',
-    id: 0
+    id: 0,
+    isTopPopup: false
   },
   data() {
     return {
@@ -43,13 +44,13 @@ export default {
       return {
         left: this.position.x + 'px',
         top: this.position.y + 'px',
-        width: width
+        width: width,
+        zIndex: this.isTopPopup ? 11 : 10
       }
     },
     popupBodyClass() {
       return `pop-up__body ${this.isDragging ? 'grab' : 'pointer'}`
     },
-
   },
   methods: {
     closeForDayHandler() {
@@ -60,6 +61,7 @@ export default {
       this.isShow = false;
     },
     startDrag(event) {
+      this.$emit("selected", this.id)
       this.offset.x = event.clientX - this.position.x;
       this.offset.y = event.clientY - this.position.y;
 
@@ -82,7 +84,6 @@ export default {
     },
     goLink() {
       if (this.link !== '' && !this.isDragging) {
-        console.log(!this.isDragging)
         window.open(this.link)
       }
     }
@@ -100,7 +101,7 @@ export default {
         창 닫기 ×
       </button>
       <button class="close-button hide-for-day" @click="closeForDayHandler">
-        오늘 하루 보지 않기
+        더 이상 보지 않기
       </button>
     </div>
   </div>
@@ -111,25 +112,29 @@ export default {
   position: absolute;
   top: 100px;
   background-color: white;
-  border: 1px solid var(--point-color);
-  z-index: 10;
   display: flex;
   flex-direction: column;
+  border-radius: 15px;
+  overflow: hidden;
+
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 
   .pop-up__footer {
     color: var(--pale-point-color);
-    font-size: 1rem;
+    font-size: 0.8rem;
     width: 100%;
-    background-color: #736d6d;
     display: flex;
     justify-content: space-between;
+    padding: 0 10px 10px;
+    border-top: 1px solid var(--pale-point-color);
+
 
     .close-button {
-      padding: 0.4rem;
+      padding: 0.2rem;
       cursor: pointer;
       background: none;
       border: none;
-      color: var(--pale-point-color);
+      color: var(--container-font-color);
       font-weight: bold;
       white-space: nowrap;
 

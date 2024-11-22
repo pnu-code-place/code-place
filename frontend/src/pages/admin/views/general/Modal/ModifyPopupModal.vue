@@ -84,7 +84,7 @@ export default {
   mounted() {
     this.imageUrl = this.banner.popup_image;
     this.linkUrl = this.banner.link_url;
-    this.width = this.banner.width || 300;
+    this.width = this.banner.popup_image_width || 300;
   },
   methods: {
     handleClose() {
