@@ -11,12 +11,13 @@ class ImageUploadForm(forms.Form):
 class PopupSerializer(serializers.ModelSerializer):
     class Meta:
         model = Popup
-        fields = ['id', 'popup_image', 'link_url']
+        fields = ['id', 'popup_image', 'link_url', 'popup_image_width']
 
 
 class PopupAdminSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     popup_image = serializers.CharField(max_length=256)
+    popup_image_width = serializers.IntegerField()
     link_url = serializers.URLField()
     visible = serializers.BooleanField()
     order = serializers.IntegerField()
