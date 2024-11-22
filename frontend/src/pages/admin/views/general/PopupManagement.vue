@@ -3,13 +3,13 @@
     <section
       style="display: flex; justify-content: space-between; margin: 12px"
     >
-      <h1 class="title">{{ $t("m.Home_Banner_Management") }}</h1>
+      <h1 class="title">{{ $t("m.Popup_Management") }}</h1>
       <span
         class="alert-description"
         style="display: flex; gap: 10px; align-items: center"
       >
         <img src="@/assets/information_icon.svg" width="17px" />
-        {{ $t("m.Home_Banner_Notice") }}
+        {{ $t("m.Popup_Notice") }}
       </span>
     </section>
     <hr style="border: 0.5px solid #e6e6e6" />
@@ -25,7 +25,8 @@
       >
         <p></p>
         <p class="table-title">{{ $t("m.Home_Banner_ID") }}</p>
-        <p class="table-title">{{ $t("m.Banner_Image") }}</p>
+        <p class="table-title">{{ $t("m.Popup_Image") }}</p>
+<!--        <p class="table-title">{{ $t("m.Width") }}</p>-->
         <p class="table-title">{{ $t("m.Create_Time") }}</p>
         <p class="table-title">{{ $t("m.Last_Update_Time") }}</p>
         <p class="table-title">{{ $t("m.Enable_Disable") }}</p>
@@ -37,7 +38,7 @@
           class="table-title"
           style="width: 100%; text-align: center; margin: 50px 0px"
         >
-          {{ $t("m.Home_Banner_Does_Not_Exist") }}
+          {{ $t("m.Popup_Does_Not_Exist") }}
         </div>
         <draggable
           v-else
@@ -56,7 +57,10 @@
             <span class="drag-item-text" style="font-size: 18px">
               {{ banner.id }}
             </span>
-            <img :src="banner.banner_image" width="100%" />
+            <img :src="banner.popup_image" width="100%" />
+<!--            <span class="drag-item-text">-->
+<!--              <el-input-number class="width-size" max="2000" type="number" placeholder="이미지 width"/>-->
+<!--            </span>-->
             <span class="drag-item-text">
               {{ banner.create_time | localtime }}
             </span>
@@ -93,8 +97,8 @@
         <i class="el-icon-plus"></i> {{ $t("m.Add") }}
       </button>
     </section>
-    <AddBannerModal v-if="addModalOpen" @onClose="handleModalClose" />
-    <ModifyBannerModal
+    <AddPopupModal v-if="addModalOpen" @onClose="handleModalClose" />
+    <ModifyPopupModal
       v-if="modifyModalOpen"
       @onClose="handleModalClose"
       :banner="this.currentBanner"
@@ -105,15 +109,15 @@
 <script>
 import api from "../../api.js";
 import draggable from "vuedraggable";
-import AddBannerModal from "./Modal/AddBannerModal";
-import ModifyBannerModal from "./Modal/ModifyBannerModal";
+import ModifyPopupModal from "./Modal/ModifyPopupModal.vue";
+import AddPopupModal from "./Modal/AddPopupModal.vue";
 
 export default {
-  name: "home-banner-management",
+  name: "popup-management",
   components: {
+    AddPopupModal,
+    ModifyPopupModal,
     draggable,
-    AddBannerModal,
-    ModifyBannerModal,
   },
   data() {
     return {
@@ -124,20 +128,20 @@ export default {
   },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
-      api.getBanners().then((res) => {
+      api.getPopups().then((res) => {
         vm.banners = res.data.data;
       });
     });
   },
   methods: {
-    getBanners() {
-      api.getBanners().then((res) => {
+    getPopups() {
+      api.getPopups().then((res) => {
         this.banners = res.data.data;
       });
     },
     handleVisibleSwitchChange(id, visible) {
       api
-        .editEnableBanner(id, { visible: visible })
+        .editEnablePopup(id, {visible: visible})
         .then((res) => {
           if (res.status === 200) {
             this.banners = res.data.data;
@@ -151,8 +155,8 @@ export default {
     handleBannerOrderChange(id) {
       const reorder_list = this.banners.map((banner) => banner.id);
 
-      api.reorderBanner({ reorder_list: reorder_list }).catch((err) => {
-        this.getBanners();
+      api.reorderPopup({reorder_list: reorder_list}).catch((err) => {
+        this.getPopups();
       });
     },
     handleAddButtonClick() {
@@ -163,12 +167,12 @@ export default {
       this.modifyModalOpen = true;
     },
     handleDeleteButtonClick(id) {
-      api.deleteBanner(id).then((res) => {
-        if (res.status === 200) this.getBanners();
+      api.deletePopup(id).then((res) => {
+        if (res.status === 200) this.getPopups();
       });
     },
     handleModalClose() {
-      this.getBanners();
+      this.getPopups();
       this.addModalOpen = false;
       this.modifyModalOpen = false;
     },
@@ -190,6 +194,7 @@ export default {
   font-size: 18px;
   font-weight: 300;
 }
+
 .alert-description {
   color: #666;
   font-size: 18px;
@@ -219,6 +224,7 @@ p {
   align-items: center;
   border-bottom: 1px solid #e6e6e6;
 }
+
 .drag-item-text {
   color: #606266;
   font-size: 15px;
@@ -233,6 +239,7 @@ p {
   font-size: 13px;
   font-weight: 450;
   cursor: pointer;
+
   &:hover {
     opacity: 70%;
   }
@@ -241,5 +248,9 @@ p {
 .ghost {
   opacity: 0.1;
   background: #409eff;
+}
+
+.width-size {
+  margin: 0 5px;
 }
 </style>

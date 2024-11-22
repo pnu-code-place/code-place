@@ -83,7 +83,7 @@ class UserProfileDashBoardAPI(APIView):
                 sorting_rank=Count('sorting_score',
                                    filter=Q(sorting_score__gt=F('sorting_score'))) + 1,
                 algorithm_rank=Count('algorithm_score',
-                                   filter=Q(algorithm_score__gt=F('algorithm_score'))) + 1
+                                     filter=Q(algorithm_score__gt=F('algorithm_score'))) + 1
             ).first()
             user_solved = UserSolved.objects.filter(user_id=user_id).first()
         except User.DoesNotExist or UserProfile.DoesNotExist:
@@ -140,6 +140,7 @@ class AvatarUploadAPI(APIView):
         user_profile.save()
         return self.success("Succeeded")
 
+
 class ProfileProblemAPIView(APIView):
 
     def get(self, request):
@@ -147,13 +148,15 @@ class ProfileProblemAPIView(APIView):
         if not username:
             self.error("username is required")
 
-        field = request.GET.get('field') # Problem 모델에서 검색
-        difficulty = request.GET.get('difficulty') # Problem 모델에서 검색
-        status = request.GET.get('status') # Submission 모델에서 result가 0이면 Solved 상태
+        field = request.GET.get('field')
+        difficulty = request.GET.get('difficulty')
+        status = request.GET.get('status')
+
+        user_id = User.objects.get(username=username).id
 
         # 각 문제별 최신 제출을 찾는 서브쿼리
         latest_submissions = Submission.objects.filter(
-            username=username,
+            user_id=user_id,
             problem=OuterRef('problem')
         ).order_by('-create_time').values('id')[:1]
 
@@ -185,8 +188,3 @@ class ProfileProblemAPIView(APIView):
         serializer = ProfileProblemSerializer(data=result, many=True)
         serializer.is_valid(raise_exception=True)
         return self.success(serializer.data)
-
-
-
-
-

@@ -38,6 +38,10 @@ class Difficulty(Choices):
 CONTEST_PASSWORD_SESSION_KEY = "contest_password"
 
 BANNER_VISIBLE_LIMIT = 5
+POPUP_VISIBLE_LIMIT = 3
+
+CONTENT_WIDTH_UPPER_BOUND = 1000
+CONTENT_WIDTH_LOWER_BOUND = 200
 
 RSS_FEED_URL = "https://swedu.pusan.ac.kr/bbs/swedu/6906/rssList.do?row=50"
 

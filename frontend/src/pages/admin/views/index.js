@@ -6,6 +6,7 @@ import Conf from "./general/Conf.vue";
 import JudgeServer from "./general/JudgeServer.vue";
 import PruneTestCase from "./general/PruneTestCase.vue";
 import HomeBannerManagement from "./general/HomeBannerManagement.vue";
+import PopupManagement from "./general/PopupManagement.vue";
 import Problem from "./problem/Problem.vue";
 import ProblemList from "./problem/ProblemList.vue";
 import ContestSubmission from "./contest/ContestSubmission.vue";
@@ -32,4 +33,5 @@ export {
   HomeBannerManagement,
   Dashboard,
   ProblemImportOrExport,
+  PopupManagement
 };

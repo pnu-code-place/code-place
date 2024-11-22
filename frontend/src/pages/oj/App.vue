@@ -1,5 +1,6 @@
 <template>
   <div id="wrapper">
+
     <template v-if="isProblemSolving">
       <NavBar_Problem></NavBar_Problem>
     </template>
@@ -24,10 +25,14 @@ import {mapActions, mapGetters, mapState} from "vuex";
 import NavBar from "./components/NavBar.vue";
 import NavBar_Problem from "./views/problem/problemSolving/problemSolvingNavbar/NavBar_Problem.vue";
 import CSEPFooter from "./views/general/CSEPFooter.vue";
+import PopUp from "./components/modal/PopUp.vue";
+import api from "./api";
 
 export default {
+
   name: "app",
   components: {
+    PopUp,
     CSEPFooter,
     NavBar_Problem,
     NavBar,
@@ -40,13 +45,15 @@ export default {
   },
   mounted() {
     this.getWebsiteConfig();
+    this.init()
   },
   methods: {
     ...mapActions(["getWebsiteConfig", "changeDomTitle"]),
   },
   computed: {
     ...mapState(["website"]),
-    ...mapGetters(["isProblemSolving"]),
+    ...mapGetters(["isProblemSolving", "removedPopupId"]),
+
   },
   watch: {
     website() {
@@ -66,7 +73,7 @@ export default {
 }
 
 h1.main-title {
-  font-size : var(--title_font-size);
+  font-size: var(--title_font-size);
   font-weight: var(--title_font-weight);
   color: var(--title-font-color);
 }
@@ -93,8 +100,8 @@ h1.main-title {
   --pale-pnu-green: rgba(6, 186, 110, 0.05);
   --pale-pnu-blue: rgba(2, 77, 151, 0.05);
 
-  --pale-gold-color : #FAF882;
-  --pale-silver-color : #F4F4F4;
+  --pale-gold-color: #FAF882;
+  --pale-silver-color: #F4F4F4;
   --pale-bronze-color: #D6C68B;
 
   /* Problem Solving Page */
@@ -172,7 +179,8 @@ a {
     outline-width: 0;
   }
 }
-.footer-dummy{
+
+.footer-dummy {
   height: calc(var(--footer-height) + var(--footer-margin));
 }
 

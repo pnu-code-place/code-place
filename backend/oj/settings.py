@@ -49,6 +49,7 @@ LOCAL_APPS = [
     'contest',
     'ranking',
     'banner',
+    'popup',
     'profile',
     'contents',
     'school',
@@ -144,6 +145,9 @@ UPLOAD_DIR = f"{DATA_DIR}{UPLOAD_PREFIX}"
 
 BANNER_URI_PREFIX = "/public/banner"
 BANNER_DIR = f"{DATA_DIR}{BANNER_URI_PREFIX}"
+
+POPUP_URI_PREFIX = "/public/popup"
+POPUP_DIR = f"{DATA_DIR}{POPUP_URI_PREFIX}"
 
 STATICFILES_DIRS = [os.path.join(DATA_DIR, "public")]
 

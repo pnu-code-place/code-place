@@ -23,6 +23,7 @@ export const m = {
   Judge_Server: "저지 서버",
   Prune_Test_Case: "테스트 케이스 목록",
   Home_Banner_Management: "홈 배너 관리",
+  Popup_Management: "팝업 관리",
   Problem: "문제",
   Problem_List: "문제 목록",
   Create_Problem: "문제 생성",
@@ -333,6 +334,17 @@ export const m = {
   URL_Link_Has_Error: "url 링크 형식이 올바르지 않습니다.",
   Image_File_Has_Error: "배너 이미지를 등록하지 않았습니다.",
   Link: "링크",
+  Width: "너비 (px)",
+
+  // PopupManagement.vue
+  Popup_Image: "팝업 이미지",
+  Popup_Does_Not_Exist: "팝업이 존재하지 않습니다.",
+  Popup_Notice: "팝업은 최대 3개까지 가능합니다.",
+
+  Add_Home_Popup: "홈 팝업 추가",
+  Connect_Popup_Link : "팝업에 연결할 링크",
+
+
 
   // Login.vue
   GO: "로그인",
