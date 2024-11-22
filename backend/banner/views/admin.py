@@ -1,16 +1,12 @@
 import os
 
-from django.core.exceptions import ValidationError
-from django.core.validators import URLValidator
-from django.db import transaction
-
 from account.decorators import super_admin_required
 from banner.models import Banner
 from banner.serializers import ImageUploadForm, BannerAdminSerializer
 from oj import settings
 from utils.api import APIView
 from utils.constants import BANNER_VISIBLE_LIMIT
-from utils.shortcuts import rand_str
+from utils.contents_util import ContentUtil
 
 import logging
 
@@ -46,32 +42,18 @@ class AdminBannerAPIView(APIView):
         banner_image = request.data.get('image')
 
         # URL 유효성 검사
-        url_validator = URLValidator()
-        try:
-            url_validator(link_url)
-        except ValidationError:
-            return self.error("Invalid URL")
+        error = ContentUtil.validateURL(link_url)
+        if error:
+            return self.error(error)
 
-        if banner_image.size > 2 * 1024 * 1024:
-            return self.error("Picture is too large")
+        error = ContentUtil.validateImage(image=banner_image)
+        if error:
+            return self.error(error)
 
-        banner_image_suffix = os.path.splitext(banner_image.name)[-1].lower()
-        if banner_image_suffix not in [".gif", ".jpg", ".jpeg", ".bmp", ".png"]:
-            return self.error("Unsupported file format")
-
-        # 배너 이미지 주소를 랜덤으로 생성
-        name = rand_str(10) + banner_image_suffix
-
-        # 배너 이미지 저장
-        banner_path = os.path.join(settings.BANNER_DIR, name)
-        os.makedirs(os.path.dirname(banner_path), exist_ok=True)
-
-        with open(banner_path, "wb") as img:
-            for chunk in banner_image:
-                img.write(chunk)
+        filename = ContentUtil.saveContentWithRandomFileName(banner_image, settings.BANNER_DIR)
 
         new_banner = Banner(
-            banner_image=f"{settings.BANNER_URI_PREFIX}/{name}",
+            banner_image=f"{settings.BANNER_URI_PREFIX}/{filename}",
             link_url=link_url,
             visible=False,
             order=None
@@ -113,42 +95,30 @@ class EditAdminBannerAPIView(APIView):
             return self.error("Invalid Banner")
 
         # 연결 링크 변경
-        if link_url is not None:
-            url_validator = URLValidator()
-            # URL 유효성 검사
-            try:
-                url_validator(link_url)
-            except ValidationError:
-                return self.error("Invalid URL")
-            target_banner.link_url = link_url
+        error = ContentUtil.validateURL(link_url)
+        if error is not None:
+            return self.error(error)
+
+        target_banner.link_url = link_url
 
         # 이미지 변경 사항이 있는 경우
         if form.is_valid():
             banner_image = form.cleaned_data["image"]
-            # 파일 크기 검사
-            if banner_image.size > 2 * 1024 * 1024:
-                return self.error("Picture is too large")
 
-            # 파일 확장자 검사
-            suffix = os.path.splitext(banner_image.name)[-1].lower()
-            if suffix not in [".gif", ".jpg", ".jpeg", ".bmp", ".png"]:
-                return self.error("Unsupported file format")
+            error = ContentUtil.validateImage(image=banner_image)
+            if error is not None:
+                self.error(error)
 
             # 기존 이미지 삭제
             original_image = target_banner.banner_image
             if os.path.isfile(os.path.join(settings.BANNER_DIR, original_image)):
                 os.remove(os.path.join(settings.BANNER_DIR, original_image))
 
-            # 배너 이미지 주소를 랜덤으로 생성
-            name = rand_str(10) + suffix
-
-            # 배너 이미지 저장
-            with open(os.path.join(settings.BANNER_DIR, name), "wb") as img:
-                for chunk in banner_image:
-                    img.write(chunk)
+            # 파일 이름 생성하여 저장
+            filename = ContentUtil.saveContentWithRandomFileName(banner_image, settings.BANNER_DIR)
 
             # 신규 경로 지정
-            target_banner.banner_image = f"{settings.BANNER_URI_PREFIX}/{name}"
+            target_banner.banner_image = f"{settings.BANNER_URI_PREFIX}/{filename}"
         else:
             self.error("Invalid file content")
 
@@ -175,6 +145,7 @@ class EditAdminBannerAPIView(APIView):
             # BANNER_VISIBLE_LIMIT 한계 수치를 넘어서 visible로 등록하면 오류 발생
             if visible and len(banners) == BANNER_VISIBLE_LIMIT:
                 return self.error("You have exceeded the limit of the banner you can activate.")
+
             if target_banner.visible == visible:
                 return self.error("Visible state is same")
 

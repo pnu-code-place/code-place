@@ -4,6 +4,7 @@ from utils.constants import POPUP_VISIBLE_LIMIT
 
 class Popup(models.Model):
     popup_image = models.TextField()
+    popup_image_width = models.IntegerField(null=True)
     link_url = models.URLField()
     visible = models.BooleanField(default=False)
     order = models.PositiveIntegerField(null=True, blank=True)
