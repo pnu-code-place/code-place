@@ -339,7 +339,7 @@ export const m = {
   // PopupManagement.vue
   Popup_Image: "팝업 이미지",
   Popup_Does_Not_Exist: "팝업이 존재하지 않습니다.",
-  Popup_Notice: "팝업은 최대 2개까지 가능합니다.",
+  Popup_Notice: "팝업은 최대 3개까지 가능합니다.",
 
   Add_Home_Popup: "홈 팝업 추가",
   Connect_Popup_Link : "팝업에 연결할 링크",
