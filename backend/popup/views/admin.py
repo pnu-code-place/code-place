@@ -1,15 +1,12 @@
 import os
 
-from django.core.exceptions import ValidationError
-from django.core.validators import URLValidator
-
 from account.decorators import super_admin_required
 from popup.models import Popup
 from popup.serializers import ImageUploadForm, PopupAdminSerializer
 from oj import settings
 from utils.api import APIView
 from utils.constants import POPUP_VISIBLE_LIMIT
-from utils.shortcuts import rand_str
+from utils.contents_util import ContentUtil
 
 import logging
 
@@ -39,39 +36,29 @@ class AdminPopupAPIView(APIView):
         다음과 같은 데이터가 필요합니다.
         - 팝업 이미지
         - 팝업 이미지에 연결할 URL 주소
+        - 팝업 이미지 넓이
         """
 
         link_url = request.data.get('link_url')
         popup_image = request.data.get('image')
+        image_width = int(request.data.get('image_width'))
 
         # URL 유효성 검사
-        url_validator = URLValidator()
-        try:
-            url_validator(link_url)
-        except ValidationError:
-            return self.error("Invalid URL")
+        error = ContentUtil.validateURL(link_url)
+        if error is not None:
+            return self.error(error)
 
-        if popup_image.size > 2 * 1024 * 1024:
-            return self.error("Picture is too large")
+        # 이미지 유효성 검사
+        error = ContentUtil.validateImage(image=popup_image, width=image_width)
+        if error is not None:
+            return self.error(error)
 
-        popup_image_suffix = os.path.splitext(popup_image.name)[-1].lower()
-        if popup_image_suffix not in [".gif", ".jpg", ".jpeg", ".bmp", ".png"]:
-            return self.error("Unsupported file format")
-
-        # 팝업 이미지 주소를 랜덤으로 생성
-        name = rand_str(10) + popup_image_suffix
-
-        # 팝업 이미지 저장
-        popup_path = os.path.join(settings.BANNER_DIR, name)
-        os.makedirs(os.path.dirname(popup_path), exist_ok=True)
-
-        with open(popup_path, "wb") as img:
-            for chunk in popup_image:
-                img.write(chunk)
+        filename = ContentUtil.saveContentWithRandomFileName(popup_image, settings.POPUP_DIR)
 
         new_popup = Popup(
-            popup_image=f"{settings.BANNER_URI_PREFIX}/{name}",
+            popup_image=f"{settings.POPUP_URI_PREFIX}/{filename}",
             link_url=link_url,
+            popup_image_width=image_width,
             visible=False,
             order=None
         )
@@ -89,6 +76,7 @@ class AdminPopupAPIView(APIView):
             target_popup = Popup.objects.get(id=request.data.get('id'))
         except Popup.DoesNotExist:
             return self.error("Invalid Popup")
+
         Popup.remove(target_popup)
         return self.success("delete success")
 
@@ -100,9 +88,10 @@ class EditAdminPopupAPIView(APIView):
         """
         어드민 페이지-홈 팝업 관리 페이지(모달창)에서 등록된 팝업를 수정합니다.
         다음과 같은 수정 기능을 포함합니다.
-        - 팝업 이미지, 연결 링크 수정
+        - 팝업 이미지, 연결 링크, 이미지 넓이 수정
         """
         link_url = request.data.get('link_url', None)
+        image_width = int(request.data.get('image_width', None))
         form = ImageUploadForm(request.POST, request.FILES)
 
         # 수정 타겟
@@ -112,42 +101,33 @@ class EditAdminPopupAPIView(APIView):
             return self.error("Invalid Popup")
 
         # 연결 링크 변경
-        if link_url is not None:
-            url_validator = URLValidator()
-            # URL 유효성 검사
-            try:
-                url_validator(link_url)
-            except ValidationError:
-                return self.error("Invalid URL")
-            target_popup.link_url = link_url
+        error = ContentUtil.validateURL(link_url)
+        if error is not None:
+            return self.error(error)
+
+        target_popup.link_url = link_url
 
         # 이미지 변경 사항이 있는 경우
         if form.is_valid():
-            popup_image = form.cleaned_data["image"]
-            # 파일 크기 검사
-            if popup_image.size > 2 * 1024 * 1024:
-                return self.error("Picture is too large")
 
-            # 파일 확장자 검사
-            suffix = os.path.splitext(popup_image.name)[-1].lower()
-            if suffix not in [".gif", ".jpg", ".jpeg", ".bmp", ".png"]:
-                return self.error("Unsupported file format")
+            popup_image = form.cleaned_data["image"]
+
+            error = ContentUtil.validateImage(image=popup_image, width=image_width)
+            if error is not None:
+                self.error(error)
 
             # 기존 이미지 삭제
             original_image = target_popup.popup_image
-            if os.path.isfile(os.path.join(settings.BANNER_DIR, original_image)):
-                os.remove(os.path.join(settings.BANNER_DIR, original_image))
+            file_path = os.path.join(settings.POPUP_DIR, original_image)
+            if os.path.isfile(file_path):
+                os.remove(file_path)
 
-            # 팝업 이미지 주소를 랜덤으로 생성
-            name = rand_str(10) + suffix
+            # 파일을 랜덤 이름을 생성하여 저장
+            filename = ContentUtil.saveContentWithRandomFileName(popup_image, settings.POPUP_DIR)
 
-            # 팝업 이미지 저장
-            with open(os.path.join(settings.BANNER_DIR, name), "wb") as img:
-                for chunk in popup_image:
-                    img.write(chunk)
-
-            # 신규 경로 지정
-            target_popup.popup_image = f"{settings.POPUP_URI_PREFIX}/{name}"
+            # 신규 경로 및 이미지 넓이 지정
+            target_popup.popup_image = f"{settings.POPUP_URI_PREFIX}/{filename}"
+            target_popup.popup_image_width = image_width
         else:
             self.error("Invalid file content")
 
