@@ -1,12 +1,7 @@
-import io
-
-import xlsxwriter
 from django.db.models import OuterRef, Count, Subquery, F, Max
 from django.http import HttpResponse
 from django.utils.timezone import now
 from django.core.cache import cache
-
-from problem.models import Problem
 from submission.models import Submission
 from utils.api import APIView, validate_serializer
 from utils.constants import CacheKey, CONTEST_PASSWORD_SESSION_KEY
@@ -216,27 +211,10 @@ class ContestRankAPI(APIView):
 
         if download_csv:
             data = serializer(qs, many=True, is_contest_admin=is_contest_admin).data
-            contest_problems = Problem.objects.filter(contest=self.contest, visible=True).order_by("_id")
-            problem_ids = [item.id for item in contest_problems]
-
-            f = io.BytesIO()
-
-            workbook = xlsxwriter.Workbook(f)
-            worksheet = workbook.add_worksheet()
-
-            contest_rank_writer = ContestRankingWriter(self.contest, workbook, worksheet, data, contest_problems, problem_ids)
-            contest_rank_writer.write_xlsx_common_contest_info()
-            if self.contest.rule_type == ContestRuleType.OI:
-                contest_rank_writer.write_xlsx_oi_ranking()
-            else:
-                contest_rank_writer.write_xlsx_acm_ranking()
-
-            worksheet.autofit()
-            workbook.close()
-
-            f.seek(0)
-            response = HttpResponse(f.read())
-            response["Content-Disposition"] = f"attachment; filename={self.contest.title}-결과표.xlsx"
+            contest_rank_writer = ContestRankingWriter(self.contest, data)
+            csv = contest_rank_writer.create_csv()
+            response = HttpResponse(csv.read())
+            response["Content-Disposition"] = f"attachment; filename=content-{self.contest.id}-result.xlsx"
             response["Content-Type"] = "application/xlsx"
             return response
 
