@@ -1,19 +1,8 @@
 from utils.constants import ContestRuleType
-
-def column_string(n):
-    string = ""
-    while n > 0:
-        n, remainder = divmod(n - 1, 26)
-        string = chr(65 + remainder) + string
-    return string
-
-def convert_ms_to_time(ms):
-    seconds = ms // 1000
-    hours = seconds // 3600
-    seconds %= 3600
-    minutes = seconds // 60
-    seconds %= 60
-    return f"{hours}시간 {minutes}분 {seconds}초"
+from utils.shortcuts import column_string
+import io
+import xlsxwriter
+import string
 
 
 class ContestRankingWriter:
