@@ -15,13 +15,14 @@
     </div>
     <div class="admin-content-app">
       <transition name="fadeInUp" mode="out-in">
+        <keep-alive :include="['problem-list', 'ProblemList']">
         <router-view></router-view>
+        </keep-alive>
       </transition>
       <div class="footer">
         Build Version: {{ version }}
       </div>
     </div>
-
     <el-dialog :title="$t('m.Latex_Editor')" :visible.sync="katexVisible">
       <KatexEditor></KatexEditor>
     </el-dialog>

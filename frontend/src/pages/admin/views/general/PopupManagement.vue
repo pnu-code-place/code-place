@@ -58,9 +58,6 @@
               {{ banner.id }}
             </span>
             <img :src="banner.popup_image" width="100%" />
-<!--            <span class="drag-item-text">-->
-<!--              <el-input-number class="width-size" max="2000" type="number" placeholder="이미지 width"/>-->
-<!--            </span>-->
             <span class="drag-item-text">
               {{ banner.create_time | localtime }}
             </span>

@@ -130,7 +130,7 @@ const getters = {
       if (min > 0) result += min + "분 ";
       if (sec > 0) result += sec + "초";
 
-      console.log(days, hours, min, sec)
+      console.log(days, hours, min, sec);
 
       return "종료까지 " + result + " 전";
     } else {
@@ -196,9 +196,9 @@ const actions = {
       );
     });
   },
-  getContestProblems({ commit, rootState }) {
+  getContestProblems({ commit, rootState }, keyword) {
     return new Promise((resolve, reject) => {
-      api.getContestProblemList(rootState.route.params.contestID).then(
+      api.getContestProblemList(rootState.route.params.contestID, keyword).then(
         (res) => {
           res.data.data.sort((a, b) => {
             if (a._id === b._id) {
