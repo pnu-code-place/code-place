@@ -166,24 +166,26 @@
         this.getProblemList(page)
       },
       getProblemList (page = 1) {
-        this.loading = true
-        let funcName = this.routeName === 'problem-list' ? 'getProblemList' : 'getContestProblemList'
-        let params = {
-          limit: this.pageSize,
-          offset: (page - 1) * this.pageSize,
-          keyword: this.keyword,
-          contest_id: this.contestId
-        }
-        api[funcName](params).then(res => {
-          this.loading = false
-          this.total = res.data.data.total
-          for (let problem of res.data.data.results) {
-            problem.isEditing = false
+        if (this.contestId) {
+          this.loading = true
+          let funcName = this.routeName === 'problem-list' ? 'getProblemList' : 'getContestProblemList'
+          let params = {
+            limit: this.pageSize,
+            offset: (page - 1) * this.pageSize,
+            keyword: this.keyword,
+            contest_id: this.contestId
           }
-          this.problemList = res.data.data.results
-        }, res => {
-          this.loading = false
-        })
+          api[funcName](params).then(res => {
+            this.loading = false
+            this.total = res.data.data.total
+            for (let problem of res.data.data.results) {
+              problem.isEditing = false
+            }
+            this.problemList = res.data.data.results
+          }, res => {
+            this.loading = false
+          })
+        }
       },
       deleteProblem (id) {
         this.$confirm(this.$t('m.ProblemList_Delete_Problem_Content'), this.$t('m.ProblemList_Delete_Problem_Title'), {
