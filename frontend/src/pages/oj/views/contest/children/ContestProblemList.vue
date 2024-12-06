@@ -61,7 +61,15 @@
           <td>
             {{ getACRate(problem.accepted_number, problem.submission_number) }}
           </td>
-          <td v-html="getSubmissionState(problem.mine_submission_state)"></td>
+          <td>
+            <CustomTooltip
+              :content="getSubmissionStateStr(problem.mine_submission_state)"
+            >
+              <div
+                v-html="getSubmissionState(problem.mine_submission_state)"
+              ></div>
+            </CustomTooltip>
+          </td>
         </tr>
       </tbody>
     </table>
@@ -140,6 +148,20 @@ export default {
           problemID: id,
         },
       });
+    },
+    getSubmissionStateStr(state) {
+      switch (state) {
+        case "Accepted":
+          return this.$t("m.Correct"); // "정답";
+        case "Partially_Accepted":
+          return this.$t("m.Partially_Correct");
+        case "Failed":
+          return this.$t("m.Failed");
+        case null:
+          return this.$t("m.Not_Submitted");
+        default:
+          return null;
+      }
     },
     getSubmissionState(state) {
       switch (state) {
