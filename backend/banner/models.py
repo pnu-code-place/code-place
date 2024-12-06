@@ -5,7 +5,7 @@ from utils.constants import BANNER_VISIBLE_LIMIT
 
 class Banner(models.Model):
     banner_image = models.TextField()
-    link_url = models.URLField()
+    link_url = models.TextField()
     visible = models.BooleanField(default=False)
     order = models.PositiveIntegerField(null=True, blank=True)
     create_time = models.DateTimeField(auto_now_add=True)
