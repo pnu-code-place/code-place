@@ -47,6 +47,9 @@ const rootMutations = {
     }
   },
   removePopup(state, payload) {
+    if (storage.get('removedPopup') === null ) {
+      storage.set('removedPopup', [])
+    }
     const removedPopup = storage.get('removedPopup')
     removedPopup.push({removedDay : new Date().getDay() ,id : payload})
     storage.set('removedPopup', removedPopup)

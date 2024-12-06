@@ -64,7 +64,6 @@ export default {
       popupData: [],
       topPopupId: 0,
       removedPopups: [],
-
     };
   },
   mounted() {
