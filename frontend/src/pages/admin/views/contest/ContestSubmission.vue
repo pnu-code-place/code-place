@@ -3,11 +3,9 @@
     <section>
       <div class="section-title">
         {{ $t("m.Contest_Submission_Title") }}
-        <icon-btn
-          :name="$t('m.Icon_Contest_Rank_Download')"
-          icon="download"
-          @click.native="downloadRankCSV()"
-        />
+        <el-button @click.native="downloadRankCSV()">
+          대회 결과표 다운로드
+        </el-button>
       </div>
       <div class="section-body">
         <div
