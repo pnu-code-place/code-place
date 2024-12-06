@@ -46,7 +46,10 @@
         <th>{{ $t("m.Th_Problem_Submission_State") }}</th>
       </thead>
       <tbody>
-        <tr v-for="problem in problems" @click="goContestProblem(problem._id)">
+        <tr
+          v-for="problem in problems.slice(limit * (page - 1), limit * page)"
+          @click="goContestProblem(problem._id)"
+        >
           <td style="white-space: nowrap; text-align: left">
             {{ problem._id }}
           </td>
@@ -69,7 +72,10 @@
         <th>{{ $t("m.Th_Problem_Submission_State") }}</th>
       </thead>
       <tbody>
-        <tr v-for="problem in problems" @click="goContestProblem(problem._id)">
+        <tr
+          v-for="problem in problems.slice(limit * (page - 1), limit * page)"
+          @click="goContestProblem(problem._id)"
+        >
           <td>{{ problem._id }}</td>
           <td class="TableTitle">
             {{ problem.title }}
@@ -78,6 +84,12 @@
         </tr>
       </tbody>
     </table>
+    <Pagination
+      :total="totalProblems"
+      :page-size="limit"
+      :current.sync="page"
+      @on-change="changeRoute"
+    ></Pagination>
   </div>
 </template>
 
@@ -87,18 +99,23 @@ import { ProblemMixin } from "@oj/components/mixins";
 import { DIFFICULTY_MAP, FIELD_MAP } from "../../../../../utils/constants";
 import FieldCategoryBox from "../../../components/FieldCategoryBox.vue";
 import CustomTooltip from "@oj/components/CustomTooltip";
+import Pagination from "@/pages/admin/components/Pagination";
 
 export default {
   name: "ContestProblemList",
-  components: { FieldCategoryBox, CustomTooltip },
+  components: { FieldCategoryBox, CustomTooltip, Pagination },
   mixins: [ProblemMixin],
   data() {
     return {
       keyword: "",
+      totalProblems: 0,
+      limit: 10,
+      page: 1,
     };
   },
   mounted() {
     this.getContestProblems();
+    this.totalProblems = this.problems.length;
   },
   methods: {
     filterByKeyword() {
