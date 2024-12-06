@@ -43,6 +43,7 @@
           {{ $t("m.Th_Problem_Total_Score") }}
         </th>
         <th>{{ $t("m.Th_Problem_AC_Rate") }}</th>
+        <th>{{ $t("m.Th_Problem_Submission_State") }}</th>
       </thead>
       <tbody>
         <tr v-for="problem in problems" @click="goContestProblem(problem._id)">
@@ -57,6 +58,7 @@
           <td>
             {{ getACRate(problem.accepted_number, problem.submission_number) }}
           </td>
+          <td v-html="getSubmissionState(problem.mine_submission_state)"></td>
         </tr>
       </tbody>
     </table>
@@ -64,6 +66,7 @@
       <thead>
         <th>{{ $t("m.Th_Problem_Id") }}</th>
         <th class="TableTitle">{{ $t("m.Th_Problem_Title") }}</th>
+        <th>{{ $t("m.Th_Problem_Submission_State") }}</th>
       </thead>
       <tbody>
         <tr v-for="problem in problems" @click="goContestProblem(problem._id)">
@@ -71,6 +74,7 @@
           <td class="TableTitle">
             {{ problem.title }}
           </td>
+          <td v-html="getSubmissionState(problem.mine_submission_state)"></td>
         </tr>
       </tbody>
     </table>
@@ -119,6 +123,20 @@ export default {
           problemID: id,
         },
       });
+    },
+    getSubmissionState(state) {
+      switch (state) {
+        case "Accepted":
+          return '<i class="far fa-check-circle" style="color: #63e6be"></i>';
+        case "Partially_Accepted":
+          return ' <i class="fas fa-adjust" style="color: #b197fc"></i>';
+        case "Failed":
+          return '<i class="far fa-times-circle" style="color: #e22828"></i>';
+        case null:
+          return '<i class="far fa-dot-circle" style="color: #bababa"></i>';
+        default:
+          return null;
+      }
     },
   },
   computed: {
