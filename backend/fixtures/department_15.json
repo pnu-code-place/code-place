@@ -11,7 +11,7 @@
     "model": "school.department",
     "pk": 101,
     "fields": {
-      "department_name": "컴퓨터공학전공-의생명융합공학부",
+      "department_name": "데이터사이언스전공-의생명융합공학부",
       "college_id": 15
     }
   }
