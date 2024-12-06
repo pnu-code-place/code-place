@@ -46,10 +46,7 @@
         <th>{{ $t("m.Th_Problem_Submission_State") }}</th>
       </thead>
       <tbody>
-        <tr
-          v-for="problem in problems.slice(limit * (page - 1), limit * page)"
-          @click="goContestProblem(problem._id)"
-        >
+        <tr v-for="problem in problems" @click="goContestProblem(problem._id)">
           <td style="white-space: nowrap; text-align: left">
             {{ problem._id }}
           </td>
