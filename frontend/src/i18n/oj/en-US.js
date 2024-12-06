@@ -298,6 +298,7 @@ export const m = {
   Th_Problem_Num_Success: "완료한 사람",
   Th_Problem_Total_Score: "총점",
   Th_Problem_AC_Rate: "정답률",
+  Th_Problem_Submission_State: "제출 상태",
   //PersonalRecommendationBox.vue
   PersonalRecommendation: "실력향상을 위한 추천문제",
   PersonalRecommendation_No_Auth: "로그인 후 사용 가능합니다.",

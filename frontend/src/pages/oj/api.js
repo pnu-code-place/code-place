@@ -234,7 +234,7 @@ export default {
         }
       });
     }
-    return ajax("contest_underway", "get", {params});
+    return ajax("contest_underway", "get", { params });
   },
   getNotStartedContestList() {
     return ajax("contest_not_started", "get");
@@ -287,15 +287,15 @@ export default {
   getAnnouncement(announcementId) {
     return ajax("announcement", "get", {
       params: {
-        id: announcementId
-      }
+        id: announcementId,
+      },
     });
   },
-  getContestProblemList(contestId) {
+  getContestProblemList(contestId, query) {
+    const params = { contest_id: contestId };
+    if (query) params.query = query;
     return ajax("contest/problem", "get", {
-      params: {
-        contest_id: contestId,
-      },
+      params: params,
     });
   },
   getContestProblem(problemID, contestID) {
@@ -368,7 +368,7 @@ export default {
       offset,
       limit,
     };
-    return ajax("major_rank", "get", {params});
+    return ajax("major_rank", "get", { params });
   },
   getContestRank(params) {
     return ajax("contest_rank", "get", {
@@ -388,7 +388,7 @@ export default {
  */
 function ajax(url, method, options) {
   if (options !== undefined) {
-    var {params = {}, data = {}} = options;
+    var { params = {}, data = {} } = options;
   } else {
     params = data = {};
   }

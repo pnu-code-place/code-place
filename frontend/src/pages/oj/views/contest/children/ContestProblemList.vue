@@ -1,17 +1,27 @@
 <template>
   <div class="problemBox">
     <div class="problemTitle">
-      <p>{{ $t("m.Problems_List") }}</p>
-      <CustomTooltip
-        v-if="contestRuleType === 'ACM'"
-        :content="$t('m.ACM_Contest_Information')"
-        placement="right"
-      >
-        <Icon
-          type="ios-information-outline"
-          style="font-size: 16px; font-weight: 900"
-        ></Icon>
-      </CustomTooltip>
+      <div style="display: flex; align-items: center; gap: 10px">
+        <p>{{ $t("m.Problems_List") }}</p>
+        <CustomTooltip
+          v-if="contestRuleType === 'ACM'"
+          :content="$t('m.ACM_Contest_Information')"
+          placement="right"
+        >
+          <Icon
+            type="ios-information-outline"
+            style="font-size: 16px; font-weight: 900"
+          ></Icon>
+        </CustomTooltip>
+      </div>
+      <Input
+        style="width: 200px"
+        v-model="keyword"
+        @on-enter="filterByKeyword"
+        @on-click="filterByKeyword"
+        :placeholder="$t('m.Search_Problem')"
+        icon="ios-search-strong"
+      />
     </div>
     <div
       v-if="problems.length === 0"
@@ -33,9 +43,13 @@
           {{ $t("m.Th_Problem_Total_Score") }}
         </th>
         <th>{{ $t("m.Th_Problem_AC_Rate") }}</th>
+        <th>{{ $t("m.Th_Problem_Submission_State") }}</th>
       </thead>
       <tbody>
-        <tr v-for="problem in problems" @click="goContestProblem(problem._id)">
+        <tr
+          v-for="problem in problems.slice(limit * (page - 1), limit * page)"
+          @click="goContestProblem(problem._id)"
+        >
           <td style="white-space: nowrap; text-align: left">
             {{ problem._id }}
           </td>
@@ -47,6 +61,7 @@
           <td>
             {{ getACRate(problem.accepted_number, problem.submission_number) }}
           </td>
+          <td v-html="getSubmissionState(problem.mine_submission_state)"></td>
         </tr>
       </tbody>
     </table>
@@ -54,16 +69,27 @@
       <thead>
         <th>{{ $t("m.Th_Problem_Id") }}</th>
         <th class="TableTitle">{{ $t("m.Th_Problem_Title") }}</th>
+        <th>{{ $t("m.Th_Problem_Submission_State") }}</th>
       </thead>
       <tbody>
-        <tr v-for="problem in problems" @click="goContestProblem(problem._id)">
+        <tr
+          v-for="problem in problems.slice(limit * (page - 1), limit * page)"
+          @click="goContestProblem(problem._id)"
+        >
           <td>{{ problem._id }}</td>
           <td class="TableTitle">
             {{ problem.title }}
           </td>
+          <td v-html="getSubmissionState(problem.mine_submission_state)"></td>
         </tr>
       </tbody>
     </table>
+    <Pagination
+      :total="totalProblems"
+      :page-size="limit"
+      :current.sync="page"
+      @on-change="changeRoute"
+    ></Pagination>
   </div>
 </template>
 
@@ -73,17 +99,30 @@ import { ProblemMixin } from "@oj/components/mixins";
 import { DIFFICULTY_MAP, FIELD_MAP } from "../../../../../utils/constants";
 import FieldCategoryBox from "../../../components/FieldCategoryBox.vue";
 import CustomTooltip from "@oj/components/CustomTooltip";
+import Pagination from "@/pages/admin/components/Pagination";
 
 export default {
   name: "ContestProblemList",
-  components: { FieldCategoryBox, CustomTooltip },
+  components: { FieldCategoryBox, CustomTooltip, Pagination },
   mixins: [ProblemMixin],
+  data() {
+    return {
+      keyword: "",
+      totalProblems: 0,
+      limit: 10,
+      page: 1,
+    };
+  },
   mounted() {
     this.getContestProblems();
+    this.totalProblems = this.problems.length;
   },
   methods: {
+    filterByKeyword() {
+      this.getContestProblems();
+    },
     getContestProblems() {
-      this.$store.dispatch("getContestProblems").then((res) => {
+      this.$store.dispatch("getContestProblems", this.keyword).then((res) => {
         if (this.isAuthenticated) {
           if (this.contestRuleType === "ACM") {
             this.addStatusColumn(this.ACMTableColumns, res.data.data);
@@ -101,6 +140,20 @@ export default {
           problemID: id,
         },
       });
+    },
+    getSubmissionState(state) {
+      switch (state) {
+        case "Accepted":
+          return '<i class="far fa-check-circle" style="color: #63e6be"></i>';
+        case "Partially_Accepted":
+          return ' <i class="fas fa-adjust" style="color: #b197fc"></i>';
+        case "Failed":
+          return '<i class="far fa-times-circle" style="color: #e22828"></i>';
+        case null:
+          return '<i class="far fa-dot-circle" style="color: #bababa"></i>';
+        default:
+          return null;
+      }
     },
   },
   computed: {
@@ -135,6 +188,7 @@ export default {
 .problemTitle {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 8px;
   p {
     text-decoration: none;
