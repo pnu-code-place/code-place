@@ -25,6 +25,10 @@ const rootGetters = {
     return state.modalStatus
   },
   'removedPopupId'(state) {
+    console.log("removedPopupId")
+    if (storage.get('removedPopup') === null ) {
+      storage.set('removedPopup', [])
+    }
     return storage.get('removedPopup').map(popup => popup.id)
     // return state.removed_popup.map(popup => popup.id)
   }

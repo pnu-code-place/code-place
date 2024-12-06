@@ -23,7 +23,6 @@
         Build Version: {{ version }}
       </div>
     </div>
-
     <el-dialog :title="$t('m.Latex_Editor')" :visible.sync="katexVisible">
       <KatexEditor></KatexEditor>
     </el-dialog>
