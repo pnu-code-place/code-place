@@ -1,11 +1,12 @@
 <template>
   <div class="mainBox">
-    <PopUp v-for="(popup, index) in this.filteredPopup" :key="popup.id" :id="popup.id" :link="popup.link_url"
-           :width="popup.popup_image_width === null || popup.popup_image_width <=50 ? 0 : popup.popup_image_width"
-           :p_position="{x: 100 + index * 50, y: 100 + index * 50}" :is-top-popup="topPopupId === popup.id" @selected="popupSelect">
-      <img :src="popup.popup_image" :alt="popup.alt" draggable="false"
-           :style="{width:'100%', objectFit:'contain'}"/>
-    </PopUp>
+      <PopUp v-for="(popup, index) in this.filteredPopup" :key="popup.id" :id="popup.id" :link="popup.link_url"
+             :width="popup.popup_image_width === null || popup.popup_image_width <=50 ? 0 : popup.popup_image_width"
+             :p_position="{x: 100 + index * 50, y: 100 + index * 50}" :is-top-popup="topPopupId === popup.id"
+             @selected="popupSelect">
+        <img :src="popup.popup_image" :alt="popup.alt" draggable="false"
+             :style="{width:'100%', objectFit:'contain'}"/>
+      </PopUp>
     <div class="boxWrapper">
       <div class="left-container">
         <HomeBannerListBox/>
@@ -21,9 +22,7 @@
     <HomeStatusBox/>
     <HomeFamilySiteBanner/>
   </div>
-
 </template>
-
 <script>
 /*eslint-disable*/
 import Announcements from "./Announcements.vue";
@@ -88,7 +87,7 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['website', 'isAdminRole',"removedPopupId"]),
+    ...mapGetters(['website', 'isAdminRole', "removedPopupId"]),
     filteredPopup() {
       const filtered = this.popupData.filter(popup => !this.removedPopupId.includes(popup.id))
       if (filtered.length > 0) {  // 배열이 비어있지 않은 경우에만 topPopupId 설정
