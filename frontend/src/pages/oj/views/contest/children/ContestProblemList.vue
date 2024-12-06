@@ -80,10 +80,7 @@
         <th>{{ $t("m.Th_Problem_Submission_State") }}</th>
       </thead>
       <tbody>
-        <tr
-          v-for="problem in problems.slice(limit * (page - 1), limit * page)"
-          @click="goContestProblem(problem._id)"
-        >
+        <tr v-for="problem in problems" @click="goContestProblem(problem._id)">
           <td>{{ problem._id }}</td>
           <td class="TableTitle">
             {{ problem.title }}
@@ -92,12 +89,6 @@
         </tr>
       </tbody>
     </table>
-    <Pagination
-      :total="totalProblems"
-      :page-size="limit"
-      :current.sync="page"
-      @on-change="changeRoute"
-    ></Pagination>
   </div>
 </template>
 
