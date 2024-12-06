@@ -76,7 +76,7 @@ export default {
     ...mapActions(['getProfile', 'changeModalStatus']),
     init() {
       api.getPopup().then((res) => {
-        this.$store.commit('refreshPopup')
+        // this.$store.commit('refreshPopup')
         this.popupData = res.data.data
       })
       if (this.isContest) {
