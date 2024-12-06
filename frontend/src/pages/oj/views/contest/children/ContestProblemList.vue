@@ -1,17 +1,27 @@
 <template>
   <div class="problemBox">
     <div class="problemTitle">
-      <p>{{ $t("m.Problems_List") }}</p>
-      <CustomTooltip
-        v-if="contestRuleType === 'ACM'"
-        :content="$t('m.ACM_Contest_Information')"
-        placement="right"
-      >
-        <Icon
-          type="ios-information-outline"
-          style="font-size: 16px; font-weight: 900"
-        ></Icon>
-      </CustomTooltip>
+      <div style="display: flex; align-items: center; gap: 10px">
+        <p>{{ $t("m.Problems_List") }}</p>
+        <CustomTooltip
+          v-if="contestRuleType === 'ACM'"
+          :content="$t('m.ACM_Contest_Information')"
+          placement="right"
+        >
+          <Icon
+            type="ios-information-outline"
+            style="font-size: 16px; font-weight: 900"
+          ></Icon>
+        </CustomTooltip>
+      </div>
+      <Input
+        style="width: 200px"
+        v-model="keyword"
+        @on-enter="filterByKeyword"
+        @on-click="filterByKeyword"
+        :placeholder="$t('m.Search_Problem')"
+        icon="ios-search-strong"
+      />
     </div>
     <div
       v-if="problems.length === 0"
@@ -78,12 +88,20 @@ export default {
   name: "ContestProblemList",
   components: { FieldCategoryBox, CustomTooltip },
   mixins: [ProblemMixin],
+  data() {
+    return {
+      keyword: "",
+    };
+  },
   mounted() {
     this.getContestProblems();
   },
   methods: {
+    filterByKeyword() {
+      this.getContestProblems();
+    },
     getContestProblems() {
-      this.$store.dispatch("getContestProblems").then((res) => {
+      this.$store.dispatch("getContestProblems", this.keyword).then((res) => {
         if (this.isAuthenticated) {
           if (this.contestRuleType === "ACM") {
             this.addStatusColumn(this.ACMTableColumns, res.data.data);
@@ -135,6 +153,7 @@ export default {
 .problemTitle {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 8px;
   p {
     text-decoration: none;
