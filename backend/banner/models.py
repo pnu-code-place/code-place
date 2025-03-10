@@ -42,8 +42,6 @@ class Banner(models.Model):
             curr_banner.order = target_loc
             curr_banner.save()
 
-
-
     @classmethod
     def remove(cls, target_banner):
         banners = cls.objects.filter(order__isnull=False).order_by('order')
@@ -62,5 +60,3 @@ class Banner(models.Model):
                     banners[i].save()
 
                 target_banner.delete()
-
-

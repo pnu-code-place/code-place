@@ -4,11 +4,13 @@ from options.options import SysOptions
 
 
 class InvalidLanguage(serializers.ValidationError):
+
     def __init__(self, name):
         super().__init__(detail=f"{name} is not a valid language")
 
 
 class LanguageNameChoiceField(serializers.CharField):
+
     def to_internal_value(self, data):
         data = super().to_internal_value(data)
         if data and data not in SysOptions.language_names:
@@ -17,6 +19,7 @@ class LanguageNameChoiceField(serializers.CharField):
 
 
 class SPJLanguageNameChoiceField(serializers.CharField):
+
     def to_internal_value(self, data):
         data = super().to_internal_value(data)
         if data and data not in SysOptions.spj_language_names:
@@ -25,6 +28,7 @@ class SPJLanguageNameChoiceField(serializers.CharField):
 
 
 class LanguageNameMultiChoiceField(serializers.ListField):
+
     def to_internal_value(self, data):
         data = super().to_internal_value(data)
         for item in data:
@@ -34,6 +38,7 @@ class LanguageNameMultiChoiceField(serializers.ListField):
 
 
 class SPJLanguageNameMultiChoiceField(serializers.ListField):
+
     def to_internal_value(self, data):
         data = super().to_internal_value(data)
         for item in data:

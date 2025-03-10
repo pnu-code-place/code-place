@@ -47,7 +47,10 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='UserScore',
             fields=[
-                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, primary_key=True, serialize=False, to='account.user')),
+                ('user',
+                 models.OneToOneField(
+                     on_delete=django.db.models.deletion.CASCADE, primary_key=True, serialize=False,
+                     to='account.user')),
                 ('yesterday_score', models.IntegerField(default=0)),
                 ('total_score', models.IntegerField(default=0)),
                 ('fluctuation', models.IntegerField(default=0)),
@@ -72,7 +75,10 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='UserSolved',
             fields=[
-                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, primary_key=True, serialize=False, to='account.user')),
+                ('user',
+                 models.OneToOneField(
+                     on_delete=django.db.models.deletion.CASCADE, primary_key=True, serialize=False,
+                     to='account.user')),
                 ('math_solved', models.BigIntegerField(default=0)),
                 ('implementation_solved', models.BigIntegerField(default=0)),
                 ('datastructure_solved', models.BigIntegerField(default=0)),
@@ -96,7 +102,14 @@ class Migration(migrations.Migration):
                 ('acm_problems_status', models.JSONField(default=dict)),
                 ('oi_problems_status', models.JSONField(default=dict)),
                 ('real_name', models.TextField(null=True)),
-                ('student_id', models.CharField(max_length=9, null=True, validators=[django.core.validators.RegexValidator(code='invalid_student_id', message='학번은 6자리 이상 9자리 이하의 숫자만 입력 가능합니다.', regex='^\\d{6,9}$')])),
+                ('student_id',
+                 models.CharField(
+                     max_length=9,
+                     null=True,
+                     validators=[
+                         django.core.validators.RegexValidator(
+                             code='invalid_student_id', message='학번은 6자리 이상 9자리 이하의 숫자만 입력 가능합니다.', regex='^\\d{6,9}$')
+                     ])),
                 ('avatar', models.TextField(default='/public/avatar/default.png')),
                 ('blog', models.URLField(null=True)),
                 ('mood', models.TextField(null=True)),
@@ -107,9 +120,12 @@ class Migration(migrations.Migration):
                 ('accepted_number', models.IntegerField(default=0)),
                 ('total_score', models.BigIntegerField(default=0)),
                 ('submission_number', models.IntegerField(default=0)),
-                ('college', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to='school.college')),
-                ('department', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to='school.department')),
-                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                ('college',
+                 models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to='school.college')),
+                ('department',
+                 models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to='school.department')),
+                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE,
+                                              to=settings.AUTH_USER_MODEL)),
             ],
             options={
                 'db_table': 'user_profile',

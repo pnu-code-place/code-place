@@ -29,7 +29,9 @@ class EditUserProfileSerializer(serializers.Serializer):
     github = serializers.URLField(max_length=256, allow_blank=True, required=False, allow_null=True)
     college = serializers.IntegerField(allow_null=True, required=False)
     department = serializers.IntegerField(allow_null=True, required=False)
-    language = serializers.ChoiceField(allow_null=True, allow_blank=True, required=False, choices=["C", "C++", "Java", "Python3", "JavaScript"])
+    language = serializers.ChoiceField(
+        allow_null=True, allow_blank=True, required=False, choices=["C", "C++", "Java", "Python3", "JavaScript"])
+
 
 class ProfileProblemSerializer(serializers.Serializer):
     id = serializers.CharField()
@@ -40,24 +42,28 @@ class ProfileProblemSerializer(serializers.Serializer):
 
 
 class DashboardUserInfoSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = User
         fields = ['username', 'email']
 
 
 class DashboardSubmissionSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = UserProfile
         fields = ['accepted_number', 'submission_number']
 
 
 class DashboardCollegeSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = College
         fields = ['college_name']
 
 
 class DashboardDepartmentSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Department
         fields = ['department_name']

@@ -20,11 +20,11 @@ class HomeRankingSerializer(serializers.ModelSerializer):
 class UserRankListSerializer(serializers.ModelSerializer):
     rank = serializers.SerializerMethodField()
     avatar = serializers.SerializerMethodField()
-    username = serializers.CharField()  # 수정
-    mood = serializers.CharField(source='userprofile.mood')  # 수정
-    score = serializers.IntegerField(source='userscore.total_score')  # 수정
-    major = serializers.CharField(source='userprofile.major')  # 수정
-    tier = serializers.CharField(source='userscore.tier')  # 수정
+    username = serializers.CharField()    # 수정
+    mood = serializers.CharField(source='userprofile.mood')    # 수정
+    score = serializers.IntegerField(source='userscore.total_score')    # 수정
+    major = serializers.CharField(source='userprofile.major')    # 수정
+    tier = serializers.CharField(source='userscore.tier')    # 수정
     solved = serializers.SerializerMethodField()
     growth = serializers.SerializerMethodField()
 
@@ -41,7 +41,7 @@ class UserRankListSerializer(serializers.ModelSerializer):
     def get_growth(self, obj):
         return obj.userscore.fluctuation
 
-    def get_solved(self, obj):  # 추가
+    def get_solved(self, obj):    # 추가
         return obj.usersolved.total_solved
 
 

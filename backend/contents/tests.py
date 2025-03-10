@@ -19,6 +19,7 @@ class GetHomeStatisticsAPITest(APITestCase):
 
 
 class GetHomeAnnouncementsAPITest(APITestCase):
+
     def setUp(self):
         self.url = self.reverse("home_announcements")
 

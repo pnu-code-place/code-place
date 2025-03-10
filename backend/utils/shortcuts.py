@@ -56,6 +56,7 @@ def get_difficulty(difficulty_str):
 
     return difficulty_map.get(difficulty_str, Difficulty.MID)
 
+
 def img2base64(img):
     with BytesIO() as buf:
         img.save(buf, "gif")
@@ -73,21 +74,20 @@ def datetime2str(value, format="iso-8601"):
         return value
     return value.strftime(format)
 
+
 def natural_sort_key(s, _nsre=re.compile(r"(\d+)")):
-    return [int(text) if text.isdigit() else text.lower()
-            for text in re.split(_nsre, s)]
+    return [int(text) if text.isdigit() else text.lower() for text in re.split(_nsre, s)]
 
 
 def send_email(smtp_config, from_name, to_email, to_name, subject, content):
-    envelope = Envelope(from_addr=(smtp_config["email"], from_name),
-                        to_addr=(to_email, to_name),
-                        subject=subject,
-                        html_body=content)
-    return envelope.send(smtp_config["server"],
-                         login=smtp_config["email"],
-                         password=smtp_config["password"],
-                         port=smtp_config["port"],
-                         tls=smtp_config["tls"])
+    envelope = Envelope(
+        from_addr=(smtp_config["email"], from_name), to_addr=(to_email, to_name), subject=subject, html_body=content)
+    return envelope.send(
+        smtp_config["server"],
+        login=smtp_config["email"],
+        password=smtp_config["password"],
+        port=smtp_config["port"],
+        tls=smtp_config["tls"])
 
 
 def get_env(name, default=""):
@@ -111,6 +111,7 @@ def column_string(n):
         n, remainder = divmod(n - 1, 26)
         string = chr(65 + remainder) + string
     return string
+
 
 def convert_ms_to_time(ms):
     seconds = ms // 1000

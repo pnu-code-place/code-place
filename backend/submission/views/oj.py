@@ -12,21 +12,19 @@ from utils.cache import cache
 from utils.captcha import Captcha
 from utils.throttling import TokenBucket
 from ..models import Submission
-from ..serializers import (CreateSubmissionSerializer, SubmissionModelSerializer,
-                           ShareSubmissionSerializer)
+from ..serializers import (CreateSubmissionSerializer, SubmissionModelSerializer, ShareSubmissionSerializer)
 from ..serializers import SubmissionSafeModelSerializer, SubmissionListSerializer
 
 
 class SubmissionAPI(APIView):
+
     def throttling(self, request):
         # 使用 open_api 的请求暂不做限制
         auth_method = getattr(request, "auth_method", "")
         if auth_method == "api_key":
             return
 
-
-        user_bucket = TokenBucket(key=str(request.user.id),
-                                  redis_conn=cache, **SysOptions.throttling["user"])
+        user_bucket = TokenBucket(key=str(request.user.id), redis_conn=cache, **SysOptions.throttling["user"])
         can_consume, wait = user_bucket.consume()
         if not can_consume:
             return "Please wait %d seconds" % (int(wait))
@@ -74,13 +72,14 @@ class SubmissionAPI(APIView):
             return self.error("Problem not exist")
         if data["language"] not in problem.languages:
             return self.error(f"{data['language']} is now allowed in the problem")
-        submission = Submission.objects.create(user_id=request.user.id,
-                                               username=request.user.username,
-                                               language=data["language"],
-                                               code=data["code"],
-                                               problem_id=problem.id,
-                                               ip=request.session["ip"],
-                                               contest_id=data.get("contest_id"))
+        submission = Submission.objects.create(
+            user_id=request.user.id,
+            username=request.user.username,
+            language=data["language"],
+            code=data["code"],
+            problem_id=problem.id,
+            ip=request.session["ip"],
+            contest_id=data.get("contest_id"))
         # use this for debug
         # JudgeDispatcher(submission.id, problem.id).judge()
 
@@ -131,6 +130,7 @@ class SubmissionAPI(APIView):
 
 
 class SubmissionListAPI(APIView):
+
     def get(self, request):
         if not request.GET.get("limit"):
             return self.error("Limit is needed")
@@ -160,6 +160,7 @@ class SubmissionListAPI(APIView):
 
 
 class ContestSubmissionListAPI(APIView):
+
     @check_contest_permission(check_type="submissions")
     def get(self, request):
         if not request.GET.get("limit"):
@@ -200,9 +201,10 @@ class ContestSubmissionListAPI(APIView):
 
 
 class SubmissionExistsAPI(APIView):
+
     def get(self, request):
         if not request.GET.get("problem_id"):
             return self.error("Parameter error, problem_id is required")
-        return self.success(request.user.is_authenticated and
-                            Submission.objects.filter(problem_id=request.GET["problem_id"],
-                                                      user_id=request.user.id).exists())
+        return self.success(
+            request.user.is_authenticated
+            and Submission.objects.filter(problem_id=request.GET["problem_id"], user_id=request.user.id).exists())

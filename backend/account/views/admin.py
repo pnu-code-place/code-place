@@ -24,7 +24,9 @@ from ..models import AdminType, ProblemPermission, User, UserProfile, UserScore,
 from ..serializers import EditUserSerializer, UserAdminSerializer, GenerateUserSerializer, UserAdminStatisticsSerializer
 from ..serializers import ImportUserSeralizer
 
+
 class UserAdminStatisticAPI(APIView):
+
     @super_admin_required
     def get(self, request):
         all_user = User.objects.all()
@@ -39,11 +41,8 @@ class UserAdminStatisticAPI(APIView):
 
         # 학과별 사용자 수 통계
         department_stats = (
-            User.objects.values('userprofile__major')
-            .annotate(value=Count('id'))
-            .values('value', name=F('userprofile__major'))
-            .order_by('-value')
-        )
+            User.objects.values('userprofile__major').annotate(value=Count('id')).values(
+                'value', name=F('userprofile__major')).order_by('-value'))
 
         # None 값 처리 (학과가 지정되지 않은 사용자)
         department_stats = list(department_stats)
@@ -59,39 +58,27 @@ class UserAdminStatisticAPI(APIView):
         end_date = datetime(current_year, 12, 31)
 
         monthly_stats = (
-            User.objects.filter(create_time__range=(start_date, end_date))
-            .annotate(month=TruncMonth('create_time'))
-            .values('month')
-            .annotate(count=Count('id'))
-            .order_by('month')
-        )
+            User.objects.filter(create_time__range=(start_date, end_date)).annotate(
+                month=TruncMonth('create_time')).values('month').annotate(count=Count('id')).order_by('month'))
 
-        months = ['1월', '2월', '3월', '4월', '5월', '6월',
-                  '7월', '8월', '9월', '10월', '11월', '12월']
+        months = ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월']
         counts = [0] * 12
 
         for stat in monthly_stats:
             month_index = stat['month'].month - 1
             counts[month_index] = stat['count']
 
-        stats_data['monthly_statistics'] = {
-            'year': current_year,
-            'xAxis': months,
-            'series': counts
-        }
+        stats_data['monthly_statistics'] = {'year': current_year, 'xAxis': months, 'series': counts}
 
         # 주간 가입자 수 통계
         today = datetime.now().date()
-        start_of_week = today - timedelta(days=today.weekday())  # 이번 주 월요일
-        end_of_week = start_of_week + timedelta(days=6)  # 이번 주 일요일
+        start_of_week = today - timedelta(days=today.weekday())    # 이번 주 월요일
+        end_of_week = start_of_week + timedelta(days=6)    # 이번 주 일요일
 
         weekly_stats = (
-            User.objects.filter(create_time__date__range=(start_of_week, end_of_week))
-            .annotate(weekday=ExtractWeekDay('create_time'))
-            .values('weekday')
-            .annotate(count=Count('id'))
-            .order_by('weekday')
-        )
+            User.objects.filter(create_time__date__range=(start_of_week, end_of_week)).annotate(
+                weekday=ExtractWeekDay('create_time')).values('weekday').annotate(
+                    count=Count('id')).order_by('weekday'))
 
         weekdays = ['월', '화', '수', '목', '금', '토', '일']
         counts = [0] * 7
@@ -103,8 +90,7 @@ class UserAdminStatisticAPI(APIView):
         # 주차 정보 계산
         year = today.year
         month = today.month
-        month_names = ['1월', '2월', '3월', '4월', '5월', '6월',
-                       '7월', '8월', '9월', '10월', '11월', '12월']
+        month_names = ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월']
         month_name = month_names[month - 1]
 
         # 해당 월의 첫 날
@@ -131,8 +117,8 @@ class UserAdminStatisticAPI(APIView):
         return self.success(serializer.data)
 
 
-
 class UserAdminAPI(APIView):
+
     @validate_serializer(ImportUserSeralizer)
     @super_admin_required
     def post(self, request):
@@ -196,7 +182,8 @@ class UserAdminAPI(APIView):
         if data["college"] and data["department"]:
             college = College.objects.get(id=data["college"])
             department = Department.objects.get(id=data["department"])
-            UserProfile.objects.filter(user=user).update(college=college, department=department, school=college.college_name, major=department.department_name)
+            UserProfile.objects.filter(user=user).update(
+                college=college, department=department, school=college.college_name, major=department.department_name)
 
         if data["student_id"]:
             UserProfile.objects.filter(user=user).update(student_id=data["student_id"])
@@ -249,16 +236,13 @@ class UserAdminAPI(APIView):
                 Case(
                     When(admin_type=AdminType.SUPER_ADMIN, then=Value(0)),
                     default=Value(1),
-                    output_field=IntegerField()
-                ),
-                'id'
-            )
+                    output_field=IntegerField()), 'id')
 
         keyword = request.GET.get("keyword", None)
         if keyword:
-            user = user.filter(Q(username__icontains=keyword) |
-                               Q(userprofile__real_name__icontains=keyword) |
-                               Q(email__icontains=keyword))
+            user = user.filter(
+                Q(username__icontains=keyword) | Q(userprofile__real_name__icontains=keyword)
+                | Q(email__icontains=keyword))
 
         college = request.GET.get("college", None)
         if college:

@@ -2,11 +2,11 @@ from account.decorators import super_admin_required
 from utils.api import APIView, validate_serializer
 
 from announcement.models import Announcement
-from announcement.serializers import (AnnouncementSerializer, CreateAnnouncementSerializer,
-                                      EditAnnouncementSerializer)
+from announcement.serializers import (AnnouncementSerializer, CreateAnnouncementSerializer, EditAnnouncementSerializer)
 
 
 class AnnouncementAdminAPI(APIView):
+
     @validate_serializer(CreateAnnouncementSerializer)
     @super_admin_required
     def post(self, request):
@@ -14,10 +14,8 @@ class AnnouncementAdminAPI(APIView):
         publish announcement
         """
         data = request.data
-        announcement = Announcement.objects.create(title=data["title"],
-                                                   content=data["content"],
-                                                   created_by=request.user,
-                                                   visible=data["visible"])
+        announcement = Announcement.objects.create(
+            title=data["title"], content=data["content"], created_by=request.user, visible=data["visible"])
         return self.success(AnnouncementSerializer(announcement).data)
 
     @validate_serializer(EditAnnouncementSerializer)

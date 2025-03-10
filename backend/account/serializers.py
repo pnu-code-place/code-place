@@ -26,18 +26,9 @@ class UserRegisterSerializer(serializers.Serializer):
     password = serializers.RegexField(
         regex=r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$',
         min_length=8,
-        error_messages={
-            'invalid': '비밀번호는 8글자 이상이어야 하며, 영문, 숫자, 특수문자를 모두 포함해야 합니다.'
-        }
-    )
+        error_messages={'invalid': '비밀번호는 8글자 이상이어야 하며, 영문, 숫자, 특수문자를 모두 포함해야 합니다.'})
     student_id = serializers.RegexField(
-        regex=r'^\d{6,9}$',
-        min_length=6,
-        max_length=9,
-        error_messages={
-            'invalid': '학번은 6자리 이상 9자리 이하의 숫자만 입력 가능합니다.'
-        }
-    )
+        regex=r'^\d{6,9}$', min_length=6, max_length=9, error_messages={'invalid': '학번은 6자리 이상 9자리 이하의 숫자만 입력 가능합니다.'})
     collegeId = serializers.IntegerField()
     departmentId = serializers.IntegerField()
 
@@ -47,10 +38,7 @@ class UserChangePasswordSerializer(serializers.Serializer):
     new_password = serializers.RegexField(
         regex=r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$',
         min_length=8,
-        error_messages={
-            'invalid': '비밀번호는 8글자 이상이어야 하며, 영문, 숫자, 특수문자를 모두 포함해야 합니다.'
-        }
-    )
+        error_messages={'invalid': '비밀번호는 8글자 이상이어야 하며, 영문, 숫자, 특수문자를 모두 포함해야 합니다.'})
 
 
 class GenerateUserSerializer(serializers.Serializer):
@@ -61,8 +49,7 @@ class GenerateUserSerializer(serializers.Serializer):
 
 
 class ImportUserSeralizer(serializers.Serializer):
-    users = serializers.ListField(
-        child=serializers.ListField(child=serializers.CharField(max_length=64)))
+    users = serializers.ListField(child=serializers.ListField(child=serializers.CharField(max_length=64)))
 
 
 class DateRangeSerializer(serializers.Serializer):
@@ -108,8 +95,10 @@ class UserAdminSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["id", "username", "email", "admin_type", "problem_permission", "real_name", "college", "department",
-                  "create_time", "last_login", "two_factor_auth", "open_api", "is_disabled", "avatar", "student_id"]
+        fields = [
+            "id", "username", "email", "admin_type", "problem_permission", "real_name", "college", "department",
+            "create_time", "last_login", "two_factor_auth", "open_api", "is_disabled", "avatar", "student_id"
+        ]
 
     def get_real_name(self, obj):
         return obj.userprofile.real_name
@@ -128,10 +117,13 @@ class UserAdminSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = User
-        fields = ["id", "username", "email", "admin_type", "problem_permission",
-                  "create_time", "last_login", "two_factor_auth", "open_api", "is_disabled"]
+        fields = [
+            "id", "username", "email", "admin_type", "problem_permission", "create_time", "last_login",
+            "two_factor_auth", "open_api", "is_disabled"
+        ]
 
 
 class EditUserSerializer(serializers.Serializer):
@@ -143,14 +135,11 @@ class EditUserSerializer(serializers.Serializer):
         allow_blank=True,
         regex=r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$',
         min_length=8,
-        error_messages={
-            'invalid': '비밀번호는 8글자 이상이어야 하며, 영문, 숫자, 특수문자를 모두 포함해야 합니다.'
-        }
-    )
+        error_messages={'invalid': '비밀번호는 8글자 이상이어야 하며, 영문, 숫자, 특수문자를 모두 포함해야 합니다.'})
     # email = serializers.EmailField(max_length=64)
     admin_type = serializers.ChoiceField(choices=(AdminType.REGULAR_USER, AdminType.ADMIN, AdminType.SUPER_ADMIN))
-    problem_permission = serializers.ChoiceField(choices=(ProblemPermission.NONE, ProblemPermission.OWN,
-                                                          ProblemPermission.ALL))
+    problem_permission = serializers.ChoiceField(
+        choices=(ProblemPermission.NONE, ProblemPermission.OWN, ProblemPermission.ALL))
     college = serializers.IntegerField(allow_null=True)
     department = serializers.IntegerField(allow_null=True)
     student_id = serializers.CharField(
@@ -158,13 +147,8 @@ class EditUserSerializer(serializers.Serializer):
         allow_null=True,
         allow_blank=True,
         validators=[
-            RegexValidator(
-                regex=r'^\d{6,9}$',
-                message='학번은 6자리 이상 9자리 이하의 숫자만 입력 가능합니다.',
-                code='invalid_student_id'
-            ),
-        ]
-    )
+            RegexValidator(regex=r'^\d{6,9}$', message='학번은 6자리 이상 9자리 이하의 숫자만 입력 가능합니다.', code='invalid_student_id'),
+        ])
     open_api = serializers.BooleanField()
     two_factor_auth = serializers.BooleanField()
     is_disabled = serializers.BooleanField()
@@ -178,9 +162,7 @@ class ApplyResetPasswordSerializer(serializers.Serializer):
 class ResetPasswordSerializer(serializers.Serializer):
     token = serializers.CharField()
     password = serializers.RegexField(
-        regex=r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$',
-        min_length=8
-    )
+        regex=r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$', min_length=8)
     captcha = serializers.CharField()
 
 

@@ -19,6 +19,7 @@ class PermissionDecoratorTest(APITestCase):
     """
     데코레이터 테스트
     """
+
     def setUp(self):
         self.regular_user = User.objects.create(username="regular_user")
         self.admin = User.objects.create(username="admin")
@@ -40,6 +41,7 @@ class DuplicateUserCheckAPITest(APITestCase):
     """
     닉네임 또는 이메일 유효성 검사 API 테스트
     """
+
     def setUp(self):
         self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
         self.email = "test@test.com"
@@ -70,10 +72,12 @@ class DuplicateUserCheckAPITest(APITestCase):
         resp = self.client.post(self.url, data={"email": "aa@test.com"})
         self.assertFalse(resp.data["data"]["email"])
 
+
 class UserLoginAPITest(APITestCase):
     """
     로그인 API 테스트
     """
+
     def setUp(self):
         self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
         self.email = "test@test.com"
@@ -96,8 +100,7 @@ class UserLoginAPITest(APITestCase):
         self.assertTrue(user.is_authenticated)
 
     def test_login_with_wrong_info(self):
-        response = self.client.post(self.login_url,
-                                           data={"username": self.email, "password": "invalid_password"})
+        response = self.client.post(self.login_url, data={"username": self.email, "password": "invalid_password"})
         self.assertDictEqual(response.data, {"error": "error", "data": "Invalid username or password"})
 
         user = auth.get_user(self.client)
@@ -106,12 +109,12 @@ class UserLoginAPITest(APITestCase):
     def test_user_disabled(self):
         self.user.is_disabled = True
         self.user.save()
-        resp = self.client.post(self.login_url, data={"username": self.email,
-                                                      "password": self.password})
+        resp = self.client.post(self.login_url, data={"username": self.email, "password": self.password})
         self.assertDictEqual(resp.data, {"error": "error", "data": "Your account has been disabled"})
 
 
 class CaptchaTest(APITestCase):
+
     def _set_captcha(self, session):
         captcha = rand_str(4)
         session["_django_captcha_key"] = captcha
@@ -121,6 +124,7 @@ class CaptchaTest(APITestCase):
 
 
 class UserRegisterAPITest(CaptchaTest):
+
     def setUp(self):
         self.client = APIClient()
         self.register_url = self.reverse("user_register_api")
@@ -128,8 +132,15 @@ class UserRegisterAPITest(CaptchaTest):
         self.username = "test"
         self.password = "test1234!"
         self.create_school_fixtures(1, "Test", 1, "Test")
-        self.data = {"email": "test@test.com", "password": "test1234!", "username": "test",
-                     "real_name": "realname", "student_id":"202400000", "collegeId": 1, "departmentId": 1}
+        self.data = {
+            "email": "test@test.com",
+            "password": "test1234!",
+            "username": "test",
+            "real_name": "realname",
+            "student_id": "202400000",
+            "collegeId": 1,
+            "departmentId": 1
+        }
 
     def test_website_config_limit(self):
         SysOptions.allow_register = False
@@ -155,6 +166,7 @@ class UserRegisterAPITest(CaptchaTest):
 
 
 class SessionManagementAPITest(APITestCase):
+
     def setUp(self):
         self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
         self.email = "test@test.com"
@@ -174,6 +186,7 @@ class SessionManagementAPITest(APITestCase):
     def test_delete_session_with_invalid_key(self):
         resp = self.client.delete(self.url + "?session_key=aaaaaaaaaa")
         self.assertDictEqual(resp.data, {"error": "error", "data": "Invalid session_key"})
+
 
 #
 # class UserProfileAPITest(APITestCase):
@@ -199,11 +212,13 @@ class SessionManagementAPITest(APITestCase):
 #         self.assertEqual(data["submission_number"], 0)
 #         self.assertEqual(data["language"], "en-US")
 
+
 @mock.patch("account.views.oj.send_email_async.send")
 class ApplyResetPasswordAPITest(CaptchaTest):
     """
     비밀번호 재설정 (로그인 전) 이메일 발송 API 테스트
     """
+
     def setUp(self):
         self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
         self.email = "test@test.com"
@@ -242,6 +257,7 @@ class ResetPasswordAPITest(CaptchaTest):
     """
     비밀번호 재설정 (로그인 전) API 테스트
     """
+
     def setUp(self):
         self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
         self.create_user(email="test@test.com", username="test", password="test1234!", login=False)
@@ -250,23 +266,34 @@ class ResetPasswordAPITest(CaptchaTest):
         user.reset_password_token = "online_judge?"
         user.reset_password_token_expire_time = now() + timedelta(minutes=20)
         user.save()
-        self.data = {"token": user.reset_password_token,
-                     "captcha": self._set_captcha(self.client.session),
-                     "password": "test1111!"}
+        self.data = {
+            "token": user.reset_password_token,
+            "captcha": self._set_captcha(self.client.session),
+            "password": "test1111!"
+        }
 
     def test_reset_password_with_invalid_password(self):
         # 8자보다 짧은 비밀번호
         self.data["password"] = "invalid"
         resp = self.client.post(self.url, data=self.data)
-        self.assertDictEqual(resp.data, {"error": "invalid-password", "data": "password: Ensure this field has at least 8 characters."})
+        self.assertDictEqual(resp.data, {
+            "error": "invalid-password",
+            "data": "password: Ensure this field has at least 8 characters."
+        })
         # 특수문자 없는 비밀번호
         self.data["password"] = "aaaaa33234"
         resp = self.client.post(self.url, data=self.data)
-        self.assertDictEqual(resp.data, {"error": "invalid-password", "data": "password: This value does not match the required pattern."})
+        self.assertDictEqual(resp.data, {
+            "error": "invalid-password",
+            "data": "password: This value does not match the required pattern."
+        })
         # 숫자 없는 비밀번호
         self.data["password"] = "aaaaa!!!!!"
         resp = self.client.post(self.url, data=self.data)
-        self.assertDictEqual(resp.data, {"error": "invalid-password", "data": "password: This value does not match the required pattern."})
+        self.assertDictEqual(resp.data, {
+            "error": "invalid-password",
+            "data": "password: This value does not match the required pattern."
+        })
 
     def test_reset_password_with_correct_token(self):
         resp = self.client.post(self.url, data=self.data)
@@ -286,8 +313,8 @@ class ResetPasswordAPITest(CaptchaTest):
         self.assertDictEqual(resp.data, {"error": "error", "data": "Token has expired"})
 
 
-
 class GenerateUserAPITest(APITestCase):
+
     def setUp(self):
         self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
         self.create_super_admin()
@@ -315,6 +342,7 @@ class GenerateUserAPITest(APITestCase):
         resp = self.client.post(self.url, data=self.data)
         self.assertSuccess(resp)
         mock_workbook.assert_called()
+
 
 # class UserChangePasswordAPITest(APITestCase):
 #     def setUp(self):
@@ -413,7 +441,6 @@ class GenerateUserAPITest(APITestCase):
 #         resp = self.client.get(self.url, data={"rule": ContestRuleType.OI})
 #         self.assertSuccess(resp)
 #         self.assertEqual(len(resp.data["data"]), 2)
-
 
 #
 #

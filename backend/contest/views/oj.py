@@ -18,6 +18,7 @@ from ..serializers import OIContestRankSerializer, ACMContestRankSerializer
 
 
 class ContestAnnouncementListAPI(APIView):
+
     @check_contest_permission(check_type="announcements")
     def get(self, request):
         contest_id = request.GET.get("contest_id")
@@ -31,6 +32,7 @@ class ContestAnnouncementListAPI(APIView):
 
 
 class ContestAPI(APIView):
+
     def get(self, request):
         id = request.GET.get("id")
         if not id or not check_is_id(id):
@@ -45,6 +47,7 @@ class ContestAPI(APIView):
 
 
 class ContestListAPI(APIView):
+
     def get(self, request):
         contests = Contest.objects.select_related("created_by").filter(visible=True)
         keyword = request.GET.get("keyword")
@@ -66,13 +69,16 @@ class ContestListAPI(APIView):
 
 
 class ContestNotStartedListAPI(APIView):
+
     def get(self, request):
         contests = Contest.objects.select_related("created_by").filter(visible=True)
         cur = now()
         contests = contests.filter(start_time__gt=cur)
         return self.success(ContestSerializer(contests, many=True).data)
 
+
 class ContestUnderWayListAPI(APIView):
+
     def get(self, request):
         contests = Contest.objects.select_related("created_by").filter(visible=True)
         keyword = request.GET.get("keyword")
@@ -85,7 +91,9 @@ class ContestUnderWayListAPI(APIView):
         contests = contests.filter(start_time__lte=cur, end_time__gte=cur)
         return self.success(ContestSerializer(contests, many=True).data)
 
+
 class ContestHistoryListAPI(APIView):
+
     def get(self, request):
         cur = now()
         contests = Contest.objects.select_related("created_by").filter(visible=True, end_time__lte=cur)
@@ -105,6 +113,7 @@ class ContestHistoryListAPI(APIView):
 
 
 class ContestPasswordVerifyAPI(APIView):
+
     @validate_serializer(ContestPasswordVerifySerializer)
     @login_required
     def post(self, request):
@@ -126,6 +135,7 @@ class ContestPasswordVerifyAPI(APIView):
 
 
 class ContestAccessAPI(APIView):
+
     @login_required
     def get(self, request):
         contest_id = request.GET.get("contest_id")
@@ -140,6 +150,7 @@ class ContestAccessAPI(APIView):
 
 
 class ContestParticipantsAPI(APIView):
+
     @login_required
     def get(self, request):
         contest_id = request.GET.get("contest_id")
@@ -147,9 +158,7 @@ class ContestParticipantsAPI(APIView):
         submissions = Submission.objects.filter(contest_id=contest_id)
 
         user_submissions = submissions.values('user_id', 'username').annotate(
-            submission_count=Count('id'),
-            last_submission_ip=Max('ip')
-        ).order_by('user_id')
+            submission_count=Count('id'), last_submission_ip=Max('ip')).order_by('user_id')
 
         # UserProfile 정보 가져오기
         user_profiles = UserProfile.objects.filter(user_id__in=[sub['user_id'] for sub in user_submissions])

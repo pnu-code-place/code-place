@@ -60,8 +60,7 @@ class AdminPopupAPIView(APIView):
             link_url=link_url,
             popup_image_width=image_width,
             visible=False,
-            order=None
-        )
+            order=None)
 
         new_popup.save()
 

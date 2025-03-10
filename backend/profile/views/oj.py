@@ -19,6 +19,7 @@ from utils.shortcuts import rand_str
 
 
 class UserProfileAPI(APIView):
+
     @method_decorator(ensure_csrf_cookie)
     def get(self, request, **kwargs):
         user = request.user
@@ -63,6 +64,7 @@ class UserProfileAPI(APIView):
 
 
 class UserProfileDashBoardAPI(APIView):
+
     @login_required
     def get(self, request):
         try:
@@ -70,21 +72,16 @@ class UserProfileDashBoardAPI(APIView):
             user_profile = UserProfile.objects.filter(user__username=username).first()
             user_id = user_profile.user_id
             user_score = UserScore.objects.filter(user_id=user_id).annotate(
-                total_rank=Count('total_score',
-                                 filter=Q(total_score__gt=F('total_score'))) + 1,
-                datastructure_rank=Count('datastructure_score',
-                                         filter=Q(datastructure_score__gt=F('datastructure_score'))) + 1,
-                implementation_rank=Count('implementation_score',
-                                          filter=Q(implementation_score__gt=F('implementation_score'))) + 1,
-                math_rank=Count('math_score',
-                                filter=Q(math_score__gt=F('math_score'))) + 1,
-                search_rank=Count('search_score',
-                                  filter=Q(search_score__gt=F('search_score'))) + 1,
-                sorting_rank=Count('sorting_score',
-                                   filter=Q(sorting_score__gt=F('sorting_score'))) + 1,
-                algorithm_rank=Count('algorithm_score',
-                                     filter=Q(algorithm_score__gt=F('algorithm_score'))) + 1
-            ).first()
+                total_rank=Count('total_score', filter=Q(total_score__gt=F('total_score'))) + 1,
+                datastructure_rank=Count(
+                    'datastructure_score', filter=Q(datastructure_score__gt=F('datastructure_score'))) + 1,
+                implementation_rank=Count(
+                    'implementation_score', filter=Q(implementation_score__gt=F('implementation_score'))) + 1,
+                math_rank=Count('math_score', filter=Q(math_score__gt=F('math_score'))) + 1,
+                search_rank=Count('search_score', filter=Q(search_score__gt=F('search_score'))) + 1,
+                sorting_rank=Count('sorting_score', filter=Q(sorting_score__gt=F('sorting_score'))) + 1,
+                algorithm_rank=Count('algorithm_score', filter=Q(algorithm_score__gt=F('algorithm_score'))) +
+                1).first()
             user_solved = UserSolved.objects.filter(user_id=user_id).first()
         except User.DoesNotExist or UserProfile.DoesNotExist:
             return HttpResponseNotFound('user does not exist')
@@ -94,23 +91,16 @@ class UserProfileDashBoardAPI(APIView):
             return HttpResponseNotFound('user_score does not exist')
 
         total_user_count = UserScore.objects.filter(user__is_disabled=False).count()
-
         """ Build oj_status """
         ojStatus = {}
         ojStatus.update(DashboardSubmissionSerializer(user_profile).data)
         ojStatus.update(DashboardRankSerializer(user_score, context={'total_user_count': total_user_count}).data)
-
         """ Build fieldInfo """
         fieldInfo = DashboardFieldInfoSerializer(user_score).data['fieldInfo']
-
         """ Build difficultyInfo"""
         difficultyInfo = DashboardDifficultyInfoSerializer(user_solved).data['difficultyInfo']
 
-        response_data = {
-            'ojStatus': ojStatus,
-            'fieldInfo': fieldInfo,
-            'difficultyInfo': difficultyInfo
-        }
+        response_data = {'ojStatus': ojStatus, 'fieldInfo': fieldInfo, 'difficultyInfo': difficultyInfo}
         return self.success(response_data)
 
 
@@ -156,14 +146,11 @@ class ProfileProblemAPIView(APIView):
 
         # 각 문제별 최신 제출을 찾는 서브쿼리
         latest_submissions = Submission.objects.filter(
-            user_id=user_id,
-            problem=OuterRef('problem')
-        ).order_by('-create_time').values('id')[:1]
+            user_id=user_id, problem=OuterRef('problem')).order_by('-create_time').values('id')[:1]
 
         # 메인 쿼리
         submissions = Submission.objects.filter(
-            id__in=Subquery(latest_submissions)
-        ).select_related('problem').order_by('-create_time')
+            id__in=Subquery(latest_submissions)).select_related('problem').order_by('-create_time')
 
         if field and field != 'All':
             submissions = submissions.filter(problem__field=field)

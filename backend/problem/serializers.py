@@ -91,6 +91,7 @@ class EditContestProblemSerializer(CreateOrEditProblemSerializer):
 
 
 class TagSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = ProblemTag
         fields = "__all__"
@@ -113,6 +114,7 @@ class BaseProblemSerializer(serializers.ModelSerializer):
 
 
 class ProblemAdminSerializer(BaseProblemSerializer):
+
     class Meta:
         model = Problem
         fields = "__all__"
@@ -124,8 +126,8 @@ class ProblemSerializer(BaseProblemSerializer):
 
     class Meta:
         model = Problem
-        exclude = ("test_case_score", "test_case_id", "visible", "is_public",
-                   "spj_code", "spj_version", "spj_compile_ok")
+        exclude = ("test_case_score", "test_case_id", "visible", "is_public", "spj_code", "spj_version",
+                   "spj_compile_ok")
 
     def get_mine_submission_state(self, obj):
         if not self.context:
@@ -144,9 +146,9 @@ class ProblemSafeSerializer(BaseProblemSerializer):
 
     class Meta:
         model = Problem
-        exclude = ("test_case_score", "test_case_id", "visible", "is_public",
-                   "spj_code", "spj_version", "spj_compile_ok",
-                   "difficulty", "submission_number", "accepted_number", "statistic_info")
+        exclude = ("test_case_score", "test_case_id", "visible", "is_public", "spj_code", "spj_version",
+                   "spj_compile_ok", "difficulty", "submission_number", "accepted_number", "statistic_info")
+
     def get_mine_submission_state(self, obj):
         if not self.context:
             return None
@@ -202,13 +204,14 @@ class ExportProblemSerializer(serializers.ModelSerializer):
         return self._html_format_value(obj.hint)
 
     def get_test_case_score(self, obj):
-        return [{"score": item["score"] if obj.rule_type == ProblemRuleType.OI else 100,
-                 "input_name": item["input_name"], "output_name": item["output_name"]}
-                for item in obj.test_case_score]
+        return [{
+            "score": item["score"] if obj.rule_type == ProblemRuleType.OI else 100,
+            "input_name": item["input_name"],
+            "output_name": item["output_name"]
+        } for item in obj.test_case_score]
 
     def get_spj(self, obj):
-        return {"code": obj.spj_code,
-                "language": obj.spj_language} if obj.spj else None
+        return {"code": obj.spj_code, "language": obj.spj_language} if obj.spj else None
 
     def get_template(self, obj):
         ret = {}
@@ -221,10 +224,9 @@ class ExportProblemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Problem
-        fields = ("display_id", "title", "description", "tags",
-                  "input_description", "output_description",
-                  "test_case_score", "hint", "time_limit", "memory_limit", "samples",
-                  "template", "spj", "rule_type", "source", "field", "difficulty", "template")
+        fields = ("display_id", "title", "description", "tags", "input_description", "output_description",
+                  "test_case_score", "hint", "time_limit", "memory_limit", "samples", "template", "spj", "rule_type",
+                  "source", "field", "difficulty", "template")
 
 
 class AddContestProblemSerializer(serializers.Serializer):
@@ -290,6 +292,7 @@ class ImportProblemSerializer(serializers.Serializer):
 
 
 class FPSProblemSerializer(serializers.Serializer):
+
     class UnitSerializer(serializers.Serializer):
         unit = serializers.ChoiceField(choices=["MB", "s", "ms"])
         value = serializers.IntegerField(min_value=1, max_value=60000)
@@ -318,6 +321,7 @@ class RecommendBonusProblemSerializer(serializers.ModelSerializer):
 
     def get_tags(self, obj):
         return [tag.name for tag in obj.tags.all()]
+
 
 class MostDifficultProblemSerializer(serializers.ModelSerializer):
     _id = serializers.CharField(max_length=128)
