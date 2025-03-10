@@ -28,15 +28,15 @@ from utils.captcha import Captcha
 from utils.shortcuts import rand_str, img2base64, datetime2str
 from ..decorators import login_required
 from ..models import User, UserProfile, AdminType, UserScore, UserSolved
-from ..serializers import (ApplyResetPasswordSerializer, ResetPasswordSerializer,
-                           UserChangePasswordSerializer, UserLoginSerializer,
-                           UserRegisterSerializer, UsernameOrEmailCheckSerializer,
+from ..serializers import (ApplyResetPasswordSerializer, ResetPasswordSerializer, UserChangePasswordSerializer,
+                           UserLoginSerializer, UserRegisterSerializer, UsernameOrEmailCheckSerializer,
                            RankInfoSerializer, SSOSerializer)
 from ..serializers import TwoFactorAuthCodeSerializer
 from ..tasks import send_email_async
 
 
 class TwoFactorAuthAPI(APIView):
+
     @login_required
     def get(self, request):
         """
@@ -84,6 +84,7 @@ class TwoFactorAuthAPI(APIView):
 
 
 class CheckTFARequiredAPI(APIView):
+
     @validate_serializer(UsernameOrEmailCheckSerializer)
     def post(self, request):
         """
@@ -101,6 +102,7 @@ class CheckTFARequiredAPI(APIView):
 
 
 class UserLoginAPI(APIView):
+
     @validate_serializer(UserLoginSerializer)
     def post(self, request):
         """
@@ -130,12 +132,14 @@ class UserLoginAPI(APIView):
 
 
 class UserLogoutAPI(APIView):
+
     def get(self, request):
         auth.logout(request)
         return self.success()
 
 
 class UsernameOrEmailCheck(APIView):
+
     @validate_serializer(UsernameOrEmailCheckSerializer)
     def post(self, request):
         """
@@ -143,10 +147,7 @@ class UsernameOrEmailCheck(APIView):
         """
         data = request.data
         # True means already exist.
-        result = {
-            "username": False,
-            "email": False
-        }
+        result = {"username": False, "email": False}
         if data.get("username"):
             result["username"] = User.objects.filter(username=data["username"].lower()).exists()
         if data.get("email"):
@@ -155,6 +156,7 @@ class UsernameOrEmailCheck(APIView):
 
 
 class ApplyUserEmailValidCheckAPI(APIView):
+
     def post(self, request):
         data = request.data
         if not data.get("email"):
@@ -177,7 +179,9 @@ class ApplyUserEmailValidCheckAPI(APIView):
                               content=email_html)
         return self.success('email validation code sent')
 
+
 class UserEmailValidCheckAPI(APIView):
+
     def post(self, request):
         data = request.data
 
@@ -200,7 +204,9 @@ class UserEmailValidCheckAPI(APIView):
         else:
             return HttpResponseServerError("validation code mismatch")
 
+
 class NicknameValidCheckAPI(APIView):
+
     def get(self, request):
         nickname = request.GET.get("nickname")
         if not nickname:
@@ -209,7 +215,9 @@ class NicknameValidCheckAPI(APIView):
             return HttpResponseBadRequest('nickname already exists')
         return self.success("nickname validation complete")
 
+
 class UserRegisterAPI(APIView):
+
     @validate_serializer(UserRegisterSerializer)
     def post(self, request):
         """
@@ -235,7 +243,13 @@ class UserRegisterAPI(APIView):
             user = User.objects.create(username=data["username"], email=data["email"])
             user.set_password(data["password"])
             user.save()
-            user_profile = UserProfile.objects.create(user=user, school=college.college_name, major=department.department_name, college=college, department=department, real_name=data["real_name"], student_id=data["student_id"])
+            user_profile = UserProfile.objects.create(user=user,
+                                                      school=college.college_name,
+                                                      major=department.department_name,
+                                                      college=college,
+                                                      department=department,
+                                                      real_name=data["real_name"],
+                                                      student_id=data["student_id"])
             user_profile.save()
             user_score = UserScore.objects.create(user=user)
             user_score.save()
@@ -243,7 +257,9 @@ class UserRegisterAPI(APIView):
             user_solved.save()
         return self.success("Succeeded")
 
+
 class UserChangePasswordAPI(APIView):
+
     @validate_serializer(UserChangePasswordSerializer)
     @login_required
     def post(self, request):
@@ -262,6 +278,7 @@ class UserChangePasswordAPI(APIView):
 
 
 class ApplyResetPasswordAPI(APIView):
+
     @validate_serializer(ApplyResetPasswordSerializer)
     def post(self, request):
         if request.user.is_authenticated:
@@ -276,7 +293,7 @@ class ApplyResetPasswordAPI(APIView):
         except User.DoesNotExist:
             return self.error("User does not exist")
         if user.reset_password_token_expire_time and 0 < int(
-                (user.reset_password_token_expire_time - now()).total_seconds()) < 20 * 60:
+            (user.reset_password_token_expire_time - now()).total_seconds()) < 20 * 60:
             return self.error("You can only reset password once per 20 minutes")
         user.reset_password_token = rand_str()
         user.reset_password_token_expire_time = now() + timedelta(minutes=20)
@@ -296,6 +313,7 @@ class ApplyResetPasswordAPI(APIView):
 
 
 class ResetPasswordAPI(APIView):
+
     @validate_serializer(ResetPasswordSerializer)
     def post(self, request):
         data = request.data
@@ -316,6 +334,7 @@ class ResetPasswordAPI(APIView):
 
 
 class SessionManagementAPI(APIView):
+
     @login_required
     def get(self, request):
         engine = import_module(settings.SESSION_ENGINE)
@@ -357,7 +376,9 @@ class SessionManagementAPI(APIView):
         else:
             return self.error("Invalid session_key")
 
+
 class ProfileProblemDisplayIDRefreshAPI(APIView):
+
     @login_required
     def get(self, request):
         profile = request.user.userprofile
@@ -377,6 +398,7 @@ class ProfileProblemDisplayIDRefreshAPI(APIView):
 
 
 class OpenAPIAppkeyAPI(APIView):
+
     @login_required
     def post(self, request):
         user = request.user
@@ -389,6 +411,7 @@ class OpenAPIAppkeyAPI(APIView):
 
 
 class SSOAPI(CSRFExemptAPIView):
+
     @login_required
     def get(self, request):
         token = rand_str()
@@ -403,5 +426,8 @@ class SSOAPI(CSRFExemptAPIView):
             user = User.objects.get(auth_token=request.data["token"])
         except User.DoesNotExist:
             return self.error("User does not exist")
-        return self.success(
-            {"username": user.username, "avatar": user.userprofile.avatar, "admin_type": user.admin_type})
+        return self.success({
+            "username": user.username,
+            "avatar": user.userprofile.avatar,
+            "admin_type": user.admin_type
+        })

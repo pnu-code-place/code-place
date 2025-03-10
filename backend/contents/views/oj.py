@@ -11,6 +11,7 @@ from utils.constants import RSS_FEED_URL
 
 
 class GetHomeStatisticsAPI(APIView):
+
     def get(self, request):
         """
         총 문제 수, 채점이 완료된 문제 수, 마감된 대회 수를 반환하는 API
@@ -42,12 +43,14 @@ class GetHomeAnnouncementAPI(APIView):
     """
     홈에서 보여지는 CSEP 공지사항의 id, title, create_time 정보를 반환하는 API
     """
+
     def get(self, request):
         home_announcements = Announcement.objects.filter(visible=True)[:2]
         return self.success(HomeAnnouncementsSerializer(home_announcements, many=True).data)
 
 
 class GetHomeRSSNoticeAPI(APIView):
+
     def get(self, request):
         """
         RSS 공지사항을 JSON으로 파싱하여 반환하는 API

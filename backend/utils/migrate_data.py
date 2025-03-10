@@ -14,16 +14,8 @@ from django.conf import settings
 from account.models import User, UserProfile, AdminType, ProblemPermission
 from problem.models import Problem, ProblemTag, ProblemDifficulty, ProblemRuleType
 
-admin_type_map = {
-    0: AdminType.REGULAR_USER,
-    1: AdminType.ADMIN,
-    2: AdminType.SUPER_ADMIN
-}
-languages_map = {
-    1: "C",
-    2: "C++",
-    3: "Java"
-}
+admin_type_map = {0: AdminType.REGULAR_USER, 1: AdminType.ADMIN, 2: AdminType.SUPER_ADMIN}
+languages_map = {1: "C", 2: "C++", 3: "Java"}
 email_regex = re.compile(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)")
 
 # pk -> name
@@ -79,9 +71,11 @@ def get_test_case_score(test_case_id):
             test_case["stripped_output_md5"] = test_case.pop("striped_output_md5")
         else:
             test_case["stripped_output_md5"] = get_stripped_output_md5(test_case_id, test_case["output_name"])
-        test_case_score.append({"input_name": test_case["input_name"],
-                                "output_name": test_case.get("output_name", "-"),
-                                "score": 0})
+        test_case_score.append({
+            "input_name": test_case["input_name"],
+            "output_name": test_case.get("output_name", "-"),
+            "score": 0
+        })
     if need_rewrite:
         with open(info_path, "w") as f:
             f.write(json.dumps(info))
