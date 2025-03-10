@@ -172,12 +172,11 @@ class ApplyUserEmailValidCheckAPI(APIView):
         cache.set(email, code, timeout=60 * 5)
 
         email_html = render_to_string("email_valid_email.html", {'code': code})
-        send_email_async.send(
-            from_name=SysOptions.website_name_shortcut,
-            to_email=email,
-            to_name=UNDEFINED_SMTP_USER,
-            subject="[부산대학교 코드플레이스] 이메일 확인 인증번호입니다.",
-            content=email_html)
+        send_email_async.send(from_name=SysOptions.website_name_shortcut,
+                              to_email=email,
+                              to_name=UNDEFINED_SMTP_USER,
+                              subject="[부산대학교 코드플레이스] 이메일 확인 인증번호입니다.",
+                              content=email_html)
         return self.success('email validation code sent')
 
 
@@ -244,14 +243,13 @@ class UserRegisterAPI(APIView):
             user = User.objects.create(username=data["username"], email=data["email"])
             user.set_password(data["password"])
             user.save()
-            user_profile = UserProfile.objects.create(
-                user=user,
-                school=college.college_name,
-                major=department.department_name,
-                college=college,
-                department=department,
-                real_name=data["real_name"],
-                student_id=data["student_id"])
+            user_profile = UserProfile.objects.create(user=user,
+                                                      school=college.college_name,
+                                                      major=department.department_name,
+                                                      college=college,
+                                                      department=department,
+                                                      real_name=data["real_name"],
+                                                      student_id=data["student_id"])
             user_profile.save()
             user_score = UserScore.objects.create(user=user)
             user_score.save()
@@ -306,12 +304,11 @@ class ApplyResetPasswordAPI(APIView):
             "link": f"{SysOptions.website_base_url}/reset-password/{user.reset_password_token}"
         }
         email_html = render_to_string("reset_password_email.html", render_data)
-        send_email_async.send(
-            from_name=SysOptions.website_name_shortcut,
-            to_email=user.email,
-            to_name=user.username,
-            subject="CSEP 비밀번호 재설정 요청",
-            content=email_html)
+        send_email_async.send(from_name=SysOptions.website_name_shortcut,
+                              to_email=user.email,
+                              to_name=user.username,
+                              subject="CSEP 비밀번호 재설정 요청",
+                              content=email_html)
         return self.success("Succeeded")
 
 

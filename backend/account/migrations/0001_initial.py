@@ -48,9 +48,10 @@ class Migration(migrations.Migration):
             name='UserScore',
             fields=[
                 ('user',
-                 models.OneToOneField(
-                     on_delete=django.db.models.deletion.CASCADE, primary_key=True, serialize=False,
-                     to='account.user')),
+                 models.OneToOneField(on_delete=django.db.models.deletion.CASCADE,
+                                      primary_key=True,
+                                      serialize=False,
+                                      to='account.user')),
                 ('yesterday_score', models.IntegerField(default=0)),
                 ('total_score', models.IntegerField(default=0)),
                 ('fluctuation', models.IntegerField(default=0)),
@@ -76,9 +77,10 @@ class Migration(migrations.Migration):
             name='UserSolved',
             fields=[
                 ('user',
-                 models.OneToOneField(
-                     on_delete=django.db.models.deletion.CASCADE, primary_key=True, serialize=False,
-                     to='account.user')),
+                 models.OneToOneField(on_delete=django.db.models.deletion.CASCADE,
+                                      primary_key=True,
+                                      serialize=False,
+                                      to='account.user')),
                 ('math_solved', models.BigIntegerField(default=0)),
                 ('implementation_solved', models.BigIntegerField(default=0)),
                 ('datastructure_solved', models.BigIntegerField(default=0)),
@@ -103,13 +105,13 @@ class Migration(migrations.Migration):
                 ('oi_problems_status', models.JSONField(default=dict)),
                 ('real_name', models.TextField(null=True)),
                 ('student_id',
-                 models.CharField(
-                     max_length=9,
-                     null=True,
-                     validators=[
-                         django.core.validators.RegexValidator(
-                             code='invalid_student_id', message='학번은 6자리 이상 9자리 이하의 숫자만 입력 가능합니다.', regex='^\\d{6,9}$')
-                     ])),
+                 models.CharField(max_length=9,
+                                  null=True,
+                                  validators=[
+                                      django.core.validators.RegexValidator(code='invalid_student_id',
+                                                                            message='학번은 6자리 이상 9자리 이하의 숫자만 입력 가능합니다.',
+                                                                            regex='^\\d{6,9}$')
+                                  ])),
                 ('avatar', models.TextField(default='/public/avatar/default.png')),
                 ('blog', models.URLField(null=True)),
                 ('mood', models.TextField(null=True)),

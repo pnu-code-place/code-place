@@ -41,7 +41,7 @@ class ContestRankingWriter:
             },
         }
         self.common_participant_info_tag = ["순위", "닉네임", "실명", "이메일", "단과대학", "학과명", "학번"]
-        self.table_start_pos_y = "7"    # 대회 결과 테이블이 작성되기 시작하는 row number
+        self.table_start_pos_y = "7"  # 대회 결과 테이블이 작성되기 시작하는 row number
 
     @staticmethod
     def get_ac_state_name(is_ac):

@@ -1,5 +1,5 @@
-from django.core.cache import cache, caches    # noqa
-from django.conf import settings    # noqa
+from django.core.cache import cache, caches  # noqa
+from django.conf import settings  # noqa
 
 from django_redis.cache import RedisCache
 from django_redis.client.default import DefaultClient

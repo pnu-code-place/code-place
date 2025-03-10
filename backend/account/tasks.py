@@ -12,12 +12,11 @@ def send_email_async(from_name, to_email, to_name, subject, content):
     if not SysOptions.smtp_config:
         return
     try:
-        send_email(
-            smtp_config=SysOptions.smtp_config,
-            from_name=from_name,
-            to_email=to_email,
-            to_name=to_name,
-            subject=subject,
-            content=content)
+        send_email(smtp_config=SysOptions.smtp_config,
+                   from_name=from_name,
+                   to_email=to_email,
+                   to_name=to_name,
+                   subject=subject,
+                   content=content)
     except Exception as e:
         logger.exception(e)

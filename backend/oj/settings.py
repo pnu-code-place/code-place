@@ -230,12 +230,12 @@ DRAMATIQ_BROKER = {
         "url": f"{REDIS_URL}/4",
     },
     "MIDDLEWARE": [
-    # "dramatiq.middleware.Prometheus",
+        # "dramatiq.middleware.Prometheus",
         "dramatiq.middleware.AgeLimit",
         "dramatiq.middleware.TimeLimit",
         "dramatiq.middleware.Callbacks",
         "dramatiq.middleware.Retries",
-    # "django_dramatiq.middleware.AdminMiddleware",
+        # "django_dramatiq.middleware.AdminMiddleware",
         "django_dramatiq.middleware.DbConnectionsMiddleware"
     ]
 }

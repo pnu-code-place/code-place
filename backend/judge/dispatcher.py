@@ -297,8 +297,8 @@ class JudgeDispatcher(DispatcherBase):
                         user_profile.accepted_number += 1
                 elif oi_problems_status[problem_id]["status"] != JudgeStatus.ACCEPTED:
                     # minus last time score, add this time score
-                    user_profile.add_score(
-                        this_time_score=score, last_time_score=oi_problems_status[problem_id]["score"])
+                    user_profile.add_score(this_time_score=score,
+                                           last_time_score=oi_problems_status[problem_id]["score"])
                     oi_problems_status[problem_id]["score"] = score
                     oi_problems_status[problem_id]["status"] = self.submission.result
                     if self.submission.result == JudgeStatus.ACCEPTED:

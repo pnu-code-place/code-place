@@ -29,8 +29,10 @@ class EditUserProfileSerializer(serializers.Serializer):
     github = serializers.URLField(max_length=256, allow_blank=True, required=False, allow_null=True)
     college = serializers.IntegerField(allow_null=True, required=False)
     department = serializers.IntegerField(allow_null=True, required=False)
-    language = serializers.ChoiceField(
-        allow_null=True, allow_blank=True, required=False, choices=["C", "C++", "Java", "Python3", "JavaScript"])
+    language = serializers.ChoiceField(allow_null=True,
+                                       allow_blank=True,
+                                       required=False,
+                                       choices=["C", "C++", "Java", "Python3", "JavaScript"])
 
 
 class ProfileProblemSerializer(serializers.Serializer):

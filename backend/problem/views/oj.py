@@ -123,8 +123,9 @@ class ContestProblemAPI(APIView):
         problem_id = request.GET.get("problem_id")
         if problem_id:
             try:
-                problem = Problem.objects.select_related("created_by").get(
-                    _id=problem_id, contest=self.contest, visible=True)
+                problem = Problem.objects.select_related("created_by").get(_id=problem_id,
+                                                                           contest=self.contest,
+                                                                           visible=True)
             except Problem.DoesNotExist:
                 return self.error("Problem does not exist.")
             if self.contest.problem_details_permission(request.user):
@@ -145,8 +146,8 @@ class ContestProblemAPI(APIView):
 
         submission_state_info = {}
         if request.user:
-            contest_user_submissions = Submission.objects.filter(
-                contest=self.contest, username__exact=request.user.username)
+            contest_user_submissions = Submission.objects.filter(contest=self.contest,
+                                                                 username__exact=request.user.username)
             accepted_submissions = set()
             partially_accepted_submissions = set()
             failed_submissions = set()
@@ -220,8 +221,8 @@ class RecommendProblemAPI(APIView):
         # candidate_problems = Problem.objects.filter(
         #     difficulty__in=difficulty, visible=True, contest__isnull=True).exclude(_id__in=user_solved_problem)
 
-        candidate_problems = Problem.objects.filter(
-            visible=True, contest__isnull=True).exclude(_id__in=user_solved_problem)
+        candidate_problems = Problem.objects.filter(visible=True,
+                                                    contest__isnull=True).exclude(_id__in=user_solved_problem)
         recommend_problems = random.sample(list(candidate_problems), min(3, len(candidate_problems)))
 
         if recommend_problems:

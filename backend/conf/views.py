@@ -66,13 +66,12 @@ class SMTPTestAPI(APIView):
         if not SysOptions.smtp_config:
             return self.error("Please setup SMTP config at first")
         try:
-            send_email(
-                smtp_config=SysOptions.smtp_config,
-                from_name=SysOptions.website_name_shortcut,
-                to_name=request.user.username,
-                to_email=request.data["email"],
-                subject="You have successfully configured SMTP",
-                content="You have successfully configured SMTP")
+            send_email(smtp_config=SysOptions.smtp_config,
+                       from_name=SysOptions.website_name_shortcut,
+                       to_name=request.user.username,
+                       to_email=request.data["email"],
+                       subject="You have successfully configured SMTP",
+                       content="You have successfully configured SMTP")
         except smtplib.SMTPResponseException as e:
             # guess error message encoding
             msg = b"Failed to send email"
@@ -226,9 +225,9 @@ class ReleaseNotesAPI(APIView):
 
     def get(self, request):
         try:
-            resp = requests.get(
-                "https://raw.githubusercontent.com/QingdaoU/OnlineJudge/master/docs/data.json?_=" + str(time.time()),
-                timeout=3)
+            resp = requests.get("https://raw.githubusercontent.com/QingdaoU/OnlineJudge/master/docs/data.json?_=" +
+                                str(time.time()),
+                                timeout=3)
             releases = resp.json()
         except (RequestException, ValueError):
             return self.success()
@@ -242,9 +241,8 @@ class DashboardInfoAPI(APIView):
 
     def get(self, request):
         today = datetime.today()
-        today_submission_count = Submission.objects.filter(
-            create_time__gte=datetime(today.year, today.month, today.day, 0, 0,
-                                      tzinfo=timezone.get_current_timezone())).count()
+        today_submission_count = Submission.objects.filter(create_time__gte=datetime(
+            today.year, today.month, today.day, 0, 0, tzinfo=timezone.get_current_timezone())).count()
         recent_contest_count = Contest.objects.exclude(end_time__lt=timezone.now()).count()
         judge_server_count = len(list(filter(lambda x: x.status == "normal", JudgeServer.objects.all())))
         return self.success({

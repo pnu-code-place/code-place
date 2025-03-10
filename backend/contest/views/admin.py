@@ -173,8 +173,8 @@ class ContestAnnouncementAPI(APIView):
         contest_announcement_id = request.GET.get("id")
         if contest_announcement_id:
             if request.user.is_admin():
-                ContestAnnouncement.objects.filter(
-                    id=contest_announcement_id, contest__created_by=request.user).delete()
+                ContestAnnouncement.objects.filter(id=contest_announcement_id,
+                                                   contest__created_by=request.user).delete()
             else:
                 ContestAnnouncement.objects.filter(id=contest_announcement_id).delete()
         return self.success()

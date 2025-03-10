@@ -22,19 +22,20 @@ class APITestCase(TestCase):
                     admin_type=AdminType.REGULAR_USER,
                     login=True,
                     problem_permission=ProblemPermission.NONE):
-        user = User.objects.create(
-            email=email, username=username, admin_type=admin_type, problem_permission=problem_permission)
+        user = User.objects.create(email=email,
+                                   username=username,
+                                   admin_type=admin_type,
+                                   problem_permission=problem_permission)
         user.set_password(password)
         school = College.objects.get(id=college_id)
         major = Department.objects.get(id=department_id)
-        UserProfile.objects.create(
-            user=user,
-            real_name=real_name,
-            student_id=student_id,
-            college_id=college_id,
-            department_id=department_id,
-            school=school,
-            major=major)
+        UserProfile.objects.create(user=user,
+                                   real_name=real_name,
+                                   student_id=student_id,
+                                   college_id=college_id,
+                                   department_id=department_id,
+                                   school=school,
+                                   major=major)
         UserScore.objects.create(user=user)
         UserSolved.objects.create(user=user)
         user.save()
@@ -49,22 +50,20 @@ class APITestCase(TestCase):
         department.save()
 
     def create_admin(self, email="admin@admin.com", username="admin", password="admin1234!", login=True):
-        return self.create_user(
-            email=email,
-            username=username,
-            password=password,
-            admin_type=AdminType.ADMIN,
-            problem_permission=ProblemPermission.OWN,
-            login=login)
+        return self.create_user(email=email,
+                                username=username,
+                                password=password,
+                                admin_type=AdminType.ADMIN,
+                                problem_permission=ProblemPermission.OWN,
+                                login=login)
 
     def create_super_admin(self, email="root@root.com", username="root", password="root1234!", login=True):
-        return self.create_user(
-            email=email,
-            username=username,
-            password=password,
-            admin_type=AdminType.SUPER_ADMIN,
-            problem_permission=ProblemPermission.ALL,
-            login=login)
+        return self.create_user(email=email,
+                                username=username,
+                                password=password,
+                                admin_type=AdminType.SUPER_ADMIN,
+                                problem_permission=ProblemPermission.ALL,
+                                login=login)
 
     def reverse(self, url_name, *args, **kwargs):
         return reverse(url_name, *args, **kwargs)

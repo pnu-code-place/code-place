@@ -73,10 +73,10 @@ class UserProfileDashBoardAPI(APIView):
             user_id = user_profile.user_id
             user_score = UserScore.objects.filter(user_id=user_id).annotate(
                 total_rank=Count('total_score', filter=Q(total_score__gt=F('total_score'))) + 1,
-                datastructure_rank=Count(
-                    'datastructure_score', filter=Q(datastructure_score__gt=F('datastructure_score'))) + 1,
-                implementation_rank=Count(
-                    'implementation_score', filter=Q(implementation_score__gt=F('implementation_score'))) + 1,
+                datastructure_rank=Count('datastructure_score',
+                                         filter=Q(datastructure_score__gt=F('datastructure_score'))) + 1,
+                implementation_rank=Count('implementation_score',
+                                          filter=Q(implementation_score__gt=F('implementation_score'))) + 1,
                 math_rank=Count('math_score', filter=Q(math_score__gt=F('math_score'))) + 1,
                 search_rank=Count('search_score', filter=Q(search_score__gt=F('search_score'))) + 1,
                 sorting_rank=Count('sorting_score', filter=Q(sorting_score__gt=F('sorting_score'))) + 1,
