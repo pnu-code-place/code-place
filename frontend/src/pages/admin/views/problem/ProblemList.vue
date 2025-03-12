@@ -114,7 +114,7 @@
   import utils from '@/utils/utils'
   import AddProblemComponent from './AddPublicProblem.vue'
 
-  // A list of routers which needs problems list
+  // A list of routers which need problems list
   const PROBLEM_LIST_ROUTES = ['problem-list', 'contest-problem-list']
 
   export default {
@@ -240,8 +240,8 @@
         this.contestId = newVal.params.contestId
         this.routeName = newVal.name
 
+        // Update only when the router requires a problem list
         if (PROBLEM_LIST_ROUTES.includes(this.routeName)) {
-          // Update only when the router requires a problem list
           this.getProblemList(this.currentPage)
         }
       },
