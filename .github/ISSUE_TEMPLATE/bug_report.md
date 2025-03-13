@@ -1,7 +1,7 @@
 ---
 name: Bug Report
 about: 버그를 보고하기 위한 템플릿
-title: "[Bug] "
+title: "[Bug]"
 type: "Bug"
 assignees: ""
 ---
