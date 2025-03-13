@@ -2,7 +2,6 @@ from django.conf.urls import url
 
 from ..views.oj import ProblemTagAPI, ProblemAPI, ContestProblemAPI, PickOneAPI, RecommendProblemAPI, BonusProblemAPI, MostDifficultProblemAPI
 
-
 urlpatterns = [
     url(r"^problem/tags/?$", ProblemTagAPI.as_view(), name="problem_tag_list_api"),
     url(r"^problem/?$", ProblemAPI.as_view(), name="problem_api"),

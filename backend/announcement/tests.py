@@ -4,6 +4,7 @@ from .models import Announcement
 
 
 class AnnouncementAdminTest(APITestCase):
+
     def setUp(self):
         self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
         self.user = self.create_super_admin()
@@ -22,8 +23,12 @@ class AnnouncementAdminTest(APITestCase):
         return resp
 
     def test_edit_announcement(self):
-        data = {"id": self.create_announcement().data["data"]["id"], "title": "ahaha", "content": "test content",
-                "visible": False}
+        data = {
+            "id": self.create_announcement().data["data"]["id"],
+            "title": "ahaha",
+            "content": "test content",
+            "visible": False
+        }
         resp = self.client.put(self.url, data=data)
         self.assertSuccess(resp)
         resp_data = resp.data["data"]
@@ -39,10 +44,14 @@ class AnnouncementAdminTest(APITestCase):
 
 
 class AnnouncementAPITest(APITestCase):
+
     def setUp(self):
         self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
         self.user = self.create_super_admin()
-        self.announcement = Announcement.objects.create(title="title", content="content", visible=True, created_by=self.user)
+        self.announcement = Announcement.objects.create(title="title",
+                                                        content="content",
+                                                        visible=True,
+                                                        created_by=self.user)
         self.url = self.reverse("announcement_api")
 
     def test_get_announcement_list(self):

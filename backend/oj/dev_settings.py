@@ -15,11 +15,7 @@ DATABASES = {
     }
 }
 
-REDIS_CONF = {
-    'host': get_env('REDIS_HOST', '127.0.0.1'),
-    'port': get_env('REDIS_PORT', '6380')
-}
-
+REDIS_CONF = {'host': get_env('REDIS_HOST', '127.0.0.1'), 'port': get_env('REDIS_PORT', '6380')}
 
 DEBUG = True
 

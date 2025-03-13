@@ -19,6 +19,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 
 class Captcha(object):
+
     def __init__(self, request):
         """
         初始化,设置各种属性

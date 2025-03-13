@@ -9,6 +9,7 @@ class ImageUploadForm(forms.Form):
 
 
 class PopupSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Popup
         fields = ['id', 'popup_image', 'link_url', 'popup_image_width']

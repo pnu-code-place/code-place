@@ -1,4 +1,6 @@
 from utils.api import serializers
+
+
 class CollegeListSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     college_name = serializers.CharField()

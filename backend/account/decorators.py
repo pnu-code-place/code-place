@@ -10,6 +10,7 @@ from .models import ProblemPermission
 
 
 class BasePermissionDecorator(object):
+
     def __init__(self, func):
         self.func = func
 
@@ -34,23 +35,27 @@ class BasePermissionDecorator(object):
 
 
 class login_required(BasePermissionDecorator):
+
     def check_permission(self):
         return self.request.user.is_authenticated
 
 
 class super_admin_required(BasePermissionDecorator):
+
     def check_permission(self):
         user = self.request.user
         return user.is_authenticated and user.is_super_admin()
 
 
 class admin_role_required(BasePermissionDecorator):
+
     def check_permission(self):
         user = self.request.user
         return user.is_authenticated and user.is_admin_role()
 
 
 class problem_permission_required(admin_role_required):
+
     def check_permission(self):
         if not super(problem_permission_required, self).check_permission():
             return False
@@ -92,6 +97,7 @@ def check_contest_permission(check_type="details"):
     """
 
     def decorator(func):
+
         def _check_permission(*args, **kwargs):
             self = args[0]
             request = args[1]
@@ -119,7 +125,9 @@ def check_contest_permission(check_type="details"):
 
             if self.contest.contest_type == ContestType.PASSWORD_PROTECTED_CONTEST:
                 # password error
-                if not check_contest_password(request.session.get(CONTEST_PASSWORD_SESSION_KEY, {}).get(self.contest.id), self.contest.password):
+                if not check_contest_password(
+                        request.session.get(CONTEST_PASSWORD_SESSION_KEY, {}).get(self.contest.id),
+                        self.contest.password):
                     return self.error("Wrong password or password expired")
 
             # regular user get contest problems, ranks etc. before contest started
@@ -132,7 +140,9 @@ def check_contest_permission(check_type="details"):
                     return self.error(f"No permission to get {check_type}")
 
             return func(*args, **kwargs)
+
         return _check_permission
+
     return decorator
 
 

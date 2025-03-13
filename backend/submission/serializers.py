@@ -53,4 +53,3 @@ class SubmissionListSerializer(serializers.ModelSerializer):
 
     def get_user_avatar(self, obj):
         return obj.user_avatar
-
