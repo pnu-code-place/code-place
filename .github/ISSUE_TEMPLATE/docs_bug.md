@@ -1,7 +1,7 @@
 ---
 name: Documentation Issue
 about: 문서 오류 보고 또는 개선 제안을 위한 템플릿
-title: "[Docs] "
+title: "[Docs]"
 type: "Documentation"
 assignees: ""
 ---

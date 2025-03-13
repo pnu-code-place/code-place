@@ -1,7 +1,7 @@
 ---
-name: Enhancement Request
+name: Improvement Request
 about: 기존 기능의 개선 또는 향상을 제안하기 위한 템플릿
-title: "[Enhancement] "
+title: "[Improvement]"
 type: "Feature"
 assignees: ""
 ---

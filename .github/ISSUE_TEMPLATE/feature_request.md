@@ -1,7 +1,7 @@
 ---
 name: Feature Request
 about: 새로운 기능 제안을 위한 템플릿
-title: "[Feature] "
+title: "[Feature]"
 type: "Feature"
 assignees: ""
 ---

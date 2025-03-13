@@ -1,7 +1,7 @@
 ---
 name: Question or Support Request
 about: 프로젝트 사용 중 질문이나 도움이 필요할 때 사용하는 템플릿
-title: "[Support] "
+title: "[Support]"
 type: "Support"
 assignees: ""
 ---
