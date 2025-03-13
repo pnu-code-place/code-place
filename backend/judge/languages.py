@@ -1,10 +1,10 @@
 from problem.models import ProblemIOMode
 
+
 default_env = ["LANG=en_US.UTF-8", "LANGUAGE=en_US:en", "LC_ALL=en_US.UTF-8"]
 
 _c_lang_config = {
-    "template":
-        """//PREPEND BEGIN
+    "template": """//PREPEND BEGIN
 #include <stdio.h>
 //PREPEND END
 
@@ -30,10 +30,7 @@ int main() {
     },
     "run": {
         "command": "{exe_path}",
-        "seccomp_rule": {
-            ProblemIOMode.standard: "c_cpp",
-            ProblemIOMode.file: "c_cpp_file_io"
-        },
+        "seccomp_rule": {ProblemIOMode.standard: "c_cpp", ProblemIOMode.file: "c_cpp_file_io"},
         "env": default_env
     }
 }
@@ -54,8 +51,7 @@ _c_lang_spj_config = {
 }
 
 _cpp_lang_config = {
-    "template":
-        """//PREPEND BEGIN
+    "template": """//PREPEND BEGIN
 #include <iostream>
 //PREPEND END
 
@@ -81,10 +77,7 @@ int main() {
     },
     "run": {
         "command": "{exe_path}",
-        "seccomp_rule": {
-            ProblemIOMode.standard: "c_cpp",
-            ProblemIOMode.file: "c_cpp_file_io"
-        },
+        "seccomp_rule": {ProblemIOMode.standard: "c_cpp", ProblemIOMode.file: "c_cpp_file_io"},
         "env": default_env
     }
 }
@@ -105,8 +98,7 @@ _cpp_lang_spj_config = {
 }
 
 _java_lang_config = {
-    "template":
-        """//PREPEND BEGIN
+    "template": """//PREPEND BEGIN
 class Main {
 //PREPEND END
 
@@ -139,8 +131,7 @@ class Main {
 }
 
 _py3_lang_config = {
-    "template":
-        """//PREPEND BEGIN
+    "template": """//PREPEND BEGIN
 //PREPEND END
 
 //TEMPLATE BEGIN
@@ -168,8 +159,7 @@ print(add(1, 2))
 }
 
 _go_lang_config = {
-    "template":
-        """//PREPEND BEGIN
+    "template": """//PREPEND BEGIN
 package main
 
 import "fmt"
@@ -204,8 +194,7 @@ func main() {
 }
 
 _node_lang_config = {
-    "template":
-        """//PREPEND BEGIN
+    "template": """//PREPEND BEGIN
 //PREPEND END
 
 //TEMPLATE BEGIN
@@ -235,48 +224,12 @@ console.log(add(1, 2))
 }
 
 languages = [
-    {
-        "config": _c_lang_config,
-        "name": "C",
-        "description": "GCC 13",
-        "content_type": "text/x-csrc",
-        "spj": {
-            "compile": _c_lang_spj_compile,
-            "config": _c_lang_spj_config
-        }
-    },
-    {
-        "config": _cpp_lang_config,
-        "name": "C++",
-        "description": "GCC 13",
-        "content_type": "text/x-c++src",
-        "spj": {
-            "compile": _cpp_lang_spj_compile,
-            "config": _cpp_lang_spj_config
-        }
-    },
-    {
-        "config": _java_lang_config,
-        "name": "Java",
-        "description": "Temurin 21",
-        "content_type": "text/x-java"
-    },
-    {
-        "config": _py3_lang_config,
-        "name": "Python3",
-        "description": "Python 3.12",
-        "content_type": "text/x-python"
-    },
-    {
-        "config": _go_lang_config,
-        "name": "Golang",
-        "description": "Golang 1.22",
-        "content_type": "text/x-go"
-    },
-    {
-        "config": _node_lang_config,
-        "name": "JavaScript",
-        "description": "Node.js 20",
-        "content_type": "text/javascript"
-    },
+    {"config": _c_lang_config, "name": "C", "description": "GCC 13", "content_type": "text/x-csrc",
+      "spj": {"compile": _c_lang_spj_compile, "config": _c_lang_spj_config}},
+    {"config": _cpp_lang_config, "name": "C++", "description": "GCC 13", "content_type": "text/x-c++src",
+      "spj": {"compile": _cpp_lang_spj_compile, "config": _cpp_lang_spj_config}},
+    {"config": _java_lang_config, "name": "Java", "description": "Temurin 21", "content_type": "text/x-java"},
+    {"config": _py3_lang_config, "name": "Python3", "description": "Python 3.12", "content_type": "text/x-python"},
+    {"config": _go_lang_config, "name": "Golang", "description": "Golang 1.22", "content_type": "text/x-go"},
+    {"config": _node_lang_config, "name": "JavaScript", "description": "Node.js 20", "content_type": "text/javascript"},
 ]

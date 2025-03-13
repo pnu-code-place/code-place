@@ -35,7 +35,6 @@ def process_pending_task():
 
 
 class ChooseJudgeServer:
-
     def __init__(self):
         self.server = None
 
@@ -57,7 +56,6 @@ class ChooseJudgeServer:
 
 
 class DispatcherBase(object):
-
     def __init__(self):
         self.token = hashlib.sha256(SysOptions.judge_server_token.encode("utf-8")).hexdigest()
 
@@ -73,13 +71,16 @@ class DispatcherBase(object):
 
 
 class SPJCompiler(DispatcherBase):
-
     def __init__(self, spj_code, spj_version, spj_language):
         super().__init__()
         spj_compile_config = \
             list(filter(lambda config: spj_language == config["name"], SysOptions.spj_languages))[0]["spj"][
                 "compile"]
-        self.data = {"src": spj_code, "spj_version": spj_version, "spj_compile_config": spj_compile_config}
+        self.data = {
+            "src": spj_code,
+            "spj_version": spj_version,
+            "spj_compile_config": spj_compile_config
+        }
 
     def compile_spj(self):
         with ChooseJudgeServer() as server:
@@ -93,7 +94,6 @@ class SPJCompiler(DispatcherBase):
 
 
 class JudgeDispatcher(DispatcherBase):
-
     def __init__(self, submission_id, problem_id):
         super().__init__()
         self.submission = Submission.objects.get(id=submission_id)
@@ -193,8 +193,8 @@ class JudgeDispatcher(DispatcherBase):
         if self.contest_id:
             if self.contest.status != ContestStatus.CONTEST_UNDERWAY or \
                     User.objects.get(id=self.submission.user_id).is_contest_admin(self.contest):
-                logger.info("Contest debug mode, id: " + str(self.contest_id) + ", submission id: " +
-                            self.submission.id)
+                logger.info(
+                    "Contest debug mode, id: " + str(self.contest_id) + ", submission id: " + self.submission.id)
                 return
             with transaction.atomic():
                 self.update_contest_problem_status()
@@ -239,7 +239,8 @@ class JudgeDispatcher(DispatcherBase):
                 score = self.submission.statistic_info["score"]
                 if oi_problems_status[problem_id]["status"] != JudgeStatus.ACCEPTED:
                     # minus last time score, add this tim score
-                    profile.add_score(this_time_score=score, last_time_score=oi_problems_status[problem_id]["score"])
+                    profile.add_score(this_time_score=score,
+                                      last_time_score=oi_problems_status[problem_id]["score"])
                     oi_problems_status[problem_id]["score"] = score
                     oi_problems_status[problem_id]["status"] = self.submission.result
                     if self.submission.result == JudgeStatus.ACCEPTED:
@@ -261,7 +262,8 @@ class JudgeDispatcher(DispatcherBase):
                 problem.curr_week_info['accepted'] += 1
             problem_info = problem.statistic_info
             problem_info[result] = problem_info.get(result, 0) + 1
-            problem.save(update_fields=["accepted_number", "submission_number", "statistic_info", "curr_week_info"])
+            problem.save(update_fields=["accepted_number", "submission_number", "statistic_info",
+                                        "curr_week_info"])
             problem.calculate_success_rate()
 
             # update_userprofile
@@ -288,11 +290,9 @@ class JudgeDispatcher(DispatcherBase):
                 score = self.submission.statistic_info["score"]
                 if problem_id not in oi_problems_status:
                     user_profile.add_score(score)
-                    oi_problems_status[problem_id] = {
-                        "status": self.submission.result,
-                        "_id": self.problem._id,
-                        "score": score
-                    }
+                    oi_problems_status[problem_id] = {"status": self.submission.result,
+                                                      "_id": self.problem._id,
+                                                      "score": score}
                     if self.submission.result == JudgeStatus.ACCEPTED:
                         user_profile.accepted_number += 1
                 elif oi_problems_status[problem_id]["status"] != JudgeStatus.ACCEPTED:
@@ -327,11 +327,9 @@ class JudgeDispatcher(DispatcherBase):
                 contest_problems_status = user_profile.oi_problems_status.get("contest_problems", {})
                 score = self.submission.statistic_info["score"]
                 if problem_id not in contest_problems_status:
-                    contest_problems_status[problem_id] = {
-                        "status": self.submission.result,
-                        "_id": self.problem._id,
-                        "score": score
-                    }
+                    contest_problems_status[problem_id] = {"status": self.submission.result,
+                                                           "_id": self.problem._id,
+                                                           "score": score}
                 else:
                     contest_problems_status[problem_id]["score"] = score
                     contest_problems_status[problem_id]["status"] = self.submission.result
@@ -429,6 +427,7 @@ class JudgeDispatcher(DispatcherBase):
                 problem = Problem.objects.get(id=self.problem.id)
             except (UserScore.DoesNotExist, Problem.DoesNotExist, UserSolved.DoesNotExist):
                 return HttpResponseNotFound("user_score | problem | user_solved doesn't exist")
+
             """ update UserScore Model """
 
             # update user score
@@ -449,6 +448,7 @@ class JudgeDispatcher(DispatcherBase):
             # update user score by difficulty
             new_difficulty_score = getattr(user_score, difficulty_name_score) + problem_score
             setattr(user_score, difficulty_name_score, new_difficulty_score)
+
             """ update UserSolved Model """
 
             # update solved problem count by difficulty

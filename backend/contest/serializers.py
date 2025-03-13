@@ -5,7 +5,6 @@ from utils.api import UsernameSerializer, serializers
 from .models import Contest, ContestAnnouncement, ContestRuleType
 from .models import ACMContestRank, OIContestRank
 
-
 class ContestUserSubmissionSummarySerializer(serializers.Serializer):
     user_id = serializers.IntegerField()
     username = serializers.CharField()
@@ -52,7 +51,6 @@ class ContestAdminSerializer(serializers.ModelSerializer):
 
 
 class ContestSerializer(ContestAdminSerializer):
-
     class Meta:
         model = Contest
         exclude = ("password", "visible", "allowed_ip_ranges")

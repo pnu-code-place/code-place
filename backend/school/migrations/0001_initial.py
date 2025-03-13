@@ -8,7 +8,8 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = []
+    dependencies = [
+    ]
 
     operations = [
         migrations.CreateModel(
@@ -26,8 +27,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('department_name', models.CharField(max_length=255)),
-                ('college',
-                 models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to='school.college')),
+                ('college', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to='school.college')),
             ],
             options={
                 'db_table': 'department',

@@ -10,7 +10,6 @@ from account.models import User
 
 
 class APITokenAuthMiddleware(MiddlewareMixin):
-
     def process_request(self, request):
         appkey = request.META.get("HTTP_APPKEY")
         if appkey:
@@ -23,7 +22,6 @@ class APITokenAuthMiddleware(MiddlewareMixin):
 
 
 class SessionRecordMiddleware(MiddlewareMixin):
-
     def process_request(self, request):
         request.ip = request.META.get(settings.IP_HEADER, request.META.get("REMOTE_ADDR"))
         if request.user.is_authenticated and request.session.session_key:
@@ -35,7 +33,6 @@ class SessionRecordMiddleware(MiddlewareMixin):
             session["last_activity"] = now()
             session.save()
 
-
 @receiver(user_logged_in)
 def add_session_key(sender, request, user, **kwargs):
     if request.session.session_key and request.session.session_key not in user.session_keys:
@@ -44,7 +41,6 @@ def add_session_key(sender, request, user, **kwargs):
 
 
 class AdminRoleRequiredMiddleware(MiddlewareMixin):
-
     def process_request(self, request):
         path = request.path_info
         if path.startswith("/admin/") or path.startswith("/api/admin/"):
@@ -53,7 +49,6 @@ class AdminRoleRequiredMiddleware(MiddlewareMixin):
 
 
 class LogSqlMiddleware(MiddlewareMixin):
-
     def process_response(self, request, response):
         print("\033[94m", "#" * 30, "\033[0m")
         time_threshold = 0.03

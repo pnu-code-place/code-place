@@ -18,8 +18,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Submission',
             fields=[
-                ('id',
-                 models.TextField(db_index=True, default=utils.shortcuts.rand_str, primary_key=True, serialize=False)),
+                ('id', models.TextField(db_index=True, default=utils.shortcuts.rand_str, primary_key=True, serialize=False)),
                 ('create_time', models.DateTimeField(auto_now_add=True)),
                 ('user_id', models.IntegerField(db_index=True)),
                 ('username', models.TextField()),
@@ -30,8 +29,7 @@ class Migration(migrations.Migration):
                 ('shared', models.BooleanField(default=False)),
                 ('statistic_info', models.JSONField(default=dict)),
                 ('ip', models.TextField(null=True)),
-                ('contest',
-                 models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='contest.contest')),
+                ('contest', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='contest.contest')),
                 ('problem', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='problem.problem')),
             ],
             options={

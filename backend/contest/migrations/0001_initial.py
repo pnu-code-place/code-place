@@ -30,8 +30,7 @@ class Migration(migrations.Migration):
                 ('last_update_time', models.DateTimeField(auto_now=True)),
                 ('visible', models.BooleanField(default=True)),
                 ('allowed_ip_ranges', models.JSONField(default=list)),
-                ('created_by',
-                 models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                ('created_by', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
             options={
                 'db_table': 'contest',
@@ -47,8 +46,7 @@ class Migration(migrations.Migration):
                 ('visible', models.BooleanField(default=True)),
                 ('create_time', models.DateTimeField(auto_now_add=True)),
                 ('contest', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='contest.contest')),
-                ('created_by',
-                 models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                ('created_by', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
             options={
                 'db_table': 'contest_announcement',

@@ -40,6 +40,7 @@ VENDOR_APPS = [
 if production_env:
     VENDOR_APPS.append('raven.contrib.django.raven_compat')
 
+
 LOCAL_APPS = [
     'account',
     'announcement',
@@ -150,6 +151,7 @@ POPUP_DIR = f"{DATA_DIR}{POPUP_URI_PREFIX}"
 
 STATICFILES_DIRS = [os.path.join(DATA_DIR, "public")]
 
+
 LOGGING_HANDLERS = ['console', 'sentry'] if production_env else ['console']
 LOGGING = {
     'version': 1,
@@ -198,14 +200,15 @@ LOGGING = {
 
 REST_FRAMEWORK = {
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
-    'DEFAULT_RENDERER_CLASSES': ('rest_framework.renderers.JSONRenderer',)
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+    )
 }
 
 REDIS_URL = "redis://%s:%s" % (REDIS_CONF["host"], REDIS_CONF["port"])
 
 
 def redis_config():
-
     def make_key(key, key_prefix, version):
         return key
 
@@ -218,14 +221,15 @@ def redis_config():
     }
 
 
-CACHES = {"default": redis_config()}
+CACHES = {
+    "default": redis_config()
+}
 
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "default"
 
 DRAMATIQ_BROKER = {
-    "BROKER":
-        "dramatiq.brokers.redis.RedisBroker",
+    "BROKER": "dramatiq.brokers.redis.RedisBroker",
     "OPTIONS": {
         "url": f"{REDIS_URL}/4",
     },
@@ -250,7 +254,9 @@ DRAMATIQ_RESULT_BACKEND = {
     }
 }
 
-RAVEN_CONFIG = {'dsn': 'https://b200023b8aed4d708fb593c5e0a6ad3d:1fddaba168f84fcf97e0d549faaeaff0@sentry.io/263057'}
+RAVEN_CONFIG = {
+    'dsn': 'https://b200023b8aed4d708fb593c5e0a6ad3d:1fddaba168f84fcf97e0d549faaeaff0@sentry.io/263057'
+}
 
 IP_HEADER = "HTTP_X_REAL_IP"
 

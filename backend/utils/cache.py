@@ -6,7 +6,6 @@ from django_redis.client.default import DefaultClient
 
 
 class MyRedisClient(DefaultClient):
-
     def __getattr__(self, item):
         client = self.get_client(write=True)
         return getattr(client, item)
@@ -20,7 +19,6 @@ class MyRedisClient(DefaultClient):
 
 
 class MyRedisCache(RedisCache):
-
     def __init__(self, server, params):
         super().__init__(server, params)
         self._client_cls = MyRedisClient

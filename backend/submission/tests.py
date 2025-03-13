@@ -5,39 +5,15 @@ from problem.models import Problem, ProblemTag
 from utils.api.tests import APITestCase
 from .models import Submission
 
-DEFAULT_PROBLEM_DATA = {
-    "_id": "A-110",
-    "title": "test",
-    "description": "<p>test</p>",
-    "input_description": "test",
-    "output_description": "test",
-    "time_limit": 1000,
-    "memory_limit": 256,
-    "difficulty": "Low",
-    "visible": True,
-    "tags": ["test"],
-    "languages": ["C", "C++", "Java", "Python2"],
-    "template": {},
-    "samples": [{
-        "input": "test",
-        "output": "test"
-    }],
-    "spj": False,
-    "spj_language": "C",
-    "spj_code": "",
-    "test_case_id": "499b26290cc7994e0b497212e842ea85",
-    "test_case_score": [{
-        "output_name": "1.out",
-        "input_name": "1.in",
-        "output_size": 0,
-        "stripped_output_md5": "d41d8cd98f00b204e9800998ecf8427e",
-        "input_size": 0,
-        "score": 0
-    }],
-    "rule_type": "ACM",
-    "hint": "<p>test</p>",
-    "source": "test"
-}
+DEFAULT_PROBLEM_DATA = {"_id": "A-110", "title": "test", "description": "<p>test</p>", "input_description": "test",
+                        "output_description": "test", "time_limit": 1000, "memory_limit": 256, "difficulty": "Low",
+                        "visible": True, "tags": ["test"], "languages": ["C", "C++", "Java", "Python2"], "template": {},
+                        "samples": [{"input": "test", "output": "test"}], "spj": False, "spj_language": "C",
+                        "spj_code": "", "test_case_id": "499b26290cc7994e0b497212e842ea85",
+                        "test_case_score": [{"output_name": "1.out", "input_name": "1.in", "output_size": 0,
+                                             "stripped_output_md5": "d41d8cd98f00b204e9800998ecf8427e",
+                                             "input_size": 0, "score": 0}],
+                        "rule_type": "ACM", "hint": "<p>test</p>", "source": "test"}
 
 DEFAULT_SUBMISSION_DATA = {
     "problem_id": "1",
@@ -50,11 +26,11 @@ DEFAULT_SUBMISSION_DATA = {
     "statistic_info": {}
 }
 
+
 # todo contest submission
 
 
 class SubmissionPrepare(APITestCase):
-
     def _create_problem_and_submission(self):
         self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
         user = self.create_admin(email="test@test.com", username="test", password="test1234!", login=False)
@@ -72,7 +48,6 @@ class SubmissionPrepare(APITestCase):
 
 
 class SubmissionListTest(SubmissionPrepare):
-
     def setUp(self):
         self._create_problem_and_submission()
         self.create_user(email="testu@test.com", username="testu", password="test1234!")
@@ -89,7 +64,6 @@ class SubmissionListTest(SubmissionPrepare):
 
 @mock.patch("submission.views.oj.judge_task.send")
 class SubmissionAPITest(SubmissionPrepare):
-
     def setUp(self):
         self._create_problem_and_submission()
         self.user = self.create_user(email="testuser@test.com", username="testuser", password="test1234!")
@@ -104,5 +78,6 @@ class SubmissionAPITest(SubmissionPrepare):
         self.submission_data.update({"language": "Python3"})
         resp = self.client.post(self.url, self.submission_data)
         self.assertFailed(resp)
-        self.assertDictEqual(resp.data, {"error": "error", "data": "Python3 is now allowed in the problem"})
+        self.assertDictEqual(resp.data, {"error": "error",
+                                         "data": "Python3 is now allowed in the problem"})
         judge_task.assert_not_called()

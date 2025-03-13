@@ -10,7 +10,6 @@ from .models import JudgeServer
 
 
 class SMTPConfigTest(APITestCase):
-
     def setUp(self):
         self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
         self.user = self.create_super_admin()
@@ -18,13 +17,8 @@ class SMTPConfigTest(APITestCase):
         self.password = "testtest"
 
     def test_create_smtp_config(self):
-        data = {
-            "server": "smtp.test.com",
-            "email": "test@test.com",
-            "port": 465,
-            "tls": True,
-            "password": self.password
-        }
+        data = {"server": "smtp.test.com", "email": "test@test.com", "port": 465,
+                "tls": True, "password": self.password}
         resp = self.client.post(self.url, data=data)
         self.assertSuccess(resp)
         self.assertTrue("password" not in resp.data)
@@ -32,25 +26,22 @@ class SMTPConfigTest(APITestCase):
 
     def test_edit_without_password(self):
         self.test_create_smtp_config()
-        data = {"server": "smtp1.test.com", "email": "test2@test.com", "port": 465, "tls": True}
+        data = {"server": "smtp1.test.com", "email": "test2@test.com", "port": 465,
+                "tls": True}
         resp = self.client.put(self.url, data=data)
         self.assertSuccess(resp)
 
     def test_edit_without_password1(self):
         self.test_create_smtp_config()
-        data = {"server": "smtp.test.com", "email": "test@test.com", "port": 465, "tls": True, "password": ""}
+        data = {"server": "smtp.test.com", "email": "test@test.com", "port": 465,
+                "tls": True, "password": ""}
         resp = self.client.put(self.url, data=data)
         self.assertSuccess(resp)
 
     def test_edit_with_password(self):
         self.test_create_smtp_config()
-        data = {
-            "server": "smtp1.test.com",
-            "email": "test2@test.com",
-            "port": 465,
-            "tls": True,
-            "password": "newpassword"
-        }
+        data = {"server": "smtp1.test.com", "email": "test2@test.com", "port": 465,
+                "tls": True, "password": "newpassword"}
         resp = self.client.put(self.url, data=data)
         self.assertSuccess(resp)
 
@@ -64,19 +55,13 @@ class SMTPConfigTest(APITestCase):
 
 
 class WebsiteConfigAPITest(APITestCase):
-
     def test_create_website_config(self):
         self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
         self.create_super_admin()
         url = self.reverse("website_config_api")
-        data = {
-            "website_base_url": "http://test.com",
-            "website_name": "test name",
-            "website_name_shortcut": "test oj",
-            "website_footer": "<a>test</a>",
-            "allow_register": True,
-            "submission_list_show_all": False
-        }
+        data = {"website_base_url": "http://test.com", "website_name": "test name",
+                "website_name_shortcut": "test oj", "website_footer": "<a>test</a>",
+                "allow_register": True, "submission_list_show_all": False}
         resp = self.client.post(url, data=data)
         self.assertSuccess(resp)
 
@@ -84,14 +69,9 @@ class WebsiteConfigAPITest(APITestCase):
         self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
         self.create_super_admin()
         url = self.reverse("website_config_api")
-        data = {
-            "website_base_url": "http://test.com",
-            "website_name": "test name",
-            "website_name_shortcut": "test oj",
-            "website_footer": "<img onerror=alert(1) src=#>",
-            "allow_register": True,
-            "submission_list_show_all": False
-        }
+        data = {"website_base_url": "http://test.com", "website_name": "test name",
+                "website_name_shortcut": "test oj", "website_footer": "<img onerror=alert(1) src=#>",
+                "allow_register": True, "submission_list_show_all": False}
         resp = self.client.post(url, data=data)
         self.assertSuccess(resp)
         self.assertEqual(SysOptions.website_footer, '<img src="#" />')
@@ -104,18 +84,10 @@ class WebsiteConfigAPITest(APITestCase):
 
 
 class JudgeServerHeartbeatTest(APITestCase):
-
     def setUp(self):
         self.url = self.reverse("judge_server_heartbeat_api")
-        self.data = {
-            "hostname": "testhostname",
-            "judger_version": "1.0.4",
-            "cpu_core": 4,
-            "cpu": 90.5,
-            "memory": 80.3,
-            "action": "heartbeat",
-            "service_url": "http://127.0.0.1"
-        }
+        self.data = {"hostname": "testhostname", "judger_version": "1.0.4", "cpu_core": 4,
+                     "cpu": 90.5, "memory": 80.3, "action": "heartbeat", "service_url": "http://127.0.0.1"}
         self.token = "test"
         self.hashed_token = hashlib.sha256(self.token.encode("utf-8")).hexdigest()
         SysOptions.judge_server_token = self.token
@@ -137,18 +109,11 @@ class JudgeServerHeartbeatTest(APITestCase):
 
 
 class JudgeServerAPITest(APITestCase):
-
     def setUp(self):
         self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
-        self.server = JudgeServer.objects.create(
-            **{
-                "hostname": "testhostname",
-                "judger_version": "1.0.4",
-                "cpu_core": 4,
-                "cpu_usage": 90.5,
-                "memory_usage": 80.3,
-                "last_heartbeat": timezone.now()
-            })
+        self.server = JudgeServer.objects.create(**{"hostname": "testhostname", "judger_version": "1.0.4",
+                                                    "cpu_core": 4, "cpu_usage": 90.5, "memory_usage": 80.3,
+                                                    "last_heartbeat": timezone.now()})
         self.url = self.reverse("judge_server_api")
         self.create_super_admin()
 
@@ -169,14 +134,12 @@ class JudgeServerAPITest(APITestCase):
 
 
 class LanguageListAPITest(APITestCase):
-
     def test_get_languages(self):
         resp = self.client.get(self.reverse("language_list_api"))
         self.assertSuccess(resp)
 
 
 class TestCasePruneAPITest(APITestCase):
-
     def setUp(self):
         self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
         self.url = self.reverse("prune_test_case_api")
@@ -191,9 +154,7 @@ class TestCasePruneAPITest(APITestCase):
     @mock.patch("conf.views.Problem")
     def test_delete_test_case(self, mocked_problem, mocked_listdir, mocked_delete_one):
         valid_id = "1172980672983b2b49820be3a741b109"
-        mocked_problem.return_value = [
-            valid_id,
-        ]
+        mocked_problem.return_value = [valid_id, ]
         mocked_listdir.return_value = [valid_id, ".test", "aaa"]
         resp = self.client.delete(self.url)
         self.assertSuccess(resp)
@@ -201,19 +162,18 @@ class TestCasePruneAPITest(APITestCase):
 
 
 class ReleaseNoteAPITest(APITestCase):
-
     def setUp(self):
         self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
         self.url = self.reverse("get_release_notes_api")
         self.create_super_admin()
-        self.latest_data = {
-            "update": [{
+        self.latest_data = {"update": [
+            {
                 "version": "2099-12-25",
                 "level": 1,
                 "title": "Update at 2099-12-25",
-                "details": ["test get",]
-            }]
-        }
+                "details": ["test get", ]
+            }
+        ]}
 
     def test_get_versions(self):
         resp = self.client.get(self.url)
@@ -221,7 +181,6 @@ class ReleaseNoteAPITest(APITestCase):
 
 
 class DashboardInfoAPITest(APITestCase):
-
     def setUp(self):
         self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
         self.url = self.reverse("dashboard_info_api")

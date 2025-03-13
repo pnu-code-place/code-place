@@ -9,7 +9,6 @@ class HomeStatistics(serializers.Serializer):
 
 
 class HomeAnnouncementsSerializer(serializers.Serializer):
-
     class Meta:
         model = Announcement
         fields = ["id", "title", "create_time"]

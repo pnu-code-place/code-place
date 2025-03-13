@@ -10,7 +10,6 @@ import xml.etree.ElementTree as ET
 
 
 class FPSParser(object):
-
     def __init__(self, fps_path=None, string_data=None):
         if fps_path:
             self._etree = ET.parse(fps_path).getroot()
@@ -36,30 +35,14 @@ class FPSParser(object):
     def _parse_one_problem(self, node):
         sample_start = True
         test_case_start = True
-        problem = {
-            "title": "No Title",
-            "description": "No Description",
-            "input": "No Input Description",
-            "output": "No Output Description",
-            "memory_limit": {
-                "unit": None,
-                "value": None
-            },
-            "time_limit": {
-                "unit": None,
-                "value": None
-            },
-            "samples": [],
-            "images": [],
-            "append": [],
-            "template": [],
-            "prepend": [],
-            "test_cases": [],
-            "hint": None,
-            "source": None,
-            "spj": None,
-            "solution": []
-        }
+        problem = {"title": "No Title", "description": "No Description",
+                   "input": "No Input Description",
+                   "output": "No Output Description",
+                   "memory_limit": {"unit": None, "value": None},
+                   "time_limit": {"unit": None, "value": None},
+                   "samples": [], "images": [], "append": [],
+                   "template": [], "prepend": [], "test_cases": [],
+                   "hint": None, "source": None, "spj": None, "solution": []}
         for item in node:
             tag = item.tag
             if tag in ["title", "description", "input", "output", "hint", "source"]:
@@ -124,7 +107,6 @@ class FPSParser(object):
 
 
 class FPSHelper(object):
-
     def save_image(self, problem, base_dir, base_url):
         _problem = copy.deepcopy(problem)
         for img in _problem["images"]:
@@ -162,7 +144,10 @@ class FPSHelper(object):
                 with open(os.path.join(base_dir, str(index + 1) + ".out"), "w", encoding="utf-8") as f:
                     f.write(output_content)
             if spj:
-                one_info = {"input_size": len(input_content), "input_name": f"{index + 1}.in"}
+                one_info = {
+                    "input_size": len(input_content),
+                    "input_name": f"{index + 1}.in"
+                }
             else:
                 one_info = {
                     "input_size": len(input_content),
@@ -172,7 +157,10 @@ class FPSHelper(object):
                     "stripped_output_md5": hashlib.md5(output_content.rstrip().encode("utf-8")).hexdigest()
                 }
             test_cases[index] = one_info
-        info = {"spj": True if spj else False, "test_cases": test_cases}
+        info = {
+            "spj": True if spj else False,
+            "test_cases": test_cases
+        }
         with open(os.path.join(base_dir, "info"), "w", encoding="utf-8") as f:
             f.write(json.dumps(info, indent=4))
         return info
