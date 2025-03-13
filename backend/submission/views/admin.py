@@ -6,7 +6,6 @@ from ..models import Submission
 
 
 class SubmissionRejudgeAPI(APIView):
-
     @super_admin_required
     def get(self, request):
         id = request.GET.get("id")

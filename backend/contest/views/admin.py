@@ -18,19 +18,13 @@ from utils.shortcuts import rand_str
 from utils.tasks import delete_files
 from ..models import Contest, ContestAnnouncement, ACMContestRank, OIContestRank
 from datetime import datetime
-from ..serializers import (
-    ContestAnnouncementSerializer,
-    ContestAdminSerializer,
-    CreateConetestSeriaizer,
-    CreateContestAnnouncementSerializer,
-    EditConetestSeriaizer,
-    EditContestAnnouncementSerializer,
-    ACMContesHelperSerializer,
-)
+from ..serializers import (ContestAnnouncementSerializer, ContestAdminSerializer,
+                           CreateConetestSeriaizer, CreateContestAnnouncementSerializer,
+                           EditConetestSeriaizer, EditContestAnnouncementSerializer,
+                           ACMContesHelperSerializer, )
 
 
 class ContestAPI(APIView):
-
     @validate_serializer(CreateConetestSeriaizer)
     def post(self, request):
         data = request.data
@@ -131,9 +125,7 @@ class ContestAPI(APIView):
         else:
             return self.error("해당 대회는 존재하지 않습니다.")
 
-
 class ContestAnnouncementAPI(APIView):
-
     @validate_serializer(CreateContestAnnouncementSerializer)
     def post(self, request):
         """
@@ -205,7 +197,6 @@ class ContestAnnouncementAPI(APIView):
 
 
 class ACMContestHelper(APIView):
-
     @check_contest_permission(check_type="ranks")
     def get(self, request):
         ranks = ACMContestRank.objects.filter(contest=self.contest, accepted_number__gt=0) \
@@ -242,7 +233,6 @@ class ACMContestHelper(APIView):
 
 
 class DownloadContestSubmissions(APIView):
-
     def _dump_submissions(self, contest, exclude_admin=True):
         problem_ids = contest.problem_set.all().values_list("id", "_id")
         id2display_id = {k[0]: k[1] for k in problem_ids}
@@ -263,7 +253,9 @@ class DownloadContestSubmissions(APIView):
                         continue
                     file_name = f"{user.username}_{id2display_id[submission.problem_id]}.txt"
                     compression = zipfile.ZIP_DEFLATED
-                    zip_file.writestr(zinfo_or_arcname=f"{file_name}", data=submission.code, compress_type=compression)
+                    zip_file.writestr(zinfo_or_arcname=f"{file_name}",
+                                      data=submission.code,
+                                      compress_type=compression)
                     user_ac_map[problem_id] = True
         return path
 

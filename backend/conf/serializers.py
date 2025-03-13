@@ -42,7 +42,7 @@ class JudgeServerHeartbeatSerializer(serializers.Serializer):
     cpu_core = serializers.IntegerField(min_value=1)
     memory = serializers.FloatField(min_value=0, max_value=100)
     cpu = serializers.FloatField(min_value=0, max_value=100)
-    action = serializers.ChoiceField(choices=("heartbeat",))
+    action = serializers.ChoiceField(choices=("heartbeat", ))
     service_url = serializers.CharField(max_length=256)
 
 

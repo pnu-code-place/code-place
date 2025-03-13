@@ -2,7 +2,6 @@ from django.db import models, transaction
 
 from utils.constants import POPUP_VISIBLE_LIMIT
 
-
 class Popup(models.Model):
     popup_image = models.TextField()
     popup_image_width = models.IntegerField(null=True)
@@ -28,6 +27,7 @@ class Popup(models.Model):
             target_popup.order = 1
             target_popup.save()
 
+
     @classmethod
     def reorder_swap(cls, curr_popup, target_loc):
         curr_loc = curr_popup.order
@@ -42,6 +42,7 @@ class Popup(models.Model):
             # 현재 팝업의 order를 목표 위치로 변경
             curr_popup.order = target_loc
             curr_popup.save()
+
 
     @classmethod
     def remove(cls, target_popup):

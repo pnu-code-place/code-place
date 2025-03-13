@@ -19,7 +19,6 @@ class ProblemPermission(object):
     OWN = "Own"
     ALL = "All"
 
-
 class UserManager(models.Manager):
     use_in_migrations = True
 
@@ -73,11 +72,11 @@ class User(AbstractBaseUser):
 
 def get_default_field_score():
     return {
-        "0": 0,  # "Math"
-        "1": 0,  # "Implementation"
-        "2": 0,  # "Datastructure"
-        "3": 0,  # "Search"
-        "4": 0,  # "Sorting"
+        "0": 0,     # "Math"
+        "1": 0,     # "Implementation"
+        "2": 0,     # "Datastructure"
+        "3": 0,     # "Search"
+        "4": 0,     # "Sorting"
     }
 
 
@@ -121,13 +120,17 @@ class UserProfile(models.Model):
     oi_problems_status = JSONField(default=dict)
 
     real_name = models.TextField(null=True)
-    student_id = models.CharField(max_length=9,
-                                  null=True,
-                                  validators=[
-                                      RegexValidator(regex=r'^\d{6,9}$',
-                                                     message='학번은 6자리 이상 9자리 이하의 숫자만 입력 가능합니다.',
-                                                     code='invalid_student_id'),
-                                  ])
+    student_id = models.CharField(
+        max_length=9,
+        null=True,
+        validators=[
+            RegexValidator(
+                regex=r'^\d{6,9}$',
+                message='학번은 6자리 이상 9자리 이하의 숫자만 입력 가능합니다.',
+                code='invalid_student_id'
+            ),
+        ]
+    )
     avatar = models.TextField(default=f"{settings.AVATAR_URI_PREFIX}/default.png")
     blog = models.URLField(null=True)
     mood = models.TextField(null=True)

@@ -24,8 +24,7 @@ class Migration(migrations.Migration):
                 ('create_time', models.DateTimeField(auto_now_add=True)),
                 ('last_update_time', models.DateTimeField(auto_now=True)),
                 ('visible', models.BooleanField(default=True)),
-                ('created_by',
-                 models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                ('created_by', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
             options={
                 'db_table': 'announcement',

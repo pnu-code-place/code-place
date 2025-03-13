@@ -55,11 +55,13 @@ class AdminPopupAPIView(APIView):
 
         filename = ContentUtil.saveContentWithRandomFileName(popup_image, settings.POPUP_DIR)
 
-        new_popup = Popup(popup_image=f"{settings.POPUP_URI_PREFIX}/{filename}",
-                          link_url=link_url,
-                          popup_image_width=image_width,
-                          visible=False,
-                          order=None)
+        new_popup = Popup(
+            popup_image=f"{settings.POPUP_URI_PREFIX}/{filename}",
+            link_url=link_url,
+            popup_image_width=image_width,
+            visible=False,
+            order=None
+        )
 
         new_popup.save()
 

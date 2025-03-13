@@ -16,32 +16,15 @@ class ContestRankingWriter:
         self.contest_problems = Problem.objects.filter(contest=self.contest, visible=True).order_by("_id")
         self.problem_ids = [item.id for item in self.contest_problems]
         self.__xlsx_style_format = {
-            "contest_title": {
-                'font_size': 30,
-                'bold': True
-            },
-            "contest_type": {
-                'font_size': 15,
-                'bold': True
-            },
-            "contest_other_info": {
-                'bold': True
-            },
-            "common_info": {
-                'bg_color': '#DAE4C0',
-                'bold': True
-            },
-            "problem_name": {
-                'bg_color': '#DEEDF2',
-                'bold': True
-            },
-            "contest_score": {
-                'bg_color': '#F6D7B8',
-                'bold': True
-            },
+            "contest_title": {'font_size': 30, 'bold': True},
+            "contest_type": {'font_size': 15, 'bold': True},
+            "contest_other_info": {'bold': True},
+            "common_info": {'bg_color': '#DAE4C0', 'bold': True},
+            "problem_name": {'bg_color': '#DEEDF2', 'bold': True},
+            "contest_score": {'bg_color': '#F6D7B8', 'bold': True},
         }
         self.common_participant_info_tag = ["순위", "닉네임", "실명", "이메일", "단과대학", "학과명", "학번"]
-        self.table_start_pos_y = "7"  # 대회 결과 테이블이 작성되기 시작하는 row number
+        self.table_start_pos_y = "7" # 대회 결과 테이블이 작성되기 시작하는 row number
 
     @staticmethod
     def get_ac_state_name(is_ac):
@@ -113,6 +96,7 @@ class ContestRankingWriter:
         for item in range(problem_count):
             problem_name = f"문제 {self.contest_problems[item]._id}"
             self.worksheet.write(column_string(9 + item) + self.table_start_pos_y, problem_name, problem_name_format)
+
         """
         성적표 테이블의 내용을 작성합니다
         """
@@ -123,13 +107,16 @@ class ContestRankingWriter:
         base_row = row_idx + int(self.table_start_pos_y)
         user = user_data["user"]
         user_fields = [
-            str(row_idx + 1), user["username"], user["real_name"] or "", user["email"] or "", user["school"] or "",
-            user["major"] or "", user["student_id"] or ""
+            str(row_idx + 1),
+            user["username"],
+            user["real_name"] or "",
+            user["email"] or "",
+            user["school"] or "",
+            user["major"] or "",
+            user["student_id"] or ""
         ]
 
-        header_by_contest_type = str(
-            user_data["accepted_number"]) + '문제' if self.contest.rule_type == ContestRuleType.ACM else str(
-                user["total_score"]) + '점'
+        header_by_contest_type = str(user_data["accepted_number"]) + '문제' if self.contest.rule_type == ContestRuleType.ACM else str(user["total_score"]) + '점'
         user_fields.append(header_by_contest_type)
 
         for col_idx, value in enumerate(user_fields):
@@ -146,6 +133,5 @@ class ContestRankingWriter:
                     problem_id = self.problem_ids.index(int(k))
                 except ValueError:
                     continue
-                value = self.get_ac_state_name(
-                    v["is_ac"]) if self.contest.rule_type == ContestRuleType.ACM else f"{str(v)}점"
+                value = self.get_ac_state_name(v["is_ac"]) if self.contest.rule_type == ContestRuleType.ACM else f"{str(v)}점"
                 self.worksheet.write_string(base_row, 8 + problem_id, value)

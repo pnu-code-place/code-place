@@ -5,7 +5,6 @@ from utils.shortcuts import rand_str  # NOQA
 
 
 class Command(BaseCommand):
-
     def add_arguments(self, parser):
         parser.add_argument("--username", type=str)
         parser.add_argument("--password", type=str)
@@ -16,7 +15,7 @@ class Command(BaseCommand):
         password = options["password"]
         action = options["action"]
 
-        if not (username and password and action):
+        if not(username and password and action):
             self.stdout.write(self.style.ERROR("Invalid args"))
             exit(1)
 
@@ -25,9 +24,7 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.SUCCESS(f"User {username} exists, operation ignored"))
                 exit()
 
-            user = User.objects.create(username=username,
-                                       email=username,
-                                       admin_type=AdminType.SUPER_ADMIN,
+            user = User.objects.create(username=username, email=username, admin_type=AdminType.SUPER_ADMIN,
                                        problem_permission=ProblemPermission.ALL)
             user.set_password(password)
             user.save()
@@ -37,9 +34,7 @@ class Command(BaseCommand):
 
             self.stdout.write(self.style.SUCCESS("User created"))
         elif action == "create_admin":
-            user = User.objects.create(username=username,
-                                       email=username,
-                                       admin_type=AdminType.ADMIN,
+            user = User.objects.create(username=username, email=username, admin_type=AdminType.ADMIN,
                                        problem_permission=ProblemPermission.OWN)
             user.set_password(password)
             user.save()

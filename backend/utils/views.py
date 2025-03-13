@@ -17,11 +17,17 @@ class SimditorImageUploadAPIView(CSRFExemptAPIView):
         if form.is_valid():
             img = form.cleaned_data["image"]
         else:
-            return self.response({"success": False, "msg": "Upload failed", "file_path": ""})
+            return self.response({
+                "success": False,
+                "msg": "Upload failed",
+                "file_path": ""})
 
         suffix = os.path.splitext(img.name)[-1].lower()
         if suffix not in [".gif", ".jpg", ".jpeg", ".bmp", ".png"]:
-            return self.response({"success": False, "msg": "Unsupported file format", "file_path": ""})
+            return self.response({
+                "success": False,
+                "msg": "Unsupported file format",
+                "file_path": ""})
         img_name = rand_str(10) + suffix
         try:
             with open(os.path.join(settings.UPLOAD_DIR, img_name), "wb") as imgFile:
@@ -29,8 +35,14 @@ class SimditorImageUploadAPIView(CSRFExemptAPIView):
                     imgFile.write(chunk)
         except IOError as e:
             logger.error(e)
-            return self.response({"success": False, "msg": "Upload Error", "file_path": ""})
-        return self.response({"success": True, "msg": "Success", "file_path": f"{settings.UPLOAD_PREFIX}/{img_name}"})
+            return self.response({
+                "success": False,
+                "msg": "Upload Error",
+                "file_path": ""})
+        return self.response({
+            "success": True,
+            "msg": "Success",
+            "file_path": f"{settings.UPLOAD_PREFIX}/{img_name}"})
 
 
 class SimditorFileUploadAPIView(CSRFExemptAPIView):
@@ -41,7 +53,10 @@ class SimditorFileUploadAPIView(CSRFExemptAPIView):
         if form.is_valid():
             file = form.cleaned_data["file"]
         else:
-            return self.response({"success": False, "msg": "Upload failed"})
+            return self.response({
+                "success": False,
+                "msg": "Upload failed"
+            })
 
         suffix = os.path.splitext(file.name)[-1].lower()
         file_name = rand_str(10) + suffix
@@ -51,10 +66,11 @@ class SimditorFileUploadAPIView(CSRFExemptAPIView):
                     f.write(chunk)
         except IOError as e:
             logger.error(e)
-            return self.response({"success": False, "msg": "Upload Error"})
+            return self.response({
+                "success": False,
+                "msg": "Upload Error"})
         return self.response({
             "success": True,
             "msg": "Success",
             "file_path": f"{settings.UPLOAD_PREFIX}/{file_name}",
-            "file_name": file.name
-        })
+            "file_name": file.name})

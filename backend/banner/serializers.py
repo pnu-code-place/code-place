@@ -3,17 +3,12 @@ from django import forms
 from banner.models import Banner
 from utils.api import serializers
 
-
 class ImageUploadForm(forms.Form):
     image = forms.FileField()
-
-
 class BannerSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Banner
         fields = ['banner_image', 'link_url']
-
 
 class BannerAdminSerializer(serializers.Serializer):
     id = serializers.IntegerField()

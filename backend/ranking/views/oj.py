@@ -7,7 +7,6 @@ from utils.api import APIView
 
 
 class HomeRankingAPI(APIView):
-
     def get(self, request):
         # rank, avatar, tier, total_score, fluctuation
         limit = request.GET.get('limit', 3)
@@ -44,13 +43,15 @@ class UserRankAPI(APIView):
             serializer = UserRankListSerializer(user, context={'rank': rank})
             results.append(serializer.data)
 
-        data = {'total': total_users, 'results': results}
+        data = {
+            'total': total_users,
+            'results': results
+        }
 
         return self.success(data)
 
 
 class SurgeUserRankAPI(APIView):
-
     def get(self, request):
         offset = int(request.GET.get("offset", 0))
         limit = int(request.GET.get("limit", 10))
@@ -65,19 +66,22 @@ class SurgeUserRankAPI(APIView):
             serializer = SurgeUserSerializer(user, context={'rank': rank})
             results.append(serializer.data)
 
-        data = {'total': total_users, 'results': results}
+        data = {
+            'total': total_users,
+            'results': results
+        }
 
         return self.success(data)
 
 
 class MajorRankAPI(APIView):
-
     def get(self, request):
         limit = int(request.GET.get("limit", 7))
 
         major_ranks = Department.objects.annotate(
             score=Sum('userprofile__user__userscore__total_score'),
-            people=Count('userprofile__user')).filter(score__isnull=False).order_by('-score')[:limit]
+            people=Count('userprofile__user')
+        ).filter(score__isnull=False).order_by('-score')[:limit]
 
         total_majors = major_ranks.count()
 
@@ -87,8 +91,8 @@ class MajorRankAPI(APIView):
                 avatar_url=F('user__userprofile__avatar'),
                 username=F('user__username'),
                 score=F('user__userscore__total_score'),
-                tier=F('user__userscore__tier')).order_by('-user__userscore__total_score').values(
-                    'avatar_url', 'username', 'mood', 'score', 'tier')
+                tier=F('user__userscore__tier')
+            ).order_by('-user__userscore__total_score').values('avatar_url', 'username', 'mood', 'score', 'tier')
 
             data = {
                 'rank': rank,
@@ -99,6 +103,9 @@ class MajorRankAPI(APIView):
             }
             results.append(data)
 
-        data = {'total': total_majors, 'results': results}
+        data = {
+            'total': total_majors,
+            'results': results
+        }
 
         return self.success(data)

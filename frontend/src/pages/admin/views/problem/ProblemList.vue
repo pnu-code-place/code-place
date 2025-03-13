@@ -114,9 +114,6 @@
   import utils from '@/utils/utils'
   import AddProblemComponent from './AddPublicProblem.vue'
 
-  // A list of routers which need problems list
-  const PROBLEM_LIST_ROUTES = ['problem-list', 'contest-problem-list']
-
   export default {
     name: 'ProblemList',
     components: {
@@ -169,25 +166,26 @@
         this.getProblemList(page)
       },
       getProblemList (page = 1) {
-        this.loading = true
-        let funcName = this.routeName === 'problem-list' ? 'getProblemList' : 'getContestProblemList'
-        console.log('this.routeName:', this.routeName)
-        let params = {
-          limit: this.pageSize,
-          offset: (page - 1) * this.pageSize,
-          keyword: this.keyword,
-          contest_id: this.contestId
-        }
-        api[funcName](params).then(res => {
-          this.loading = false
-          this.total = res.data.data.total
-          for (let problem of res.data.data.results) {
-            problem.isEditing = false
+        if (this.contestId) {
+          this.loading = true
+          let funcName = this.routeName === 'problem-list' ? 'getProblemList' : 'getContestProblemList'
+          let params = {
+            limit: this.pageSize,
+            offset: (page - 1) * this.pageSize,
+            keyword: this.keyword,
+            contest_id: this.contestId
           }
-          this.problemList = res.data.data.results
-        }, res => {
-          this.loading = false
-        })
+          api[funcName](params).then(res => {
+            this.loading = false
+            this.total = res.data.data.total
+            for (let problem of res.data.data.results) {
+              problem.isEditing = false
+            }
+            this.problemList = res.data.data.results
+          }, res => {
+            this.loading = false
+          })
+        }
       },
       deleteProblem (id) {
         this.$confirm(this.$t('m.ProblemList_Delete_Problem_Content'), this.$t('m.ProblemList_Delete_Problem_Title'), {
@@ -239,11 +237,7 @@
       '$route' (newVal, oldVal) {
         this.contestId = newVal.params.contestId
         this.routeName = newVal.name
-
-        // Update only when the router requires a problem list
-        if (PROBLEM_LIST_ROUTES.includes(this.routeName)) {
-          this.getProblemList(this.currentPage)
-        }
+        this.getProblemList(this.currentPage)
       },
       'keyword' () {
         this.currentChange()

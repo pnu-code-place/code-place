@@ -52,10 +52,12 @@ class AdminBannerAPIView(APIView):
 
         filename = ContentUtil.saveContentWithRandomFileName(banner_image, settings.BANNER_DIR)
 
-        new_banner = Banner(banner_image=f"{settings.BANNER_URI_PREFIX}/{filename}",
-                            link_url=link_url,
-                            visible=False,
-                            order=None)
+        new_banner = Banner(
+            banner_image=f"{settings.BANNER_URI_PREFIX}/{filename}",
+            link_url=link_url,
+            visible=False,
+            order=None
+        )
 
         new_banner.save()
 

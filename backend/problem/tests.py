@@ -17,51 +17,20 @@ from contest.tests import DEFAULT_CONTEST_DATA
 from .views.admin import TestCaseAPI
 from .utils import parse_problem_template
 
-DEFAULT_PROBLEM_DATA = {
-    "_id": "A-110",
-    "title": "test",
-    "description": "<p>test</p>",
-    "input_description": "test",
-    "output_description": "test",
-    "time_limit": 1000,
-    "memory_limit": 256,
-    "field": 0,
-    "difficulty": "Low",
-    "visible": True,
-    "tags": ["test"],
-    "languages": ["C", "C++", "Java"],
-    "template": {},
-    "samples": [{
-        "input": "test",
-        "output": "test"
-    }],
-    "spj": False,
-    "spj_language": "C",
-    "spj_code": "",
-    "spj_compile_ok": True,
-    "test_case_id": "499b26290cc7994e0b497212e842ea85",
-    "test_case_score": [{
-        "output_name": "1.out",
-        "input_name": "1.in",
-        "output_size": 0,
-        "stripped_output_md5": "d41d8cd98f00b204e9800998ecf8427e",
-        "input_size": 0,
-        "score": 0
-    }],
-    "io_mode": {
-        "io_mode": ProblemIOMode.standard,
-        "input": "input.txt",
-        "output": "output.txt"
-    },
-    "share_submission": False,
-    "rule_type": "ACM",
-    "hint": "<p>test</p>",
-    "source": "test"
-}
+DEFAULT_PROBLEM_DATA = {"_id": "A-110", "title": "test", "description": "<p>test</p>", "input_description": "test",
+                        "output_description": "test", "time_limit": 1000, "memory_limit": 256, "field": 0, "difficulty": "Low",
+                        "visible": True, "tags": ["test"], "languages": ["C", "C++", "Java"], "template": {},
+                        "samples": [{"input": "test", "output": "test"}], "spj": False, "spj_language": "C",
+                        "spj_code": "", "spj_compile_ok": True, "test_case_id": "499b26290cc7994e0b497212e842ea85",
+                        "test_case_score": [{"output_name": "1.out", "input_name": "1.in", "output_size": 0,
+                                             "stripped_output_md5": "d41d8cd98f00b204e9800998ecf8427e",
+                                             "input_size": 0, "score": 0}],
+                        "io_mode": {"io_mode": ProblemIOMode.standard, "input": "input.txt", "output": "output.txt"},
+                        "share_submission": False,
+                        "rule_type": "ACM", "hint": "<p>test</p>", "source": "test"}
 
 
 class ProblemCreateTestBase(APITestCase):
-
     @staticmethod
     def add_problem(problem_data, created_by):
         data = copy.deepcopy(problem_data)
@@ -98,7 +67,6 @@ class ProblemCreateTestBase(APITestCase):
 
 
 class ProblemTagListAPITest(APITestCase):
-
     def test_get_tag_list(self):
         ProblemTag.objects.create(name="name1")
         ProblemTag.objects.create(name="name2")
@@ -107,7 +75,6 @@ class ProblemTagListAPITest(APITestCase):
 
 
 class TestCaseUploadAPITest(APITestCase):
-
     def setUp(self):
         self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
         self.api = TestCaseAPI()
@@ -138,7 +105,8 @@ class TestCaseUploadAPITest(APITestCase):
 
     def test_upload_spj_test_case_zip(self):
         with open(self.make_test_case_zip(), "rb") as f:
-            resp = self.client.post(self.url, data={"spj": "true", "file": f}, format="multipart")
+            resp = self.client.post(self.url,
+                                           data={"spj": "true", "file": f}, format="multipart")
             self.assertSuccess(resp)
             data = resp.data["data"]
             self.assertEqual(data["spj"], True)
@@ -151,7 +119,8 @@ class TestCaseUploadAPITest(APITestCase):
 
     def test_upload_test_case_zip(self):
         with open(self.make_test_case_zip(), "rb") as f:
-            resp = self.client.post(self.url, data={"spj": "false", "file": f}, format="multipart")
+            resp = self.client.post(self.url,
+                                           data={"spj": "false", "file": f}, format="multipart")
             self.assertSuccess(resp)
             data = resp.data["data"]
             self.assertEqual(data["spj"], False)
@@ -164,7 +133,6 @@ class TestCaseUploadAPITest(APITestCase):
 
 
 class ProblemAdminAPITest(APITestCase):
-
     def setUp(self):
         self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
         self.url = self.reverse("problem_admin_api")
@@ -212,7 +180,6 @@ class ProblemAdminAPITest(APITestCase):
 
 
 class ProblemAPITest(ProblemCreateTestBase):
-
     def setUp(self):
         self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
         self.url = self.reverse("problem_api")
@@ -230,7 +197,6 @@ class ProblemAPITest(ProblemCreateTestBase):
 
 
 class ContestProblemAdminTest(APITestCase):
-
     def setUp(self):
         self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
         self.url = self.reverse("contest_problem_admin_api")
@@ -260,7 +226,6 @@ class ContestProblemAdminTest(APITestCase):
 
 
 class ContestProblemTest(ProblemCreateTestBase):
-
     def setUp(self):
         self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
         admin = self.create_admin()
@@ -301,7 +266,6 @@ class ContestProblemTest(ProblemCreateTestBase):
 
 
 class AddProblemFromPublicProblemAPITest(ProblemCreateTestBase):
-
     def setUp(self):
         self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
         admin = self.create_admin()
@@ -312,7 +276,11 @@ class AddProblemFromPublicProblemAPITest(ProblemCreateTestBase):
         self.contest = self.client.post(url, data=contest_data).data["data"]
         self.problem = self.add_problem(DEFAULT_PROBLEM_DATA, admin)
         self.url = self.reverse("add_contest_problem_from_public_api")
-        self.data = {"display_id": "1000", "contest_id": self.contest["id"], "problem_id": self.problem.id}
+        self.data = {
+            "display_id": "1000",
+            "contest_id": self.contest["id"],
+            "problem_id": self.problem.id
+        }
 
     def test_add_contest_problem(self):
         resp = self.client.post(self.url, data=self.data)
@@ -322,7 +290,6 @@ class AddProblemFromPublicProblemAPITest(ProblemCreateTestBase):
 
 
 class ParseProblemTemplateTest(APITestCase):
-
     def test_parse(self):
         template_str = """
 //PREPEND BEGIN
