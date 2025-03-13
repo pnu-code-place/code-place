@@ -11,10 +11,7 @@ DATABASES = {
     }
 }
 
-REDIS_CONF = {
-    "host": get_env("REDIS_HOST", "oj-redis"),
-    "port": get_env("REDIS_PORT", "6379")
-}
+REDIS_CONF = {"host": get_env("REDIS_HOST", "oj-redis"), "port": get_env("REDIS_PORT", "6379")}
 
 DEBUG = False
 

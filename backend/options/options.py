@@ -17,6 +17,7 @@ class my_property:
     2. ttl is callable，条件缓存
     3. 缓存 ttl 秒
     """
+
     def __init__(self, func=None, fset=None, ttl=None):
         self.fset = fset
         self.local = threading.local()
@@ -114,12 +115,23 @@ class OptionDefaultValue:
     submission_list_show_all = True
     smtp_config = {}
     judge_server_token = default_token
-    throttling = {"ip": {"capacity": 100, "fill_rate": 0.1, "default_capacity": 50},
-                  "user": {"capacity": 20, "fill_rate": 0.03, "default_capacity": 10}}
+    throttling = {
+        "ip": {
+            "capacity": 100,
+            "fill_rate": 0.1,
+            "default_capacity": 50
+        },
+        "user": {
+            "capacity": 20,
+            "fill_rate": 0.03,
+            "default_capacity": 10
+        }
+    }
     languages = languages
 
 
 class _SysOptionsMeta(type):
+
     @classmethod
     def _get_keys(cls):
         return [key for key in OptionKeys.__dict__ if not key.startswith("__")]

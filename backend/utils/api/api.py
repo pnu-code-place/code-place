@@ -13,6 +13,7 @@ logger = logging.getLogger("")
 
 
 class APIError(Exception):
+
     def __init__(self, msg, err=None):
         self.err = err
         self.msg = msg
@@ -40,6 +41,7 @@ class URLEncodedParser(object):
     @staticmethod
     def parse(body):
         return QueryDict(body)
+
 
 class MultiPartParser:
     content_type = "multipart/form-data"
@@ -170,8 +172,7 @@ class APIView(View):
             results = object_serializer(results, many=True).data
         else:
             count = query_set.count()
-        data = {"results": results,
-                "total": count}
+        data = {"results": results, "total": count}
         return data
 
     def dispatch(self, request, *args, **kwargs):
@@ -193,6 +194,7 @@ class APIView(View):
 
 
 class CSRFExemptAPIView(APIView):
+
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
         return super(CSRFExemptAPIView, self).dispatch(request, *args, **kwargs)
@@ -204,7 +206,9 @@ def validate_serializer(serializer):
     def post(self, request):
         return self.success(request.data)
     """
+
     def validate(view_method):
+
         @functools.wraps(view_method)
         def handle(*args, **kwargs):
             self = args[0]

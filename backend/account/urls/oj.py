@@ -1,10 +1,8 @@
 from django.conf.urls import url
 
-from ..views.oj import (ApplyResetPasswordAPI, ResetPasswordAPI,
-                        UserChangePasswordAPI, UserRegisterAPI,
-                        UserLoginAPI, UserLogoutAPI, UsernameOrEmailCheck,
-                        TwoFactorAuthAPI, CheckTFARequiredAPI, SessionManagementAPI,
-                        OpenAPIAppkeyAPI, SSOAPI, ApplyUserEmailValidCheckAPI,
+from ..views.oj import (ApplyResetPasswordAPI, ResetPasswordAPI, UserChangePasswordAPI, UserRegisterAPI, UserLoginAPI,
+                        UserLogoutAPI, UsernameOrEmailCheck, TwoFactorAuthAPI, CheckTFARequiredAPI,
+                        SessionManagementAPI, OpenAPIAppkeyAPI, SSOAPI, ApplyUserEmailValidCheckAPI,
                         UserEmailValidCheckAPI, NicknameValidCheckAPI)
 
 from utils.captcha.views import CaptchaAPIView

@@ -1,4 +1,5 @@
 class Choices:
+
     @classmethod
     def choices(cls):
         d = cls.__dict__
@@ -62,23 +63,16 @@ class ProblemField:
         'sorting': 4,
         'algorithm': 5,
     }
-    intToStr = {
-        0: 'implementation',
-        1: 'math',
-        2: 'datastructure',
-        3: 'search',
-        4: 'sorting',
-        5: 'algorithm'
-    }
+    intToStr = {0: 'implementation', 1: 'math', 2: 'datastructure', 3: 'search', 4: 'sorting', 5: 'algorithm'}
 
 
 class ProblemScore:
     score = {
-        'VeryLow': 10,      # VeryLow
-        'Low': 20,      # Low
-        'Mid': 160,      # Mid
-        'High': 640,     # High
-        'VeryHigh': 1280,    # VeryHigh
+        'VeryLow': 10,  # VeryLow
+        'Low': 20,  # Low
+        'Mid': 160,  # Mid
+        'High': 640,  # High
+        'VeryHigh': 1280,  # VeryHigh
     }
 
 

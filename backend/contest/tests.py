@@ -7,16 +7,21 @@ from utils.api.tests import APITestCase
 
 from .models import ContestAnnouncement, ContestRuleType, Contest
 
-DEFAULT_CONTEST_DATA = {"title": "test title", "description": "test description",
-                        "start_time": timezone.localtime(timezone.now()),
-                        "end_time": timezone.localtime(timezone.now()) + timedelta(days=1),
-                        "rule_type": ContestRuleType.ACM,
-                        "password": "123",
-                        "allowed_ip_ranges": [],
-                        "visible": True, "real_time_rank": True}
+DEFAULT_CONTEST_DATA = {
+    "title": "test title",
+    "description": "test description",
+    "start_time": timezone.localtime(timezone.now()),
+    "end_time": timezone.localtime(timezone.now()) + timedelta(days=1),
+    "rule_type": ContestRuleType.ACM,
+    "password": "123",
+    "allowed_ip_ranges": [],
+    "visible": True,
+    "real_time_rank": True
+}
 
 
 class ContestAdminAPITest(APITestCase):
+
     def setUp(self):
         self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
         self.create_super_admin()
@@ -35,10 +40,14 @@ class ContestAdminAPITest(APITestCase):
 
     def test_update_contest(self):
         id = self.test_create_contest().data["data"]["id"]
-        update_data = {"id": id, "title": "update title",
-                       "description": "update description",
-                       "password": "12345",
-                       "visible": False, "real_time_rank": False}
+        update_data = {
+            "id": id,
+            "title": "update title",
+            "description": "update description",
+            "password": "12345",
+            "visible": False,
+            "real_time_rank": False
+        }
         data = copy.deepcopy(self.data)
         data.update(update_data)
         response = self.client.put(self.url, data=data)
@@ -61,6 +70,7 @@ class ContestAdminAPITest(APITestCase):
 
 
 class ContestAPITest(APITestCase):
+
     def setUp(self):
         self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
         user = self.create_admin()
@@ -93,14 +103,17 @@ class ContestAPITest(APITestCase):
         self.assertFalse(resp.data["data"]["access"])
 
         password_url = self.reverse("contest_password_api")
-        resp = self.client.post(password_url,
-                                       {"contest_id": self.contest.id, "password": DEFAULT_CONTEST_DATA["password"]})
+        resp = self.client.post(password_url, {
+            "contest_id": self.contest.id,
+            "password": DEFAULT_CONTEST_DATA["password"]
+        })
         self.assertSuccess(resp)
         resp = self.client.get(self.url)
         self.assertSuccess(resp)
 
 
 class ContestAnnouncementAdminAPITest(APITestCase):
+
     def setUp(self):
         self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
         self.create_super_admin()
@@ -136,6 +149,7 @@ class ContestAnnouncementAdminAPITest(APITestCase):
 
 
 class ContestAnnouncementListAPITest(APITestCase):
+
     def setUp(self):
         self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
         self.create_super_admin()
@@ -155,6 +169,7 @@ class ContestAnnouncementListAPITest(APITestCase):
 
 
 class ContestRankAPITest(APITestCase):
+
     def setUp(self):
         self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
         user = self.create_admin()
