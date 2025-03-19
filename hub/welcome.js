@@ -61,7 +61,10 @@ const statusCode = (res, status, name) => {
       chrome.storage.local.set({ mode_type: "commit" }, () => {
         $("#error").hide();
         $("#success").html(
-          `Successfully created <a target="blank" href="${res.html_url}">${name}</a>.`,
+          `
+            <i class="huge blue check circle icon" style="margin-bottom: 0.5em"></i>
+            <p>Successfully created <a target="blank" href="${res.html_url}">${name}</a>.</p>
+          `,
         );
         $("#success").show();
         $("#unlink").show();
