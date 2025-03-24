@@ -1,0 +1,46 @@
+{
+  "manifest_version": 3,
+  "name": "Code Place Hub",
+  "description": "Automatically integrate your Code Place submissions to Github",
+  "version": "1.0.0",
+  "author": "boksam",
+  "action": {
+    "default_icon": "assets/thumbnail.png",
+    "default_popup": "popup.html"
+  },
+  "icons": {
+    "16": "assets/thumbnail.png",
+    "48": "assets/thumbnail.png",
+    "128": "assets/thumbnail.png"
+  },
+  "background": {
+    "service_worker": "scripts/background.js"
+  },
+  "permissions": [
+    "unlimitedStorage",
+    "storage",
+    "declarativeNetRequest",
+    "declarativeNetRequestWithHostAccess"
+  ],
+  "host_permissions": ["https://github.com/"],
+  "web_accessible_resources": [
+    {
+      "matches": ["<all_urls>"],
+      "resources": [
+        "library/jquery-3.3.1.min.js",
+        "library/semantic.min.js",
+        "popup.html",
+        "popup.js",
+        "welcome.html",
+        "welcome.js"
+      ]
+    }
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://github.com/*"],
+      "js": ["scripts/util.js", "scripts/github.js", "scripts/authorize.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
