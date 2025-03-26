@@ -1,144 +1,232 @@
 <template>
   <div class="problemDetailFlexibleContainer">
-    <Panel :padding="45" class="detailCard" dis-hover style="transition: 0.3s;">
-      <div slot="title"
-           class="detailTitle">
+    <Panel :padding="45" class="detailCard" dis-hover style="transition: 0.3s">
+      <div
+        slot="title"
+        class="detailTitle"
+        :id="`problem-title-${problem._id}`"
+      >
         {{ problem._id + ". " + problem.title }}
       </div>
       <div id="problem-content" class="markdown-body" v-katex>
-        <div style="display: flex; justify-content: space-between;">
+        <div style="display: flex; justify-content: space-between">
           <div style="display: flex">
-            <div class="headerDetailBtn" style="background-color: var(--difficulty-color)">
+            <div
+              class="headerDetailBtn"
+              style="background-color: var(--difficulty-color)"
+              :id="`problem-difficulty-${problem._id}`"
+            >
               {{ this.getDifficulty }}
             </div>
             <div class="headerDetailBtn" @click="scrollField">
-              <Icon type="ios-pie" color="#F8B193"/>
+              <Icon type="ios-pie" color="#F8B193" />
               영역
             </div>
             <div class="headerDetailBtn" @click="scrollCategory">
-              <Icon type="ios-pricetag" color="#FF9F9F"/>
+              <Icon type="ios-pricetag" color="#FF9F9F" />
               태그
             </div>
           </div>
-          <div style="display: flex;">
+          <div style="display: flex">
             <!--            <div v-if="problem.solved_by" class="headerDetailBtn" style="background-color: rgba(161,214,161,0.25)">-->
             <!--              <i class="fas fa-check-circle" style="color: #65ba43"></i>-->
             <!--              Accepted-->
             <!--            </div>-->
-            <Tooltip :content="'정답 시 점수를 2배로 획득해요!'" placement="bottom">
-              <div v-if="problem.is_bonus" class="headerDetailBtn" style="background-color: rgba(174,161,214,0.25)">
+            <Tooltip
+              :content="'정답 시 점수를 2배로 획득해요!'"
+              placement="bottom"
+            >
+              <div
+                v-if="problem.is_bonus"
+                class="headerDetailBtn"
+                style="background-color: rgba(174, 161, 214, 0.25)"
+              >
                 <i class="fas fa-award" style="color: #895edc"></i>
                 Bonus x2
               </div>
             </Tooltip>
-
           </div>
         </div>
-        <p class="title" style="margin-top: 25px">{{ $t('m.Description') }}</p>
-        <p class="content" v-html=problem.description></p>
-        <p class="title">{{ $t('m.Input') }}
-          <span v-if="problem.io_mode.io_mode=='File IO'">({{ $t('m.FromFile') }}: {{ problem.io_mode.input }})</span>
+        <p class="title" style="margin-top: 25px">{{ $t("m.Description") }}</p>
+        <p
+          class="content"
+          v-html="problem.description"
+          :id="`problem-description-${problem._id}`"
+        ></p>
+        <p class="title">
+          {{ $t("m.Input") }}
+          <span v-if="problem.io_mode.io_mode == 'File IO'"
+            >({{ $t("m.FromFile") }}: {{ problem.io_mode.input }})</span
+          >
         </p>
-        <p class="content" v-html=problem.input_description></p>
+        <p
+          class="content"
+          v-html="problem.input_description"
+          :id="`problem-input-desc-${problem._id}`"
+        ></p>
 
-        <p class="title">{{ $t('m.Output') }}
-          <span v-if="problem.io_mode.io_mode=='File IO'">({{ $t('m.ToFile') }}: {{ problem.io_mode.output }})</span>
+        <p class="title">
+          {{ $t("m.Output") }}
+          <span v-if="problem.io_mode.io_mode == 'File IO'"
+            >({{ $t("m.ToFile") }}: {{ problem.io_mode.output }})</span
+          >
         </p>
-        <p class="content" v-html=problem.output_description></p>
+        <p
+          class="content"
+          v-html="problem.output_description"
+          :id="`problem-output-desc-${problem._id}`"
+        ></p>
 
         <div v-for="(sample, index) of problem.samples" :key="index">
           <div class="sample">
             <div class="sample-input">
-              <p class="title" style="text-decoration: none; margin-bottom: 0px">{{ $t('m.Sample_Input') }}
+              <p
+                class="title"
+                style="text-decoration: none; margin-bottom: 0px"
+              >
+                {{ $t("m.Sample_Input") }}
                 {{ index + 1 }}
-                <a class="copy"
-                   v-clipboard:copy="sample.input"
-                   v-clipboard:success="onCopy"
-                   v-clipboard:error="onCopyError">
+                <a
+                  class="copy"
+                  v-clipboard:copy="sample.input"
+                  v-clipboard:success="onCopy"
+                  v-clipboard:error="onCopyError"
+                >
                   <Icon type="clipboard"></Icon>
                 </a>
               </p>
-              <pre>{{ sample.input }}</pre>
+              <pre :id="`problem-sample-input-${problem._id}-${index}`">{{
+                sample.input
+              }}</pre>
             </div>
             <div class="sample-output">
-              <p class="title" style="text-decoration: none; margin-bottom: 0px">{{ $t('m.Sample_Output') }}
-                {{ index + 1 }}</p>
-              <pre>{{ sample.output }}</pre>
+              <p
+                class="title"
+                style="text-decoration: none; margin-bottom: 0px"
+              >
+                {{ $t("m.Sample_Output") }} {{ index + 1 }}
+              </p>
+              <pre :id="`problem-sample-output-${problem._id}-${index}`">{{
+                sample.output
+              }}</pre>
             </div>
           </div>
         </div>
         <p class="title" style="text-decoration: none">제약사항</p>
         <li style="padding-left: 20px">
-          <code>
-            {{ $t('m.Time_Limit') + "   " + problem.time_limit + 'ms' }}
+          <code :id="`problem-time-limit-${problem._id}`">
+            {{ $t("m.Time_Limit") + "   " + problem.time_limit + "ms" }}
           </code>
         </li>
         <li style="padding-left: 20px">
-          <code>
-            {{ $t('m.Memory_Limit') + "   " + problem.memory_limit + 'mb' }}
+          <code :id="`problem-memory-limit-${problem._id}`">
+            {{ $t("m.Memory_Limit") + "   " + problem.memory_limit + "mb" }}
           </code>
         </li>
         <div v-if="problem.hint">
-          <p class="title">{{ $t('m.Hint') }}</p>
+          <p class="title">{{ $t("m.Hint") }}</p>
           <Card dis-hover class="hintCard">
-            <div class="hintContent" v-html=problem.hint></div>
+            <div
+              class="hintContent"
+              v-html="problem.hint"
+              :id="`problem-hint-${problem._id}`"
+            ></div>
           </Card>
         </div>
 
         <template v-if="!contestID">
           <div class="detailInfoBox">
             <div class="detailInfoBoxHeader" @click="toggleDropdown('field')">
-              <p class="title" style="text-decoration: none; margin-top: 0px" ref="field">
-                <Icon type="ios-pie" color="#F8B193" style="margin-right: 5px"/>
+              <p
+                class="title"
+                style="text-decoration: none; margin-top: 0px"
+                ref="field"
+              >
+                <Icon
+                  type="ios-pie"
+                  color="#F8B193"
+                  style="margin-right: 5px"
+                />
                 영역
               </p>
-              <i class="fas fa-chevron-down" v-if="!dropdown.openFieldDropdown"></i>
+              <i
+                class="fas fa-chevron-down"
+                v-if="!dropdown.openFieldDropdown"
+              ></i>
               <i class="fas fa-chevron-up" v-else></i>
             </div>
             <transition name="slide">
               <div class="dropdown-content" v-if="dropdown.openFieldDropdown">
-                <FieldCategoryBox :boxType="true" :value="FIELD_MAP[problem.field].value"
-                                  :boxColor="FIELD_MAP[problem.field].boxColor"/>
+                <FieldCategoryBox
+                  :boxType="true"
+                  :value="FIELD_MAP[problem.field].value"
+                  :boxColor="FIELD_MAP[problem.field].boxColor"
+                />
               </div>
             </transition>
           </div>
 
           <div class="detailInfoBox">
-            <div class="detailInfoBoxHeader" @click="toggleDropdown('category')">
-              <p class="title" style="text-decoration: none; margin-top: 0px;" ref="category">
-                <Icon type="ios-pricetag" color="#FF9F9F" style="margin-right: 5px"/>
+            <div
+              class="detailInfoBoxHeader"
+              @click="toggleDropdown('category')"
+            >
+              <p
+                class="title"
+                style="text-decoration: none; margin-top: 0px"
+                ref="category"
+              >
+                <Icon
+                  type="ios-pricetag"
+                  color="#FF9F9F"
+                  style="margin-right: 5px"
+                />
                 태그
               </p>
-              <i class="fas fa-chevron-down" v-if="!dropdown.openCategoryDropdown"></i>
+              <i
+                class="fas fa-chevron-down"
+                v-if="!dropdown.openCategoryDropdown"
+              ></i>
               <i class="fas fa-chevron-up" v-else></i>
             </div>
 
             <div v-if="dropdown.openCategoryDropdown" style="display: flex">
               <template v-for="(category, idx) in problem.tags">
-                <FieldCategoryBox :boxType="false" :value="'#' + category" :boxColor="'#FFFFFF'"/>
+                <FieldCategoryBox
+                  :boxType="false"
+                  :value="'#' + category"
+                  :boxColor="'#FFFFFF'"
+                />
               </template>
             </div>
           </div>
 
           <div class="detailInfoBox">
             <div class="detailInfoBoxHeader">
-              <p class="title" style="text-decoration: none; margin-top: 0px;">
-                <Icon type="ios-contact" color="#90B8E7" style="margin-right: 5px"/>
+              <p class="title" style="text-decoration: none; margin-top: 0px">
+                <Icon
+                  type="ios-contact"
+                  color="#90B8E7"
+                  style="margin-right: 5px"
+                />
                 문제를 등록한 사람
               </p>
-              <p class="title" style="text-decoration: none; margin-top: 0px;">
-                {{ problem.created_by.username + '님' }}
+              <p class="title" style="text-decoration: none; margin-top: 0px">
+                {{ problem.created_by.username + "님" }}
               </p>
             </div>
           </div>
 
           <div class="detailInfoBox" v-if="problem.source">
             <div class="detailInfoBoxHeader">
-              <p class="title" style="text-decoration: none; margin-top: 0px;">
-                <i class="fas fa-paperclip" style="margin-right: 5px; color: #424f66"></i>
+              <p class="title" style="text-decoration: none; margin-top: 0px">
+                <i
+                  class="fas fa-paperclip"
+                  style="margin-right: 5px; color: #424f66"
+                ></i>
                 출처
               </p>
-              <p class="title" style="text-decoration: none; margin-top: 0px;">
+              <p class="title" style="text-decoration: none; margin-top: 0px">
                 {{ problem.source }}
               </p>
             </div>
@@ -150,61 +238,59 @@
 </template>
 
 <script>
-
-import {defineComponent} from "vue";
+import { defineComponent } from "vue";
 import FieldCategoryBox from "../../../../components/FieldCategoryBox.vue";
-import {DIFFICULTY_MAP, FIELD_MAP} from "../../../../../../utils/constants";
+import { DIFFICULTY_MAP, FIELD_MAP } from "../../../../../../utils/constants";
 
 export default defineComponent({
   props: {
     problem: Object,
-    contestID: Number
+    contestID: Number,
   },
-  components: {FieldCategoryBox},
+  components: { FieldCategoryBox },
   data() {
     return {
       dropdown: {
         openFieldDropdown: false,
-        openCategoryDropdown: false
-      }
-    }
+        openCategoryDropdown: false,
+      },
+    };
   },
   methods: {
     scrollField() {
-      this.$refs.field.scrollIntoView({behavior: 'smooth'})
+      this.$refs.field.scrollIntoView({ behavior: "smooth" });
     },
     scrollCategory() {
-      this.$refs.category.scrollIntoView({behavior: 'smooth'})
+      this.$refs.category.scrollIntoView({ behavior: "smooth" });
     },
     toggleDropdown(type) {
-      if (type === 'field') {
-        this.dropdown.openFieldDropdown = !this.dropdown.openFieldDropdown
-        return
+      if (type === "field") {
+        this.dropdown.openFieldDropdown = !this.dropdown.openFieldDropdown;
+        return;
       }
-      this.dropdown.openCategoryDropdown = !this.dropdown.openCategoryDropdown
+      this.dropdown.openCategoryDropdown = !this.dropdown.openCategoryDropdown;
     },
     onCopy(event) {
-      this.$success('Code copied')
+      this.$success("Code copied");
     },
     onCopyError(e) {
-      this.$error('Failed to copy code')
+      this.$error("Failed to copy code");
     },
   },
   computed: {
     FIELD_MAP() {
-      return FIELD_MAP
+      return FIELD_MAP;
     },
     DIFFICULTY_MAP() {
-      return DIFFICULTY_MAP
+      return DIFFICULTY_MAP;
     },
-    getDifficulty(){
-      let difficultyInfo = DIFFICULTY_MAP[this.problem.difficulty]
-      return difficultyInfo.value
-    }
-  }
-})
+    getDifficulty() {
+      let difficultyInfo = DIFFICULTY_MAP[this.problem.difficulty];
+      return difficultyInfo.value;
+    },
+  },
+});
 </script>
-
 
 <style scoped lang="less">
 .problemDetailFlexibleContainer {
@@ -226,7 +312,7 @@ export default defineComponent({
       border-bottom: 1px solid var(--border-color);
       padding-bottom: 14px;
       padding-left: 18px;
-      font-weight: bold
+      font-weight: bold;
     }
   }
 
@@ -244,7 +330,6 @@ export default defineComponent({
       }
     }
 
-
     p.content {
       font-size: 15px;
       font-weight: 600;
@@ -256,7 +341,8 @@ export default defineComponent({
       justify-content: space-around;
       align-items: stretch;
 
-      &-input, &-output {
+      &-input,
+      &-output {
         width: 100%;
         flex: 1 1 auto;
         display: flex;
