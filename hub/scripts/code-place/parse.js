@@ -1,7 +1,12 @@
 const FALLBACK_VALUE = "UNKNOWN";
 const CODE_PLACE_URL = "https://code.pusan.ac.kr";
 
-// Helper function returning value of an element safely
+/**
+ * Safely retrieves the text content of an element matching the selector
+ * @param {string} selector - CSS selector to find the element
+ * @param {string} [defaultValue=FALLBACK_VALUE] - Default value to return if element is not found
+ * @returns {string} Text content of the element or default value
+ */
 const getElementText = (selector, defaultValue = FALLBACK_VALUE) => {
   try {
     const element = document.querySelector(selector);
@@ -11,7 +16,12 @@ const getElementText = (selector, defaultValue = FALLBACK_VALUE) => {
   }
 };
 
-// Helper function returning values of multiple elements safely
+/**
+ * Safely retrieves the text content of multiple elements matching the selector
+ * @param {string} selector - CSS selector to find elements
+ * @param {Array} [defaultValue=[]] - Default value to return if no elements are found
+ * @returns {Array<string>} Array of text content from elements or default value
+ */
 const getElementsText = (selector, defaultValue = []) => {
   try {
     const elements = document.querySelectorAll(selector);
@@ -23,6 +33,11 @@ const getElementsText = (selector, defaultValue = []) => {
   }
 };
 
+/**
+ * Parses problem data from the webpage
+ * @async
+ * @returns {Promise<Object>} The parsed problem data processed by makeData function
+ */
 const parseData = async () => {
   // Parsing Problem Title
   const fullTitle = getElementText('[id^="problem-title"]');
@@ -68,6 +83,25 @@ const parseData = async () => {
   });
 };
 
+/**
+ * Processes parsed problem data and converts it into information needed for file creation
+ * @async
+ * @param {Object} options - Problem data object
+ * @param {string} options.problemId - Problem ID
+ * @param {string} options.title - Problem title
+ * @param {string} options.status - Submission status
+ * @param {string} options.difficulty - Problem difficulty
+ * @param {string} options.description - Problem description
+ * @param {string} options.inputDescription - Input description
+ * @param {string} options.outputDescription - Output description
+ * @param {Array<string>} options.inputSample - Array of example inputs
+ * @param {Array<string>} options.outputSample - Array of example outputs
+ * @param {string} options.timeLimit - Time limit
+ * @param {string} options.memoryLimit - Memory limit
+ * @param {string} options.hint - Problem hint
+ * @param {string} options.code - Submitted code
+ * @returns {Promise<Object>} Object containing information needed for file creation
+ */
 const makeData = async ({
   problemId,
   title,
@@ -88,7 +122,7 @@ const makeData = async ({
   const directory = `${problemId}/${title}`;
   const commitMessage = currentDate;
 
-  // 입출력 예제 포맷팅
+  // Formatting sample input & output
   const formatSamples = (inputs, outputs) => {
     let result = [];
 
@@ -110,8 +144,8 @@ const makeData = async ({
     return result.join("\n");
   };
 
-  // README 내용 구성
-  // TODO: 성능 요약 데이터 추출
+  // Create README.md
+  // TODO: Implement Performance Analytics
   const readme = [
     `# [${problemId}] ${title}`,
     `### 채점 결과`,
@@ -142,7 +176,7 @@ const makeData = async ({
     .filter(Boolean)
     .join("\n");
 
-  console.log(readme);
+  log(readme);
 
   return { problemId, commitMessage, directory, readme, code };
 };
