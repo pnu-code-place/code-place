@@ -1,5 +1,4 @@
 const FALLBACK_VALUE = "UNKNOWN";
-const CODE_PLACE_URL = "https://code.pusan.ac.kr";
 
 /**
  * Safely retrieves the text content of an element matching the selector
