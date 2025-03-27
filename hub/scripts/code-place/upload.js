@@ -1,3 +1,15 @@
+/**
+ * Uploads a single solved problem to Git repository
+ *
+ * @async
+ * @param {Object} coplData - Data of the solved problem
+ * @param {string} coplData.readme - README content in markdown format
+ * @param {string} coplData.directory - Directory path where the file will be uploaded
+ * @param {string} coplData.commitMessage - Message for the Git commit
+ * @param {Function} [cb] - Optional callback function to execute after upload
+ * @returns {Promise<void|Object>} - Result of the upload operation or void if token/hook is null
+ * @throws {Error} - If there's an issue during the upload process
+ */
 const uploadOneSolveProblemOnGit = async (coplData, cb) => {
   const token = await getToken();
   const hook = await getHook();
@@ -15,6 +27,19 @@ const uploadOneSolveProblemOnGit = async (coplData, cb) => {
   );
 };
 
+/**
+ * Performs the actual upload to GitHub repository
+ *
+ * @async
+ * @param {string} token - GitHub authentication token
+ * @param {string} hook - GitHub repository reference
+ * @param {string} readmeText - Content for the README.md file
+ * @param {string} directory - Directory path where the file will be uploaded
+ * @param {string} commitMessage - Message for the Git commit
+ * @param {Function} [cb] - Optional callback function to execute after upload
+ * @returns {Promise<void>} - Completes when upload is finished
+ * @throws {Error} - If there's an issue during any GitHub operation
+ */
 const upload = async (
   token,
   hook,
@@ -35,7 +60,6 @@ const upload = async (
   const treeSHA = await git.createTree(refSHA, [readme]);
   const commitSHA = await git.createCommit(commitMessage, treeSHA, refSHA);
   await git.updateHead(ref, commitSHA);
-
   updateObjectDatafromPath(
     stats.submission,
     `${hook}/${readme.path}`,
