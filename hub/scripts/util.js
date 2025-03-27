@@ -130,7 +130,7 @@ function unescapeHtml(text) {
     /&(?:amp|#38|lt|#60|gt|#62|apos|#39|quot|#34|nbsp|#160);/g,
     function (m) {
       return unescaped[m];
-    },
+    }
   );
 }
 
@@ -190,7 +190,7 @@ function b64EncodeUnicode(str) {
   return btoa(
     encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function (match, p1) {
       return String.fromCharCode(`0x${p1}`);
-    }),
+    })
   );
 }
 
@@ -206,7 +206,7 @@ function b64DecodeUnicode(b64str) {
       .map(function (c) {
         return `%${`00${c.charCodeAt(0).toString(16)}`.slice(-2)}`;
       })
-      .join(""),
+      .join("")
   );
 }
 
@@ -313,3 +313,22 @@ if (typeof __DEV__ !== "undefined") {
 function log(...args) {
   if (debug) console.log(...args);
 }
+
+/**
+ * Formats a Date object into a formatted date string
+ *
+ * @param {Date} date - The Date object to be formatted
+ * @returns {string} A formatted date string in Korean format (ex: 2025년 03월 27일 11:25:32)
+ * @example
+ * // Returns "2025년 03월 27일 11:25:32"
+ * getDateString(new Date('2025-03-27T11:25:32'));
+ */
+const getDateString = (date) => {
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, "0");
+  const day = date.getDate().toString().padStart(2, "0");
+  const hours = date.getHours().toString().padStart(2, "0");
+  const minutes = date.getMinutes().toString().padStart(2, "0");
+  const seconds = date.getSeconds().toString().padStart(2, "0");
+  return `${year}년 ${month}월 ${day}일 ${hours}:${minutes}:${seconds}`;
+};
