@@ -112,47 +112,50 @@ export const m = {
   Success: "Success",
   Password_reset_mail_sent: "Password reset mail has been sent to your email，",
   // FAQ.vue
-  Frequently_Asked_Questions: "Frequently Asked Questions",
-  Where_is_the_input_and_the_output: "Where is the input and the output?",
+  Frequently_Asked_Questions: "FAQ",
+  Where_is_the_input_and_the_output: "Input과 Output은 어떻게 작동하나요?",
   Where_is_the_input_and_the_output_answer_part_1:
-    "Your program shall read input from",
+    "여러분들이 작성한 코드는 일반적으로 ",
   Standard_Input: "Standard Input",
-  Where_is_the_input_and_the_output_answer_part_3: "and write output to",
+  Where_is_the_input_and_the_output_answer_part_3: "을 사용하고, 결과는",
   Standard_Output: "Standard Output",
-  Where_is_the_input_and_the_output_answer_part_5: "For example,you can use",
-  Where_is_the_input_and_the_output_answer_part_6: "in C or",
+  Where_is_the_input_and_the_output_answer_part_5: "을 통해 출력됩니다. 예를 들어 C에서는",
+  Where_is_the_input_and_the_output_answer_part_6: "을 사용하고, C++에서는",
   Where_is_the_input_and_the_output_answer_part_7:
-    "in C++ to read from stdin,and use",
-  Where_is_the_input_and_the_output_answer_part_8: "in C or",
+    "을 표준입력으로 사용하며, 표준출력을 위해서 C에서는",
+  Where_is_the_input_and_the_output_answer_part_8: "C++에서는",
   Where_is_the_input_and_the_output_answer_part_9:
-    "in C++ to write to stdout.  User programs are not allowed to read or write files, or you will get a",
+    "을 사용합니다. 일반적으로 파일입출력은 허용되지 않으며, 만약 파일을 읽으려 할 경우에는 다음과 같은 에러가 발생합니다:",
   What_is_the_meaning_of_submission_execution_time:
-    "What's the meaning of the submission execution time?",
+    "제출물의 실행시간은 어떻게 계산되나요??",
   What_is_the_meaning_of_submission_execution_time_answer:
-    "The onlinejudge might test your code multiple times with different input files. If your code gives the correct answer within the time limit for each input file, the execution time displayed is the max of the time spent for each test case. Otherwise, the execution time will have no sense.",
-  How_Can_I_use_CPP_Int64: "How can I use C++ Int64?",
-  How_Can_I_use_CPP_Int64_answer_part_1: "You should declare as",
-  How_Can_I_use_CPP_Int64_answer_part_2: "and use with",
-  or: "or",
-  using: "using",
-  How_Can_I_use_CPP_Int64_answer_part_3: "will result in",
-  Java_specifications: "Java specifications?",
+    "채점프로그램은 일반적으로 다양한 테스트케이스에 따라서 제출된 코드를 여러번 체점합니다. 만약 제출된 코드가 정해진 시간 내에 각 테스트케이스를 통과한다면, 가장 오래 걸린 테스트케이스의 실행시간을 표시합니다.",
+  How_Can_I_use_CPP_Int64: "C++에서 int64를 사용하려면 어떻게 해야하나요?",
+  How_Can_I_use_CPP_Int64_answer_part_1: "C++에서 int64를 사용하려면 변수를 ",
+  How_Can_I_use_CPP_Int64_answer_part_2: "으로 선언하세요. 혹은",
+  or: "에서는",
+  using: "을 통해 값을 입력받을 수 있습니다. 만약",
+  How_Can_I_use_CPP_Int64_answer_part_3: "을 사용할 경우 다음과 같은 에러를 발생시킬 수 있습니다:",
+  Java_specifications: "자바 사용시 주의점",
   Java_specifications_answer_part_1:
-    "All programs must begin in a static main method in a",
-  Java_specifications_answer_part_2: "class. Do not use public classes: even",
+    "모든 Java 코드는 정적 메서드 (static method)인 ",
+  Java_specifications_answer_part_2: "클래스에서 시작됩니다. 때문에 public 클래스인 ",
   Java_specifications_answer_part_3:
-    "must be non public to avoid compile error.Use buffered I/O to avoid time limit exceeded due to excesive flushing.",
-  About_presentation_error: "About presentation error?",
+    "은 컴파일 에러를 방지하기 위해 선언되어서는 안됩니다. 과도한 플러싱을 막기 위해서 Buffered I/O를 사용하세요.",
+  About_presentation_error: "출력형식 오류에 관하여",
   About_presentation_error_answer_part_1:
-    "There is no presentation error in this oj.The judger will trim the blacks and wraps in your ouput's",
-  last: "last",
+    "해당 프로그램은 Presentation Error가 없습니다. 채점프로그램은 제출된 코드의 출력 중 ",
+  last: "마지막 개행과 불필요한 공백",
   About_presentation_error_answer_part_2:
-    "line.  if it's still different with the correct output, the result will be",
-  How_to_report_bugs: "How to report bugs about this oj?",
+    "을 제거합니다. 그럼에도 불구하고, 정답과 차이가 있는 경우 다음과 같은 결과를 반환합니다:",
+  How_to_report_bugs: "버그를 제보하는 방법",
   How_to_report_bugs_answer_part_1:
-    "The onlinejudge is open source, you can open an issue in",
+    "버그를 발견하셨다면 ",
   How_to_report_bugs_answer_part_2:
-    "The details(like env, version..) about a bug is required, which will help us a lot to solve the bug. Certainly, we are very pleased to merge your pull requests.",
+    "를 통해 제보해주세요. 버그를 제보할 때는 버그 제보에 관한 상세한 내용을 포함해주세요.",
+
+  There_Are_No_Answer_Yet: "아직 답변이 등록되지 않았습니다.",
+
   // Cancel.vue
   Cancel: "Cancel",
   // ContestDetail.vue

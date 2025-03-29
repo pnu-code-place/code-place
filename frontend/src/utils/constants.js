@@ -408,3 +408,58 @@ export const LANGUAGE_INFO = [
     ]
   }
 ]
+
+export const TIER_SCORE= [
+  {
+    name: "sprout",
+    score: {
+      1: 0,
+    },
+    imageSrc: TierImageSrc.sprout
+  },
+  {
+    name: "Bronze",
+    score: {
+      3 : 100,
+      2 : 300,
+      1 : 500,
+    },
+    imageSrc: TierImageSrc.bronze1
+  },
+  {
+    name: "Silver",
+    score: {
+      3 : 700,
+      2 : 1100,
+      1 : 1500
+    },
+    imageSrc: TierImageSrc.silver1
+  },
+  {
+    name: "Gold",
+    score : {
+      3: 1900,
+      2: 3500,
+      1: 5100,
+    },
+    imageSrc: TierImageSrc.gold1
+  },
+  {
+    name: "Platinum",
+    score : {
+      3: 6700,
+      2: 13100,
+      1: 19500,
+    },
+    imageSrc: TierImageSrc.platinum1
+  },
+  {
+    name: "Diamond",
+    score: {
+      3: 25900,
+      2: 38700,
+      1: 51500,
+    },
+    imageSrc: TierImageSrc.diamond1
+  },
+]
