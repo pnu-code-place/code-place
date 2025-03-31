@@ -20,8 +20,10 @@ const uploadOneSolveProblemOnGit = async (coplData, cb) => {
   return upload(
     token,
     hook,
+    coplData.code,
     coplData.readme,
     coplData.directory,
+    coplData.sourceCodeFileName,
     coplData.commitMessage,
     cb
   );
@@ -43,8 +45,10 @@ const uploadOneSolveProblemOnGit = async (coplData, cb) => {
 const upload = async (
   token,
   hook,
+  code,
   readmeText,
   directory,
+  sourceCodeFileName,
   commitMessage,
   cb
 ) => {
@@ -56,10 +60,20 @@ const upload = async (
     stats.branches[hook] = default_branch;
   }
   const { refSHA, ref } = await git.getReference(default_branch);
+  const sourceCode = await git.createBlob(
+    code,
+    `${directory}/${sourceCodeFileName}`
+  );
   const readme = await git.createBlob(readmeText, `${directory}/README.md`);
-  const treeSHA = await git.createTree(refSHA, [readme]);
+  const treeSHA = await git.createTree(refSHA, [readme, sourceCode]);
   const commitSHA = await git.createCommit(commitMessage, treeSHA, refSHA);
   await git.updateHead(ref, commitSHA);
+
+  updateObjectDatafromPath(
+    stats.submission,
+    `${hook}/${sourceCode.path}`,
+    sourceCode.sha
+  );
   updateObjectDatafromPath(
     stats.submission,
     `${hook}/${readme.path}`,
