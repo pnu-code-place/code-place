@@ -52,6 +52,7 @@ const parseData = async () => {
   const status = getElementText(".submissionState");
   const difficulty = getElementText('[id^="problem-difficulty-"]');
   const description = getElementText('[id^="problem-description-"]');
+  const language = getElementText('[id^="code-language-"]');
   const inputDescription = getElementText('[id^="problem-input-desc-"]');
   const outputDescription = getElementText('[id^="problem-output-desc-"]');
   const inputSample = getElementsText('[id^="problem-sample-input-"]');
@@ -70,6 +71,7 @@ const parseData = async () => {
     title,
     status,
     difficulty,
+    language,
     description,
     inputDescription,
     outputDescription,
@@ -90,6 +92,7 @@ const parseData = async () => {
  * @param {string} options.title - Problem title
  * @param {string} options.status - Submission status
  * @param {string} options.difficulty - Problem difficulty
+ * @param {string} options.language - Code Language
  * @param {string} options.description - Problem description
  * @param {string} options.inputDescription - Input description
  * @param {string} options.outputDescription - Output description
@@ -106,6 +109,7 @@ const makeData = async ({
   title,
   status,
   difficulty,
+  language,
   description,
   inputDescription,
   outputDescription,
@@ -117,8 +121,10 @@ const makeData = async ({
   code,
 }) => {
   const currentDate = getDateString(new Date(Date.now()));
-  // Set Directory name as problem ID
   const directory = `${problemId}/${title}`;
+  const sourceCodeFileName = `${convertSingleCharToDoubleChar(title)}.${
+    LANGUAGES[language]
+  }`;
   const commitMessage = currentDate;
 
   // Formatting sample input & output
@@ -149,7 +155,7 @@ const makeData = async ({
     `# [${problemId}] ${title}`,
     `### 채점 결과`,
     `${status}`,
-    `## 제출 일자`,
+    `### 제출 일자`,
     `${currentDate}`,
     `### 성능 요약[추후 구현 예정]`,
     `- 메모리: N/A KB`,
@@ -167,8 +173,8 @@ const makeData = async ({
     outputDescription,
     `### 예제 입력/출력`,
     formatSamples(inputSample, outputSample),
-    hint !== FALLBACK_VALUE ? `## 힌트\n${hint}\n` : "",
-    `## 제약 사항`,
+    hint !== FALLBACK_VALUE ? `### 힌트\n${hint}\n` : "",
+    `### 제약 사항`,
     `- ${timeLimit}`,
     `- ${memoryLimit}`,
   ]
@@ -177,5 +183,12 @@ const makeData = async ({
 
   log(readme);
 
-  return { problemId, commitMessage, directory, readme, code };
+  return {
+    problemId,
+    commitMessage,
+    directory,
+    sourceCodeFileName,
+    readme,
+    code,
+  };
 };
