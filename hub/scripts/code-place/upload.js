@@ -3,8 +3,10 @@
  *
  * @async
  * @param {Object} coplData - Data of the solved problem
- * @param {string} coplData.readme - README content in markdown format
+ * @param {string} coplData.summary - Summary content in markdown format
  * @param {string} coplData.directory - Directory path where the file will be uploaded
+ * @param {string} coplData.summaryFileName - Summary file path
+ * @param {string} coplData.sourceCodeFileName - Source code file path
  * @param {string} coplData.commitMessage - Message for the Git commit
  * @param {Function} [cb] - Optional callback function to execute after upload
  * @returns {Promise<void|Object>} - Result of the upload operation or void if token/hook is null
@@ -21,8 +23,9 @@ const uploadOneSolveProblemOnGit = async (coplData, cb) => {
     token,
     hook,
     coplData.code,
-    coplData.readme,
+    coplData.summary,
     coplData.directory,
+    coplData.summaryFileName,
     coplData.sourceCodeFileName,
     coplData.commitMessage,
     cb
@@ -35,8 +38,10 @@ const uploadOneSolveProblemOnGit = async (coplData, cb) => {
  * @async
  * @param {string} token - GitHub authentication token
  * @param {string} hook - GitHub repository reference
- * @param {string} readmeText - Content for the README.md file
+ * @param {string} summaryText - Content for the summary file
  * @param {string} directory - Directory path where the file will be uploaded
+ * @param {string} summaryFileName - Summary file path
+ * @param {string} sourceCodeFileName - Source code file path
  * @param {string} commitMessage - Message for the Git commit
  * @param {Function} [cb] - Optional callback function to execute after upload
  * @returns {Promise<void>} - Completes when upload is finished
@@ -46,8 +51,9 @@ const upload = async (
   token,
   hook,
   code,
-  readmeText,
+  summaryText,
   directory,
+  summaryFileName,
   sourceCodeFileName,
   commitMessage,
   cb
@@ -60,12 +66,17 @@ const upload = async (
     stats.branches[hook] = default_branch;
   }
   const { refSHA, ref } = await git.getReference(default_branch);
+
   const sourceCode = await git.createBlob(
     code,
     `${directory}/${sourceCodeFileName}`
   );
-  const readme = await git.createBlob(readmeText, `${directory}/README.md`);
-  const treeSHA = await git.createTree(refSHA, [readme, sourceCode]);
+  const summary = await git.createBlob(
+    summaryText,
+    `${directory}/${summaryFileName}`
+  );
+
+  const treeSHA = await git.createTree(refSHA, [summary, sourceCode]);
   const commitSHA = await git.createCommit(commitMessage, treeSHA, refSHA);
   await git.updateHead(ref, commitSHA);
 
@@ -76,9 +87,10 @@ const upload = async (
   );
   updateObjectDatafromPath(
     stats.submission,
-    `${hook}/${readme.path}`,
-    readme.sha
+    `${hook}/${summary.path}`,
+    summary.sha
   );
+
   await saveStats(stats);
   if (typeof cb === "function") {
     cb(stats.branches, directory);

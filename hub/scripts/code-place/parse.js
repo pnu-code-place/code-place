@@ -121,10 +121,10 @@ const makeData = async ({
   code,
 }) => {
   const currentDate = getDateString(new Date(Date.now()));
-  const directory = `${problemId}/${title}`;
-  const sourceCodeFileName = `${convertSingleCharToDoubleChar(title)}.${
-    LANGUAGES[language]
-  }`;
+  const directory = `${SOLUTIONS_DIRECTORY}/[${problemId}] ${title}`;
+
+  const summaryFileName = `${SUMMARY_FILENAME}`;
+  const sourceCodeFileName = `${SOLUTION_FILENAME}.${LANGUAGE_EXTENSIONS[language]}`;
   const commitMessage = currentDate;
 
   // Formatting sample input & output
@@ -151,7 +151,7 @@ const makeData = async ({
 
   // Create README.md
   // TODO: Implement Performance Analytics
-  const readme = [
+  const summary = [
     `# [${problemId}] ${title}`,
     `### 채점 결과`,
     `${status}`,
@@ -181,14 +181,15 @@ const makeData = async ({
     .filter(Boolean)
     .join("\n");
 
-  log(readme);
+  log(summary);
 
   return {
     problemId,
     commitMessage,
     directory,
+    summaryFileName,
     sourceCodeFileName,
-    readme,
+    summary,
     code,
   };
 };
