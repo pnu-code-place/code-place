@@ -1,12 +1,41 @@
 // Set to true to enable console log
-const debug = false;
+const debug = true;
 
-let loader;
+// Interval for checking submission state after clicking the submit button (ms)
+const POLL_INTERVAL = 500; // 500ms
+// Max wait time for submit button to be attached on the DOM
+const SUBMIT_BTN_MAX_WAIT_TIME = 10000; // 10s
 
+// Interval ID for status checking
+let loader = null;
+let isLoaderRunning = false;
+
+/**
+ * Starts the submission state checking loader
+ * Periodically checks submission status and initiates upload when problem is solved
+ * @returns {void}
+ */
 const startLoader = () => {
+  if (isLoaderRunning) {
+    log("Loader is already running. Ignoring additional loader.");
+    return;
+  }
+
+  isLoaderRunning = true;
   loader = setInterval(async () => {
+    log("Checking Submission Status...");
+
+    if (!isProblemPage()) {
+      log("Out of problem page.");
+      stopLoader();
+      return;
+    }
+
     const enabled = await checkEnable();
-    if (!enabled) stopLoader();
+    if (!enabled) {
+      stopLoader();
+      return;
+    }
 
     const submissionStateElem = document.querySelector(".submissionState");
     if (submissionStateElem === null) return;
@@ -19,14 +48,25 @@ const startLoader = () => {
       const coplData = await parseData();
       await beginUpload(coplData);
     }
-  }, 2000);
+  }, POLL_INTERVAL);
 };
 
+/**
+ * Stops the submission state checking loader
+ * @returns {void}
+ */
 const stopLoader = () => {
+  log("Stopping Loader...");
+  isLoaderRunning = false;
   clearInterval(loader);
   loader = null;
 };
 
+/**
+ * Updates the extension version
+ * @async
+ * @returns {Promise<void>}
+ */
 const versionUpdate = async () => {
   log("Start Version Update");
   const stats = await updateLocalStorageStats();
@@ -36,30 +76,81 @@ const versionUpdate = async () => {
   log("stats updated.", stats);
 };
 
+/**
+ * Initiates the upload of problem solution data
+ * @async
+ * @param {Object} coplData
+ * @returns {Promise<void>}
+ */
 const beginUpload = async (coplData) => {
-  console.log("Begin Upload with data", coplData);
-  if (isNotEmpty(coplData)) {
-    const stats = await getStats();
-    const hook = await getHook();
-
-    const currentVersion = stats.version;
-    if (
-      isNull(currentVersion) ||
-      currentVersion !== getVersion() ||
-      isNull(await getStatsSHAfromPath(hook))
-    ) {
-      await versionUpdate();
-    }
-
-    await uploadOneSolveProblemOnGit(coplData, () => {
-      log("Uploaded complete!");
-    });
+  if (!isNotEmpty(coplData)) {
+    log("coplData is empty. Stop Uploading.");
+    return;
   }
+
+  log(`Begin Upload with ${coplData}`);
+
+  const stats = await getStats();
+  const hook = await getHook();
+
+  const currentVersion = stats.version;
+  if (
+    isNull(currentVersion) ||
+    currentVersion !== getVersion() ||
+    isNull(await getStatsSHAfromPath(hook))
+  ) {
+    await versionUpdate();
+  }
+
+  await uploadOneSolveProblemOnGit(coplData, () => {
+    log("Uploaded complete!");
+  });
 };
 
-const currentUrl = window.location.href;
+/**
+ * Sets up a mutation observer to watch for the submission button to appear in the DOM.
+ * Once the button is detected, attaches a click event listener that triggers the startLoader function.
+ * The observer automatically disconnects either when the button is found or after a maximum wait time.
+ * @returns {void}
+ */
+const setupSubmitListener = () => {
+  const startTime = Date.now();
 
-if (PROBLEM_URL_REGEX.test(currentUrl)) {
-  log("start loader...");
-  startLoader();
-}
+  const observer = new MutationObserver((mutations) => {
+    if (Date.now() - startTime > SUBMIT_BTN_MAX_WAIT_TIME) {
+      observer.disconnect();
+      log("Failed to find Submit Button.");
+      return;
+    }
+
+    const submitBtn = document.querySelector(".submissionBtnWrapper");
+    if (submitBtn) {
+      observer.disconnect();
+      submitBtn.addEventListener("click", startLoader);
+    }
+  });
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true,
+  });
+};
+
+/**
+ * Checks if the current page is a problem page
+ * @returns {boolean} - True if current page is a problem paage, false otherwise
+ */
+const isProblemPage = () => {
+  const currentUrl = window.location.href;
+  return PROBLEM_URL_REGEX.test(currentUrl);
+};
+
+/**
+ * Background worker sends message if current URL is Problem Detail Page
+ * On Problem Detail Page, add callback function on submit button's onclick event
+ */
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message && message.action === "url_changed_to_problem_detail_page") {
+    console.log("URL changed to:", message.url);
+    setupSubmitListener();
+  }
+});
