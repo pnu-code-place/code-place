@@ -1,9 +1,9 @@
 // Set to true to enable console log
-const debug = true;
+const debug = false;
 
 // Interval for checking submission state after clicking the submit button (ms)
 const POLL_INTERVAL = 500; // 500ms
-// Max wait time for submit button to be attached on the DOM
+// Max wait time for submit button to be attached on the DOM (ms)
 const SUBMIT_BTN_MAX_WAIT_TIME = 10000; // 10s
 
 // Interval ID for status checking
@@ -12,7 +12,7 @@ let isLoaderRunning = false;
 
 /**
  * Starts the submission state checking loader
- * Periodically checks submission status and initiates upload when problem is solved
+ * Periodically checks submission status and initiates upload when problem is accepted
  * @returns {void}
  */
 const startLoader = () => {

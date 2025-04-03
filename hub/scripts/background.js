@@ -1,6 +1,6 @@
 // TODO: This PROBLEM_URL_REGEX is defined in code_place/variables.js
 // We should figure it out how to import the variables from there
-const PROBLEM_URL_REGEX = /localhost:8080\/problem\/\d+/;
+const PROBLEM_URL_REGEX = /code.pusan.ac.kr\/problem\/\d+/;
 
 function handleMessage(request, sender, sendResponse) {
   if (request && request.closeWebPage === true && request.isSuccess === true) {
