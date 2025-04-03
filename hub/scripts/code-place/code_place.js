@@ -1,5 +1,5 @@
 // Set to true to enable console log
-const debug = true;
+const debug = false;
 
 // Interval for checking submission state after clicking the submit button (ms)
 const POLL_INTERVAL = 500; // 500ms
