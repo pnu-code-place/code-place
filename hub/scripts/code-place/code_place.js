@@ -1,10 +1,12 @@
 // Set to true to enable console log
-const debug = false;
+const debug = true;
 
 // Interval for checking submission state after clicking the submit button (ms)
 const POLL_INTERVAL = 500; // 500ms
 // Max wait time for submit button to be attached on the DOM (ms)
 const SUBMIT_BTN_MAX_WAIT_TIME = 10000; // 10s
+// Max wait time for getting ACCEPTED status after submission
+const SUBMIT_ACCEPTED_WAIT_TIME = 10000; // 10s
 
 // Interval ID for status checking
 let loader = null;
@@ -20,6 +22,13 @@ const startLoader = () => {
     log("Loader is already running. Ignoring additional loader.");
     return;
   }
+
+  const timer = setTimeout(() => {
+    log(
+      `Waited Accepted status for ${SUBMIT_ACCEPTED_WAIT_TIME}ms. Stopping loader.`
+    );
+    stopLoader();
+  }, SUBMIT_ACCEPTED_WAIT_TIME);
 
   isLoaderRunning = true;
   loader = setInterval(async () => {
@@ -150,7 +159,7 @@ const isProblemPage = () => {
  */
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message && message.action === "url_changed_to_problem_detail_page") {
-    console.log("URL changed to:", message.url);
+    log("URL changed to:", message.url);
     setupSubmitListener();
   }
 });
