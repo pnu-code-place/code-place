@@ -111,6 +111,16 @@ const beginUpload = async (coplData) => {
     await versionUpdate();
   }
 
+  const cachedSHA = await getStatsSHAfromPath(
+    `${hook}/${coplData.directory}/${coplData.sourceCodeFileName}`
+  );
+  const calcSHA = calculateBlobSHA(coplData.code);
+  log("cachedSHA: ", cachedSHA, "caclSHA:", calcSHA);
+  if (cachedSHA === calcSHA) {
+    log("This source code is already uploaded. Skipping upload.");
+    return;
+  }
+
   await uploadOneSolveProblemOnGit(coplData, () => {
     log("Uploaded complete!");
   });
