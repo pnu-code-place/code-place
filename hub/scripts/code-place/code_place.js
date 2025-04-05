@@ -10,7 +10,7 @@ const SUBMIT_ACCEPTED_WAIT_TIME = 10000; // 10s
 
 // Interval ID for status checking
 let loader = null;
-let isLoaderRunning = false;
+let timer = null;
 
 /**
  * Starts the submission state checking loader
@@ -18,19 +18,18 @@ let isLoaderRunning = false;
  * @returns {void}
  */
 const startLoader = () => {
-  if (isLoaderRunning) {
+  if (loader) {
     log("Loader is already running. Ignoring additional loader.");
     return;
   }
 
-  const timer = setTimeout(() => {
+  timer = setTimeout(() => {
     log(
       `Waited Accepted status for ${SUBMIT_ACCEPTED_WAIT_TIME}ms. Stopping loader.`
     );
     stopLoader();
   }, SUBMIT_ACCEPTED_WAIT_TIME);
 
-  isLoaderRunning = true;
   loader = setInterval(async () => {
     log("Checking Submission Status...");
 
@@ -61,14 +60,21 @@ const startLoader = () => {
 };
 
 /**
- * Stops the submission state checking loader
+ * Clears the interval and timeout for checking submission status
  * @returns {void}
  */
 const stopLoader = () => {
   log("Stopping Loader...");
-  isLoaderRunning = false;
-  clearInterval(loader);
-  loader = null;
+
+  if (loader) {
+    clearInterval(loader);
+    loader = null;
+  }
+
+  if (timer) {
+    clearTimeout(timer);
+    timer = null;
+  }
 };
 
 /**
