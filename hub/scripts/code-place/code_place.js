@@ -115,7 +115,7 @@ const beginUpload = async (coplData) => {
     `${hook}/${coplData.directory}/${coplData.sourceCodeFileName}`
   );
   const calcSHA = calculateBlobSHA(coplData.code);
-  log("cachedSHA: ", cachedSHA, "caclSHA:", calcSHA);
+  log("cachedSHA: ", cachedSHA, "calcSHA:", calcSHA);
   if (cachedSHA === calcSHA) {
     log("This source code is already uploaded. Skipping upload.");
     return;
