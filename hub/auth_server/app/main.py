@@ -75,5 +75,5 @@ async def issue_access_token(request: TokenRequest) -> TokenResponse:
     except HTTPException:
         # Re-raise HTTP exceptions without modification
         raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
+    except Exception:
+        raise HTTPException(status_code=500, detail=f"Internal Server Error")

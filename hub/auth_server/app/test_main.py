@@ -45,7 +45,6 @@ def test_github_api_failure(client):
     with mock.patch("httpx.AsyncClient", return_value=mock_client):
         response = client.post("/token/issue", json={"code": "invalid_code"})
 
-    print(response.json())
     assert response.status_code == 400, "Expected HTTP 400 Bad Request"
     assert "detail" in response.json(), "Expected error details in response"
     assert response.json()["detail"] == "Failed to get access token: Invalid code", "Expected specific error message"
