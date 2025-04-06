@@ -4,6 +4,7 @@ GitHub OAuth authentication server.
 This module provides endpoints for retrieving GitHub personal access tokens
 through the OAuth flow.
 """
+import json
 from typing import Dict, Any
 
 from fastapi import FastAPI, HTTPException
@@ -47,7 +48,11 @@ async def exchange_code_for_token(code: str) -> Dict[str, Any]:
                                          "code": code,
                                      })
 
-        data = response.json()
+        try:
+            data = response.json()
+        except json.JSONDecodeError:
+            raise HTTPException(status_code=500, detail="Failed to decode response from GitHub")
+
         if response.status_code != 200:
             error_message = data.get('error_description', 'Unknown error')
             raise HTTPException(status_code=400, detail=f"Failed to get access token: {error_message}")
