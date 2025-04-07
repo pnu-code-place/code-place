@@ -8,12 +8,21 @@ import json
 from typing import Dict, Any
 
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import httpx
 
 from .config import settings
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://github.com"],
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type", "Accept", "Authorization"],
+)
 
 
 class TokenRequest(BaseModel):
@@ -60,7 +69,7 @@ async def exchange_code_for_token(code: str) -> Dict[str, Any]:
         return data
 
 
-@app.post("/token/issue", response_model=TokenResponse)
+@app.post("/api/token/issue", response_model=TokenResponse)
 async def issue_access_token(request: TokenRequest) -> TokenResponse:
     """
     Issue a personal access token (PAT) for GitHub.
