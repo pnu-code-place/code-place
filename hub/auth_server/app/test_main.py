@@ -11,9 +11,9 @@ def client():
 
 def test_no_code(client):
     """
-    Test the /token/issue endpoint without providing a code.
+    Test the /api/token/issue endpoint without providing a code.
     """
-    response = client.post("/token/issue")
+    response = client.post("/api/token/issue")
     assert response.status_code == 422, "Expected HTTP 422 Unprocessable Entity"
     assert "detail" in response.json(), "Expected error details in response"
 
@@ -27,7 +27,7 @@ def test_successful_token_issue(client):
     mock_client.__aenter__.return_value.post.return_value = mock_response
 
     with mock.patch("httpx.AsyncClient", return_value=mock_client):
-        response = client.post("/token/issue", json={"code": "mock_code"})
+        response = client.post("/api/token/issue", json={"code": "mock_code"})
 
     assert response.status_code == 200, "Expected HTTP 200 OK"
     assert "access_token" in response.json(), "Expected access_token in response"
@@ -43,7 +43,7 @@ def test_github_api_failure(client):
     mock_client.__aenter__.return_value.post.return_value = mock_response
 
     with mock.patch("httpx.AsyncClient", return_value=mock_client):
-        response = client.post("/token/issue", json={"code": "invalid_code"})
+        response = client.post("/api/token/issue", json={"code": "invalid_code"})
 
     assert response.status_code == 400, "Expected HTTP 400 Bad Request"
     assert "detail" in response.json(), "Expected error details in response"
@@ -55,7 +55,7 @@ def test_internal_server_error(client):
     mock_client.__aenter__.return_value.post.side_effect = Exception("Internal Server Error")
 
     with mock.patch("httpx.AsyncClient", return_value=mock_client):
-        response = client.post("/token/issue", json={"code": "mock_code"})
+        response = client.post("/api/token/issue", json={"code": "mock_code"})
 
     assert response.status_code == 500, "Expected HTTP 500 Internal Server Error"
     assert "detail" in response.json(), "Expected error details in response"
