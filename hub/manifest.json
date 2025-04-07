@@ -20,7 +20,8 @@
     "unlimitedStorage",
     "storage",
     "declarativeNetRequest",
-    "declarativeNetRequestWithHostAccess"
+    "declarativeNetRequestWithHostAccess",
+    "tabs"
   ],
   "host_permissions": ["https://github.com/"],
   "web_accessible_resources": [
@@ -40,6 +41,22 @@
     {
       "matches": ["https://github.com/*"],
       "js": ["scripts/util.js", "scripts/github.js", "scripts/authorize.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://code.pusan.ac.kr/*"],
+      "js": [
+        "library/sha1.min.js",
+        "scripts/util.js",
+        "scripts/github.js",
+        "scripts/authorize.js",
+        "scripts/storage.js",
+        "scripts/enable.js",
+        "scripts/code-place/variables.js",
+        "scripts/code-place/parse.js",
+        "scripts/code-place/upload.js",
+        "scripts/code-place/code_place.js"
+      ],
       "run_at": "document_idle"
     }
   ]
