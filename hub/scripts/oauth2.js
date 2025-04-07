@@ -5,11 +5,10 @@ const oAuth2 = {
    */
   init() {
     this.KEY = "CodePlaceHub_token";
-    this.ACCESS_TOKEN_URL = "https://github.com/login/oauth/access_token";
+    // TODO: Change ACCESS_TOKEN_URL to the correct one. This is for testing.
+    this.ACCESS_TOKEN_URL = "http://localhost:8081/api/token/issue";
     this.AUTHORIZATION_URL = "https://github.com/login/oauth/authorize";
-    // TODO: Store CLIENT_ID and CLIENT_SECRET with more secured way.
-    this.CLIENT_ID = "";
-    this.CLIENT_SECRET = "";
+    this.CLIENT_ID = "Ov23liGMeecEJnH8nRfD"; // Code Place Hub OAuth App ID
     this.REDIRECT_URL = "https://github.com/"; // for example, https://github.com
     this.SCOPES = ["repo"];
   },

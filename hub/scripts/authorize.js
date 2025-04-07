@@ -9,11 +9,9 @@ const localAuth = {
    */
   init() {
     this.KEY = "CodePlaceHub_token";
-    this.ACCESS_TOKEN_URL = "https://github.com/login/oauth/access_token";
+    // TODO: Change ACCESS_TOKEN_URL to the correct one. This is for testing.
+    this.ACCESS_TOKEN_URL = "http://localhost:8081/api/token/issue";
     this.AUTHORIZATION_URL = "https://github.com/login/oauth/authorize";
-    // TODO: Store CLIENT SECRET with safer way.
-    this.CLIENT_ID = "";
-    this.CLIENT_SECRET = "";
     this.REDIRECT_URL = "https://github.com/"; // for example, https://github.com
     this.SCOPES = ["repo"];
   },
@@ -42,28 +40,31 @@ const localAuth = {
    *
    * @param code The access code returned by provider.
    */
-  requestToken(code) {
-    const that = this;
-    const data = new FormData();
-    data.append("client_id", this.CLIENT_ID);
-    data.append("client_secret", this.CLIENT_SECRET);
-    data.append("code", code);
+  async requestToken(code) {
+    try {
+      const response = await fetch(this.ACCESS_TOKEN_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({ code }),
+      });
 
-    const xhr = new XMLHttpRequest();
-    xhr.addEventListener("readystatechange", function () {
-      if (xhr.readyState === 4) {
-        if (xhr.status === 200) {
-          that.finish(xhr.responseText.match(/access_token=([^&]*)/)[1]);
-        } else {
-          chrome.runtime.sendMessage({
-            closeWebPage: true,
-            isSuccess: false,
-          });
-        }
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Failed to get token:", errorData);
+        chrome.runtime.sendMessage({
+          closeWebPage: true,
+          isSuccess: false,
+        });
       }
-    });
-    xhr.open("POST", this.ACCESS_TOKEN_URL, true);
-    xhr.send(data);
+
+      const data = await response.json();
+      this.finish(data.access_token);
+    } catch (error) {
+      console.error("Error fetching token:", error);
+    }
   },
 
   /**
