@@ -40,7 +40,6 @@ function handleMessage(request, sender, sendResponse) {
       chrome.tabs.remove(tab.id);
     });
   }
-  return true;
 }
 
 chrome.runtime.onMessage.addListener(handleMessage);

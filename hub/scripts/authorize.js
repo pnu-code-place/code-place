@@ -78,9 +78,10 @@ const localAuth = {
     const AUTHENTICATION_URL = "https://api.github.com/user";
 
     const xhr = new XMLHttpRequest();
-    xhr.addEventListener("readystatechange", function () {
+    xhr.addEventListener("readystatechange", () => {
       if (xhr.readyState === 4) {
         if (xhr.status === 200) {
+          console.log("Successfully authenticated.");
           const username = JSON.parse(xhr.responseText).login;
           chrome.runtime.sendMessage({
             closeWebPage: true,
