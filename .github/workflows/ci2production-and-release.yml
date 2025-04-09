@@ -172,8 +172,8 @@ jobs:
           file: ./hub/auth_server/Dockerfile
           push: true
           tags: |
-            ${{ secrets.HARBOR_REGISTRY }}/code-place-prod/hub-auth:${{ github.sha }}-prod
-            ${{ secrets.HARBOR_REGISTRY }}/code-place-prod/hub-auth:latest
+            ${{ secrets.HARBOR_REGISTRY }}/code-place-hub/auth-server:${{ github.sha }}
+            ${{ secrets.HARBOR_REGISTRY }}/code-place-hub/auth-server:latest
 
   create-release:
     needs: [check-release-branch, ci-frontend, ci-backend, ci-scheduler]
