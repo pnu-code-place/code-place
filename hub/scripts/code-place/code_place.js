@@ -53,6 +53,7 @@ const startLoader = () => {
     if (submissionState === RESULT_CATEGORY.RESULT_ACCEPTED) {
       stopLoader();
       log("Accepted problem detected, Starting upload...");
+      showToast("업로드 중이에요, 잠시만 기다려 주세요...");
       const coplData = await parseData();
       await beginUpload(coplData);
     }
@@ -124,11 +125,13 @@ const beginUpload = async (coplData) => {
   log("cachedSHA: ", cachedSHA, "calcSHA:", calcSHA);
   if (cachedSHA === calcSHA) {
     log("This source code is already uploaded. Skipping upload.");
+    showToast("이미 제출된 코드에요.");
     return;
   }
 
   await uploadOneSolveProblemOnGit(coplData, () => {
     log("Uploaded complete!");
+    showToast("업로드를 완료했어요.");
   });
 };
 
