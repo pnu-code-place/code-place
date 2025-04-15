@@ -33,7 +33,8 @@
         "popup.html",
         "popup.js",
         "welcome.html",
-        "welcome.js"
+        "welcome.js",
+        "assets/thumbnail.png"
       ]
     }
   ],
@@ -53,6 +54,7 @@
         "scripts/storage.js",
         "scripts/enable.js",
         "scripts/code-place/variables.js",
+        "scripts/code-place/toast_message.js",
         "scripts/code-place/parse.js",
         "scripts/code-place/upload.js",
         "scripts/code-place/code_place.js"
