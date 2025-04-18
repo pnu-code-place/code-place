@@ -1,6 +1,16 @@
 /* global oAuth2 */
 /* eslint no-undef: "error" */
 
+// Setting up language using i18n
+$(document).ready(() => {
+  $("#main_caption").text(chrome.i18n.getMessage("main_caption"));
+  $("#github_auth_request").text(chrome.i18n.getMessage("github_auth_request"));
+  $("#github_auth_button_text").text(
+    chrome.i18n.getMessage("github_auth_button_text")
+  );
+  $("#connected_repo_info").text(chrome.i18n.getMessage("connected_repo_info"));
+});
+
 let action = false;
 
 $("#authenticate").on("click", () => {
@@ -12,11 +22,11 @@ $("#authenticate").on("click", () => {
 /* Get URL for welcome page */
 $("#welcome_URL").attr(
   "href",
-  `chrome-extension://${chrome.runtime.id}/welcome.html`,
+  `chrome-extension://${chrome.runtime.id}/welcome.html`
 );
 $("#hook_URL").attr(
   "href",
-  `chrome-extension://${chrome.runtime.id}/welcome.html`,
+  `chrome-extension://${chrome.runtime.id}/welcome.html`
 );
 
 chrome.storage.local.get("CodePlaceHub_token", (data) => {
@@ -43,10 +53,10 @@ chrome.storage.local.get("CodePlaceHub_token", (data) => {
                   const CodePlaceHubHook = data3.CodePlaceHub_hook;
                   if (CodePlaceHubHook) {
                     $("#repo_url").html(
-                      `Your Repo: <a target="blank" style="color: cadetblue !important;" href="https://github.com/${CodePlaceHubHook}">${CodePlaceHubHook}</a>`,
+                      `<a target="_blank" style="color: cadetblue !important;" href="https://github.com/${CodePlaceHubHook}">${CodePlaceHubHook}</a>`
                     );
                   }
-                },
+                }
               );
             } else {
               $("#hook_mode").show();
@@ -74,25 +84,25 @@ chrome.storage.local.get("CodePlaceHub_token", (data) => {
  */
 chrome.storage.local.get("bjhEnable", (data4) => {
   if (data4.bjhEnable === undefined) {
-    $("#onffbox").prop("checked", true);
+    $("#onoffbox").prop("checked", true);
     chrome.storage.local.set(
-      { bjhEnable: $("#onffbox").is(":checked") },
-      () => {},
+      { bjhEnable: $("#onoffbox").is(":checked") },
+      () => {}
     );
   } else {
-    $("#onffbox").prop("checked", data4.bjhEnable);
+    $("#onoffbox").prop("checked", data4.bjhEnable);
     chrome.storage.local.set(
-      { bjhEnable: $("#onffbox").is(":checked") },
-      () => {},
+      { bjhEnable: $("#onoffbox").is(":checked") },
+      () => {}
     );
   }
 });
 /*
   활성화 버튼 클릭 시 storage에 활성 여부 데이터를 저장.
  */
-$("#onffbox").on("click", () => {
+$("#onoffbox").on("click", () => {
   chrome.storage.local.set(
-    { bjhEnable: $("#onffbox").is(":checked") },
-    () => {},
+    { bjhEnable: $("#onoffbox").is(":checked") },
+    () => {}
   );
 });
