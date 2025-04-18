@@ -53,7 +53,7 @@ chrome.storage.local.get("CodePlaceHub_token", (data) => {
                   const CodePlaceHubHook = data3.CodePlaceHub_hook;
                   if (CodePlaceHubHook) {
                     $("#repo_url").html(
-                      `<a target="blank" style="color: cadetblue !important;" href="https://github.com/${CodePlaceHubHook}">${CodePlaceHubHook}</a>`
+                      `<a target="_blank" style="color: cadetblue !important;" href="https://github.com/${CodePlaceHubHook}">${CodePlaceHubHook}</a>`
                     );
                   }
                 }
