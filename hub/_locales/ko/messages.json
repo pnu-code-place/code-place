@@ -1,0 +1,17 @@
+{
+  "main_caption": {
+    "message": "Code Place를 Github와 연동하세요."
+  },
+
+  "github_auth_request": {
+    "message": "Code Place Hub를 사용하기 위해 Github 인증을 진행해주세요."
+  },
+
+  "github_auth_button_text": {
+    "message": "인증하기"
+  },
+
+  "connected_repo_info": {
+    "message": "현재 연결된 레포지토리"
+  }
+}
