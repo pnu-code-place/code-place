@@ -1,6 +1,8 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
   <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="css/welcome.css" />
     <script src="/library/jquery-3.3.1.min.js"></script>
 
@@ -12,43 +14,42 @@
   </head>
 
   <body>
-    <div class="ui grid container">
-      <div class="sixteen wide center aligned column">
-        <br />
-        <img src="assets/thumbnail.png" />
-        <p class="caption" style="font-size: 5em; font-weight: 500">
-          Code Place Hub
-        </p>
-        <p class="caption">
-          Automatically sync your code from CodePlace to GitHub
-        </p>
-        <br /><br /><br /><br /><br /><br /><br /><br />
-        <p hidden id="error"></p>
-        <p hidden id="success"></p>
-        <p hidden id="unlink">Linked the wrong repo? <a>Unlink</a>.</p>
+    <div class="container">
+      <header>
+        <img src="assets/code-place-logo.svg" class="logo" />
+        <h1 class="title">Code Place <span class="accent-text">Hub</span></h1>
+        <p class="caption" id="main_caption"></p>
+      </header>
+
+      <div class="divider">
+        <div class="divider-line"></div>
       </div>
 
-      <!-- Create Hook -->
-      <div style="display: none" id="hook_mode" class="ui grid container">
-        <div class="six wide column">
-          <p class="caption ui large center aligned">
-            To get started with CodePlaceHub
-          </p>
-        </div>
-        <div class="four wide left aligned column">
-          <div class="ui form">
-            <div class="field">
-              <select id="type">
-                <option value="">Pick an Option</option>
-                <option value="new">Create a new Private Repository</option>
-                <option value="link">Link an Existing Repository</option>
-              </select>
-            </div>
-          </div>
+      <p hidden id="error"></p>
+      <p hidden id="success"></p>
+      <p hidden id="unlink">Linked the wrong repo? <a>Unlink</a>.</p>
+
+      <div id="hook_mode" class="ui grid container">
+        <div class="sixteen wide column">
+          <p class="caption" id="connect_repo_info"></p>
         </div>
 
-        <div class="six wide column">
-          <div class="ui form">
+        <div class="ten wide centered column">
+          <div class="ui form form-container">
+            <div class="field">
+              <select id="type" class="ui dropdown">
+                <option value="" id="repo_option_default">
+                  Pick an Option
+                </option>
+                <option value="new" id="repo_option_new">
+                  Create a new Private Repository
+                </option>
+                <option value="link" id="repo_option_link">
+                  Link an Existing Repository
+                </option>
+              </select>
+            </div>
+
             <div class="field">
               <input
                 autocomplete="off"
@@ -57,14 +58,13 @@
                 type="text"
               />
             </div>
-          </div>
-        </div>
 
-        <div class="sixteen wide right aligned column">
-          <br />
-          <button id="hook_button" disabled class="ui button blue">
-            Get Started
-          </button>
+            <div class="field button-container">
+              <button id="hook_button" disabled class="ui button blue">
+                Get Started
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
