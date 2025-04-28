@@ -146,11 +146,6 @@ button {
   margin-right: 4px;
 }
 
-/* Controls Section */
-.controls-section {
-  margin: 20px 0;
-}
-
 .toggle-container {
   display: flex;
   justify-content: center;
