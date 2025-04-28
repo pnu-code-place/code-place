@@ -1,8 +1,12 @@
 <template>
   <div>
     <Form ref="formRegister" :model="formRegister" :rules="ruleRegister">
-      <div class="inputName">
-        부산대학교 웹메일
+      <div class="inputNameWithDescription">
+        <span class="inputName">부산대학교 웹메일</span>
+        <div>
+          <Icon type="ios-information" size="13" color="#7a7a7a"></Icon>
+          <span>부산대학교 웹메일이 없으신가요? <a href="https://zm911.mailplug.com/member/join" class="webMailSignUpLink">가입하기</a></span>
+        </div>
       </div>
       <FormItem prop="pnuWebMail">
         <div class="email-form">
@@ -465,6 +469,15 @@ button:disabled {
   }
   100% {
     opacity: 1;
+  }
+}
+
+.webMailSignUpLink {
+  color: var(--point-color);
+  text-decoration: none;
+
+  &:hover {
+    color: lighten(#32306b, 10%);
   }
 }
 
