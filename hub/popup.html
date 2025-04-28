@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="css/popup.css" />
+    <script src="/library/jquery-3.3.1.min.js"></script>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.css"
+      rel="stylesheet"
+    />
+    <script src="/library/semantic.min.js"></script>
+  </head>
+
+  <body>
+    <div class="container">
+      <header class="header">
+        <h3 class="title">Code Place <span class="accent-text">Hub</span></h3>
+        <p id="main_caption" class="caption"></p>
+      </header>
+
+      <div class="divider">
+        <div class="divider-line"></div>
+        <img src="./assets/code-place-logo.svg" class="divider-icon" />
+        <div class="divider-line"></div>
+      </div>
+
+      <section id="auth_mode" class="section" hidden>
+        <p id="github_auth_request"></p>
+        <button id="authenticate" class="github-button">
+          <i class="icon github"></i>
+          <span id="github_auth_button_text"></span>
+        </button>
+      </section>
+
+      <section id="commit_mode" class="section" hidden>
+        <div class="repo-info">
+          <p id="connected_repo_info"></p>
+          <p id="repo_url" class="repo-url"></p>
+        </div>
+      </section>
+
+      <section class="section">
+        <!-- ON/OFF Button -->
+        <div class="toggle-container">
+          <input type="checkbox" id="onoffbox" />
+          <label for="onoffbox" id="onoffmain">
+            <span id="onoffball"></span>
+          </label>
+        </div>
+      </section>
+
+      <!-- Socials -->
+      <footer class="footer">
+        <div id="socials" class="social-icons">
+          <a
+            title="CodePlaceHub GitHub"
+            href="https://github.com/pnu-code-place/code-place"
+            target="_blank"
+          >
+            <i class="ui black github icon"></i>
+          </a>
+          <a title="Email" href="mailto:boksam1017@gmail.com" target="_blank">
+            <i class="ui red envelope icon"></i>
+          </a>
+        </div>
+      </footer>
+    </div>
+
+    <script src="scripts/oauth2.js"></script>
+    <script type="text/javascript" src="popup.js"></script>
+  </body>
+</html>

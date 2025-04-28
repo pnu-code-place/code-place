@@ -1,0 +1,37 @@
+{
+  "main_caption": {
+    "message": "Sync Code Place with your Github."
+  },
+
+  "github_auth_request": {
+    "message": "Authenticate Github to use Code Place Hub."
+  },
+
+  "github_auth_button_text": {
+    "message": "Authenticate"
+  },
+
+  "connected_repo_info": {
+    "message": "Currently connected repository"
+  },
+  
+  "connect_repo_info": {
+    "message": "Connect your Github repository to Code Place Hub."
+  },
+
+  "repo_option_default": {
+    "message": "Pick an option"
+  },
+
+  "repo_option_new": {
+    "message": "Create a new private repository"
+  },
+
+  "repo_option_link": {
+    "message": "Link to an existing repository"
+  },
+  
+  "repo_link_button_text": {
+    "message": "Get Started"
+  }
+}

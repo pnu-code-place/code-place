@@ -1,29 +1,41 @@
 <template>
   <div class="container-header">
     <div>
-      <i class="fas fa-code"/>
+      <i class="fas fa-code" />
       <span>코드 작성</span>
     </div>
-    <div style="display: flex; justify-content: space-between; align-items: center">
+    <div
+      style="display: flex; justify-content: space-between; align-items: center"
+    >
       <Tooltip :content="'언어 선택'" placement="bottom">
         <Dropdown @on-click="changeLanguage" trigger="click" class="dropdown">
-                          <span style="font-size: 13px; padding-right: 3px; font-weight: 450">
-                            {{ language }}
-                          </span>
+          <span
+            style="font-size: 13px; padding-right: 3px; font-weight: 450"
+            :id="`code-language-${problem._id}`"
+          >
+            {{ language }}
+          </span>
           <i class="fas fa-chevron-down"></i>
           <Dropdown-menu slot="list">
-            <Dropdown-item :name="item" v-for="item in problem.languages" :key="item">{{
-                item
-              }}
+            <Dropdown-item
+              :name="item"
+              v-for="item in problem.languages"
+              :key="item"
+              >{{ item }}
             </Dropdown-item>
           </Dropdown-menu>
         </Dropdown>
       </Tooltip>
-      <SubmissionBtn :isSubmitting="isSubmitting" @create-submission="$emit('create-submission')"/>
-      <SubmissionStatus :statusVisible="statusVisible"
-                        :contestID="contestID"
-                        :result="result"
-                        :submissionId="submissionId"/>
+      <SubmissionBtn
+        :isSubmitting="isSubmitting"
+        @create-submission="$emit('create-submission')"
+      />
+      <SubmissionStatus
+        :statusVisible="statusVisible"
+        :contestID="contestID"
+        :result="result"
+        :submissionId="submissionId"
+      />
       <!--      <Tooltip :content="'글자 크기 키우기'" placement="bottom-end">-->
       <!--        <CustomIconBtn @click="changeFontSize(fontSize+1)" :wrapperSize="30" iconClass="fas fa-plus"/>-->
       <!--      </Tooltip>-->
@@ -41,7 +53,7 @@
 </template>
 
 <script>
-import {defineComponent} from "vue";
+import { defineComponent } from "vue";
 import FieldCategoryBox from "../../../../components/FieldCategoryBox.vue";
 import CustomIconBtn from "../../../../components/buttons/CustomIconBtn.vue";
 import SubmissionStatus from "./SubmissionStatus.vue";
@@ -52,35 +64,40 @@ export default defineComponent({
     problem: Object,
     language: {
       type: String,
-      default: 'C++'
+      default: "C++",
     },
     statusVisible: Boolean,
     contestID: String,
     result: Object,
     submissionId: String,
-    isSubmitting: Boolean
+    isSubmitting: Boolean,
   },
-  components: {SubmissionBtn, SubmissionStatus, CustomIconBtn, FieldCategoryBox},
+  components: {
+    SubmissionBtn,
+    SubmissionStatus,
+    CustomIconBtn,
+    FieldCategoryBox,
+  },
   methods: {
     changeLanguage(newLang) {
-      this.$emit('change-language', newLang)
+      this.$emit("change-language", newLang);
     },
     onResetToTemplate() {
       this.$Modal.confirm({
-        content: this.$i18n.t('m.Are_you_sure_you_want_to_reset_your_code'),
+        content: this.$i18n.t("m.Are_you_sure_you_want_to_reset_your_code"),
         onOk: () => {
-          let template = this.problem.template
+          let template = this.problem.template;
           if (template && template[this.language]) {
-            this.code = template[this.language]
+            this.code = template[this.language];
           } else {
-            this.code = ''
+            this.code = "";
           }
-          this.$refs.myCm.resetCM()
-        }
-      })
+          this.$refs.myCm.resetCM();
+        },
+      });
     },
-  }
-})
+  },
+});
 </script>
 
 <style scoped lang="less">

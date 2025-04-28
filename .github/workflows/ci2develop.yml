@@ -16,6 +16,7 @@ jobs:
       backend: ${{ steps.filter.outputs.backend }}
       scheduler: ${{ steps.filter.outputs.scheduler }}
       frontend: ${{ steps.filter.outputs.frontend }}
+      hub-auth: ${{ steps.filter.outputs.hub-auth }}
     steps:
       - uses: actions/checkout@v2
       - uses: dorny/paths-filter@v2
@@ -28,6 +29,8 @@ jobs:
               - 'scheduler/**'
             frontend:
               - 'frontend/**'
+            hub-auth:
+              - 'hub/auth_server/**'
 
   ci-backend-dev:
     needs: [detect-changes-by-component]

@@ -1,0 +1,37 @@
+{
+  "main_caption": {
+    "message": "Code Place를 Github와 연동하세요."
+  },
+
+  "github_auth_request": {
+    "message": "Code Place Hub를 사용하기 위해 Github 인증을 진행해주세요."
+  },
+
+  "github_auth_button_text": {
+    "message": "인증하기"
+  },
+
+  "connected_repo_info": {
+    "message": "현재 연결된 레포지토리"
+  },
+
+  "connect_repo_info": {
+    "message": "Github 레포지토리를 Code Place Hub에 연결하세요."
+  },
+
+  "repo_option_default": {
+    "message": "옵션 선택"
+  },
+
+  "repo_option_new": {
+    "message": "새로운 비공개 레포지토리 생성"
+  },
+
+  "repo_option_link": {
+    "message": "기존 레포지토리 연결"
+  },
+
+  "repo_link_button_text": {
+    "message": "시작하기"
+  }
+}
