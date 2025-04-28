@@ -52,7 +52,6 @@ const UI = {
       RepoManager.unlinkRepo();
       $("#unlink").hide();
       this.showSuccess(`
-        <i class="huge blue check circle icon" style="margin-bottom: 0.5em"></i>
         <p>Successfully unlinked your current git repo. Please create/link a new hook.</p>
       `);
     });
@@ -118,30 +117,22 @@ const UI = {
   },
 
   /**
-   * Show commit mode UI elements
-   */
-  showCommitMode() {
-    this.hideHookMode();
-    $("#commit_mode").show();
-  },
-
-  /**
    * Display error message
-   * @param {string} message - The error message to display
+   * @param {HTMLElement} htmlContent - The HTML content to display as an error message
    */
-  showError(message) {
+  showError(htmlContent) {
     $("#success").hide();
-    $("#error").html(message);
+    $("#error_detail").html(htmlContent);
     $("#error").show();
   },
 
   /**
    * Display success message
-   * @param {string} message - The success message to display
+   * @param {HTMLElement} htmlContent - The HTML content to display as a success message
    */
-  showSuccess(message) {
+  showSuccess(htmlContent) {
     $("#error").hide();
-    $("#success").html(message);
+    $("#success_detail").html(htmlContent);
     $("#success").show();
   },
 
@@ -152,7 +143,6 @@ const UI = {
    */
   showRepoLinkSuccess(repoUrl, repoName) {
     this.showSuccess(`
-      <i class="huge blue check circle icon" style="margin-bottom: 0.5em"></i>
       <p>Successfully linked <a target="blank" href="${repoUrl}">${repoName}</a> to CodePlaceHub.</p>
     `);
     $("#unlink").show();
@@ -165,7 +155,6 @@ const UI = {
    */
   showRepoCreateSuccess(repoUrl, repoName) {
     this.showSuccess(`
-      <i class="huge blue check circle icon" style="margin-bottom: 0.5em"></i>
       <p>Successfully created <a target="blank" href="${repoUrl}">${repoName}</a>.</p>
     `);
     $("#unlink").show();
@@ -211,7 +200,6 @@ const RepoManager = {
       );
       $("#name").focus();
     } else {
-      UI.showSuccess("Attempting to create Hook... Please wait.");
       RepoManager.processRequest(option, repoName);
     }
   },
@@ -343,6 +331,7 @@ const GitHubAPI = {
         StorageManager.setModeType("commit");
         StorageManager.setRepoHook(response.full_name);
         UI.showRepoCreateSuccess(response.html_url, name);
+        UI.hideHookMode();
         break;
     }
   },

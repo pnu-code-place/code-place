@@ -25,8 +25,19 @@
         <div class="divider-line"></div>
       </div>
 
-      <p hidden id="error"></p>
-      <p hidden id="success"></p>
+      <div hidden id="error">
+        <i
+          class="huge red exclamation circle icon"
+          style="margin-bottom: 0.3em"
+        ></i>
+        <div id="error_detail"></div>
+      </div>
+
+      <div hidden id="success">
+        <i class="huge blue check circle icon" style="margin-bottom: 0.3em"></i>
+        <div id="success_detail"></div>
+      </div>
+
       <p hidden id="unlink">Linked the wrong repo? <a>Unlink</a>.</p>
 
       <div id="hook_mode" class="ui grid container">

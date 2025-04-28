@@ -15,6 +15,10 @@ body {
   transition: background-color 0.75s ease;
 }
 
+p {
+  font-size: 1.1em;
+}
+
 .form-container {
   max-width: 500px;
   margin: 0 auto;
@@ -114,16 +118,16 @@ body {
 /* Messages */
 #error {
   color: red !important;
-  margin-bottom: 10px;
+  margin-bottom: 1em;
 }
 
 #success {
   color: var(--primary-color) !important;
   font-size: 1.1em;
+  margin-bottom: 1em;
 }
 
 #unlink {
-  font-size: 1.1em;
   margin-bottom: 10px;
 }
 
