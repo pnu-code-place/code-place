@@ -34,11 +34,7 @@
   "repo_link_button_text": {
     "message": "시작하기"
   },
-
-  "toast_enter_problem_page": {
-    "message": "코드가 제출되면 Github에 업로드 할게요."
-  },
-
+  
   "toast_disabled": {
     "message": "Code Place Hub가 비활성화 되어 있어요. 업로드를 스킵할게요."
   },
@@ -47,15 +43,19 @@
     "message": "Code Place Hub가 완전히 설정되지 않았어요. 확장 프로그램을 열고 설정을 완료해주세요."
   },
 
-  "toast_uploading": {
+  "toast_ready_upload": {
+    "message": "코드가 제출되면 Github에 업로드 할게요."
+  },
+
+  "toast_processing_upload": {
     "message": "업로드 중이에요, 잠시만 기다려주세요..."
   },
 
-  "toast_upload_success": {
+  "toast_successful_upload": {
     "message": "업로드를 완료했어요."
   },
 
-  "toast_already_uploaded": {
+  "toast_duplicate_upload": {
     "message": "이미 제출된 코드에요."
   }
 }

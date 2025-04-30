@@ -53,7 +53,7 @@ const startLoader = () => {
     if (submissionState === RESULT_CATEGORY.RESULT_ACCEPTED) {
       stopLoader();
       log("Accepted problem detected, Starting upload...");
-      showToast(chrome.i18n.getMessage("toast_uploading"));
+      showToast(chrome.i18n.getMessage("toast_processing_upload"));
       const coplData = await parseData();
       await beginUpload(coplData);
     }
@@ -125,13 +125,13 @@ const beginUpload = async (coplData) => {
   log("cachedSHA: ", cachedSHA, "calcSHA:", calcSHA);
   if (cachedSHA === calcSHA) {
     log("This source code is already uploaded. Skipping upload.");
-    showToast(chrome.i18n.getMessage("toast_already_uploaded"));
+    showToast(chrome.i18n.getMessage("toast_duplicate_upload"));
     return;
   }
 
   await uploadOneSolveProblemOnGit(coplData, () => {
     log("Uploaded complete!");
-    showToast(chrome.i18n.getMessage("toast_upload_success"));
+    showToast(chrome.i18n.getMessage("toast_successful_upload"));
   });
 };
 
@@ -196,7 +196,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
       return;
     }
 
-    showToast(chrome.i18n.getMessage("toast_enter_problem_page"));
+    showToast(chrome.i18n.getMessage("toast_ready_upload"));
     setupSubmitListener();
   }
 });
