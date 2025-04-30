@@ -49,7 +49,9 @@ chrome.runtime.onMessage.addListener(handleMessage);
  * Send message to scripts/code_place/code_place.js
  */
 const handleProblemPageDetection = (tabId, url) => {
-  if (PROBLEM_URL_REGEX.test(url)) {
+  // Check if extension context was invalidated or not and if the URL is valid
+  // For extension context invalidation, check out https://stackoverflow.com/questions/53939205/how-to-avoid-extension-context-invalidated-errors-when-messaging-after-an-exte
+  if (chrome.runtime?.id && PROBLEM_URL_REGEX.test(url)) {
     chrome.tabs.sendMessage(tabId, {
       action: "url_changed_to_problem_detail_page",
       url: url,
