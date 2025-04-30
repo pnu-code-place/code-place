@@ -155,7 +155,7 @@ const UI = {
    */
   showRepoCreateSuccess(repoUrl, repoName) {
     this.showSuccess(`
-      <p>Successfully created <a target="blank" href="${repoUrl}">${repoName}</a>.</p>
+      <p>Successfully created and linked <a target="blank" href="${repoUrl}">${repoName}</a>.</p>
     `);
     $("#unlink").show();
     $("#hook_mode").show();

@@ -53,7 +53,7 @@ const startLoader = () => {
     if (submissionState === RESULT_CATEGORY.RESULT_ACCEPTED) {
       stopLoader();
       log("Accepted problem detected, Starting upload...");
-      showToast("업로드 중이에요, 잠시만 기다려 주세요...");
+      showToast(chrome.i18n.getMessage("toast_uploading"));
       const coplData = await parseData();
       await beginUpload(coplData);
     }
@@ -125,13 +125,13 @@ const beginUpload = async (coplData) => {
   log("cachedSHA: ", cachedSHA, "calcSHA:", calcSHA);
   if (cachedSHA === calcSHA) {
     log("This source code is already uploaded. Skipping upload.");
-    showToast("이미 제출된 코드에요.");
+    showToast(chrome.i18n.getMessage("toast_already_uploaded"));
     return;
   }
 
   await uploadOneSolveProblemOnGit(coplData, () => {
     log("Uploaded complete!");
-    showToast("업로드를 완료했어요.");
+    showToast(chrome.i18n.getMessage("toast_upload_success"));
   });
 };
 
@@ -176,9 +176,27 @@ const isProblemPage = () => {
  * Background worker sends message if current URL is Problem Detail Page
  * On Problem Detail Page, add callback function on submit button's onclick event
  */
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
   if (message && message.action === "url_changed_to_problem_detail_page") {
-    log("URL changed to:", message.url);
+    // Check if local storage is set properly
+    const isLocalStorageValid = await checkLocalStorage();
+    if (!isLocalStorageValid) {
+      showToast(
+        chrome.i18n.getMessage("toast_incomplete_setup"),
+        "error",
+        3000
+      );
+      return;
+    }
+
+    // check Code Place Hub is enabled
+    const enabled = await checkEnable();
+    if (!enabled) {
+      showToast(chrome.i18n.getMessage("toast_disabled"), "info", 3000);
+      return;
+    }
+
+    showToast(chrome.i18n.getMessage("toast_enter_problem_page"));
     setupSubmitListener();
   }
 });
