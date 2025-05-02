@@ -33,5 +33,29 @@
   
   "repo_link_button_text": {
     "message": "Get Started"
+  },
+
+  "toast_disabled": {
+    "message": "Code Place Hub is disabled. Skipping upload."
+  },
+
+  "toast_incomplete_setup": {
+    "message": "Code Place Hub setup incomplete. Open the extension and finish setup."
+  },
+
+  "toast_ready_upload": {
+    "message": "Your code will be uploaded to Github when it's accepted."
+  },
+
+  "toast_processing_upload": {
+    "message": "Uploading your code to Github, Please wait..."
+  },
+
+  "toast_successful_upload": {
+    "message": "Your code has been uploaded to Github."
+  },
+
+  "toast_duplicate_upload": {
+    "message": "Your code has already been submitted."
   }
 }
