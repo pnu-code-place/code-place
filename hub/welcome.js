@@ -20,6 +20,8 @@ const UI = {
       this.updateText("repo_option_default", "repo_option_default");
       this.updateText("repo_option_new", "repo_option_new");
       this.updateText("repo_option_link", "repo_option_link");
+      this.updateText("unlink_repo_info", "unlink_repo");
+      this.updateText("unlink_repo_btn", "unlink_repo_button_text");
 
       this.setupEventListeners();
       this.checkModeType();
@@ -48,11 +50,11 @@ const UI = {
     $("#hook_button").on("click", RepoManager.handleCreateOrLink);
 
     // Unlink link click event
-    $("#unlink a").on("click", () => {
+    $("#unlink_repo_btn").on("click", () => {
       RepoManager.unlinkRepo();
       $("#unlink").hide();
       this.showSuccess(`
-        <p>Successfully unlinked your current git repo. Please create/link a new hook.</p>
+        <p>${chrome.i18n.getMessage("repo_unlink_success")}</p>
       `);
     });
   },
@@ -79,9 +81,7 @@ const UI = {
     chrome.storage.local.get("CodePlaceHub_token", (data) => {
       const token = data.CodePlaceHub_token;
       if (!token) {
-        this.showError(
-          "Authorization error - Grant CodePlaceHub access to your GitHub account to continue (click CodePlaceHub extension on the top right to proceed)"
-        );
+        this.showError(chrome.i18n.getMessage("error_improper_auth"));
         this.showHookMode();
         return;
       }
@@ -89,9 +89,7 @@ const UI = {
       chrome.storage.local.get("CodePlaceHub_hook", (repoData) => {
         const hook = repoData.CodePlaceHub_hook;
         if (!hook) {
-          this.showError(
-            "Improper Authorization error - Grant CodePlaceHub access to your GitHub account to continue (click CodePlaceHub extension on the top right to proceed)"
-          );
+          this.showError(chrome.i18n.getMessage("error_improper_auth"));
           this.showHookMode();
           return;
         }
@@ -143,7 +141,8 @@ const UI = {
    */
   showRepoLinkSuccess(repoUrl, repoName) {
     this.showSuccess(`
-      <p>Successfully linked <a target="blank" href="${repoUrl}">${repoName}</a> to CodePlaceHub.</p>
+      <p>${chrome.i18n.getMessage("repo_link_success")}</p>
+      <p>${chrome.i18n.getMessage("recommend_refresh")}</p>
     `);
     $("#unlink").show();
   },
@@ -155,7 +154,8 @@ const UI = {
    */
   showRepoCreateSuccess(repoUrl, repoName) {
     this.showSuccess(`
-      <p>Successfully created and linked <a target="blank" href="${repoUrl}">${repoName}</a>.</p>
+      <p>${chrome.i18n.getMessage("repo_create_success")}</p>
+      <p>${chrome.i18n.getMessage("recommend_refresh")}</p>
     `);
     $("#unlink").show();
     $("#hook_mode").show();
@@ -191,13 +191,9 @@ const RepoManager = {
     const repoName = RepoManager.getRepositoryName();
 
     if (!option) {
-      UI.showError(
-        "No option selected - Pick an option from dropdown menu below that best suits you!"
-      );
+      UI.showError(chrome.i18n.getMessage("error_no_option_selected"));
     } else if (!repoName) {
-      UI.showError(
-        "No repository name added - Enter the name of your repository!"
-      );
+      UI.showError(chrome.i18n.getMessage("error_no_repo_name"));
       $("#name").focus();
     } else {
       RepoManager.processRequest(option, repoName);
@@ -213,9 +209,7 @@ const RepoManager = {
     chrome.storage.local.get("CodePlaceHub_token", (data) => {
       const token = data.CodePlaceHub_token;
       if (!token) {
-        UI.showError(
-          "Authorization error - Grant CodePlaceHub access to your GitHub account to continue (launch extension to proceed)"
-        );
+        UI.showError(chrome.i18n.getMessage("error_improper_auth"));
         return;
       }
 
@@ -225,9 +219,7 @@ const RepoManager = {
         chrome.storage.local.get("CodePlaceHub_username", (userData) => {
           const username = userData.CodePlaceHub_username;
           if (!username) {
-            UI.showError(
-              "Improper Authorization error - Grant CodePlaceHub access to your GitHub account to continue (launch extension to proceed)"
-            );
+            UI.showError(chrome.i18n.getMessage("error_improper_auth"));
             return;
           }
           GitHubAPI.linkRepo(token, `${username}/${repoName}`);
@@ -304,27 +296,37 @@ const GitHubAPI = {
     switch (status) {
       case 304:
         UI.showError(
-          `Error creating ${name} - Unable to modify repository. Try again later!`
+          `Error creating ${name} - ${chrome.i18n.getMessage(
+            "error_unable_to_modify_repo"
+          )}`
         );
         break;
       case 400:
         UI.showError(
-          `Error creating ${name} - Bad POST request, make sure you're not overriding any existing scripts`
+          `Error creating ${name} - ${chrome.i18n.getMessage(
+            "error_bad_request"
+          )}`
         );
         break;
       case 401:
         UI.showError(
-          `Error creating ${name} - Unauthorized access to repo. Try again later!`
+          `Error creating ${name} - ${chrome.i18n.getMessage(
+            "error_unauthorized_access_to_repo"
+          )}`
         );
         break;
       case 403:
         UI.showError(
-          `Error creating ${name} - Forbidden access to repository. Try again later!`
+          `Error creating ${name} - ${chrome.i18n.getMessage(
+            "error_forbidden_access_to_repo"
+          )}`
         );
         break;
       case 422:
         UI.showError(
-          `Error creating ${name} - Unprocessable Entity. Repository may have already been created. Try Linking instead (select 2nd option).`
+          `Error creating ${name} - ${chrome.i18n.getMessage(
+            "error_unprocessable_entity"
+          )}`
         );
         break;
       default:
@@ -377,17 +379,23 @@ const GitHubAPI = {
     switch (status) {
       case 301:
         UI.showError(
-          `Error linking <a target="blank" href="${repoUrl}">${repoName}</a> to CodePlaceHub. <br> This repository has been moved permenantly. Try creating a new one.`
+          `Error linking <a target="blank" href="${repoUrl}">${repoName}</a> - ${chrome.i18n.getMessage(
+            "error_moved_permanently"
+          )}`
         );
         break;
       case 403:
         UI.showError(
-          `Error linking <a target="blank" href="${repoUrl}">${repoName}</a> to CodePlaceHub. <br> Forbidden action. Please make sure you have the right access to this repository.`
+          `Error linking <a target="blank" href="${repoUrl}">${repoName}</a> - ${chrome.i18n.getMessage(
+            "error_forbidden_access_to_repo"
+          )}`
         );
         break;
       case 404:
         UI.showError(
-          `Error linking <a target="blank" href="${repoUrl}">${repoName}</a> to CodePlaceHub. <br> Resource not found. Make sure you enter the right repository name.`
+          `Error linking <a target="blank" href="${repoUrl}">${repoName}</a> - ${chrome.i18n.getMessage(
+            "error_repo_not_found"
+          )}`
         );
         break;
       case 200:
@@ -397,13 +405,12 @@ const GitHubAPI = {
         RepoManager.initializeStats();
         UI.showRepoLinkSuccess(response.html_url, repoName);
         UI.hideHookMode();
+        $("#unlink").show();
         break;
       default:
         UI.showError(`Error linking repository. Unknown error (${status}).`);
         break;
     }
-
-    $("#unlink").show();
   },
 };
 

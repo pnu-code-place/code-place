@@ -35,6 +35,30 @@
     "message": "Get Started"
   },
 
+  "repo_link_success": {
+    "message": "Successfully linked your Github repository!"
+  },
+
+  "repo_create_success": {
+    "message": "Successfully created and linked your Github repository!"
+  },
+
+  "repo_unlink_success": {
+    "message": "Successfully unlinked your current Github repository! Please create/link a new repository."
+  },
+
+  "unlink_repo": {
+    "message": "Linked the wrong repository?"
+  },
+
+  "unlink_repo_button_text": {
+    "message": "Unlink"
+  },
+
+  "recommend_refresh": {
+    "message": "If you're on the Code Place page, refresh the Code Place page to activate the extension."
+  },
+
   "toast_disabled": {
     "message": "Code Place Hub is disabled. Skipping upload."
   },
@@ -57,5 +81,45 @@
 
   "toast_duplicate_upload": {
     "message": "Your code has already been submitted."
+  },
+
+  "error_improper_auth": {
+    "message": "Code Place Hub is not authorized to access your Github account. Please click `Authenticate` in the extension to authorize it."
+  },
+
+  "error_no_option_selected": {
+    "message": "No option selected, Please pick an option from the dropdown menu below."
+  },
+
+  "error_no_repo_name": {
+    "message": "No repository name provided, Please provide a name for your repository."
+  },
+
+  "error_unable_to_modify_repo": {
+    "message": "Unable to modify the repository. Try again later."
+  },
+
+  "error_bad_request": {
+    "message": "Bad POST request. Make sure you're not overriding any existing scripts."
+  },
+
+  "error_unauthorized_access_to_repo": {
+    "message": "Unauthorized access to the repository. Try again later."
+  },
+
+  "error_forbidden_access_to_repo": {
+    "message": "Forbidden access to the repository. Try again later."
+  },
+
+  "error_unprocessable_entity": {
+    "message": "Unprocessable entity. Repository may have already been created. Tryn linking instead."
+  },
+
+  "error_moved_permanently": {
+    "message": "This repository has been moved permanently. Try creating a new one."
+  },
+
+  "error_repo_not_found": {
+    "message": "Repository not found. Make sure the repository name is correct."
   }
 }
