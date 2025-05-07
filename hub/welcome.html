@@ -38,7 +38,9 @@
         <div id="success_detail"></div>
       </div>
 
-      <p hidden id="unlink">Linked the wrong repo? <a>Unlink</a>.</p>
+      <div hidden id="unlink">
+        <span id="unlink_repo_info"></span> <a id="unlink_repo_btn"></a>
+      </div>
 
       <div id="hook_mode" class="ui grid container">
         <div class="sixteen wide column">
@@ -49,15 +51,9 @@
           <div class="ui form form-container">
             <div class="field">
               <select id="type" class="ui dropdown">
-                <option value="" id="repo_option_default">
-                  Pick an Option
-                </option>
-                <option value="new" id="repo_option_new">
-                  Create a new Private Repository
-                </option>
-                <option value="link" id="repo_option_link">
-                  Link an Existing Repository
-                </option>
+                <option value="" id="repo_option_default"></option>
+                <option value="new" id="repo_option_new"></option>
+                <option value="link" id="repo_option_link"></option>
               </select>
             </div>
 

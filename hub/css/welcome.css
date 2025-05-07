@@ -16,6 +16,7 @@ body {
 }
 
 p {
+  color: var(--text-color);
   font-size: 1.1em;
 }
 
@@ -128,6 +129,7 @@ p {
 }
 
 #unlink {
+  margin-top: 2em;
   margin-bottom: 10px;
 }
 
