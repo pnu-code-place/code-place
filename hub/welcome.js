@@ -50,7 +50,7 @@ const UI = {
     $("#hook_button").on("click", RepoManager.handleCreateOrLink);
 
     // Unlink link click event
-    $("#unlink a").on("click", () => {
+    $("#unlink_repo_btn").on("click", () => {
       RepoManager.unlinkRepo();
       $("#unlink").hide();
       this.showSuccess(`
