@@ -28,6 +28,10 @@ import MajorRank from "../views/rank/majorRank/MajorRank.vue";
 import UserRank from "../views/rank/UserRank.vue";
 import SettingDemo from "../views/setting/UserSetting.vue";
 import AnnouncementDetail from "../views/notice/AnnouncementDetail.vue";
+import FAQTier from "../views/help/faq/FAQTier.vue";
+import FAQJudge from "../views/help/faq/contents/FAQJudge.vue";
+import FAQAccount from "../views/help/faq/contents/FAQAccount.vue";
+import FAQProblem from "../views/help/faq/contents/FAQProblem.vue";
 
 export default [
   {
@@ -252,6 +256,46 @@ export default [
     name: "faq",
     meta: { title: "FAQ" },
     component: FAQ,
+    children: [
+      {
+        path : "",
+        name : "faq",
+        component: FAQJudge
+      },
+      {
+        path: "judge",
+        name: "faq-judge",
+        meta: {title : "Judge Info"},
+        component: FAQJudge,
+        props:{
+          type: "judge"
+        }
+      },
+      {
+        path: "tier",
+        name: "faq-tier",
+        meta: {title : "Tier Info"},
+        component: FAQTier,
+      },
+      {
+        path: "account",
+        name : "faq-account",
+        meta: {title : "Account Help"},
+        component: FAQAccount,
+        props: {
+          type: "account"
+        }
+      },
+      {
+        path: "problem",
+        name : "faq-problem",
+        meta: {title : "Problem Help"},
+        component: FAQProblem,
+        props: {
+          type: "problem"
+        }
+      },
+    ]
   },
   {
     path: "*",
