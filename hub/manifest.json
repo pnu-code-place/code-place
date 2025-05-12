@@ -20,8 +20,6 @@
   "permissions": [
     "unlimitedStorage",
     "storage",
-    "declarativeNetRequest",
-    "declarativeNetRequestWithHostAccess",
     "tabs"
   ],
   "host_permissions": ["https://github.com/"],
