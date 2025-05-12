@@ -9,6 +9,7 @@ $(document).ready(() => {
     chrome.i18n.getMessage("github_auth_button_text")
   );
   $("#connected_repo_info").text(chrome.i18n.getMessage("connected_repo_info"));
+  $("#reset_button_text").text(chrome.i18n.getMessage("reset_button_text"));
 });
 
 let action = false;
@@ -17,6 +18,17 @@ $("#authenticate").on("click", () => {
   if (action) {
     oAuth2.begin();
   }
+});
+
+$("#reset").on("click", () => {
+  chrome.storage.local.clear(() => {
+    log("Cleared all local storage");
+
+    $("#auth_mode").show();
+    $("#commit_mode").hide();
+    $("#hook_mode").hide();
+    action = true;
+  });
 });
 
 /* Get URL for welcome page */
