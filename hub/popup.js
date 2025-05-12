@@ -22,7 +22,7 @@ $("#authenticate").on("click", () => {
 
 $("#reset").on("click", () => {
   chrome.storage.local.clear(() => {
-    log("Cleared all local storage");
+    console.log("Cleared all local storage");
 
     $("#auth_mode").show();
     $("#commit_mode").hide();

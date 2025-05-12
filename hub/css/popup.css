@@ -203,7 +203,7 @@ button {
 }
 
 .reset-button {
-  background-color: #ef7f7f;
+  background-color: #EF7F7F;
   color: #FFFFFF;
   font-size: 0.8em;
   border: none;
@@ -225,7 +225,7 @@ button {
 }
 
 .reset-button:hover {
-  background-color: #cacbcd;
+  background-color: #E86A6A;
   transform: translateY(-1px);
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
 }
