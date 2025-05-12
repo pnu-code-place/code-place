@@ -15,6 +15,10 @@
     "message": "현재 연결된 레포지토리"
   },
 
+  "reset_button_text": {
+    "message": "초기화"
+  },
+
   "connect_repo_info": {
     "message": "Github 레포지토리를 Code Place Hub에 연결하세요."
   },
