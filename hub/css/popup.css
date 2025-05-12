@@ -219,7 +219,7 @@ button {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.reset-button .icon {
+.reset-button i {
   font-size: 1em;
   margin-right: 2px;
 }
