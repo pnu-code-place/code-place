@@ -6,6 +6,18 @@
           <h1 class="main-title">{{ $t('m.Problem_Status') }}</h1>
           <ul class="query-dropdowns">
             <li>
+              <DatePicker
+                class="date-picker"
+                size="large"
+                type="daterange"
+                input-class="my-datepicker-input"
+                split-panels
+                :placeholder="$t('m.Date_Range_Filter')"
+                v-model="dateRange"
+                @on-change="changeDateRange"
+              ></DatePicker>
+            </li>
+            <li>
               <CustomDropdown
                 :options="statusOptions"
                 @dropdownChange="changeStatus"
@@ -67,6 +79,8 @@ export default {
       isLoading: true,
       error: 0,
       query: {
+        startDate: '',
+        endDate: '',
         field: '',
         difficulty: '',
         status: ''
@@ -95,6 +109,8 @@ export default {
       this.requestData()
     },
     initQuery() {
+      this.query.startDate = this.$route.query.startDate || ''
+      this.query.endDate = this.$route.query.endDate || ''
       this.query.field = this.$route.query.field || ''
       this.query.difficulty = this.$route.query.difficulty || ''
       this.query.status = this.$route.query.status || ''
@@ -120,6 +136,17 @@ export default {
       ).finally(() =>
         this.isLoading = false
       )
+    },
+    changeDateRange(dateRange) {
+      if (dateRange && dateRange.length === 2) {
+        this.query.startDate = dateRange[0]
+        this.query.endDate = dateRange[1]
+      } else {
+        // If the date range is invalid, reset the start and end dates
+        this.query.startDate = ''
+        this.query.endDate = ''
+      }
+      this.pushRouter()
     },
     changeField(newVal) {
       this.query.field = newVal
@@ -196,6 +223,16 @@ section {
         font-weight: 500;
       }
     }
+  }
+
+  /* Style overriding for iview DatePicker */
+  /deep/ .ivu-input {
+    border: 1px solid #ccc !important;
+    width: 200px;
+  }
+
+  /deep/ .ivu-input::placeholder {
+    color: #aaa;
   }
 
   hr {

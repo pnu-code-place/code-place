@@ -1,4 +1,5 @@
 import os
+import datetime
 
 from django.db.models import OuterRef, Subquery, Q, Count, F
 from django.http import HttpResponseNotFound
@@ -134,6 +135,22 @@ class AvatarUploadAPI(APIView):
 class ProfileProblemAPIView(APIView):
 
     def get(self, request):
+        """Get the latest submission for each problem of a user.
+
+        This API retrieves the latest submission for each problem of a user and returns the details.
+        Submissions can be filtered by various parameters like below.
+
+        Query Parameters:
+            username (Optional[str]): Target username
+            field (Optional[str]): Problem field
+            difficulty (Optional[str]): Problem difficulty
+            status (Optional[str]): Submission status
+            startDate (Optional[str]): Start date for filtering (YYYY-MM-DD)
+            endDate (Optional[str]): End date for filtering (YYYY-MM-DD)
+        
+        Returns:
+            ProfileProblemSerializer.data: List of latest submissions for each problem.
+        """
         username = request.GET.get('username')
         if not username:
             self.error("username is required")
@@ -141,6 +158,8 @@ class ProfileProblemAPIView(APIView):
         field = request.GET.get('field')
         difficulty = request.GET.get('difficulty')
         status = request.GET.get('status')
+        start_date_str = request.GET.get('startDate')
+        end_date_str = request.GET.get('endDate')
 
         user_id = User.objects.get(username=username).id
 
@@ -152,6 +171,7 @@ class ProfileProblemAPIView(APIView):
         submissions = Submission.objects.filter(
             id__in=Subquery(latest_submissions)).select_related('problem').order_by('-create_time')
 
+        # Filtering
         if field and field != 'All':
             submissions = submissions.filter(problem__field=field)
         if difficulty and difficulty != 'All':
@@ -161,6 +181,21 @@ class ProfileProblemAPIView(APIView):
                 submissions = submissions.filter(result=0)
             else:
                 submissions = submissions.filter(~Q(result=0))
+
+        # Date Filtering
+        try:
+            start_date = datetime.datetime.strptime(start_date_str, "%Y-%m-%d") if start_date_str else None
+            end_date = datetime.datetime.strptime(end_date_str, "%Y-%m-%d") if end_date_str else None
+        except ValueError:
+            return self.error("Invalid date format. Should be YYYY-MM-DD.")
+
+        if start_date and end_date:
+            submissions = submissions.filter(create_time__gte=start_date,
+                                             create_time__lt=(end_date + datetime.timedelta(days=1)))
+        elif start_date:
+            submissions = submissions.filter(create_time__gte=start_date)
+        elif end_date:
+            submissions = submissions.filter(create_time__lt=(end_date + datetime.timedelta(days=1)))
 
         result = []
         for submission in submissions:
