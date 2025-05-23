@@ -85,7 +85,6 @@ export default {
         difficulty: '',
         status: ''
       },
-      dateRange: [],
       fieldOptions: [],
       difficultyOptions: [],
       statusOptions: [

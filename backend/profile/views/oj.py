@@ -190,11 +190,12 @@ class ProfileProblemAPIView(APIView):
             return self.error("Invalid date format. Should be YYYY-MM-DD.")
 
         if start_date and end_date:
-            submissions = submissions.filter(create_time__date__range=(start_date, end_date))
+            submissions = submissions.filter(create_time__gte=start_date,
+                                             create_time__lt=(end_date + datetime.timedelta(days=1)))
         elif start_date:
-            submissions = submissions.filter(create_time__date__gte=start_date)
+            submissions = submissions.filter(create_time__gte=start_date)
         elif end_date:
-            submissions = submissions.filter(create_time__date__lte=end_date)
+            submissions = submissions.filter(create_time__lt=(end_date + datetime.timedelta(days=1)))
 
         result = []
         for submission in submissions:
