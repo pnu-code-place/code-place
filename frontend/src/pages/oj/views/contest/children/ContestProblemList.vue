@@ -2,7 +2,7 @@
   <div class="problemBox">
     <div class="problemTitle">
       <div style="display: flex; align-items: center; gap: 10px">
-        <p>{{ $t("m.Problems_List") }}</p>
+        <p>{{ $t("m.Problems_List") }} ({{ problems.length }})</p>
         <CustomTooltip
           v-if="contestRuleType === 'ACM'"
           :content="$t('m.ACM_Contest_Information')"

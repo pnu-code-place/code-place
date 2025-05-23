@@ -450,6 +450,9 @@ export const m = {
   Lets_Get_Started: "한 번 시작해 볼까요?",
   Is_Solved: "해결 여부",
 
+  //ProblemSectionList.vue
+  Date_Range_Filter: "날짜 범위 선택",
+
   //AchievementSection.vue
   Achieved: "달성",
   NotAchieved: "미달성",

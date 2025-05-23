@@ -15,6 +15,10 @@
     "message": "현재 연결된 레포지토리"
   },
 
+  "reset_button_text": {
+    "message": "초기화"
+  },
+
   "connect_repo_info": {
     "message": "Github 레포지토리를 Code Place Hub에 연결하세요."
   },
@@ -33,5 +37,93 @@
 
   "repo_link_button_text": {
     "message": "시작하기"
+  },
+
+  "repo_link_success": {
+    "message": "Github 레포지토리 연결에 성공했어요!"
+  },
+
+  "repo_create_success": {
+    "message": "Github 레포지토리 생성 및 연결에 성공했어요!"
+  },
+
+  "repo_unlink_success": {
+    "message": "현재 Github 레포지토리 연결 해제에 성공했어요! 새로운 레포지토리를 생성/연결해주세요."
+  },
+
+  "unlink_repo": {
+    "message": "잘못된 레포지토리를 연결하셨나요?"
+  },
+
+  "unlink_repo_button_text": {
+    "message": "연결 해제"
+  },
+
+  "recommend_refresh": {
+    "message": "만약 Code Place 페이지에 있었다면, 확장 프로그램을 활성화하기 위해 Code Place 페이지를 새로고침 해주세요."
+  },
+  
+  "toast_disabled": {
+    "message": "Code Place Hub가 비활성화 되어 있어요. 업로드를 스킵할게요."
+  },
+
+  "toast_incomplete_setup": {
+    "message": "Code Place Hub가 완전히 설정되지 않았어요. 확장 프로그램을 열고 설정을 완료해주세요."
+  },
+
+  "toast_ready_upload": {
+    "message": "코드가 제출되면 Github에 업로드 할게요."
+  },
+
+  "toast_processing_upload": {
+    "message": "업로드 중이에요, 잠시만 기다려주세요..."
+  },
+
+  "toast_successful_upload": {
+    "message": "업로드를 완료했어요."
+  },
+
+  "toast_duplicate_upload": {
+    "message": "이미 제출된 코드에요."
+  },
+
+  "error_improper_auth": {
+    "message": "Code Place Hub가 Github 계정에 접근 권한이 없어요. 확장 프로그램에서 `인증하기`를 클릭하여 권한을 부여해주세요."
+  },
+
+  "error_no_option_selected": {
+    "message": "선택된 옵션이 없습니다. 아래 드롭다운 메뉴에서 옵션을 선택해주세요."
+  },
+
+  "error_no_repo_name": {
+    "message": "레포지토리 이름이 제공되지 않았습니다. 레포지토리 이름을 입력해주세요."
+  },
+
+  "error_unable_to_modify_repo": {
+    "message": "레포지토리를 수정할 수 없습니다. 나중에 다시 시도해주세요."
+  },
+
+  "error_bad_request": {
+    "message": "잘못된 POST 요청입니다. 기존 스크립트를 덮어쓰고 있지 않은지 확인해주세요."
+  },
+
+  "error_unauthorized_access_to_repo": {
+    "message": "레포지토리에 대한 승인되지 않은 접근입니다. 나중에 다시 시도해주세요."
+  },
+
+  "error_forbidden_access_to_repo": {
+    "message": "레포지토리에 대한 접근이 금지되었습니다. 나중에 다시 시도해주세요."
+  },
+
+  "error_unprocessable_entity": {
+    "message": "처리할 수 없는 엔티티입니다. 레포지토리가 이미 생성되었을 수 있습니다. 대신 연결을 시도해보세요."
+  },
+
+  "error_moved_permanently": {
+    "message": "이 레포지토리는 영구적으로 이동되었습니다. 새로 만들어보세요."
+  },
+
+  "error_repo_not_found": {
+    "message": "레포지토리를 찾을 수 없습니다. 레포지토리 이름이 올바른지 확인해주세요."
   }
 }
