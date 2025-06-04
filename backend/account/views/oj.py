@@ -16,7 +16,7 @@ from django.core.cache import cache
 from django.http import HttpResponseBadRequest, HttpResponseNotFound, HttpResponseForbidden, HttpResponseServerError, \
     JsonResponse
 from django.db.models import F, Count, Q, Sum, Value, TextField
-from django.db import transaction
+from django.db import DatabaseError, transaction
 
 from contest.models import Contest
 from problem.models import Problem
@@ -26,7 +26,7 @@ from options.options import SysOptions
 from utils.api import APIView, validate_serializer, CSRFExemptAPIView
 from utils.captcha import Captcha
 from utils.shortcuts import rand_str, img2base64, datetime2str
-from ..decorators import login_required
+from ..decorators import login_required, scheduler_only
 from ..models import User, UserProfile, AdminType, UserScore, UserSolved
 from ..serializers import (ApplyResetPasswordSerializer, ResetPasswordSerializer, UserChangePasswordSerializer,
                            UserLoginSerializer, UserRegisterSerializer, UsernameOrEmailCheckSerializer,
@@ -431,3 +431,58 @@ class SSOAPI(CSRFExemptAPIView):
             "avatar": user.userprofile.avatar,
             "admin_type": user.admin_type
         })
+
+
+class CalculateUserScoreBasisAPI(APIView):
+    """API endpoint to reset all users' score baselines.
+
+    This endpoint is intended to be used by the scheduler only.
+    Only requests authenticated with a valid scheduler token will be processed.
+    """
+
+    @scheduler_only
+    def post(self, request):
+        """Handle POST requests to reset user score baselines.
+
+        This method updates all users' `yesterday_score` to their total scores
+        and resets their `fluctuation` to 0.
+
+        Returns:
+            JsonResponse: A success message if the operation was successful,
+                          or an error message if an exception occurred.
+        """
+        try:
+            UserScore.objects.update(yesterday_score=F('total_score'), fluctuation=0)
+            return self.success("User scores have been reset successfully")
+        except DatabaseError as e:
+            return self.error(f"Database error: {str(e)}")
+        except Exception as e:
+            return self.error(f"An error occurred while calculating user scores: {str(e)}")
+
+
+class CalculateUserScoreFluctuationAPI(APIView):
+    """API endpoint to calculate user score fluctuations.
+
+    This endpoint is intended to be used by the scheduler only.
+    Only requests authenticated with a valid scheduler token will be processed.
+    """
+
+    @scheduler_only
+    def post(self, request):
+        """Handle POST requests to calculate user score fluctuations.
+
+        This method calculates the fluctuation of each user's score by subtracting
+        their `yesterday_score` from their `total_score`, and updates the `fluctuation`
+        field in the `UserScore` model.
+
+        Returns:
+            JsonResponse: A success message if the operation was successful,
+                          or an error message if an exception occurred.
+        """
+        try:
+            UserScore.objects.update(fluctuation=F('total_score') - F('yesterday_score'))
+            return self.success("User score fluctuations have been calculated successfully")
+        except DatabaseError as e:
+            return self.error(f"Database error: {str(e)}")
+        except Exception as e:
+            return self.error(f"An error occurred while calculating user score fluctuations: {str(e)}")
