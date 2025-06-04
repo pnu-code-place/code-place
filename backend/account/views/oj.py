@@ -3,7 +3,6 @@ from datetime import timedelta
 from importlib import import_module
 import json
 
-from django.core.exceptions import FieldError
 import qrcode
 from django.conf import settings
 from django.contrib import auth

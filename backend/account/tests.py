@@ -65,6 +65,13 @@ class SchedulerOnlyDecoratorTest(APITestCase):
         response = self.view.post(request)
         self.assertFailed(response)
 
+    def test_missing_header_token(self):
+        """ Test when SCHEDULER_TOKEN is not set in the environment and request header is missing."""
+        with mock.patch('os.environ', {}):
+            request = self.factory.post("/")
+            response = self.view.post(request)
+        self.assertFailed(response)
+
     def test_valid_token(self):
         """ Test when SCHEDULER_TOKEN is set and matches the request header."""
         with mock.patch('os.environ', {'SCHEDULER_TOKEN': 'secret'}):
@@ -425,7 +432,7 @@ class CalculateUserScoreBasisAPITest(APITestCase):
         self.assertFailed(resp, "Database error: Test Database Error")
 
 
-class CalculateUserScoreFluctuationAPI(APITestCase):
+class CalculateUserScoreFluctuationAPITest(APITestCase):
     """Calculate User Score Fluctuation API Test"""
 
     def setUp(self):
