@@ -237,7 +237,7 @@ class ProblemAPI(ProblemBase):
         data = request.data
 
         if Problem.objects.filter(_id=data["_id"]).exists():
-            return "Problem ID already exists"
+            return self.error("Problem ID already exists")
 
         error_info = self.common_checks(request)
         if error_info:
