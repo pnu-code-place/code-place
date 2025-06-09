@@ -1,15 +1,20 @@
+import logging
 import random
+
 from django.db import transaction
-from django.db.models import F, Q, Count
-from utils.api import APIView
-from account.decorators import check_contest_permission, login_required, scheduler_only
-from ..models import ProblemTag, Problem, ProblemRuleType, get_default_week_info
-from ..serializers import ProblemSerializer, TagSerializer, ProblemSafeSerializer, RecommendBonusProblemSerializer, MostDifficultProblemSerializer
-from contest.models import ContestRuleType
+from django.db.models import Count, F, Q
+from django.http import HttpResponseBadRequest, HttpResponseNotFound
+
+from account.decorators import (check_contest_permission, login_required, scheduler_only)
 from account.models import UserProfile, UserScore
+from contest.models import ContestRuleType
 from submission.models import JudgeStatus, Submission
-from django.http import HttpResponseNotFound, HttpResponseBadRequest
-from utils.constants import ProblemField, Difficulty, Tier
+from utils.api import APIView
+from utils.constants import Difficulty, ProblemField, Tier
+
+from ..models import (Problem, ProblemRuleType, ProblemTag, get_default_week_info)
+from ..serializers import (MostDifficultProblemSerializer, ProblemSafeSerializer, ProblemSerializer,
+                           RecommendBonusProblemSerializer, TagSerializer)
 
 
 class ProblemTagAPI(APIView):
@@ -340,4 +345,5 @@ class UpdateWeeklyStatsAPI(APIView):
 
             return self.success("Weekly stats updated successfully.")
         except Exception as e:
+            logging.error("Error updating weekly stats: %s", e)
             return self.error("Failed to update weekly stats.")
