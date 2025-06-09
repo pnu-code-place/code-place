@@ -8,8 +8,9 @@ from zipfile import ZipFile
 from django.conf import settings
 
 from utils.api.tests import APITestCase
+from unittest import mock
 
-from .models import ProblemTag, ProblemIOMode
+from .models import ProblemTag, ProblemIOMode, get_default_week_info
 from .models import Problem, ProblemRuleType
 from contest.models import Contest
 from contest.tests import DEFAULT_CONTEST_DATA
@@ -95,6 +96,12 @@ class ProblemCreateTestBase(APITestCase):
                 tag = ProblemTag.objects.create(name=item)
             problem.tags.add(tag)
         return problem
+
+    @staticmethod
+    def create_problem_with_custom_display_id(display_id, created_by):
+        data = copy.deepcopy(DEFAULT_PROBLEM_DATA)
+        data["_id"] = display_id
+        return ProblemCreateTestBase.add_problem(data, created_by)
 
 
 class ProblemTagListAPITest(APITestCase):
@@ -361,3 +368,79 @@ ddd
         self.assertEqual(ret["prepend"], "aaa\n")
         self.assertEqual(ret["template"], "")
         self.assertEqual(ret["append"], "ccc\n")
+
+
+class UpdateWeeklyStatsTest(APITestCase):
+
+    def setUp(self):
+        self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
+        self.admin = self.create_super_admin()
+        self.data = copy.deepcopy(DEFAULT_PROBLEM_DATA)
+        self.url = self.reverse("update_weekly_stats_api")
+
+        self.problem_1 = ProblemCreateTestBase.create_problem_with_custom_display_id("A-1", created_by=self.admin)
+        self.problem_2 = ProblemCreateTestBase.create_problem_with_custom_display_id("A-2", created_by=self.admin)
+        self.problem_3 = ProblemCreateTestBase.create_problem_with_custom_display_id("A-3", created_by=self.admin)
+
+    def test_update_weekly_stats(self):
+        week_info_1 = {
+            'submission': 10,
+            'accepted': 5,
+            'success_rate': 0.5,
+            'solver': ['user1', 'user2', 'user3', 'user4', 'user5'],
+        }
+        week_info_2 = {
+            'submission': 10,
+            'accepted': 3,
+            'success_rate': 0.3,
+            'solver': ['user1', 'user2', 'user3'],
+        }
+        week_info_3 = { # This problem will be marked as most difficult
+            'submission': 10,
+            'accepted': 1,
+            'success_rate': 0.1,
+            'solver': ['user1'],
+        }
+
+        self.problem_1.curr_week_info = week_info_1
+        self.problem_1.save(update_fields=['curr_week_info'])
+        self.problem_2.curr_week_info = week_info_2
+        self.problem_2.save(update_fields=['curr_week_info'])
+        self.problem_3.curr_week_info = week_info_3
+        self.problem_3.save(update_fields=['curr_week_info'])
+
+        # Check is_most_difficult = false before update
+        self.assertFalse(self.problem_1.is_most_difficult)
+        self.assertFalse(self.problem_2.is_most_difficult)
+        self.assertFalse(self.problem_3.is_most_difficult)
+
+        with mock.patch('os.environ', {'SCHEDULER_TOKEN': 'secret'}):
+            resp = self.client.post(self.url, data={}, HTTP_X_SCHEDULER_TOKEN='secret')
+
+        self.assertSuccess(resp)
+        self.assertEqual(resp.data["data"], "Weekly stats updated successfully.")
+
+        updated_problem_1 = Problem.objects.get(id=self.problem_1.id)
+        updated_problem_2 = Problem.objects.get(id=self.problem_2.id)
+        updated_problem_3 = Problem.objects.get(id=self.problem_3.id)
+
+        # Check last_week_info and curr_week_info are updated
+        self.assertEqual(updated_problem_1.last_week_info, week_info_1)
+        self.assertEqual(updated_problem_1.curr_week_info, get_default_week_info())
+        self.assertEqual(updated_problem_2.last_week_info, week_info_2)
+        self.assertEqual(updated_problem_2.curr_week_info, get_default_week_info())
+        self.assertEqual(updated_problem_3.last_week_info, week_info_3)
+        self.assertEqual(updated_problem_3.curr_week_info, get_default_week_info())
+
+        # Check is_most_difficult is updated correctly
+        self.assertFalse(updated_problem_1.is_most_difficult)
+        self.assertFalse(updated_problem_2.is_most_difficult)
+        self.assertTrue(updated_problem_3.is_most_difficult)
+
+    def test_update_weekly_stats_database_error(self):
+
+        with mock.patch('os.environ', {'SCHEDULER_TOKEN': 'secret'}):
+            with mock.patch('problem.models.Problem.objects.update', side_effect=Exception("Database error")):
+                resp = self.client.post(self.url, data={}, HTTP_X_SCHEDULER_TOKEN='secret')
+
+        self.assertFailed(resp, "Failed to update weekly stats.")
