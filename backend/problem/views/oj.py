@@ -16,6 +16,8 @@ from ..models import (Problem, ProblemRuleType, ProblemTag, get_default_week_inf
 from ..serializers import (MostDifficultProblemSerializer, ProblemSafeSerializer, ProblemSerializer,
                            RecommendBonusProblemSerializer, TagSerializer)
 
+logger = logging.getLogger(__name__)
+
 
 class ProblemTagAPI(APIView):
 
@@ -347,3 +349,56 @@ class UpdateWeeklyStatsAPI(APIView):
         except Exception as e:
             logging.error("Error updating weekly stats: %s", e)
             return self.error("Failed to update weekly stats.")
+
+
+class UpdateBonusProblemAPI(APIView):
+
+    DIFFICULTY_GROUPS = [
+        [Difficulty.VERYLOW, Difficulty.LOW],
+        [Difficulty.MID],
+        [Difficulty.HIGH, Difficulty.VERYHIGH],
+    ]
+
+    @scheduler_only
+    def post(self, request):
+        """Update bonus problems by selecting one problem from each difficulty group.
+
+        This method selects one problem from each difficulty group, ensuring that no two problems
+        belong to the same field. If no problems are found in a difficulty group, it allows field overlap.
+        It updates the selected problems to be marked as bonus problems and resets the bonus status
+        for all other problems.
+        """
+        selected_problem_ids = list()
+        selected_fields = set()
+
+        try:
+            with transaction.atomic():
+                for difficulty in self.DIFFICULTY_GROUPS:
+                    candidate_problems = Problem.objects.filter(
+                        difficulty__in=difficulty,
+                        visible=True,
+                        contest__isnull=True,
+                    ).exclude(is_bonus=True).exclude(field__in=selected_fields)
+
+                    # If no problems found in the current difficulty group, Allow field overlap
+                    if not candidate_problems:
+                        candidate_problems = Problem.objects.filter(
+                            difficulty__in=difficulty,
+                            visible=True,
+                            contest__isnull=True,
+                        ).exclude(is_bonus=True)
+
+                    # Randomly select one problem from the candidate problems
+                    selected_problem = candidate_problems.order_by('?').first()
+
+                    if selected_problem:
+                        selected_problem_ids.append(selected_problem.id)
+                        selected_fields.add(selected_problem.field)
+
+                Problem.objects.filter(is_bonus=True).update(is_bonus=False)
+                Problem.objects.filter(id__in=selected_problem_ids).update(is_bonus=True)
+        except Exception as e:
+            logging.error("Error updating bonus problems: %s", e)
+            return self.error("Failed to update bonus problems.")
+
+        return self.success("Bonus problems updated successfully.")
