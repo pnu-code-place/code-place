@@ -3,6 +3,7 @@ ARG TARGETARCH
 ARG TARGETVARIANT
 
 ENV OJ_ENV production
+ENV MODE server
 WORKDIR /app
 
 COPY ./deploy/requirements.txt /app/deploy/

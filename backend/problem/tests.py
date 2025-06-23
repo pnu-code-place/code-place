@@ -14,6 +14,7 @@ from unittest import mock
 
 from .models import ProblemTag, ProblemIOMode, get_default_week_info
 from .models import Problem, ProblemRuleType
+from .tasks import update_weekly_stats, update_bonus_problem
 from contest.models import Contest
 from contest.tests import DEFAULT_CONTEST_DATA
 
@@ -416,11 +417,7 @@ class UpdateWeeklyStatsTest(APITestCase):
         self.assertFalse(self.problem_2.is_most_difficult)
         self.assertFalse(self.problem_3.is_most_difficult)
 
-        with mock.patch('os.environ', {'SCHEDULER_TOKEN': 'secret'}):
-            resp = self.client.post(self.url, data={}, HTTP_X_SCHEDULER_TOKEN='secret')
-
-        self.assertSuccess(resp)
-        self.assertEqual(resp.data["data"], "Weekly stats updated successfully.")
+        update_weekly_stats()
 
         updated_problem_1 = Problem.objects.get(id=self.problem_1.id)
         updated_problem_2 = Problem.objects.get(id=self.problem_2.id)
@@ -441,11 +438,9 @@ class UpdateWeeklyStatsTest(APITestCase):
 
     def test_update_weekly_stats_database_error(self):
 
-        with mock.patch('os.environ', {'SCHEDULER_TOKEN': 'secret'}):
-            with mock.patch('problem.models.Problem.objects.update', side_effect=Exception("Database error")):
-                resp = self.client.post(self.url, data={}, HTTP_X_SCHEDULER_TOKEN='secret')
-
-        self.assertFailed(resp, "Failed to update weekly stats.")
+        with mock.patch('problem.models.Problem.objects.update', side_effect=Exception("Database error")):
+            with self.assertRaises(Exception):
+                update_weekly_stats()
 
 
 class UpdateBonusProblemTest(APITestCase):
@@ -477,11 +472,7 @@ class UpdateBonusProblemTest(APITestCase):
         self.assertFalse(self.mid_problem_1.is_bonus)
         self.assertFalse(self.high_problem_1.is_bonus)
 
-        with mock.patch('os.environ', {'SCHEDULER_TOKEN': 'secret'}):
-            resp = self.client.post(self.url, data={}, HTTP_X_SCHEDULER_TOKEN='secret')
-
-        self.assertSuccess(resp)
-        self.assertEqual(resp.data["data"], "Bonus problems updated successfully.")
+        update_bonus_problem()
 
         updated_low_problem_1 = Problem.objects.get(id=self.low_problem_1.id)
         updated_mid_problem_1 = Problem.objects.get(id=self.mid_problem_1.id)
@@ -509,11 +500,7 @@ class UpdateBonusProblemTest(APITestCase):
         self.assertFalse(self.mid_problem_1.is_bonus)
         self.assertFalse(self.high_problem_1.is_bonus)
 
-        with mock.patch('os.environ', {'SCHEDULER_TOKEN': 'secret'}):
-            resp = self.client.post(self.url, data={}, HTTP_X_SCHEDULER_TOKEN='secret')
-
-        self.assertSuccess(resp)
-        self.assertEqual(resp.data["data"], "Bonus problems updated successfully.")
+        update_bonus_problem()
 
         updated_low_problem_1 = Problem.objects.get(id=self.low_problem_1.id)
         updated_low_problem_2 = Problem.objects.get(id=low_problem_2.id)
@@ -526,13 +513,6 @@ class UpdateBonusProblemTest(APITestCase):
         self.assertTrue(updated_low_problem_2.is_bonus)
         self.assertTrue(updated_mid_problem_1.is_bonus)
         self.assertTrue(updated_high_problem_1.is_bonus)
-
-    def test_update_bonus_problem_contest_problem(self):
-        contest_problem = ProblemCreateTestBase.create_problem_with_custom_field(
-            self.admin,
-            _id="A-5",
-            difficulty=Difficulty.LOW,
-        )
 
     def test_update_bonus_problem_with_contest_problems(self):
         # Ensure other problems are marked as bonus to avoid selection
@@ -554,11 +534,7 @@ class UpdateBonusProblemTest(APITestCase):
             contest_id=contest["id"],
         )
 
-        with mock.patch('os.environ', {'SCHEDULER_TOKEN': 'secret'}):
-            resp = self.client.post(self.url, data={}, HTTP_X_SCHEDULER_TOKEN='secret')
-
-        self.assertSuccess(resp)
-        self.assertEqual(resp.data["data"], "Bonus problems updated successfully.")
+        update_bonus_problem()
 
         # Contest problem should not be selected as bonus
         updated_contest_problem = Problem.objects.get(id=contest_problem.id)
@@ -581,19 +557,13 @@ class UpdateBonusProblemTest(APITestCase):
             visible=False,
         )
 
-        with mock.patch('os.environ', {'SCHEDULER_TOKEN': 'secret'}):
-            resp = self.client.post(self.url, data={}, HTTP_X_SCHEDULER_TOKEN='secret')
-
-        self.assertSuccess(resp)
-        self.assertEqual(resp.data["data"], "Bonus problems updated successfully.")
+        update_bonus_problem()
 
         # Invisible problem should not be selected as bonus
         updated_invisible_problem = Problem.objects.get(id=invisible_problem.id)
         self.assertFalse(updated_invisible_problem.is_bonus)
 
     def test_update_bonus_problem_with_database_error(self):
-        with mock.patch('os.environ', {'SCHEDULER_TOKEN': 'secret'}):
-            with mock.patch('problem.models.Problem.objects.filter', side_effect=DatabaseError("Database error")):
-                resp = self.client.post(self.url, data={}, HTTP_X_SCHEDULER_TOKEN='secret')
-
-        self.assertFailed(resp, "Failed to update bonus problems.")
+        with mock.patch('problem.models.Problem.objects.filter', side_effect=DatabaseError("Database error")):
+            with self.assertRaises(DatabaseError):
+                update_bonus_problem()

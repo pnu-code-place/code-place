@@ -14,6 +14,8 @@ import raven
 from copy import deepcopy
 from utils.shortcuts import get_env
 
+import celery.schedules
+
 production_env = get_env("OJ_ENV", "dev") == "production"
 if production_env:
     from .production_settings import *
@@ -35,6 +37,7 @@ VENDOR_APPS = [
     'rest_framework',
     'django_dramatiq',
     'django_dbconn_retry',
+    'django_celery_beat',
 ]
 
 if production_env:
@@ -255,3 +258,28 @@ RAVEN_CONFIG = {'dsn': 'https://b200023b8aed4d708fb593c5e0a6ad3d:1fddaba168f84fc
 IP_HEADER = "HTTP_X_REAL_IP"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+
+CELERY_BROKER_URL = f"{REDIS_URL}/4"
+CELERY_RESULT_BACKEND = f"{REDIS_URL}/4"
+
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+
+CELERY_BEAT_SCHEDULE = {
+    'calculate_user_score_basis': {
+        'task': 'calculate_user_score_basis',
+        'schedule': celery.schedules.crontab(minute=0, hour=0),  # Every day at midnight
+    },
+    'calculate_user_score_fluctuation': {
+        'task': 'calculate_user_score_fluctuation',
+        'schedule': celery.schedules.crontab(minute='*/1'),  # Every minute
+    },
+    'update_weekly_stats': {
+        'task': 'update_weekly_stats',
+        'schedule': celery.schedules.crontab(hour=0, minute=0, day_of_week='mon'),  # Every Monday at midnight
+    },
+    'update_bonus_problem': {
+        'task': 'update_bonus_problem',
+        'schedule': celery.schedules.crontab(hour=0, minute=0, day_of_week='mon'),  # Every Monday at midnight
+    }
+}

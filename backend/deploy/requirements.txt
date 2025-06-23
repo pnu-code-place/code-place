@@ -22,3 +22,5 @@ qrcode==7.4.2
 raven==6.10.0
 XlsxWriter==3.1.9
 yapf==0.43.0
+celery==5.5.3
+django-celery-beat==2.8.1
