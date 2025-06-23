@@ -20,6 +20,7 @@ from options.options import SysOptions
 
 from .models import AdminType, ProblemPermission, User
 from .decorators import scheduler_only
+from .tasks import calculate_user_score_basis, calculate_user_score_fluctuation
 
 
 class PermissionDecoratorTest(APITestCase):
@@ -401,7 +402,6 @@ class CalculateUserScoreBasisAPITest(APITestCase):
         self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
         self.create_user(email="test@test.com", username="test", password="test1234!", login=False)
         self.user = User.objects.first()
-        self.url = self.reverse("calculate_user_score_basis_api")
 
     def test_successful_calculate_user_score_basis(self):
         user_score = self.user.userscore
@@ -409,12 +409,10 @@ class CalculateUserScoreBasisAPITest(APITestCase):
         user_score.total_score = 200
         user_score.save()
 
-        with mock.patch('os.environ', {'SCHEDULER_TOKEN': 'secret'}):
-            resp = self.client.post(self.url, data={}, HTTP_X_SCHEDULER_TOKEN='secret')
+        calculate_user_score_basis()
 
         user_score.refresh_from_db()
 
-        self.assertSuccess(resp)
         self.assertEqual(user_score.yesterday_score, 200)
         self.assertEqual(user_score.fluctuation, 0)
 
@@ -424,12 +422,10 @@ class CalculateUserScoreBasisAPITest(APITestCase):
         user_score.total_score = 200
         user_score.save()
 
-        with mock.patch('os.environ', {'SCHEDULER_TOKEN': 'secret'}):
-            with mock.patch('account.models.UserScore.objects.update',
-                            side_effect=DatabaseError("Test Database Error")):
-                resp = self.client.post(self.url, data={}, HTTP_X_SCHEDULER_TOKEN='secret')
-
-        self.assertFailed(resp, "Database error: Test Database Error")
+        with mock.patch('account.models.UserScore.objects.update', side_effect=DatabaseError("Test Database Error")):
+            with self.assertRaises(DatabaseError):
+                calculate_user_score_basis()
+        self.assertEqual(user_score.yesterday_score, 100)
 
 
 class CalculateUserScoreFluctuationAPITest(APITestCase):
@@ -448,12 +444,10 @@ class CalculateUserScoreFluctuationAPITest(APITestCase):
         user_score.fluctuation = 0
         user_score.save()
 
-        with mock.patch('os.environ', {'SCHEDULER_TOKEN': 'secret'}):
-            resp = self.client.post(self.url, data={}, HTTP_X_SCHEDULER_TOKEN='secret')
+        calculate_user_score_fluctuation()
 
         user_score.refresh_from_db()
 
-        self.assertSuccess(resp)
         self.assertEqual(user_score.fluctuation, 200)  # 300 - 100 = 200
 
     def test_database_error_calculate_user_score_fluctuation(self):
@@ -463,12 +457,10 @@ class CalculateUserScoreFluctuationAPITest(APITestCase):
         user_score.fluctuation = 0
         user_score.save()
 
-        with mock.patch('os.environ', {'SCHEDULER_TOKEN': 'secret'}):
-            with mock.patch('account.models.UserScore.objects.update',
-                            side_effect=DatabaseError("Test Database Error")):
-                resp = self.client.post(self.url, data={}, HTTP_X_SCHEDULER_TOKEN='secret')
-
-        self.assertFailed(resp, "Database error: Test Database Error")
+        with mock.patch('account.models.UserScore.objects.update', side_effect=DatabaseError("Test Database Error")):
+            with self.assertRaises(DatabaseError):
+                calculate_user_score_fluctuation()
+        self.assertEqual(user_score.fluctuation, 0)  # Fluctuation should not change if error occurs
 
 
 # class UserChangePasswordAPITest(APITestCase):

@@ -18,15 +18,26 @@ services:
     environment:
       - JUDGE_SERVER_TOKEN=CHANGE_THIS # secret.key
 
-  scheduler:
+  celery-beat:
     restart: always
     depends_on:
+      - oj-redis
       - oj-postgres
-      - backend
-    volumes:
-      - ../scheduler/logs:/app/logs
     env_file:
       - .env
+    environment:
+      - MODE=celery_beat
+
+  celery-worker:
+    restart: always
+    depends_on:
+      - oj-redis
+      - oj-postgres
+      - backend
+    env_file:
+      - .env
+    environment:
+      - MODE=celery_worker
 
   oj-judge:
     restart: always
