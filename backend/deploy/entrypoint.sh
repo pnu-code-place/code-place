@@ -57,7 +57,7 @@ chown -R server:spj $DATA $APP/dist
 find $DATA/test_case -type d -exec chmod 710 {} \;
 find $DATA/test_case -type f -exec chmod 640 {} \;
 
-if [ "$MODE" = "celery_worker"]; then
+if [ "$MODE" = "celery_worker" ]; then
     exec celery -A oj worker --loglevel=info
 elif [ "$MODE" = "celery_beat" ]; then
     exec celery -A oj beat --loglevel=info
