@@ -17,6 +17,7 @@ services:
       - .env
     environment:
       - JUDGE_SERVER_TOKEN=CHANGE_THIS # secret.key
+    entrypoint: /app/deploy/entrypoint.sh
 
   celery-beat:
     restart: always
@@ -25,8 +26,9 @@ services:
       - oj-postgres
     env_file:
       - .env
-    environment:
-      - MODE=celery_beat
+    volumes:
+      - ../backend/data/celery/log:/data/log
+    entrypoint: /app/deploy/entrypoint_beat.sh
 
   celery-worker:
     restart: always
@@ -36,8 +38,9 @@ services:
       - backend
     env_file:
       - .env
-    environment:
-      - MODE=celery_worker
+    volumes:
+      - ../backend/data/celery/log:/data/log
+    entrypoint: /app/deploy/entrypoint_worker.sh
 
   oj-judge:
     restart: always
