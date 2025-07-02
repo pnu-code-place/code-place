@@ -31,6 +31,7 @@ set -e
 
 TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
 ENV_FILE="../deployment/.env"
+DATABASE_CONTAINER_NAME="code-place-dev_oj-postgres"
 
 # 환경 변수 파일이 존재하는지 확인
 if [[ ! -f "$ENV_FILE" ]]; then
@@ -61,7 +62,7 @@ export AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION:-ap-northeast-2}"
 # PostgreSQL 데이터베이스 백업을 S3에 업로드
 echo "Starting PostgreSQL backup to S3..."
 export PGPASSWORD="$POSTGRES_PASSWORD"
-docker exec $(docker ps -q -f name=code-place-prod_oj-postgres) pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" | \
+docker exec $(docker ps -q -f name=$DATABASE_CONTAINER_NAME) pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" | \
     gzip | \
     aws s3 cp - "s3://$AWS_S3_BACKUP_BUCKET/postgres/$TIMESTAMP.sql.gz" --storage-class GLACIER
 
@@ -71,11 +72,12 @@ echo "PostgreSQL backup completed: s3://$AWS_S3_BACKUP_BUCKET/postgres/$TIMESTAM
 echo "Starting data directories backup to S3..."
 
 DATA_TARGET_DIRS=(
-    "assets",
-    "backend",
-    "config",
+    "assets"
+    "backend"
+    "config"
 )
 for dir in "${DATA_TARGET_DIRS[@]}"; do
+    echo "Backing up directory: ./data/$dir"
     if [[ -d "./data/$dir" ]]; then
         tar -czf - "./data/$dir" | \
             aws s3 cp - "s3://$AWS_S3_BACKUP_BUCKET/data/$dir/$TIMESTAMP.tar.gz" --storage-class GLACIER
