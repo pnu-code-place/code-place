@@ -21,10 +21,10 @@
 #
 # 주의사항:
 # - 환경 변수 파일(.env)이 ../deployment/.env 경로에 있어야 하며,
-#   POSTGRES_DB, POSTGRES_USER, POSTGRES_PASSWORD, AWS_S3_BUCKET 등이 정의되어 있어야 합니다.
+#   POSTGRES_DB, POSTGRES_USER, POSTGRES_PASSWORD, AWS_S3_BACKUP_BUCKET 등이 정의되어 있어야 합니다.
 # - Docker와 AWS CLI가 설치되어 있어야 합니다.
 # - AWS 관련 환경 변수가 모두 설정되어 있어야 합니다.
-# - production 환경 데이터베이스만 백업하고, dev 환경은 백업하지 않습니다.
+# - production 환경 데이터베이스만 백업하고, dev 환경은 백업하지 않도록 crontab을 실행해주세요.
 ###############################################################################
 
 set -e
@@ -47,9 +47,9 @@ if [[ -z "$POSTGRES_DB" || -z "$POSTGRES_USER" || -z "$POSTGRES_PASSWORD" ]]; th
 fi
 
 # AWS S3 관련 환경 변수 확인
-if [[ -z "$AWS_S3_BUCKET" || -z "$AWS_ACCESS_KEY_ID" || -z "$AWS_SECRET_ACCESS_KEY" ]]; then
+if [[ -z "$AWS_S3_BACKUP_BUCKET" || -z "$AWS_ACCESS_KEY_ID" || -z "$AWS_SECRET_ACCESS_KEY" ]]; then
     echo "AWS S3 environment variables are not set in $ENV_FILE"
-    echo "Required: AWS_S3_BUCKET, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY"
+    echo "Required: AWS_S3_BACKUP_BUCKET, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY"
     exit 1
 fi
 
@@ -63,32 +63,26 @@ echo "Starting PostgreSQL backup to S3..."
 export PGPASSWORD="$POSTGRES_PASSWORD"
 docker exec $(docker ps -q -f name=code-place-prod_oj-postgres) pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" | \
     gzip | \
-    aws s3 cp - "s3://$AWS_S3_BUCKET/postgres/$TIMESTAMP.sql.gz" --storage-class GLACIER
+    aws s3 cp - "s3://$AWS_S3_BACKUP_BUCKET/postgres/$TIMESTAMP.sql.gz" --storage-class GLACIER
 
-echo "PostgreSQL backup completed: s3://$AWS_S3_BUCKET/postgres/$TIMESTAMP.sql.gz"
+echo "PostgreSQL backup completed: s3://$AWS_S3_BACKUP_BUCKET/postgres/$TIMESTAMP.sql.gz"
 
 # 데이터 디렉토리 백업을 S3에 직접 업로드
 echo "Starting data directories backup to S3..."
 
-# assets 디렉토리 백업
-if [[ -d "./data/assets" ]]; then
-    tar -czf - ./data/assets | \
-        aws s3 cp - "s3://$AWS_S3_BUCKET/data/assets/$TIMESTAMP.tar.gz" --storage-class GLACIER
-    echo "Assets backup completed: s3://$AWS_S3_BUCKET/data/assets/$TIMESTAMP.tar.gz"
-fi
-
-# backend 디렉토리 백업
-if [[ -d "./data/backend" ]]; then
-    tar -czf - ./data/backend | \
-        aws s3 cp - "s3://$AWS_S3_BUCKET/data/backend/$TIMESTAMP.tar.gz" --storage-class GLACIER
-    echo "Backend backup completed: s3://$AWS_S3_BUCKET/data/backend/$TIMESTAMP.tar.gz"
-fi
-
-# config 디렉토리 백업
-if [[ -d "./data/config" ]]; then
-    tar -czf - ./data/config | \
-        aws s3 cp - "s3://$AWS_S3_BUCKET/data/config/$TIMESTAMP.tar.gz" --storage-class GLACIER
-    echo "Config backup completed: s3://$AWS_S3_BUCKET/data/config/$TIMESTAMP.tar.gz"
-fi
+DATA_TARGET_DIRS=(
+    "assets",
+    "backend",
+    "config",
+)
+for dir in "${DATA_TARGET_DIRS[@]}"; do
+    if [[ -d "./data/$dir" ]]; then
+        tar -czf - "./data/$dir" | \
+            aws s3 cp - "s3://$AWS_S3_BACKUP_BUCKET/data/$dir/$TIMESTAMP.tar.gz" --storage-class GLACIER
+        echo "$dir backup completed: s3://$AWS_S3_BACKUP_BUCKET/data/$dir/$TIMESTAMP.tar.gz"
+    else
+        echo "Directory ./data/$dir does not exist, skipping backup."
+    fi
+done
 
 echo "All backups completed successfully."
