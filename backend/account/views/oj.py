@@ -172,11 +172,14 @@ class ApplyUserEmailValidCheckAPI(APIView):
         cache.set(email, code, timeout=60 * 5)
 
         email_html = render_to_string("email_valid_email.html", {'code': code})
-        send_email_async.send(from_name=SysOptions.website_name_shortcut,
-                              to_email=email,
-                              to_name=UNDEFINED_SMTP_USER,
-                              subject="[부산대학교 코드플레이스] 이메일 확인 인증번호입니다.",
-                              content=email_html)
+        send_email_async.apply_async(
+            kwargs={
+                'from_name': SysOptions.website_name_shortcut,
+                'to_email': email,
+                'to_name': UNDEFINED_SMTP_USER,
+                'subject': "[부산대학교 코드플레이스] 이메일 확인 인증번호입니다.",
+                'content': email_html
+            })
         return self.success('email validation code sent')
 
 
@@ -304,11 +307,14 @@ class ApplyResetPasswordAPI(APIView):
             "link": f"{SysOptions.website_base_url}/reset-password/{user.reset_password_token}"
         }
         email_html = render_to_string("reset_password_email.html", render_data)
-        send_email_async.send(from_name=SysOptions.website_name_shortcut,
-                              to_email=user.email,
-                              to_name=user.username,
-                              subject="CSEP 비밀번호 재설정 요청",
-                              content=email_html)
+        send_email_async.apply_async(
+            kwargs={
+                'from_name': SysOptions.website_name_shortcut,
+                'to_email': user.email,
+                'to_name': user.username,
+                'subject': "CSEP 비밀번호 재설정 요청",
+                'content': email_html
+            })
         return self.success("Succeeded")
 
 
