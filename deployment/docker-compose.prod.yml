@@ -31,8 +31,25 @@ services:
       restart_policy:
         condition: on-failure
 
-  scheduler:
-    image: registry.copl-dev.site/code-place-prod/scheduler:latest
+  celery-beat:
+    image: registry.copl-dev.site/code-place-prod/backend:latest
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 1
+        order: stop-first
+      restart_policy:
+        condition: on-failure
+
+  celery-worker:
+    image: registry.copl-dev.site/code-place-prod/backend:latest
+    deploy:
+      replicas: 3 # NOTE: This should be adjusted based on the workloads
+      update_config:
+        parallelism: 1
+        order: stop-first
+      restart_policy:
+        condition: on-failure
 
   oj-judge:
     image: registry.copl-dev.site/code-place-prod/judge-server:1.0.0-beta
@@ -45,10 +62,10 @@ services:
         condition: on-failure
       resources:
         limits:
-          cpus: '0.50'
+          cpus: "0.50"
           memory: 1GB
         reservations:
-          cpus: '0.10'
+          cpus: "0.10"
           memory: 300M
 
   oj-postgres:

@@ -3,6 +3,7 @@ ARG TARGETARCH
 ARG TARGETVARIANT
 
 ENV OJ_ENV production
+ENV MODE server
 WORKDIR /app
 
 COPY ./deploy/requirements.txt /app/deploy/
@@ -18,8 +19,7 @@ apk del gcc libc-dev python3-dev libpq-dev libjpeg-turbo-dev zlib-dev freetype-d
 EOS
 
 COPY ./ /app/
-RUN chmod -R u=rwX,go=rX ./ && chmod +x ./deploy/entrypoint.sh
+RUN chmod -R u=rwX,go=rX ./ && chmod +x ./deploy/entrypoint.sh ./deploy/entrypoint_beat.sh ./deploy/entrypoint_worker.sh
 
 HEALTHCHECK --interval=5s CMD [ "/usr/local/bin/python3", "/app/deploy/health_check.py" ]
 EXPOSE 8080
-ENTRYPOINT [ "/app/deploy/entrypoint.sh" ]

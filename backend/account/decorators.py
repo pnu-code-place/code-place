@@ -1,6 +1,7 @@
 import functools
 import hashlib
 import time
+import os
 
 from problem.models import Problem
 from contest.models import Contest, ContestType, ContestStatus, ContestRuleType
@@ -157,3 +158,79 @@ def ensure_created_by(obj, user):
             raise e
     elif obj.created_by != user:
         raise e
+
+
+class SchedulerOnlyDecorator(object):
+    """Decorator class that restricts API access to requests with a valid scheduler token.
+
+    This decorator is intended to be used on API view methods that should only be accessible by
+    scheduled tasks (e.g., cron jobs), not by regular users.
+    It checks for a specific token in the request headers and allows the request to proceed if the token matches
+    the expected value set in the environment variable `SCHEDULER_TOKEN`.
+    If the token is missing or invalid, it returns a JSON response indicating permission denial.
+    """
+
+    def __init__(self, func):
+        """Initialize the decorator with the function to be wrapped."""
+        self.func = func
+
+    def __get__(self, obj, obj_type):
+        """Allow the decorator to be used as a method of a class."""
+        return functools.partial(self.__call__, obj)
+
+    def __call__(self, *args, **kwargs):
+        """Call the wrapped function if the token is valid, otherwise return an error response.
+
+        Args:
+            *args: Positional arguments passed to the wrapped function.
+            **kwargs: Keyword arguments passed to the wrapped function.
+
+        Returns:
+            The result of the decorated function if the token is valid,
+            or a JSON response indicating permission denial if the token is invalid or missing.
+        """
+        self.request = args[1]
+        if self.check_token():
+            return self.func(*args, **kwargs)
+        else:
+            return self.error("Permission denied")
+
+    def check_token(self):
+        """Check if the request contains a valid scheduler token.
+
+        Returns:
+            bool: True if the token is valid, False otherwise.
+        """
+        expected_token = os.getenv("SCHEDULER_TOKEN", "")
+        if not expected_token:
+            return False
+        received_token = self.request.headers.get("X-Scheduler-Token", "")
+        return received_token == expected_token
+
+    def error(self, data):
+        """Return a JSON response indicating permission denial."""
+        return JSONResponse.response({
+            "error": "permission-denied",
+            "data": "Scheduler token is invalid or missing",
+        })
+
+
+def scheduler_only(view_func):
+    """Function decorator to restrict API access to scheduler-authenticated requests.
+
+    This decorator wraps the given view function and applies the `SchedulerOnlyDecorator`
+    to ensure that only requests with a valid scheduler token can access the view.
+
+    Args:
+        view_func (callable): The view function to be decorated.
+
+    Returns:
+        callable: The wrapped view function.
+    """
+
+    @functools.wraps(view_func)
+    def wrapped_view(*args, **kwargs):
+        decorator = SchedulerOnlyDecorator(view_func)
+        return decorator(*args, **kwargs)
+
+    return wrapped_view

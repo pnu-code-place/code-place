@@ -1,18 +1,26 @@
 import time
+import os
 
 from unittest import mock
 from datetime import timedelta
 from copy import deepcopy
 
 from django.contrib import auth
+from django.db import DatabaseError
+from django.http.response import JsonResponse
+from django.test import RequestFactory, TestCase
+from django.utils import decorators
 from django.utils.timezone import now
 from otpauth import OtpAuth
 
 from utils.api.tests import APIClient, APITestCase
+from utils.api import APIView
 from utils.shortcuts import rand_str
 from options.options import SysOptions
 
 from .models import AdminType, ProblemPermission, User
+from .decorators import scheduler_only
+from .tasks import calculate_user_score_basis, calculate_user_score_fluctuation
 
 
 class PermissionDecoratorTest(APITestCase):
@@ -35,6 +43,49 @@ class PermissionDecoratorTest(APITestCase):
 
     def test_super_admin_required(self):
         pass
+
+
+class SchedulerOnlyDecoratorTest(APITestCase):
+    """SchedulerOnly Decorator Test"""
+
+    class TestAPIView(APIView):
+        """ Test APIView to test scheduler_only decorator"""
+
+        @scheduler_only
+        def post(self, request):
+            return self.success("Success")
+
+    def setUp(self) -> None:
+        """Set up the test case with a request factory and a test view."""
+        self.factory = RequestFactory()
+        self.view = self.TestAPIView()
+
+    def test_empty_environment_token(self):
+        """ Test when SCHEDULER_TOKEN is not set in the environment."""
+        request = self.factory.post("/", HTTP_X_SCHEDULER_TOKEN='secret')
+        response = self.view.post(request)
+        self.assertFailed(response)
+
+    def test_missing_header_token(self):
+        """ Test when SCHEDULER_TOKEN is not set in the environment and request header is missing."""
+        with mock.patch('os.environ', {}):
+            request = self.factory.post("/")
+            response = self.view.post(request)
+        self.assertFailed(response)
+
+    def test_valid_token(self):
+        """ Test when SCHEDULER_TOKEN is set and matches the request header."""
+        with mock.patch('os.environ', {'SCHEDULER_TOKEN': 'secret'}):
+            request = self.factory.post("/", HTTP_X_SCHEDULER_TOKEN='secret')
+            response = self.view.post(request)
+        self.assertSuccess(response)
+
+    def test_invalid_token(self):
+        """ Test when SCHEDULER_TOKEN is set but does not match the request header."""
+        with mock.patch('os.environ', {'SCHEDULER_TOKEN': 'secret'}):
+            request = self.factory.post("/", HTTP_X_SCHEDULER_TOKEN='wrong_secret')
+            response = self.view.post(request)
+        self.assertFailed(response)
 
 
 class DuplicateUserCheckAPITest(APITestCase):
@@ -342,6 +393,74 @@ class GenerateUserAPITest(APITestCase):
         resp = self.client.post(self.url, data=self.data)
         self.assertSuccess(resp)
         mock_workbook.assert_called()
+
+
+class CalculateUserScoreBasisAPITest(APITestCase):
+    """Calculate User Score Basis API Test"""
+
+    def setUp(self):
+        self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
+        self.create_user(email="test@test.com", username="test", password="test1234!", login=False)
+        self.user = User.objects.first()
+
+    def test_successful_calculate_user_score_basis(self):
+        user_score = self.user.userscore
+        user_score.yesterday_score = 100
+        user_score.total_score = 200
+        user_score.save()
+
+        calculate_user_score_basis()
+
+        user_score.refresh_from_db()
+
+        self.assertEqual(user_score.yesterday_score, 200)
+        self.assertEqual(user_score.fluctuation, 0)
+
+    def test_database_error_calculate_user_score_basis(self):
+        user_score = self.user.userscore
+        user_score.yesterday_score = 100
+        user_score.total_score = 200
+        user_score.save()
+
+        with mock.patch('account.models.UserScore.objects.update', side_effect=DatabaseError("Test Database Error")):
+            with self.assertRaises(DatabaseError):
+                calculate_user_score_basis()
+        self.assertEqual(user_score.yesterday_score, 100)
+
+
+class CalculateUserScoreFluctuationAPITest(APITestCase):
+    """Calculate User Score Fluctuation API Test"""
+
+    def setUp(self):
+        self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
+        self.create_user(email="test@test.com", username="test", password="test1234!", login=False)
+        self.user = User.objects.first()
+        self.url = self.reverse("calculate_user_score_fluctuation_api")
+
+    def test_successful_calculate_user_score_fluctuation(self):
+        user_score = self.user.userscore
+        user_score.yesterday_score = 100
+        user_score.total_score = 300
+        user_score.fluctuation = 0
+        user_score.save()
+
+        calculate_user_score_fluctuation()
+
+        user_score.refresh_from_db()
+
+        self.assertEqual(user_score.fluctuation, 200)  # 300 - 100 = 200
+
+    def test_database_error_calculate_user_score_fluctuation(self):
+        user_score = self.user.userscore
+        user_score.yesterday_score = 100
+        user_score.total_score = 300
+        user_score.fluctuation = 0
+        user_score.save()
+
+        with mock.patch('account.models.UserScore.objects.update', side_effect=DatabaseError("Test Database Error")):
+            with self.assertRaises(DatabaseError):
+                calculate_user_score_fluctuation()
+        self.assertEqual(user_score.fluctuation, 0)  # Fluctuation should not change if error occurs
 
 
 # class UserChangePasswordAPITest(APITestCase):

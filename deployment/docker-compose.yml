@@ -17,16 +17,30 @@ services:
       - .env
     environment:
       - JUDGE_SERVER_TOKEN=CHANGE_THIS # secret.key
+    entrypoint: /app/deploy/entrypoint.sh
 
-  scheduler:
+  celery-beat:
     restart: always
     depends_on:
+      - oj-redis
       - oj-postgres
-      - backend
-    volumes:
-      - ../scheduler/logs:/app/logs
     env_file:
       - .env
+    volumes:
+      - ../backend/data/celery/log:/data/log
+    entrypoint: /app/deploy/entrypoint_beat.sh
+
+  celery-worker:
+    restart: always
+    depends_on:
+      - oj-redis
+      - oj-postgres
+      - backend
+    env_file:
+      - .env
+    volumes:
+      - ../backend/data/celery/log:/data/log
+    entrypoint: /app/deploy/entrypoint_worker.sh
 
   oj-judge:
     restart: always
