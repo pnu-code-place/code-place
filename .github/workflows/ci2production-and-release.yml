@@ -150,7 +150,7 @@ jobs:
       always() &&
       needs.check-release-branch.outputs.is_release == 'true' &&
       (needs.ci-frontend.result == 'success' || needs.ci-frontend.result == 'skipped') &&
-      (needs.ci-backend.result == 'success' || needs.ci-backend.result == 'skipped')
+      (needs.ci-backend.result == 'success' || needs.ci-backend.result == 'skipped') &&
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
