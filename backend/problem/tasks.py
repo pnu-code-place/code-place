@@ -5,6 +5,7 @@ import celery
 
 from .models import Problem, get_default_week_info
 from utils.constants import Difficulty
+from utils.shortcuts import CELERY_TASK_ARGS
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +16,7 @@ DIFFICULTY_GROUPS = [
 ]
 
 
-@celery.shared_task(max_retries=0, time_limit=3600, soft_time_limit=3600)
+@celery.shared_task(**CELERY_TASK_ARGS())
 def update_weekly_stats():
     """Update the weekly statistics of problems.
     
@@ -39,7 +40,7 @@ def update_weekly_stats():
             most_difficult_problem.save(update_fields=['is_most_difficult'])
 
 
-@celery.shared_task(max_retries=0, time_limit=3600, soft_time_limit=3600)
+@celery.shared_task(**CELERY_TASK_ARGS())
 def update_bonus_problem():
     """Update bonus problems by selecting one problem from each difficulty group.
 

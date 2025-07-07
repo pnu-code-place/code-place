@@ -1,9 +1,9 @@
 import os
 import re
-import datetime
 import random
 from base64 import b64encode
 from io import BytesIO
+from typing import Any, Dict
 
 from django.utils.crypto import get_random_string
 from envelopes import Envelope
@@ -93,6 +93,28 @@ def send_email(smtp_config, from_name, to_email, to_name, subject, content):
 
 def get_env(name, default=""):
     return os.environ.get(name, default)
+
+
+def CELERY_TASK_ARGS(
+    max_retries: int = 0,
+    time_limit: int = 3600,
+    soft_time_limit: int = 3600,
+) -> Dict[str, Any]:
+    """Returns a dictionary of arguments for Celery tasks.
+
+    Args:
+        max_retries: Maximum number of retries for the task.
+        time_limit: Hard time limit for the task in seconds.
+        soft_time_limit: Soft time limit for the task in seconds.
+
+    Returns:
+        dict: A dictionary containing the task arguments.
+    """
+    return {
+        "max_retries": max_retries,
+        "time_limit": time_limit,
+        "soft_time_limit": soft_time_limit,
+    }
 
 
 def check_is_id(value):

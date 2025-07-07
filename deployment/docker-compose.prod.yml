@@ -44,7 +44,7 @@ services:
   celery-worker:
     image: registry.copl-dev.site/code-place-prod/backend:latest
     deploy:
-      replicas: 1 # NOTE: This should be adjusted based on the workloads
+      replicas: 3 # NOTE: This should be adjusted based on the workloads
       update_config:
         parallelism: 1
         order: stop-first
