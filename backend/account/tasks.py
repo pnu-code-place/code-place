@@ -1,17 +1,16 @@
 import logging
 from django.db.models import F
-import dramatiq
+import celery
 
 from options.options import SysOptions
-from utils.shortcuts import send_email, DRAMATIQ_WORKER_ARGS
+from utils.shortcuts import CELERY_TASK_ARGS, send_email
 
-from oj import celery
 from .models import UserScore
 
 logger = logging.getLogger(__name__)
 
 
-@dramatiq.actor(**DRAMATIQ_WORKER_ARGS(max_retries=3))
+@celery.shared_task(**CELERY_TASK_ARGS(max_retries=3))
 def send_email_async(from_name, to_email, to_name, subject, content):
     if not SysOptions.smtp_config:
         return
@@ -26,7 +25,7 @@ def send_email_async(from_name, to_email, to_name, subject, content):
         logger.exception(e)
 
 
-@celery.app.task(name='calculate_user_score_basis')
+@celery.shared_task(**CELERY_TASK_ARGS())
 def calculate_user_score_basis():
     """Calculate the basis for user scores by resetting the yesterday's score and fluctuation.
 
@@ -37,7 +36,7 @@ def calculate_user_score_basis():
     logging.info("User scores have been reset successfully")
 
 
-@celery.app.task(name='calculate_user_score_fluctuation')
+@celery.shared_task(**CELERY_TASK_ARGS())
 def calculate_user_score_fluctuation():
     """Calculate the fluctuation of user scores.
 
