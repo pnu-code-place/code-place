@@ -82,7 +82,7 @@ class SubmissionAPI(APIView):
         # use this for debug
         # JudgeDispatcher(submission.id, problem.id).judge()
 
-        judge_task.send(submission.id, problem.id)
+        judge_task.apply_async(args=(submission.id, problem.id))
 
         if hide_id:
             return self.success()

@@ -1,15 +1,6 @@
-import json
-import random
 import re
 
-import dramatiq
 from functools import lru_cache
-
-from django.db import transaction
-from django.db.models import Min, F
-
-from .models import Problem, get_default_week_info
-from utils.constants import Difficulty
 
 TEMPLATE_BASE = """//PREPEND BEGIN
 {}

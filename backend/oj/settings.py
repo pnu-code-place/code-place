@@ -14,6 +14,8 @@ import raven
 from copy import deepcopy
 from utils.shortcuts import get_env
 
+import celery.schedules
+
 production_env = get_env("OJ_ENV", "dev") == "production"
 if production_env:
     from .production_settings import *
@@ -33,8 +35,8 @@ VENDOR_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'django_dramatiq',
     'django_dbconn_retry',
+    'django_celery_beat',
 ]
 
 if production_env:
@@ -183,11 +185,6 @@ LOGGING = {
             'level': 'ERROR',
             'propagate': True,
         },
-        'dramatiq': {
-            'handlers': LOGGING_HANDLERS,
-            'level': 'DEBUG',
-            'propagate': False,
-        },
         '': {
             'handlers': LOGGING_HANDLERS,
             'level': 'WARNING',
@@ -223,35 +220,33 @@ CACHES = {"default": redis_config()}
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "default"
 
-DRAMATIQ_BROKER = {
-    "BROKER":
-        "dramatiq.brokers.redis.RedisBroker",
-    "OPTIONS": {
-        "url": f"{REDIS_URL}/4",
-    },
-    "MIDDLEWARE": [
-        # "dramatiq.middleware.Prometheus",
-        "dramatiq.middleware.AgeLimit",
-        "dramatiq.middleware.TimeLimit",
-        "dramatiq.middleware.Callbacks",
-        "dramatiq.middleware.Retries",
-        # "django_dramatiq.middleware.AdminMiddleware",
-        "django_dramatiq.middleware.DbConnectionsMiddleware"
-    ]
-}
-
-DRAMATIQ_RESULT_BACKEND = {
-    "BACKEND": "dramatiq.results.backends.redis.RedisBackend",
-    "BACKEND_OPTIONS": {
-        "url": f"{REDIS_URL}/4",
-    },
-    "MIDDLEWARE_OPTIONS": {
-        "result_ttl": None
-    }
-}
-
 RAVEN_CONFIG = {'dsn': 'https://b200023b8aed4d708fb593c5e0a6ad3d:1fddaba168f84fcf97e0d549faaeaff0@sentry.io/263057'}
 
 IP_HEADER = "HTTP_X_REAL_IP"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+
+CELERY_BROKER_URL = f"{REDIS_URL}/4"
+CELERY_RESULT_BACKEND = f"{REDIS_URL}/4"
+
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+
+CELERY_BEAT_SCHEDULE = {
+    'calculate_user_score_basis': {
+        'task': 'account.tasks.calculate_user_score_basis',
+        'schedule': celery.schedules.crontab(minute=0, hour=0),  # Every day at midnight
+    },
+    'calculate_user_score_fluctuation': {
+        'task': 'account.tasks.calculate_user_score_fluctuation',
+        'schedule': celery.schedules.crontab(minute='*/1'),  # Every minute
+    },
+    'update_weekly_stats': {
+        'task': 'problem.tasks.update_weekly_stats',
+        'schedule': celery.schedules.crontab(hour=0, minute=0, day_of_week='mon'),  # Every Monday at midnight
+    },
+    'update_bonus_problem': {
+        'task': 'problem.tasks.update_bonus_problem',
+        'schedule': celery.schedules.crontab(hour=0, minute=0, day_of_week='mon'),  # Every Monday at midnight
+    }
+}
