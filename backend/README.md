@@ -7,7 +7,6 @@
 [![Django Rest Framework](https://img.shields.io/badge/django_rest_framework-3.12.0-blue.svg?style=flat-square)](http://www.django-rest-framework.org/)
 
 ## 1. 프로젝트 소개
-
 [기존의 운영중인 부산대학교 온라인 저지 웹페이지](http://oj.pusan.ac.kr/)를 개선하는 프로젝트입니다.
 
 [베타 사이트](http://10.125.121.115:8080/)는 현재 부산대학교 내부 네트워크에서만 접속이 가능합니다.
@@ -17,7 +16,6 @@
 이 프로젝트는 기존 [QingdaoU의 OnlineJudge](https://github.com/QingdaoU/OnlineJudge)를 기반으로 개발되었습니다.
 
 ### 개발 환경
-
 <details>
   <summary>Python <strong>3.8.0</strong></summary>
   기본 QingdaoU의 Online Judge에 사용된 Python 버전은 <strong>3.8.0</strong> 입니다.
@@ -35,24 +33,20 @@
 </details>
 
 ### 개발 기간
-
 2023.12 ~ 2024.3 (현재 진행 중)
 
 ### 개발 인원
-
-| github                              | 사진                                                                  | 역할                         | 이메일 주소           | 소속             |
-| ----------------------------------- | --------------------------------------------------------------------- | ---------------------------- | --------------------- | ---------------- |
-| [hunsy9](https://github.com/hunsy9) | ![유저 아바타](https://avatars.githubusercontent.com/u/101303791?v=4) | PM, 백엔드 개발 및 배포      | juniper0917@gmail.com | 정보컴퓨터공학부 |
-| [Boksam](https://github.com/Boksam) | ![유저 아바타](https://avatars.githubusercontent.com/u/82745129?v=4)  | 프로젝트 기획 및 백엔드 개발 | boksam1017@gmail.com  | 정보컴퓨터공학부 |
+| github                              | 사진                                                              | 역할               | 이메일 주소                | 소속       |
+|-------------------------------------|-----------------------------------------------------------------|------------------|-----------------------|----------|
+| [hunsy9](https://github.com/hunsy9) | ![유저 아바타](https://avatars.githubusercontent.com/u/101303791?v=4)  | PM, 백엔드 개발 및 배포  | juniper0917@gmail.com | 정보컴퓨터공학부 |
+| [Boksam](https://github.com/Boksam) | ![유저 아바타](https://avatars.githubusercontent.com/u/82745129?v=4) | 프로젝트 기획 및 백엔드 개발 | boksam1017@gmail.com  | 정보컴퓨터공학부 |
 
 ## 2. 프로젝트 설치
-
 CSEP BE는 기본적으로 Docker, Docker-Compose에 기반합니다.
 
 [Docker Desktop](https://www.docker.com/products/docker-desktop/)을 미리 설치해두고 프로젝트를 설치하는 것을 권장합니다.
 
 ### Linux
-
 ```bash
 
 # 의존 라이브러리 설치
@@ -72,16 +66,13 @@ python3 manage.py runserver
 
 ```
 
-아래는 문제 채점 및 제출과 같은 비동기 작업을 처리하는 **celery**를 실행시키는 방법입니다.
+아래는 문제 채점 및 제출과 같은 비동기 작업을 처리하는 **dramatiq**를 실행시키는 방법입니다. 
 
 ```bash
 # 1. 터미널을 하나 더 생성합니다.
 
-# 2. celery worker를 실행합니다.
-celery -A oj worker -l info
-
-# 3. 스케줄링 작업도 실행하고 싶은 경우, celery beat를 실행합니다.
-celery -A oj beat -l info
+# 2. dramitiq를 실행합니다.
+python3 manage.py rundramatiq
 ```
 
 ## 3. Package, 디렉토리 구성
@@ -97,7 +88,7 @@ Python Package 구성은 다음과 같습니다.
 ├── submission/                   # 문제 제출 관련 패키지
 ├── utils/                        # 기타 util용 패키지
 ├── conf/                         # JudgeServer Heartbeat, SMTP등 환경 구성
-├── fps/                          # 문제 등록 시 사용되는 데이터 파싱
+├── fps/                          # 문제 등록 시 사용되는 데이터 파싱 
 ├── judge/                        # 문제 채점 시 사용되는 비동기 태스크
 ├── oj/                           # 개발환경 설정(Dev, Production)
 ```
@@ -111,5 +102,4 @@ Python Package를 제외한 폴더 구조는 다음과 같습니다.
 ```
 
 ## 4. 라이센스
-
 [MIT](http://opensource.org/licenses/MIT)

@@ -31,7 +31,7 @@ def process_pending_task():
         print("process_pending_task tmp: ", tmp_data)
         if tmp_data:
             data = json.loads(tmp_data.decode("utf-8"))
-            judge_task.apply_async(kwargs=data)
+            judge_task.send(**data)
 
 
 class ChooseJudgeServer:

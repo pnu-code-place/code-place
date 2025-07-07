@@ -1,10 +1,9 @@
 from django.conf.urls import url
 
-from ..views.oj import (ApplyResetPasswordAPI, CalculateUserScoreBasisAPI, CalculateUserScoreFluctuationAPI,
-                        ResetPasswordAPI, UserChangePasswordAPI, UserRegisterAPI, UserLoginAPI, UserLogoutAPI,
-                        UsernameOrEmailCheck, TwoFactorAuthAPI, CheckTFARequiredAPI, SessionManagementAPI,
-                        OpenAPIAppkeyAPI, SSOAPI, ApplyUserEmailValidCheckAPI, UserEmailValidCheckAPI,
-                        NicknameValidCheckAPI)
+from ..views.oj import (ApplyResetPasswordAPI, ResetPasswordAPI, UserChangePasswordAPI, UserRegisterAPI, UserLoginAPI,
+                        UserLogoutAPI, UsernameOrEmailCheck, TwoFactorAuthAPI, CheckTFARequiredAPI,
+                        SessionManagementAPI, OpenAPIAppkeyAPI, SSOAPI, ApplyUserEmailValidCheckAPI,
+                        UserEmailValidCheckAPI, NicknameValidCheckAPI)
 
 from utils.captcha.views import CaptchaAPIView
 
@@ -25,9 +24,5 @@ urlpatterns = [
     url(r"^two_factor_auth/?$", TwoFactorAuthAPI.as_view(), name="two_factor_auth_api"),
     url(r"^sessions/?$", SessionManagementAPI.as_view(), name="session_management_api"),
     url(r"^open_api_appkey/?$", OpenAPIAppkeyAPI.as_view(), name="open_api_appkey_api"),
-    url(r"^sso?$", SSOAPI.as_view(), name="sso_api"),
-    url(r"^calc_user_score_basis/?$", CalculateUserScoreBasisAPI.as_view(), name="calculate_user_score_basis_api"),
-    url(r"^calc_user_score_fluctuation/?$",
-        CalculateUserScoreFluctuationAPI.as_view(),
-        name="calculate_user_score_fluctuation_api")
+    url(r"^sso?$", SSOAPI.as_view(), name="sso_api")
 ]

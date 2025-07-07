@@ -6,15 +6,11 @@ from datetime import timedelta
 from zipfile import ZipFile
 
 from django.conf import settings
-from django.db import DatabaseError
 
-from utils.constants import Difficulty
 from utils.api.tests import APITestCase
-from unittest import mock
 
-from .models import ProblemTag, ProblemIOMode, get_default_week_info
+from .models import ProblemTag, ProblemIOMode
 from .models import Problem, ProblemRuleType
-from .tasks import update_weekly_stats, update_bonus_problem
 from contest.models import Contest
 from contest.tests import DEFAULT_CONTEST_DATA
 
@@ -99,12 +95,6 @@ class ProblemCreateTestBase(APITestCase):
                 tag = ProblemTag.objects.create(name=item)
             problem.tags.add(tag)
         return problem
-
-    @staticmethod
-    def create_problem_with_custom_field(created_by, **kwargs):
-        data = copy.deepcopy(DEFAULT_PROBLEM_DATA)
-        data.update(kwargs)
-        return ProblemCreateTestBase.add_problem(data, created_by)
 
 
 class ProblemTagListAPITest(APITestCase):
@@ -371,199 +361,3 @@ ddd
         self.assertEqual(ret["prepend"], "aaa\n")
         self.assertEqual(ret["template"], "")
         self.assertEqual(ret["append"], "ccc\n")
-
-
-class UpdateWeeklyStatsTest(APITestCase):
-
-    def setUp(self):
-        self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
-        self.admin = self.create_super_admin()
-        self.data = copy.deepcopy(DEFAULT_PROBLEM_DATA)
-        self.url = self.reverse("update_weekly_stats_api")
-
-        self.problem_1 = ProblemCreateTestBase.create_problem_with_custom_field(self.admin, _id="A-1")
-        self.problem_2 = ProblemCreateTestBase.create_problem_with_custom_field(self.admin, _id="A-2")
-        self.problem_3 = ProblemCreateTestBase.create_problem_with_custom_field(self.admin, _id="A-3")
-
-    def test_update_weekly_stats(self):
-        week_info_1 = {
-            'submission': 10,
-            'accepted': 5,
-            'success_rate': 0.5,
-            'solver': ['user1', 'user2', 'user3', 'user4', 'user5'],
-        }
-        week_info_2 = {
-            'submission': 10,
-            'accepted': 3,
-            'success_rate': 0.3,
-            'solver': ['user1', 'user2', 'user3'],
-        }
-        week_info_3 = { # This problem will be marked as most difficult
-            'submission': 10,
-            'accepted': 1,
-            'success_rate': 0.1,
-            'solver': ['user1'],
-        }
-
-        self.problem_1.curr_week_info = week_info_1
-        self.problem_1.save(update_fields=['curr_week_info'])
-        self.problem_2.curr_week_info = week_info_2
-        self.problem_2.save(update_fields=['curr_week_info'])
-        self.problem_3.curr_week_info = week_info_3
-        self.problem_3.save(update_fields=['curr_week_info'])
-
-        # Check is_most_difficult = false before update
-        self.assertFalse(self.problem_1.is_most_difficult)
-        self.assertFalse(self.problem_2.is_most_difficult)
-        self.assertFalse(self.problem_3.is_most_difficult)
-
-        update_weekly_stats()
-
-        updated_problem_1 = Problem.objects.get(id=self.problem_1.id)
-        updated_problem_2 = Problem.objects.get(id=self.problem_2.id)
-        updated_problem_3 = Problem.objects.get(id=self.problem_3.id)
-
-        # Check last_week_info and curr_week_info are updated
-        self.assertEqual(updated_problem_1.last_week_info, week_info_1)
-        self.assertEqual(updated_problem_1.curr_week_info, get_default_week_info())
-        self.assertEqual(updated_problem_2.last_week_info, week_info_2)
-        self.assertEqual(updated_problem_2.curr_week_info, get_default_week_info())
-        self.assertEqual(updated_problem_3.last_week_info, week_info_3)
-        self.assertEqual(updated_problem_3.curr_week_info, get_default_week_info())
-
-        # Check is_most_difficult is updated correctly
-        self.assertFalse(updated_problem_1.is_most_difficult)
-        self.assertFalse(updated_problem_2.is_most_difficult)
-        self.assertTrue(updated_problem_3.is_most_difficult)
-
-    def test_update_weekly_stats_database_error(self):
-
-        with mock.patch('problem.models.Problem.objects.update', side_effect=Exception("Database error")):
-            with self.assertRaises(Exception):
-                update_weekly_stats()
-
-
-class UpdateBonusProblemTest(APITestCase):
-
-    def setUp(self):
-        self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
-        self.admin = self.create_super_admin()
-        self.url = self.reverse("update_bonus_problem_api")
-
-        self.low_problem_1 = ProblemCreateTestBase.create_problem_with_custom_field(
-            self.admin,
-            _id="A-1",
-            difficulty=Difficulty.LOW,
-        )
-        self.mid_problem_1 = ProblemCreateTestBase.create_problem_with_custom_field(
-            self.admin,
-            _id="A-2",
-            difficulty=Difficulty.MID,
-        )
-        self.high_problem_1 = ProblemCreateTestBase.create_problem_with_custom_field(
-            self.admin,
-            _id="A-3",
-            difficulty=Difficulty.HIGH,
-        )
-
-    def test_update_bonus_problem(self):
-        # Check initial state
-        self.assertFalse(self.low_problem_1.is_bonus)
-        self.assertFalse(self.mid_problem_1.is_bonus)
-        self.assertFalse(self.high_problem_1.is_bonus)
-
-        update_bonus_problem()
-
-        updated_low_problem_1 = Problem.objects.get(id=self.low_problem_1.id)
-        updated_mid_problem_1 = Problem.objects.get(id=self.mid_problem_1.id)
-        updated_high_problem_1 = Problem.objects.get(id=self.high_problem_1.id)
-
-        # Check is_bonus is updated correctly
-        self.assertTrue(updated_low_problem_1.is_bonus)
-        self.assertTrue(updated_mid_problem_1.is_bonus)
-        self.assertTrue(updated_high_problem_1.is_bonus)
-
-    def test_update_bonus_problem_with_existing_bonus(self):
-        # Set low_problem_1 as current bonus problem
-        self.low_problem_1.is_bonus = True
-        self.low_problem_1.save(update_fields=['is_bonus'])
-
-        low_problem_2 = ProblemCreateTestBase.create_problem_with_custom_field(
-            self.admin,
-            _id="A-4",
-            difficulty=Difficulty.LOW,
-        )
-
-        # Check initial state
-        self.assertTrue(self.low_problem_1.is_bonus)
-        self.assertFalse(low_problem_2.is_bonus)
-        self.assertFalse(self.mid_problem_1.is_bonus)
-        self.assertFalse(self.high_problem_1.is_bonus)
-
-        update_bonus_problem()
-
-        updated_low_problem_1 = Problem.objects.get(id=self.low_problem_1.id)
-        updated_low_problem_2 = Problem.objects.get(id=low_problem_2.id)
-        updated_mid_problem_1 = Problem.objects.get(id=self.mid_problem_1.id)
-        updated_high_problem_1 = Problem.objects.get(id=self.high_problem_1.id)
-
-        # Check is_bonus is updated correctly
-        # Since low_problem_1 was bonus, it should not be selected again
-        self.assertFalse(updated_low_problem_1.is_bonus)
-        self.assertTrue(updated_low_problem_2.is_bonus)
-        self.assertTrue(updated_mid_problem_1.is_bonus)
-        self.assertTrue(updated_high_problem_1.is_bonus)
-
-    def test_update_bonus_problem_with_contest_problems(self):
-        # Ensure other problems are marked as bonus to avoid selection
-        self.low_problem_1.is_bonus = True
-        self.low_problem_1.save(update_fields=['is_bonus'])
-        self.mid_problem_1.is_bonus = True
-        self.mid_problem_1.save(update_fields=['is_bonus'])
-        self.high_problem_1.is_bonus = True
-        self.high_problem_1.save(update_fields=['is_bonus'])
-
-        # Create contest problems (should be excluded from bonus selection)
-        contest_data = copy.deepcopy(DEFAULT_CONTEST_DATA)
-        contest = self.client.post(self.reverse("contest_admin_api"), data=contest_data).data["data"]
-
-        contest_problem = ProblemCreateTestBase.create_problem_with_custom_field(
-            self.admin,
-            _id="C-1",
-            difficulty=Difficulty.LOW,
-            contest_id=contest["id"],
-        )
-
-        update_bonus_problem()
-
-        # Contest problem should not be selected as bonus
-        updated_contest_problem = Problem.objects.get(id=contest_problem.id)
-        self.assertFalse(updated_contest_problem.is_bonus)
-
-    def test_update_bonus_problem_with_invisible_problems(self):
-        #Ensure other problems are marked as bonus to avoid selection
-        self.low_problem_1.is_bonus = True
-        self.low_problem_1.save(update_fields=['is_bonus'])
-        self.mid_problem_1.is_bonus = True
-        self.mid_problem_1.save(update_fields=['is_bonus'])
-        self.high_problem_1.is_bonus = True
-        self.high_problem_1.save(update_fields=['is_bonus'])
-
-        # Create an invisible problem
-        invisible_problem = ProblemCreateTestBase.create_problem_with_custom_field(
-            self.admin,
-            _id="A-6",
-            difficulty=Difficulty.LOW,
-            visible=False,
-        )
-
-        update_bonus_problem()
-
-        # Invisible problem should not be selected as bonus
-        updated_invisible_problem = Problem.objects.get(id=invisible_problem.id)
-        self.assertFalse(updated_invisible_problem.is_bonus)
-
-    def test_update_bonus_problem_with_database_error(self):
-        with mock.patch('problem.models.Problem.objects.filter', side_effect=DatabaseError("Database error")):
-            with self.assertRaises(DatabaseError):
-                update_bonus_problem()

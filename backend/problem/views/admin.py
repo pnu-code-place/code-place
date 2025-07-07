@@ -237,7 +237,7 @@ class ProblemAPI(ProblemBase):
         data = request.data
 
         if Problem.objects.filter(_id=data["_id"]).exists():
-            return self.error("Problem ID already exists")
+            return "Problem ID already exists"
 
         error_info = self.common_checks(request)
         if error_info:
@@ -575,7 +575,7 @@ class ExportProblemAPI(APIView):
         with zipfile.ZipFile(path, "w") as zip_file:
             for index, problem in enumerate(problems):
                 self.process_one_problem(zip_file=zip_file, user=request.user, problem=problem, index=index + 1)
-        delete_files.apply_async(args=(path,), countdown=300)
+        delete_files.send_with_options(args=(path,), delay=300_000)
         resp = FileResponse(open(path, "rb"))
         resp["Content-Type"] = "application/zip"
         resp["Content-Disposition"] = "attachment;filename=problem-export.zip"

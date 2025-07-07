@@ -1,8 +1,10 @@
 import os
-from celery import shared_task
+import dramatiq
+
+from utils.shortcuts import DRAMATIQ_WORKER_ARGS
 
 
-@shared_task(max_retries=0, time_limit=3600, soft_time_limit=3600)
+@dramatiq.actor(**DRAMATIQ_WORKER_ARGS())
 def delete_files(*args):
     for item in args:
         try:

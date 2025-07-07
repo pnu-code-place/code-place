@@ -12,7 +12,6 @@ develop-eggs/
 dist/
 eggs/
 lib64/
-lib/
 parts/
 sdist/
 var/

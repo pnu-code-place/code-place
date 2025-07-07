@@ -16,11 +16,8 @@ services:
     volumes:
       - data_volume:/data:rw
 
-  celery-beat:
-    image: registry.copl-dev.site/code-place-dev/backend:latest
-
-  celery-worker:
-    image: registry.copl-dev.site/code-place-dev/backend:latest
+  scheduler:
+    image: registry.copl-dev.site/code-place-dev/scheduler:latest
 
   oj-judge:
     image: registry.copl-dev.site/code-place-dev/judge-server:1.0.0-beta
