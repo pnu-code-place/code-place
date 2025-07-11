@@ -2,7 +2,31 @@
   <div class="flex-container">
     <splitpanes vertical style="height: calc(100vh - 50px)">
       <pane :size="50">
-        <ProblemDetailFlexibleContainer :problem="problem" :contestID="contestID"/>
+        <div class="tab-headers">
+          <div class="tab-header"
+            :class="{ active: leftPainActiveTab === 'problem' }"
+            @click="leftPainActiveTab = 'problem'">
+            문제 설명
+          </div>
+          <div class="tab-header"
+            :class="{ active: leftPainActiveTab === 'submission' }"
+            @click="leftPainActiveTab = 'submission'">
+            제출 현황
+          </div>
+        </div>
+        <div class="tab-content">
+          <ProblemDetailFlexibleContainer
+            v-if="leftPainActiveTab === 'problem'"
+            :problem="problem"
+            :contestID="contestID"
+          />
+          <SubmissionList
+            v-if="leftPainActiveTab === 'submission'"
+            :problemID="problemID"
+            :contestID="contestID"
+            :theme="theme"
+          />
+        </div>
       </pane>
       <pane min-size="30" :size="50">
         <CodeEditorHeader @create-submission="submitCode"
@@ -43,6 +67,7 @@ import SubmissionStatus from "./problemSolvingComponent/SubmissionStatus.vue";
 import ProblemDetailFlexibleContainer from "./problemSolvingComponent/ProblemDetailFlexibleContainer.vue";
 import StickyLnCol from "./problemSolvingComponent/StickyLnCol.vue";
 import CodeEditor from "./problemSolvingComponent/CodeEditor.vue"
+import SubmissionList from './problemSolvingComponent/SubmissionList.vue'
 
 const filtedStatus = ['-1', '-2', '0', '1', '2', '3', '4', '8']
 
@@ -54,6 +79,7 @@ export default {
     SubmissionStatus,
     CodeEditorHeader,
     ProblemDetailFlexibleContainer,
+    SubmissionList,
     CustomIconBtn,
     FieldCategoryBox,
     Splitpanes,
@@ -119,6 +145,8 @@ export default {
         openCategoryDropdown: false
       },
       modalCheck: false,
+      leftPainActiveTab: 'problem',
+      rightPainActiveTab: 'editor',
     }
   },
   beforeRouteEnter(to, from, next) {
@@ -435,5 +463,32 @@ export default {
   cursor: pointer;
 }
 
-</style>
+.tab-headers {
+  display: flex;
+  // border-bottom: 1px solid #e0e0e0;
+  // margin-bottom: 15px;
+}
 
+.tab-header {
+  padding: 10px 20px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.tab-header.active {
+  border-bottom-color: #007bff;
+  color: #007bff;
+  font-weight: 600;
+}
+
+.tab-header:hover {
+  background-color: #f8f9fa;
+}
+
+.tab-content {
+  height: calc(100% - 50px);
+  overflow-y: auto;
+}
+
+</style>
