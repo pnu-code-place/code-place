@@ -64,7 +64,6 @@ export default {
     contestID: String,
     theme: {
       type: Boolean,
-      default: false // false: Light, true: Dark
     }
   },
   data() {
@@ -135,8 +134,6 @@ export default {
 }
 
 .submission-list-container {
-  border: 1px solid var(--border-color);
-  border-radius: 7px;
   height: 100%;
   overflow-y: auto;
   display: flex;

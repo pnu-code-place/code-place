@@ -2,30 +2,32 @@
   <div class="flex-container">
     <splitpanes vertical style="height: calc(100vh - 50px)">
       <pane :size="50">
-        <div class="tab-headers">
-          <div class="tab-header"
-            :class="{ active: leftPainActiveTab === 'problem' }"
-            @click="leftPainActiveTab = 'problem'">
-            문제 설명
+        <div class="left-pain-wrapper">
+          <div class="tab-headers">
+            <div class="tab-header"
+              :class="{ active: leftPainActiveTab === 'problem' }"
+              @click="leftPainActiveTab = 'problem'">
+              문제 설명
+            </div>
+            <div class="tab-header"
+              :class="{ active: leftPainActiveTab === 'submission' }"
+              @click="leftPainActiveTab = 'submission'">
+              제출 현황
+            </div>
           </div>
-          <div class="tab-header"
-            :class="{ active: leftPainActiveTab === 'submission' }"
-            @click="leftPainActiveTab = 'submission'">
-            제출 현황
+          <div class="tab-content">
+            <ProblemDetailFlexibleContainer
+              v-if="leftPainActiveTab === 'problem'"
+              :problem="problem"
+              :contestID="contestID"
+            />
+            <SubmissionList
+              v-if="leftPainActiveTab === 'submission'"
+              :problemID="problemID"
+              :contestID="contestID"
+              :theme.sync="theme"
+            />
           </div>
-        </div>
-        <div class="tab-content">
-          <ProblemDetailFlexibleContainer
-            v-if="leftPainActiveTab === 'problem'"
-            :problem="problem"
-            :contestID="contestID"
-          />
-          <SubmissionList
-            v-if="leftPainActiveTab === 'submission'"
-            :problemID="problemID"
-            :contestID="contestID"
-            :theme="theme"
-          />
         </div>
       </pane>
       <pane min-size="30" :size="50">
@@ -463,10 +465,16 @@ export default {
   cursor: pointer;
 }
 
+.left-pain-wrapper {
+  border: 1px solid var(--border-color);
+  border-radius: 7px;
+  background-color: var(--bg-color);
+  height: 100%;
+}
+
 .tab-headers {
   display: flex;
-  // border-bottom: 1px solid #e0e0e0;
-  // margin-bottom: 15px;
+  margin-bottom: 10px;
 }
 
 .tab-header {
