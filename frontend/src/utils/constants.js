@@ -2,20 +2,20 @@ import i18n from "@/i18n";
 
 export const JUDGE_COLOR = {
   WRONG: {
-    color: "#ffd025",
-    textColor: "#ffffff",
+    color: "#f7d87c", // 부드러운 노랑
+    textColor: "#4a4a4a", // 약한 어두운 회색
   },
   CORRECT: {
-    color: "#1abe6b",
-    textColor: "#ffffff",
+    color: "#a4d6b2", // 연한 녹색
+    textColor: "#2e4d3a",
   },
   PENDING: {
-    color: "#ffb574",
-    textColor: "#ffffff",
+    color: "#f7cba4", // 연한 주황/살구
+    textColor: "#4a3b2e",
   },
   ERROR: {
-    color: "#ed3f13",
-    textColor: "#ffffff",
+    color: "#f19b8f", // 부드러운 빨강/살색
+    textColor: "#4a2d2d",
   },
 };
 
@@ -225,39 +225,39 @@ export const TierImageSrc = {
 
 export const FamilySiteContentSrc = {
   sw_convergence: {
-    "src": require("@/assets/familyContents/micon_0.svg"),
-    "banner_name": "부산대학교:소프트웨어융합교육원",
-    "url": "https://swedu.pusan.ac.kr/"
+    src: require("@/assets/familyContents/micon_0.svg"),
+    banner_name: "부산대학교:소프트웨어융합교육원",
+    url: "https://swedu.pusan.ac.kr/",
   },
   sw_support: {
-    "src": require("@/assets/familyContents/micon_1.svg"),
-    "banner_name": "부산대학교:학생지원시스템",
-    "url": "https://onestop.pusan.ac.kr/"
+    src: require("@/assets/familyContents/micon_1.svg"),
+    banner_name: "부산대학교:학생지원시스템",
+    url: "https://onestop.pusan.ac.kr/",
   },
   sw_plato: {
-    "src": require("@/assets/familyContents/micon_2.svg"),
-    "banner_name": "스마트교육플랫폼:PLATO",
-    "url": "https://plato.pusan.ac.kr/"
+    src: require("@/assets/familyContents/micon_2.svg"),
+    banner_name: "스마트교육플랫폼:PLATO",
+    url: "https://plato.pusan.ac.kr/",
   },
   sw_edwith: {
-    "src": require("@/assets/familyContents/micon_3.svg"),
-    "banner_name": "온라인강좌:인프런",
-    "url": "https://inflearn.com/users/1370319"
+    src: require("@/assets/familyContents/micon_3.svg"),
+    banner_name: "온라인강좌:인프런",
+    url: "https://inflearn.com/users/1370319",
   },
   sw_css: {
-    "src": require("@/assets/familyContents/micon_4.svg"),
-    "banner_name": "부산대학교:SW역량지원시스템",
-    "url": "https://swcss.pusan.ac.kr/"
+    src: require("@/assets/familyContents/micon_4.svg"),
+    banner_name: "부산대학교:SW역량지원시스템",
+    url: "https://swcss.pusan.ac.kr/",
   },
 };
 
 export const LanguageImageSrc = {
-  'C++' : require('@/assets/languages/cpp.png'),
-  'Java' : require('@/assets/languages/java.png'),
-  'Python3' : require('@/assets/languages/python.png'),
-  'C' : require('@/assets/languages/c.png'),
-  'JavaScript' : require('@/assets/languages/javascript.png'),
-  'undefined' : require('@/assets/languages/c.png'),
+  "C++": require("@/assets/languages/cpp.png"),
+  Java: require("@/assets/languages/java.png"),
+  Python3: require("@/assets/languages/python.png"),
+  C: require("@/assets/languages/c.png"),
+  JavaScript: require("@/assets/languages/javascript.png"),
+  undefined: require("@/assets/languages/c.png"),
 };
 
 export const AwardImageSrc = {
@@ -338,7 +338,8 @@ export const LANGUAGE_INFO = [
   {
     name: "C",
     image: require("@/assets/languages/c.png"),
-    description: "C 언어는 1970년대 초반에 벨 연구소의 데니스 리치와 브라이언 커니핸이 개발한 프로그래밍 언어입니다. " +
+    description:
+      "C 언어는 1970년대 초반에 벨 연구소의 데니스 리치와 브라이언 커니핸이 개발한 프로그래밍 언어입니다. " +
       "시스템 소프트웨어, 운영체제(특히 유닉스), 임베디드 시스템, 컴파일러 개발 등 다양한 분야에서 사용됩니다. " +
       "C 언어는 저수준 메모리 조작이 가능하고, 효율성과 속도가 뛰어나며, 하드웨어에 가까운 작업을 수행하는 데 적합합니다. " +
       "또한, 다른 많은 프로그래밍 언어(C++, C#, 자바 등)의 기초가 되는 중요한 언어로 널리 알려져 있습니다." +
@@ -348,39 +349,37 @@ export const LANGUAGE_INFO = [
       "유닉스기초",
       "임베디드시스템",
       "임베디드시스템설계및실험",
-      "어드벤처디자인"
+      "어드벤처디자인",
     ],
-    tags: ["C언어", "C프로그래밍", "시스템프로그래밍"]
+    tags: ["C언어", "C프로그래밍", "시스템프로그래밍"],
   },
   {
     name: "C++",
     image: require("@/assets/languages/cpp.png"),
-    description: "C++는 1980년대 초반에 벨 연구소의 비야네 스트롭스트룹이 C 언어를 기반으로 개발한 객체 지향 프로그래밍 언어입니다. " +
+    description:
+      "C++는 1980년대 초반에 벨 연구소의 비야네 스트롭스트룹이 C 언어를 기반으로 개발한 객체 지향 프로그래밍 언어입니다. " +
       "C++는 C 언어의 절차적 프로그래밍 기능에 클래스와 객체를 도입하여 코드 재사용성과 유연성을 높였습니다. " +
       "C++는 시스템 소프트웨어, 게임 개발, 그래픽, 금융 애플리케이션, 실시간 시뮬레이션 등 다양한 분야에서 사용됩니다. " +
       "다중 상속, 템플릿, 예외 처리와 같은 고급 기능을 제공하며, 저수준 메모리 조작도 지원합니다. " +
       "C++는 성능과 효율성을 중시하는 응용 프로그램 개발에 강점을 가지고 있으며, C와의 호환성도 뛰어납니다.",
-    lectures: [
-      "C++프로그래밍과실습",
-      "자료구조"
-    ]
+    lectures: ["C++프로그래밍과실습", "자료구조"],
   },
   {
     name: "Java",
     image: require("@/assets/languages/java.png"),
-    description: "Java는 1995년 썬 마이크로시스템즈(현재는 오라클)에서 개발한 객체 지향 프로그래밍 언어입니다. " +
-      "\"한 번 작성하면 어디서나 실행된다\"는 철학을 기반으로, JVM(Java Virtual Machine) 위에서 실행되어 플랫폼 독립성을 제공합니다. " +
+    description:
+      "Java는 1995년 썬 마이크로시스템즈(현재는 오라클)에서 개발한 객체 지향 프로그래밍 언어입니다. " +
+      '"한 번 작성하면 어디서나 실행된다"는 철학을 기반으로, JVM(Java Virtual Machine) 위에서 실행되어 플랫폼 독립성을 제공합니다. ' +
       "Java는 안정성과 확장성이 뛰어나고, 대규모 엔터프라이즈 애플리케이션, 웹 애플리케이션, 모바일 애플리케이션(Android) 등 다양한 분야에서 사용됩니다. " +
       "풍부한 표준 라이브러리와 강력한 개발 도구를 갖추고 있으며, 쓰레딩, 메모리 관리, 네트워킹 등 강력한 기능을 지원합니다. " +
       "코드의 가독성과 유지보수성이 높아, 교육용 언어로도 널리 사용됩니다.",
-    lectures: [
-      "플랫폼기반프로그래밍"
-    ]
+    lectures: ["플랫폼기반프로그래밍"],
   },
   {
     name: "Python",
     image: require("@/assets/languages/python.png"),
-    description: "Python은 1991년 네덜란드의 귀도 반 로섬이 개발한 고급 프로그래밍 언어로, 간결하고 읽기 쉬운 문법을 가지고 있습니다. " +
+    description:
+      "Python은 1991년 네덜란드의 귀도 반 로섬이 개발한 고급 프로그래밍 언어로, 간결하고 읽기 쉬운 문법을 가지고 있습니다. " +
       "Python은 다양한 프로그래밍 패러다임(객체 지향, 절차적, 함수형 프로그래밍)을 지원하며, 동적 타입과 자동 메모리 관리 기능을 제공합니다. " +
       "웹 개발, 데이터 과학, 인공지능, 자동화, 스크립트 작성 등 여러 분야에서 널리 사용됩니다. " +
       "풍부한 표준 라이브러리와 강력한 서드파티 패키지 생태계 덕분에 빠른 개발과 유지보수가 용이합니다. " +
@@ -390,21 +389,18 @@ export const LANGUAGE_INFO = [
       "데이터과학입문",
       "AI프로그래밍",
       "인공지능",
-      "머신러닝"
-    ]
+      "머신러닝",
+    ],
   },
   {
     name: "JavaScript",
     image: require("@/assets/languages/javascript.png"),
-    description: "JavaScript는 1995년 넷스케이프의 브렌던 아이크가 개발한 프로그래밍 언어로, 주로 웹 브라우저에서 동작하는 스크립트 언어입니다. " +
+    description:
+      "JavaScript는 1995년 넷스케이프의 브렌던 아이크가 개발한 프로그래밍 언어로, 주로 웹 브라우저에서 동작하는 스크립트 언어입니다. " +
       "JavaScript는 동적이고 인터랙티브한 웹 페이지를 만들기 위해 사용되며, HTML과 CSS와 함께 웹 개발의 핵심 요소 중 하나입니다. " +
       "클라이언트 측에서 실행되지만, Node.js와 같은 런타임 환경을 통해 서버 측 프로그래밍에도 사용됩니다. " +
       "JavaScript는 이벤트 기반 프로그래밍, 비동기 처리, JSON 데이터 처리 등의 기능을 제공하여, 웹 애플리케이션, 게임 개발, 모바일 앱 개발 등에 널리 활용됩니다. " +
       "최신 프레임워크와 라이브러리(React, Angular, Vue.js 등)의 등장으로 JavaScript의 활용 범위가 더욱 확장되었습니다.",
-    lectures: [
-      "인터넷과웹기초",
-      "웹응용프로그래밍",
-      "컴퓨터그래픽스(WebGL)",
-    ]
-  }
-]
+    lectures: ["인터넷과웹기초", "웹응용프로그래밍", "컴퓨터그래픽스(WebGL)"],
+  },
+];
