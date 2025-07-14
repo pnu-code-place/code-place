@@ -485,9 +485,9 @@ export default {
 }
 
 .tab-header.active {
-  border-bottom-color: #007bff;
-  color: #007bff;
-  font-weight: 600;
+  // border-bottom-color: #007bff;
+  // color: #007bff;
+  font-weight: 800;
 }
 
 .tab-header:hover {
