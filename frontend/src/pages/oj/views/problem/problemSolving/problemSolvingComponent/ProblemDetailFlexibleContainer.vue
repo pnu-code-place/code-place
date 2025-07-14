@@ -294,8 +294,6 @@ export default defineComponent({
 
 <style scoped lang="less">
 .problemDetailFlexibleContainer {
-  border: 1px solid var(--border-color);
-  border-radius: 7px;
   height: 100%;
   overflow-y: scroll;
   display: flex;

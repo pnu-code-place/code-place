@@ -82,6 +82,69 @@ export const JUDGE_STATUS = {
   },
 };
 
+export const LANGUAGE_COLOR = {
+  C: {
+    lightTheme: {
+      color: "#f6e7e7",
+      textColor: "#000000",
+    },
+    darkTheme: {
+      color: "#5c4141",
+      textColor: "#ffffff",
+    },
+  },
+  "C++": {
+    lightTheme: {
+      color: "#f6f1e7",
+      textColor: "#000000",
+    },
+    darkTheme: {
+      color: "#5c5341",
+      textColor: "#ffffff",
+    },
+  },
+  Golang: {
+    lightTheme: {
+      color: "#e7f6ee",
+      textColor: "#000000",
+    },
+    darkTheme: {
+      color: "#415c4a",
+      textColor: "#ffffff",
+    },
+  },
+  Java: {
+    lightTheme: {
+      color: "#e7eaf6",
+      textColor: "#000000",
+    },
+    darkTheme: {
+      color: "#41455c",
+      textColor: "#ffffff",
+    },
+  },
+  JavaScript: {
+    lightTheme: {
+      color: "#f6f6e7",
+      textColor: "#000000",
+    },
+    darkTheme: {
+      color: "#5c5c41",
+      textColor: "#ffffff",
+    },
+  },
+  Python3: {
+    lightTheme: {
+      color: "#f6e7f3",
+      textColor: "#000000",
+    },
+    darkTheme: {
+      color: "#5c4159",
+      textColor: "#ffffff",
+    },
+  },
+};
+
 export const CONTEST_STATUS = {
   NOT_START: "1",
   UNDERWAY: "0",

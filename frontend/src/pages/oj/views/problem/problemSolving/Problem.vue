@@ -2,7 +2,33 @@
   <div class="flex-container">
     <splitpanes vertical style="height: calc(100vh - 50px)">
       <pane :size="50">
-        <ProblemDetailFlexibleContainer :problem="problem" :contestID="contestID"/>
+        <div class="left-pain-wrapper">
+          <div class="tab-headers">
+            <div class="tab-header"
+              :class="{ active: leftPainActiveTab === 'problem' }"
+              @click="leftPainActiveTab = 'problem'">
+              문제 설명
+            </div>
+            <div class="tab-header"
+              :class="{ active: leftPainActiveTab === 'submission' }"
+              @click="leftPainActiveTab = 'submission'">
+              제출 현황
+            </div>
+          </div>
+          <div class="tab-content">
+            <ProblemDetailFlexibleContainer
+              v-if="leftPainActiveTab === 'problem'"
+              :problem="problem"
+              :contestID="contestID"
+            />
+            <SubmissionList
+              v-if="leftPainActiveTab === 'submission'"
+              :problemID="problemID"
+              :contestID="contestID"
+              :theme.sync="theme"
+            />
+          </div>
+        </div>
       </pane>
       <pane min-size="30" :size="50">
         <CodeEditorHeader @create-submission="submitCode"
@@ -43,6 +69,7 @@ import SubmissionStatus from "./problemSolvingComponent/SubmissionStatus.vue";
 import ProblemDetailFlexibleContainer from "./problemSolvingComponent/ProblemDetailFlexibleContainer.vue";
 import StickyLnCol from "./problemSolvingComponent/StickyLnCol.vue";
 import CodeEditor from "./problemSolvingComponent/CodeEditor.vue"
+import SubmissionList from './problemSolvingComponent/SubmissionList.vue'
 
 const filtedStatus = ['-1', '-2', '0', '1', '2', '3', '4', '8']
 
@@ -54,6 +81,7 @@ export default {
     SubmissionStatus,
     CodeEditorHeader,
     ProblemDetailFlexibleContainer,
+    SubmissionList,
     CustomIconBtn,
     FieldCategoryBox,
     Splitpanes,
@@ -119,6 +147,8 @@ export default {
         openCategoryDropdown: false
       },
       modalCheck: false,
+      leftPainActiveTab: 'problem',
+      rightPainActiveTab: 'editor',
     }
   },
   beforeRouteEnter(to, from, next) {
@@ -435,5 +465,39 @@ export default {
   cursor: pointer;
 }
 
-</style>
+.left-pain-wrapper {
+  height: 100%;
+}
 
+.tab-headers {
+  display: flex;
+}
+
+.tab-header {
+  padding: 10px 20px;
+  cursor: pointer;
+  border-radius: 7px 7px 0 0;
+  border: 1px solid transparent;
+}
+
+.tab-header.active {
+  font-weight: 800;
+  background-color: var(--bg-color);
+  border: 1px solid var(--border-color);
+  border-bottom: none;
+  border-radius: 7px 7px 0 0;
+  margin-bottom: -1px; // tab-content와 살짝 겹치도록 하여 연결된 것처럼 보이도록 함
+}
+
+.tab-header:hover:not(.active) {
+  background-color: var(--bg-color);
+}
+
+.tab-content {
+  height: calc(100% - 40px);
+  overflow-y: auto;
+  border: 1px solid var(--border-color);
+  border-radius: 0 7px 7px 7px;
+}
+
+</style>
