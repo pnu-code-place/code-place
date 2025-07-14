@@ -466,37 +466,38 @@ export default {
 }
 
 .left-pain-wrapper {
-  border: 1px solid var(--border-color);
-  border-radius: 7px;
-  background-color: var(--bg-color);
   height: 100%;
 }
 
 .tab-headers {
   display: flex;
-  margin-bottom: 10px;
 }
 
 .tab-header {
   padding: 10px 20px;
   cursor: pointer;
-  border-bottom: 2px solid transparent;
-  transition: all 0.3s ease;
+  border-radius: 7px 7px 0 0;
+  border: 1px solid transparent;
 }
 
 .tab-header.active {
-  // border-bottom-color: #007bff;
-  // color: #007bff;
   font-weight: 800;
+  background-color: var(--bg-color);
+  border: 1px solid var(--border-color);
+  border-bottom: none;
+  border-radius: 7px 7px 0 0;
+  margin-bottom: -1px; // tab-content와 살짝 겹치도록 하여 연결된 것처럼 보이도록 함
 }
 
-.tab-header:hover {
-  background-color: #f8f9fa;
+.tab-header:hover:not(.active) {
+  background-color: var(--bg-color);
 }
 
 .tab-content {
-  height: calc(100% - 50px);
+  height: calc(100% - 40px);
   overflow-y: auto;
+  border: 1px solid var(--border-color);
+  border-radius: 0 7px 7px 7px;
 }
 
 </style>

@@ -9,7 +9,7 @@
             <th>언어</th>
             <th>실행 시간</th>
             <th>메모리</th>
-            <th>제출 시간</th>
+            <th>제출 일자</th>
           </tr>
         </thead>
         <tbody>
