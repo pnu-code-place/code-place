@@ -101,35 +101,58 @@ export default {
 </script>
 
 <style scoped>
+/* 다크 테마 CSS 변수 */
 .dark-theme {
-  --dropdown-bg: #2f3542;
-  --dropdown-text: #e6e6e6;
+  --dropdown-bg: #1e1e1e;
+  --dropdown-text: #d4d4d4;
+  --border-color: #333333;
+  --error-bg: #2d1b1b;
+  --error-text: #f87171;
+  --error-border: #7f1d1d;
 }
 
+/* 라이트 테마 CSS 변수 */
 .light-theme {
-  --dropdown-bg: #f9f9f9;
-  --dropdown-text: #222;
+  --dropdown-bg: #ffffff;
+  --dropdown-text: #1f2937;
+  --border-color: #e5e7eb;
+  --error-bg: #fef2f2;
+  --error-text: #dc2626;
+  --error-border: #fecaca;
 }
 
+/* 에러 메시지 스타일 */
 .error-info {
-  background-color: #ffebee !important;
-  color: #d32f2f;
+  background-color: var(--error-bg) !important;
+  color: var(--error-text) !important;
+  border: 1px solid var(--error-border) !important;
 }
 
+/* 코드 하이라이팅 래퍼 컨테이너 스타일 */
 .code-highlight-wrapper {
   margin: 0;
-  padding: 12px;
-  border-radius: 6px;
-  font-size: 13px;
-  font-family: "Fira Mono", "Menlo", "Consolas", monospace;
+  padding: 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: "Fira Code", "JetBrains Mono", "Menlo", "Monaco", "Consolas", monospace;
   white-space: pre-line;
   overflow-x: auto;
   background-color: var(--dropdown-bg);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  color: var(--dropdown-text);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: all 0.2s ease;
 }
 
+.code-highlight-wrapper:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* 코드 태그 기본 스타일 초기화 */
 code {
   background: unset;
-  color: unset;
+  color: inherit;
+  font-family: inherit;
+  font-size: inherit;
 }
 </style>
