@@ -145,6 +145,17 @@ export const LANGUAGE_COLOR = {
   },
 };
 
+export const HIGHLIGHT_JS_LANGUAGES = {
+  C: "c",
+  "C++": "cpp",
+  Golang: "go",
+  Java: "java",
+  JavaScript: "javascript",
+  Python3: "python",
+  sh: "bash",
+  plaintext: "plaintext",
+};
+
 export const CONTEST_STATUS = {
   NOT_START: "1",
   UNDERWAY: "0",
