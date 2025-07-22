@@ -13,40 +13,67 @@
           </tr>
         </thead>
         <tbody>
-          <tr
-            v-for="(submission, idx) in submissions"
-            :key="submission.id"
-            @click="selectSubmission(submission)"
-            :class="{ selected: selectedSubmissionId === submission.id }"
-          >
-            <td>{{ submissions.length - idx }}</td>
-            <td>
-              <span
-                class="status-dot"
-                :style="{ backgroundColor: judgeStatus[submission.result].color }"
-              ></span>
-              <span class="status">{{ judgeStatus[submission.result].name }}</span>
-            </td>
-            <td>
-              <span
-                class="pill"
-                :style="{
-                  backgroundColor: getLanguageColor(submission.language).color,
-                  color: getLanguageColor(submission.language).textColor
-                }"
-                >{{ submission.language }}</span
-              >
-            </td>
-            <td>
-              <i class="ivu-icon ivu-icon-ios-speedometer-outline"></i>
-              {{ formatTimeCost(submission.statistic_info.time_cost) }}
-            </td>
-            <td>
-              <i class="ivu-icon ivu-icon-ios-pulse"></i>
-              {{ formatMemoryCost(submission.statistic_info.memory_cost) }}
-            </td>
-            <td>{{ formatTime(submission.create_time) }}</td>
-          </tr>
+          <template v-for="(submission, idx) in submissions">
+            <tr
+              :key="submission.id"
+              @click="selectSubmission(submission)"
+              :class="{ selected: selectedSubmissionId === submission.id }"
+            >
+              <td>{{ submissions.length - idx }}</td>
+              <td>
+                <span
+                  class="status-dot"
+                  :style="{
+                    backgroundColor: judgeStatus[submission.result].color,
+                  }"
+                ></span>
+                <span class="status">{{
+                  judgeStatus[submission.result].name
+                }}</span>
+              </td>
+              <td>
+                <span
+                  class="pill"
+                  :style="{
+                    backgroundColor: getLanguageColor(submission.language)
+                      .color,
+                    color: getLanguageColor(submission.language).textColor,
+                  }"
+                  >{{ submission.language }}</span
+                >
+              </td>
+              <td>
+                <i class="ivu-icon ivu-icon-ios-speedometer-outline"></i>
+                {{ formatTimeCost(submission.statistic_info.time_cost) }}
+              </td>
+              <td>
+                <i class="ivu-icon ivu-icon-ios-pulse"></i>
+                {{ formatMemoryCost(submission.statistic_info.memory_cost) }}
+              </td>
+              <td>{{ formatTime(submission.create_time) }}</td>
+            </tr>
+            <!-- 드롭다운 행 -->
+            <tr
+              v-if="selectedSubmissionId === submission.id"
+              :key="`dropdown-${submission.id}`"
+              class="dropdown-row"
+            >
+              <td colspan="6" class="dropdown-cell">
+                <div class="dropdown-content">
+                  <SubmissionErrorDropdown
+                    v-if="submission.result !== 0"
+                    :submission="submission"
+                    :theme.sync="theme"
+                  />
+                  <SubmissionAcceptedDropdown
+                    v-if="submission.result === 0"
+                    :submission="submission"
+                    :theme.sync="theme"
+                  />
+                </div>
+              </td>
+            </tr>
+          </template>
         </tbody>
       </table>
     </div>
@@ -54,17 +81,28 @@
 </template>
 
 <script>
-import api from '@oj/api'
-import { JUDGE_STATUS, LANGUAGE_COLOR } from '../../../../../../utils/constants'
+import api from "@oj/api";
+import {
+  JUDGE_STATUS,
+  LANGUAGE_COLOR,
+} from "../../../../../../utils/constants";
+import CodeHighlight from "./CodeHighlight.vue";
+import SubmissionErrorDropdown from "./SubmissionErrorDropdown.vue";
+import SubmissionAcceptedDropdown from "./SubmissionAcceptedDropdown.vue";
 
 export default {
-  name: 'SubmissionList',
+  name: "SubmissionList",
   props: {
     problemID: String,
     contestID: String,
     theme: {
       type: Boolean,
-    }
+    },
+  },
+  components: {
+    CodeHighlight,
+    SubmissionErrorDropdown,
+    SubmissionAcceptedDropdown,
   },
   data() {
     return {
@@ -72,50 +110,62 @@ export default {
       selectedSubmissionId: null,
       judgeStatus: JUDGE_STATUS,
       languageColor: LANGUAGE_COLOR,
-    }
+    };
   },
   computed: {
     themeClass() {
-      return this.theme ? 'dark-theme' : 'light-theme'
-    }
+      return this.theme ? "dark-theme" : "light-theme";
+    },
   },
   mounted() {
-    this.getSubmissionList()
+    this.getSubmissionList();
   },
   methods: {
     getSubmissionList() {
       const params = {
-        myself: '1',
+        myself: "1",
         problem_id: this.problemID,
-      }
-      api['getSubmissionList'](0, 100, params).then(res => {
-        // TODO: 최대 100개의 제출만 가져오도록 해놓았는데, 추후 페이지네이션을 고려해야 할 것 같습니다.
-        this.submissions = res.data.data.results
-      })
+      };
+      api["getSubmissionList"](0, 100, params).then((res) => {
+        this.submissions = res.data.data.results;
+        console.log(this.submissions);
+      });
     },
-    selectSubmission(submission) {
-      this.selectedSubmissionId = submission.id
-      this.$emit('submissionSelected', submission)
+    async selectSubmission(submission) {
+      if (this.selectedSubmissionId === submission.id) {
+        this.selectedSubmissionId = null;
+        return;
+      }
+
+      this.selectedSubmissionId = submission.id;
+      if (!submission.code) {
+        const res = await api.getSubmission(submission.id);
+        this.$set(submission, "code", res.data.data.code);
+      }
+      this.$emit("submissionSelected", submission);
     },
     formatTime(timestamp) {
-      const date = new Date(timestamp)
-      return date.toLocaleDateString()
+      const date = new Date(timestamp);
+      return date.toLocaleDateString();
     },
     formatTimeCost(time) {
-      if (time == null) return 'N/A'
-      return `${time} ms`
+      if (time == null) return "N/A";
+      return `${time} ms`;
     },
     formatMemoryCost(memory) {
-      if (memory == null) return 'N/A'
-      if (memory < 1024 * 1024) return `${(memory / 1024).toFixed(0)} KB`
-      if (memory < 1024 * 1024 * 1024) return `${(memory / 1024 / 1024).toFixed(2)} MB`
-      return `${(memory / 1024 / 1024 / 1024).toFixed(2)} GB`
+      if (memory == null) return "N/A";
+      if (memory < 1024 * 1024) return `${(memory / 1024).toFixed(0)} KB`;
+      if (memory < 1024 * 1024 * 1024)
+        return `${(memory / 1024 / 1024).toFixed(2)} MB`;
+      return `${(memory / 1024 / 1024 / 1024).toFixed(2)} GB`;
     },
     getLanguageColor(language) {
-      return (this.theme ? this.languageColor[language].darkTheme : this.languageColor[language].lightTheme)
-    }
-  }
-}
+      return this.theme
+        ? this.languageColor[language].darkTheme
+        : this.languageColor[language].lightTheme;
+    },
+  },
+};
 </script>
 
 <style scoped lang="less">
@@ -200,9 +250,33 @@ export default {
   cursor: pointer;
 }
 
-.submission-table tr.selected,
-.submission-table tr:hover {
+.submission-table tr.selected {
   background: var(--row-hover-bg);
   transition: background 0.5s;
+}
+
+/* 드롭다운 스타일 */
+.dropdown-row {
+  cursor: default !important;
+}
+
+.dropdown-cell {
+  padding: 10px !important;
+  border-bottom: 1px solid var(--dropdown-border);
+}
+
+.dropdown-content {
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>
