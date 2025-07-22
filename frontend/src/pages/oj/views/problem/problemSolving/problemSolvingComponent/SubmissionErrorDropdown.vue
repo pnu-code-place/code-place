@@ -36,10 +36,7 @@ export default {
     theme: {
       type: Boolean,
       default: false, // Default to light theme
-    }
-  },
-  mounted() {
-    console.log("submission:", this.submission);
+    },
   },
   methods: {
     getHljsLanguage(language) {

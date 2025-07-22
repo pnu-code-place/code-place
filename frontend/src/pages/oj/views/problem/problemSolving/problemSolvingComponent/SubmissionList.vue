@@ -86,7 +86,6 @@ import {
   JUDGE_STATUS,
   LANGUAGE_COLOR,
 } from "../../../../../../utils/constants";
-import CodeHighlight from "./CodeHighlight.vue";
 import SubmissionErrorDropdown from "./SubmissionErrorDropdown.vue";
 import SubmissionAcceptedDropdown from "./SubmissionAcceptedDropdown.vue";
 
@@ -100,7 +99,6 @@ export default {
     },
   },
   components: {
-    CodeHighlight,
     SubmissionErrorDropdown,
     SubmissionAcceptedDropdown,
   },
@@ -128,7 +126,6 @@ export default {
       };
       api["getSubmissionList"](0, 100, params).then((res) => {
         this.submissions = res.data.data.results;
-        console.log(this.submissions);
       });
     },
     async selectSubmission(submission) {
