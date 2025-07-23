@@ -1,5 +1,6 @@
 import logging
 import json
+import os
 from typing import Dict, Optional
 from django.core.cache import cache
 from django.conf import settings
@@ -67,8 +68,24 @@ class TestCaseCacheManager:
             파일을 읽는 데 실패한 경우 None을 반환합니다.
         """
 
-        input_file_path = f"{settings.TEST_CASE_DIR}/{testcase_dir}/{testcase_idx}.in"
-        output_file_path = f"{settings.TEST_CASE_DIR}/{testcase_dir}/{testcase_idx}.out"
+        # 입력값 검증
+        if not testcase_dir.isalnum():
+            logger.error("Invalid testcase directory name. Only alphanumeric characters are allowed.")
+            return None
+        if not isinstance(testcase_idx, int) or testcase_idx < 0:
+            logger.error("Invalid testcase index. It must be a non-negative integer.")
+            return None
+
+        input_file_path = os.path.join(settings.TEST_CASE_DIR, testcase_dir, f"{testcase_idx}.in")
+        output_file_path = os.path.join(settings.TEST_CASE_DIR, testcase_dir, f"{testcase_idx}.out")
+
+        base_dir = os.path.abspath(settings.TEST_CASE_DIR)
+        input_file_path = os.path.abspath(input_file_path)
+        output_file_path = os.path.abspath(output_file_path)
+
+        if not input_file_path.startswith(base_dir) or not output_file_path.startswith(base_dir):
+            logger.error("Attempt to access files outside the test case directory.")
+            return None
 
         try:
             with open(input_file_path, 'r', encoding='utf-8') as f:

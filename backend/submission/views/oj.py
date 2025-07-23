@@ -112,7 +112,10 @@ class SubmissionAPI(APIView):
             # 연습 문제 제출인 경우 최초로 실패한 테스트 케이스의 Input/Output을 가져옵니다.
             testcase_dir = submission.problem.test_case_id
             testcase_idx = submission.first_failed_tc_idx
-            submission_data["first_failed_tc_io"] = TestCaseCacheManager.get_testcase(testcase_dir, testcase_idx)
+            if testcase_idx is not None:
+                submission_data["first_failed_tc_io"] = TestCaseCacheManager.get_testcase(testcase_dir, testcase_idx)
+            else:
+                submission_data["first_failed_tc_io"] = None
 
         return self.success(submission_data)
 
