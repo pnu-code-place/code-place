@@ -40,6 +40,8 @@ class Submission(models.Model):
     # {time_cost: "", memory_cost: "", err_info: "", score: 0}
     statistic_info = JSONField(default=dict)
     ip = models.TextField(null=True)
+    # 최초로 실패한 테스트 케이스의 인덱스, 연습 문제에서 틀린 테스트케이스를 보여주기 위해 사용됩니다.
+    first_failed_tc_idx = models.IntegerField(null=True, default=None)
 
     def check_user_permission(self, user, check_share=True):
         if self.user_id == user.id or user.is_super_admin() or user.can_mgmt_all_problem(
