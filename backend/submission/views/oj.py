@@ -1,6 +1,7 @@
 import ipaddress
 
 from account.decorators import login_required, check_contest_permission
+from utils.testcase_cache import TestCaseCacheManager
 from contest.models import ContestStatus, ContestRuleType
 from judge.dispatcher import JudgeDispatcher
 from judge.tasks import judge_task
@@ -106,7 +107,13 @@ class SubmissionAPI(APIView):
             submission_data = SubmissionSafeModelSerializer(submission).data
         # 是否有权限取消共享
         submission_data["can_unshare"] = submission.check_user_permission(request.user, check_share=False)
-        # print(submission_data)
+
+        if not submission.contest:
+            # 연습 문제 제출인 경우 최초로 실패한 테스트 케이스의 Input/Output을 가져옵니다.
+            testcase_dir = submission.problem.test_case_id
+            testcase_idx = submission.first_failed_tc_idx
+            submission_data["first_failed_tc_io"] = TestCaseCacheManager.get_testcase(testcase_dir, testcase_idx)
+
         return self.success(submission_data)
 
     @validate_serializer(ShareSubmissionSerializer)
