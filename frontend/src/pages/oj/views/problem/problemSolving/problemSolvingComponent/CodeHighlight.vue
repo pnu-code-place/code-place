@@ -16,16 +16,16 @@ import "highlight.js/styles/atom-one-dark.css";
  */
 export default {
   name: "CodeHighlight",
-  
+
   props: {
     /**
      * 컴포넌트 타입
      * @type {String}
      * @default "code"
-     * @description "code" - 일반 코드 하이라이팅, "error" - 에러 메시지 표시 (하이라이팅 없음)
+     * @description "code" - 일반 코드 하이라이팅, "error" - 에러 메시지 표시 (하이라이팅 없음), "plaintext" - 일반 텍스트 표시
      */
     type: { type: String, default: "code" },
-    
+
     /**
      * 표시할 코드 내용
      * @type {String}
@@ -33,7 +33,7 @@ export default {
      * @description 하이라이팅할 코드 문자열
      */
     code: { type: String, required: true },
-    
+
     /**
      * 프로그래밍 언어 타입
      * @type {String}
@@ -41,7 +41,7 @@ export default {
      * @description highlight.js에서 지원하는 언어 코드 (예: javascript, python, css 등)
      */
     language: { type: String, default: "plaintext" },
-    
+
     /**
      * 테마 설정
      * @type {Boolean}
@@ -50,7 +50,7 @@ export default {
      */
     theme: { type: Boolean, default: false },
   },
-  
+
   computed: {
     /**
      * 하이라이팅된 코드 HTML 반환
@@ -59,12 +59,12 @@ export default {
     highlightedCode() {
       // 코드가 없으면 빈 문자열 반환
       if (!this.code) return "";
-      
+
       // 에러 타입인 경우 하이라이팅 없이 원본 코드 반환
-      if (this.type === "error") {
+      if (this.type !== "code") {
         return this.code;
       }
-      
+
       try {
         return hljs.highlight(this.language, this.code).value;
       } catch (e) {
@@ -72,7 +72,7 @@ export default {
         return hljs.highlightAuto(this.code).value;
       }
     },
-    
+
     /**
      * 코드 태그에 적용할 CSS 클래스 반환
      * @returns {String} hljs 및 언어별 클래스명
@@ -80,7 +80,7 @@ export default {
     languageClass() {
       return "hljs " + (this.language ? "language-" + this.language : "");
     },
-    
+
     /**
      * 테마 및 타입에 따른 CSS 클래스 반환
      * @returns {String} 테마 클래스 및 에러 클래스 조합
@@ -88,20 +88,19 @@ export default {
     themeClass() {
       // 기본 테마 클래스 설정 (다크/라이트)
       let themeClass = this.theme ? "dark-theme" : "light-theme";
-      
+
       // 에러 타입인 경우 에러 스타일 클래스 추가
       if (this.type === "error") {
         themeClass += " error-info";
       }
-      
+
       return themeClass;
-    }
+    },
   },
 };
 </script>
 
 <style scoped>
-/* 다크 테마 CSS 변수 */
 .dark-theme {
   --dropdown-bg: #1e1e1e;
   --dropdown-text: #d4d4d4;
@@ -111,7 +110,6 @@ export default {
   --error-border: #7f1d1d;
 }
 
-/* 라이트 테마 CSS 변수 */
 .light-theme {
   --dropdown-bg: #ffffff;
   --dropdown-text: #1f2937;
@@ -121,22 +119,20 @@ export default {
   --error-border: #fecaca;
 }
 
-/* 에러 메시지 스타일 */
 .error-info {
   background-color: var(--error-bg) !important;
   color: var(--error-text) !important;
   border: 1px solid var(--error-border) !important;
 }
 
-/* 코드 하이라이팅 래퍼 컨테이너 스타일 */
 .code-highlight-wrapper {
   margin: 0;
   padding: 16px;
   border-radius: 8px;
   font-size: 14px;
-  font-family: "Fira Code", "JetBrains Mono", "Menlo", "Monaco", "Consolas", monospace;
-  white-space: pre-line;
-  overflow-x: auto;
+  font-family: "Fira Code", "JetBrains Mono", "Menlo", "Monaco", "Consolas",
+    monospace;
+  white-space: pre;
   background-color: var(--dropdown-bg);
   color: var(--dropdown-text);
   border: 1px solid var(--border-color);
@@ -148,7 +144,6 @@ export default {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-/* 코드 태그 기본 스타일 초기화 */
 code {
   background: unset;
   color: inherit;
