@@ -14,44 +14,43 @@
         </thead>
         <tbody>
           <template v-for="(submission, idx) in submissions">
+            <!-- 메인 행 -->
             <tr
               :key="submission.id"
               @click="selectSubmission(submission)"
               :class="{ selected: selectedSubmissionId === submission.id }"
             >
               <td>{{ submissions.length - idx }}</td>
-              <td>
+              <td class="status-cell">
                 <span
                   class="status-dot"
                   :style="{
                     backgroundColor: judgeStatus[submission.result].color,
                   }"
-                ></span>
+                />
                 <span class="status">{{
                   judgeStatus[submission.result].name
                 }}</span>
               </td>
               <td>
                 <span
-                  class="pill"
-                  :style="{
-                    backgroundColor: getLanguageColor(submission.language)
-                      .color,
-                    color: getLanguageColor(submission.language).textColor,
-                  }"
-                  >{{ submission.language }}</span
+                  class="language-pill"
+                  :style="getLanguageStyle(submission.language)"
                 >
+                  {{ submission.language }}
+                </span>
               </td>
               <td>
-                <i class="ivu-icon ivu-icon-ios-speedometer-outline"></i>
+                <Icon type="ios-speedometer-outline" />
                 {{ formatTimeCost(submission.statistic_info.time_cost) }}
               </td>
               <td>
-                <i class="ivu-icon ivu-icon-ios-pulse"></i>
+                <Icon type="ios-pulse" />
                 {{ formatMemoryCost(submission.statistic_info.memory_cost) }}
               </td>
               <td>{{ formatTime(submission.create_time) }}</td>
             </tr>
+
             <!-- 드롭다운 행 -->
             <tr
               v-if="selectedSubmissionId === submission.id"
@@ -66,7 +65,7 @@
                     :theme.sync="theme"
                   />
                   <SubmissionAcceptedDropdown
-                    v-if="submission.result === 0"
+                    v-else
                     :submission="submission"
                     :theme.sync="theme"
                   />
@@ -89,25 +88,35 @@ import {
 import SubmissionErrorDropdown from "./SubmissionErrorDropdown.vue";
 import SubmissionAcceptedDropdown from "./SubmissionAcceptedDropdown.vue";
 
+const BYTES_IN_KB = 1024;
+const BYTES_IN_MB = BYTES_IN_KB * 1024;
+const BYTES_IN_GB = BYTES_IN_MB * 1024;
+
 export default {
   name: "SubmissionList",
-  props: {
-    problemID: String,
-    contestID: String,
-    theme: {
-      type: Boolean,
-    },
-  },
   components: {
     SubmissionErrorDropdown,
     SubmissionAcceptedDropdown,
+  },
+  props: {
+    problemID: {
+      type: String,
+      required: true,
+    },
+    contestID: {
+      type: String,
+      default: null,
+    },
+    theme: {
+      type: Boolean,
+      default: false,
+    },
   },
   data() {
     return {
       submissions: [],
       selectedSubmissionId: null,
       judgeStatus: JUDGE_STATUS,
-      languageColor: LANGUAGE_COLOR,
     };
   },
   computed: {
@@ -119,15 +128,19 @@ export default {
     this.getSubmissionList();
   },
   methods: {
-    getSubmissionList() {
-      const params = {
-        myself: "1",
-        problem_id: this.problemID,
-      };
-      api["getSubmissionList"](0, 100, params).then((res) => {
+    async getSubmissionList() {
+      try {
+        const params = {
+          myself: "1",
+          problem_id: this.problemID,
+        };
+        const res = await api.getSubmissionList(0, 100, params);
         this.submissions = res.data.data.results;
-      });
+      } catch (error) {
+        console.error("Failed to fetch submission list:", error);
+      }
     },
+
     async selectSubmission(submission) {
       if (this.selectedSubmissionId === submission.id) {
         this.selectedSubmissionId = null;
@@ -135,31 +148,57 @@ export default {
       }
 
       this.selectedSubmissionId = submission.id;
+
       if (!submission.code) {
-        const res = await api.getSubmission(submission.id);
-        this.$set(submission, "code", res.data.data.code);
+        await this.fetchSubmissionDetails(submission);
       }
+
       this.$emit("submissionSelected", submission);
     },
+
+    async fetchSubmissionDetails(submission) {
+      try {
+        const res = await api.getSubmission(submission.id);
+        const { code, first_failed_tc_io } = res.data.data;
+
+        this.$set(submission, "code", code);
+        this.$set(submission, "first_failed_tc_io", first_failed_tc_io);
+      } catch (error) {
+        console.error("Failed to fetch submission details:", error);
+      }
+    },
+
     formatTime(timestamp) {
-      const date = new Date(timestamp);
-      return date.toLocaleDateString();
+      return new Date(timestamp).toLocaleDateString();
     },
+
     formatTimeCost(time) {
-      if (time == null) return "N/A";
-      return `${time} ms`;
+      return time != null ? `${time} ms` : "N/A";
     },
+
     formatMemoryCost(memory) {
       if (memory == null) return "N/A";
-      if (memory < 1024 * 1024) return `${(memory / 1024).toFixed(0)} KB`;
-      if (memory < 1024 * 1024 * 1024)
-        return `${(memory / 1024 / 1024).toFixed(2)} MB`;
-      return `${(memory / 1024 / 1024 / 1024).toFixed(2)} GB`;
+
+      if (memory < BYTES_IN_MB) {
+        return `${Math.round(memory / BYTES_IN_KB)} KB`;
+      }
+      if (memory < BYTES_IN_GB) {
+        return `${(memory / BYTES_IN_MB).toFixed(2)} MB`;
+      }
+      return `${(memory / BYTES_IN_GB).toFixed(2)} GB`;
     },
-    getLanguageColor(language) {
-      return this.theme
-        ? this.languageColor[language].darkTheme
-        : this.languageColor[language].lightTheme;
+
+    getLanguageStyle(language) {
+      const colorConfig = LANGUAGE_COLOR[language];
+      if (!colorConfig) return {};
+
+      const themeConfig = this.theme
+        ? colorConfig.darkTheme
+        : colorConfig.lightTheme;
+      return {
+        backgroundColor: themeConfig.color,
+        color: themeConfig.textColor,
+      };
     },
   },
 };
@@ -171,6 +210,7 @@ export default {
   --th-color: #3a3a4a;
   --row-hover-bg: #f5f6fa;
   --text-color: #222;
+  --dropdown-border: #e0e0e0;
 }
 
 .dark-theme {
@@ -178,6 +218,7 @@ export default {
   --th-color: #e6e6e6;
   --row-hover-bg: #2f3542;
   --text-color: #e6e6e6;
+  --dropdown-border: #3a3a4a;
 }
 
 .submission-list-container {
@@ -190,27 +231,6 @@ export default {
   color: var(--text-color);
 }
 
-.status-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  display: inline-block;
-  margin-right: 2px;
-}
-
-.status {
-  font-weight: bold;
-}
-
-.pill {
-  display: inline-flex;
-  align-items: center;
-  padding: 5px 10px;
-  border-radius: 5px;
-  font-size: 10.5px;
-  font-weight: bold;
-}
-
 .submission-table-wrapper {
   width: 100%;
   overflow-x: auto;
@@ -219,42 +239,66 @@ export default {
 .submission-table {
   width: 100%;
   border-collapse: collapse;
+
+  th,
+  td {
+    text-align: start;
+    vertical-align: middle;
+    padding: 12px 0;
+    font-size: 14px;
+
+    &:first-child {
+      min-width: 20px;
+      max-width: 40px;
+    }
+  }
+
+  th {
+    border-bottom: 1px solid var(--border-color);
+    font-weight: 700;
+    color: var(--th-color);
+    background: var(--bg-color);
+  }
+
+  tbody tr {
+    transition: background 0.2s;
+    cursor: pointer;
+
+    &.selected {
+      background: var(--row-hover-bg);
+      transition: background 0.5s;
+    }
+
+    &.dropdown-row {
+      cursor: default !important;
+    }
+  }
 }
 
-.submission-table th,
-.submission-table td {
-  text-align: start;
-  vertical-align: middle;
-  padding: 12px 0;
-  font-size: 14px;
+.status-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.submission-table th:first-child,
-.submission-table td:first-child {
-  min-width: 20px;
-  max-width: 40px;
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 
-.submission-table th {
-  border-bottom: 1px solid var(--border-color);
-  font-weight: 700;
-  color: var(--th-color);
-  background: var(--bg-color);
+.status {
+  font-weight: bold;
 }
 
-.submission-table tr {
-  transition: background 0.2s;
-  cursor: pointer;
-}
-
-.submission-table tr.selected {
-  background: var(--row-hover-bg);
-  transition: background 0.5s;
-}
-
-/* 드롭다운 스타일 */
-.dropdown-row {
-  cursor: default !important;
+.language-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: 10.5px;
+  font-weight: bold;
 }
 
 .dropdown-cell {
