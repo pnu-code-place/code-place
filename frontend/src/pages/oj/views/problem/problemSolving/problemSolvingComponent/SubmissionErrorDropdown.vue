@@ -1,7 +1,7 @@
 <template>
   <div class="submission-error-dropdown">
     <!-- 에러 메시지 섹션 -->
-    <div>
+    <div class="error-message">
       <p class="sub-title">에러 메시지</p>
       <CodeHighlight
         type="error"
@@ -102,6 +102,14 @@ export default {
   margin-bottom: 8px;
 }
 
+.error-message {
+  /deep/ .code-highlight-wrapper {
+    max-width: 100%;
+    max-height: 300px;
+    overflow: auto;
+  }
+}
+
 .failed-tc-header {
   display: flex;
   align-items: center;
@@ -113,7 +121,7 @@ export default {
 .testcase-info {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: stretch;
   gap: 16px;
 
   p {
@@ -127,11 +135,14 @@ export default {
 .testcase-output {
   flex: 1;
   max-width: 50%;
-}
+  display: flex;
+  flex-direction: column;
 
-/deep/ .code-highlight-wrapper {
-  max-width: 100%;
-  max-height: 300px;
-  overflow: auto;
+  /deep/ .code-highlight-wrapper {
+    flex: 1;
+    max-width: 100%;
+    max-height: 300px;
+    overflow: auto;
+  }
 }
 </style>
