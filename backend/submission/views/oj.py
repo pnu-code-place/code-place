@@ -223,7 +223,15 @@ class SubmissionRankAPI(APIView):
 
     @login_required
     def get(self, request):
-        """제출물의 순위 정보를 반환합니다 (해결 순위, 실행시간 순위, 메모리 순위)"""
+        """제출물의 순위 정보를 반환합니다.
+
+        순위 정보는 다음과 같습니다:
+            - solved_rank: 제출자가 문제를 푼 순위 (해당 제출 이전에 문제를 푼 사용자 수 + 1)
+            - time_cost_percent: 제출자의 시간 비용이 전체 제출 중 몇 퍼센트인지
+            - memory_cost_percent: 제출자의 메모리 비용이 전체 제출 중 몇 퍼센트인지
+
+        이 API는 제출물의 ID를 통해 해당 제출물의 통계 정보를 기반으로 순위를 계산합니다.
+        """
 
         # submission_id 파라미터가 없으면 에러 반환
         submission_id = request.GET.get("submission_id")
