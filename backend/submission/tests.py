@@ -308,12 +308,12 @@ class SubmissionRankAPITest(SubmissionCreateTestBase):
         # sub1(100), sub3(150), sub2(200) 순
         # sub3의 time_cost는 150, 'time_cost < 150'인것은 sub1(100) 1개 -> rank = 2
         # total_count = 3
-        self.assertEqual(data["time_cost_percent"], round(2 / 3 * 100, 2))
+        self.assertEqual(data["time_cost_percent"], round(1 / 3 * 100, 2))
 
         # memory_cost ranking:
         # sub1(1024), sub3(1024), sub2(2048)
         # 'memory_cost < 1024'는 없음 -> rank = 1
-        self.assertEqual(data["memory_cost_percent"], round(1 / 3 * 100, 2))
+        self.assertEqual(data["memory_cost_percent"], round(0 / 3 * 100, 2))
 
     def test_get_submission_rank_no_submission_id(self):
         resp = self.client.get(self.url)

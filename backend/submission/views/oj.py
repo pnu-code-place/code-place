@@ -291,12 +291,11 @@ class SubmissionRankAPI(APIView):
         solved_rank = rank_data['earlier_solved_users'] + 1
 
         time_total = rank_data['total_time_submissions']
-        time_cost_percent = round(
-            (rank_data['faster_submissions'] + 1) / time_total * 100, 2) if time_total > 0 else 0.0
+        time_cost_percent = round(rank_data['faster_submissions'] / time_total * 100, 2) if time_total > 0 else 0.0
 
         memory_total = rank_data['total_memory_submissions']
-        memory_cost_percent = round(
-            (rank_data['less_memory_submissions'] + 1) / memory_total * 100, 2) if memory_total > 0 else 0.0
+        memory_cost_percent = round(rank_data['less_memory_submissions'] / memory_total *
+                                    100, 2) if memory_total > 0 else 0.0
 
         return self.success({
             'solved_rank': solved_rank,
