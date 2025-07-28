@@ -1,5 +1,9 @@
 import ipaddress
 
+from django.db.models import Q, Count, IntegerField
+from django.db.models.fields.json import KeyTextTransform
+from django.db.models.functions import Cast
+
 from account.decorators import login_required, check_contest_permission
 from utils.testcase_cache import TestCaseCacheManager
 from contest.models import ContestStatus, ContestRuleType
@@ -12,7 +16,7 @@ from utils.api import APIView, validate_serializer
 from utils.cache import cache
 from utils.captcha import Captcha
 from utils.throttling import TokenBucket
-from ..models import Submission
+from ..models import JudgeStatus, Submission
 from ..serializers import (CreateSubmissionSerializer, SubmissionModelSerializer, ShareSubmissionSerializer)
 from ..serializers import SubmissionSafeModelSerializer, SubmissionListSerializer
 
@@ -217,3 +221,85 @@ class SubmissionExistsAPI(APIView):
         return self.success(
             request.user.is_authenticated and
             Submission.objects.filter(problem_id=request.GET["problem_id"], user_id=request.user.id).exists())
+
+
+class SubmissionRankAPI(APIView):
+
+    @login_required
+    def get(self, request):
+        """제출물의 순위 정보를 반환합니다 (해결 순위, 실행시간 순위, 메모리 순위)"""
+
+        # submission_id 파라미터가 없으면 에러 반환
+        submission_id = request.GET.get("submission_id")
+        if not submission_id:
+            return self.error("Parameter submission_id is required")
+
+        try:
+            submission = Submission.objects.get(id=submission_id)
+        except Submission.DoesNotExist:
+            return self.error("Submission does not exist")
+
+        # Submission의 statistic_info가 없으면 에러 반환
+        statistic_info = submission.statistic_info or {}
+        curr_time_cost = statistic_info.get('time_cost')
+        curr_memory_cost = statistic_info.get('memory_cost')
+        if curr_time_cost is None or curr_memory_cost is None:
+            return self.error("Submission does not have statistic_info")
+        try:
+            curr_time_cost = int(curr_time_cost)
+            curr_memory_cost = int(curr_memory_cost)
+        except (ValueError, TypeError):
+            return self.error('Invalid statistic_info data')
+
+        base_filter = Q(
+            problem_id=submission.problem,
+            language=submission.language,
+            result=JudgeStatus.ACCEPTED,
+        )
+
+        rank_data = Submission.objects.filter(base_filter).aggregate(
+            earlier_solved_users=Count(
+                'user_id',
+                filter=Q(create_time__lt=submission.create_time,) & ~Q(user_id=submission.user_id),
+                distinct=True,
+            ),
+            faster_submissions=Count(
+                'id',
+                filter=Q(
+                    statistic_info__time_cost__lt=curr_time_cost,
+                    statistic_info__time_cost__isnull=False,
+                ),
+            ),
+            total_time_submissions=Count(
+                'id',
+                filter=Q(statistic_info__time_cost__isnull=False),
+            ),
+            less_memory_submissions=Count(
+                'id',
+                filter=Q(
+                    statistic_info__memory_cost__lt=curr_memory_cost,
+                    statistic_info__memory_cost__isnull=False,
+                ),
+            ),
+            total_memory_submissions=Count(
+                'id',
+                filter=Q(statistic_info__memory_cost__isnull=False),
+            ),
+        )
+
+        # 순위 계산
+        solved_rank = rank_data['earlier_solved_users'] + 1
+
+        time_total = rank_data['total_time_submissions']
+        time_cost_percent = round(
+            (rank_data['faster_submissions'] + 1) / time_total * 100, 2) if time_total > 0 else 0.0
+
+        memory_total = rank_data['total_memory_submissions']
+        memory_cost_percent = round(
+            (rank_data['less_memory_submissions'] + 1) / memory_total * 100, 2) if memory_total > 0 else 0.0
+
+        return self.success({
+            'solved_rank': solved_rank,
+            'time_cost_percent': time_cost_percent,
+            'memory_cost_percent': memory_cost_percent,
+        })
