@@ -243,6 +243,9 @@ class SubmissionRankAPI(APIView):
         except Submission.DoesNotExist:
             return self.error("Submission does not exist")
 
+        if submission.contest is not None:
+            return self.error("This API is not available for contest submissions")
+
         if request.user.id != submission.user_id and not request.user.is_admin_role():
             return self.error("No permission for this submission")
 
