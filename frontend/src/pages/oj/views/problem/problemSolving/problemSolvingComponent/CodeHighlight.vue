@@ -108,6 +108,8 @@ export default {
   --error-bg: #2d1b1b;
   --error-text: #f87171;
   --error-border: #7f1d1d;
+  --box-shadow: 0 2px 8px rgba(255, 255, 255, 0.06);
+  --box-shadow-hover: 0 4px 12px rgba(255, 255, 255, 0.1);
 }
 
 .light-theme {
@@ -117,6 +119,8 @@ export default {
   --error-bg: #fef2f2;
   --error-text: #dc2626;
   --error-border: #fecaca;
+  --box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --box-shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .error-info {
@@ -136,12 +140,12 @@ export default {
   background-color: var(--dropdown-bg);
   color: var(--dropdown-text);
   border: 1px solid var(--border-color);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  box-shadow: var(--box-shadow);
   transition: all 0.2s ease;
 }
 
 .code-highlight-wrapper:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--box-shadow-hover);
 }
 
 code {
