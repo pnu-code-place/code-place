@@ -229,8 +229,8 @@ class SubmissionRankAPITest(SubmissionCreateTestBase):
                                             self.problem,
                                             result=JudgeStatus.ACCEPTED,
                                             statistic_info={
-                                                "time_cost": "100",
-                                                "memory_cost": "1024"
+                                                "time_cost": 100,
+                                                "memory_cost": 1024
                                             })
 
         resp = self.client.get(f"{self.url}?submission_id={submission.id}")
@@ -243,18 +243,37 @@ class SubmissionRankAPITest(SubmissionCreateTestBase):
                                             result=JudgeStatus.ACCEPTED,
                                             statistic_info={
                                                 "time_cost": "invalid",
-                                                "memory_cost": "1024"
+                                                "memory_cost": "invalid"
                                             })
 
         resp = self.client.get(f"{self.url}?submission_id={submission.id}")
-        self.assertFailed(resp, "Invalid statistic_info data")
+        self.assertFailed(resp, "Invalid submission statistic_info")
 
         # statistic_info가 비어있는 경우
         submission.statistic_info = {}
         submission.save()
 
         resp = self.client.get(f"{self.url}?submission_id={submission.id}")
-        self.assertFailed(resp, "Submission does not have statistic_info")
+        self.assertFailed(resp, "Invalid submission statistic_info")
+
+    def test_reject_unauthorized_user(self):
+        submission = self.create_submission(user=self.user,
+                                            problem=self.problem,
+                                            result=JudgeStatus.ACCEPTED,
+                                            statistic_info={
+                                                "time_cost": 100,
+                                                "memory_cost": 1024
+                                            })
+
+        # 다른 유저로 요청
+        other_user = self.create_user(
+            email="other",
+            username="other",
+            password="test1234!",
+        )
+
+        resp = self.client.get(f"{self.url}?submission_id={submission.id}", user=other_user)
+        self.assertFailed(resp, "No permission for this submission")
 
     def test_get_submission_rank_multiple_users(self):
         # 여러 유저 생성
@@ -329,8 +348,8 @@ class SubmissionRankAPITest(SubmissionCreateTestBase):
                                             self.problem,
                                             result=JudgeStatus.PENDING,
                                             statistic_info={
-                                                "time_cost": "100",
-                                                "memory_cost": "1024"
+                                                "time_cost": 100,
+                                                "memory_cost": 1024
                                             })
 
         resp = self.client.get(f"{self.url}?submission_id={submission.id}")

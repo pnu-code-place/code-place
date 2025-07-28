@@ -239,17 +239,15 @@ class SubmissionRankAPI(APIView):
         except Submission.DoesNotExist:
             return self.error("Submission does not exist")
 
+        if request.user.id != submission.user_id and not request.user.is_admin_role():
+            return self.error("No permission for this submission")
+
         # Submission의 statistic_info가 없으면 에러 반환
-        statistic_info = submission.statistic_info or {}
-        curr_time_cost = statistic_info.get('time_cost')
-        curr_memory_cost = statistic_info.get('memory_cost')
-        if curr_time_cost is None or curr_memory_cost is None:
-            return self.error("Submission does not have statistic_info")
         try:
-            curr_time_cost = int(curr_time_cost)
-            curr_memory_cost = int(curr_memory_cost)
-        except (ValueError, TypeError):
-            return self.error('Invalid statistic_info data')
+            curr_time_cost = int(submission.statistic_info['time_cost'])
+            curr_memory_cost = int(submission.statistic_info['memory_cost'])
+        except (KeyError, TypeError, ValueError):
+            return self.error("Invalid submission statistic_info")
 
         base_filter = Q(
             problem_id=submission.problem,
@@ -260,15 +258,12 @@ class SubmissionRankAPI(APIView):
         rank_data = Submission.objects.filter(base_filter).aggregate(
             earlier_solved_users=Count(
                 'user_id',
-                filter=Q(create_time__lt=submission.create_time,) & ~Q(user_id=submission.user_id),
+                filter=Q(create_time__lt=submission.create_time) & ~Q(user_id=submission.user_id),
                 distinct=True,
             ),
             faster_submissions=Count(
                 'id',
-                filter=Q(
-                    statistic_info__time_cost__lt=curr_time_cost,
-                    statistic_info__time_cost__isnull=False,
-                ),
+                filter=Q(statistic_info__time_cost__lt=curr_time_cost, statistic_info__time_cost__isnull=False),
             ),
             total_time_submissions=Count(
                 'id',
@@ -276,10 +271,7 @@ class SubmissionRankAPI(APIView):
             ),
             less_memory_submissions=Count(
                 'id',
-                filter=Q(
-                    statistic_info__memory_cost__lt=curr_memory_cost,
-                    statistic_info__memory_cost__isnull=False,
-                ),
+                filter=Q(statistic_info__memory_cost__lt=curr_memory_cost, statistic_info__memory_cost__isnull=False),
             ),
             total_memory_submissions=Count(
                 'id',
@@ -290,9 +282,11 @@ class SubmissionRankAPI(APIView):
         # 순위 계산
         solved_rank = rank_data['earlier_solved_users'] + 1
 
+        # 시간 비용 백분율 계산
         time_total = rank_data['total_time_submissions']
         time_cost_percent = round(rank_data['faster_submissions'] / time_total * 100, 2) if time_total > 0 else 0.0
 
+        # 메모리 비용 백분율 계산
         memory_total = rank_data['total_memory_submissions']
         memory_cost_percent = round(rank_data['less_memory_submissions'] / memory_total *
                                     100, 2) if memory_total > 0 else 0.0
