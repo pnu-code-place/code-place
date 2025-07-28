@@ -42,14 +42,23 @@
     </div>
 
     <!-- 제출 코드 섹션 -->
-    <div>
-      <p class="sub-title">제출 코드</p>
-      <CodeHighlight
-        type="code"
-        :code="submission.code || ''"
-        :language="getHljsLanguage(submission.language)"
-        :theme.sync="theme"
-      />
+    <div class="submission-code-section">
+      <div class="code-header">
+        <p class="sub-title">제출 코드</p>
+        <span class="expand-hint" v-if="!isCodeExpanded">클릭하여 펼치기</span>
+      </div>
+      <div
+        class="code-wrapper"
+        :class="{ expanded: isCodeExpanded }"
+        @click="toggleCodeExpansion"
+      >
+        <CodeHighlight
+          type="code"
+          :code="submission.code || ''"
+          :language="getHljsLanguage(submission.language)"
+          :theme.sync="theme"
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -75,6 +84,11 @@ export default {
       default: false,
     },
   },
+  data() {
+    return {
+      isCodeExpanded: false,
+    };
+  },
   computed: {
     hasFailedTestCase() {
       const tcInfo = this.submission.first_failed_tc_io;
@@ -84,6 +98,9 @@ export default {
   methods: {
     getHljsLanguage(language) {
       return HIGHLIGHT_JS_LANGUAGES[language] || "plaintext";
+    },
+    toggleCodeExpansion() {
+      this.isCodeExpanded = !this.isCodeExpanded;
     },
   },
 };
@@ -143,6 +160,44 @@ export default {
     max-width: 100%;
     max-height: 300px;
     overflow: auto;
+  }
+}
+
+.submission-code-section {
+  .code-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+
+    .expand-hint {
+      font-size: 11px;
+      color: var(--text-color);
+      font-style: italic;
+    }
+  }
+
+  .code-wrapper {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-radius: 4px;
+
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.02);
+    }
+
+    /deep/ .code-highlight-wrapper {
+      max-width: 100%;
+      max-height: 300px;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+    }
+
+    &.expanded {
+      /deep/ .code-highlight-wrapper {
+        max-height: none;
+      }
+    }
   }
 }
 </style>

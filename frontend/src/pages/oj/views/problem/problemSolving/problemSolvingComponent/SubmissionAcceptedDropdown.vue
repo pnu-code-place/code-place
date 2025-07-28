@@ -31,14 +31,23 @@
     </div>
 
     <!-- 제출 코드 섹션 -->
-    <div>
-      <p class="sub-title">제출 코드</p>
-      <CodeHighlight
-        type="code"
-        :code="submission.code || ''"
-        :language="getHljsLanguage(submission.language)"
-        :theme.sync="theme"
-      />
+    <div class="submission-code-section">
+      <div class="code-header">
+        <p class="sub-title">제출 코드</p>
+        <span class="expand-hint" v-if="!isCodeExpanded">클릭하여 펼치기</span>
+      </div>
+      <div
+        class="code-wrapper"
+        :class="{ expanded: isCodeExpanded }"
+        @click="toggleCodeExpansion"
+      >
+        <CodeHighlight
+          type="code"
+          :code="submission.code || ''"
+          :language="getHljsLanguage(submission.language)"
+          :theme.sync="theme"
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -74,6 +83,7 @@ export default {
   data() {
     return {
       submissionRank: {},
+      isCodeExpanded: false,
     }
   },
   methods: {
@@ -91,7 +101,10 @@ export default {
       } catch (error) {
         console.error("Failed to fetch submission rank:", error);
       }
-    }
+    },
+    toggleCodeExpansion() {
+      this.isCodeExpanded = !this.isCodeExpanded;
+    },
   },
 };
 </script>
@@ -164,5 +177,43 @@ export default {
 .value {
   font-size: 24px;
   font-weight: bold;
+}
+
+.submission-code-section {
+  .code-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+
+    .expand-hint {
+      font-size: 12px;
+      color: #666;
+      font-style: italic;
+    }
+  }
+
+  .code-wrapper {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-radius: 4px;
+
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.02);
+    }
+
+    /deep/ .code-highlight-wrapper {
+      max-width: 100%;
+      max-height: 300px;
+      overflow: auto;
+      transition: max-height 0.3s ease;
+    }
+
+    &.expanded {
+      /deep/ .code-highlight-wrapper {
+        max-height: none;
+      }
+    }
+  }
 }
 </style>
