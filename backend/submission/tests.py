@@ -219,7 +219,20 @@ class SubmissionRankAPITest(SubmissionCreateTestBase):
 
     def setUp(self):
         self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
-        self.admin = self.create_admin(login=False)
+
+        # 관리자 생성 및 테스트 컨테스트 생성
+        self.admin = self.create_admin()
+        contest_data = copy.deepcopy(DEFAULT_CONTEST_DATA)
+        contest_data["start_time"] = timezone.now() - timedelta(hours=1)
+        contest_data["end_time"] = timezone.now() + timedelta(hours=1)
+        contest_resp = self.client.post(self.reverse("contest_admin_api"), data=contest_data)
+        self.assertSuccess(contest_resp)
+        self.contest = contest_resp.data["data"]
+
+        self.contest_problem = ProblemCreateTestBase.add_problem(DEFAULT_PROBLEM_DATA, self.admin)
+        self.contest_problem.contest_id = self.contest["id"]
+        self.contest_problem.save()
+
         self.user = self.create_user(email="test@test.com", username="test", password="test1234!")
         self.problem = ProblemCreateTestBase.add_problem(DEFAULT_PROBLEM_DATA, self.admin)
         self.url = self.reverse("submission_rank_api")
@@ -255,6 +268,19 @@ class SubmissionRankAPITest(SubmissionCreateTestBase):
 
         resp = self.client.get(f"{self.url}?submission_id={submission.id}")
         self.assertFailed(resp, "Invalid submission statistic_info")
+
+    def test_reject_contest_problem(self):
+        submission = self.create_submission(self.user,
+                                            self.contest_problem,
+                                            contest_id=self.contest["id"],
+                                            result=JudgeStatus.ACCEPTED,
+                                            statistic_info={
+                                                "time_cost": 100,
+                                                "memory_cost": 1024
+                                            })
+
+        resp = self.client.get(f"{self.url}?submission_id={submission.id}")
+        self.assertFailed(resp, "This API is not available for contest submissions")
 
     def test_reject_unauthorized_user(self):
         submission = self.create_submission(user=self.user,
