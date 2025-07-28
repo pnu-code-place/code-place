@@ -1,18 +1,18 @@
 import ipaddress
 
+from django.db.models import Q, Count
+
 from account.decorators import login_required, check_contest_permission
 from utils.testcase_cache import TestCaseCacheManager
 from contest.models import ContestStatus, ContestRuleType
-from judge.dispatcher import JudgeDispatcher
 from judge.tasks import judge_task
 from options.options import SysOptions
-# from judge.dispatcher import JudgeDispatcher
 from problem.models import Problem, ProblemRuleType
 from utils.api import APIView, validate_serializer
 from utils.cache import cache
 from utils.captcha import Captcha
 from utils.throttling import TokenBucket
-from ..models import Submission
+from ..models import JudgeStatus, Submission
 from ..serializers import (CreateSubmissionSerializer, SubmissionModelSerializer, ShareSubmissionSerializer)
 from ..serializers import SubmissionSafeModelSerializer, SubmissionListSerializer
 
@@ -217,3 +217,86 @@ class SubmissionExistsAPI(APIView):
         return self.success(
             request.user.is_authenticated and
             Submission.objects.filter(problem_id=request.GET["problem_id"], user_id=request.user.id).exists())
+
+
+class SubmissionRankAPI(APIView):
+
+    @login_required
+    def get(self, request):
+        """제출물의 순위 정보를 반환합니다.
+
+        순위 정보는 다음과 같습니다:
+            - solved_rank: 제출자가 문제를 푼 순위 (해당 제출 이전에 문제를 푼 사용자 수 + 1)
+            - time_cost_percent: 제출자의 시간 비용이 전체 제출 중 몇 퍼센트인지
+            - memory_cost_percent: 제출자의 메모리 비용이 전체 제출 중 몇 퍼센트인지
+
+        이 API는 제출물의 ID를 통해 해당 제출물의 통계 정보를 기반으로 순위를 계산합니다.
+        """
+
+        # submission_id 파라미터가 없으면 에러 반환
+        submission_id = request.GET.get("submission_id")
+        if not submission_id:
+            return self.error("Parameter submission_id is required")
+
+        try:
+            submission = Submission.objects.get(id=submission_id)
+        except Submission.DoesNotExist:
+            return self.error("Submission does not exist")
+
+        if request.user.id != submission.user_id and not request.user.is_admin_role():
+            return self.error("No permission for this submission")
+
+        # Submission의 statistic_info가 없으면 에러 반환
+        try:
+            curr_time_cost = int(submission.statistic_info['time_cost'])
+            curr_memory_cost = int(submission.statistic_info['memory_cost'])
+        except (KeyError, TypeError, ValueError):
+            return self.error("Invalid submission statistic_info")
+
+        base_filter = Q(
+            problem_id=submission.problem,
+            language=submission.language,
+            result=JudgeStatus.ACCEPTED,
+        )
+
+        rank_data = Submission.objects.filter(base_filter).aggregate(
+            earlier_solved_users=Count(
+                'user_id',
+                filter=Q(create_time__lt=submission.create_time) & ~Q(user_id=submission.user_id),
+                distinct=True,
+            ),
+            faster_submissions=Count(
+                'id',
+                filter=Q(statistic_info__time_cost__lt=curr_time_cost, statistic_info__time_cost__isnull=False),
+            ),
+            total_time_submissions=Count(
+                'id',
+                filter=Q(statistic_info__time_cost__isnull=False),
+            ),
+            less_memory_submissions=Count(
+                'id',
+                filter=Q(statistic_info__memory_cost__lt=curr_memory_cost, statistic_info__memory_cost__isnull=False),
+            ),
+            total_memory_submissions=Count(
+                'id',
+                filter=Q(statistic_info__memory_cost__isnull=False),
+            ),
+        )
+
+        # 순위 계산
+        solved_rank = rank_data['earlier_solved_users'] + 1
+
+        # 시간 비용 백분율 계산
+        time_total = rank_data['total_time_submissions']
+        time_cost_percent = round(rank_data['faster_submissions'] / time_total * 100, 2) if time_total > 0 else 0.0
+
+        # 메모리 비용 백분율 계산
+        memory_total = rank_data['total_memory_submissions']
+        memory_cost_percent = round(rank_data['less_memory_submissions'] / memory_total *
+                                    100, 2) if memory_total > 0 else 0.0
+
+        return self.success({
+            'solved_rank': solved_rank,
+            'time_cost_percent': time_cost_percent,
+            'memory_cost_percent': memory_cost_percent,
+        })
