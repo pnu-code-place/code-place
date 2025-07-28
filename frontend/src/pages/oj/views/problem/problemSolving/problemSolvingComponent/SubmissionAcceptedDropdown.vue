@@ -73,7 +73,7 @@ export default {
   },
   data() {
     return {
-      submissionRank: null,
+      submissionRank: {},
     }
   },
   methods: {
@@ -83,7 +83,6 @@ export default {
     async getSubmissionRank() {
       try {
         const res = await api.getSubmissionRank(this.submission.id);
-        console.log(res.data.data);
         this.submissionRank = {
           solvedRank: res.data.data.solved_rank,
           timeCostPercent: res.data.data.time_cost_percent,
