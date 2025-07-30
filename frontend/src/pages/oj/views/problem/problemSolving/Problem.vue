@@ -436,9 +436,6 @@ export default {
       this.$refs.myCm.toggleTheme(customTheme);
       this.theme = value;
     },
-    theme(newVal) {
-      console.log("Theme changed:", newVal);
-    },
   },
 };
 </script>
