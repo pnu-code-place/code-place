@@ -48,7 +48,7 @@ export default {
      * @default false
      * @description false - 라이트 테마, true - 다크 테마
      */
-    theme: { type: Boolean, default: false },
+    isDarkMode: { type: Boolean, default: false },
   },
 
   computed: {
@@ -87,7 +87,7 @@ export default {
      */
     themeClass() {
       // 기본 테마 클래스 설정 (다크/라이트)
-      let themeClass = this.theme ? "dark-theme" : "light-theme";
+      let themeClass = this.isDarkMode ? "dark-theme" : "light-theme";
 
       // 에러 타입인 경우 에러 스타일 클래스 추가
       if (this.type === "error") {

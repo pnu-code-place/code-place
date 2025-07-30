@@ -29,7 +29,7 @@
               v-if="leftPainActiveTab === 'submission'"
               :problemID="problemID"
               :contestID="contestID"
-              :theme.sync="theme"
+              :isDarkMode="isDarkMode"
             />
           </div>
         </div>

@@ -62,12 +62,12 @@
                   <SubmissionErrorDropdown
                     v-if="submission.result !== 0"
                     :submission="submission"
-                    :theme.sync="theme"
+                    :isDarkMode="isDarkMode"
                   />
                   <SubmissionAcceptedDropdown
                     v-else
                     :submission="submission"
-                    :theme.sync="theme"
+                    :isDarkMode="isDarkMode"
                   />
                 </div>
               </td>
@@ -107,7 +107,7 @@ export default {
       type: String,
       default: null,
     },
-    theme: {
+    isDarkMode: {
       type: Boolean,
       default: false,
     },
@@ -121,7 +121,7 @@ export default {
   },
   computed: {
     themeClass() {
-      return this.theme ? "dark-theme" : "light-theme";
+      return this.isDarkMode ? "dark-theme" : "light-theme";
     },
   },
   mounted() {
@@ -192,7 +192,7 @@ export default {
       const colorConfig = LANGUAGE_COLOR[language];
       if (!colorConfig) return {};
 
-      const themeConfig = this.theme
+      const themeConfig = this.isDarkMode
         ? colorConfig.darkTheme
         : colorConfig.lightTheme;
       return {
