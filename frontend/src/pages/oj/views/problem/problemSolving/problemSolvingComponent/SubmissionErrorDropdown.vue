@@ -6,7 +6,7 @@
       <CodeHighlight
         type="error"
         :code="submission.statistic_info.err_info || 'No error information'"
-        :theme.sync="theme"
+        :isDarkMode="isDarkMode"
       />
     </div>
 
@@ -27,7 +27,7 @@
           <CodeHighlight
             type="plaintext"
             :code="submission.first_failed_tc_io.input || ''"
-            :theme.sync="theme"
+            :isDarkMode="isDarkMode"
           />
         </div>
         <div class="testcase-output">
@@ -35,7 +35,7 @@
           <CodeHighlight
             type="plaintext"
             :code="submission.first_failed_tc_io.output || ''"
-            :theme.sync="theme"
+            :isDarkMode="isDarkMode"
           />
         </div>
       </div>
@@ -56,7 +56,7 @@
           type="code"
           :code="submission.code || ''"
           :language="getHljsLanguage(submission.language)"
-          :theme.sync="theme"
+          :isDarkMode="isDarkMode"
         />
       </div>
     </div>
@@ -79,7 +79,7 @@ export default {
       type: Object,
       required: true,
     },
-    theme: {
+    isDarkMode: {
       type: Boolean,
       default: false,
     },

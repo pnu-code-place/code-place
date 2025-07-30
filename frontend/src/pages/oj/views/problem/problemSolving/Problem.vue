@@ -29,7 +29,7 @@
               v-if="leftPainActiveTab === 'submission'"
               :problemID="problemID"
               :contestID="contestID"
-              :theme.sync="theme"
+              :isDarkMode="isDarkMode"
             />
           </div>
         </div>
@@ -435,6 +435,9 @@ export default {
       let customTheme = value ? "ayu-mirage" : "github-light";
       this.$refs.myCm.toggleTheme(customTheme);
       this.theme = value;
+    },
+    theme(newVal) {
+      console.log("Theme changed:", newVal);
     },
   },
 };

@@ -8,14 +8,16 @@
           <p class="sub-title">제출 순위</p>
           <div class="ranking-content">
             <span class="prefix">#</span>
-            <span class="value">{{ submissionRank.solvedRank || '0' }}</span>
+            <span class="value">{{ submissionRank.solvedRank || "0" }}</span>
           </div>
         </div>
         <div class="ranking-box">
           <p class="sub-title">시간 비용</p>
           <div class="ranking-content">
             <span class="prefix">상위</span>
-            <span class="value">{{ submissionRank.timeCostPercent || '0' }}</span>
+            <span class="value">{{
+              submissionRank.timeCostPercent || "0"
+            }}</span>
             <span class="suffix">%</span>
           </div>
         </div>
@@ -23,7 +25,9 @@
           <p class="sub-title">메모리 비용</p>
           <div class="ranking-content">
             <span class="prefix">상위</span>
-            <span class="value">{{ submissionRank.memoryCostPercent || '0' }}</span>
+            <span class="value">{{
+              submissionRank.memoryCostPercent || "0"
+            }}</span>
             <span class="suffix">%</span>
           </div>
         </div>
@@ -45,7 +49,7 @@
           type="code"
           :code="submission.code || ''"
           :language="getHljsLanguage(submission.language)"
-          :theme.sync="theme"
+          :isDarkMode="isDarkMode"
         />
       </div>
     </div>
@@ -53,7 +57,7 @@
 </template>
 
 <script>
-import api from '@oj/api';
+import api from "@oj/api";
 import CodeHighlight from "./CodeHighlight.vue";
 import { HIGHLIGHT_JS_LANGUAGES } from "../../../../../../utils/constants";
 
@@ -67,7 +71,7 @@ export default {
       type: Object,
       required: true,
     },
-    theme: {
+    isDarkMode: {
       type: Boolean,
       default: false,
     },
@@ -77,14 +81,14 @@ export default {
   },
   computed: {
     themeClass() {
-      return this.theme ? 'dark-theme' : 'light-theme';
-    }
+      return this.isDarkMode ? "dark-theme" : "light-theme";
+    },
   },
   data() {
     return {
       submissionRank: {},
       isCodeExpanded: false,
-    }
+    };
   },
   methods: {
     getHljsLanguage(language) {
