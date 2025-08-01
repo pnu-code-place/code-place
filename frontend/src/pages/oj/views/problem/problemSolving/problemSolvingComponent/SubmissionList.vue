@@ -9,7 +9,7 @@
             <th>언어</th>
             <th>실행 시간</th>
             <th>메모리</th>
-            <th>제출 일자 {{ this.lastSubmissionId || "no" }}</th>
+            <th>제출 일자</th>
             <th></th>
           </tr>
         </thead>
@@ -147,7 +147,6 @@ export default {
       // 값이 실제로 변경되었을 때만 실행
       if (newId !== oldId && newId) {
         try {
-          console.log("Last submission ID changed:", newId);
           // 1. 제출 목록 새로고침
           await this.getSubmissionList();
 
@@ -166,7 +165,6 @@ export default {
   methods: {
     async getSubmissionList() {
       try {
-        console.log("Fetching submission list for problem ID:", this.problemID);
         const params = {
           myself: "1",
           problem_id: this.problemID,
@@ -179,12 +177,10 @@ export default {
     },
 
     selectSubmissionById(submissionId) {
-      console.log("Selecting submission by ID:", submissionId);
       const submission = this.submissions.find(
         (sub) => sub.id === submissionId
       );
       if (submission) {
-        console.log("Selecting submission:", submission);
         this.selectSubmission(submission);
       } else {
         console.warn("Submission not found for ID:", submissionId);

@@ -292,7 +292,6 @@ export default {
 
               this.leftPainActiveTab = "submission";
               this.lastSubmissionId = id;
-              console.log("lastSubmissionId:", this.lastSubmissionId);
 
               clearTimeout(this.refreshStatus);
               this.init();
