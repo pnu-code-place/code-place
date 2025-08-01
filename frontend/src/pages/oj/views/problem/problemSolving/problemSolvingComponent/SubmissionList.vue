@@ -4,12 +4,13 @@
       <table class="submission-table">
         <thead>
           <tr>
-            <th></th>
+            <th>No.</th>
             <th>결과</th>
             <th>언어</th>
             <th>실행 시간</th>
             <th>메모리</th>
             <th>제출 일자</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
@@ -18,7 +19,10 @@
             <tr
               :key="submission.id"
               @click="selectSubmission(submission)"
-              :class="{ selected: selectedSubmissionId === submission.id }"
+              class="submission-row"
+              :class="{
+                selected: internalSelectedSubmissionId === submission.id,
+              }"
             >
               <td>{{ submissions.length - idx }}</td>
               <td class="status-cell">
@@ -49,15 +53,22 @@
                 {{ formatMemoryCost(submission.statistic_info.memory_cost) }}
               </td>
               <td>{{ formatTime(submission.create_time) }}</td>
+              <td>
+                <Icon
+                  v-if="internalSelectedSubmissionId !== submission.id"
+                  type="ios-arrow-down"
+                />
+                <Icon v-else type="ios-arrow-up" class="rotate-icon" />
+              </td>
             </tr>
 
             <!-- 드롭다운 행 -->
             <tr
-              v-if="selectedSubmissionId === submission.id"
+              v-if="internalSelectedSubmissionId === submission.id"
               :key="`dropdown-${submission.id}`"
               class="dropdown-row"
             >
-              <td colspan="6" class="dropdown-cell">
+              <td colspan="7" class="dropdown-cell">
                 <div class="dropdown-content">
                   <SubmissionErrorDropdown
                     v-if="submission.result !== 0"
@@ -111,11 +122,15 @@ export default {
       type: Boolean,
       default: false,
     },
+    lastSubmissionId: {
+      type: String,
+      default: null,
+    },
   },
   data() {
     return {
       submissions: [],
-      selectedSubmissionId: null,
+      internalSelectedSubmissionId: null,
       judgeStatus: JUDGE_STATUS,
     };
   },
@@ -126,6 +141,26 @@ export default {
   },
   mounted() {
     this.getSubmissionList();
+  },
+  watch: {
+    async lastSubmissionId(newId, oldId) {
+      // 값이 실제로 변경되었을 때만 실행
+      if (newId !== oldId && newId) {
+        try {
+          // 1. 제출 목록 새로고침
+          await this.getSubmissionList();
+
+          // 2. DOM 업데이트 완료 대기
+          await this.$nextTick();
+
+          // 3. 해당 제출을 선택
+          this.selectSubmissionById(newId);
+        } catch (error) {
+          console.error("Failed to process lastSubmissionId change:", error);
+          this.internalSelectedSubmissionId = null;
+        }
+      }
+    },
   },
   methods: {
     async getSubmissionList() {
@@ -141,14 +176,27 @@ export default {
       }
     },
 
+    selectSubmissionById(submissionId) {
+      const submission = this.submissions.find(
+        (sub) => sub.id === submissionId
+      );
+      if (submission) {
+        this.selectSubmission(submission);
+      } else {
+        console.warn("Submission not found for ID:", submissionId);
+        this.internalSelectedSubmissionId = null;
+      }
+    },
+
     async selectSubmission(submission) {
-      if (this.selectedSubmissionId === submission.id) {
-        this.selectedSubmissionId = null;
+      if (this.internalSelectedSubmissionId === submission.id) {
+        this.internalSelectedSubmissionId = null;
         return;
       }
 
-      this.selectedSubmissionId = submission.id;
+      this.internalSelectedSubmissionId = submission.id;
 
+      // 코드가 없는 경우에만 상세 정보 fetch
       if (!submission.code) {
         await this.fetchSubmissionDetails(submission);
       }
@@ -244,7 +292,7 @@ export default {
   td {
     text-align: start;
     vertical-align: middle;
-    padding: 12px 0;
+    padding: 12px 14px;
     font-size: 14px;
 
     &:first-child {
@@ -262,6 +310,7 @@ export default {
 
   tbody tr {
     transition: background 0.2s;
+    padding: 0 12px;
     cursor: pointer;
 
     &.selected {
@@ -272,6 +321,10 @@ export default {
     &.dropdown-row {
       cursor: default !important;
     }
+  }
+
+  .submission-row:hover {
+    background: var(--row-hover-bg);
   }
 }
 
@@ -307,13 +360,13 @@ export default {
 }
 
 .dropdown-content {
-  animation: slideDown 0.3s ease-out;
+  animation: slideDown 0.8s ease-out;
 }
 
 @keyframes slideDown {
   from {
     opacity: 0;
-    transform: translateY(-10px);
+    transform: translateY(-15px);
   }
   to {
     opacity: 1;

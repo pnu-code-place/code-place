@@ -21,14 +21,15 @@
           </div>
           <div class="tab-content">
             <ProblemDetailFlexibleContainer
-              v-if="leftPainActiveTab === 'problem'"
+              v-show="leftPainActiveTab === 'problem'"
               :problem="problem"
               :contestID="contestID"
             />
             <SubmissionList
-              v-if="leftPainActiveTab === 'submission'"
+              v-show="leftPainActiveTab === 'submission'"
               :problemID="problemID"
               :contestID="contestID"
+              :lastSubmissionId="lastSubmissionId"
               :isDarkMode="isDarkMode"
             />
           </div>
@@ -161,6 +162,7 @@ export default {
       modalCheck: false,
       leftPainActiveTab: "problem",
       rightPainActiveTab: "editor",
+      lastSubmissionId: null,
     };
   },
   beforeRouteEnter(to, from, next) {
@@ -287,6 +289,10 @@ export default {
             if (Object.keys(res.data.data.statistic_info).length !== 0) {
               this.submitting = false;
               this.submitted = false;
+
+              this.leftPainActiveTab = "submission";
+              this.lastSubmissionId = id;
+
               clearTimeout(this.refreshStatus);
               this.init();
             } else {
