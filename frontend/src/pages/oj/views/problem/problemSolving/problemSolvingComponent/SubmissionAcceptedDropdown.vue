@@ -1,100 +1,66 @@
 <template>
   <div class="submission-accepted-dropdown" :class="themeClass">
-    <!-- 제출 통계 섹션 -->
-    <div>
-      <p class="sub-title">제출 분석</p>
-      <div class="submission-ranking">
-        <div class="ranking-box">
-          <p class="sub-title">제출 순위</p>
-          <div class="ranking-content">
-            <span class="prefix">#</span>
-            <span class="value">{{ submissionRank.solvedRank || "0" }}</span>
-          </div>
-        </div>
-        <div class="ranking-box">
-          <p class="sub-title">시간 비용</p>
-          <div class="ranking-content">
-            <span class="prefix">상위</span>
-            <span class="value">{{
-              submissionRank.timeCostPercent || "0"
-            }}</span>
-            <span class="suffix">%</span>
-          </div>
-        </div>
-        <div class="ranking-box">
-          <p class="sub-title">메모리 비용</p>
-          <div class="ranking-content">
-            <span class="prefix">상위</span>
-            <span class="value">{{
-              submissionRank.memoryCostPercent || "0"
-            }}</span>
-            <span class="suffix">%</span>
-          </div>
-        </div>
-      </div>
-    </div>
+    <!-- 제출 통계 섹션 (contestID가 없을 때만 표시) -->
+    <SubmissionStats v-if="!contestID" :stats="submissionRank" />
 
     <!-- 제출 코드 섹션 -->
-    <div class="submission-code-section">
-      <div class="code-header">
-        <p class="sub-title">제출 코드</p>
-        <span class="expand-hint" v-if="!isCodeExpanded">클릭하여 펼치기</span>
-      </div>
-      <div
-        class="code-wrapper"
-        :class="{ expanded: isCodeExpanded }"
-        @click="toggleCodeExpansion"
-      >
-        <CodeHighlight
-          type="code"
-          :code="submission.code || ''"
-          :language="getHljsLanguage(submission.language)"
-          :isDarkMode="isDarkMode"
-        />
-      </div>
-    </div>
+    <ExpandableCode
+      title="제출 코드"
+      :code="submission.code || ''"
+      :language="getHljsLanguage(submission.language)"
+      :isDarkMode="isDarkMode"
+    />
   </div>
 </template>
 
 <script>
 import api from "@oj/api";
-import CodeHighlight from "./CodeHighlight.vue";
+import SubmissionStats from "./SubmissionStats.vue";
+import ExpandableCode from "./ExpandableCode.vue";
 import { HIGHLIGHT_JS_LANGUAGES } from "../../../../../../utils/constants";
 
 export default {
   name: "SubmissionAcceptedDropdown",
   components: {
-    CodeHighlight,
+    SubmissionStats,
+    ExpandableCode,
   },
   props: {
     submission: {
       type: Object,
       required: true,
     },
+    contestID: {
+      type: String,
+      default: null,
+    },
     isDarkMode: {
       type: Boolean,
       default: false,
     },
   },
-  mounted() {
-    this.getSubmissionRank();
+  data() {
+    return {
+      submissionRank: {},
+    };
   },
   computed: {
     themeClass() {
       return this.isDarkMode ? "dark-theme" : "light-theme";
     },
   },
-  data() {
-    return {
-      submissionRank: {},
-      isCodeExpanded: false,
-    };
+  mounted() {
+    // contestID가 없을 때만 제출 통계를 가져옴
+    if (!this.contestID) {
+      this.fetchSubmissionRank();
+    }
   },
   methods: {
     getHljsLanguage(language) {
       return HIGHLIGHT_JS_LANGUAGES[language] || "plaintext";
     },
-    async getSubmissionRank() {
+
+    async fetchSubmissionRank() {
       try {
         const res = await api.getSubmissionRank(this.submission.id);
         this.submissionRank = {
@@ -105,9 +71,6 @@ export default {
       } catch (error) {
         console.error("Failed to fetch submission rank:", error);
       }
-    },
-    toggleCodeExpansion() {
-      this.isCodeExpanded = !this.isCodeExpanded;
     },
   },
 };
@@ -133,91 +96,6 @@ export default {
 .submission-accepted-dropdown {
   display: flex;
   flex-direction: column;
-  gap: 24px;
-}
-
-.sub-title {
-  font-size: 14px;
-  font-weight: bold;
-  margin-bottom: 8px;
-}
-
-.submission-ranking {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-.ranking-box {
-  flex: 1;
-  text-align: center;
-  padding: 16px 12px;
-  border-radius: 8px;
-  background-color: var(--dropdown-bg);
-  color: var(--dropdown-text);
-  border: 1px solid var(--border-color);
-  box-shadow: var(--box-shadow);
-  transition: all 0.2s ease;
-}
-
-.ranking-box:hover {
-  box-shadow: var(--box-shadow-hover);
-}
-
-.ranking-content {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  margin-top: 4px;
-}
-
-.prefix,
-.suffix {
-  font-size: 12px;
-  font-weight: normal;
-}
-
-.value {
-  font-size: 24px;
-  font-weight: bold;
-}
-
-.submission-code-section {
-  .code-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 8px;
-
-    .expand-hint {
-      font-size: 12px;
-      color: #666;
-      font-style: italic;
-    }
-  }
-
-  .code-wrapper {
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border-radius: 4px;
-
-    &:hover {
-      background-color: rgba(0, 0, 0, 0.02);
-    }
-
-    /deep/ .code-highlight-wrapper {
-      max-width: 100%;
-      max-height: 300px;
-      overflow: auto;
-      transition: max-height 0.3s ease;
-    }
-
-    &.expanded {
-      /deep/ .code-highlight-wrapper {
-        max-height: none;
-      }
-    }
-  }
+  gap: 36px;
 }
 </style>

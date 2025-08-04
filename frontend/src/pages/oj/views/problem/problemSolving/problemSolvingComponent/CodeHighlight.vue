@@ -142,6 +142,20 @@ export default {
   border: 1px solid var(--border-color);
   box-shadow: var(--box-shadow);
   transition: all 0.2s ease;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  &::-webkit-scrollbar-track {
+    background: var(--dropdown-bg);
+    border-radius: 4px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--border-color);
+    border-radius: 4px;
+    border: 2px solid var(--dropdown-bg);
+  }
 }
 
 .code-highlight-wrapper:hover {

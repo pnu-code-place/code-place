@@ -26,6 +26,7 @@
               :contestID="contestID"
             />
             <SubmissionList
+              v-if="isInitialized"
               v-show="leftPainActiveTab === 'submission'"
               :problemID="problemID"
               :contestID="contestID"
@@ -163,6 +164,7 @@ export default {
       leftPainActiveTab: "problem",
       rightPainActiveTab: "editor",
       lastSubmissionId: null,
+      isInitialized: false,
     };
   },
   beforeRouteEnter(to, from, next) {
@@ -190,6 +192,7 @@ export default {
     this.$store.commit(types.CHANGE_CONTEST_ITEM_VISIBLE, { menu: false });
     this.init();
     window.addEventListener("beforeunload", this.unLoadEvent);
+    this.isInitialized = true;
   },
   beforeUnmount() {
     window.removeEventListener("beforeunload", this.unLoadEvent);

@@ -299,6 +299,20 @@ export default defineComponent({
   display: flex;
   flex-direction: column;
 
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  &::-webkit-scrollbar-track {
+    background: var(--dropdown-bg);
+    border-radius: 4px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--border-color);
+    border-radius: 4px;
+    border: 2px solid var(--dropdown-bg);
+  }
+
   .detailCard {
     border: none;
     flex: 1;

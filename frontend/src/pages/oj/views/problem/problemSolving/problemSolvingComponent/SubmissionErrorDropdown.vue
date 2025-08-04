@@ -10,87 +10,55 @@
       />
     </div>
 
-    <!-- 테스트케이스 정보 섹션 -->
-    <div v-if="hasFailedTestCase">
-      <div class="failed-tc-header">
-        <p>최초 실패 케이스</p>
-        <CustomTooltip
-          content="테스트케이스 중 최초로 실패한 케이스의 입력값과 기대값입니다."
-          placement="right"
-        >
-          <Icon type="ios-information" />
-        </CustomTooltip>
-      </div>
-      <div class="testcase-info">
-        <div class="testcase-input">
-          <p>입력값</p>
-          <CodeHighlight
-            type="plaintext"
-            :code="submission.first_failed_tc_io.input || ''"
-            :isDarkMode="isDarkMode"
-          />
-        </div>
-        <div class="testcase-output">
-          <p>기대값</p>
-          <CodeHighlight
-            type="plaintext"
-            :code="submission.first_failed_tc_io.output || ''"
-            :isDarkMode="isDarkMode"
-          />
-        </div>
-      </div>
-    </div>
+    <!-- 테스트케이스 정보 섹션 (contestID가 없을 때만 표시) -->
+    <TestCaseInfo
+      v-if="shouldShowTestCase"
+      :testCase="submission.first_failed_tc_io"
+      :isDarkMode="isDarkMode"
+    />
 
     <!-- 제출 코드 섹션 -->
-    <div class="submission-code-section">
-      <div class="code-header">
-        <p class="sub-title">제출 코드</p>
-        <span class="expand-hint" v-if="!isCodeExpanded">클릭하여 펼치기</span>
-      </div>
-      <div
-        class="code-wrapper"
-        :class="{ expanded: isCodeExpanded }"
-        @click="toggleCodeExpansion"
-      >
-        <CodeHighlight
-          type="code"
-          :code="submission.code || ''"
-          :language="getHljsLanguage(submission.language)"
-          :isDarkMode="isDarkMode"
-        />
-      </div>
-    </div>
+    <ExpandableCode
+      title="제출 코드"
+      :code="submission.code || ''"
+      :language="getHljsLanguage(submission.language)"
+      :isDarkMode="isDarkMode"
+    />
   </div>
 </template>
 
 <script>
 import CodeHighlight from "./CodeHighlight.vue";
-import CustomTooltip from "@oj/components/CustomTooltip";
+import TestCaseInfo from "./TestCaseInfo.vue";
+import ExpandableCode from "./ExpandableCode.vue";
 import { HIGHLIGHT_JS_LANGUAGES } from "../../../../../../utils/constants";
 
 export default {
   name: "SubmissionErrorDropdown",
   components: {
     CodeHighlight,
-    CustomTooltip,
+    TestCaseInfo,
+    ExpandableCode,
   },
   props: {
     submission: {
       type: Object,
       required: true,
     },
+    contestID: {
+      type: String,
+      default: null,
+    },
     isDarkMode: {
       type: Boolean,
       default: false,
     },
   },
-  data() {
-    return {
-      isCodeExpanded: false,
-    };
-  },
   computed: {
-    hasFailedTestCase() {
+    shouldShowTestCase() {
+      // contestID가 없고, 실패한 테스트케이스 정보가 있을 때만 표시
+      if (this.contestID) return false;
+
       const tcInfo = this.submission.first_failed_tc_io;
       return tcInfo && tcInfo.input && tcInfo.output;
     },
@@ -98,9 +66,6 @@ export default {
   methods: {
     getHljsLanguage(language) {
       return HIGHLIGHT_JS_LANGUAGES[language] || "plaintext";
-    },
-    toggleCodeExpansion() {
-      this.isCodeExpanded = !this.isCodeExpanded;
     },
   },
 };
@@ -110,94 +75,20 @@ export default {
 .submission-error-dropdown {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 36px;
 }
 
 .sub-title {
   font-size: 14px;
   font-weight: bold;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
 
 .error-message {
   /deep/ .code-highlight-wrapper {
-    max-width: 100%;
+    // max-width: 100%;
     max-height: 300px;
     overflow: auto;
-  }
-}
-
-.failed-tc-header {
-  display: flex;
-  align-items: center;
-  margin-bottom: 6px;
-  font-weight: bold;
-  gap: 8px;
-}
-
-.testcase-info {
-  display: flex;
-  justify-content: space-between;
-  align-items: stretch;
-  gap: 16px;
-
-  p {
-    font-size: 13px;
-    font-weight: bold;
-    margin-bottom: 8px;
-  }
-}
-
-.testcase-input,
-.testcase-output {
-  flex: 1;
-  max-width: 50%;
-  display: flex;
-  flex-direction: column;
-
-  /deep/ .code-highlight-wrapper {
-    flex: 1;
-    max-width: 100%;
-    max-height: 300px;
-    overflow: auto;
-  }
-}
-
-.submission-code-section {
-  .code-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 8px;
-
-    .expand-hint {
-      font-size: 11px;
-      color: var(--text-color);
-      font-style: italic;
-    }
-  }
-
-  .code-wrapper {
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border-radius: 4px;
-
-    &:hover {
-      background-color: rgba(0, 0, 0, 0.02);
-    }
-
-    /deep/ .code-highlight-wrapper {
-      max-width: 100%;
-      max-height: 300px;
-      overflow: hidden;
-      transition: max-height 0.3s ease;
-    }
-
-    &.expanded {
-      /deep/ .code-highlight-wrapper {
-        max-height: none;
-      }
-    }
   }
 }
 </style>
