@@ -173,25 +173,99 @@ class ContestSubmissionAPITest(SubmissionCreateTestBase):
 class SubmissionListAPITest(SubmissionCreateTestBase):
 
     def setUp(self):
+        super().setUp()
         self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
-        self.admin = self.create_admin(login=False)
-        self.user = self.create_user(email="test@test.com", username="test", password="test1234!")
+        self.admin = self.create_admin()
         self.problem = ProblemCreateTestBase.add_problem(DEFAULT_PROBLEM_DATA, self.admin)
         self.url = self.reverse("submission_list_api")
 
-    def test_get_submission_list_success(self):
+        # 테스트용 Contest 및 Contest Problem 생성
+        contest_data = DEFAULT_CONTEST_DATA.copy()
+        contest_data["visible"] = True
+        contest_resp = self.client.post(self.reverse("contest_admin_api"), data=contest_data)
+        self.assertSuccess(contest_resp)
+        self.contest = contest_resp.data["data"]
+
+        # Contest Problem 연결
+        self.contest_problem = ProblemCreateTestBase.add_problem(DEFAULT_PROBLEM_DATA, self.admin)
+        self.contest_problem.contest_id = self.contest["id"]
+        self.contest_problem.visible = True
+        self.contest_problem.save()
+
+        self.user = self.create_user(email="user@test.com", username="user", password="test1234!")
+
+    def test_no_limit_param(self):
+        resp = self.client.get(self.url)
+        self.assertFailed(resp, "Limit is needed")
+
+    def test_get_submissions_general(self):
+        # 유저 제출 생성 (일반 문제)
         submission = self.create_submission(self.user, self.problem)
 
         resp = self.client.get(f"{self.url}?limit=10")
         self.assertSuccess(resp)
+        self.assertTrue("results" in resp.data["data"])
 
-    def test_get_submission_list_no_limit(self):
-        resp = self.client.get(self.url)
-        self.assertFailed(resp, "Limit is needed")
+    def test_get_submissions_filtered_by_problem(self):
+        # 문제 필터링 테스트 (일반 문제만)
+        submission = self.create_submission(self.user, self.problem)
 
-    def test_get_submission_list_contest_id_error(self):
-        resp = self.client.get(f"{self.url}?limit=10&contest_id=1")
-        self.assertFailed(resp, "Parameter error")
+        resp = self.client.get(f"{self.url}?limit=10&problem_id={self.problem._id}")
+        self.assertSuccess(resp)
+        self.assertTrue(any(sub["id"] == submission.id for sub in resp.data["data"]["results"]))
+
+    def test_get_submissions_filtered_by_result(self):
+        submission_accepted = self.create_submission(self.user, self.problem, result=JudgeStatus.ACCEPTED)
+        submission_wrong = self.create_submission(self.user, self.problem, result=JudgeStatus.WRONG_ANSWER)
+
+        resp = self.client.get(f"{self.url}?limit=10&result={JudgeStatus.ACCEPTED}")
+        self.assertSuccess(resp)
+        self.assertTrue(any(sub["id"] == submission_accepted.id for sub in resp.data["data"]["results"]))
+        self.assertFalse(any(sub["id"] == submission_wrong.id for sub in resp.data["data"]["results"]))
+
+    def test_get_submissions_filtered_by_username(self):
+        # 일반 제출에서 username 필터 테스트
+        other_user = self.create_user(email="other@test.com", username="otheruser", password="test1234!", login=False)
+        sub1 = self.create_submission(self.user, self.problem)
+        sub2 = self.create_submission(other_user, self.problem)
+
+        resp = self.client.get(f"{self.url}?limit=10&username={self.user.username}")
+        self.assertSuccess(resp)
+        # 결과에 현재 로그인한 user만 포함되어야 함 (SysOptions.submission_list_show_all 설정에 따라 다름)
+        # 기본 가정: show_all False이면 자신 제출만 조회됨
+        results = resp.data["data"]["results"]
+        for sub in results:
+            self.assertIn(self.user.username, sub["username"])
+
+    def test_get_submissions_contest_regular_user_no_permission(self):
+        # contest_id 지정, myself=0, admin이 아닌 경우 에러 발생
+        resp = self.client.get(f"{self.url}?limit=10&contest_id={self.contest['id']}&myself=0")
+        self.assertFailed(resp, "No permission to view all submissions in this contest")
+
+    def test_get_submissions_contest_admin_access(self):
+        # admin 권한으로 contest submissions 전체조회 가능
+        admin = self.admin
+        self.client.force_login(admin)
+
+        # Contest Id 포함 리스트 조회
+        resp = self.client.get(f"{self.url}?limit=10&contest_id={self.contest['id']}")
+        self.assertSuccess(resp)
+        self.client.logout()
+
+    def test_get_submissions_contest_myself(self):
+        # contest_id 지정, myself=1일때는 조회 성공
+        sub = self.create_submission(self.user, self.contest_problem, contest_id=self.contest["id"])
+        resp = self.client.get(f"{self.url}?limit=10&contest_id={self.contest['id']}&myself=1")
+        self.assertSuccess(resp)
+        self.assertTrue(any(s["id"] == sub.id for s in resp.data["data"]["results"]))
+
+    def test_get_submissions_with_problem_not_exist(self):
+        # problem_id 지정했으나 존재하지 않는 경우 에러 발생
+        resp = self.client.get(f"{self.url}?limit=10&problem_id=9999999")
+        self.assertFailed(resp, "Problem doesn't exist")
+
+    # 더 추가할 수 있는 경우
+    # - username 필터가 contest_id 있을때 비활성 여부 테스트
 
 
 class SubmissionExistsAPITest(SubmissionCreateTestBase):

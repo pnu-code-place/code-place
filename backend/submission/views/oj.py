@@ -4,7 +4,7 @@ from django.db.models import Q, Count
 
 from account.decorators import login_required, check_contest_permission
 from utils.testcase_cache import TestCaseCacheManager
-from contest.models import ContestStatus, ContestRuleType
+from contest.models import Contest, ContestStatus, ContestRuleType
 from judge.tasks import judge_task
 from options.options import SysOptions
 from problem.models import Problem, ProblemRuleType
@@ -143,26 +143,53 @@ class SubmissionListAPI(APIView):
     def get(self, request):
         if not request.GET.get("limit"):
             return self.error("Limit is needed")
-        if request.GET.get("contest_id"):
-            return self.error("Parameter error")
 
-        submissions = Submission.objects.filter(contest_id__isnull=True).select_related("problem__created_by")
+        contest_id = request.GET.get("contest_id")
         problem_id = request.GET.get("problem_id")
         myself = request.GET.get("myself")
         result = request.GET.get("result")
         username = request.GET.get("username")
-        if problem_id:
+
+        # contest_id가 있는 경우의 처리
+        if contest_id:
+            # 일반 사용자는 자신의 제출만 볼 수 있음
+            if myself != "1" and not request.user.is_admin_role():
+                return self.error("No permission to view all submissions in this contest")
+
             try:
-                problem = Problem.objects.get(_id=problem_id, contest_id__isnull=True, visible=True)
-            except Problem.DoesNotExist:
-                return self.error("Problem doesn't exist")
-            submissions = submissions.filter(problem=problem)
+                contest = Contest.objects.get(id=contest_id, visible=True)
+            except Contest.DoesNotExist:
+                return self.error("Contest doesn't exist")
+
+            submissions = Submission.objects.filter(contest_id=contest_id).select_related("problem__created_by")
+
+            # 대회 문제 필터링
+            if problem_id:
+                try:
+                    problem = Problem.objects.get(_id=problem_id, contest_id=contest_id, visible=True)
+                except Problem.DoesNotExist:
+                    return self.error("Problem doesn't exist")
+                submissions = submissions.filter(problem=problem)
+        else:
+            # 기존 로직: 일반 문제 제출
+            submissions = Submission.objects.filter(contest_id__isnull=True).select_related("problem__created_by")
+
+            if problem_id:
+                try:
+                    problem = Problem.objects.get(_id=problem_id, contest_id__isnull=True, visible=True)
+                except Problem.DoesNotExist:
+                    return self.error("Problem doesn't exist")
+                submissions = submissions.filter(problem=problem)
+
+        # 사용자 필터링
         if (myself and myself == "1") or not SysOptions.submission_list_show_all:
             submissions = submissions.filter(user_id=request.user.id)
-        elif username:
+        elif username and not contest_id:  # 대회에서는 username 검색 제한
             submissions = submissions.filter(username__icontains=username)
+
         if result:
             submissions = submissions.filter(result=result)
+
         data = self.paginate_data(request, submissions)
         data["results"] = SubmissionListSerializer(data["results"], many=True, user=request.user).data
         return self.success(data)
