@@ -327,7 +327,7 @@ export default {
   },
   getSubmissionRank(id) {
     const params = { submission_id: id };
-    return ajax('submission_rank', "get", {
+    return ajax("submission_rank", "get", {
       params: params,
     });
   },
