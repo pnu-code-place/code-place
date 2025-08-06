@@ -28,10 +28,6 @@
             </div>
           </div>
           <div style="display: flex">
-            <!--            <div v-if="problem.solved_by" class="headerDetailBtn" style="background-color: rgba(161,214,161,0.25)">-->
-            <!--              <i class="fas fa-check-circle" style="color: #65ba43"></i>-->
-            <!--              Accepted-->
-            <!--            </div>-->
             <Tooltip
               :content="'정답 시 점수를 2배로 획득해요!'"
               placement="bottom"
@@ -135,100 +131,100 @@
         </div>
 
         <template v-if="!contestID">
-          <div class="detailInfoBox">
-            <div class="detailInfoBoxHeader" @click="toggleDropdown('field')">
-              <p
-                class="title"
-                style="text-decoration: none; margin-top: 0px"
-                ref="field"
-              >
-                <Icon
-                  type="ios-pie"
-                  color="#F8B193"
-                  style="margin-right: 5px"
-                />
-                영역
-              </p>
-              <i
-                class="fas fa-chevron-down"
-                v-if="!dropdown.openFieldDropdown"
-              ></i>
-              <i class="fas fa-chevron-up" v-else></i>
-            </div>
-            <transition name="slide">
-              <div class="dropdown-content" v-if="dropdown.openFieldDropdown">
-                <FieldCategoryBox
-                  :boxType="true"
-                  :value="FIELD_MAP[problem.field].value"
-                  :boxColor="FIELD_MAP[problem.field].boxColor"
-                />
-              </div>
-            </transition>
-          </div>
-
-          <div class="detailInfoBox">
-            <div
-              class="detailInfoBoxHeader"
-              @click="toggleDropdown('category')"
-            >
-              <p
-                class="title"
-                style="text-decoration: none; margin-top: 0px"
-                ref="category"
-              >
-                <Icon
-                  type="ios-pricetag"
-                  color="#FF9F9F"
-                  style="margin-right: 5px"
-                />
-                태그
-              </p>
-              <i
-                class="fas fa-chevron-down"
-                v-if="!dropdown.openCategoryDropdown"
-              ></i>
-              <i class="fas fa-chevron-up" v-else></i>
-            </div>
-
-            <div v-if="dropdown.openCategoryDropdown" style="display: flex">
-              <template v-for="(category, idx) in problem.tags">
-                <FieldCategoryBox
-                  :boxType="false"
-                  :value="'#' + category"
-                  :boxColor="'#FFFFFF'"
-                />
-              </template>
-            </div>
-          </div>
-
-          <div class="detailInfoBox">
-            <div class="detailInfoBoxHeader">
-              <p class="title" style="text-decoration: none; margin-top: 0px">
-                <Icon
-                  type="ios-contact"
-                  color="#90B8E7"
-                  style="margin-right: 5px"
-                />
-                문제를 등록한 사람
-              </p>
-              <p class="title" style="text-decoration: none; margin-top: 0px">
-                {{ problem.created_by.username + "님" }}
-              </p>
-            </div>
-          </div>
-
-          <div class="detailInfoBox" v-if="problem.source">
-            <div class="detailInfoBoxHeader">
-              <p class="title" style="text-decoration: none; margin-top: 0px">
+          <div class="detailInfoContainer">
+            <div class="detailInfoBox">
+              <div class="detailInfoBoxHeader" @click="toggleDropdown('field')">
+                <p
+                  class="title"
+                  style="text-decoration: none; margin-top: 0px"
+                  ref="field"
+                >
+                  <Icon
+                    type="ios-pie"
+                    color="#F8B193"
+                    style="margin-right: 5px"
+                  />
+                  영역
+                </p>
                 <i
-                  class="fas fa-paperclip"
-                  style="margin-right: 5px; color: #424f66"
+                  class="fas fa-chevron-down"
+                  v-if="!dropdown.openFieldDropdown"
                 ></i>
-                출처
-              </p>
-              <p class="title" style="text-decoration: none; margin-top: 0px">
-                {{ problem.source }}
-              </p>
+                <i class="fas fa-chevron-up" v-else></i>
+              </div>
+              <transition name="slide">
+                <div class="dropdown-content" v-if="dropdown.openFieldDropdown">
+                  <div class="dropdown-badge">
+                    {{ FIELD_MAP[problem.field].value }}
+                  </div>
+                </div>
+              </transition>
+            </div>
+
+            <div class="detailInfoBox">
+              <div
+                class="detailInfoBoxHeader"
+                @click="toggleDropdown('category')"
+              >
+                <p
+                  class="title"
+                  style="text-decoration: none; margin-top: 0px"
+                  ref="category"
+                >
+                  <Icon
+                    type="ios-pricetag"
+                    color="#FF9F9F"
+                    style="margin-right: 5px"
+                  />
+                  태그
+                </p>
+                <i
+                  class="fas fa-chevron-down"
+                  v-if="!dropdown.openCategoryDropdown"
+                ></i>
+                <i class="fas fa-chevron-up" v-else></i>
+              </div>
+              <transition name="slide">
+                <div
+                  class="dropdown-content"
+                  v-if="dropdown.openCategoryDropdown"
+                >
+                  <template v-for="(category, idx) in problem.tags">
+                    <div class="dropdown-badge">#{{ category }}</div>
+                  </template>
+                </div>
+              </transition>
+            </div>
+
+            <div class="detailInfoBox">
+              <div class="detailInfoBoxHeader">
+                <p class="title" style="text-decoration: none; margin-top: 0px">
+                  <Icon
+                    type="ios-contact"
+                    color="#90B8E7"
+                    style="margin-right: 5px"
+                  />
+                  문제를 등록한 사람
+                </p>
+                <p class="title" style="text-decoration: none; margin-top: 0px">
+                  {{ problem.created_by.username + "님" }}
+                </p>
+              </div>
+            </div>
+
+            <div class="detailInfoBox" v-if="problem.source">
+              <div class="detailInfoBoxHeader">
+                <p class="title" style="text-decoration: none; margin-top: 0px">
+                  <i
+                    class="fas fa-paperclip"
+                    style="margin-right: 5px; color: #424f66"
+                  ></i>
+                  출처
+                </p>
+                <p class="title" style="text-decoration: none; margin-top: 0px">
+                  {{ problem.source }}
+                </p>
+              </div>
             </div>
           </div>
         </template>
@@ -259,9 +255,11 @@ export default defineComponent({
   methods: {
     scrollField() {
       this.$refs.field.scrollIntoView({ behavior: "smooth" });
+      this.dropdown.openFieldDropdown = true;
     },
     scrollCategory() {
       this.$refs.category.scrollIntoView({ behavior: "smooth" });
+      this.dropdown.openCategoryDropdown = true;
     },
     toggleDropdown(type) {
       if (type === "field") {
@@ -401,9 +399,14 @@ export default defineComponent({
   background-color: var(--ps-content-pre-background-color);
 }
 
-.detailInfoBox {
+.detailInfoContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
   margin-top: 30px;
-  height: 30px;
+}
+
+.detailInfoBox {
   padding-left: 20px;
   padding-right: 30px;
   padding-top: 15px;
@@ -419,23 +422,33 @@ export default defineComponent({
   .dropdown-content {
     display: flex;
     align-items: center;
-    height: 30px;
+    flex-wrap: wrap;
+  }
+
+  .dropdown-badge {
+    background-color: var(--header-btn-color);
+    padding: 3px 8px;
+    font-weight: 500;
+    margin-right: 10px;
+    border-radius: 8px;
   }
 }
 
 .slide-enter-active,
 .slide-leave-active {
-  transition: max-height 0.3s ease;
+  transition: max-height 0.3s ease, opacity 0.3s ease;
   overflow: hidden;
 }
 
 .slide-enter,
 .slide-leave-to {
   max-height: 0;
+  opacity: 0;
 }
 
 .slide-enter-to,
 .slide-leave {
-  max-height: 100px; /* 적절한 높이 값으로 조정하세요 */
+  max-height: 100px;
+  opacity: 1;
 }
 </style>
