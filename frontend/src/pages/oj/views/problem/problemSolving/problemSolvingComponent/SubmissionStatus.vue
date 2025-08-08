@@ -3,51 +3,75 @@
     <template v-if="!statusVisible">
       <span>제출결과</span>
     </template>
-    <template v-else-if="statusVisible && (!this.contestID || (this.contestID && OIContestRealTimePermission))">
-      <div class="submissionState" @click="handleRoute('/status/'+submissionId)">
-        <i v-if="(submissionStatus.text === 'Submitting') || (submissionStatus.text === 'Judging')"
-           class="fas fa-circle-notch fa-spin" style="color: #e39530"/>
-        <i v-else class="fas fa-circle" :style="{'color': submissionStatus.color}"/>
-        {{ $t('m.' + submissionStatus.text.replace(/ /g, "_")) }}
+    <template
+      v-else-if="
+        statusVisible &&
+        (!this.contestID || (this.contestID && OIContestRealTimePermission))
+      "
+    >
+      <div
+        class="submissionState"
+        @click="handleRoute('/status/' + submissionId)"
+      >
+        <i
+          v-if="
+            submissionStatus.text === 'Submitting' ||
+            submissionStatus.text === 'Judging'
+          "
+          class="fas fa-circle-notch fa-spin"
+          style="color: #e39530"
+        />
+        <i
+          v-else
+          class="fas fa-circle"
+          :style="{ color: submissionStatus.color }"
+        />
+        {{ $t("m." + submissionStatus.text.replace(/ /g, "_")) }}
       </div>
     </template>
-    <template v-else-if="statusVisible && (this.contestID && !OIContestRealTimePermission)">
-      <Alert type="success" show-icon>{{ $t('m.Submitted_successfully') }}</Alert>
+    <template
+      v-else-if="
+        statusVisible && this.contestID && !OIContestRealTimePermission
+      "
+    >
+      <Alert type="success" show-icon>{{
+        $t("m.Submitted_successfully")
+      }}</Alert>
     </template>
   </div>
 </template>
 
 <script>
-import {defineComponent} from "vue";
-import {mapGetters} from "vuex";
-import {JUDGE_STATUS} from "../../../../../../utils/constants";
+import { defineComponent } from "vue";
+import { mapGetters } from "vuex";
+import { JUDGE_STATUS } from "../../../../../../utils/constants";
 
 export default defineComponent({
   props: {
     statusVisible: Boolean,
     contestID: String,
     result: Object,
-    submissionId: String
+    submissionId: String,
   },
   components: {},
   data() {
-    return {}
+    return {};
   },
   methods: {
     handleRoute(route) {
-      this.$router.push(route)
-    }
+      this.$router.push(route);
+    },
   },
   computed: {
-    ...mapGetters(['OIContestRealTimePermission']),
+    ...mapGetters(["OIContestRealTimePermission"]),
     submissionStatus() {
       return {
-        text: JUDGE_STATUS[this.result.result]['name'],
-        color: JUDGE_STATUS[this.result.result]['color']
-      }
+        text: JUDGE_STATUS[this.result.result]["name"],
+        color: JUDGE_STATUS[this.result.result]["color"],
+      };
     },
-  }
-})
+  },
+});
 </script>
 
 <style scoped lang="less">

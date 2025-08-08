@@ -180,14 +180,19 @@ class JudgeDispatcher(DispatcherBase):
             self.submission.info = resp
             self._compute_statistic_info(resp["data"])
             error_test_case = list(filter(lambda case: case["result"] != 0, resp["data"]))
-            # ACM모드: 모든 테스트 케이스가 정답이면 Accepted, 그렇지 않으면 첫번째 오답 테스트케이스의 상태를 가짐
-            # OI모드: 모든 테스트 케이스가 맞으면 Accepted, 모두 틀리면 첫번째 오답 테스트케이스의 상태, 그렇지 않으면 Partially Accepted
+
             if not error_test_case:
                 self.submission.result = JudgeStatus.ACCEPTED
-            elif self.problem.rule_type == ProblemRuleType.ACM or len(error_test_case) == len(resp["data"]):
-                self.submission.result = error_test_case[0]["result"]
             else:
-                self.submission.result = JudgeStatus.PARTIALLY_ACCEPTED
+                # 첫번째 오답 테스트 케이스의 인덱스를 저장, 추후 연습 문제에서 오답 테스트 케이스 힌트를 보여주기 위해 사용
+                self.submission.first_failed_tc_idx = int(error_test_case[0]["test_case"])
+
+                # ACM모드: 모든 테스트 케이스가 정답이면 Accepted, 그렇지 않으면 첫번째 오답 테스트케이스의 상태를 가짐
+                # OI모드: 모든 테스트 케이스가 맞으면 Accepted, 모두 틀리면 첫번째 오답 테스트케이스의 상태, 그렇지 않으면 Partially Accepted
+                if self.problem.rule_type == ProblemRuleType.ACM or len(error_test_case) == len(resp["data"]):
+                    self.submission.result = error_test_case[0]["result"]
+                else:
+                    self.submission.result = JudgeStatus.PARTIALLY_ACCEPTED
         self.submission.save()
 
         if self.contest_id:

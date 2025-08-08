@@ -5,3 +5,4 @@ omit = */urls/*
        */migrations/*
        *urls.py
        utils/xss_filter.py
+       */MagicMock/*
