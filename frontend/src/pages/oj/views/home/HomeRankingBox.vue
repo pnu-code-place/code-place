@@ -1,55 +1,70 @@
 <template>
   <div class="rankingBox">
     <div class="rankingBoxHeader">
-      <h2>{{ $t('m.Title_Home_Ranking') }} <span class="gradientSpan">{{ $t('m.Top_Three_Home_Ranking') }}</span></h2>
-      <div class="plusDiv" @click="handleRoute('acm-rank')" v-if="this.rankingItems.length >= 3">
+      <h2>
+        {{ $t("m.Title_Home_Ranking") }}
+        <span class="gradientSpan">{{ $t("m.Top_Three_Home_Ranking") }}</span>
+      </h2>
+      <div
+        class="plusDiv"
+        @click="handleRoute('acm-rank')"
+        v-if="this.rankingItems.length >= 3"
+      >
         <Icon type="android-add" size="13" color="#7a7a7a"></Icon>
-        <span>{{ $t('m.More_Home_Ranking') }}</span>
+        <span>{{ $t("m.More_Home_Ranking") }}</span>
       </div>
     </div>
     <div class="rankingBoxBody">
       <template v-if="this.rankingItems.length <= 1">
         <div class="noData">
-          {{ $t('m.No_Sufficient_Data_Home_Ranking') }}
+          {{ $t("m.No_Sufficient_Data_Home_Ranking") }}
         </div>
       </template>
       <template v-else>
         <table>
           <tr>
-            <th class="idx">{{ $t('m.Rank_Home_Ranking') }}</th>
-            <th class="name">{{ $t('m.User_Home_Ranking') }}</th>
-            <th class="tier">{{ $t('m.Tier_Home_Ranking') }}</th>
-            <th class="score">{{ $t('m.Total_Score_Home_Ranking') }}</th>
+            <th class="idx">{{ $t("m.Rank_Home_Ranking") }}</th>
+            <th class="name">{{ $t("m.User_Home_Ranking") }}</th>
+            <th class="tier">{{ $t("m.Tier_Home_Ranking") }}</th>
+            <th class="score">{{ $t("m.Total_Score_Home_Ranking") }}</th>
           </tr>
           <tbody>
-          <tr v-for="(user, index) in this.rankingItems" :key="index" v-if="index <= 2">
-            <td class="idx">
-              {{ index + 1 + '위' }}
-            </td>
-            <td class="name">
-              <div class="user-wrapper" @click="goUserInfo(user.username)">
-                <img class="avatar" :src="user.avatar" alt="user avatar image"/>
-                <span>
-
-                {{ user.username }}
-              </span>
-              </div>
-            </td>
-            <template v-if="(index + 1) <= 3">
-              <td class="tier">
-                <ShineWrapper>
-                  <img alt="" :src="TierImageSrc[user.tier]" width="25px"/>
-                </ShineWrapper>
+            <tr
+              v-for="(user, index) in this.rankingItems"
+              :key="index"
+              v-if="index <= 2"
+            >
+              <td class="idx">
+                {{ index + 1 + "위" }}
               </td>
-            </template>
-            <td class="score">
-              <div class="user-score">
-                <span class="user-score__score">{{ user.total_score }}</span>
-                <span class="user-score__growth">{{ user.fluctuation === 0 ? "-" : ("▲" + user.fluctuation) }}
-              </span>
-              </div>
-            </td>
-          </tr>
+              <td class="name">
+                <div class="user-wrapper" @click="goUserInfo(user.username)">
+                  <img
+                    class="avatar"
+                    :src="user.avatar"
+                    alt="user avatar image"
+                  />
+                  <span>
+                    {{ user.username }}
+                  </span>
+                </div>
+              </td>
+              <template v-if="index + 1 <= 3">
+                <td class="tier">
+                  <ShineWrapper>
+                    <img alt="" :src="TierImageSrc[user.tier]" width="25px" />
+                  </ShineWrapper>
+                </td>
+              </template>
+              <td class="score">
+                <div class="user-score">
+                  <span class="user-score__score">{{ user.total_score }}</span>
+                  <span class="user-score__growth"
+                    >{{ user.fluctuation === 0 ? "-" : "▲" + user.fluctuation }}
+                  </span>
+                </div>
+              </td>
+            </tr>
           </tbody>
         </table>
       </template>
@@ -58,13 +73,13 @@
 </template>
 
 <script>
-import api from "../../api";
-import {TierImageSrc} from "../../../../utils/constants";
-import ShineWrapper from "../../components/ShineWrapper.vue";
+import api from "../../api"
+import { TierImageSrc } from "../../../../utils/constants"
+import ShineWrapper from "../../components/ShineWrapper.vue"
 
 export default {
-  name: 'HomeRankingBox',
-  components: {ShineWrapper},
+  name: "HomeRankingBox",
+  components: { ShineWrapper },
   data() {
     return {
       rankingItems: [],
@@ -76,28 +91,26 @@ export default {
   },
   methods: {
     handleRoute(route) {
-      this.$router.push({name: route});
+      this.$router.push({ name: route })
     },
     goUserInfo(username) {
-      this.$router.push({name: 'user-home', params: {username: username}})
+      this.$router.push({ name: "user-home", params: { username: username } })
     },
     init() {
-      api.getHomeRealTimeRanking()
-        .then((res) => {
-          this.rankingItems = res.data.data
-        })
-    }
+      api.getHomeRealTimeRanking().then((res) => {
+        this.rankingItems = res.data.data
+      })
+    },
   },
   computed: {
     TierImageSrc() {
       return TierImageSrc
     },
-  }
+  },
 }
 </script>
 
 <style scoped lang="less">
-
 h2 {
   font-size: 18px;
 }
@@ -175,7 +188,6 @@ table {
 
     &.score {
       width: 20%;
-
     }
   }
 
@@ -243,11 +255,13 @@ table {
 
 .gradientSpan {
   font-weight: bold;
-  background: linear-gradient(to right,
-  #6266dc 20%,
-  #39408e 30%,
-  #3d3580 70%,
-  #20345c 80%);
+  background: linear-gradient(
+    to right,
+    #6266dc 20%,
+    #39408e 30%,
+    #3d3580 70%,
+    #20345c 80%
+  );
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;

@@ -56,7 +56,7 @@
             </el-select>
           </el-col>
           <el-col :span="selectedUsers.length ? 16: 24">
-            <el-input v-model="query.keyword" prefix-icon="el-icon-search" placeholder="Keywords"></el-input>
+            <el-input v-model="query.keyword" prefix-icon="el-icon-search" placeholder="Keywords"/></el-input>
           </el-col>
         </el-row>
       </div>
@@ -256,7 +256,7 @@
           </el-col>
           <el-col :span="12">
             <el-form-item :label="$t('m.User_New_Password')">
-              <input class="user-password-input" v-model="user.password"></input>
+              <input class="user-password-input" v-model="user.password"/>
             </el-form-item>
           </el-col>
           <el-col :span="12">

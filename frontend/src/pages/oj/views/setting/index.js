@@ -1,6 +1,10 @@
-const Settings = () => import(/* webpackChunkName: "setting" */ './LegacySettings.vue')
-const ProfileSetting = () => import(/* webpackChunkName: "setting" */ './children/ProfileSetting.vue')
-const SecuritySetting = () => import(/* webpackChunkName: "setting" */ './children/SecuritySetting.vue')
-const AccountSetting = () => import(/* webpackChunkName: "setting" */ './children/AccountSetting.vue')
+const Settings = () =>
+  import(/* webpackChunkName: "setting" */ "./LegacySettings.vue")
+const ProfileSetting = () =>
+  import(/* webpackChunkName: "setting" */ "./children/ProfileSetting.vue")
+const SecuritySetting = () =>
+  import(/* webpackChunkName: "setting" */ "./children/SecuritySetting.vue")
+const AccountSetting = () =>
+  import(/* webpackChunkName: "setting" */ "./children/AccountSetting.vue")
 
-export {Settings, ProfileSetting, SecuritySetting, AccountSetting}
+export { Settings, ProfileSetting, SecuritySetting, AccountSetting }

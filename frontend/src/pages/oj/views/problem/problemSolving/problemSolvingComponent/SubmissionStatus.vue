@@ -42,9 +42,9 @@
 </template>
 
 <script>
-import { defineComponent } from "vue";
-import { mapGetters } from "vuex";
-import { JUDGE_STATUS } from "../../../../../../utils/constants";
+import { defineComponent } from "vue"
+import { mapGetters } from "vuex"
+import { JUDGE_STATUS } from "../../../../../../utils/constants"
 
 export default defineComponent({
   props: {
@@ -55,11 +55,11 @@ export default defineComponent({
   },
   components: {},
   data() {
-    return {};
+    return {}
   },
   methods: {
     handleRoute(route) {
-      this.$router.push(route);
+      this.$router.push(route)
     },
   },
   computed: {
@@ -68,10 +68,10 @@ export default defineComponent({
       return {
         text: JUDGE_STATUS[this.result.result]["name"],
         color: JUDGE_STATUS[this.result.result]["color"],
-      };
+      }
     },
   },
-});
+})
 </script>
 
 <style scoped lang="less">

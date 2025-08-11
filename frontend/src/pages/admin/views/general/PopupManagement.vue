@@ -26,7 +26,7 @@
         <p></p>
         <p class="table-title">{{ $t("m.Home_Banner_ID") }}</p>
         <p class="table-title">{{ $t("m.Popup_Image") }}</p>
-<!--        <p class="table-title">{{ $t("m.Width") }}</p>-->
+        <!--        <p class="table-title">{{ $t("m.Width") }}</p>-->
         <p class="table-title">{{ $t("m.Create_Time") }}</p>
         <p class="table-title">{{ $t("m.Last_Update_Time") }}</p>
         <p class="table-title">{{ $t("m.Enable_Disable") }}</p>
@@ -104,10 +104,10 @@
 </template>
 
 <script>
-import api from "../../api.js";
-import draggable from "vuedraggable";
-import ModifyPopupModal from "./Modal/ModifyPopupModal.vue";
-import AddPopupModal from "./Modal/AddPopupModal.vue";
+import api from "../../api.js"
+import draggable from "vuedraggable"
+import ModifyPopupModal from "./Modal/ModifyPopupModal.vue"
+import AddPopupModal from "./Modal/AddPopupModal.vue"
 
 export default {
   name: "popup-management",
@@ -121,67 +121,67 @@ export default {
       addModalOpen: false,
       modifyModalOpen: false,
       banners: [],
-    };
+    }
   },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
       api.getPopups().then((res) => {
-        vm.banners = res.data.data;
-      });
-    });
+        vm.banners = res.data.data
+      })
+    })
   },
   methods: {
     getPopups() {
       api.getPopups().then((res) => {
-        this.banners = res.data.data;
-      });
+        this.banners = res.data.data
+      })
     },
     handleVisibleSwitchChange(id, visible) {
       api
-        .editEnablePopup(id, {visible: visible})
+        .editEnablePopup(id, { visible: visible })
         .then((res) => {
           if (res.status === 200) {
-            this.banners = res.data.data;
+            this.banners = res.data.data
           }
         })
         .catch((err) => {
-          const bannerIdx = this.banners.findIndex((e) => e.id === id);
-          this.banners[bannerIdx].visible = false;
-        });
+          const bannerIdx = this.banners.findIndex((e) => e.id === id)
+          this.banners[bannerIdx].visible = false
+        })
     },
     handleBannerOrderChange(id) {
-      const reorder_list = this.banners.map((banner) => banner.id);
+      const reorder_list = this.banners.map((banner) => banner.id)
 
-      api.reorderPopup({reorder_list: reorder_list}).catch((err) => {
-        this.getPopups();
-      });
+      api.reorderPopup({ reorder_list: reorder_list }).catch((err) => {
+        this.getPopups()
+      })
     },
     handleAddButtonClick() {
-      this.addModalOpen = true;
+      this.addModalOpen = true
     },
     handleModifyButtonClick(banner) {
-      this.currentBanner = banner;
-      this.modifyModalOpen = true;
+      this.currentBanner = banner
+      this.modifyModalOpen = true
     },
     handleDeleteButtonClick(id) {
       api.deletePopup(id).then((res) => {
-        if (res.status === 200) this.getPopups();
-      });
+        if (res.status === 200) this.getPopups()
+      })
     },
     handleModalClose() {
-      this.getPopups();
-      this.addModalOpen = false;
-      this.modifyModalOpen = false;
+      this.getPopups()
+      this.addModalOpen = false
+      this.modifyModalOpen = false
     },
   },
   computed: {
     dragOptions() {
       return {
         ghostClass: "ghost",
-      };
+      }
     },
   },
-};
+}
 </script>
 
 <style lang="less" scoped>

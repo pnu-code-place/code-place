@@ -1,74 +1,105 @@
 <template>
-    <table>
-      <thead>
+  <table>
+    <thead>
       <tr>
-        <th class="th-first">{{ $t('m.Th_Problem_Id') }}</th>
-        <th class="th-second">{{ $t('m.Th_Problem_Title') }}</th>
-        <th class="th-third">{{ $t('m.Th_Problem_Difficulty') }}</th>
-        <th class="th-fourth">{{ $t('m.Th_Problem_Num_Success') }}</th>
-        <th class="th-fifth">{{ $t('m.Th_Problem_AC_Rate') }}</th>
+        <th class="th-first">{{ $t("m.Th_Problem_Id") }}</th>
+        <th class="th-second">{{ $t("m.Th_Problem_Title") }}</th>
+        <th class="th-third">{{ $t("m.Th_Problem_Difficulty") }}</th>
+        <th class="th-fourth">{{ $t("m.Th_Problem_Num_Success") }}</th>
+        <th class="th-fifth">{{ $t("m.Th_Problem_AC_Rate") }}</th>
       </tr>
-      </thead>
-      <template v-if="this.problemList.length !== 0">
-        <tbody>
+    </thead>
+    <template v-if="this.problemList.length !== 0">
+      <tbody>
         <tr v-for="problem in this.problemList">
           <td class="td-first">{{ problem._id }}</td>
-          <td class="td-second" @click="enterProblemDetail(problem._id, problem.title)">
-                <span class="problemTitle">
-                  {{ problem.title }}
-                </span>
-            <br>
+          <td
+            class="td-second"
+            @click="enterProblemDetail(problem._id, problem.title)"
+          >
+            <span class="problemTitle">
+              {{ problem.title }}
+            </span>
+            <br />
             <div style="display: flex">
-              <FieldCategoryBox :boxType="true" :value="FIELD_MAP[problem.field].value"
-                                :boxColor="FIELD_MAP[problem.field].boxColor"/>
+              <FieldCategoryBox
+                :boxType="true"
+                :value="FIELD_MAP[problem.field].value"
+                :boxColor="FIELD_MAP[problem.field].boxColor"
+              />
               <template v-for="(category, idx) in problem.tags">
-                <FieldCategoryBox :boxType="false" :value="'#' + category" :boxColor="'#ffffff'"/>
+                <FieldCategoryBox
+                  :boxType="false"
+                  :value="'#' + category"
+                  :boxColor="'#ffffff'"
+                />
               </template>
             </div>
           </td>
-          <td class="td-third" style="font-weight: bold; font-size: 14px"><div class="difficulty-badge" :style="{borderColor:DIFFICULTY_MAP[problem.difficulty].textColor}">{{ DIFFICULTY_MAP[problem.difficulty].value }}</div></td>
-          <td class="td-fourth" style="font-size: 13px">{{ problem.accepted_number+'명' }}</td>
-          <td class="td-fifth" style="font-size: 13px">{{ problem.submission_number == 0 ? "없음" : Math.floor((problem.accepted_number / problem.submission_number ) * 100) + '%' }}</td>
+          <td class="td-third" style="font-weight: bold; font-size: 14px">
+            <div
+              class="difficulty-badge"
+              :style="{
+                borderColor: DIFFICULTY_MAP[problem.difficulty].textColor,
+              }"
+            >
+              {{ DIFFICULTY_MAP[problem.difficulty].value }}
+            </div>
+          </td>
+          <td class="td-fourth" style="font-size: 13px">
+            {{ problem.accepted_number + "명" }}
+          </td>
+          <td class="td-fifth" style="font-size: 13px">
+            {{
+              problem.submission_number == 0
+                ? "없음"
+                : Math.floor(
+                    (problem.accepted_number / problem.submission_number) * 100,
+                  ) + "%"
+            }}
+          </td>
         </tr>
-        </tbody>
-      </template>
-    </table>
+      </tbody>
+    </template>
+  </table>
 </template>
 
 <script>
-import {mapActions} from "vuex";
-import FieldCategoryBox from "../../../../components/FieldCategoryBox.vue";
-import {DIFFICULTY_MAP, FIELD_MAP} from "../../../../../../utils/constants";
-import Pagination from "../../../../components/Pagination.vue";
+import { mapActions } from "vuex"
+import FieldCategoryBox from "../../../../components/FieldCategoryBox.vue"
+import { DIFFICULTY_MAP, FIELD_MAP } from "../../../../../../utils/constants"
+import Pagination from "../../../../components/Pagination.vue"
 
 export default {
-  name: 'ProblemListTable',
-  components: {Pagination, FieldCategoryBox},
-  props:{
-    problemList:{
-      type: Object
-    }
-  },
-  methods:{
-    ...mapActions(['changeProblemSolvingState']),
-    enterProblemDetail(problemId, problemTitle) {
-      this.changeProblemSolvingState(true)
-      this.$router.push({name: 'problem-details', params: {problemID: problemId, problemTitle: problemTitle}})
+  name: "ProblemListTable",
+  components: { Pagination, FieldCategoryBox },
+  props: {
+    problemList: {
+      type: Object,
     },
   },
-  computed:{
+  methods: {
+    ...mapActions(["changeProblemSolvingState"]),
+    enterProblemDetail(problemId, problemTitle) {
+      this.changeProblemSolvingState(true)
+      this.$router.push({
+        name: "problem-details",
+        params: { problemID: problemId, problemTitle: problemTitle },
+      })
+    },
+  },
+  computed: {
     DIFFICULTY_MAP() {
       return DIFFICULTY_MAP
     },
     FIELD_MAP() {
       return FIELD_MAP
     },
-  }
+  },
 }
 </script>
 
 <style scoped lang="less">
-
 .problemListTable {
   background-color: #ffffff;
   border-radius: 7px;
@@ -91,17 +122,17 @@ table {
   border: 1px solid #dedede;
   padding-right: 20px;
   padding-left: 20px;
-  font-size: .9em;
+  font-size: 0.9em;
   width: 100%;
   border-radius: 7px;
   border-spacing: 0;
   overflow: hidden;
 }
-table:hover{
+table:hover {
   border: 1px solid #cccccc;
 }
 
-th{
+th {
   font-size: 1.3em;
 }
 
@@ -115,7 +146,7 @@ th {
 
 thead {
   font-weight: bold;
-  color: #7E7E7E;
+  color: #7e7e7e;
 
   .th-second {
     width: 400px;
@@ -147,19 +178,20 @@ tbody {
     }
 
     .problemTitle:hover {
-      color: #4A86C0;
+      color: #4a86c0;
     }
   }
 }
 
-td, th {
-  padding: 1.3em .5em;
+td,
+th {
+  padding: 1.3em 0.5em;
   vertical-align: center;
 }
 
 td {
   background: #fff;
-  border-top: 1px solid rgba(0, 0, 0, .1);
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 td:nth-child(2) {
@@ -171,4 +203,3 @@ td:nth-child(2) {
 //  border: 2px solid #dedede;
 //}
 </style>
-

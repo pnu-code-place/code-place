@@ -1,85 +1,114 @@
 <template>
   <div class="problemListTableHeader">
-    <h1 class="main-title">{{ $t('m.Problem_List') }}</h1>
+    <h1 class="main-title">{{ $t("m.Problem_List") }}</h1>
     <div style="display: flex; align-items: center; justify-content: center">
-      <li style="list-style-type: none; margin-left: 3px;">
-        <Input v-model="query.keyword"
-               @on-enter="filterByKeyword"
-               @on-click="filterByKeyword"
-               :placeholder="$t('m.Search_Problem')"
-               icon="ios-search-strong"/>
+      <li style="list-style-type: none; margin-left: 3px">
+        <Input
+          v-model="query.keyword"
+          @on-enter="filterByKeyword"
+          @on-click="filterByKeyword"
+          :placeholder="$t('m.Search_Problem')"
+          icon="ios-search-strong"
+        />
       </li>
-      <Dropdown @on-click="filterByDifficulty" trigger="click" class="dropdown difficultyDropdown">
-                          <span style="font-weight: bold; font-size: 15px; padding-right: 10px">{{
-                              query.difficulty === '' ? this.$i18n.t('m.Difficulty') : this.$i18n.t('m.' + query.difficulty)
-                            }}
-                          </span>
+      <Dropdown
+        @on-click="filterByDifficulty"
+        trigger="click"
+        class="dropdown difficultyDropdown"
+      >
+        <span style="font-weight: bold; font-size: 15px; padding-right: 10px"
+          >{{
+            query.difficulty === ""
+              ? this.$i18n.t("m.Difficulty")
+              : this.$i18n.t("m." + query.difficulty)
+          }}
+        </span>
         <Icon type="arrow-down-b"></Icon>
         <Dropdown-menu slot="list">
-          <Dropdown-item name="">{{ $t('m.All') }}</Dropdown-item>
-          <Dropdown-item name="VeryLow">{{ $t('m.VeryLow') }}</Dropdown-item>
-          <Dropdown-item name="Low">{{ $t('m.Low') }}</Dropdown-item>
-          <Dropdown-item name="Mid">{{ $t('m.Mid') }}</Dropdown-item>
-          <Dropdown-item name="High">{{ $t('m.High') }}</Dropdown-item>
-          <Dropdown-item name="VeryHigh">{{ $t('m.VeryHigh') }}</Dropdown-item>
+          <Dropdown-item name="">{{ $t("m.All") }}</Dropdown-item>
+          <Dropdown-item name="VeryLow">{{ $t("m.VeryLow") }}</Dropdown-item>
+          <Dropdown-item name="Low">{{ $t("m.Low") }}</Dropdown-item>
+          <Dropdown-item name="Mid">{{ $t("m.Mid") }}</Dropdown-item>
+          <Dropdown-item name="High">{{ $t("m.High") }}</Dropdown-item>
+          <Dropdown-item name="VeryHigh">{{ $t("m.VeryHigh") }}</Dropdown-item>
         </Dropdown-menu>
       </Dropdown>
-      <Dropdown @on-click="filterByField" trigger="click" class="dropdown fieldDropdown">
-                          <span style="font-weight: bold; font-size: 15px; padding-right: 10px">{{
-                              query.field === '' ? this.$i18n.t('m.Field') : FIELD_MAP[query.field].value
-                            }}
-                          </span>
+      <Dropdown
+        @on-click="filterByField"
+        trigger="click"
+        class="dropdown fieldDropdown"
+      >
+        <span style="font-weight: bold; font-size: 15px; padding-right: 10px"
+          >{{
+            query.field === ""
+              ? this.$i18n.t("m.Field")
+              : FIELD_MAP[query.field].value
+          }}
+        </span>
         <Icon type="arrow-down-b"></Icon>
         <Dropdown-menu slot="list">
-          <Dropdown-item name="">{{ $t('m.All') }}</Dropdown-item>
-          <Dropdown-item name="0">{{ $t('m.Field_Impl') }}</Dropdown-item>
-          <Dropdown-item name="2">{{ $t('m.Field_DataStructure') }}</Dropdown-item>
-          <Dropdown-item name="1">{{ $t('m.Field_Math') }}</Dropdown-item>
-          <Dropdown-item name="3">{{ $t('m.Field_Search') }}</Dropdown-item>
-          <Dropdown-item name="4">{{ $t('m.Field_Sorting') }}</Dropdown-item>
-          <Dropdown-item name="5">{{ $t('m.Field_Algorithm') }}</Dropdown-item>
+          <Dropdown-item name="">{{ $t("m.All") }}</Dropdown-item>
+          <Dropdown-item name="0">{{ $t("m.Field_Impl") }}</Dropdown-item>
+          <Dropdown-item name="2">{{
+            $t("m.Field_DataStructure")
+          }}</Dropdown-item>
+          <Dropdown-item name="1">{{ $t("m.Field_Math") }}</Dropdown-item>
+          <Dropdown-item name="3">{{ $t("m.Field_Search") }}</Dropdown-item>
+          <Dropdown-item name="4">{{ $t("m.Field_Sorting") }}</Dropdown-item>
+          <Dropdown-item name="5">{{ $t("m.Field_Algorithm") }}</Dropdown-item>
         </Dropdown-menu>
       </Dropdown>
-      <Dropdown @on-click="filterByCategory" trigger="click" class="dropdown difficultyDropdown">
-                          <span style="font-weight: bold; font-size: 15px; padding-right: 10px">{{
-                              query.tag === '' ? this.$i18n.t('m.Category') : this.$i18n.t(query.tag)
-                            }}
-                          </span>
+      <Dropdown
+        @on-click="filterByCategory"
+        trigger="click"
+        class="dropdown difficultyDropdown"
+      >
+        <span style="font-weight: bold; font-size: 15px; padding-right: 10px"
+          >{{
+            query.tag === ""
+              ? this.$i18n.t("m.Category")
+              : this.$i18n.t(query.tag)
+          }}
+        </span>
         <Icon type="arrow-down-b"></Icon>
         <Dropdown-menu slot="list">
-          <Dropdown-item name="">{{ $t('m.All') }}</Dropdown-item>
+          <Dropdown-item name="">{{ $t("m.All") }}</Dropdown-item>
           <template v-for="(problem, idx) in this.problemList">
             <template v-for="(problemTag, idx) in problem.tags">
-              <Dropdown-item :name=problemTag >{{ problemTag }}</Dropdown-item>
+              <Dropdown-item :name="problemTag">{{ problemTag }}</Dropdown-item>
             </template>
           </template>
         </Dropdown-menu>
       </Dropdown>
-      <Tooltip :content="$t('m.Pick_One')" placement="bottom" style="margin-left: 5px">
-        <CustomIconBtn @click="pickOne" iconClass="fas fa-random"/>
+      <Tooltip
+        :content="$t('m.Pick_One')"
+        placement="bottom"
+        style="margin-left: 5px"
+      >
+        <CustomIconBtn @click="pickOne" iconClass="fas fa-random" />
       </Tooltip>
     </div>
   </div>
 </template>
 
 <script>
-import FieldCategoryBox from "../../../../components/FieldCategoryBox.vue";
-import {DIFFICULTY_MAP, FIELD_MAP} from "../../../../../../utils/constants";
-import Pagination from "../../../../components/Pagination.vue";
-import CustomIconBtn from "../../../../components/buttons/CustomIconBtn.vue";
+import FieldCategoryBox from "../../../../components/FieldCategoryBox.vue"
+import { DIFFICULTY_MAP, FIELD_MAP } from "../../../../../../utils/constants"
+import Pagination from "../../../../components/Pagination.vue"
+import CustomIconBtn from "../../../../components/buttons/CustomIconBtn.vue"
 
 export default {
-  name: 'ProblemListTableHeader',
-  components: {CustomIconBtn, Pagination, FieldCategoryBox},
-  props:{
-    query:{
-      type: Object
+  name: "ProblemListTableHeader",
+  components: { CustomIconBtn, Pagination, FieldCategoryBox },
+  props: {
+    query: {
+      type: Object,
     },
-    problemList:{
-      type: Object
-    }
+    problemList: {
+      type: Object,
+    },
   },
-  methods:{
+  methods: {
     filterByCategory(categoryName) {
       this.query.tag = categoryName
       this.query.page = 1
@@ -102,16 +131,16 @@ export default {
     },
     pickOne() {
       this.$emit("pick-one")
-    }
+    },
   },
-  computed:{
+  computed: {
     DIFFICULTY_MAP() {
       return DIFFICULTY_MAP
     },
     FIELD_MAP() {
       return FIELD_MAP
     },
-  }
+  },
 }
 </script>
 
@@ -148,4 +177,3 @@ export default {
   }
 }
 </style>
-

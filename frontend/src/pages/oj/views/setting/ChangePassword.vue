@@ -1,29 +1,29 @@
 <script>
-import api from '@oj/api'
+import api from "@oj/api"
 
 export default {
-  name: 'PasswordReset',
+  name: "PasswordReset",
   data() {
     return {
       formResetPassword: {
-        old_password: '',
-        new_password: '',
-        newPasswordAgain: '',
-        token: ''
+        old_password: "",
+        new_password: "",
+        newPasswordAgain: "",
+        token: "",
       },
       formError: {
-        old_password: '',
-        new_password: '',
-        newPasswordAgain: '',
+        old_password: "",
+        new_password: "",
+        newPasswordAgain: "",
       },
       pwReq: {
         maxLength: 20,
         minLength: 8,
-        regex: /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#$%^&*()]).{8,20}$/
+        regex: /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#$%^&*()]).{8,20}$/,
       },
       btnLoading: false,
       resetSuccess: false,
-      logoutTrigger: false
+      logoutTrigger: false,
     }
   },
   mounted() {
@@ -31,41 +31,54 @@ export default {
   },
   methods: {
     clearErrorSign(input) {
-      this.formError[input] = ''
+      this.formError[input] = ""
     },
     handleResetPassword(e) {
       e.preventDefault()
       this.changePassword()
     },
     validatePassword(password) {
-      if (password.length < this.pwReq.minLength || password.length > this.pwReq.maxLength) {
+      if (
+        password.length < this.pwReq.minLength ||
+        password.length > this.pwReq.maxLength
+      ) {
         return false
       }
       return this.pwReq.regex.test(password)
     },
     validateForm() {
-      if (this.formResetPassword.old_password === '') {
-        this.formError.old_password = this.$t('m.Please_Input_Current_Password')
+      if (this.formResetPassword.old_password === "") {
+        this.formError.old_password = this.$t("m.Please_Input_Current_Password")
         return false
       }
-      if (this.formResetPassword.new_password === '') {
-        this.formError.new_password = this.$t('m.Please_Input_New_Password')
+      if (this.formResetPassword.new_password === "") {
+        this.formError.new_password = this.$t("m.Please_Input_New_Password")
         return false
       }
-      if (this.formResetPassword.newPasswordAgain === '') {
-        this.formError.newPasswordAgain = this.$t('m.Please_Input_New_Password_Again')
+      if (this.formResetPassword.newPasswordAgain === "") {
+        this.formError.newPasswordAgain = this.$t(
+          "m.Please_Input_New_Password_Again",
+        )
         return false
       }
-      if (this.formResetPassword.new_password !== this.formResetPassword.newPasswordAgain) {
-        this.formError.newPasswordAgain = this.$t('m.password_does_not_match')
+      if (
+        this.formResetPassword.new_password !==
+        this.formResetPassword.newPasswordAgain
+      ) {
+        this.formError.newPasswordAgain = this.$t("m.password_does_not_match")
         return false
       }
-      if (this.formResetPassword.new_password === this.formResetPassword.old_password) {
-        this.formError.new_password = this.$t('m.New_Password_Cannot_Be_The_Same_As_The_Current_Password')
+      if (
+        this.formResetPassword.new_password ===
+        this.formResetPassword.old_password
+      ) {
+        this.formError.new_password = this.$t(
+          "m.New_Password_Cannot_Be_The_Same_As_The_Current_Password",
+        )
         return false
       }
       if (!this.validatePassword(this.formResetPassword.new_password)) {
-        this.formError.new_password = this.$t('m.Invalid_Password_Format')
+        this.formError.new_password = this.$t("m.Invalid_Password_Format")
         return false
       }
       return true
@@ -73,38 +86,41 @@ export default {
     changePassword() {
       if (this.validateForm()) {
         this.btnLoading = true
-        api.changePassword(this.formResetPassword).then(res => {
-          this.btnLoading = false
-          this.resetSuccess = true
-          this.$success(this.$t('m.Change_Password_Success'))
-          setTimeout(() => {
-            this.$router.push({name: 'logout'})
-          }, 5000)
-        }, res => {
-          this.btnLoading = false
-          this.$error(res.data.data)
-        })
+        api.changePassword(this.formResetPassword).then(
+          (res) => {
+            this.btnLoading = false
+            this.resetSuccess = true
+            this.$success(this.$t("m.Change_Password_Success"))
+            setTimeout(() => {
+              this.$router.push({ name: "logout" })
+            }, 5000)
+          },
+          (res) => {
+            this.btnLoading = false
+            this.$error(res.data.data)
+          },
+        )
       }
     },
   },
   computed: {
     submitClass() {
       if (this.btnLoading) {
-        return 'button-loading'
+        return "button-loading"
       } else {
-        return 'submit-button'
+        return "submit-button"
       }
     },
     submitText() {
       if (this.btnLoading) {
-        return this.$t('m.Submitting')
+        return this.$t("m.Submitting")
       }
-      return this.$t('m.Submit_Password')
+      return this.$t("m.Submit_Password")
     },
     willLogout() {
-      return this.$t('m.You_Will_Be_Logged_Out_In_5_Seconds')
-    }
-  }
+      return this.$t("m.You_Will_Be_Logged_Out_In_5_Seconds")
+    },
+  },
 }
 </script>
 
@@ -112,45 +128,56 @@ export default {
   <div class="change-password">
     {{ this.formResetPassword.token }}
     <h1>
-      {{ $t('m.ChangePassword') }}
+      {{ $t("m.ChangePassword") }}
     </h1>
     <form class="change-password-form">
       <div>
         <label class="label" for="current-password">
-          {{ $t('m.Current_Password') }}
+          {{ $t("m.Current_Password") }}
         </label>
-        <input type="password"
-               id="current-password"
-               v-model="formResetPassword.old_password"
-               @focusout="clearErrorSign('currentPassword')"
+        <input
+          type="password"
+          id="current-password"
+          v-model="formResetPassword.old_password"
+          @focusout="clearErrorSign('currentPassword')"
         />
         <span class="form-error">{{ this.formError.old_password }}</span>
       </div>
       <div>
         <div class="input-header">
-          <label class="label" for="new-password">{{ $t('m.New_Password') }}</label>
+          <label class="label" for="new-password">{{
+            $t("m.New_Password")
+          }}</label>
           <div>
             <Icon type="ios-information" size="13" color="#7a7a7a"></Icon>
-            <span>8글자 이상, 영문, 숫자, 특수문자를 모두 사용해야 합니다.</span>
+            <span
+              >8글자 이상, 영문, 숫자, 특수문자를 모두 사용해야 합니다.</span
+            >
           </div>
         </div>
-        <input type="password"
-               id="new-password"
-               v-model="formResetPassword.new_password"
-               @focusout="clearErrorSign('newPassword')"
+        <input
+          type="password"
+          id="new-password"
+          v-model="formResetPassword.new_password"
+          @focusout="clearErrorSign('newPassword')"
         />
         <span class="form-error">{{ this.formError.new_password }}</span>
       </div>
       <div>
-        <label class="label" for="password-again">{{ $t('m.Password_Again') }}</label>
-        <input type="password"
-               id="password-again"
-               v-model="formResetPassword.newPasswordAgain"
-               @focusout="clearErrorSign('newPasswordAgain')"
+        <label class="label" for="password-again">{{
+          $t("m.Password_Again")
+        }}</label>
+        <input
+          type="password"
+          id="password-again"
+          v-model="formResetPassword.newPasswordAgain"
+          @focusout="clearErrorSign('newPasswordAgain')"
         />
         <span class="form-error">{{ this.formError.newPasswordAgain }}</span>
       </div>
-      <div v-if="this.logoutTrigger" class="logout-notice"> {{ $t('m.You_Will_Be_Logged_Out_In_5_Seconds') }}</div>
+      <div v-if="this.logoutTrigger" class="logout-notice">
+        {{ $t("m.You_Will_Be_Logged_Out_In_5_Seconds") }}
+      </div>
       <button :class="submitClass" @click="handleResetPassword">
         {{ this.submitText }}
       </button>
@@ -175,13 +202,11 @@ export default {
       justify-content: space-between;
     }
 
-
     .form-error {
       color: red;
       font-size: 12px;
       height: 14px;
     }
-
 
     input {
       width: 100%;
@@ -206,7 +231,6 @@ export default {
   font-size: 14px;
   font-weight: 700;
 }
-
 
 .button-loading {
   background-color: var(--pale-point-color);

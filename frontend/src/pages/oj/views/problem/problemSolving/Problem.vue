@@ -63,29 +63,29 @@
 </template>
 
 <script>
-import { mapGetters, mapActions } from "vuex";
-import { types } from "../../../../../store";
-import storage from "@/utils/storage";
-import { FormMixin } from "@oj/components/mixins";
+import { mapGetters, mapActions } from "vuex"
+import { types } from "../../../../../store"
+import storage from "@/utils/storage"
+import { FormMixin } from "@oj/components/mixins"
 import {
   JUDGE_STATUS,
   CONTEST_STATUS,
   buildProblemCodeKey,
-} from "@/utils/constants";
-import api from "@oj/api";
-import { Pane, Splitpanes } from "splitpanes";
-import "splitpanes/dist/splitpanes.css";
-import FieldCategoryBox from "../../../components/FieldCategoryBox.vue";
-import CustomIconBtn from "../../../components/buttons/CustomIconBtn.vue";
-import { DIFFICULTY_MAP, FIELD_MAP } from "../../../../../utils/constants";
-import CodeEditorHeader from "./problemSolvingComponent/CodeEditorHeader.vue";
-import SubmissionStatus from "./problemSolvingComponent/SubmissionStatus.vue";
-import ProblemDetailFlexibleContainer from "./problemSolvingComponent/ProblemDetailFlexibleContainer.vue";
-import StickyLnCol from "./problemSolvingComponent/StickyLnCol.vue";
-import CodeEditor from "./problemSolvingComponent/CodeEditor.vue";
-import SubmissionList from "./problemSolvingComponent/SubmissionList.vue";
+} from "@/utils/constants"
+import api from "@oj/api"
+import { Pane, Splitpanes } from "splitpanes"
+import "splitpanes/dist/splitpanes.css"
+import FieldCategoryBox from "../../../components/FieldCategoryBox.vue"
+import CustomIconBtn from "../../../components/buttons/CustomIconBtn.vue"
+import { DIFFICULTY_MAP, FIELD_MAP } from "../../../../../utils/constants"
+import CodeEditorHeader from "./problemSolvingComponent/CodeEditorHeader.vue"
+import SubmissionStatus from "./problemSolvingComponent/SubmissionStatus.vue"
+import ProblemDetailFlexibleContainer from "./problemSolvingComponent/ProblemDetailFlexibleContainer.vue"
+import StickyLnCol from "./problemSolvingComponent/StickyLnCol.vue"
+import CodeEditor from "./problemSolvingComponent/CodeEditor.vue"
+import SubmissionList from "./problemSolvingComponent/SubmissionList.vue"
 
-const filtedStatus = ["-1", "-2", "0", "1", "2", "3", "4", "8"];
+const filtedStatus = ["-1", "-2", "0", "1", "2", "3", "4", "8"]
 
 export default {
   name: "Problem",
@@ -122,7 +122,7 @@ export default {
       languages: {
         type: Array,
         default: () => {
-          return ["C", "C++", "Java", "Python3"];
+          return ["C", "C++", "Java", "Python3"]
         },
       },
       theme: false,
@@ -165,40 +165,40 @@ export default {
       rightPainActiveTab: "editor",
       lastSubmissionId: null,
       isInitialized: false,
-    };
+    }
   },
   beforeRouteEnter(to, from, next) {
     let problemCode = storage.get(
-      buildProblemCodeKey(to.params.problemID, to.params.contestID)
-    );
-    let psSettings = storage.get("ProblemSolvingSettings");
+      buildProblemCodeKey(to.params.problemID, to.params.contestID),
+    )
+    let psSettings = storage.get("ProblemSolvingSettings")
     if (psSettings) {
       next((vm) => {
-        vm.theme = psSettings.theme;
-      });
+        vm.theme = psSettings.theme
+      })
     } else {
-      next();
+      next()
     }
     if (problemCode) {
       next((vm) => {
-        vm.language = problemCode.language;
-        vm.code = problemCode.code;
-      });
+        vm.language = problemCode.language
+        vm.code = problemCode.code
+      })
     } else {
-      next();
+      next()
     }
   },
   mounted() {
-    this.$store.commit(types.CHANGE_CONTEST_ITEM_VISIBLE, { menu: false });
-    this.init();
-    window.addEventListener("beforeunload", this.unLoadEvent);
-    this.isInitialized = true;
+    this.$store.commit(types.CHANGE_CONTEST_ITEM_VISIBLE, { menu: false })
+    this.init()
+    window.addEventListener("beforeunload", this.unLoadEvent)
+    this.isInitialized = true
   },
   beforeUnmount() {
-    window.removeEventListener("beforeunload", this.unLoadEvent);
+    window.removeEventListener("beforeunload", this.unLoadEvent)
   },
   destroyed() {
-    this.changeProblemSolvingState(false);
+    this.changeProblemSolvingState(false)
   },
   methods: {
     ...mapActions([
@@ -207,154 +207,154 @@ export default {
       "changeProblemSolvingTheme",
     ]),
     init() {
-      this.changeProblemSolvingState(true);
-      this.$Loading.start();
-      this.contestID = this.$route.params.contestID;
-      this.problemID = this.$route.params.problemID;
+      this.changeProblemSolvingState(true)
+      this.$Loading.start()
+      this.contestID = this.$route.params.contestID
+      this.problemID = this.$route.params.problemID
       let func =
         this.$route.name === "problem-details"
           ? "getProblem"
-          : "getContestProblem";
+          : "getContestProblem"
       api[func](this.problemID, this.contestID).then(
         (res) => {
-          this.$Loading.finish();
-          let problem = res.data.data;
-          this.changeDomTitle({ title: problem.title });
+          this.$Loading.finish()
+          let problem = res.data.data
+          this.changeDomTitle({ title: problem.title })
           api.submissionExists(problem.id).then((res) => {
-            this.submissionExists = res.data.data;
-          });
-          problem.languages = problem.languages.sort();
-          this.problem = problem;
+            this.submissionExists = res.data.data
+          })
+          problem.languages = problem.languages.sort()
+          this.problem = problem
 
           if (this.code !== "") {
-            return;
+            return
           }
           // try to load problem template
-          this.language = this.problem.languages[0];
-          let template = this.problem.template;
+          this.language = this.problem.languages[0]
+          let template = this.problem.template
           if (template && template[this.language]) {
-            this.code = template[this.language];
+            this.code = template[this.language]
           }
-          this.problem.difficulty = problem.difficulty;
+          this.problem.difficulty = problem.difficulty
         },
         () => {
-          this.$Loading.error();
-        }
-      );
+          this.$Loading.error()
+        },
+      )
     },
     unLoadEvent: function (event) {
-      if (this.isLeaveSite) return;
+      if (this.isLeaveSite) return
 
       storage.set(buildProblemCodeKey(this.problem._id, this.contestID), {
         code: this.code,
         language: this.language,
-      });
+      })
 
       storage.set("ProblemSolvingSettings", {
         theme: this.theme,
-      });
+      })
 
-      event.preventDefault();
-      event.returnValue = "";
+      event.preventDefault()
+      event.returnValue = ""
     },
     changeLanguage(newLang) {
       if (this.problem.template[newLang]) {
         if (this.code.trim() === "") {
-          this.code = this.problem.template[newLang];
+          this.code = this.problem.template[newLang]
         }
       }
-      this.language = newLang;
-      this.$refs.myCm.onLangChange(newLang);
+      this.language = newLang
+      this.$refs.myCm.onLangChange(newLang)
     },
     modalOpen() {
-      this.modalCheck = !this.modalCheck;
+      this.modalCheck = !this.modalCheck
     },
     handleRoute(route) {
-      this.$router.push(route);
+      this.$router.push(route)
     },
     check() {
-      alert(this.code);
+      alert(this.code)
     },
     onChangeTheme(newTheme) {
-      this.theme = newTheme;
+      this.theme = newTheme
     },
     checkSubmissionStatus() {
       // 使用setTimeout避免一些问题
       if (this.refreshStatus) {
         // 如果之前的提交状态检查还没有停止,则停止,否则将会失去timeout的引用造成无限请求
-        clearTimeout(this.refreshStatus);
+        clearTimeout(this.refreshStatus)
       }
       const checkStatus = () => {
-        let id = this.submissionId;
+        let id = this.submissionId
         api.getSubmission(id).then(
           (res) => {
-            this.result = res.data.data;
+            this.result = res.data.data
             if (Object.keys(res.data.data.statistic_info).length !== 0) {
-              this.submitting = false;
-              this.submitted = false;
+              this.submitting = false
+              this.submitted = false
 
-              this.leftPainActiveTab = "submission";
-              this.lastSubmissionId = id;
+              this.leftPainActiveTab = "submission"
+              this.lastSubmissionId = id
 
-              clearTimeout(this.refreshStatus);
-              this.init();
+              clearTimeout(this.refreshStatus)
+              this.init()
             } else {
-              this.refreshStatus = setTimeout(checkStatus, 2000);
+              this.refreshStatus = setTimeout(checkStatus, 2000)
             }
           },
           (res) => {
-            this.submitting = false;
-            clearTimeout(this.refreshStatus);
-          }
-        );
-      };
-      this.refreshStatus = setTimeout(checkStatus, 2000);
+            this.submitting = false
+            clearTimeout(this.refreshStatus)
+          },
+        )
+      }
+      this.refreshStatus = setTimeout(checkStatus, 2000)
     },
     submitCode() {
       if (this.code.trim() === "") {
-        this.$error(this.$i18n.t("m.Code_can_not_be_empty"));
-        return;
+        this.$error(this.$i18n.t("m.Code_can_not_be_empty"))
+        return
       }
-      this.submissionId = "";
-      this.result = { result: 9 };
-      this.submitting = true;
+      this.submissionId = ""
+      this.result = { result: 9 }
+      this.submitting = true
       let data = {
         problem_id: this.problem.id,
         language: this.language,
         code: this.code,
         contest_id: this.contestID,
-      };
+      }
       if (this.captchaRequired) {
-        data.captcha = this.captchaCode;
+        data.captcha = this.captchaCode
       }
       const submitFunc = (data, detailsVisible) => {
-        this.statusVisible = true;
+        this.statusVisible = true
         api.submitCode(data).then(
           (res) => {
-            this.submissionId = res.data.data && res.data.data.submission_id;
+            this.submissionId = res.data.data && res.data.data.submission_id
             // 定时检查状态
-            this.submitting = false;
-            this.submissionExists = true;
+            this.submitting = false
+            this.submissionExists = true
             if (!detailsVisible) {
               this.$Modal.success({
                 title: this.$i18n.t("m.Success"),
                 content: this.$i18n.t("m.Submit_code_successfully"),
-              });
-              return;
+              })
+              return
             }
-            this.submitted = true;
-            this.checkSubmissionStatus();
+            this.submitted = true
+            this.checkSubmissionStatus()
           },
           (res) => {
-            this.getCaptchaSrc();
+            this.getCaptchaSrc()
             if (res.data.data.startsWith("Captcha is required")) {
-              this.captchaRequired = true;
+              this.captchaRequired = true
             }
-            this.submitting = false;
-            this.statusVisible = false;
-          }
-        );
-      };
+            this.submitting = false
+            this.statusVisible = false
+          },
+        )
+      }
 
       if (this.contestRuleType === "OI" && !this.OIContestRealTimePermission) {
         if (this.submissionExists) {
@@ -363,33 +363,33 @@ export default {
             content:
               "<h3>" +
               this.$i18n.t(
-                "m.You_have_submission_in_this_problem_sure_to_cover_it"
+                "m.You_have_submission_in_this_problem_sure_to_cover_it",
               ) +
               "<h3>",
             onOk: () => {
               // 暂时解决对话框与后面提示对话框冲突的问题(否则一闪而过）
               setTimeout(() => {
-                submitFunc(data, false);
-              }, 1000);
+                submitFunc(data, false)
+              }, 1000)
             },
             onCancel: () => {
-              this.submitting = false;
+              this.submitting = false
             },
-          });
+          })
         } else {
-          submitFunc(data, false);
+          submitFunc(data, false)
         }
       } else {
-        submitFunc(data, true);
+        submitFunc(data, true)
       }
     },
   },
   computed: {
     FIELD_MAP() {
-      return FIELD_MAP;
+      return FIELD_MAP
     },
     DIFFICULTY_MAP() {
-      return DIFFICULTY_MAP;
+      return DIFFICULTY_MAP
     },
     ...mapGetters([
       "problemSubmitDisabled",
@@ -399,54 +399,54 @@ export default {
       "isDarkMode",
     ]),
     contest() {
-      return this.$store.state.contest.contest;
+      return this.$store.state.contest.contest
     },
     contestEnded() {
-      return this.contestStatus === CONTEST_STATUS.ENDED;
+      return this.contestStatus === CONTEST_STATUS.ENDED
     },
     submissionStatus() {
       return {
         text: JUDGE_STATUS[this.result.result]["name"],
         color: JUDGE_STATUS[this.result.result]["color"],
-      };
+      }
     },
     submissionRoute() {
       if (this.contestID) {
         return {
           name: "contest-submission-list",
           query: { problemID: this.problemID },
-        };
+        }
       } else {
         return {
           name: "submission-list",
           query: { problemID: this.problemID },
-        };
+        }
       }
     },
   },
   beforeRouteLeave(to, from, next) {
-    clearInterval(this.refreshStatus);
-    this.$store.commit(types.CHANGE_CONTEST_ITEM_VISIBLE, { menu: true });
+    clearInterval(this.refreshStatus)
+    this.$store.commit(types.CHANGE_CONTEST_ITEM_VISIBLE, { menu: true })
     storage.set(buildProblemCodeKey(this.problem._id, from.params.contestID), {
       code: this.code,
       language: this.language,
-    });
+    })
     storage.set("ProblemSolvingSettings", {
       theme: this.theme,
-    });
-    next();
+    })
+    next()
   },
   watch: {
     $route() {
-      this.init();
+      this.init()
     },
     isDarkMode(value) {
-      let customTheme = value ? "ayu-mirage" : "github-light";
-      this.$refs.myCm.toggleTheme(customTheme);
-      this.theme = value;
+      let customTheme = value ? "ayu-mirage" : "github-light"
+      this.$refs.myCm.toggleTheme(customTheme)
+      this.theme = value
     },
   },
-};
+}
 </script>
 
 <style lang="less">

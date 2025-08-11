@@ -74,12 +74,12 @@
   </div>
 </template>
 <script>
-import { mapActions } from "vuex";
-import api from "@oj/api";
-import Pagination from "@oj/components/Pagination";
-import ContestRankMixin from "./contestRankMixin";
-import utils from "@/utils/utils";
-import CustomTooltip from "@oj/components/CustomTooltip";
+import { mapActions } from "vuex"
+import api from "@oj/api"
+import Pagination from "@oj/components/Pagination"
+import ContestRankMixin from "./contestRankMixin"
+import utils from "@/utils/utils"
+import CustomTooltip from "@oj/components/CustomTooltip"
 
 export default {
   name: "acm-contest-rank",
@@ -94,11 +94,11 @@ export default {
       page: 1,
       contestID: "",
       myDataRank: [],
-    };
+    }
   },
   mounted() {
-    this.contestID = this.$route.params.contestID;
-    this.updateContestData();
+    this.contestID = this.$route.params.contestID
+    this.updateContestData()
   },
   methods: {
     ...mapActions(["getContestProblems"]),
@@ -108,38 +108,38 @@ export default {
         limit: this.limit,
         contest_id: this.$route.params.contestID,
         force_refresh: this.forceUpdate ? "1" : "0",
-      };
+      }
       api.getContestRank(params).then((res) => {
-        const data = res.data.data.results;
-        let dataRank = JSON.parse(JSON.stringify(data));
+        const data = res.data.data.results
+        let dataRank = JSON.parse(JSON.stringify(data))
 
         this.getContestProblems().then((res) => {
-          this.addRankData(dataRank, res.data.data);
-        });
-        this.total = res.data.data.total;
-      });
+          this.addRankData(dataRank, res.data.data)
+        })
+        this.total = res.data.data.total
+      })
     },
     addRankData(dataRank, problems) {
       problems.forEach((problem) => {
         dataRank.forEach((rank, idx) => {
-          dataRank[idx][problem.id] = { isSet: false, problemId: problem._id };
-        });
-      });
+          dataRank[idx][problem.id] = { isSet: false, problemId: problem._id }
+        })
+      })
       dataRank.forEach((rank, i) => {
-        let info = rank.submission_info;
+        let info = rank.submission_info
         Object.keys(info).forEach((problemID) => {
-          dataRank[i][problemID].total_score = info[problemID];
-          dataRank[i][problemID].isSet = true;
-        });
-        dataRank[i].idx = (this.page - 1) * this.limit + i + 1;
-      });
-      this.myDataRank = dataRank;
+          dataRank[i][problemID].total_score = info[problemID]
+          dataRank[i][problemID].isSet = true
+        })
+        dataRank[i].idx = (this.page - 1) * this.limit + i + 1
+      })
+      this.myDataRank = dataRank
     },
     goUserPage(username) {
       this.$router.push({
         name: "user-dashboard",
         params: { username: username },
-      });
+      })
     },
     goProblemPage(problemId) {
       this.$router.push({
@@ -148,10 +148,10 @@ export default {
           contestID: this.contestID,
           problemID: problemId,
         },
-      });
+      })
     },
   },
-};
+}
 </script>
 <style scoped lang="less">
 .OIRankBox {

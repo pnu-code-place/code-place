@@ -90,12 +90,12 @@
 </template>
 
 <script>
-import { mapState, mapGetters } from "vuex";
-import { ProblemMixin } from "@oj/components/mixins";
-import { DIFFICULTY_MAP, FIELD_MAP } from "../../../../../utils/constants";
-import FieldCategoryBox from "../../../components/FieldCategoryBox.vue";
-import CustomTooltip from "@oj/components/CustomTooltip";
-import Pagination from "@/pages/admin/components/Pagination";
+import { mapState, mapGetters } from "vuex"
+import { ProblemMixin } from "@oj/components/mixins"
+import { DIFFICULTY_MAP, FIELD_MAP } from "../../../../../utils/constants"
+import FieldCategoryBox from "../../../components/FieldCategoryBox.vue"
+import CustomTooltip from "@oj/components/CustomTooltip"
+import Pagination from "@/pages/admin/components/Pagination"
 
 export default {
   name: "ContestProblemList",
@@ -107,26 +107,26 @@ export default {
       totalProblems: 0,
       limit: 10,
       page: 1,
-    };
+    }
   },
   mounted() {
-    this.getContestProblems();
-    this.totalProblems = this.problems.length;
+    this.getContestProblems()
+    this.totalProblems = this.problems.length
   },
   methods: {
     filterByKeyword() {
-      this.getContestProblems();
+      this.getContestProblems()
     },
     getContestProblems() {
       this.$store.dispatch("getContestProblems", this.keyword).then((res) => {
         if (this.isAuthenticated) {
           if (this.contestRuleType === "ACM") {
-            this.addStatusColumn(this.ACMTableColumns, res.data.data);
+            this.addStatusColumn(this.ACMTableColumns, res.data.data)
           } else if (this.OIContestRealTimePermission) {
-            this.addStatusColumn(this.ACMTableColumns, res.data.data);
+            this.addStatusColumn(this.ACMTableColumns, res.data.data)
           }
         }
-      });
+      })
     },
     goContestProblem(id) {
       this.$router.push({
@@ -135,34 +135,34 @@ export default {
           contestID: this.$route.params.contestID,
           problemID: id,
         },
-      });
+      })
     },
     getSubmissionStateStr(state) {
       switch (state) {
         case "Accepted":
-          return this.$t("m.Correct"); // "정답";
+          return this.$t("m.Correct") // "정답";
         case "Partially_Accepted":
-          return this.$t("m.Partially_Correct");
+          return this.$t("m.Partially_Correct")
         case "Failed":
-          return this.$t("m.Failed");
+          return this.$t("m.Failed")
         case null:
-          return this.$t("m.Not_Submitted");
+          return this.$t("m.Not_Submitted")
         default:
-          return null;
+          return null
       }
     },
     getSubmissionState(state) {
       switch (state) {
         case "Accepted":
-          return '<i class="far fa-check-circle" style="color: #63e6be"></i>';
+          return '<i class="far fa-check-circle" style="color: #63e6be"></i>'
         case "Partially_Accepted":
-          return ' <i class="fas fa-adjust" style="color: #b197fc"></i>';
+          return ' <i class="fas fa-adjust" style="color: #b197fc"></i>'
         case "Failed":
-          return '<i class="far fa-times-circle" style="color: #e22828"></i>';
+          return '<i class="far fa-times-circle" style="color: #e22828"></i>'
         case null:
-          return '<i class="far fa-dot-circle" style="color: #bababa"></i>';
+          return '<i class="far fa-dot-circle" style="color: #bababa"></i>'
         default:
-          return null;
+          return null
       }
     },
   },
@@ -176,13 +176,13 @@ export default {
       "OIContestRealTimePermission",
     ]),
     DIFFICULTY_MAP() {
-      return DIFFICULTY_MAP;
+      return DIFFICULTY_MAP
     },
     FIELD_MAP() {
-      return FIELD_MAP;
+      return FIELD_MAP
     },
   },
-};
+}
 </script>
 
 <style scoped lang="less">

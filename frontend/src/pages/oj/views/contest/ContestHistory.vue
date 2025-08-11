@@ -77,22 +77,22 @@
 </template>
 
 <script>
-import api from "@oj/api";
-import utils from "@/utils/utils";
-import YearDropdown from "./components/YearDropdown";
-import MonthDropdown from "./components/MonthDropdown";
-import RuleTypeDropdown from "./components/RuleTypeDropdown";
-import SearchKeyword from "./components/SearchKeyword";
-import Pagination from "@/pages/oj/components/Pagination";
-import { CONTEST_STATUS, CONTEST_TYPE, MONTH } from "@/utils/constants";
-import {CONTEST_STATUS_REVERSE} from "../../../../utils/constants";
+import api from "@oj/api"
+import utils from "@/utils/utils"
+import YearDropdown from "./components/YearDropdown"
+import MonthDropdown from "./components/MonthDropdown"
+import RuleTypeDropdown from "./components/RuleTypeDropdown"
+import SearchKeyword from "./components/SearchKeyword"
+import Pagination from "@/pages/oj/components/Pagination"
+import { CONTEST_STATUS, CONTEST_TYPE, MONTH } from "@/utils/constants"
+import { CONTEST_STATUS_REVERSE } from "../../../../utils/constants"
 
 export default {
   name: "contest-history-list",
   computed: {
     CONTEST_STATUS_REVERSE() {
       return CONTEST_STATUS_REVERSE
-    }
+    },
   },
   components: {
     YearDropdown,
@@ -114,31 +114,31 @@ export default {
       total: 0,
       limit: 10,
       page: 1,
-    };
+    }
   },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
       api
         .getContestHistoryList((vm.page - 1) * vm.limit, vm.limit)
         .then((res) => {
-          vm.contests = res.data.data.results;
-          vm.total = res.data.data.total;
-        });
-    });
+          vm.contests = res.data.data.results
+          vm.total = res.data.data.total
+        })
+    })
   },
   methods: {
     getContestHistoryList() {
-      const { month, ...rest } = this.query;
+      const { month, ...rest } = this.query
       const query = {
         ...rest,
         month: month === "" ? month : MONTH[month].number,
-      };
+      }
       api
         .getContestHistoryList((this.page - 1) * this.limit, this.limit, query)
         .then((res) => {
-          this.contests = res.data.data.results;
-          this.total = res.data.data.total;
-        });
+          this.contests = res.data.data.results
+          this.total = res.data.data.total
+        })
     },
     contestStateStyle(state) {
       return {
@@ -146,56 +146,56 @@ export default {
         height: "16px",
         "border-radius": "100%",
         "background-color": CONTEST_STATUS_REVERSE[state].color,
-      };
+      }
     },
     onYearChange(year) {
-      this.page = 1;
-      this.query.year = year;
-      this.getContestHistoryList();
+      this.page = 1
+      this.query.year = year
+      this.getContestHistoryList()
     },
     onMonthChange(month) {
-      this.page = 1;
-      this.query.month = month;
-      this.getContestHistoryList();
+      this.page = 1
+      this.query.month = month
+      this.getContestHistoryList()
     },
     onRuleChange(rule) {
-      this.page = 1;
-      this.query.rule_type = rule;
-      this.getContestHistoryList();
+      this.page = 1
+      this.query.rule_type = rule
+      this.getContestHistoryList()
     },
     onKeywordChange(keyword) {
-      this.page = 1;
-      this.query.keyword = keyword;
-      this.getContestHistoryList();
+      this.page = 1
+      this.query.keyword = keyword
+      this.getContestHistoryList()
     },
     getContestDisclosure(contest) {
       return contest.contest_type === "Public"
         ? this.$i18n.t("m.Public")
-        : this.$i18n.t("m.Private");
+        : this.$i18n.t("m.Private")
     },
     goContest(contest) {
       if (
         contest.contest_type !== CONTEST_TYPE.PUBLIC &&
         !this.isAuthenticated
       ) {
-        this.$error(this.$i18n.t("m.Please_login_first"));
-        this.$store.dispatch("changeModalStatus", { visible: true });
+        this.$error(this.$i18n.t("m.Please_login_first"))
+        this.$store.dispatch("changeModalStatus", { visible: true })
       } else {
         this.$router.push({
           name: "contest-overview",
           params: { contestID: contest.id },
-        });
+        })
       }
     },
   },
   watch: {
     $route(newVal, oldVal) {
       if (newVal !== oldVal) {
-        this.init();
+        this.init()
       }
     },
   },
-};
+}
 </script>
 
 <style lang="less" scoped>

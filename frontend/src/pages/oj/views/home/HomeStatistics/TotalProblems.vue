@@ -1,5 +1,5 @@
 <script>
-import Time from "../../../../../utils/time";
+import Time from "../../../../../utils/time"
 
 export default {
   data() {
@@ -11,85 +11,92 @@ export default {
       countingTime: 1.7,
       stackingTime: 2.0,
       steps: 30,
-      itemArray: []
+      itemArray: [],
     }
   },
   props: {
     extended: {
       type: Boolean,
-      default: false
+      default: false,
     },
     totalProblems: {
       type: Number,
-      default: 388
-    }
+      default: 388,
+    },
   },
   computed: {
     countingInterval() {
-      return Math.max((this.totalProblems / (this.steps)).toFixed(0), 1);
+      return Math.max((this.totalProblems / this.steps).toFixed(0), 1)
     },
     numberInterval() {
-      return (this.countingTime * 1000 / this.steps).toFixed(0);
+      return ((this.countingTime * 1000) / this.steps).toFixed(0)
     },
     currentTime() {
       return Time.utcToLocal()
     },
     itemInterval() {
-      return Math.max((this.stackingTime * 1000 / this.MAX_ITEMS).toFixed(0), 1);
-    }
+      return Math.max(
+        ((this.stackingTime * 1000) / this.MAX_ITEMS).toFixed(0),
+        1,
+      )
+    },
   },
   methods: {
     getRandomColor() {
-      const red = Math.floor(Math.random() * 256);
-      const green = Math.floor(Math.random() * 256);
-      const blue = Math.floor(Math.random() * 256);
-      return `rgb(${red}, ${green}, ${blue}, 0.2)`;
-    }
+      const red = Math.floor(Math.random() * 256)
+      const green = Math.floor(Math.random() * 256)
+      const blue = Math.floor(Math.random() * 256)
+      return `rgb(${red}, ${green}, ${blue}, 0.2)`
+    },
   },
   watch: {
     extended: function (newVal, oldVal) {
       if (newVal) {
-        this.displayNumber = 0;
-        this.itemArray = [];
+        this.displayNumber = 0
+        this.itemArray = []
         this.numberTimer = setInterval(() => {
           if (this.displayNumber < this.totalProblems) {
-            this.displayNumber += this.countingInterval;
+            this.displayNumber += this.countingInterval
           } else {
-            this.displayNumber = this.totalProblems;
-            clearInterval(this.numberTimer);
+            this.displayNumber = this.totalProblems
+            clearInterval(this.numberTimer)
           }
-        }, this.numberInterval);
+        }, this.numberInterval)
         this.itemTimer = setInterval(() => {
           if (this.itemArray.length < this.MAX_ITEMS) {
-            this.itemArray.push(this.itemArray.length);
+            this.itemArray.push(this.itemArray.length)
           } else {
-            clearInterval(this.itemTimer);
+            clearInterval(this.itemTimer)
           }
-        }, this.itemInterval);
-      }
-      else {
-        this.displayNumber = 0;
-        this.itemArray = [];
-        clearInterval(this.numberTimer);
-        clearInterval(this.itemTimer);
+        }, this.itemInterval)
+      } else {
+        this.displayNumber = 0
+        this.itemArray = []
+        clearInterval(this.numberTimer)
+        clearInterval(this.itemTimer)
       }
     },
-  }
+  },
 }
 </script>
 
 <template>
   <div class="held-contests">
-    <span class="number" v-if="extended">{{ this.displayNumber }}<span class="problem">{{
-        $t('m.Problems')
-      }}</span></span>
+    <span class="number" v-if="extended"
+      >{{ this.displayNumber
+      }}<span class="problem">{{ $t("m.Problems") }}</span></span
+    >
     <transition-group name="item" tag="ul" class="stack-wrapper">
-      <li class="stack-item" :style="{backgroundColor: getRandomColor()}" v-for="elem in this.itemArray"
-          :key="elem"/>
+      <li
+        class="stack-item"
+        :style="{ backgroundColor: getRandomColor() }"
+        v-for="elem in this.itemArray"
+        :key="elem"
+      />
     </transition-group>
     <transition name="standard">
       <div v-if="extended" class="standard">
-        {{ this.currentTime }} {{ $t('m.Standard') }}
+        {{ this.currentTime }} {{ $t("m.Standard") }}
       </div>
     </transition>
   </div>
@@ -138,17 +145,20 @@ export default {
   text-align: center;
 }
 
-.standard-enter, .standard-leave-to {
+.standard-enter,
+.standard-leave-to {
   transform: translateY(100%);
   opacity: 0;
 }
 
-.standard-enter-to, .standard-leave {
+.standard-enter-to,
+.standard-leave {
   transform: translateY(0);
   opacity: 1;
 }
 
-.standard-enter-active, .standard-leave-active {
+.standard-enter-active,
+.standard-leave-active {
   transition: all 1s ease-in-out;
 }
 
@@ -161,18 +171,20 @@ export default {
   list-style-type: none;
 }
 
-.item-enter-active, .item-leave-active {
+.item-enter-active,
+.item-leave-active {
   transition: all 0.6s;
 }
 
-.item-enter, .item-leave-to {
+.item-enter,
+.item-leave-to {
   transform: translateY(-200%);
   opacity: 0;
 }
 
-.item-enter-to, .item-leave {
+.item-enter-to,
+.item-leave {
   transform: translateY(0);
   opacity: 1;
 }
-
 </style>

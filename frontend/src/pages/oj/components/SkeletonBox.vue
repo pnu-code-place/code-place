@@ -2,12 +2,12 @@
 export default {
   data() {
     return {}
-  }
+  },
 }
 </script>
 
 <template>
-<div class="skeleton"></div>
+  <div class="skeleton"></div>
 </template>
 
 <style scoped lang="less">

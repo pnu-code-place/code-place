@@ -58,7 +58,7 @@
                 <td>
                   {{
                     submissionMemoryFormat(
-                      submission.statistic_info.memory_cost
+                      submission.statistic_info.memory_cost,
                     )
                   }}
                 </td>
@@ -115,12 +115,12 @@
 </template>
 
 <script>
-import api from "../../api.js";
+import api from "../../api.js"
 
-import { JUDGE_STATUS, USER_TYPE } from "@/utils/constants";
-import utils from "@/utils/utils";
-import time from "@/utils/time";
-import Pagination from "@/pages/admin/components/Pagination";
+import { JUDGE_STATUS, USER_TYPE } from "@/utils/constants"
+import utils from "@/utils/utils"
+import time from "@/utils/time"
+import Pagination from "@/pages/admin/components/Pagination"
 
 export default {
   name: "ContestSubmission",
@@ -139,73 +139,73 @@ export default {
       contestID: 0,
       JUDGE_STATUS: "",
       rejudge_column: false,
-    };
+    }
   },
   mounted() {
-    this.init();
-    this.JUDGE_STATUS = Object.assign({}, JUDGE_STATUS);
+    this.init()
+    this.JUDGE_STATUS = Object.assign({}, JUDGE_STATUS)
   },
   methods: {
     init() {
-      this.contestID = this.$route.params.contestId;
-      let query = this.$route.query;
-      this.pageSubmission = parseInt(query.pageSubmission) || 1;
-      this.pageParticipant = parseInt(query.pageParticipant) || 1;
-      if (this.pageSubmission < 1) this.pageSubmission = 1;
-      if (this.pageParticipant < 1) this.pageParticipant = 1;
-      this.getSubmissions();
-      this.getParticipants();
+      this.contestID = this.$route.params.contestId
+      let query = this.$route.query
+      this.pageSubmission = parseInt(query.pageSubmission) || 1
+      this.pageParticipant = parseInt(query.pageParticipant) || 1
+      if (this.pageSubmission < 1) this.pageSubmission = 1
+      if (this.pageParticipant < 1) this.pageParticipant = 1
+      this.getSubmissions()
+      this.getParticipants()
     },
     changeRoute() {
       let query = {
         pageSubmission: this.pageSubmission,
-      };
+      }
       this.$router.push({
         name: "contest-submission",
         params: { contestId: this.contestID },
         query: utils.filterEmptyValue(query),
-      });
+      })
     },
     buildQuery() {
       return {
         page: this.pageSubmission,
         contest_id: this.contestID,
-      };
+      }
     },
     getSubmissions() {
-      let params = this.buildQuery();
-      let offset = (this.pageSubmission - 1) * this.limit;
+      let params = this.buildQuery()
+      let offset = (this.pageSubmission - 1) * this.limit
       api.getContestSubmissionList(offset, this.limit, params).then((res) => {
-        let data = res.data.data;
-        this.submissions = data.results;
-        this.totalSubmission = data.total;
-      });
+        let data = res.data.data
+        this.submissions = data.results
+        this.totalSubmission = data.total
+      })
     },
     getParticipants() {
       api.getContestParticipantList(this.contestID).then((res) => {
-        this.participants = res.data.data;
-      });
+        this.participants = res.data.data
+      })
     },
     submissionMemoryFormat(memory) {
-      return utils.submissionMemoryFormat(memory);
+      return utils.submissionMemoryFormat(memory)
     },
     submissionTimeFormat(time) {
-      return utils.submissionTimeFormat(time);
+      return utils.submissionTimeFormat(time)
     },
     downloadRankCSV() {
       utils.downloadFile(
-        `admin/contest_rank?download_csv=1&contest_id=${this.contestID}`
-      );
+        `admin/contest_rank?download_csv=1&contest_id=${this.contestID}`,
+      )
     },
   },
   watch: {
     $route(newVal, oldVal) {
       if (newVal !== oldVal) {
-        this.init();
+        this.init()
       }
     },
   },
-};
+}
 </script>
 
 <style scoped lang="less">

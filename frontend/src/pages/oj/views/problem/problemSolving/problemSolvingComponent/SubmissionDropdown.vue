@@ -20,8 +20,8 @@
 </template>
 
 <script>
-import SubmissionAcceptedDropdown from "./SubmissionAcceptedDropdown.vue";
-import SubmissionErrorDropdown from "./SubmissionErrorDropdown.vue";
+import SubmissionAcceptedDropdown from "./SubmissionAcceptedDropdown.vue"
+import SubmissionErrorDropdown from "./SubmissionErrorDropdown.vue"
 
 export default {
   name: "SubmissionDropdown",
@@ -45,10 +45,10 @@ export default {
   },
   computed: {
     isAccepted() {
-      return this.submission.result === 0;
+      return this.submission.result === 0
     },
   },
-};
+}
 </script>
 
 <style scoped lang="less">

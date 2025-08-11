@@ -7,10 +7,9 @@
 </template>
 
 <script>
-  export default {
-    name: 'VerticalMenu'
-  }
+export default {
+  name: "VerticalMenu",
+}
 </script>
 
-<style scoped lang="less">
-</style>
+<style scoped lang="less"></style>

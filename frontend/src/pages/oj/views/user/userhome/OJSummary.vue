@@ -1,18 +1,13 @@
 <script>
-
-import HorizontalGauge from "./sections/dashboardSection/HorizontalGauge.vue";
-import ShineWrapper from "../../../components/ShineWrapper.vue";
+import HorizontalGauge from "./sections/dashboardSection/HorizontalGauge.vue"
+import ShineWrapper from "../../../components/ShineWrapper.vue"
 
 export default {
-  name: 'oj-summary',
-  components: {ShineWrapper, HorizontalGauge},
-  props: ['ojStatus'],
-  computed: {
-
-  },
-  methods :{
-
-  }
+  name: "oj-summary",
+  components: { ShineWrapper, HorizontalGauge },
+  props: ["ojStatus"],
+  computed: {},
+  methods: {},
 }
 </script>
 
@@ -20,48 +15,58 @@ export default {
   <div class="oj-summary">
     <div class="rank-mark-wrapper">
       <shine-wrapper>
-        <img :src="TierImageSrc[ojStatus.tier]" class="rank-mark" alt="rank emblem"/>
+        <img
+          :src="TierImageSrc[ojStatus.tier]"
+          class="rank-mark"
+          alt="rank emblem"
+        />
       </shine-wrapper>
       <span>{{ getTier(ojStatus.tier) }}</span>
     </div>
     <div class="rank-info">
       <div class="rank-info-top">
         <div class="rank-info-elem">
-          <span class="header">{{$t('m.UserHomeScore')}}</span>
+          <span class="header">{{ $t("m.UserHomeScore") }}</span>
           <span class="value">{{ comma(ojStatus.total_score) }}</span>
         </div>
         <div class="rank-info-elem">
-          <span class="header">{{$t('m.Ranking')}}</span>
-          <span class="value">{{ ojStatus.rank }} ({{$t('m.TOP')}} {{ rankPercent }}%)</span>
+          <span class="header">{{ $t("m.Ranking") }}</span>
+          <span class="value"
+            >{{ ojStatus.rank }} ({{ $t("m.TOP") }} {{ rankPercent }}%)</span
+          >
         </div>
         <div class="rank-info-elem">
-          <span class="header">{{$t('m.Submit')}}</span>
+          <span class="header">{{ $t("m.Submit") }}</span>
           <span class="value">{{ ojStatus.submission_number }}</span>
         </div>
         <div class="rank-info-elem">
-          <span class="header">{{$t('m.UserHomeSolved')}}</span>
+          <span class="header">{{ $t("m.UserHomeSolved") }}</span>
           <span class="value">{{ ojStatus.accepted_number }}</span>
         </div>
       </div>
       <div class="progress">
         <span class="progress-info">
-          {{ comma(ojStatus.total_score) }} / {{ comma(ojStatus.next_tier_score) }}
+          {{ comma(ojStatus.total_score) }} /
+          {{ comma(ojStatus.next_tier_score) }}
         </span>
         <div class="gauge-wrapper">
           <horizontal-gauge :progress="gaugeWidth"></horizontal-gauge>
         </div>
         <span class="progress-next">
-          {{$t('m.Until_Promotion_Before')}} <span class="progress-next-number">{{ comma(ojStatus.next_tier_score - ojStatus.total_score) }}{{$t('m.Point')}}</span> {{$t('m.Until_Promotion_After')}}
+          {{ $t("m.Until_Promotion_Before") }}
+          <span class="progress-next-number"
+            >{{ comma(ojStatus.next_tier_score - ojStatus.total_score)
+            }}{{ $t("m.Point") }}</span
+          >
+          {{ $t("m.Until_Promotion_After") }}
         </span>
       </div>
     </div>
-    <div class="miracle">
-    </div>
+    <div class="miracle"></div>
   </div>
 </template>
 
 <style scoped lang="less">
-
 .oj-summary {
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   display: flex;
@@ -76,7 +81,7 @@ export default {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding : 0 20px 15px;
+    padding: 0 20px 15px;
     gap: 10px;
 
     .rank-mark {
@@ -103,7 +108,6 @@ export default {
       justify-content: space-between;
       align-items: flex-start;
       font-size: 15px;
-
 
       .rank-info-elem {
         width: 100%;
@@ -132,7 +136,6 @@ export default {
       }
 
       .progress-next {
-
         .progress-next-number {
           font-weight: 700;
         }

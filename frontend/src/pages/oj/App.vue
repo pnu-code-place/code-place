@@ -1,6 +1,5 @@
 <template>
   <div id="wrapper">
-
     <template v-if="isProblemSolving">
       <NavBar_Problem></NavBar_Problem>
     </template>
@@ -21,15 +20,14 @@
 </template>
 
 <script>
-import {mapActions, mapGetters, mapState} from "vuex";
-import NavBar from "./components/NavBar.vue";
-import NavBar_Problem from "./views/problem/problemSolving/problemSolvingNavbar/NavBar_Problem.vue";
-import CSEPFooter from "./views/general/CSEPFooter.vue";
-import PopUp from "./components/modal/PopUp.vue";
-import api from "./api";
+import { mapActions, mapGetters, mapState } from "vuex"
+import NavBar from "./components/NavBar.vue"
+import NavBar_Problem from "./views/problem/problemSolving/problemSolvingNavbar/NavBar_Problem.vue"
+import CSEPFooter from "./views/general/CSEPFooter.vue"
+import PopUp from "./components/modal/PopUp.vue"
+import api from "./api"
 
 export default {
-
   name: "app",
   components: {
     PopUp,
@@ -39,12 +37,11 @@ export default {
   },
   created() {
     try {
-      document.body.removeChild(document.getElementById("app-loader"));
-    } catch (e) {
-    }
+      document.body.removeChild(document.getElementById("app-loader"))
+    } catch (e) {}
   },
   mounted() {
-    this.getWebsiteConfig();
+    this.getWebsiteConfig()
     this.init()
   },
   methods: {
@@ -53,17 +50,16 @@ export default {
   computed: {
     ...mapState(["website"]),
     ...mapGetters(["isProblemSolving", "removedPopupId"]),
-
   },
   watch: {
     website() {
-      this.changeDomTitle();
+      this.changeDomTitle()
     },
     $route() {
-      this.changeDomTitle();
+      this.changeDomTitle()
     },
   },
-};
+}
 </script>
 
 <style lang="less">
@@ -90,9 +86,8 @@ h1.main-title {
   --title_font-size: 24px;
   --title_font-weight: 700;
 
-
   --point-color: #32306b;
-  --pale-point-color: #F8F9FF;
+  --pale-point-color: #f8f9ff;
   // hex #024D97; to rgb 2, 77, 151
   --pnu-green: rgb(6, 186, 110);
   --pnu-blue: rgb(2, 77, 151);
@@ -100,9 +95,9 @@ h1.main-title {
   --pale-pnu-green: rgba(6, 186, 110, 0.05);
   --pale-pnu-blue: rgba(2, 77, 151, 0.05);
 
-  --pale-gold-color: #FAF882;
-  --pale-silver-color: #F4F4F4;
-  --pale-bronze-color: #D6C68B;
+  --pale-gold-color: #faf882;
+  --pale-silver-color: #f4f4f4;
+  --pale-bronze-color: #d6c68b;
 
   /* Problem Solving Page */
   --ps-background-color: #f9fafb;
@@ -135,7 +130,6 @@ h1.main-title {
   --footer-margin: 80px;
 
   --global-width: 1200px;
-
 }
 
 :root.dark.problem {

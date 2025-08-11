@@ -1,42 +1,45 @@
 <script>
 export default {
-  name: 'draw-card',
+  name: "draw-card",
   props: {
     title: {
       type: String,
-      default: 'title'
+      default: "title",
     },
     createTime: {
       type: String,
-      default: '2024-10-10'
+      default: "2024-10-10",
     },
     author: {
       type: String,
-      default: 'author'
+      default: "author",
     },
     link: {
       type: String,
-      default: 'no-link'
+      default: "no-link",
     },
     noticeIndex: {
       type: Number,
-      default: -1
-    }
+      default: -1,
+    },
   },
   computed: {
     hasLink() {
-      return this.link !== 'no-link'
+      return this.link !== "no-link"
     },
   },
   methods: {
     goLink() {
       if (this.hasLink) {
-        window.open(this.link, '_blank')
+        window.open(this.link, "_blank")
       }
     },
     goAnnouncement() {
       if (this.noticeIndex !== -1) {
-        this.$router.push({name: 'notice', params: {notice: this.noticeIndex}})
+        this.$router.push({
+          name: "notice",
+          params: { notice: this.noticeIndex },
+        })
       }
     },
     clickHandler() {
@@ -47,11 +50,14 @@ export default {
       }
     },
     goAuthor() {
-      if (this.link === 'no-link') {
-        this.$router.push({name: 'user-profile', params: {username: this.author}})
+      if (this.link === "no-link") {
+        this.$router.push({
+          name: "user-profile",
+          params: { username: this.author },
+        })
       }
-    }
-  }
+    },
+  },
   // methods: {
   //   goAnnouncement(announcement) {
   //     this.$router.push({})
@@ -64,8 +70,15 @@ export default {
   <li class="notice-wrapper">
     <div class="notice-item">
       <div class="notice-header">
-        <span class="notice-author" @click="goAuthor">{{ author }} <span v-if="hasLink" class="sw-center">({{$t('m.SWCenter')}})</span></span>
-        <span class="notice-date"><span class="new-badge">new</span>{{ createTime }}</span>
+        <span class="notice-author" @click="goAuthor"
+          >{{ author }}
+          <span v-if="hasLink" class="sw-center"
+            >({{ $t("m.SWCenter") }})</span
+          ></span
+        >
+        <span class="notice-date"
+          ><span class="new-badge">new</span>{{ createTime }}</span
+        >
       </div>
       <h3 class="notice-title" @click="clickHandler">
         {{ title }}
@@ -77,12 +90,46 @@ export default {
 <style scoped lang="less">
 .notice-wrapper {
   height: 75px;
-  transform: matrix3d(1, 0, 0.00, 0, 0.00, 0.98, -0.17, 0, 0, 0.17, 0.98, 0, 0, 0, 0, 1);
+  transform: matrix3d(
+    1,
+    0,
+    0,
+    0,
+    0,
+    0.98,
+    -0.17,
+    0,
+    0,
+    0.17,
+    0.98,
+    0,
+    0,
+    0,
+    0,
+    1
+  );
   list-style: none;
   transition: transform 0.3s;
 
   &:hover {
-    transform: matrix3d(1, 0, 0.00, 0, 0.00, 0.98, -0.17, 0, 0, 0.17, 0.98, 0, 0, -50, 0, 1);
+    transform: matrix3d(
+      1,
+      0,
+      0,
+      0,
+      0,
+      0.98,
+      -0.17,
+      0,
+      0,
+      0.17,
+      0.98,
+      0,
+      0,
+      -50,
+      0,
+      1
+    );
   }
 }
 

@@ -1,11 +1,5 @@
-<template>
+<template></template>
 
-</template>
+<script></script>
 
-<script>
-
-</script>
-
-<style scoped lang="less">
-
-</style>
+<style scoped lang="less"></style>

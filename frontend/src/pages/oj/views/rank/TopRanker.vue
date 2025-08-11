@@ -7,30 +7,30 @@
   <div class="top-ranker-banner" @click="goUserDashboard" v-else>
     <div class="user-info">
       <div class="avatar-wrapper">
-        <img class="avatar" :src="user.avatar" alt="avatar"/>
-        <img class="trophy" :src="AwardImageSrc[rank.toString()]" alt="medal"/>
-<!--        <img class="tier-mark" :src="TierImageSrc[user.tier]" alt="tier mark"/>-->
+        <img class="avatar" :src="user.avatar" alt="avatar" />
+        <img class="trophy" :src="AwardImageSrc[rank.toString()]" alt="medal" />
+        <!--        <img class="tier-mark" :src="TierImageSrc[user.tier]" alt="tier mark"/>-->
       </div>
       <span class="user-name">{{ user.username }}</span>
       <span class="user-major">{{ user.major }}</span>
     </div>
-    <div class="user-score">{{ comma(user.score) }}{{ $t('m.Point') }}</div>
+    <div class="user-score">{{ comma(user.score) }}{{ $t("m.Point") }}</div>
   </div>
 </template>
 <script>
-import api from "../../api";
-import {comma} from "../../../../utils/utils";
-import {AwardImageSrc, TierImageSrc} from "../../../../utils/constants";
+import api from "../../api"
+import { comma } from "../../../../utils/utils"
+import { AwardImageSrc, TierImageSrc } from "../../../../utils/constants"
 
 export default {
   data() {
     return {
       user: {
-        username: 'username',
-        avatar: '',
+        username: "username",
+        avatar: "",
         score: 0,
         solved: 0,
-        accuracy: 0.0
+        accuracy: 0.0,
       },
       isLoading: false,
     }
@@ -41,26 +41,29 @@ export default {
     },
     AwardImageSrc() {
       return AwardImageSrc
-    }
+    },
   },
   props: {
     rank: {
       type: Number,
-      default: 1
-    }
+      default: 1,
+    },
   },
   methods: {
     comma,
     init() {
       this.isLoading = true
-      api.getUserRank(this.rank-1, 1).then(res => {
+      api.getUserRank(this.rank - 1, 1).then((res) => {
         this.isLoading = false
         this.user = res.data.data.results[0]
       })
     },
     goUserDashboard() {
-      this.$router.push({name: 'user-dashboard', params: {username: this.user.username}})
-    }
+      this.$router.push({
+        name: "user-dashboard",
+        params: { username: this.user.username },
+      })
+    },
   },
   mounted() {
     this.init()
@@ -68,9 +71,7 @@ export default {
 }
 </script>
 
-
 <style scoped lang="less">
-
 .top-ranker-banner {
   cursor: pointer;
 
@@ -86,7 +87,12 @@ export default {
         width: 100px;
         height: 100px;
         border-radius: 50%;
-        background: linear-gradient(90deg, #f0f0f0 25%, #f5f5f5 50%, #f0f0f0 75%);
+        background: linear-gradient(
+          90deg,
+          #f0f0f0 25%,
+          #f5f5f5 50%,
+          #f0f0f0 75%
+        );
       }
 
       .trophy {
@@ -157,5 +163,4 @@ export default {
     background-color: #e3e3e3;
   }
 }
-
 </style>

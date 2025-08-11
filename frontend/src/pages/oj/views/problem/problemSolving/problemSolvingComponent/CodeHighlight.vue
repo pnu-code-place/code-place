@@ -5,9 +5,9 @@
 </template>
 
 <script>
-import hljs from "highlight.js";
-import "highlight.js/styles/solarized-light.css";
-import "highlight.js/styles/atom-one-dark.css";
+import hljs from "highlight.js"
+import "highlight.js/styles/solarized-light.css"
+import "highlight.js/styles/atom-one-dark.css"
 
 /**
  * 코드 하이라이팅 컴포넌트
@@ -58,18 +58,18 @@ export default {
      */
     highlightedCode() {
       // 코드가 없으면 빈 문자열 반환
-      if (!this.code) return "";
+      if (!this.code) return ""
 
       // 에러 타입인 경우 하이라이팅 없이 원본 코드 반환
       if (this.type !== "code") {
-        return this.code;
+        return this.code
       }
 
       try {
-        return hljs.highlight(this.language, this.code).value;
+        return hljs.highlight(this.language, this.code).value
       } catch (e) {
         // 언어 지정 실패 시 자동 감지로 하이라이팅
-        return hljs.highlightAuto(this.code).value;
+        return hljs.highlightAuto(this.code).value
       }
     },
 
@@ -78,7 +78,7 @@ export default {
      * @returns {String} hljs 및 언어별 클래스명
      */
     languageClass() {
-      return "hljs " + (this.language ? "language-" + this.language : "");
+      return "hljs " + (this.language ? "language-" + this.language : "")
     },
 
     /**
@@ -87,17 +87,17 @@ export default {
      */
     themeClass() {
       // 기본 테마 클래스 설정 (다크/라이트)
-      let themeClass = this.isDarkMode ? "dark-theme" : "light-theme";
+      let themeClass = this.isDarkMode ? "dark-theme" : "light-theme"
 
       // 에러 타입인 경우 에러 스타일 클래스 추가
       if (this.type === "error") {
-        themeClass += " error-info";
+        themeClass += " error-info"
       }
 
-      return themeClass;
+      return themeClass
     },
   },
-};
+}
 </script>
 
 <style scoped>
@@ -134,8 +134,8 @@ export default {
   padding: 16px;
   border-radius: 8px;
   font-size: 14px;
-  font-family: "Fira Code", "JetBrains Mono", "Menlo", "Monaco", "Consolas",
-    monospace;
+  font-family:
+    "Fira Code", "JetBrains Mono", "Menlo", "Monaco", "Consolas", monospace;
   white-space: pre;
   background-color: var(--dropdown-bg);
   color: var(--dropdown-text);

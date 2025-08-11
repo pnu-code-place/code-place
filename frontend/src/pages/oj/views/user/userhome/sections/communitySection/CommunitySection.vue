@@ -1,8 +1,7 @@
 <script>
 export default {
-  name : 'community-section',
-  props: {
-  }
+  name: "community-section",
+  props: {},
 }
 </script>
 
@@ -14,12 +13,12 @@ export default {
 
 <style scoped lang="less">
 section {
-  border : 1px solid #dedede;
+  border: 1px solid #dedede;
   border-radius: 7px;
-  transition : all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  padding : 20px;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  padding: 20px;
   h1 {
-    text-align : left;
+    text-align: left;
     margin-bottom: 10px;
   }
 }

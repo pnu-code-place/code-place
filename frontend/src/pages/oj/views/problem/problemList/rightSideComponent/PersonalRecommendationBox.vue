@@ -1,50 +1,60 @@
 <template>
   <main>
     <header>
-      <span class="personal-recommendation-span-title">{{ $t('m.PersonalRecommendation') }}</span>
+      <span class="personal-recommendation-span-title">{{
+        $t("m.PersonalRecommendation")
+      }}</span>
     </header>
     <div v-if="!this.isAuthenticated" class="no-auth">
-      <span style="font-size: medium; font-weight: bold">{{ $t('m.PersonalRecommendation_No_Auth') }}</span>
+      <span style="font-size: medium; font-weight: bold">{{
+        $t("m.PersonalRecommendation_No_Auth")
+      }}</span>
     </div>
     <template v-else>
       <template v-if="!recommendation">
-        <InSufficientData :type="false"/>
+        <InSufficientData :type="false" />
       </template>
       <template v-else>
         <template v-if="!isScoreDataInSufficient">
           <div style="height: 200px; text-align: center">
-            <ECharts :options="chartOption" style="width: 100%; height: 100%"/>
+            <ECharts :options="chartOption" style="width: 100%; height: 100%" />
           </div>
-          <div style=" justify-content: center; padding: 10px">
-            <span style="font-weight: 500"><span style="font-weight: bold">{{ user.username }}</span> 님을 위해 선별된 문제들이에요!</span>
+          <div style="justify-content: center; padding: 10px">
+            <span style="font-weight: 500"
+              ><span style="font-weight: bold">{{ user.username }}</span> 님을
+              위해 선별된 문제들이에요!</span
+            >
           </div>
         </template>
         <template v-else>
-          <InSufficientData :type="true"/>
+          <InSufficientData :type="true" />
         </template>
       </template>
-      <template v-for="(recommend_problem, index) of this.recommendation.recommend_problems">
-        <RecommendProblem :recommend_problem="recommend_problem"/>
+      <template
+        v-for="(recommend_problem, index) of this.recommendation
+          .recommend_problems"
+      >
+        <RecommendProblem :recommend_problem="recommend_problem" />
       </template>
     </template>
   </main>
 </template>
 
 <script>
-import {mapActions, mapGetters} from "vuex";
-import FieldCategoryBox from "../../../../components/FieldCategoryBox.vue";
-import api from "../../../../api";
-import {FIELD_MAP} from "../../../../../../utils/constants";
-import RecommendProblem from "./RecommendProblem.vue";
-import InSufficientData from "./InSufficientData.vue";
+import { mapActions, mapGetters } from "vuex"
+import FieldCategoryBox from "../../../../components/FieldCategoryBox.vue"
+import api from "../../../../api"
+import { FIELD_MAP } from "../../../../../../utils/constants"
+import RecommendProblem from "./RecommendProblem.vue"
+import InSufficientData from "./InSufficientData.vue"
 
 export default {
-  name: 'PersonalRecommendationBox',
-  components: {InSufficientData, RecommendProblem, FieldCategoryBox},
+  name: "PersonalRecommendationBox",
+  components: { InSufficientData, RecommendProblem, FieldCategoryBox },
   data() {
     return {
       recommendation: null,
-      noProblemData: false
+      noProblemData: false,
     }
   },
   mounted() {
@@ -52,68 +62,76 @@ export default {
   },
   methods: {
     init() {
-      api.getPersonalRecommendProblem()
+      api
+        .getPersonalRecommendProblem()
         .then((res) => {
           this.recommendation = res.data.data
-        }).catch((e) => {
-        console.log(e)
-      })
+        })
+        .catch((e) => {
+          console.log(e)
+        })
     },
   },
   computed: {
-    ...mapGetters(['user', 'isAuthenticated', 'isAdminRole']),
+    ...mapGetters(["user", "isAuthenticated", "isAdminRole"]),
     FIELD_MAP() {
       return FIELD_MAP
     },
     getGraphColor() {
-      return Object.values(this.FIELD_MAP).map(field => field.boxColor);
+      return Object.values(this.FIELD_MAP).map((field) => field.boxColor)
     },
     getFieldName() {
-      return Object.values(this.FIELD_MAP).map(field => field.value);
+      return Object.values(this.FIELD_MAP).map((field) => field.value)
     },
     getScoreList() {
       if (this.recommendation == null) {
         return
       }
-      return Object.values(this.recommendation.field_score).map(field => field.score)
+      return Object.values(this.recommendation.field_score).map(
+        (field) => field.score,
+      )
     },
     getGraphData() {
       // 각 영역별로 점수를 배열로 만들어서 반환
-      let fieldList = this.getFieldName;
-      let scoreList = this.getScoreList;
+      let fieldList = this.getFieldName
+      let scoreList = this.getScoreList
 
       return fieldList.map((field, index) => ({
         value: scoreList[index],
-        name: field
-      }));
+        name: field,
+      }))
     },
     getRecommendedField() {
       if (this.recommendation == null) {
         return
       }
-      return Object.values(this.recommendation.recommend_problems).map(problem => problem.field)
+      return Object.values(this.recommendation.recommend_problems).map(
+        (problem) => problem.field,
+      )
     },
     isScoreDataInSufficient() {
       if (this.recommendation == null) {
         return
       }
-      let zeroCount = this.recommendation.field_score.filter(item => item.score == 0).length
-      return (zeroCount >= 3)
+      let zeroCount = this.recommendation.field_score.filter(
+        (item) => item.score == 0,
+      ).length
+      return zeroCount >= 3
     },
     chartOption() {
       return {
         tooltip: {
-          trigger: 'item',
-          borderRadius: 10
+          trigger: "item",
+          borderRadius: 10,
         },
         legend: {
-          top: '5%',
-          left: 'center'
+          top: "5%",
+          left: "center",
         },
         series: [
           {
-            type: 'pie',
-            radius: ['30%', '65%'],
+            type: "pie",
+            radius: ["30%", "65%"],
             avoidLabelOverlap: false,
             padAngle: 10,
             itemStyle: {
@@ -123,28 +141,28 @@ export default {
             },
             label: {
               show: false,
-              position: 'center'
+              position: "center",
             },
             emptyCircleStyle: {
               color: "lightgray",
-              opacity: 1
+              opacity: 1,
             },
             emphasis: {
               label: {
                 show: true,
                 fontSize: 40,
-              }
+              },
             },
             labelLine: {
               show: false,
             },
             color: this.getGraphColor,
             data: this.getGraphData,
-          }
-        ]
-      };
-    }
-  }
+          },
+        ],
+      }
+    },
+  },
 }
 </script>
 
@@ -170,11 +188,13 @@ main {
   .personal-recommendation-span-title {
     font-size: 17px;
     font-weight: 650;
-    background: linear-gradient(to right,
-    #344360 20%,
-    #376091 30%,
-    #295d73 70%,
-    #5d3da6 80%);
+    background: linear-gradient(
+      to right,
+      #344360 20%,
+      #376091 30%,
+      #295d73 70%,
+      #5d3da6 80%
+    );
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -205,4 +225,3 @@ main:hover {
   justify-content: center;
 }
 </style>
-

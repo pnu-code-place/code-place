@@ -148,17 +148,17 @@
 </template>
 
 <script>
-import api from "@oj/api";
-import { mapGetters } from "vuex";
-import utils from "@/utils/utils";
-import time from "@/utils/time";
+import api from "@oj/api"
+import { mapGetters } from "vuex"
+import utils from "@/utils/utils"
+import time from "@/utils/time"
 import {
   CONTEST_STATUS,
   CONTEST_STATUS_REVERSE,
   CONTEST_TYPE,
-} from "@/utils/constants";
-import SearchKeyword from "./components/SearchKeyword";
-import RuleTypeDropdown from "./components/RuleTypeDropdown";
+} from "@/utils/constants"
+import SearchKeyword from "./components/SearchKeyword"
+import RuleTypeDropdown from "./components/RuleTypeDropdown"
 
 export default {
   name: "contest-list",
@@ -176,80 +176,82 @@ export default {
       not_start_contests: [],
       ended_contests: [],
       CONTEST_STATUS_REVERSE: CONTEST_STATUS_REVERSE,
-    };
+    }
   },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
       api.getUnderwayContestList().then((res) => {
-        vm.underway_contests = res.data.data;
-      });
+        vm.underway_contests = res.data.data
+      })
       api.getNotStartedContestList().then((res) => {
-        vm.not_start_contests = res.data.data;
-      });
+        vm.not_start_contests = res.data.data
+      })
       api.getContestHistoryList(0, 5).then((res) => {
-        vm.ended_contests = res.data.data.results;
-      });
-    });
+        vm.ended_contests = res.data.data.results
+      })
+    })
   },
   methods: {
     formatDescription(oldDescription) {
-      let s = oldDescription.indexOf("<img"), e = 0;
+      let s = oldDescription.indexOf("<img"),
+        e = 0
       while (s !== -1) {
-        e = oldDescription.indexOf("/>", s);
-        oldDescription = oldDescription.substring(0, s) + oldDescription.substring(e);
+        e = oldDescription.indexOf("/>", s)
+        oldDescription =
+          oldDescription.substring(0, s) + oldDescription.substring(e)
 
-        e = s;
-        s = oldDescription.indexOf("<img", e);
+        e = s
+        s = oldDescription.indexOf("<img", e)
       }
-      return oldDescription;
+      return oldDescription
     },
     getUnderwayContestList() {
       api.getUnderwayContestList(this.query).then((res) => {
-        this.underway_contests = res.data.data;
-      });
+        this.underway_contests = res.data.data
+      })
     },
     onRuleChange(rule) {
-      this.query.rule_type = rule;
-      this.getUnderwayContestList();
+      this.query.rule_type = rule
+      this.getUnderwayContestList()
     },
     onKeywordChange(keyword) {
-      this.query.keyword = keyword;
-      this.getUnderwayContestList();
+      this.query.keyword = keyword
+      this.getUnderwayContestList()
     },
     goContest(contest) {
       if (
         contest.contest_type !== CONTEST_TYPE.PUBLIC &&
         !this.isAuthenticated
       ) {
-        this.$error(this.$i18n.t("m.Please_login_first"));
-        this.$store.dispatch("changeModalStatus", { visible: true });
+        this.$error(this.$i18n.t("m.Please_login_first"))
+        this.$store.dispatch("changeModalStatus", { visible: true })
       } else {
         this.$router.push({
           name: "contest-overview",
           params: { contestID: contest.id },
-        });
+        })
       }
     },
     goContestHistory() {
       this.$router.push({
         name: "contest-history-list",
-      });
+      })
     },
     dateFormat(dateUtc) {
-      const date = new Date(dateUtc);
+      const date = new Date(dateUtc)
 
-      const hour = date.getHours();
-      const min = date.getMinutes();
-      const sec = date.getSeconds();
+      const hour = date.getHours()
+      const min = date.getMinutes()
+      const sec = date.getSeconds()
 
-      let result = "";
-      if (hour > 12) result = "오후 " + (hour - 12) + "시 ";
-      else result = "오전 " + hour + "시 ";
+      let result = ""
+      if (hour > 12) result = "오후 " + (hour - 12) + "시 "
+      else result = "오전 " + hour + "시 "
 
-      if (min !== 0) result = result + min + "분 ";
-      if (sec !== 0) result = result + sec + "초";
+      if (min !== 0) result = result + min + "분 "
+      if (sec !== 0) result = result + sec + "초"
 
-      return result;
+      return result
     },
     contestStateStyle(state) {
       return {
@@ -257,12 +259,12 @@ export default {
         height: "16px",
         "border-radius": "100%",
         "background-color": CONTEST_STATUS_REVERSE[state].color,
-      };
+      }
     },
     getContestDisclosure(contest) {
       return contest.contest_type === "Public"
         ? this.$i18n.t("m.Public")
-        : this.$i18n.t("m.Private");
+        : this.$i18n.t("m.Private")
     },
   },
   computed: {
@@ -271,11 +273,11 @@ export default {
   watch: {
     $route(newVal, oldVal) {
       if (newVal !== oldVal) {
-        this.init();
+        this.init()
       }
     },
   },
-};
+}
 </script>
 
 <style lang="less" scoped>

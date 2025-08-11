@@ -21,26 +21,26 @@
 </template>
 
 <script>
-import api from "@oj/api";
+import api from "@oj/api"
 
 export default {
   name: "HomeBannerListBox",
   data() {
     return {
       banners: [],
-    };
+    }
   },
   mounted() {
     api.getBanners().then((res) => {
-      this.banners = res.data.data;
-    });
+      this.banners = res.data.data
+    })
   },
   methods: {
     goBannerLink(link) {
-      window.open(link);
+      window.open(link)
     },
   },
-};
+}
 </script>
 
 <style scoped lang="less">

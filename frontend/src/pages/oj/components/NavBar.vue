@@ -1,49 +1,77 @@
 <template>
   <div id="header">
     <Menu mode="horizontal" @on-select="handleRoute" :active-name="activeMenu">
-      <LogoButton/>
+      <LogoButton />
       <Menu-item class="menuItemText first" name="/">
-        {{ $t('m.Home') }}
+        {{ $t("m.Home") }}
       </Menu-item>
       <Menu-item class="menuItemText" name="/problem">
-        {{ $t('m.NavProblems') }}
+        {{ $t("m.NavProblems") }}
       </Menu-item>
       <!--        <Menu-item class="menuItemText" name="/status">-->
       <!--          {{$t('m.Community')}}-->
       <!--        </Menu-item>-->
       <Menu-item class="menuItemText" name="/contest">
-        {{ $t('m.Contests') }}
+        {{ $t("m.Contests") }}
       </Menu-item>
       <Menu-item class="menuItemText" name="/acm-rank">
-        {{ $t('m.Rank') }}
+        {{ $t("m.Rank") }}
       </Menu-item>
       <Menu-item class="menuItemText" name="/status">
-        {{ $t('m.NavStatus') }}
+        {{ $t("m.NavStatus") }}
       </Menu-item>
 
       <template v-if="isAuthenticated">
-        <Dropdown class="drop-menu" @on-click="handleRoute" placement="bottom" trigger="click">
-          <div style="display: flex; align-items: center;">
+        <Dropdown
+          class="drop-menu"
+          @on-click="handleRoute"
+          placement="bottom"
+          trigger="click"
+        >
+          <div style="display: flex; align-items: center">
             <div>
-              <img class="avatar" :src="profile.avatar" alt="avatar of the user"/>
+              <img
+                class="avatar"
+                :src="profile.avatar"
+                alt="avatar of the user"
+              />
             </div>
             <div style="margin-left: 10px">
               <Icon type="arrow-down-b" style="cursor: pointer"></Icon>
             </div>
           </div>
           <Dropdown-menu slot="list">
-            <Dropdown-item :name="`/user-home/dashboard/${user.username}`">{{ $t('m.MyHome') }}</Dropdown-item>
-            <Dropdown-item name="/status?myself=1">{{ $t('m.MySubmissions') }}</Dropdown-item>
-            <Dropdown-item name="/user-setting">{{ $t('m.Settings') }}</Dropdown-item>
-            <Dropdown-item v-if="isAdminRole" name="/admin">{{ $t('m.Management') }}</Dropdown-item>
-            <Dropdown-item divided name="/logout">{{ $t('m.Logout') }}</Dropdown-item>
+            <Dropdown-item :name="`/user-home/dashboard/${user.username}`">{{
+              $t("m.MyHome")
+            }}</Dropdown-item>
+            <Dropdown-item name="/status?myself=1">{{
+              $t("m.MySubmissions")
+            }}</Dropdown-item>
+            <Dropdown-item name="/user-setting">{{
+              $t("m.Settings")
+            }}</Dropdown-item>
+            <Dropdown-item v-if="isAdminRole" name="/admin">{{
+              $t("m.Management")
+            }}</Dropdown-item>
+            <Dropdown-item divided name="/logout">{{
+              $t("m.Logout")
+            }}</Dropdown-item>
           </Dropdown-menu>
         </Dropdown>
       </template>
     </Menu>
-    <Modal v-model="modalVisible" :maskClosable="false" :width="400" :styles="{'top': modalStatus.mode === 'login' ? '10%' : '2%'}">
+    <Modal
+      v-model="modalVisible"
+      :maskClosable="false"
+      :width="400"
+      :styles="{ top: modalStatus.mode === 'login' ? '10%' : '2%' }"
+    >
       <div slot="header" class="modal-title" style="text-align: center">
-        {{ modalStatus.mode === 'login' ? $t('m.LoginModalHeader') : $t('m.RegisterModalHeader') }}
+        {{
+          modalStatus.mode === "login"
+            ? $t("m.LoginModalHeader")
+            : $t("m.RegisterModalHeader")
+        }}
       </div>
       <component :is="modalStatus.mode" v-if="modalVisible"></component>
       <div slot="footer" style="display: none"></div>
@@ -52,53 +80,59 @@
 </template>
 
 <script>
-import {mapGetters, mapActions} from 'vuex'
-import login from '@oj/views/user/Login'
-import register from '@oj/views/user/Register'
-import LogoButton from "./LogoButton.vue";
+import { mapGetters, mapActions } from "vuex"
+import login from "@oj/views/user/Login"
+import register from "@oj/views/user/Register"
+import LogoButton from "./LogoButton.vue"
 
 export default {
   components: {
     LogoButton,
     login,
-    register
+    register,
   },
   mounted() {
     this.getProfile()
   },
   methods: {
-    ...mapActions(['getProfile', 'changeModalStatus']),
+    ...mapActions(["getProfile", "changeModalStatus"]),
     handleRoute(route) {
-      if (route && route.indexOf('admin') < 0) {
+      if (route && route.indexOf("admin") < 0) {
         this.$router.push(route)
       } else {
-        window.open('/admin/')
+        window.open("/admin/")
       }
     },
     handleBtnClick(mode) {
       console.log("setting complete!")
       this.changeModalStatus({
         visible: true,
-        mode: mode
+        mode: mode,
       })
-    }
+    },
   },
   computed: {
-    ...mapGetters(['website', 'modalStatus', 'user', 'isAuthenticated', 'isAdminRole']),
-    ...mapGetters(['profile']),
+    ...mapGetters([
+      "website",
+      "modalStatus",
+      "user",
+      "isAuthenticated",
+      "isAdminRole",
+    ]),
+    ...mapGetters(["profile"]),
     // 跟随路由变化
     activeMenu() {
-      return '/' + this.$route.path.split('/')[1]
+      return "/" + this.$route.path.split("/")[1]
     },
     modalVisible: {
       get() {
         return this.modalStatus.visible
       },
       set(value) {
-        this.changeModalStatus({visible: value})
-      }
-    }
-  }
+        this.changeModalStatus({ visible: value })
+      },
+    },
+  },
 }
 </script>
 
@@ -155,15 +189,13 @@ export default {
   box-shadow: 0 0 1px 0;
 }
 
-.ivu-menu-item-active{
-  color: #3c5977!important;
-  border-bottom: 2px solid #3c5977!important;
-
+.ivu-menu-item-active {
+  color: #3c5977 !important;
+  border-bottom: 2px solid #3c5977 !important;
 }
 
 .ivu-menu-light.ivu-menu-horizontal .ivu-menu-item:hover {
-  color: #3c5977!important;
-  border-bottom: 2px solid #3c5977!important;
+  color: #3c5977 !important;
+  border-bottom: 2px solid #3c5977 !important;
 }
-
 </style>

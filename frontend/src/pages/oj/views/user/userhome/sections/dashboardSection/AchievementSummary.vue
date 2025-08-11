@@ -1,5 +1,5 @@
 <script>
-import ChallengeBadge from "./AchievementBadge.vue";
+import ChallengeBadge from "./AchievementBadge.vue"
 
 export default {
   name: "challenge-summary",
@@ -10,7 +10,7 @@ export default {
     achievements: {
       type: Array,
       default() {
-        return [];
+        return []
       },
     },
   },
@@ -18,18 +18,17 @@ export default {
     return {}
   },
 }
-
 </script>
 
 <template>
   <div class="challenge-summary">
     <div class="badge-wrapper" v-for="achievement in achievements">
       <ChallengeBadge
-          :image="achievement.image"
-          :description="achievement.description"
-          :title="achievement.title"
-          :acquireTime="achievement.acquireTime"
-          :key="achievement.id"
+        :image="achievement.image"
+        :description="achievement.description"
+        :title="achievement.title"
+        :acquireTime="achievement.acquireTime"
+        :key="achievement.id"
       ></ChallengeBadge>
     </div>
   </div>

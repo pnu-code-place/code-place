@@ -31,8 +31,8 @@
 </template>
 
 <script>
-import CodeHighlight from "./CodeHighlight.vue";
-import CustomTooltip from "@oj/components/CustomTooltip";
+import CodeHighlight from "./CodeHighlight.vue"
+import CustomTooltip from "@oj/components/CustomTooltip"
 
 export default {
   name: "TestCaseInfo",
@@ -50,7 +50,7 @@ export default {
       default: false,
     },
   },
-};
+}
 </script>
 
 <style scoped lang="less">

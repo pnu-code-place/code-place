@@ -1,9 +1,9 @@
 <template>
   <div class="profileBox">
     <template v-if="!isAuthenticated">
-            <span style="font-size: 14px; font-weight: 600">
-              안전한 서비스 이용을 위해 로그인을 해주세요
-            </span>
+      <span style="font-size: 14px; font-weight: 600">
+        안전한 서비스 이용을 위해 로그인을 해주세요
+      </span>
       <div class="loginBtn" @click="handleLoginBtnClick('login')">
         <Icon type="android-lock" size="20"></Icon>
         <span>로그인</span>
@@ -17,35 +17,39 @@
       <div class="authenticatedBox">
         <div class="authenticatedBody">
           <div class="userAvatarWrapper">
-            <img class="avatar" :src="profile.avatar"/>
+            <img class="avatar" :src="profile.avatar" />
           </div>
           <div class="userInfoWrapper">
-                  <span>
-                    {{ user.username + '님' }}
-                  </span>
+            <span>
+              {{ user.username + "님" }}
+            </span>
             <template v-if="!isAdminRole">
-              <br>
+              <br />
               <span>{{ profile.school }}</span>
-              <br>
+              <br />
               <span>{{ profile.major }}</span>
             </template>
             <template v-else>
-              <br>
+              <br />
               <span v-if="isAdminRole">관리자({{ user.admin_type }})</span>
             </template>
           </div>
           <div class="logoutBtn">
-                  <span @click="goRouter('logout')">
-                    로그아웃
-                  </span>
+            <span @click="goRouter('logout')"> 로그아웃 </span>
           </div>
         </div>
         <div class="authenticatedFooter">
-          <span @click="goRouter('user-home')"><router-link
-            :to="{name:'user-home', params:{username:user.username}}">{{ $t('m.MyHome') }}</router-link></span>
-          <router-link :to="{name:'user-setting'}">정보수정</router-link>
+          <span @click="goRouter('user-home')"
+            ><router-link
+              :to="{ name: 'user-home', params: { username: user.username } }"
+              >{{ $t("m.MyHome") }}</router-link
+            ></span
+          >
+          <router-link :to="{ name: 'user-setting' }">정보수정</router-link>
           <span v-if="isAdminRole" @click="goRouter('admin')">관리</span>
-          <span v-else @click="alertUndeveloped" class="unclickable">내 강의</span>
+          <span v-else @click="alertUndeveloped" class="unclickable"
+            >내 강의</span
+          >
           <!--          <span @click="goRouter('profile-setting')"><router-link-->
           <!--              :to="{name:'default-setting'}">{{ $t('m.Settings') }}</router-link></span>-->
         </div>
@@ -55,47 +59,53 @@
 </template>
 
 <script>
-import api from '@oj/api'
-import {mapActions, mapGetters} from "vuex";
-import {getTierImageSrc} from "../../../../utils/constants";
+import api from "@oj/api"
+import { mapActions, mapGetters } from "vuex"
+import { getTierImageSrc } from "../../../../utils/constants"
 
 export default {
-  name: 'HomeProfileBox',
+  name: "HomeProfileBox",
   data() {
     return {}
   },
   methods: {
     alertUndeveloped() {
-      this.$error('개발 중인 기능입니다.')
+      this.$error("개발 중인 기능입니다.")
     },
     getTierImageSrc,
-    ...mapActions(['getProfile', 'changeModalStatus']),
+    ...mapActions(["getProfile", "changeModalStatus"]),
     handleLoginBtnClick(mode) {
       console.log("setting complete!")
       this.changeModalStatus({
         visible: true,
-        mode: mode
+        mode: mode,
       })
     },
     handleRoute(route) {
-      this.$router.push({name: route});
+      this.$router.push({ name: route })
     },
     goResetPassword() {
-      this.changeModalStatus({visible: false});
-      this.$router.push({name: "apply-reset-password"});
+      this.changeModalStatus({ visible: false })
+      this.$router.push({ name: "apply-reset-password" })
     },
     goRouter(routeName) {
-      if (routeName && routeName.indexOf('admin') < 0) {
-        this.$router.push({name: routeName})
+      if (routeName && routeName.indexOf("admin") < 0) {
+        this.$router.push({ name: routeName })
       } else {
-        window.open('/admin/')
+        window.open("/admin/")
       }
-    }
+    },
   },
   computed: {
-    ...mapGetters(['website', 'modalStatus', 'user', 'isAuthenticated', 'isAdminRole']),
-    ...mapGetters(['profile']),
-  }
+    ...mapGetters([
+      "website",
+      "modalStatus",
+      "user",
+      "isAuthenticated",
+      "isAdminRole",
+    ]),
+    ...mapGetters(["profile"]),
+  },
 }
 </script>
 
@@ -129,7 +139,6 @@ export default {
     display: flex;
     justify-content: right;
 
-
     span {
       cursor: pointer;
     }
@@ -145,7 +154,6 @@ export default {
 }
 
 .authenticatedBox {
-
   @avatar-radius: 50%;
 
   .avatar {
@@ -227,6 +235,4 @@ export default {
     }
   }
 }
-
-
 </style>

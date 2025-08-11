@@ -55,9 +55,9 @@
 
 <script>
 /*eslint-disable*/
-import { mapGetters, mapActions } from "vuex";
-import api from "@oj/api";
-import { FormMixin } from "@oj/components/mixins";
+import { mapGetters, mapActions } from "vuex"
+import api from "@oj/api"
+import { FormMixin } from "@oj/components/mixins"
 
 export default {
   mixins: [FormMixin],
@@ -65,12 +65,12 @@ export default {
     const CheckRequiredTFA = (rule, value, callback) => {
       console.log(value)
       if (value !== "") {
-        api.tfaRequiredCheck(value).then(res => {
-          this.tfaRequired = res.data.data.result;
-        });
+        api.tfaRequiredCheck(value).then((res) => {
+          this.tfaRequired = res.data.data.result
+        })
       }
-      callback();
-    };
+      callback()
+    }
 
     return {
       tfaRequired: false,
@@ -78,63 +78,63 @@ export default {
       formLogin: {
         username: "",
         password: "",
-        tfa_code: ""
+        tfa_code: "",
       },
       ruleLogin: {
         username: [
           { required: true, trigger: "blur" },
-          { validator: CheckRequiredTFA, trigger: "blur" }
+          { validator: CheckRequiredTFA, trigger: "blur" },
         ],
-        password: [{ required: true, trigger: "change", min: 6, max: 20 }]
-      }
-    };
+        password: [{ required: true, trigger: "change", min: 6, max: 20 }],
+      },
+    }
   },
   methods: {
     ...mapActions(["changeModalStatus", "getProfile"]),
     handleBtnClick(mode) {
       this.changeModalStatus({
         mode,
-        visible: true
-      });
+        visible: true,
+      })
     },
     handleLogin() {
-      this.validateForm("formLogin").then(valid => {
-        this.btnLoginLoading = true;
-        let formData = Object.assign({}, this.formLogin);
+      this.validateForm("formLogin").then((valid) => {
+        this.btnLoginLoading = true
+        let formData = Object.assign({}, this.formLogin)
         console.log(formData)
         if (!this.tfaRequired) {
-          delete formData["tfa_code"];
+          delete formData["tfa_code"]
         }
         api.login(formData).then(
-          res => {
-            this.btnLoginLoading = false;
-            this.changeModalStatus({ visible: false });
-            this.getProfile();
-            this.$success(this.$i18n.t("m.Welcome_back"));
+          (res) => {
+            this.btnLoginLoading = false
+            this.changeModalStatus({ visible: false })
+            this.getProfile()
+            this.$success(this.$i18n.t("m.Welcome_back"))
           },
-          _ => {
-            this.btnLoginLoading = false;
-          }
-        );
-      });
+          (_) => {
+            this.btnLoginLoading = false
+          },
+        )
+      })
     },
     goResetPassword() {
-      this.changeModalStatus({ visible: false });
-      this.$router.push({ name: "apply-reset-password" });
-    }
+      this.changeModalStatus({ visible: false })
+      this.$router.push({ name: "apply-reset-password" })
+    },
   },
   computed: {
     ...mapGetters(["website", "modalStatus"]),
     visible: {
       get() {
-        return this.modalStatus.visible;
+        return this.modalStatus.visible
       },
       set(value) {
-        this.changeModalStatus({ visible: value });
-      }
-    }
-  }
-};
+        this.changeModalStatus({ visible: value })
+      },
+    },
+  },
+}
 </script>
 
 <style scoped lang="less">
