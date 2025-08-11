@@ -51,6 +51,8 @@ export default {
     }
   },
   mounted() {
+    Simditor.locale = "en-US" // 한국어는 지원하지 않으므로 영어로 설정합니다.
+
     this.editor = new Simditor({
       textarea: this.$refs.editor,
       toolbar: this.toolbar,
