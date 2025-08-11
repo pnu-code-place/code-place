@@ -1,24 +1,30 @@
 <script>
-import CustomDropDown from "../../components/dropdown/CustomDropdown.vue";
-import api from "../../api";
-import PasswordReset from "./ChangePassword.vue";
-import ResetPassword from "../user/ResetPassword.vue";
-import ChangeAvatar from "./ChangeAvatar.vue";
-import ErrorSign from "../general/ErrorSign.vue";
-import {types} from "../../../../store";
+import CustomDropDown from "../../components/dropdown/CustomDropdown.vue"
+import api from "../../api"
+import PasswordReset from "./ChangePassword.vue"
+import ResetPassword from "../user/ResetPassword.vue"
+import ChangeAvatar from "./ChangeAvatar.vue"
+import ErrorSign from "../general/ErrorSign.vue"
+import { types } from "../../../../store"
 
 export default {
-  components: {ErrorSign, ChangeAvatar, ResetPassword, PasswordReset, CustomDropDown},
+  components: {
+    ErrorSign,
+    ChangeAvatar,
+    ResetPassword,
+    PasswordReset,
+    CustomDropDown,
+  },
   data() {
     return {
       MOOD_MAX_LENGTH: 256,
 
       languageList: [
-        {languageName: "C", id: "C",},
-        {languageName: "C++", id: "C++",},
-        {languageName: "Java", id: "Java",},
-        {languageName: "JavaScript", id: "JavaScript",},
-        {languageName: "Python3", id: "Python3",},
+        { languageName: "C", id: "C" },
+        { languageName: "C++", id: "C++" },
+        { languageName: "Java", id: "Java" },
+        { languageName: "JavaScript", id: "JavaScript" },
+        { languageName: "Python3", id: "Python3" },
       ],
 
       collegeList: [],
@@ -29,7 +35,7 @@ export default {
         college: "",
         department: "",
         github: "",
-        mood: ""
+        mood: "",
       },
       oldUsername: "",
 
@@ -70,8 +76,9 @@ export default {
     getUserProfile() {
       this.loading = true
       this.error = false
-      api.getUserInfo()
-        .then(async res => {
+      api
+        .getUserInfo()
+        .then(async (res) => {
           this.formSetting.username = res.data.data.user.username
           this.oldUsername = res.data.data.user.username
           this.formSetting.language = res.data.data.language
@@ -82,7 +89,7 @@ export default {
           await this.getDepartmentList(this.formSetting.college)
           this.formSetting.department = res.data.data.department
         })
-        .catch(error => {
+        .catch((error) => {
           this.$error("프로필을 불러오는데 실패했습니다.")
           this.error = error
         })
@@ -106,57 +113,61 @@ export default {
     handleSubmit() {
       this.loadingSaveBtn = true
       if (this.formSetting.username === "") {
-        this.formError.username = this.$t('m.Nickname_Required');
+        this.formError.username = this.$t("m.Nickname_Required")
         this.loadingSaveBtn = false
-        return;
+        return
       }
       if (!this.isDuplicateChecked) {
         this.$error("닉네임 중복 확인을 해주세요.")
         this.loadingSaveBtn = false
-        return;
+        return
       }
       let updateData = this.formSetting
       // let updateData = utils.filterEmptyValue(Object.assign({}, this.formSetting))
-      api.updateProfile(updateData).then(res => {
-        this.$success(this.$t('m.Profile_Update_Success'))
-        this.$store.commit(types.CHANGE_PROFILE, {profile: res.data.data})
-        this.loadingSaveBtn = false
-      }, _ => {
-        this.loadingSaveBtn = false
-      })
+      api.updateProfile(updateData).then(
+        (res) => {
+          this.$success(this.$t("m.Profile_Update_Success"))
+          this.$store.commit(types.CHANGE_PROFILE, { profile: res.data.data })
+          this.loadingSaveBtn = false
+        },
+        (_) => {
+          this.loadingSaveBtn = false
+        },
+      )
     },
     handleClickNicknameAuthBtn() {
       if (this.formSetting.username === "") {
-        this.formError.username = this.$t('m.Nickname_Required');
-        return;
+        this.formError.username = this.$t("m.Nickname_Required")
+        return
       }
       if (this.formSetting.username === this.oldUsername) {
-        this.$success("사용 가능한 닉네임입니다.");
-        this.isDuplicateChecked = true;
-        return;
+        this.$success("사용 가능한 닉네임입니다.")
+        this.isDuplicateChecked = true
+        return
       }
-      api.nicknameValidCheck(this.formSetting.username)
+      api
+        .nicknameValidCheck(this.formSetting.username)
         .then(() => {
-          this.$success("사용 가능한 닉네임입니다.");
-          this.isDuplicateChecked = true;
+          this.$success("사용 가능한 닉네임입니다.")
+          this.isDuplicateChecked = true
         })
-        .catch(error => {
+        .catch((error) => {
           if (error.response) {
             switch (error.response.status) {
               case 400:
-                this.formError.username = this.$t('m.Nickname_Duplicated');
-                break;
+                this.formError.username = this.$t("m.Nickname_Duplicated")
+                break
               default:
-                this.formError.username = this.$t('m.Unknown_Error');
+                this.formError.username = this.$t("m.Unknown_Error")
             }
           }
-        });
+        })
     },
     openAvatarModal() {
-      this.avatarUploadModal = true;
+      this.avatarUploadModal = true
     },
     closeAvatarModal() {
-      this.avatarUploadModal = false;
+      this.avatarUploadModal = false
     },
   },
   mounted() {
@@ -177,119 +188,168 @@ export default {
     },
   },
   watch: {
-    'formSetting.username': function (newVal, oldVal) {
+    "formSetting.username": function (newVal, oldVal) {
       if (newVal !== oldVal) {
         this.isDuplicateChecked = false
       }
-    }
-  }
+    },
+  },
 }
-
 </script>
 
 <template>
   <main class="setting">
-    <h1 class="main-title user-setting">{{ $t('m.User_Setting') }}</h1>
+    <h1 class="main-title user-setting">{{ $t("m.User_Setting") }}</h1>
     <div class="setting-container">
       <div v-if="loading" class="loading">
-        <Spin size="large"/>
+        <Spin size="large" />
       </div>
       <div v-else-if="error" class="error">
-        <ErrorSign :code="this.error"/>
+        <ErrorSign :code="this.error" />
       </div>
       <div v-else>
         <div class="contents">
           <div class="left-column">
             <div class="nickname">
-              <label class="nickname__title label" for="nickname">{{ $t('m.Nickname') }}</label>
+              <label class="nickname__title label" for="nickname">{{
+                $t("m.Nickname")
+              }}</label>
               <div class="nickname__contents row-flex-box">
-                <input placeholder="" type="text" v-model="formSetting.username"
-                       @focusout="() => this.formError.username = ''" id="nickname"/>
-                <button v-if="!this.isDuplicateChecked" @click="handleClickNicknameAuthBtn" class="button">{{ $t('m.CheckDuplicate') }}</button>
-                <button v-else class="button check-button loading">{{ $t('m.CheckDuplicate') }}</button>
-
+                <input
+                  placeholder=""
+                  type="text"
+                  v-model="formSetting.username"
+                  @focusout="() => (this.formError.username = '')"
+                  id="nickname"
+                />
+                <button
+                  v-if="!this.isDuplicateChecked"
+                  @click="handleClickNicknameAuthBtn"
+                  class="button"
+                >
+                  {{ $t("m.CheckDuplicate") }}
+                </button>
+                <button v-else class="button check-button loading">
+                  {{ $t("m.CheckDuplicate") }}
+                </button>
               </div>
-              <p class="nickname__description">{{ $t('m.Nickname_Description') }} <span
-                v-if="this.formError.username" class="form-error">{{ this.formError.username }}</span></p>
+              <p class="nickname__description">
+                {{ $t("m.Nickname_Description") }}
+                <span v-if="this.formError.username" class="form-error">{{
+                  this.formError.username
+                }}</span>
+              </p>
             </div>
             <div class="language-dept-major">
               <div class="major">
                 <div class="major__header">
-                  <label class="major__title label">{{ $t('m.MajorAndDeparture') }}</label>
-                  <span class="major__error form-error"
-                        v-if="this.formError.majorWithoutCollege">{{ $t('m.College_Required') }}</span>
+                  <label class="major__title label">{{
+                    $t("m.MajorAndDeparture")
+                  }}</label>
+                  <span
+                    class="major__error form-error"
+                    v-if="this.formError.majorWithoutCollege"
+                    >{{ $t("m.College_Required") }}</span
+                  >
                 </div>
                 <div class="major__contents">
                   <div class="college">
-                    <CustomDropDown :options="this.collegeList" nameKey="college_name"
-                                    :selected="this.formSetting.college"
-                                    @dropdownChange="handleCollegeChange"
-                                    @click="removeErrorSign('majorWithoutCollege')"/>
+                    <CustomDropDown
+                      :options="this.collegeList"
+                      nameKey="college_name"
+                      :selected="this.formSetting.college"
+                      @dropdownChange="handleCollegeChange"
+                      @click="removeErrorSign('majorWithoutCollege')"
+                    />
                   </div>
                   <div class="major">
-                    <CustomDropDown :options="this.majorList" nameKey="department_name"
-                                    :selected="this.formSetting.department"
-                                    @dropdownChange="handleMajorChange" @click="handleClickMajor"/>
+                    <CustomDropDown
+                      :options="this.majorList"
+                      nameKey="department_name"
+                      :selected="this.formSetting.department"
+                      @dropdownChange="handleMajorChange"
+                      @click="handleClickMajor"
+                    />
                   </div>
                 </div>
               </div>
               <div class="language">
-                <label class="language__title label" for="language">{{ $t('m.FavoriteLanguage') }}</label>
+                <label class="language__title label" for="language">{{
+                  $t("m.FavoriteLanguage")
+                }}</label>
                 <div class="language__contents">
-                  <CustomDropDown :options="this.languageList" nameKey="languageName"
-                                  :selected="this.formSetting.language"
-                                  @dropdownChange="handleLanguageChange" id="language"/>
+                  <CustomDropDown
+                    :options="this.languageList"
+                    nameKey="languageName"
+                    :selected="this.formSetting.language"
+                    @dropdownChange="handleLanguageChange"
+                    id="language"
+                  />
                 </div>
               </div>
             </div>
             <div class="github">
               <label class="github__title label" for="github">Github</label>
               <div class="github__contents">
-                <input v-model="formSetting.github" type="text" id="github"/>
+                <input v-model="formSetting.github" type="text" id="github" />
               </div>
-              <p class="github__description">{{ $t('m.Github_Description') }}<a target="_blank"
-                                                                                :href="this.githubLink">{{
-                  $t('m.Confirm_Link')
+              <p class="github__description">
+                {{ $t("m.Github_Description")
+                }}<a target="_blank" :href="this.githubLink">{{
+                  $t("m.Confirm_Link")
                 }}</a>
               </p>
             </div>
             <div class="mood">
-              <label class="mood__title label" for="mood">{{ $t('m.Mood') }}</label>
+              <label class="mood__title label" for="mood">{{
+                $t("m.Mood")
+              }}</label>
               <div class="mood__contents">
-                <textarea v-model="formSetting.mood" class="mood__input" id="mood"/>
+                <textarea
+                  v-model="formSetting.mood"
+                  class="mood__input"
+                  id="mood"
+                />
               </div>
               <div class="mood__bottom">
-                <span class="mood__description">{{ $t('m.Mood_Description') }}</span>
-                <span :class="moodLengthExceedClass">{{ this.moodLength }} / {{ this.MOOD_MAX_LENGTH }}</span>
+                <span class="mood__description">{{
+                  $t("m.Mood_Description")
+                }}</span>
+                <span :class="moodLengthExceedClass"
+                  >{{ this.moodLength }} / {{ this.MOOD_MAX_LENGTH }}</span
+                >
               </div>
             </div>
-            <button v-if="this.loadingSaveBtn" class="button loading">{{ $t('m.Submit_Profile') }}</button>
-            <button v-else @click="handleSubmit" class="button">{{ $t('m.Submit_Profile') }}</button>
+            <button v-if="this.loadingSaveBtn" class="button loading">
+              {{ $t("m.Submit_Profile") }}
+            </button>
+            <button v-else @click="handleSubmit" class="button">
+              {{ $t("m.Submit_Profile") }}
+            </button>
           </div>
           <div class="right-column">
-            <h3 class="avatar__title label">{{ $t('m.Profile_Avatar') }}</h3>
+            <h3 class="avatar__title label">{{ $t("m.Profile_Avatar") }}</h3>
             <div class="avatar__contents">
               <div class="avatar-preview">
-                <img :src="this.userAvatar" alt="avatar"/>
-                <div class="avatar-overlay" @click="this.openAvatarModal">{{ $t('m.Change_Avatar') }}</div>
+                <img :src="this.userAvatar" alt="avatar" />
+                <div class="avatar-overlay" @click="this.openAvatarModal">
+                  {{ $t("m.Change_Avatar") }}
+                </div>
               </div>
             </div>
-            <Modal v-model="avatarUploadModal"
-                   :footer-hide="true"
-                   :width="800">
-              <ChangeAvatar @finishCrop="this.closeAvatarModal"/>
+            <Modal v-model="avatarUploadModal" :footer-hide="true" :width="800">
+              <ChangeAvatar @finishCrop="this.closeAvatarModal" />
             </Modal>
           </div>
         </div>
-        <hr/>
-        <PasswordReset/>
+        <hr />
+        <PasswordReset />
       </div>
     </div>
   </main>
 </template>
 
 <style scoped lang="less">
-
 .form-error {
   color: red;
   font-size: 12px;
@@ -301,7 +361,6 @@ export default {
   max-width: var(--global-width);
   width: 100%;
 
-
   .setting-container {
     display: flex;
     flex-direction: column;
@@ -311,7 +370,6 @@ export default {
     border: 1px solid var(--border-color);
     padding: 15px 30px 45px;
   }
-
 
   h1 {
     margin-bottom: 20px;
@@ -477,8 +535,6 @@ input {
   font-size: 14px;
 }
 
-
-
 .button {
   background-color: var(--point-color);
   text-align: center;
@@ -492,7 +548,7 @@ input {
   font-weight: 700;
 
   &.check-button {
-    width: 100px
+    width: 100px;
   }
 
   &.loading {

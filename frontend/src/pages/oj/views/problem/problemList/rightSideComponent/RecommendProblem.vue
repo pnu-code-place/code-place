@@ -1,17 +1,29 @@
 <template>
-  <div class="problem-flex-container" @click="enterProblemDetail(recommend_problem._id)">
+  <div
+    class="problem-flex-container"
+    @click="enterProblemDetail(recommend_problem._id)"
+  >
     <div class="problem-container">
       <div class="problem-title">
-              <span class="title-span">
-                  {{ recommend_problem.title }}
-                </span>
-        <span class="solve-problem">{{ $t('m.Try_Personal_Recommendation_Problem') }}</span>
+        <span class="title-span">
+          {{ recommend_problem.title }}
+        </span>
+        <span class="solve-problem">{{
+          $t("m.Try_Personal_Recommendation_Problem")
+        }}</span>
       </div>
       <div class="problem-extra">
-        <FieldCategoryBox :boxType="true" :value="FIELD_MAP[recommend_problem.field].value"
-                          :boxColor="FIELD_MAP[recommend_problem.field].boxColor"/>
+        <FieldCategoryBox
+          :boxType="true"
+          :value="FIELD_MAP[recommend_problem.field].value"
+          :boxColor="FIELD_MAP[recommend_problem.field].boxColor"
+        />
         <template v-for="(category, idx) in recommend_problem.tags">
-          <FieldCategoryBox :boxType="false" :value="'#' + category" :boxColor="'#ffffff'"/>
+          <FieldCategoryBox
+            :boxType="false"
+            :value="'#' + category"
+            :boxColor="'#ffffff'"
+          />
         </template>
       </div>
     </div>
@@ -19,36 +31,37 @@
 </template>
 
 <script>
-import {defineComponent} from "vue";
-import FieldCategoryBox from "../../../../components/FieldCategoryBox.vue";
-import {FIELD_MAP} from "../../../../../../utils/constants";
-import {mapActions} from "vuex";
+import { defineComponent } from "vue"
+import FieldCategoryBox from "../../../../components/FieldCategoryBox.vue"
+import { FIELD_MAP } from "../../../../../../utils/constants"
+import { mapActions } from "vuex"
 
 export default defineComponent({
   computed: {
     FIELD_MAP() {
       return FIELD_MAP
-    }
+    },
   },
   props: {
-    recommend_problem: Object
+    recommend_problem: Object,
   },
   components: {
-    FieldCategoryBox
-
+    FieldCategoryBox,
   },
   methods: {
-    ...mapActions(['changeProblemSolvingState']),
+    ...mapActions(["changeProblemSolvingState"]),
     enterProblemDetail(problemId) {
       this.changeProblemSolvingState(true)
-      this.$router.push({name: 'problem-details', params: {problemID: problemId}})
+      this.$router.push({
+        name: "problem-details",
+        params: { problemID: problemId },
+      })
     },
-  }
+  },
 })
 </script>
 
 <style scoped lang="less">
-
 .problem-flex-container {
   border-radius: 7px;
   background-color: rgba(244, 248, 250, 0.69);
@@ -57,7 +70,7 @@ export default defineComponent({
   display: flex;
   cursor: pointer;
 
-  .problem-container{
+  .problem-container {
     width: 100%;
   }
 
@@ -66,7 +79,7 @@ export default defineComponent({
     justify-content: space-between;
     align-items: center;
     margin-bottom: 5px;
-    .title-span{
+    .title-span {
       width: 150px;
       text-align: left;
       font-weight: bold;
@@ -75,10 +88,10 @@ export default defineComponent({
       overflow: hidden;
       text-overflow: ellipsis;
     }
-    .solve-problem{
-      text-decoration: underline
+    .solve-problem {
+      text-decoration: underline;
     }
-    .solve-problem:hover{
+    .solve-problem:hover {
       font-weight: 500;
     }
   }

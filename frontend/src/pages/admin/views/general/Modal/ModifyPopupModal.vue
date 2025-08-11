@@ -56,10 +56,10 @@
 </template>
 
 <script>
-import api from "../../../api.js";
+import api from "../../../api.js"
 
-import ConfirmModal from "@/pages/oj/components/modal/ConfirmModal";
-import ImageDragAndDropBox from "@/pages/oj/components/ImageDragAndDropBox";
+import ConfirmModal from "@/pages/oj/components/modal/ConfirmModal"
+import ImageDragAndDropBox from "@/pages/oj/components/ImageDragAndDropBox"
 
 export default {
   name: "ModifyPopupModal",
@@ -71,8 +71,8 @@ export default {
       hasLinkUrlError: false,
       hasImageFileError: false,
       hasWidthError: false,
-      width: 300
-    };
+      width: 300,
+    }
   },
   components: {
     ConfirmModal,
@@ -82,67 +82,67 @@ export default {
     banner: Object,
   },
   mounted() {
-    this.imageUrl = this.banner.popup_image;
-    this.linkUrl = this.banner.link_url;
-    this.width = this.banner.popup_image_width || 300;
+    this.imageUrl = this.banner.popup_image
+    this.linkUrl = this.banner.link_url
+    this.width = this.banner.popup_image_width || 300
   },
   methods: {
     handleClose() {
-      this.resetData();
-      this.$emit("onClose");
+      this.resetData()
+      this.$emit("onClose")
     },
     async handleConfirmButtonClick() {
-      if (this.linkUrl === "") this.hasLinkUrlError = true;
+      if (this.linkUrl === "") this.hasLinkUrlError = true
       if (this.imageFile === null && this.imageFile !== "")
-        this.imageFile = await this.convertURLtoFile(this.imageUrl);
-      if (this.imageFile === null) this.hasImageFileError = true;
+        this.imageFile = await this.convertURLtoFile(this.imageUrl)
+      if (this.imageFile === null) this.hasImageFileError = true
 
-      if (this.hasLinkUrlError || this.hasImageFileError) return;
+      if (this.hasLinkUrlError || this.hasImageFileError) return
 
-      const formData = new FormData();
-      formData.append("link_url", this.linkUrl);
-      formData.append("image", this.imageFile);
-      formData.append("image_width", this.width);
+      const formData = new FormData()
+      formData.append("link_url", this.linkUrl)
+      formData.append("image", this.imageFile)
+      formData.append("image_width", this.width)
 
       api
         .modifyPopup(this.banner.id, formData)
         .then((res) => {
           if (res.status === 200) {
-            this.resetData();
-            this.$emit("onClose");
+            this.resetData()
+            this.$emit("onClose")
           }
         })
         .catch((res) => {
-          if (res.data.data === "Invalid URL") this.hasLinkUrlError = true;
-        });
+          if (res.data.data === "Invalid URL") this.hasLinkUrlError = true
+        })
     },
     resetData() {
-      this.linkUrl = "";
-      this.imageFile = null;
-      this.imageUrl = "";
+      this.linkUrl = ""
+      this.imageFile = null
+      this.imageUrl = ""
     },
     async handlePopupImageChange(image) {
-      this.imageFile = image;
-      this.imageUrl = await this.readImage(image);
+      this.imageFile = image
+      this.imageUrl = await this.readImage(image)
     },
     async readImage(image) {
       return new Promise((resolve, reject) => {
-        const reader = new FileReader();
+        const reader = new FileReader()
         reader.onload = async (e) => {
-          resolve(e.target.result);
-        };
-        reader.readAsDataURL(image);
-      });
+          resolve(e.target.result)
+        }
+        reader.readAsDataURL(image)
+      })
     },
     async convertURLtoFile(url) {
-      const response = await fetch(url);
-      const data = await response.blob();
-      const filename = url.split("/").pop(); // url 구조에 맞게 수정할 것
-      const metadata = { type: `image/jpeg` };
-      return new File([data], filename, metadata);
+      const response = await fetch(url)
+      const data = await response.blob()
+      const filename = url.split("/").pop() // url 구조에 맞게 수정할 것
+      const metadata = { type: `image/jpeg` }
+      return new File([data], filename, metadata)
     },
   },
-};
+}
 </script>
 
 <style lang="less" scoped>

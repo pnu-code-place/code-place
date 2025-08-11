@@ -17,11 +17,11 @@ export default {
       type: String,
       default: "top",
       validator: function (value) {
-        return ["left", "right", "top", "bottom"].includes(value);
+        return ["left", "right", "top", "bottom"].includes(value)
       },
     },
   },
-};
+}
 </script>
 
 <style scoped lang="less">

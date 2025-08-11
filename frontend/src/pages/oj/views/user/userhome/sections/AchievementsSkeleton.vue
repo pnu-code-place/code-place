@@ -2,30 +2,33 @@
   <ul>
     <li v-for="i in this.count" :key="i">
       <shine-wrapper>
-        <img src="@/assets/challenges/errorMedal.png" class="medal-skeleton" alt="medal"/>
+        <img
+          src="@/assets/challenges/errorMedal.png"
+          class="medal-skeleton"
+          alt="medal"
+        />
       </shine-wrapper>
     </li>
   </ul>
 </template>
 
 <script>
-
-import ShineWrapper from "../../../../components/ShineWrapper.vue";
+import ShineWrapper from "../../../../components/ShineWrapper.vue"
 
 export default {
-  name: 'AchievementsSkeleton',
+  name: "AchievementsSkeleton",
   data() {
     return {
-      image: require("@/assets/challenges/errorMedal.png")
+      image: require("@/assets/challenges/errorMedal.png"),
     }
   },
-  components: {ShineWrapper},
+  components: { ShineWrapper },
   props: {
     count: {
       type: Number,
-      default: 6
-    }
-  }
+      default: 6,
+    },
+  },
 }
 </script>
 
@@ -47,7 +50,8 @@ ul {
       height: auto;
       opacity: 0.2;
       // 색상 변형
-      filter: invert(95%) sepia(0%) saturate(272%) hue-rotate(247deg) brightness(83%) contrast(81%);
+      filter: invert(95%) sepia(0%) saturate(272%) hue-rotate(247deg)
+        brightness(83%) contrast(81%);
     }
   }
 }

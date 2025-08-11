@@ -1,14 +1,14 @@
 <template>
   <div class="submissionBtnWrapper" @click="submitCode">
-    <i class="fas fa-cloud"/>
-      <span>제출</span>
+    <i class="fas fa-cloud" />
+    <span>제출</span>
   </div>
 </template>
 
 <script>
-import {defineComponent} from "vue";
-import {mapGetters} from "vuex";
-import {JUDGE_STATUS} from "../../../../../../utils/constants";
+import { defineComponent } from "vue"
+import { mapGetters } from "vuex"
+import { JUDGE_STATUS } from "../../../../../../utils/constants"
 
 export default defineComponent({
   props: {
@@ -16,8 +16,8 @@ export default defineComponent({
   },
   methods: {
     submitCode() {
-      if(!this.isSubmitting){
-        this.$emit('create-submission')
+      if (!this.isSubmitting) {
+        this.$emit("create-submission")
       }
     },
     handleRoute(route) {
@@ -25,14 +25,14 @@ export default defineComponent({
     },
   },
   computed: {
-    ...mapGetters(['OIContestRealTimePermission']),
+    ...mapGetters(["OIContestRealTimePermission"]),
     submissionStatus() {
       return {
-        text: JUDGE_STATUS[this.result.result]['name'],
-        color: JUDGE_STATUS[this.result.result]['color']
+        text: JUDGE_STATUS[this.result.result]["name"],
+        color: JUDGE_STATUS[this.result.result]["color"],
       }
     },
-  }
+  },
 })
 </script>
 
@@ -49,7 +49,7 @@ export default defineComponent({
   cursor: pointer;
   transition: width 0.3s;
   background-color: var(--submit-btn-color);
-  i{
+  i {
     font-size: smaller;
   }
 }

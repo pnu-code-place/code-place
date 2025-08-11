@@ -1,4 +1,3 @@
-
 <script>
 /**
  * CustomDropdown
@@ -11,60 +10,72 @@
  * @emits dropdownChange: 드롭다운에서 선택한 항목의 value값을 부모 컴포넌트로 전달합니다.
  */
 export default {
-  name: 'CustomDropdown',
+  name: "CustomDropdown",
   data() {
     return {
-      localSelected: this.selected
+      localSelected: this.selected,
     }
   },
   props: {
     options: {
       type: Array,
-      default: () => []
+      default: () => [],
     },
     defaultText: {
       type: String,
-      default: ''
+      default: "",
     },
-    nameKey: { // nameKey는 options의 표시값을 저장한 key값을 지정
+    nameKey: {
+      // nameKey는 options의 표시값을 저장한 key값을 지정
       type: String,
-      default: 'name'
+      default: "name",
     },
-    valueKey: { // valueKey는 options의 실제 값이 저장된 key값을 지정 value값은 emit을 통해 부모 컴포넌트로 전달
+    valueKey: {
+      // valueKey는 options의 실제 값이 저장된 key값을 지정 value값은 emit을 통해 부모 컴포넌트로 전달
       type: String,
-      default: 'id'
+      default: "id",
     },
     selected: {
-      default : ''
-    }
+      default: "",
+    },
   },
   mounted() {
     this.items = this.options
   },
   watch: {
     selected(newVal) {
-      this.localSelected = newVal; // selected prop이 변경될 때 localSelected 업데이트
+      this.localSelected = newVal // selected prop이 변경될 때 localSelected 업데이트
     },
     localSelected(newVal) {
-      this.$emit('dropdownChange', newVal); // localSelected이 변경될 때 부모 컴포넌트에게 이벤트 emit
+      this.$emit("dropdownChange", newVal) // localSelected이 변경될 때 부모 컴포넌트에게 이벤트 emit
     },
     options: {
       handler(newVal) {
         this.items = newVal
       },
-      deep: true
-    }
+      deep: true,
+    },
   },
-  emits: ['dropdownChange']
+  emits: ["dropdownChange"],
 }
 </script>
 
 <template>
-  <select v-model=localSelected class="p-dropdown" :class="localSelected === '' ? 'disabled' : ''">
+  <select
+    v-model="localSelected"
+    class="p-dropdown"
+    :class="localSelected === '' ? 'disabled' : ''"
+  >
     <option :value="''" disabled class="disabled">
       {{ defaultText }}
     </option>
-    <option v-for="item in options" :key="item[valueKey]" :value="item[valueKey]">{{ item[nameKey] }}</option>
+    <option
+      v-for="item in options"
+      :key="item[valueKey]"
+      :value="item[valueKey]"
+    >
+      {{ item[nameKey] }}
+    </option>
   </select>
 </template>
 

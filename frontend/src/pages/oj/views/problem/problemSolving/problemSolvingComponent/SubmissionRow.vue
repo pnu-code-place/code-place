@@ -39,14 +39,11 @@
 </template>
 
 <script>
-import {
-  JUDGE_STATUS,
-  LANGUAGE_COLOR,
-} from "../../../../../../utils/constants";
+import { JUDGE_STATUS, LANGUAGE_COLOR } from "../../../../../../utils/constants"
 
-const BYTES_IN_KB = 1024;
-const BYTES_IN_MB = BYTES_IN_KB * 1024;
-const BYTES_IN_GB = BYTES_IN_MB * 1024;
+const BYTES_IN_KB = 1024
+const BYTES_IN_MB = BYTES_IN_KB * 1024
+const BYTES_IN_GB = BYTES_IN_MB * 1024
 
 export default {
   name: "SubmissionRow",
@@ -71,43 +68,43 @@ export default {
   data() {
     return {
       judgeStatus: JUDGE_STATUS,
-    };
+    }
   },
   methods: {
     formatTime(timestamp) {
-      return new Date(timestamp).toLocaleDateString();
+      return new Date(timestamp).toLocaleDateString()
     },
 
     formatTimeCost(time) {
-      return time != null ? `${time} ms` : "N/A";
+      return time != null ? `${time} ms` : "N/A"
     },
 
     formatMemoryCost(memory) {
-      if (memory == null) return "N/A";
+      if (memory == null) return "N/A"
 
       if (memory < BYTES_IN_MB) {
-        return `${Math.round(memory / BYTES_IN_KB)} KB`;
+        return `${Math.round(memory / BYTES_IN_KB)} KB`
       }
       if (memory < BYTES_IN_GB) {
-        return `${(memory / BYTES_IN_MB).toFixed(2)} MB`;
+        return `${(memory / BYTES_IN_MB).toFixed(2)} MB`
       }
-      return `${(memory / BYTES_IN_GB).toFixed(2)} GB`;
+      return `${(memory / BYTES_IN_GB).toFixed(2)} GB`
     },
 
     getLanguageStyle(language) {
-      const colorConfig = LANGUAGE_COLOR[language];
-      if (!colorConfig) return {};
+      const colorConfig = LANGUAGE_COLOR[language]
+      if (!colorConfig) return {}
 
       const themeConfig = this.isDarkMode
         ? colorConfig.darkTheme
-        : colorConfig.lightTheme;
+        : colorConfig.lightTheme
       return {
         backgroundColor: themeConfig.color,
         color: themeConfig.textColor,
-      };
+      }
     },
   },
-};
+}
 </script>
 
 <style scoped lang="less">

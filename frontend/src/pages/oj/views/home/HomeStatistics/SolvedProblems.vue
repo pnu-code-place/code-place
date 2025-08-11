@@ -1,5 +1,5 @@
 <script>
-import Time from "../../../../../utils/time";
+import Time from "../../../../../utils/time"
 
 export default {
   data() {
@@ -13,12 +13,12 @@ export default {
   props: {
     extended: {
       type: Boolean,
-      default: false
+      default: false,
     },
     solvedProblems: {
       type: Number,
-      default: 388
-    }
+      default: 388,
+    },
   },
   computed: {
     flipped() {
@@ -29,26 +29,26 @@ export default {
     },
     currentTime() {
       return Time.utcToLocal()
-    }
+    },
   },
   watch: {
     extended: function (newVal, oldVal) {
       if (newVal) {
-        this.animationTime = 0;
+        this.animationTime = 0
         this.animationTimer = setInterval(() => {
           if (this.animationTime < this.showNumberTime) {
-            this.animationTime += 0.1;
+            this.animationTime += 0.1
           } else {
-            this.animationTime = this.showNumberTime;
-            clearInterval(this.animationTimer);
+            this.animationTime = this.showNumberTime
+            clearInterval(this.animationTimer)
           }
-        }, 100);
+        }, 100)
       } else {
-        this.animationTime = 0;
-        clearInterval(this.animationTimer);
+        this.animationTime = 0
+        clearInterval(this.animationTimer)
       }
-    }
-  }
+    },
+  },
 }
 </script>
 
@@ -58,32 +58,29 @@ export default {
       <transition name="number">
         <div v-if="showNumber" class="number">
           <span>{{ solvedProblems }}</span>
-          <span class="problem">{{ $t('m.Problem')}}</span>
+          <span class="problem">{{ $t("m.Problem") }}</span>
         </div>
       </transition>
     </div>
     <div :class="`flip-inner ${flipped} ${showNumber}`">
       <div class="flip-front">
         <transition name="gauge">
-          <div v-if="extended" class="gauge">
-          </div>
+          <div v-if="extended" class="gauge"></div>
         </transition>
         <span>
-        {{ $t('m.Grading') }}
-      </span>
+          {{ $t("m.Grading") }}
+        </span>
       </div>
       <div class="flip-back">
-      <span>
-        {{ $t('m.Correct') }}
-      </span>
+        <span>
+          {{ $t("m.Correct") }}
+        </span>
       </div>
     </div>
     <div class="standard-wrapper">
-    <transition name="standard">
-      <div v-if="flipped">
-        {{ this.currentTime }} {{ $t('m.Standard') }}
-      </div>
-    </transition>
+      <transition name="standard">
+        <div v-if="flipped">{{ this.currentTime }} {{ $t("m.Standard") }}</div>
+      </transition>
     </div>
   </div>
 </template>
@@ -99,7 +96,6 @@ export default {
   flex-direction: column;
   perspective: 900px;
   transition: all 0.7s ease-in-out;
-
 
   .number-wrapper {
     height: 75px;
@@ -131,7 +127,7 @@ export default {
         position: absolute;
         height: 100%;
         width: 100%;
-        background-color: var(--point-color)
+        background-color: var(--point-color);
       }
 
       span {
@@ -175,20 +171,18 @@ export default {
       transform: rotateY(180deg);
     }
     &.show-number {
-      transform: translateY(0) rotateY(180deg) ;
+      transform: translateY(0) rotateY(180deg);
     }
   }
   .standard-wrapper {
-    height:12px;
+    height: 12px;
   }
 }
-
 
 .problem {
   font-size: 40px;
   font-weight: 600;
 }
-
 
 .gauge-enter-active {
   transition: all 1.1s ease-in-out;
@@ -198,11 +192,13 @@ export default {
   transition: all 0.3s ease-in-out;
 }
 
-.gauge-enter, .gauge-leave-to {
+.gauge-enter,
+.gauge-leave-to {
   transform: translateX(-100%);
 }
 
-.gauge-enter-to, .gauge-leave {
+.gauge-enter-to,
+.gauge-leave {
   transform: translateX(0);
 }
 
@@ -214,42 +210,44 @@ export default {
   transition: all 0.3s ease-in-out;
 }
 
-.number-enter, .number-leave-to {
+.number-enter,
+.number-leave-to {
   transform: translateY(100%);
   opacity: 0;
 }
 
-.number-enter-to, .number-leave {
+.number-enter-to,
+.number-leave {
   transform: translateY(0);
   opacity: 1;
 }
 
-.standard-enter, .standard-leave-to {
+.standard-enter,
+.standard-leave-to {
   transform: translateY(100%);
   opacity: 0;
 }
 
-.standard-enter-to, .standard-leave {
+.standard-enter-to,
+.standard-leave {
   transform: translateY(0);
   opacity: 1;
 }
 
-.standard-enter-active, .standard-leave-active {
+.standard-enter-active,
+.standard-leave-active {
   transition: all 1s ease-in-out;
 }
 
-
 @keyframes hover {
   0% {
-    transform: translateY(7%)
+    transform: translateY(7%);
   }
   50% {
-    transform: translateY(-7%)
+    transform: translateY(-7%);
   }
   100% {
-    transform: translateY(7%)
+    transform: translateY(7%);
   }
 }
-
-
 </style>

@@ -103,10 +103,10 @@
 </template>
 
 <script>
-import api from "../../api.js";
-import draggable from "vuedraggable";
-import AddBannerModal from "./Modal/AddBannerModal";
-import ModifyBannerModal from "./Modal/ModifyBannerModal";
+import api from "../../api.js"
+import draggable from "vuedraggable"
+import AddBannerModal from "./Modal/AddBannerModal"
+import ModifyBannerModal from "./Modal/ModifyBannerModal"
 
 export default {
   name: "home-banner-management",
@@ -120,67 +120,67 @@ export default {
       addModalOpen: false,
       modifyModalOpen: false,
       banners: [],
-    };
+    }
   },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
       api.getBanners().then((res) => {
-        vm.banners = res.data.data;
-      });
-    });
+        vm.banners = res.data.data
+      })
+    })
   },
   methods: {
     getBanners() {
       api.getBanners().then((res) => {
-        this.banners = res.data.data;
-      });
+        this.banners = res.data.data
+      })
     },
     handleVisibleSwitchChange(id, visible) {
       api
         .editEnableBanner(id, { visible: visible })
         .then((res) => {
           if (res.status === 200) {
-            this.banners = res.data.data;
+            this.banners = res.data.data
           }
         })
         .catch((err) => {
-          const bannerIdx = this.banners.findIndex((e) => e.id === id);
-          this.banners[bannerIdx].visible = false;
-        });
+          const bannerIdx = this.banners.findIndex((e) => e.id === id)
+          this.banners[bannerIdx].visible = false
+        })
     },
     handleBannerOrderChange(id) {
-      const reorder_list = this.banners.map((banner) => banner.id);
+      const reorder_list = this.banners.map((banner) => banner.id)
 
       api.reorderBanner({ reorder_list: reorder_list }).catch((err) => {
-        this.getBanners();
-      });
+        this.getBanners()
+      })
     },
     handleAddButtonClick() {
-      this.addModalOpen = true;
+      this.addModalOpen = true
     },
     handleModifyButtonClick(banner) {
-      this.currentBanner = banner;
-      this.modifyModalOpen = true;
+      this.currentBanner = banner
+      this.modifyModalOpen = true
     },
     handleDeleteButtonClick(id) {
       api.deleteBanner(id).then((res) => {
-        if (res.status === 200) this.getBanners();
-      });
+        if (res.status === 200) this.getBanners()
+      })
     },
     handleModalClose() {
-      this.getBanners();
-      this.addModalOpen = false;
-      this.modifyModalOpen = false;
+      this.getBanners()
+      this.addModalOpen = false
+      this.modifyModalOpen = false
     },
   },
   computed: {
     dragOptions() {
       return {
         ghostClass: "ghost",
-      };
+      }
     },
   },
-};
+}
 </script>
 
 <style lang="less" scoped>

@@ -1,12 +1,11 @@
 <script>
-
-import api from "../../api";
-import ErrorSign from "../general/ErrorSign.vue";
-import notice from "./Notice.vue";
+import api from "../../api"
+import ErrorSign from "../general/ErrorSign.vue"
+import notice from "./Notice.vue"
 
 export default {
-  name: 'AnnouncementDetails',
-  components: {ErrorSign},
+  name: "AnnouncementDetails",
+  components: { ErrorSign },
   data() {
     return {
       announcement: {
@@ -18,13 +17,14 @@ export default {
           real_name: null,
           student_id: null,
           school: "\uacf5\ub300",
-          major: "\ud559\uacfc"
+          major: "\ud559\uacfc",
         },
-        title: '[CSEP] 코딩역량강화플랫폼 채점 언어 및 컴파일러 안내',
-        content: '<h2><strong>C\uc5b8\uc5b4 \ucef4\ud30c\uc77c\ub7ec</strong></h2><ul><li>gcc (Debian 13.2.0-25) 13.2.0</li></ul><h2><strong>C++ \ucef4\ud30c\uc77c\ub7ec</strong></h2><ul><li>g++ (Debian 13.2.0-25) 13.2.0</li></ul><h2><strong>\ud30c\uc774\uc36c \uc778\ud130\ud504\ub9ac\ud130</strong></h2><ul><li>Python 3.12.3</li></ul><h2><strong>\uc790\ubc14 JDK \ubc84\uc804</strong></h2><ul><li>openjdk 21.0.3 (LTS \ubc84\uc804)<ul><li>Temurin Java JDK</li></ul></li></ul><h2><strong>NodeJS(\uc790\ubc14\uc2a4\ud06c\ub9bd\ud2b8 \ub7f0\ud0c0\uc784) \ubc84\uc804</strong></h2><ul><li>v20.14.0</li></ul>',
-        create_time: '2024-07-25T11:20:06.681229Z',
+        title: "[CSEP] 코딩역량강화플랫폼 채점 언어 및 컴파일러 안내",
+        content:
+          "<h2><strong>C\uc5b8\uc5b4 \ucef4\ud30c\uc77c\ub7ec</strong></h2><ul><li>gcc (Debian 13.2.0-25) 13.2.0</li></ul><h2><strong>C++ \ucef4\ud30c\uc77c\ub7ec</strong></h2><ul><li>g++ (Debian 13.2.0-25) 13.2.0</li></ul><h2><strong>\ud30c\uc774\uc36c \uc778\ud130\ud504\ub9ac\ud130</strong></h2><ul><li>Python 3.12.3</li></ul><h2><strong>\uc790\ubc14 JDK \ubc84\uc804</strong></h2><ul><li>openjdk 21.0.3 (LTS \ubc84\uc804)<ul><li>Temurin Java JDK</li></ul></li></ul><h2><strong>NodeJS(\uc790\ubc14\uc2a4\ud06c\ub9bd\ud2b8 \ub7f0\ud0c0\uc784) \ubc84\uc804</strong></h2><ul><li>v20.14.0</li></ul>",
+        create_time: "2024-07-25T11:20:06.681229Z",
         last_update_time: "2024-07-21T16:33:17.914733Z",
-        visible: true
+        visible: true,
       },
       loading: false,
       error: 0,
@@ -32,7 +32,7 @@ export default {
       loadingBefore: false,
       nextAnnouncement: null,
       beforeAnnouncement: null,
-      total: null
+      total: null,
     }
   },
   mounted() {
@@ -46,14 +46,17 @@ export default {
     },
     getAnnouncement() {
       this.loading = true
-      api.getAnnouncement(this.$route.params.noticeID).then(res => {
-        this.announcement = res.data.data.results[0]
-        this.total = res.data.data.total
-        this.loading = false
-      }).catch((error) => {
-        this.loading = false
-        this.error = error.response.status
-      })
+      api
+        .getAnnouncement(this.$route.params.noticeID)
+        .then((res) => {
+          this.announcement = res.data.data.results[0]
+          this.total = res.data.data.total
+          this.loading = false
+        })
+        .catch((error) => {
+          this.loading = false
+          this.error = error.response.status
+        })
     },
     findNextAnnouncement(noticeId) {
       this.loadingNext = true
@@ -63,18 +66,21 @@ export default {
         this.nextAnnouncement = null
         return null
       }
-      api.getAnnouncement(noticeId + 1).then(async res => {
-        if (res.data.data.results.length === 0) {
-          // console.log(`발견된 공지사항이 없습니다. noticeId: ${noticeId} 다음 공지사항을 찾습니다. noticeId + 1: ${noticeId + 1}`)
-          await this.findNextAnnouncement(noticeId + 1)
-        } else {
+      api
+        .getAnnouncement(noticeId + 1)
+        .then(async (res) => {
+          if (res.data.data.results.length === 0) {
+            // console.log(`발견된 공지사항이 없습니다. noticeId: ${noticeId} 다음 공지사항을 찾습니다. noticeId + 1: ${noticeId + 1}`)
+            await this.findNextAnnouncement(noticeId + 1)
+          } else {
+            this.loadingNext = false
+            this.nextAnnouncement = res.data.data.results[0]
+            return res.data.data.results[0]
+          }
+        })
+        .catch(async (error) => {
           this.loadingNext = false
-          this.nextAnnouncement = res.data.data.results[0]
-          return res.data.data.results[0]
-        }
-      }).catch(async (error) => {
-        this.loadingNext = false
-      })
+        })
     },
     findBeforeAnnouncement(noticeId) {
       this.loadingBefore = true
@@ -84,25 +90,34 @@ export default {
         this.beforeAnnouncement = null
         return null
       }
-      api.getAnnouncement(noticeId - 1).then(async res => {
-        if (res.data.data.results.length === 0) {
-          // console.log(`발견된 공지사항이 없습니다. noticeId: ${noticeId} 다음 공지사항을 찾습니다. noticeId - 1: ${noticeId - 1}`)
-          await this.findBeforeAnnouncement(noticeId - 1)
-        } else {
+      api
+        .getAnnouncement(noticeId - 1)
+        .then(async (res) => {
+          if (res.data.data.results.length === 0) {
+            // console.log(`발견된 공지사항이 없습니다. noticeId: ${noticeId} 다음 공지사항을 찾습니다. noticeId - 1: ${noticeId - 1}`)
+            await this.findBeforeAnnouncement(noticeId - 1)
+          } else {
+            this.loadingBefore = false
+            this.beforeAnnouncement = res.data.data.results[0]
+            return res.data.data.results[0]
+          }
+        })
+        .catch(async (error) => {
           this.loadingBefore = false
-          this.beforeAnnouncement = res.data.data.results[0]
-          return res.data.data.results[0]
-        }
-      }).catch(async (error) => {
-        this.loadingBefore = false
-      })
+        })
     },
     goBeforeAnnouncement() {
-      this.$router.push({name: 'notice-details', params: {noticeID: this.beforeAnnouncementId}})
+      this.$router.push({
+        name: "notice-details",
+        params: { noticeID: this.beforeAnnouncementId },
+      })
     },
     goAfterAnnouncement() {
-      this.$router.push({name: 'notice-details', params: {noticeID: this.nextAnnouncementId}})
-    }
+      this.$router.push({
+        name: "notice-details",
+        params: { noticeID: this.nextAnnouncementId },
+      })
+    },
   },
   computed: {
     createDate() {
@@ -126,13 +141,13 @@ export default {
     },
     nextAnnouncementTitle() {
       if (this.nextAnnouncement === null) {
-        return this.$t('m.NoNextAnnouncement')
+        return this.$t("m.NoNextAnnouncement")
       }
       return this.nextAnnouncement.title
     },
     beforeAnnouncementTitle() {
       if (this.beforeAnnouncement === null) {
-        return this.$t('m.NoBeforeAnnouncement')
+        return this.$t("m.NoBeforeAnnouncement")
       }
       return this.beforeAnnouncement.title
     },
@@ -144,21 +159,19 @@ export default {
     },
   },
   watch: {
-    '$route.params.noticeID': function () {
+    "$route.params.noticeID": function () {
       this.init()
-    }
-  }
+    },
+  },
 }
-
 </script>
 
 <template>
   <div>
     <div class="announcement-detail">
       <div v-if="this.loading" class="loading-wrapper">
-        <div class="loading-header skeleton">
-        </div>
-        <hr/>
+        <div class="loading-header skeleton"></div>
+        <hr />
         <div class="loading-contents">
           <div class="loading-skeleton skeleton"></div>
           <div class="loading-skeleton skeleton"></div>
@@ -167,57 +180,61 @@ export default {
         </div>
       </div>
       <div v-else-if="this.error !== 0">
-        <ErrorSign :code="this.error">
-        </ErrorSign>
+        <ErrorSign :code="this.error"> </ErrorSign>
       </div>
       <div v-else>
         <header class="announcement-header">
           <h1 class="title">{{ this.announcement.title }}</h1>
           <div class="announcement-info">
             <div class="announcement-info__content">
-              <span class="label">{{ $t('m.Date') }}</span>
+              <span class="label">{{ $t("m.Date") }}</span>
               <span class="data">{{ this.createDate }}</span>
             </div>
             <div class="announcement-info__content">
-              <span class="label">{{ $t('m.Author') }}</span>
-              <span class="data">{{ this.announcement.created_by.username }}</span>
+              <span class="label">{{ $t("m.Author") }}</span>
+              <span class="data">{{
+                this.announcement.created_by.username
+              }}</span>
             </div>
           </div>
         </header>
-        <hr/>
-        <div v-katex v-html="this.announcement.content" key="content" class="contents content-container markdown-body">
-        </div>
+        <hr />
+        <div
+          v-katex
+          v-html="this.announcement.content"
+          key="content"
+          class="contents content-container markdown-body"
+        ></div>
       </div>
     </div>
-<!--    <div class="other-announcements">-->
-<!--      <div class="other-announcement-wrapper">-->
-<!--        <div class="announcement-skeleton" v-if="this.loadingNext">-->
-<!--          <div class="skeleton"></div>-->
-<!--        </div>-->
-<!--        <div v-else-if="this.existNextAnnouncement" class="other-announcement__title" @click="this.goAfterAnnouncement">-->
-<!--          {{ this.nextAnnouncementTitle }}-->
-<!--        </div>-->
-<!--        <div v-else>-->
-<!--          <div class="no-announcement">{{ $t('m.NoNextAnnouncement') }}</div>-->
-<!--        </div>-->
-<!--      </div>-->
-<!--      <div class="other-announcement-wrapper">-->
-<!--        <div class="announcement-skeleton" v-if="this.loadingBefore">-->
-<!--          <div class="skeleton"></div>-->
-<!--        </div>-->
-<!--        <div v-else-if="this.existBeforeAnnouncement" class="other-announcement__title"-->
-<!--             @click="this.goBeforeAnnouncement">{{ this.beforeAnnouncementTitle }}-->
-<!--        </div>-->
-<!--        <div v-else>-->
-<!--          <div class="no-announcement">{{ $t('m.NoBeforeAnnouncement') }}</div>-->
-<!--        </div>-->
-<!--      </div>-->
-<!--    </div>-->
+    <!--    <div class="other-announcements">-->
+    <!--      <div class="other-announcement-wrapper">-->
+    <!--        <div class="announcement-skeleton" v-if="this.loadingNext">-->
+    <!--          <div class="skeleton"></div>-->
+    <!--        </div>-->
+    <!--        <div v-else-if="this.existNextAnnouncement" class="other-announcement__title" @click="this.goAfterAnnouncement">-->
+    <!--          {{ this.nextAnnouncementTitle }}-->
+    <!--        </div>-->
+    <!--        <div v-else>-->
+    <!--          <div class="no-announcement">{{ $t('m.NoNextAnnouncement') }}</div>-->
+    <!--        </div>-->
+    <!--      </div>-->
+    <!--      <div class="other-announcement-wrapper">-->
+    <!--        <div class="announcement-skeleton" v-if="this.loadingBefore">-->
+    <!--          <div class="skeleton"></div>-->
+    <!--        </div>-->
+    <!--        <div v-else-if="this.existBeforeAnnouncement" class="other-announcement__title"-->
+    <!--             @click="this.goBeforeAnnouncement">{{ this.beforeAnnouncementTitle }}-->
+    <!--        </div>-->
+    <!--        <div v-else>-->
+    <!--          <div class="no-announcement">{{ $t('m.NoBeforeAnnouncement') }}</div>-->
+    <!--        </div>-->
+    <!--      </div>-->
+    <!--    </div>-->
   </div>
 </template>
 
 <style scoped lang="less">
-
 .other-announcements {
   display: flex;
   flex-direction: column;
@@ -255,7 +272,7 @@ export default {
     .other-announcement__title {
       cursor: pointer;
       transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-      width:100%;
+      width: 100%;
       text-align: center;
     }
   }
@@ -295,7 +312,7 @@ export default {
   }
 
   hr {
-    border: 1px solid var(--container-border-color)
+    border: 1px solid var(--container-border-color);
   }
 
   .title {

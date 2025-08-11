@@ -1,15 +1,17 @@
 <template>
   <div class="setting-main">
-    <h2>{{ $t('m.Avatar_Setting') }}</h2>
+    <h2>{{ $t("m.Avatar_Setting") }}</h2>
     <template v-if="!avatarOption.imgSrc">
-      <Upload type="drag"
-              class="mini-container"
-              accept=".jpg,.jpeg,.png,.bmp,.gif"
-              action=""
-              :before-upload="handleSelectFile">
+      <Upload
+        type="drag"
+        class="mini-container"
+        accept=".jpg,.jpeg,.png,.bmp,.gif"
+        action=""
+        :before-upload="handleSelectFile"
+      >
         <div style="padding: 30px 0">
           <Icon type="ios-cloud-upload" size="52" style="color: #3399ff"></Icon>
-          <p>{{ $t('m.Upload_Image') }}</p>
+          <p>{{ $t("m.Upload_Image") }}</p>
         </div>
       </Upload>
     </template>
@@ -27,7 +29,8 @@
               :outputSize="avatarOption.size"
               :outputType="avatarOption.outputType"
               :info="true"
-              @realTime="realTime">
+              @realTime="realTime"
+            >
             </vueCropper>
           </div>
           <ButtonGroup vertical class="cropper-btn">
@@ -44,52 +47,58 @@
         </div>
         <div class="preview-wrapper">
           <div class="cropper-preview" :style="previewStyle">
-            <div :style=" preview.div">
-              <img :src="avatarOption.imgSrc" :style="preview.img">
+            <div :style="preview.div">
+              <img :src="avatarOption.imgSrc" :style="preview.img" />
             </div>
           </div>
         </div>
-        <button @click="finishCrop">{{$t('m.Save')}}</button>
+        <button @click="finishCrop">{{ $t("m.Save") }}</button>
       </div>
     </template>
-    <Modal v-model="uploadModalVisible"
-           title="Upload the avatar"
-           :styles="{zIndex: 2000}"
+    <Modal
+      v-model="uploadModalVisible"
+      title="Upload the avatar"
+      :styles="{ zIndex: 2000 }"
     >
       <div class="upload-modal">
-        <p class="notice">{{ $t('m.Avatar_Preview') }}</p>
-        <img :src="uploadImgSrc"/>
+        <p class="notice">{{ $t("m.Avatar_Preview") }}</p>
+        <img :src="uploadImgSrc" />
       </div>
       <div slot="footer">
-        <Button @click="uploadAvatar" :loading="loadingUploadBtn" type="primary">{{ $t('m.Confirm') }}</Button>
+        <Button
+          @click="uploadAvatar"
+          :loading="loadingUploadBtn"
+          type="primary"
+          >{{ $t("m.Confirm") }}</Button
+        >
       </div>
     </Modal>
   </div>
 </template>
 
 <script>
-import api from '@oj/api'
-import utils from '@/utils/utils'
-import {VueCropper} from 'vue-cropper'
-import {types} from '@/store'
-import {languages} from '@/i18n'
+import api from "@oj/api"
+import utils from "@/utils/utils"
+import { VueCropper } from "vue-cropper"
+import { types } from "@/store"
+import { languages } from "@/i18n"
 
 export default {
   components: {
-    VueCropper
+    VueCropper,
   },
-  emits: ['finishCrop'],
+  emits: ["finishCrop"],
   data() {
     return {
       loadingSaveBtn: false,
       loadingUploadBtn: false,
       uploadModalVisible: false,
       preview: {},
-      uploadImgSrc: '',
+      uploadImgSrc: "",
       avatarOption: {
-        imgSrc: '',
+        imgSrc: "",
         size: 0.8,
-        outputType: 'png'
+        outputType: "png",
       },
       languages: languages,
     }
@@ -98,8 +107,11 @@ export default {
     checkFileType(file) {
       if (!/\.(gif|jpg|jpeg|png|bmp|GIF|JPG|PNG)$/.test(file.name)) {
         this.$Notice.warning({
-          title: 'File type not support',
-          desc: 'The format of ' + file.name + ' is incorrect ，please choose image only.'
+          title: "File type not support",
+          desc:
+            "The format of " +
+            file.name +
+            " is incorrect ，please choose image only.",
         })
         return false
       }
@@ -109,8 +121,11 @@ export default {
       // max size is 2MB
       if (file.size > 2 * 1024 * 1024) {
         this.$Notice.warning({
-          title: 'Exceed max size limit',
-          desc: 'File ' + file.name + ' is too big, you can upload a image up to 2MB in size'
+          title: "Exceed max size limit",
+          desc:
+            "File " +
+            file.name +
+            " is too big, you can upload a image up to 2MB in size",
         })
         return false
       }
@@ -132,7 +147,7 @@ export default {
       this.preview = data
     },
     rotate(direction) {
-      if (direction === 'left') {
+      if (direction === "left") {
         this.$refs.cropper.rotateLeft()
       } else {
         this.$refs.cropper.rotateRight()
@@ -140,67 +155,77 @@ export default {
     },
     reselect() {
       this.$Modal.confirm({
-        content: 'Are you sure to discard the changes?',
+        content: "Are you sure to discard the changes?",
         onOk: () => {
-          this.avatarOption.imgSrc = ''
-        }
+          this.avatarOption.imgSrc = ""
+        },
       })
     },
     finishCrop() {
-      this.$refs.cropper.getCropData(data => {
+      this.$refs.cropper.getCropData((data) => {
         this.uploadImgSrc = data
         this.uploadModalVisible = true
       })
-      this.$emit('finishCrop')
+      this.$emit("finishCrop")
     },
     uploadAvatar() {
-      this.$refs.cropper.getCropBlob(blob => {
+      this.$refs.cropper.getCropBlob((blob) => {
         let form = new window.FormData()
-        let file = new window.File([blob], 'avatar.' + this.avatarOption.outputType)
-        form.append('image', file)
+        let file = new window.File(
+          [blob],
+          "avatar." + this.avatarOption.outputType,
+        )
+        form.append("image", file)
         this.loadingUploadBtn = true
         this.$http({
-          method: 'post',
-          url: 'upload_avatar',
+          method: "post",
+          url: "upload_avatar",
           data: form,
-          headers: {'content-type': 'multipart/form-data'}
-        }).then(res => {
-          this.loadingUploadBtn = false
-          this.$success('Successfully set new avatar')
-          this.uploadModalVisible = false
-          this.avatarOption.imgSrc = ''
-          this.$store.dispatch('getProfile')
-        }, () => {
-          this.loadingUploadBtn = false
-        })
+          headers: { "content-type": "multipart/form-data" },
+        }).then(
+          (res) => {
+            this.loadingUploadBtn = false
+            this.$success("Successfully set new avatar")
+            this.uploadModalVisible = false
+            this.avatarOption.imgSrc = ""
+            this.$store.dispatch("getProfile")
+          },
+          () => {
+            this.loadingUploadBtn = false
+          },
+        )
       })
     },
     updateProfile() {
       this.loadingSaveBtn = true
-      let updateData = utils.filterEmptyValue(Object.assign({}, this.formProfile))
-      api.updateProfile(updateData).then(res => {
-        this.$success('Success')
-        this.$store.commit(types.CHANGE_PROFILE, {profile: res.data.data})
-        this.loadingSaveBtn = false
-      }, _ => {
-        this.loadingSaveBtn = false
-      })
-    }
+      let updateData = utils.filterEmptyValue(
+        Object.assign({}, this.formProfile),
+      )
+      api.updateProfile(updateData).then(
+        (res) => {
+          this.$success("Success")
+          this.$store.commit(types.CHANGE_PROFILE, { profile: res.data.data })
+          this.loadingSaveBtn = false
+        },
+        (_) => {
+          this.loadingSaveBtn = false
+        },
+      )
+    },
   },
   computed: {
     previewStyle() {
       return {
-        'width': this.preview.w + 'px',
-        'height': this.preview.h + 'px',
-        'overflow': 'hidden'
+        width: this.preview.w + "px",
+        height: this.preview.h + "px",
+        overflow: "hidden",
       }
-    }
-  }
+    },
+  },
 }
 </script>
 
 <style lang="less" scoped>
-
 h2 {
   font-size: 20px;
 }
@@ -231,8 +256,7 @@ label {
   align-items: center;
   display: flex;
   flex-direction: column;
-  gap:10px;
-
+  gap: 10px;
 
   .cropper-wrapper {
     width: 100%;

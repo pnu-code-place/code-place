@@ -14,10 +14,10 @@
 </template>
 
 <script>
-import api from "@oj/api";
-import SubmissionStats from "./SubmissionStats.vue";
-import ExpandableCode from "./ExpandableCode.vue";
-import { HIGHLIGHT_JS_LANGUAGES } from "../../../../../../utils/constants";
+import api from "@oj/api"
+import SubmissionStats from "./SubmissionStats.vue"
+import ExpandableCode from "./ExpandableCode.vue"
+import { HIGHLIGHT_JS_LANGUAGES } from "../../../../../../utils/constants"
 
 export default {
   name: "SubmissionAcceptedDropdown",
@@ -42,38 +42,38 @@ export default {
   data() {
     return {
       submissionRank: {},
-    };
+    }
   },
   computed: {
     themeClass() {
-      return this.isDarkMode ? "dark-theme" : "light-theme";
+      return this.isDarkMode ? "dark-theme" : "light-theme"
     },
   },
   mounted() {
     // contestID가 없을 때만 제출 통계를 가져옴
     if (!this.contestID) {
-      this.fetchSubmissionRank();
+      this.fetchSubmissionRank()
     }
   },
   methods: {
     getHljsLanguage(language) {
-      return HIGHLIGHT_JS_LANGUAGES[language] || "plaintext";
+      return HIGHLIGHT_JS_LANGUAGES[language] || "plaintext"
     },
 
     async fetchSubmissionRank() {
       try {
-        const res = await api.getSubmissionRank(this.submission.id);
+        const res = await api.getSubmissionRank(this.submission.id)
         this.submissionRank = {
           solvedRank: res.data.data.solved_rank,
           timeCostPercent: res.data.data.time_cost_percent,
           memoryCostPercent: res.data.data.memory_cost_percent,
-        };
+        }
       } catch (error) {
-        console.error("Failed to fetch submission rank:", error);
+        console.error("Failed to fetch submission rank:", error)
       }
     },
   },
-};
+}
 </script>
 
 <style scoped lang="less">

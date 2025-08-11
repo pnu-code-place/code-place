@@ -1,15 +1,17 @@
 <template>
   <div class="setting-main">
-    <h2>{{$t('m.Avatar_Setting')}}</h2>
+    <h2>{{ $t("m.Avatar_Setting") }}</h2>
     <template v-if="!avatarOption.imgSrc">
-      <Upload type="drag"
-              class="mini-container"
-              accept=".jpg,.jpeg,.png,.bmp,.gif"
-              action=""
-              :before-upload="handleSelectFile">
+      <Upload
+        type="drag"
+        class="mini-container"
+        accept=".jpg,.jpeg,.png,.bmp,.gif"
+        action=""
+        :before-upload="handleSelectFile"
+      >
         <div style="padding: 30px 0">
           <Icon type="ios-cloud-upload" size="52" style="color: #3399ff"></Icon>
-          <p>{{ $t('m.Upload_Image') }}</p>
+          <p>{{ $t("m.Upload_Image") }}</p>
         </div>
       </Upload>
     </template>
@@ -17,16 +19,17 @@
       <div class="flex-container">
         <div class="cropper-main inline">
           <vueCropper
-              ref="cropper"
-              autoCrop
-              fixed
-              :autoCropWidth="200"
-              :autoCropHeight="200"
-              :img="avatarOption.imgSrc"
-              :outputSize="avatarOption.size"
-              :outputType="avatarOption.outputType"
-              :info="true"
-              @realTime="realTime">
+            ref="cropper"
+            autoCrop
+            fixed
+            :autoCropWidth="200"
+            :autoCropHeight="200"
+            :img="avatarOption.imgSrc"
+            :outputSize="avatarOption.size"
+            :outputType="avatarOption.outputType"
+            :info="true"
+            @realTime="realTime"
+          >
           </vueCropper>
         </div>
         <ButtonGroup vertical class="cropper-btn">
@@ -44,77 +47,91 @@
           </Button>
         </ButtonGroup>
         <div class="cropper-preview" :style="previewStyle">
-          <div :style=" preview.div">
-            <img :src="avatarOption.imgSrc" :style="preview.img">
+          <div :style="preview.div">
+            <img :src="avatarOption.imgSrc" :style="preview.img" />
           </div>
         </div>
       </div>
     </template>
-    <Modal v-model="uploadModalVisible"
-           title="Upload the avatar">
+    <Modal v-model="uploadModalVisible" title="Upload the avatar">
       <div class="upload-modal">
-        <p class="notice">{{ $t('m.Avatar_Preview') }}</p>
-        <img :src="uploadImgSrc"/>
+        <p class="notice">{{ $t("m.Avatar_Preview") }}</p>
+        <img :src="uploadImgSrc" />
       </div>
       <div slot="footer">
-        <Button @click="uploadAvatar" :loading="loadingUploadBtn" type="primary">{{ $t('m.Confirm') }}</Button>
+        <Button
+          @click="uploadAvatar"
+          :loading="loadingUploadBtn"
+          type="primary"
+          >{{ $t("m.Confirm") }}</Button
+        >
       </div>
     </Modal>
     <Form ref="formProfile" :model="formProfile">
       <div class="form">
-        <h2>{{$t('m.User_Setting')}}</h2>
+        <h2>{{ $t("m.User_Setting") }}</h2>
         <div class="form-top">
           <div class="form-column">
-            <label>{{ $t('m.Real_Name') }}</label>
+            <label>{{ $t("m.Real_Name") }}</label>
             <FormItem>
-              <Input v-model="formProfile.real_name"/>
+              <Input v-model="formProfile.real_name" />
             </FormItem>
-            <label>{{ $t('m.Mood') }}</label>
+            <label>{{ $t("m.Mood") }}</label>
             <Form-item>
-              <Input v-model="formProfile.mood"/>
+              <Input v-model="formProfile.mood" />
             </Form-item>
-            <label>{{ $t('m.Blog') }}</label>
+            <label>{{ $t("m.Blog") }}</label>
             <Form-item>
-              <Input v-model="formProfile.blog"/>
+              <Input v-model="formProfile.blog" />
             </Form-item>
           </div>
           <div class="form-column">
-            <label>{{ $t('m.School') }}</label>
+            <label>{{ $t("m.School") }}</label>
             <Form-item>
-              <Input v-model="formProfile.school"/>
+              <Input v-model="formProfile.school" />
             </Form-item>
-            <label>{{ $t('m.Major') }}</label>
+            <label>{{ $t("m.Major") }}</label>
             <Form-item>
-              <Input v-model="formProfile.major"/>
+              <Input v-model="formProfile.major" />
             </Form-item>
             <label>Github</label>
             <Form-item>
-              <Input v-model="formProfile.github"/>
+              <Input v-model="formProfile.github" />
             </Form-item>
           </div>
         </div>
         <label>language</label>
         <FormItem>
           <Select v-model="formProfile.language">
-            <Option v-for="lang in languages" :key="lang.value" :value="lang.value">{{ lang.label }}</Option>
+            <Option
+              v-for="lang in languages"
+              :key="lang.value"
+              :value="lang.value"
+              >{{ lang.label }}</Option
+            >
           </Select>
         </FormItem>
-        <Button type="primary" @click="updateProfile" :loading="loadingSaveBtn">{{ $t('m.Save') }}</Button>
+        <Button
+          type="primary"
+          @click="updateProfile"
+          :loading="loadingSaveBtn"
+          >{{ $t("m.Save") }}</Button
+        >
       </div>
     </Form>
   </div>
 </template>
 
 <script>
-import api from '@oj/api'
-import utils from '@/utils/utils'
-import {VueCropper} from 'vue-cropper'
-import {types} from '@/store'
-import {languages} from '@/i18n'
+import api from "@oj/api"
+import utils from "@/utils/utils"
+import { VueCropper } from "vue-cropper"
+import { types } from "@/store"
+import { languages } from "@/i18n"
 
 export default {
   components: {
-    VueCropper
+    VueCropper,
   },
   data() {
     return {
@@ -122,28 +139,28 @@ export default {
       loadingUploadBtn: false,
       uploadModalVisible: false,
       preview: {},
-      uploadImgSrc: '',
+      uploadImgSrc: "",
       avatarOption: {
-        imgSrc: '',
+        imgSrc: "",
         size: 0.8,
-        outputType: 'png'
+        outputType: "png",
       },
       languages: languages,
       formProfile: {
-        real_name: '',
-        mood: '',
-        major: '',
-        blog: '',
-        school: '',
-        github: '',
-        language: ''
-      }
+        real_name: "",
+        mood: "",
+        major: "",
+        blog: "",
+        school: "",
+        github: "",
+        language: "",
+      },
     }
   },
   mounted() {
     let profile = this.$store.state.user.profile
     console.log(profile)
-    Object.keys(this.formProfile).forEach(element => {
+    Object.keys(this.formProfile).forEach((element) => {
       if (profile[element] !== undefined) {
         this.formProfile[element] = profile[element]
       }
@@ -153,8 +170,11 @@ export default {
     checkFileType(file) {
       if (!/\.(gif|jpg|jpeg|png|bmp|GIF|JPG|PNG)$/.test(file.name)) {
         this.$Notice.warning({
-          title: 'File type not support',
-          desc: 'The format of ' + file.name + ' is incorrect ，please choose image only.'
+          title: "File type not support",
+          desc:
+            "The format of " +
+            file.name +
+            " is incorrect ，please choose image only.",
         })
         return false
       }
@@ -164,8 +184,11 @@ export default {
       // max size is 2MB
       if (file.size > 2 * 1024 * 1024) {
         this.$Notice.warning({
-          title: 'Exceed max size limit',
-          desc: 'File ' + file.name + ' is too big, you can upload a image up to 2MB in size'
+          title: "Exceed max size limit",
+          desc:
+            "File " +
+            file.name +
+            " is too big, you can upload a image up to 2MB in size",
         })
         return false
       }
@@ -187,7 +210,7 @@ export default {
       this.preview = data
     },
     rotate(direction) {
-      if (direction === 'left') {
+      if (direction === "left") {
         this.$refs.cropper.rotateLeft()
       } else {
         this.$refs.cropper.rotateRight()
@@ -195,70 +218,79 @@ export default {
     },
     reselect() {
       this.$Modal.confirm({
-        content: 'Are you sure to discard the changes?',
+        content: "Are you sure to discard the changes?",
         onOk: () => {
-          this.avatarOption.imgSrc = ''
-        }
+          this.avatarOption.imgSrc = ""
+        },
       })
     },
     finishCrop() {
-      this.$refs.cropper.getCropData(data => {
+      this.$refs.cropper.getCropData((data) => {
         this.uploadImgSrc = data
         this.uploadModalVisible = true
       })
     },
     uploadAvatar() {
-      this.$refs.cropper.getCropBlob(blob => {
+      this.$refs.cropper.getCropBlob((blob) => {
         let form = new window.FormData()
-        let file = new window.File([blob], 'avatar.' + this.avatarOption.outputType)
-        form.append('image', file)
+        let file = new window.File(
+          [blob],
+          "avatar." + this.avatarOption.outputType,
+        )
+        form.append("image", file)
         this.loadingUploadBtn = true
         this.$http({
-          method: 'post',
-          url: 'upload_avatar',
+          method: "post",
+          url: "upload_avatar",
           data: form,
-          headers: {'content-type': 'multipart/form-data'}
-        }).then(res => {
-          this.loadingUploadBtn = false
-          this.$success('Successfully set new avatar')
-          this.uploadModalVisible = false
-          this.avatarOption.imgSrc = ''
-          this.$store.dispatch('getProfile')
-        }, () => {
-          this.loadingUploadBtn = false
-        })
+          headers: { "content-type": "multipart/form-data" },
+        }).then(
+          (res) => {
+            this.loadingUploadBtn = false
+            this.$success("Successfully set new avatar")
+            this.uploadModalVisible = false
+            this.avatarOption.imgSrc = ""
+            this.$store.dispatch("getProfile")
+          },
+          () => {
+            this.loadingUploadBtn = false
+          },
+        )
       })
     },
     updateProfile() {
       this.loadingSaveBtn = true
-      let updateData = utils.filterEmptyValue(Object.assign({}, this.formProfile))
-      api.updateProfile(updateData).then(res => {
-        this.$success('Success')
-        this.$store.commit(types.CHANGE_PROFILE, {profile: res.data.data})
-        this.loadingSaveBtn = false
-      }, _ => {
-        this.loadingSaveBtn = false
-      })
-    }
+      let updateData = utils.filterEmptyValue(
+        Object.assign({}, this.formProfile),
+      )
+      api.updateProfile(updateData).then(
+        (res) => {
+          this.$success("Success")
+          this.$store.commit(types.CHANGE_PROFILE, { profile: res.data.data })
+          this.loadingSaveBtn = false
+        },
+        (_) => {
+          this.loadingSaveBtn = false
+        },
+      )
+    },
   },
   computed: {
     previewStyle() {
       return {
-        'width': this.preview.w + 'px',
-        'height': this.preview.h + 'px',
-        'overflow': 'hidden'
+        width: this.preview.w + "px",
+        height: this.preview.h + "px",
+        overflow: "hidden",
       }
-    }
-  }
+    },
+  },
 }
 </script>
 
 <style lang="less" scoped>
-
-h2{
+h2 {
   font-size: 20px;
   margin-bottom: 20px;
-
 }
 
 .setting-main {

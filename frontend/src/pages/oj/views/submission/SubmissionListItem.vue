@@ -1,15 +1,14 @@
 <script>
-import api from "../../api";
-import {JUDGE_STATUS} from "../../../../utils/constants";
+import api from "../../api"
+import { JUDGE_STATUS } from "../../../../utils/constants"
 
 export default {
-  name: 'SubmissionListItem',
+  name: "SubmissionListItem",
   props: {
     item: {
       type: Object,
-      default: () => {
-      }
-    }
+      default: () => {},
+    },
   },
   computed: {
     JUDGE_STATUS() {
@@ -17,76 +16,91 @@ export default {
     },
     submit_time() {
       // 2024-04-30T10:51:36.831239Z-> 2024-04-30 10:51:36
-      return this.item.create_time.replace('T', ' ').split('.')[0]
+      return this.item.create_time.replace("T", " ").split(".")[0]
     },
     id() {
       return this.item.id.slice(0, 12)
     },
     memory() {
-      if (this.item.statistic_info.memory_cost === null || this.item.statistic_info.memory_cost === undefined) {
-        return '--'
+      if (
+        this.item.statistic_info.memory_cost === null ||
+        this.item.statistic_info.memory_cost === undefined
+      ) {
+        return "--"
       } else {
         return this.getMemory(this.item.statistic_info.memory_cost)
       }
     },
     running_time() {
-      if (this.item.statistic_info.time_cost === null || this.item.statistic_info.time_cost === undefined) {
-        return '--'
+      if (
+        this.item.statistic_info.time_cost === null ||
+        this.item.statistic_info.time_cost === undefined
+      ) {
+        return "--"
       } else {
-        return this.item.statistic_info.time_cost + 'ms'
+        return this.item.statistic_info.time_cost + "ms"
       }
     },
     statusStyle() {
       return {
         backgroundColor: JUDGE_STATUS[this.item.result].color,
         color: JUDGE_STATUS[this.item.result].textColor,
-        fontWeight: 'bold'
+        fontWeight: "bold",
       }
-    }
+    },
   },
   methods: {
     goStatus() {
-      this.$router.push('/status/' + this.item.id)
+      this.$router.push("/status/" + this.item.id)
     },
     goProblem() {
-      this.$router.push({name: 'problem-details', params: {problemID: this.item.problem}})
+      this.$router.push({
+        name: "problem-details",
+        params: { problemID: this.item.problem },
+      })
     },
     goUser() {
-      this.$router.push({name: 'user-home', params: {username: this.item.username}})
+      this.$router.push({
+        name: "user-home",
+        params: { username: this.item.username },
+      })
     },
     getMemory(memory_cost) {
       if (memory_cost > 1024 * 1024 * 1024) {
-        return (memory_cost / 1024 / 1024 / 1024).toFixed(1) + 'GB'
+        return (memory_cost / 1024 / 1024 / 1024).toFixed(1) + "GB"
       } else if (memory_cost > 1024 * 1024) {
-        return (memory_cost / 1024 / 1024).toFixed(1) + 'MB'
+        return (memory_cost / 1024 / 1024).toFixed(1) + "MB"
       } else if (memory_cost > 1024) {
-        return (memory_cost / 1024).toFixed(1) + 'KB'
+        return (memory_cost / 1024).toFixed(1) + "KB"
       } else {
-        return memory_cost + 'B'
+        return memory_cost + "B"
       }
     },
   },
 }
-
 </script>
 
 <template>
   <tr>
     <td>{{ this.submit_time }}</td>
     <td class="link" @click="this.goStatus">{{ item.id.slice(0, 12) }}</td>
-    <td><button class="status-badge" :style="this.statusStyle">{{ JUDGE_STATUS[item.result].name }}</button></td>
-    <td class="link" @click="this.goProblem">{{ item.problem + '번' }}</td>
+    <td>
+      <button class="status-badge" :style="this.statusStyle">
+        {{ JUDGE_STATUS[item.result].name }}
+      </button>
+    </td>
+    <td class="link" @click="this.goProblem">{{ item.problem + "번" }}</td>
     <td>{{ this.running_time }}</td>
     <td>{{ this.memory }}</td>
     <td>{{ item.language }}</td>
     <td class="link" @click="this.goUser">
       <div class="user-wrapper">
-        <img class="avatar" :src="item.user_avatar"/>
+        <img class="avatar" :src="item.user_avatar" />
         <div class="name-wrapper">
           {{ item.username }}
         </div>
       </div>
-      </td>
+    </td>
     <!--        <td>{{ item.id }}</td>-->
     <!--        <td>{{ item.status }}</td>-->
     <!--        <td>{{ item.memory }}</td>-->
@@ -107,11 +121,11 @@ td {
 .link {
   color: #32306b;
   cursor: pointer;
-  .user-wrapper{
+  .user-wrapper {
     display: flex;
     justify-content: center;
     align-items: center;
-    .name-wrapper{
+    .name-wrapper {
       margin-left: 7px;
     }
   }

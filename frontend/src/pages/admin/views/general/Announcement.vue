@@ -7,266 +7,318 @@
           element-loading-text="loading"
           ref="table"
           :data="announcementList"
-          style="width: 100%">
+          style="width: 100%"
+        >
           <el-table-column
             width="100"
             prop="id"
-            :label="$t('m.Announcement_Table_Id')">
+            :label="$t('m.Announcement_Table_Id')"
+          >
           </el-table-column>
           <el-table-column
             prop="title"
-            :label="$t('m.Announcement_Table_Title')">
+            :label="$t('m.Announcement_Table_Title')"
+          >
           </el-table-column>
           <el-table-column
             prop="create_time"
-            :label="$t('m.Announcement_Table_CreateTime')">
+            :label="$t('m.Announcement_Table_CreateTime')"
+          >
             <template slot-scope="scope">
               {{ scope.row.create_time | localtime }}
             </template>
           </el-table-column>
           <el-table-column
             prop="last_update_time"
-            :label="$t('m.Announcement_Table_LastUpdateTime')">
+            :label="$t('m.Announcement_Table_LastUpdateTime')"
+          >
             <template slot-scope="scope">
-              {{scope.row.last_update_time | localtime }}
+              {{ scope.row.last_update_time | localtime }}
             </template>
           </el-table-column>
           <el-table-column
             prop="created_by.username"
-            :label="$t('m.Announcement_Table_Author')">
+            :label="$t('m.Announcement_Table_Author')"
+          >
           </el-table-column>
           <el-table-column
             width="100"
             prop="visible"
-            :label="$t('m.Announcement_Table_Visible')">
+            :label="$t('m.Announcement_Table_Visible')"
+          >
             <template slot-scope="scope">
-              <el-switch v-model="scope.row.visible"
-                         active-text=""
-                         inactive-text=""
-                         @change="handleVisibleSwitch(scope.row)">
+              <el-switch
+                v-model="scope.row.visible"
+                active-text=""
+                inactive-text=""
+                @change="handleVisibleSwitch(scope.row)"
+              >
               </el-switch>
             </template>
           </el-table-column>
           <el-table-column
             fixed="right"
             :label="$t('m.Announcement_Table_Option')"
-            width="200">
+            width="200"
+          >
             <div slot-scope="scope">
-              <icon-btn :name="$t('m.Icon_Edit')" icon="edit" @click.native="openAnnouncementDialog(scope.row.id)"></icon-btn>
-              <icon-btn :name="$t('m.Icon_Delete')" icon="trash" @click.native="deleteAnnouncement(scope.row.id)"></icon-btn>
+              <icon-btn
+                :name="$t('m.Icon_Edit')"
+                icon="edit"
+                @click.native="openAnnouncementDialog(scope.row.id)"
+              ></icon-btn>
+              <icon-btn
+                :name="$t('m.Icon_Delete')"
+                icon="trash"
+                @click.native="deleteAnnouncement(scope.row.id)"
+              ></icon-btn>
             </div>
           </el-table-column>
         </el-table>
         <div class="panel-options">
-          <el-button type="primary" size="small" @click="openAnnouncementDialog(null)" icon="el-icon-plus">{{$t('m.Announcement_Create')}}</el-button>
+          <el-button
+            type="primary"
+            size="small"
+            @click="openAnnouncementDialog(null)"
+            icon="el-icon-plus"
+            >{{ $t("m.Announcement_Create") }}</el-button
+          >
           <el-pagination
             v-if="!contestID"
             class="page"
             layout="prev, pager, next"
             @current-change="currentChange"
             :page-size="pageSize"
-            :total="total">
+            :total="total"
+          >
           </el-pagination>
         </div>
       </div>
     </Panel>
     <!--对话框-->
-    <el-dialog :title="announcementDialogTitle" :visible.sync="showEditAnnouncementDialog"
-               @open="onOpenEditDialog" :close-on-click-modal="false">
+    <el-dialog
+      :title="announcementDialogTitle"
+      :visible.sync="showEditAnnouncementDialog"
+      @open="onOpenEditDialog"
+      :close-on-click-modal="false"
+    >
       <el-form label-position="top">
         <el-form-item :label="$t('m.Announcement_Title')" required>
           <el-input
             v-model="announcement.title"
-            :placeholder="$t('m.Announcement_Title')" class="title-input">
+            :placeholder="$t('m.Announcement_Title')"
+            class="title-input"
+          >
           </el-input>
         </el-form-item>
         <el-form-item :label="$t('m.Announcement_Content')" required>
           <Simditor v-model="announcement.content"></Simditor>
         </el-form-item>
         <div class="visible-box">
-          <span>{{$t('m.Announcement_visible')}}</span>
+          <span>{{ $t("m.Announcement_visible") }}</span>
           <el-switch
             v-model="announcement.visible"
             active-text=""
-            inactive-text="">
+            inactive-text=""
+          >
           </el-switch>
         </div>
       </el-form>
       <span slot="footer" class="dialog-footer">
-          <cancel @click.native="showEditAnnouncementDialog = false"></cancel>
-          <save type="primary" @click.native="submitAnnouncement"></save>
-        </span>
+        <cancel @click.native="showEditAnnouncementDialog = false"></cancel>
+        <save type="primary" @click.native="submitAnnouncement"></save>
+      </span>
     </el-dialog>
   </div>
 </template>
 
 <script>
-  import Simditor from '../../components/Simditor.vue'
-  import api from '../../api.js'
+import Simditor from "../../components/Simditor.vue"
+import api from "../../api.js"
 
-  export default {
-    name: 'Announcement',
-    components: {
-      Simditor
-    },
-    data () {
-      return {
-        contestID: '',
-        showEditAnnouncementDialog: false,
-        announcementList: [],
-        pageSize: 15,
-        total: 0,
-        currentAnnouncementId: null,
-        mode: 'create',
-        announcement: {
-          title: '',
-          visible: true,
-          content: ''
-        },
-        announcementDialogTitle: this.$t('m.Edit_Announcement'),
-        loading: true,
-        currentPage: 0
+export default {
+  name: "Announcement",
+  components: {
+    Simditor,
+  },
+  data() {
+    return {
+      contestID: "",
+      showEditAnnouncementDialog: false,
+      announcementList: [],
+      pageSize: 15,
+      total: 0,
+      currentAnnouncementId: null,
+      mode: "create",
+      announcement: {
+        title: "",
+        visible: true,
+        content: "",
+      },
+      announcementDialogTitle: this.$t("m.Edit_Announcement"),
+      loading: true,
+      currentPage: 0,
+    }
+  },
+  mounted() {
+    this.init()
+  },
+  methods: {
+    init() {
+      this.contestID = this.$route.params.contestId
+      if (this.contestID) {
+        this.getContestAnnouncementList()
+      } else {
+        this.getAnnouncementList(1)
       }
     },
-    mounted () {
-      this.init()
+    // 切换页码回调
+    currentChange(page) {
+      this.currentPage = page
+      this.getAnnouncementList(page)
     },
-    methods: {
-      init () {
-        this.contestID = this.$route.params.contestId
-        if (this.contestID) {
-          this.getContestAnnouncementList()
-        } else {
-          this.getAnnouncementList(1)
-        }
-      },
-      // 切换页码回调
-      currentChange (page) {
-        this.currentPage = page
-        this.getAnnouncementList(page)
-      },
-      getAnnouncementList (page) {
-        this.loading = true
-        api.getAnnouncementList((page - 1) * this.pageSize, this.pageSize).then(res => {
+    getAnnouncementList(page) {
+      this.loading = true
+      api.getAnnouncementList((page - 1) * this.pageSize, this.pageSize).then(
+        (res) => {
           this.loading = false
           this.total = res.data.data.total
           this.announcementList = res.data.data.results
-        }, res => {
+        },
+        (res) => {
           this.loading = false
-        })
-      },
-      getContestAnnouncementList () {
-        this.loading = true
-        api.getContestAnnouncementList(this.contestID).then(res => {
+        },
+      )
+    },
+    getContestAnnouncementList() {
+      this.loading = true
+      api
+        .getContestAnnouncementList(this.contestID)
+        .then((res) => {
           this.loading = false
           this.announcementList = res.data.data
-        }).catch(() => {
+        })
+        .catch(() => {
           this.loading = false
         })
-      },
-      // 打开编辑对话框的回调
-      onOpenEditDialog () {
-        // todo 优化
-        // 暂时解决 文本编辑器显示异常bug
-        setTimeout(() => {
-          if (document.createEvent) {
-            let event = document.createEvent('HTMLEvents')
-            event.initEvent('resize', true, true)
-            window.dispatchEvent(event)
-          } else if (document.createEventObject) {
-            window.fireEvent('onresize')
-          }
-        }, 0)
-      },
-      // 提交编辑
-      // 默认传入MouseEvent
-      submitAnnouncement (data = undefined) {
-        let funcName = ''
-        if (!data.title) {
-          data = {
-            id: this.currentAnnouncementId,
-            title: this.announcement.title,
-            content: this.announcement.content,
-            visible: this.announcement.visible
-          }
+    },
+    // 打开编辑对话框的回调
+    onOpenEditDialog() {
+      // todo 优化
+      // 暂时解决 文本编辑器显示异常bug
+      setTimeout(() => {
+        if (document.createEvent) {
+          let event = document.createEvent("HTMLEvents")
+          event.initEvent("resize", true, true)
+          window.dispatchEvent(event)
+        } else if (document.createEventObject) {
+          window.fireEvent("onresize")
         }
-        if (this.contestID) {
-          data.contest_id = this.contestID
-          funcName = this.mode === 'edit' ? 'updateContestAnnouncement' : 'createContestAnnouncement'
-        } else {
-          funcName = this.mode === 'edit' ? 'updateAnnouncement' : 'createAnnouncement'
+      }, 0)
+    },
+    // 提交编辑
+    // 默认传入MouseEvent
+    submitAnnouncement(data = undefined) {
+      let funcName = ""
+      if (!data.title) {
+        data = {
+          id: this.currentAnnouncementId,
+          title: this.announcement.title,
+          content: this.announcement.content,
+          visible: this.announcement.visible,
         }
-        api[funcName](data).then(res => {
+      }
+      if (this.contestID) {
+        data.contest_id = this.contestID
+        funcName =
+          this.mode === "edit"
+            ? "updateContestAnnouncement"
+            : "createContestAnnouncement"
+      } else {
+        funcName =
+          this.mode === "edit" ? "updateAnnouncement" : "createAnnouncement"
+      }
+      api[funcName](data)
+        .then((res) => {
           this.showEditAnnouncementDialog = false
           this.init()
-        }).catch()
-      },
-      // 删除公告
-      deleteAnnouncement (announcementId) {
-        this.$confirm(this.$t('m.Delete_Announcement_Content'), this.$t('m.Delete_Announcement'), {
-          confirmButtonText: this.$t('m.Modal_Confirm'),
-          cancelButtonText: this.$t('m.Modal_Cancel'),
-          type: 'warning'
-        }).then(() => {
+        })
+        .catch()
+    },
+    // 删除公告
+    deleteAnnouncement(announcementId) {
+      this.$confirm(
+        this.$t("m.Delete_Announcement_Content"),
+        this.$t("m.Delete_Announcement"),
+        {
+          confirmButtonText: this.$t("m.Modal_Confirm"),
+          cancelButtonText: this.$t("m.Modal_Cancel"),
+          type: "warning",
+        },
+      )
+        .then(() => {
           // then 为确定
           this.loading = true
-          let funcName = this.contestID ? 'deleteContestAnnouncement' : 'deleteAnnouncement'
-          api[funcName](announcementId).then(res => {
+          let funcName = this.contestID
+            ? "deleteContestAnnouncement"
+            : "deleteAnnouncement"
+          api[funcName](announcementId).then((res) => {
             this.loading = true
             this.init()
           })
-        }).catch(() => {
+        })
+        .catch(() => {
           // catch 为取消
           this.loading = false
         })
-      },
-      openAnnouncementDialog (id) {
-        this.showEditAnnouncementDialog = true
-        if (id !== null) {
-          this.currentAnnouncementId = id
-          this.announcementDialogTitle = this.$t('m.Edit_Announcement')
-          this.announcementList.find(item => {
-            if (item.id === this.currentAnnouncementId) {
-              this.announcement.title = item.title
-              this.announcement.visible = item.visible
-              this.announcement.content = item.content
-              this.mode = 'edit'
-            }
-          })
-        } else {
-          this.announcementDialogTitle = this.$t('m.Create_Announcement')
-          this.announcement.title = ''
-          this.announcement.visible = true
-          this.announcement.content = ''
-          this.mode = 'create'
-        }
-      },
-      handleVisibleSwitch (row) {
-        this.mode = 'edit'
-        this.submitAnnouncement({
-          id: row.id,
-          title: row.title,
-          content: row.content,
-          visible: row.visible
+    },
+    openAnnouncementDialog(id) {
+      this.showEditAnnouncementDialog = true
+      if (id !== null) {
+        this.currentAnnouncementId = id
+        this.announcementDialogTitle = this.$t("m.Edit_Announcement")
+        this.announcementList.find((item) => {
+          if (item.id === this.currentAnnouncementId) {
+            this.announcement.title = item.title
+            this.announcement.visible = item.visible
+            this.announcement.content = item.content
+            this.mode = "edit"
+          }
         })
+      } else {
+        this.announcementDialogTitle = this.$t("m.Create_Announcement")
+        this.announcement.title = ""
+        this.announcement.visible = true
+        this.announcement.content = ""
+        this.mode = "create"
       }
     },
-    watch: {
-      $route () {
-        this.init()
-      }
-    }
-  }
+    handleVisibleSwitch(row) {
+      this.mode = "edit"
+      this.submitAnnouncement({
+        id: row.id,
+        title: row.title,
+        content: row.content,
+        visible: row.visible,
+      })
+    },
+  },
+  watch: {
+    $route() {
+      this.init()
+    },
+  },
+}
 </script>
 
 <style lang="less" scoped>
-  .title-input {
-    margin-bottom: 20px;
-  }
+.title-input {
+  margin-bottom: 20px;
+}
 
-  .visible-box {
-    margin-top: 10px;
-    width: 205px;
-    float: left;
-  }
+.visible-box {
+  margin-top: 10px;
+  width: 205px;
+  float: left;
+}
 </style>

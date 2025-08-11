@@ -24,14 +24,14 @@ export default {
   data() {
     return {
       keyword: "",
-    };
+    }
   },
   methods: {
     onKeywordChangeEventEmit() {
-      this.$emit("onKeywordChange", this.keyword);
+      this.$emit("onKeywordChange", this.keyword)
     },
   },
-};
+}
 </script>
 
 <style scoped lang="less">

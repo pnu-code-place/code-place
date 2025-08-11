@@ -1,16 +1,16 @@
 <template>
   <div class="fieldCategoryBox">
     <template v-if="boxType">
-      <div class="box fieldBox" :style="{'background-color': boxColor}">
+      <div class="box fieldBox" :style="{ 'background-color': boxColor }">
         <span>
-          {{value}}
+          {{ value }}
         </span>
       </div>
     </template>
     <template v-else>
       <div class="box categoryBox">
         <span>
-          {{value}}
+          {{ value }}
         </span>
       </div>
     </template>
@@ -19,32 +19,29 @@
 
 <script>
 export default {
-  name: 'FieldCategoryBox',
+  name: "FieldCategoryBox",
   props: {
     boxType: {
       type: Boolean,
-      default: false
+      default: false,
     },
     value: {
       type: String,
-      default: ''
+      default: "",
     },
     boxColor: {
       type: String,
-      default: 'red'
-    }
+      default: "red",
+    },
   },
-  data () {
-    return {
-
-    }
+  data() {
+    return {}
   },
 }
 </script>
 
 <style lang="less" scoped>
-
-.box{
+.box {
   text-align: center;
   margin-top: 2px;
   margin-right: 3px;
@@ -55,14 +52,14 @@ export default {
   width: fit-content;
   height: fit-content;
 }
-.fieldBox{
+.fieldBox {
   color: white;
   font-weight: bold;
 
   border: 1px solid #ffffff;
 }
-.categoryBox{
-  color: #4E4E4E;
+.categoryBox {
+  color: #4e4e4e;
   border: 1px solid #949494;
 }
 </style>

@@ -4,27 +4,46 @@
       <div slot="header">
         <el-row type="flex">
           <el-col :span="8" style="margin-right: 15px">
-            <el-button v-show="selectedUsers.length"
-                       type="warning" icon="el-icon-fa-trash"
-                       @click="deleteUsers(selectedUserIDs)">{{$t('m.Icon_Delete')}}
+            <el-button
+              v-show="selectedUsers.length"
+              type="warning"
+              icon="el-icon-fa-trash"
+              @click="deleteUsers(selectedUserIDs)"
+              >{{ $t("m.Icon_Delete") }}
             </el-button>
           </el-col>
           <el-col style="margin-right: 15px">
-            <el-select v-model="query.college" :placeholder="$t('m.User_Placeholder_College')">
+            <el-select
+              v-model="query.college"
+              :placeholder="$t('m.User_Placeholder_College')"
+            >
               <template v-for="(item, index) in collegeList">
-                <el-option :label="item.college_name" :value="item.id"></el-option>
+                <el-option
+                  :label="item.college_name"
+                  :value="item.id"
+                ></el-option>
               </template>
             </el-select>
           </el-col>
           <el-col style="margin-right: 15px">
-            <el-select v-model="query.department" :placeholder="$t('m.User_Placeholder_Department')">
+            <el-select
+              v-model="query.department"
+              :placeholder="$t('m.User_Placeholder_Department')"
+            >
               <template v-for="(item, index) in filteredDepartmentListForQuery">
-                <el-option :label="item.department_name" :value="item.id"></el-option>
+                <el-option
+                  :label="item.department_name"
+                  :value="item.id"
+                ></el-option>
               </template>
             </el-select>
           </el-col>
-          <el-col :span="selectedUsers.length ? 16: 24">
-            <el-input v-model="query.keyword" prefix-icon="el-icon-search" placeholder="Keywords"></el-input>
+          <el-col :span="selectedUsers.length ? 16 : 24">
+            <el-input
+              v-model="query.keyword"
+              prefix-icon="el-icon-search"
+              placeholder="Keywords"
+            ></el-input>
           </el-col>
         </el-row>
       </div>
@@ -34,26 +53,46 @@
         @selection-change="handleSelectionChange"
         ref="table"
         :data="userList"
-        style="width: 100%;">
+        style="width: 100%"
+      >
         <el-table-column type="selection" width="55"></el-table-column>
 
-        <el-table-column prop="id" width="55" :label="$t('m.User_Table_ID')"></el-table-column>
+        <el-table-column
+          prop="id"
+          width="55"
+          :label="$t('m.User_Table_ID')"
+        ></el-table-column>
 
         <el-table-column width="60" :label="$t('m.User_Table_User_Avatar')">
           <template slot-scope="scope">
-            <img class="avatar" :src="scope.row.avatar"/>
+            <img class="avatar" :src="scope.row.avatar" />
           </template>
         </el-table-column>
 
-        <el-table-column prop="username" width="100" :label="$t('m.User_Table_Username')"></el-table-column>
+        <el-table-column
+          prop="username"
+          width="100"
+          :label="$t('m.User_Table_Username')"
+        ></el-table-column>
 
-        <el-table-column prop="email" :label="$t('m.User_Table_Email')"></el-table-column>
+        <el-table-column
+          prop="email"
+          :label="$t('m.User_Table_Email')"
+        ></el-table-column>
 
-        <el-table-column prop="real_name" width="80" :label="$t('m.User_Table_Real_Name')"></el-table-column>
+        <el-table-column
+          prop="real_name"
+          width="80"
+          :label="$t('m.User_Table_Real_Name')"
+        ></el-table-column>
 
-        <el-table-column prop="student_id" width="100" :label="$t('m.User_Table_Student_Id')"></el-table-column>
+        <el-table-column
+          prop="student_id"
+          width="100"
+          :label="$t('m.User_Table_Student_Id')"
+        ></el-table-column>
 
-        <el-table-column width="100"  :label="$t('m.User_Table_User_College')">
+        <el-table-column width="100" :label="$t('m.User_Table_User_College')">
           <template slot-scope="scope">
             {{ scope.row.college }}
           </template>
@@ -71,10 +110,22 @@
           </template>
         </el-table-column>
 
-        <el-table-column fixed="right" :label="$t('m.User_Table_Option')" width="120">
-          <template slot-scope="{row}">
-            <icon-btn :name="$t('m.Icon_Edit')" icon="edit" @click.native="openUserDialog(row.id)"></icon-btn>
-            <icon-btn :name="$t('m.Icon_Delete')" icon="trash" @click.native="deleteUsers([row.id])"></icon-btn>
+        <el-table-column
+          fixed="right"
+          :label="$t('m.User_Table_Option')"
+          width="120"
+        >
+          <template slot-scope="{ row }">
+            <icon-btn
+              :name="$t('m.Icon_Edit')"
+              icon="edit"
+              @click.native="openUserDialog(row.id)"
+            ></icon-btn>
+            <icon-btn
+              :name="$t('m.Icon_Delete')"
+              icon="trash"
+              @click.native="deleteUsers([row.id])"
+            ></icon-btn>
           </template>
         </el-table-column>
       </el-table>
@@ -84,15 +135,20 @@
           layout="prev, pager, next"
           @current-change="currentChange"
           :page-size="pageSize"
-          :total="total">
+          :total="total"
+        >
         </el-pagination>
       </div>
     </Panel>
 
-    <el-dialog :title="$t('m.User_Info')" :visible.sync="showUserDialog" :close-on-click-modal="false">
+    <el-dialog
+      :title="$t('m.User_Info')"
+      :visible.sync="showUserDialog"
+      :close-on-click-modal="false"
+    >
       <el-form :model="user" label-width="120px" label-position="left">
         <el-col style="margin-bottom: 10px">
-          <span style="font-weight: bold;font-size: medium">계정 정보</span>
+          <span style="font-weight: bold; font-size: medium">계정 정보</span>
         </el-col>
         <el-row :gutter="20">
           <el-col :span="12">
@@ -112,13 +168,16 @@
           </el-col>
           <el-col :span="12">
             <el-form-item :label="$t('m.User_New_Password')">
-              <input class="user-password-input" v-model="user.password"></input>
+              <input class="user-password-input" v-model="user.password" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item :label="$t('m.User_Type')">
               <el-select v-model="user.admin_type">
-                <el-option label="Regular User" value="Regular User"></el-option>
+                <el-option
+                  label="Regular User"
+                  value="Regular User"
+                ></el-option>
                 <el-option label="Admin" value="Admin"></el-option>
                 <el-option label="Super Admin" value="Super Admin"></el-option>
               </el-select>
@@ -126,7 +185,10 @@
           </el-col>
           <el-col :span="12">
             <el-form-item :label="$t('m.Problem_Permission')">
-              <el-select v-model="user.problem_permission" :disabled="user.admin_type!=='Admin'">
+              <el-select
+                v-model="user.problem_permission"
+                :disabled="user.admin_type !== 'Admin'"
+              >
                 <el-option label="None" value="None"></el-option>
                 <el-option label="Own" value="Own"></el-option>
                 <el-option label="All" value="All"></el-option>
@@ -138,18 +200,32 @@
           </el-col>
           <el-col :span="12">
             <el-form-item :label="$t('m.Create_User_Table_College')">
-              <el-select v-model="user.college" :placeholder="$t('m.User_Placeholder_College')">
+              <el-select
+                v-model="user.college"
+                :placeholder="$t('m.User_Placeholder_College')"
+              >
                 <template v-for="(item, index) in collegeList">
-                  <el-option :label="item.college_name" :value="item.id"></el-option>
+                  <el-option
+                    :label="item.college_name"
+                    :value="item.id"
+                  ></el-option>
                 </template>
               </el-select>
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item :label="$t('m.Create_User_Table_Department')">
-              <el-select v-model="user.department" :placeholder="$t('m.User_Placeholder_Department')">
-                <template v-for="(item, index) in filteredDepartmentListForEdit">
-                  <el-option :label="item.department_name" :value="item.id"></el-option>
+              <el-select
+                v-model="user.department"
+                :placeholder="$t('m.User_Placeholder_Department')"
+              >
+                <template
+                  v-for="(item, index) in filteredDepartmentListForEdit"
+                >
+                  <el-option
+                    :label="item.department_name"
+                    :value="item.id"
+                  ></el-option>
                 </template>
               </el-select>
             </el-form-item>
@@ -160,7 +236,7 @@
             </el-form-item>
           </el-col>
           <el-col style="margin-bottom: 10px">
-            <span style="font-weight: bold;font-size: medium">기타 정보</span>
+            <span style="font-weight: bold; font-size: medium">기타 정보</span>
           </el-col>
           <el-col :span="8">
             <el-form-item :label="$t('m.Two_Factor_Auth')">
@@ -168,7 +244,8 @@
                 v-model="user.two_factor_auth"
                 :disabled="!user.real_tfa"
                 active-color="#13ce66"
-                inactive-color="#ff4949">
+                inactive-color="#ff4949"
+              >
               </el-switch>
             </el-form-item>
           </el-col>
@@ -177,15 +254,14 @@
               <el-switch
                 v-model="user.open_api"
                 active-color="#13ce66"
-                inactive-color="#ff4949">
+                inactive-color="#ff4949"
+              >
               </el-switch>
             </el-form-item>
           </el-col>
           <el-col :span="8">
             <el-form-item :label="$t('m.Is_Disabled')">
-              <el-switch
-                v-model="user.is_disabled">
-              </el-switch>
+              <el-switch v-model="user.is_disabled"> </el-switch>
             </el-form-item>
           </el-col>
         </el-row>
@@ -199,13 +275,13 @@
 </template>
 
 <script>
-import papa from 'papaparse'
-import api from '../../api.js'
-import utils from '@/utils/utils'
+import papa from "papaparse"
+import api from "../../api.js"
+import utils from "@/utils/utils"
 
 export default {
-  name: 'AdminCatalog',
-  data () {
+  name: "AdminCatalog",
+  data() {
     return {
       pageSize: 10,
       total: 0,
@@ -214,11 +290,11 @@ export default {
       uploadUsersPage: [],
       uploadUsersCurrentPage: 1,
       uploadUsersPageSize: 15,
-      query:{
-        keyword: '',
-        college: '',
-        department: '',
-        active: true
+      query: {
+        keyword: "",
+        college: "",
+        department: "",
+        active: true,
       },
       showUserDialog: false,
       user: {},
@@ -227,39 +303,42 @@ export default {
       currentPage: 0,
       selectedUsers: [],
       formGenerateUser: {
-        prefix: '',
+        prefix: "",
         num_of_mock: 0,
-        college: '',
-        department: ''
+        college: "",
+        department: "",
       },
       collegeList: [],
       departmentList: [],
-      departmentItems: []
+      departmentItems: [],
     }
   },
-  mounted () {
+  mounted() {
     this.getAdminList(1)
     this.getCollegeList()
     this.getDepartmentList()
   },
   methods: {
-    currentChange (page) {
+    currentChange(page) {
       this.currentPage = page
       this.getAdminList(page)
     },
-    saveUser () {
-      api.editUser(this.user).then(res => {
-        this.getAdminList(this.currentPage)
-      }).then(() => {
-        this.showUserDialog = false
-      }).catch(() => {
-      })
+    saveUser() {
+      api
+        .editUser(this.user)
+        .then((res) => {
+          this.getAdminList(this.currentPage)
+        })
+        .then(() => {
+          this.showUserDialog = false
+        })
+        .catch(() => {})
     },
-    openUserDialog (id) {
+    openUserDialog(id) {
       this.showUserDialog = true
-      api.getUser(id).then(res => {
+      api.getUser(id).then((res) => {
         this.user = res.data.data
-        this.user.password = ''
+        this.user.password = ""
         this.user.real_tfa = this.user.two_factor_auth
         this.user.college = null
         this.user.department = null
@@ -270,55 +349,71 @@ export default {
       this.collegeList = [
         {
           id: "-1",
-          college_name: "전체"
+          college_name: "전체",
         },
-        ...res.data.data
-      ];
+        ...res.data.data,
+      ]
     },
     async getDepartmentList() {
       let res = await api.getMajorList()
       this.departmentList = [
         {
           id: "-1",
-          department_name: "전체"
+          department_name: "전체",
         },
-        ...res.data.data
-      ];
+        ...res.data.data,
+      ]
     },
-    getAdminList (page) {
+    getAdminList(page) {
       this.loadingTable = true
-      api.getAdminList((page - 1) * this.pageSize, this.pageSize, this.query).then(res => {
-        this.loadingTable = false
-        this.total = res.data.data.total
-        this.userList = res.data.data.results
-      }, res => {
-        this.loadingTable = false
-      })
+      api
+        .getAdminList((page - 1) * this.pageSize, this.pageSize, this.query)
+        .then(
+          (res) => {
+            this.loadingTable = false
+            this.total = res.data.data.total
+            this.userList = res.data.data.results
+          },
+          (res) => {
+            this.loadingTable = false
+          },
+        )
     },
-    deleteUsers (ids) {
-      this.$confirm(this.$t('m.Delete_User_Modal_Content'), this.$t('m.Delete_User_Modal_Title'), {
-        type: 'warning'
-      }).then(() => {
-        api.deleteUsers(ids.join(',')).then(res => {
-          this.getAdminList(this.currentPage)
-        }).catch(() => {
-          this.getAdminList(this.currentPage)
-        })
-      }, () => {
-      })
+    deleteUsers(ids) {
+      this.$confirm(
+        this.$t("m.Delete_User_Modal_Content"),
+        this.$t("m.Delete_User_Modal_Title"),
+        {
+          type: "warning",
+        },
+      ).then(
+        () => {
+          api
+            .deleteUsers(ids.join(","))
+            .then((res) => {
+              this.getAdminList(this.currentPage)
+            })
+            .catch(() => {
+              this.getAdminList(this.currentPage)
+            })
+        },
+        () => {},
+      )
     },
-    handleSelectionChange (val) {
+    handleSelectionChange(val) {
       this.selectedUsers = val
     },
-    handleUsersCSV (file) {
+    handleUsersCSV(file) {
       papa.parse(file, {
         complete: (results) => {
-          let data = results.data.filter(user => {
+          let data = results.data.filter((user) => {
             return user[0] && user[1] && user[2] && user[3]
           })
           let delta = results.data.length - data.length
           if (delta > 0) {
-            this.$warning(delta + ' users have been filtered due to empty value')
+            this.$warning(
+              delta + " users have been filtered due to empty value",
+            )
           }
           this.uploadUsersCurrentPage = 1
           this.uploadUsers = data
@@ -326,22 +421,24 @@ export default {
         },
         error: (error) => {
           this.$error(error)
-        }
+        },
       })
     },
-    handleUsersUpload () {
-      api.importUsers(this.uploadUsers).then(res => {
-        this.getAdminList(1)
-        this.handleResetData()
-      }).catch(() => {
-      })
+    handleUsersUpload() {
+      api
+        .importUsers(this.uploadUsers)
+        .then((res) => {
+          this.getAdminList(1)
+          this.handleResetData()
+        })
+        .catch(() => {})
     },
-    handleResetData () {
+    handleResetData() {
       this.uploadUsers = []
-    }
+    },
   },
   computed: {
-    selectedUserIDs () {
+    selectedUserIDs() {
       let ids = []
       for (let user of this.selectedUsers) {
         ids.push(user.id)
@@ -349,46 +446,53 @@ export default {
       return ids
     },
     filteredDepartmentListForQuery() {
-      if(this.query.college === "-1"){
+      if (this.query.college === "-1") {
         return this.departmentList
       }
-      return this.departmentList.filter(item => item.college_id === this.query.college);
+      return this.departmentList.filter(
+        (item) => item.college_id === this.query.college,
+      )
     },
     filteredDepartmentListForEdit() {
-      if(this.user.college === "-1"){
+      if (this.user.college === "-1") {
         return []
       }
-      return this.departmentList.filter(item => item.college_id === this.user.college);
-    }
+      return this.departmentList.filter(
+        (item) => item.college_id === this.user.college,
+      )
+    },
   },
   watch: {
     query: {
       handler() {
-        this.currentChange(1);
+        this.currentChange(1)
       },
       deep: true,
-      immediate: false
+      immediate: false,
     },
-    'formGenerateUser.college' (){
-      this.formGenerateUser.department = ''
+    "formGenerateUser.college"() {
+      this.formGenerateUser.department = ""
     },
-    'query.college' (){
-      this.query.department = ''
+    "query.college"() {
+      this.query.department = ""
     },
-    'user.college' (){
+    "user.college"() {
       this.user.department = null
     },
-    'user.admin_type' () {
-      if (this.user.admin_type === 'Super Admin') {
-        this.user.problem_permission = 'All'
-      } else if (this.user.admin_type === 'Regular User') {
-        this.user.problem_permission = 'None'
+    "user.admin_type"() {
+      if (this.user.admin_type === "Super Admin") {
+        this.user.problem_permission = "All"
+      } else if (this.user.admin_type === "Regular User") {
+        this.user.problem_permission = "None"
       }
     },
-    'uploadUsersCurrentPage' (page) {
-      this.uploadUsersPage = this.uploadUsers.slice((page - 1) * this.uploadUsersPageSize, page * this.uploadUsersPageSize)
-    }
-  }
+    uploadUsersCurrentPage(page) {
+      this.uploadUsersPage = this.uploadUsers.slice(
+        (page - 1) * this.uploadUsersPageSize,
+        page * this.uploadUsersPageSize,
+      )
+    },
+  },
 }
 </script>
 
@@ -406,8 +510,8 @@ export default {
   line-height: 40px;
   outline: 0;
   padding: 0 15px;
-  -webkit-transition: border-color .2s cubic-bezier(.645,.045,.355,1);
-  transition: border-color .2s cubic-bezier(.645,.045,.355,1);
+  -webkit-transition: border-color 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
+  transition: border-color 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
   width: 100%;
 }
 

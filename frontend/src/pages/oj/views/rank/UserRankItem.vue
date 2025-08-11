@@ -1,12 +1,12 @@
 <script>
-import {comma, getTier} from "../../../../utils/utils";
-import {TierImageSrc} from "../../../../utils/constants";
-import ShineWrapper from "../../components/ShineWrapper.vue";
+import { comma, getTier } from "../../../../utils/utils"
+import { TierImageSrc } from "../../../../utils/constants"
+import ShineWrapper from "../../components/ShineWrapper.vue"
 
 export default {
-  name: 'RankItem',
-  components: {ShineWrapper},
-  methods: {comma, getTier},
+  name: "RankItem",
+  components: { ShineWrapper },
+  methods: { comma, getTier },
   props: {
     user: {
       type: Object,
@@ -20,34 +20,36 @@ export default {
           score: 0,
           solved: 0,
           accuracy: 0.0,
-          growth : 0
+          growth: 0,
         }
-      }
-    }
+      },
+    },
   },
   computed: {
     TierImageSrc() {
       return TierImageSrc
     },
     accuracy() {
-      return (this.user.accuracy * 100).toFixed(1) + '%'
+      return (this.user.accuracy * 100).toFixed(1) + "%"
     },
     growth() {
       if (this.user.growth == 0) {
         return "-"
       }
       return "▲" + comma(this.user.growth)
-    }
-  }
+    },
+  },
 }
 </script>
 
 <template>
   <tr>
-    <td>{{ user.rank }}{{ $t("m.Th")}}</td>
+    <td>{{ user.rank }}{{ $t("m.Th") }}</td>
     <td class="user-info">
-      <router-link :to="{name: 'user-home', params: {username :user.username}}">
-        <img class='avatar' :src="user.avatar" alt="avatar">
+      <router-link
+        :to="{ name: 'user-home', params: { username: user.username } }"
+      >
+        <img class="avatar" :src="user.avatar" alt="avatar" />
         <span>{{ user.username }}</span>
       </router-link>
     </td>
@@ -55,18 +57,27 @@ export default {
     <td>{{ user.major }}</td>
     <td class="tier">
       <shine-wrapper class="tier-mark-wrapper">
-        <img class="tier-mark" :src="TierImageSrc[user.tier]" alt='tier-mark'>
+        <img class="tier-mark" :src="TierImageSrc[user.tier]" alt="tier-mark" />
       </shine-wrapper>
       <span class="tier">{{ getTier(user.tier) }}</span>
     </td>
     <td>
       <div class="user-score">
-        <span class="user-score__score">{{ comma(user.score) }}{{ $t("m.Point")}}</span>
-        <span class="user-score__growth">{{ this.growth}}</span>
+        <span class="user-score__score"
+          >{{ comma(user.score) }}{{ $t("m.Point") }}</span
+        >
+        <span class="user-score__growth">{{ this.growth }}</span>
       </div>
     </td>
     <td class="user-problem">
-      <router-link :to="{name: 'user-problems', params: {username : user.username}, query:{status:'Solved'}}" class="justify-center">
+      <router-link
+        :to="{
+          name: 'user-problems',
+          params: { username: user.username },
+          query: { status: 'Solved' },
+        }"
+        class="justify-center"
+      >
         {{ user.solved }}
       </router-link>
     </td>
@@ -139,7 +150,6 @@ tr {
       }
     }
   }
-
 }
 
 .avatar {

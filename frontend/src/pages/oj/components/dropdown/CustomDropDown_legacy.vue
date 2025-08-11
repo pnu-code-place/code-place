@@ -1,13 +1,17 @@
 <template>
   <div
-    :class="{'select-menu': true, 'select-menu active': openState === true}"
+    :class="{ 'select-menu': true, 'select-menu active': openState === true }"
   >
     <div class="select-btn" @click="handleOpenState">
       <span class="sBtn-text">{{ selectedOption }}</span>
-      <img src="@/assets/chevron-down.png" class="bx bx-chevron-down"/>
+      <img src="@/assets/chevron-down.png" class="bx bx-chevron-down" />
     </div>
     <ul class="options" v-if="openState == true">
-      <li v-for="(item, index) in items" class="option" @click="handleClickItem(item.id, item.name)">
+      <li
+        v-for="(item, index) in items"
+        class="option"
+        @click="handleClickItem(item.id, item.name)"
+      >
         <span class="option-text">{{ item.name }}</span>
       </li>
     </ul>
@@ -15,42 +19,39 @@
 </template>
 
 <script>
-
-
-import {collegeDto, DropDownType, majorDto} from "./test"
+import { collegeDto, DropDownType, majorDto } from "./test"
 
 export default {
   name: "customDropDown_legacy",
   props: {
-    dropdownType: DropDownType
+    dropdownType: DropDownType,
   },
   data() {
     return {
       openState: false,
       selectedOption: this.dropdownType,
-      items: this.dropdownType === DropDownType.COLLEGE ? collegeDto : majorDto
-    };
+      items: this.dropdownType === DropDownType.COLLEGE ? collegeDto : majorDto,
+    }
   },
-  methods:{
-    handleClickItem(itemId, itemName){
+  methods: {
+    handleClickItem(itemId, itemName) {
       this.openState = false
       this.selectedOption = itemName
       const dto = {
-        "id": itemId,
-        "dropdownType": this.dropdownType
+        id: itemId,
+        dropdownType: this.dropdownType,
       }
-      this.$emit('handleDropDownChange', dto)
+      this.$emit("handleDropDownChange", dto)
     },
-    handleOpenState(){
-      if(this.openState === true){
+    handleOpenState() {
+      if (this.openState === true) {
         this.openState = false
-      }
-      else{
+      } else {
         this.openState = true
       }
-    }
-  }
-};
+    },
+  },
+}
 </script>
 
 <style scoped lang="less">

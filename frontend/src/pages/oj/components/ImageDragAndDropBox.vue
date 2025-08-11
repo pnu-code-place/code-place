@@ -35,55 +35,55 @@ export default {
     return {
       isDragging: true,
       imageUrl: "",
-    };
+    }
   },
   methods: {
     onClick() {
-      this.$refs.fileInput.click();
+      this.$refs.fileInput.click()
     },
     onDragenter(event) {
-      event.preventDefault();
-      event.stopPropagation();
-      this.isDragging = true;
+      event.preventDefault()
+      event.stopPropagation()
+      this.isDragging = true
     },
     onDragleave(event) {
-      event.preventDefault();
-      event.stopPropagation();
-      this.isDragging = false;
+      event.preventDefault()
+      event.stopPropagation()
+      this.isDragging = false
     },
     onDragover(event) {
-      event.preventDefault();
-      event.stopPropagation();
+      event.preventDefault()
+      event.stopPropagation()
       if (event.dataTransfer.files) {
-        this.isDragging = true;
+        this.isDragging = true
       }
     },
     onDrop(event) {
-      event.preventDefault();
-      event.stopPropagation();
-      this.isDragged = false;
+      event.preventDefault()
+      event.stopPropagation()
+      this.isDragged = false
       if (
         event.dataTransfer.files &&
         this.checkFileSize(event.dataTransfer.files[0])
       ) {
-        this.$emit("onBannerImageChange", event.dataTransfer.files[0]);
+        this.$emit("onBannerImageChange", event.dataTransfer.files[0])
       }
     },
     onFileChange(event) {
       if (event.target.files && this.checkFileSize(event.target.files[0])) {
-        this.$emit("onBannerImageChange", event.target.files[0]);
+        this.$emit("onBannerImageChange", event.target.files[0])
       }
     },
     checkFileSize(file) {
-      const limitSize = 1024 ** 2 * 10; // 10MB
+      const limitSize = 1024 ** 2 * 10 // 10MB
       if (file.size > limitSize) {
-        alert(this.$t("m.Image_Max_Size_Alert"));
-        return false;
+        alert(this.$t("m.Image_Max_Size_Alert"))
+        return false
       }
-      return true;
+      return true
     },
   },
-};
+}
 </script>
 
 <style lang="less" scoped>

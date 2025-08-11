@@ -342,9 +342,7 @@ export const m = {
   Popup_Notice: "팝업은 최대 3개까지 가능합니다.",
 
   Add_Home_Popup: "홈 팝업 추가",
-  Connect_Popup_Link : "팝업에 연결할 링크",
-
-
+  Connect_Popup_Link: "팝업에 연결할 링크",
 
   // Login.vue
   GO: "로그인",
@@ -390,4 +388,4 @@ export const m = {
   School_Email: "학교 이메일",
   College: "단과대학",
   Major: "전공",
-};
+}

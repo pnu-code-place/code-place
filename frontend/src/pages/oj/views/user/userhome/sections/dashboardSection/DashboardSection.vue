@@ -1,12 +1,12 @@
 <script>
-import OjSummary from "../../OJSummary.vue";
-import FieldSummary from "./FieldSummary.vue";
-import DifficultySummary from "./DifficultySummary.vue";
-import ChallengeSummary from "./AchievementSummary.vue";
-import api from "@oj/api";
-import DashboardSkeleton from "./DashboardSkeleton.vue";
-import AchievementsSkeleton from "../AchievementsSkeleton.vue";
-import ErrorSign from "../../../../general/ErrorSign.vue";
+import OjSummary from "../../OJSummary.vue"
+import FieldSummary from "./FieldSummary.vue"
+import DifficultySummary from "./DifficultySummary.vue"
+import ChallengeSummary from "./AchievementSummary.vue"
+import api from "@oj/api"
+import DashboardSkeleton from "./DashboardSkeleton.vue"
+import AchievementsSkeleton from "../AchievementsSkeleton.vue"
+import ErrorSign from "../../../../general/ErrorSign.vue"
 
 export default {
   name: "dashboard-section",
@@ -15,44 +15,63 @@ export default {
       isLoading: true,
       error: 0,
       dashboardInfo: {},
-      myData: 0
+      myData: 0,
     }
   },
   components: {
     ErrorSign,
-    AchievementsSkeleton, DashboardSkeleton, ChallengeSummary, DifficultySummary, OjSummary, FieldSummary
+    AchievementsSkeleton,
+    DashboardSkeleton,
+    ChallengeSummary,
+    DifficultySummary,
+    OjSummary,
+    FieldSummary,
   },
   methods: {
     init() {
-      api.getDashboardInfo(this.username).then(res => {
-        this.dashboardInfo = res.data.data
-        this.isLoading = false
-      }).catch((err) => {
-        this.isLoading = false
-        this.error = err.response.status
-      })
+      api
+        .getDashboardInfo(this.username)
+        .then((res) => {
+          this.dashboardInfo = res.data.data
+          this.isLoading = false
+        })
+        .catch((err) => {
+          this.isLoading = false
+          this.error = err.response.status
+        })
     },
     test() {
       this.myData += 1
-    }
+    },
   },
   mounted() {
     this.init()
   },
   computed: {
     username() {
-      let username = '';
+      let username = ""
 
-      if (this.$route && this.$route.params && typeof this.$route.params.username === 'string') {
-        username = this.$route.params.username;
+      if (
+        this.$route &&
+        this.$route.params &&
+        typeof this.$route.params.username === "string"
+      ) {
+        username = this.$route.params.username
       }
 
-      if (!username && this.$store && this.$store.state.user && this.$store.state.user.profile && this.$store.state.user.profile.user && typeof this.$store.state.user.profile.user.username === 'string') {
-        username = this.$store.state.user.profile.user.username;
+      if (
+        !username &&
+        this.$store &&
+        this.$store.state.user &&
+        this.$store.state.user.profile &&
+        this.$store.state.user.profile.user &&
+        typeof this.$store.state.user.profile.user.username === "string"
+      ) {
+        username = this.$store.state.user.profile.user.username
       }
 
-      return username;
-    }
+      return username
+    },
   },
 }
 </script>
@@ -61,19 +80,24 @@ export default {
   <section>
     <ErrorSign v-if="error !== 0" :code="this.error"></ErrorSign>
     <div v-else>
-      <h2>{{ $t('m.Field_Based_Distribution') }}</h2>
-      <FieldSummary v-if="this.dashboardInfo.fieldInfo" :fieldInfo="this.dashboardInfo.fieldInfo"></FieldSummary>
+      <h2>{{ $t("m.Field_Based_Distribution") }}</h2>
+      <FieldSummary
+        v-if="this.dashboardInfo.fieldInfo"
+        :fieldInfo="this.dashboardInfo.fieldInfo"
+      ></FieldSummary>
       <DashboardSkeleton v-else-if="this.isLoading"></DashboardSkeleton>
-      <hr/>
-      <h2>{{ $t('m.Difficulty_Based_Distribution') }}</h2>
-      <DifficultySummary v-if="this.dashboardInfo.difficultyInfo"
-                         :difficultyInfo="this.dashboardInfo.difficultyInfo"></DifficultySummary>
+      <hr />
+      <h2>{{ $t("m.Difficulty_Based_Distribution") }}</h2>
+      <DifficultySummary
+        v-if="this.dashboardInfo.difficultyInfo"
+        :difficultyInfo="this.dashboardInfo.difficultyInfo"
+      ></DifficultySummary>
       <DashboardSkeleton v-else-if="this.isLoading"></DashboardSkeleton>
-<!--      <hr/>-->
-<!--      <h1>{{ $t('m.Achievement') }}</h1>-->
-<!--      <ChallengeSummary v-if="this.dashboardInfo.achievements"-->
-<!--                        :achievements="this.dashboardInfo.achievements"></ChallengeSummary>-->
-<!--      <AchievementsSkeleton v-else-if="this.isLoading"></AchievementsSkeleton>-->
+      <!--      <hr/>-->
+      <!--      <h1>{{ $t('m.Achievement') }}</h1>-->
+      <!--      <ChallengeSummary v-if="this.dashboardInfo.achievements"-->
+      <!--                        :achievements="this.dashboardInfo.achievements"></ChallengeSummary>-->
+      <!--      <AchievementsSkeleton v-else-if="this.isLoading"></AchievementsSkeleton>-->
     </div>
   </section>
 </template>

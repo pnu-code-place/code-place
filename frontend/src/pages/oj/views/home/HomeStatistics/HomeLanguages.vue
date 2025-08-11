@@ -1,13 +1,13 @@
 <script>
-import LanguageIcon from "./LanguageIcon.vue";
-import {LANGUAGE_INFO} from "../../../../../utils/constants";
-import SolvedProblems from "./SolvedProblems.vue";
-import TotalProblems from "./TotalProblems.vue";
-import HeldContests from "./HeldContests.vue";
+import LanguageIcon from "./LanguageIcon.vue"
+import { LANGUAGE_INFO } from "../../../../../utils/constants"
+import SolvedProblems from "./SolvedProblems.vue"
+import TotalProblems from "./TotalProblems.vue"
+import HeldContests from "./HeldContests.vue"
 
 export default {
-  name: 'HomeStatusBox',
-  components: {LanguageIcon, SolvedProblems, TotalProblems, HeldContests},
+  name: "HomeStatusBox",
+  components: { LanguageIcon, SolvedProblems, TotalProblems, HeldContests },
   data() {
     return {
       languages: LANGUAGE_INFO,
@@ -33,9 +33,9 @@ export default {
       return this.languageIndex !== -1
     },
     langExtendedClass() {
-      return this.langExtended ? 'extended' : ''
+      return this.langExtended ? "extended" : ""
     },
-  }
+  },
 }
 </script>
 
@@ -43,12 +43,18 @@ export default {
   <div class="home-status-box">
     <div :class="`languages ${langExtendedClass}`">
       <h3>
-        {{ $t('m.UsableLanguages') }}
+        {{ $t("m.UsableLanguages") }}
       </h3>
-      <hr/>
+      <hr />
       <div class="language-list">
-        <LanguageIcon v-for="(language, index) in languages" :key="index" :index="index"
-                      :image="language.image" :openIndex="languageIndex" @extend="langSelect" :extended="langExtended"
+        <LanguageIcon
+          v-for="(language, index) in languages"
+          :key="index"
+          :index="index"
+          :image="language.image"
+          :openIndex="languageIndex"
+          @extend="langSelect"
+          :extended="langExtended"
         />
       </div>
       <div v-if="langExtended" class="description-wrapper">
@@ -59,7 +65,7 @@ export default {
           {{ this.description }}
         </p>
         <h3>
-          {{ $t('m.Lecture') }}
+          {{ $t("m.Lecture") }}
         </h3>
         <div class="lectures">
           <div class="lecture-item" v-for="lecture in this.lectures">
@@ -76,7 +82,7 @@ h3 {
   font-size: 18px;
   padding: 15px 0;
   font-weight: 650;
-  color: var(--ps-content-text-color)
+  color: var(--ps-content-text-color);
 }
 
 .home-status-box {
@@ -106,7 +112,7 @@ h3 {
   }
 
   .description-wrapper {
-    overflow: hidden
+    overflow: hidden;
   }
 
   .description {

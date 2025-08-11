@@ -47,10 +47,10 @@
 </template>
 
 <script>
-import api from "../../../api.js";
+import api from "../../../api.js"
 
-import ConfirmModal from "@/pages/oj/components/modal/ConfirmModal";
-import ImageDragAndDropBox from "@/pages/oj/components/ImageDragAndDropBox";
+import ConfirmModal from "@/pages/oj/components/modal/ConfirmModal"
+import ImageDragAndDropBox from "@/pages/oj/components/ImageDragAndDropBox"
 
 export default {
   name: "AddBannerModal",
@@ -61,7 +61,7 @@ export default {
       imageFile: null,
       hasLinkUrlError: false,
       hasImageFileError: false,
-    };
+    }
   },
   components: {
     ConfirmModal,
@@ -69,51 +69,51 @@ export default {
   },
   methods: {
     handleClose() {
-      this.resetData();
-      this.$emit("onClose");
+      this.resetData()
+      this.$emit("onClose")
     },
     handleConfirmButtonClick() {
-      if (this.linkUrl === "") this.hasLinkUrlError = true;
-      if (this.imageFile === null) this.hasImageFileError = true;
+      if (this.linkUrl === "") this.hasLinkUrlError = true
+      if (this.imageFile === null) this.hasImageFileError = true
 
-      if (this.hasLinkUrlError || this.hasImageFileError) return;
+      if (this.hasLinkUrlError || this.hasImageFileError) return
 
-      const formData = new FormData();
-      formData.append("link_url", this.linkUrl);
-      formData.append("image", this.imageFile);
+      const formData = new FormData()
+      formData.append("link_url", this.linkUrl)
+      formData.append("image", this.imageFile)
 
       api
         .addBanner(formData)
         .then((res) => {
           if (res.status === 200) {
-            this.resetData();
-            this.$emit("onClose");
+            this.resetData()
+            this.$emit("onClose")
           }
         })
         .catch((res) => {
-          if (res.data.data === "Invalid URL") this.hasLinkUrlError = true;
-        });
+          if (res.data.data === "Invalid URL") this.hasLinkUrlError = true
+        })
     },
     resetData() {
-      this.linkUrl = "";
-      this.imageFile = null;
-      this.imageUrl = "";
+      this.linkUrl = ""
+      this.imageFile = null
+      this.imageUrl = ""
     },
     async handleBannerImageChange(image) {
-      this.imageFile = image;
-      this.imageUrl = await this.readImage(image);
+      this.imageFile = image
+      this.imageUrl = await this.readImage(image)
     },
     async readImage(image) {
       return new Promise((resolve, reject) => {
-        const reader = new FileReader();
+        const reader = new FileReader()
         reader.onload = async (e) => {
-          resolve(e.target.result);
-        };
-        reader.readAsDataURL(image);
-      });
+          resolve(e.target.result)
+        }
+        reader.readAsDataURL(image)
+      })
     },
   },
-};
+}
 </script>
 
 <style lang="less" scoped>

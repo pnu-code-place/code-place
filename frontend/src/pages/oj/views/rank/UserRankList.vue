@@ -1,22 +1,22 @@
 <script>
-import UserItem from "./UserRankItem.vue";
+import UserItem from "./UserRankItem.vue"
 
 export default {
-  name: 'RankList',
-  components: {UserItem},
+  name: "RankList",
+  components: { UserItem },
   props: {
     userList: {
       type: Array,
-      default: []
+      default: [],
     },
     isLoading: {
       type: Boolean,
-      default: false
+      default: false,
     },
     limit: {
       type: Number,
-      default: 30
-    }
+      default: 30,
+    },
   },
 }
 </script>
@@ -24,22 +24,33 @@ export default {
 <template>
   <table>
     <thead>
-    <tr>
-      <th class="col-rank">{{ $t('m.Rank') }}</th>
-      <th class="col-user">{{ $t('m.Users') }}</th>
-      <th class="col-major">{{ $t('m.Major') }}</th>
-      <th class="col-grade">{{ $t('m.Grade') }}</th>
-      <th class="col-score">{{ $t('m.Score') }}/{{ $t('m.Today_Growth')}}</th>
-      <th class="col-solved">{{ $t('m.Solved_Problems') }}</th>
-    </tr>
+      <tr>
+        <th class="col-rank">{{ $t("m.Rank") }}</th>
+        <th class="col-user">{{ $t("m.Users") }}</th>
+        <th class="col-major">{{ $t("m.Major") }}</th>
+        <th class="col-grade">{{ $t("m.Grade") }}</th>
+        <th class="col-score">
+          {{ $t("m.Score") }}/{{ $t("m.Today_Growth") }}
+        </th>
+        <th class="col-solved">{{ $t("m.Solved_Problems") }}</th>
+      </tr>
     </thead>
     <tbody>
-    <tr v-if="isLoading" v-for="index in 10" :key="index" class="skeleton-row">
-      <td class="skeleton-wrapper" v-for="index in 6">
-        <div class="skeleton"></div>
-      </td>
-    </tr>
-    <UserItem v-for="user in userList" :key="user.username" :user="user"></UserItem>
+      <tr
+        v-if="isLoading"
+        v-for="index in 10"
+        :key="index"
+        class="skeleton-row"
+      >
+        <td class="skeleton-wrapper" v-for="index in 6">
+          <div class="skeleton"></div>
+        </td>
+      </tr>
+      <UserItem
+        v-for="user in userList"
+        :key="user.username"
+        :user="user"
+      ></UserItem>
     </tbody>
   </table>
 </template>
@@ -133,8 +144,5 @@ th {
   &.col-solved {
     width: 10%;
   }
-
 }
-
-
 </style>

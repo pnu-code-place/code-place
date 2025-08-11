@@ -1,41 +1,41 @@
 <script>
-import ShineWrapper from "../../../../../components/ShineWrapper.vue";
+import ShineWrapper from "../../../../../components/ShineWrapper.vue"
 
 export default {
-  components: {ShineWrapper},
+  components: { ShineWrapper },
   props: {
     title: {
       type: String,
-      required: true
+      required: true,
     },
     description: {
       type: String,
-      required: true
+      required: true,
     },
     image: {
       type: String,
-      required: true
+      required: true,
     },
     acquireTime: {
       type: String,
-      required: false
+      required: false,
     },
     tooltipDisabled: {
       type: Boolean,
       default() {
         return false
-      }
+      },
     },
     greyscale: {
       type: Boolean,
       default() {
         return false
-      }
-    }
+      },
+    },
   },
   data() {
     return {
-      displayImage: this.image
+      displayImage: this.image,
     }
   },
   computed: {
@@ -44,29 +44,34 @@ export default {
     },
     acquireDate() {
       if (this.acquireTime) {
-        return this.acquireTime.split("T")[0];
+        return this.acquireTime.split("T")[0]
       } else {
-        return "";
+        return ""
       }
-    }
+    },
   },
   methods: {
     onMedalError(e) {
-      e.target.src = this.fallbackMedal;
-    }
-  }
+      e.target.src = this.fallbackMedal
+    },
+  },
 }
 </script>
 
 <template>
   <Tooltip placement="bottom" class="tooltip" :disabled="this.tooltipDisabled">
     <shine-wrapper class="image" :disabled="greyscale">
-      <img :src="image" alt="badge" @error="onMedalError" :class="{grey:this.greyscale}"/>
+      <img
+        :src="image"
+        alt="badge"
+        @error="onMedalError"
+        :class="{ grey: this.greyscale }"
+      />
     </shine-wrapper>
     <template #content>
       <h3>{{ title }}</h3>
       <p>{{ description }}</p>
-      <div>{{ $t('m.Date') }} : {{ acquireDate }}</div>
+      <div>{{ $t("m.Date") }} : {{ acquireDate }}</div>
     </template>
   </Tooltip>
 </template>

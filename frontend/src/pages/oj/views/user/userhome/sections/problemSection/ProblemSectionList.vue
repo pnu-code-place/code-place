@@ -3,7 +3,7 @@
     <section>
       <div class="problem-tab">
         <header class="problem-tab__header">
-          <h1 class="main-title">{{ $t('m.Problem_Status') }}</h1>
+          <h1 class="main-title">{{ $t("m.Problem_Status") }}</h1>
           <ul class="query-dropdowns">
             <li>
               <DatePicker
@@ -47,10 +47,17 @@
           </ul>
         </header>
       </div>
-      <hr>
+      <hr />
       <ErrorSign v-if="error !== 0" :code="this.error"></ErrorSign>
-      <ProblemSkeleton v-if="isLoading" class="loading-skeleton"></ProblemSkeleton>
-      <ErrorSign v-else-if="problem_list.length === 0" code="" :solution="this.$t('m.There_Is_No_Solved_Problem')"></ErrorSign>
+      <ProblemSkeleton
+        v-if="isLoading"
+        class="loading-skeleton"
+      ></ProblemSkeleton>
+      <ErrorSign
+        v-else-if="problem_list.length === 0"
+        code=""
+        :solution="this.$t('m.There_Is_No_Solved_Problem')"
+      ></ErrorSign>
       <div v-else class="problem-list">
         <ProblemBadge
           v-for="problem in problem_list"
@@ -63,42 +70,44 @@
 </template>
 
 <script>
-import ProblemBadge from "./ProblemBadge.vue";
-import api from "@oj/api";
-import ProblemSkeleton from "./ProblemSkeleton.vue";
-import {DIFFICULTY_MAP, FIELD_MAP} from "../../../../../../../utils/constants";
-import ErrorSign from "../../../../general/ErrorSign.vue";
-import CustomDropdown from "../../../../../components/dropdown/CustomDropdown.vue";
-import utils from "../../../../../../../utils/utils";
+import ProblemBadge from "./ProblemBadge.vue"
+import api from "@oj/api"
+import ProblemSkeleton from "./ProblemSkeleton.vue"
+import { DIFFICULTY_MAP, FIELD_MAP } from "../../../../../../../utils/constants"
+import ErrorSign from "../../../../general/ErrorSign.vue"
+import CustomDropdown from "../../../../../components/dropdown/CustomDropdown.vue"
+import utils from "../../../../../../../utils/utils"
 
 export default {
-  name: 'problem-section-list',
-  components: {CustomDropdown, ErrorSign, ProblemSkeleton, ProblemBadge},
+  name: "problem-section-list",
+  components: { CustomDropdown, ErrorSign, ProblemSkeleton, ProblemBadge },
   data() {
     return {
       isLoading: true,
       error: 0,
       query: {
-        startDate: '',
-        endDate: '',
-        field: '',
-        difficulty: '',
-        status: ''
+        startDate: "",
+        endDate: "",
+        field: "",
+        difficulty: "",
+        status: "",
       },
       fieldOptions: [],
       difficultyOptions: [],
       statusOptions: [
         {
-          id: 'All',
-          name: this.$t('m.All')
+          id: "All",
+          name: this.$t("m.All"),
         },
         {
-          id: 'Solved',
-          name: this.$t('m.Solved_Problems')
-        }, {
-          id: 'Failed',
-          name: this.$t('m.Failed_Problems')
-        }],
+          id: "Solved",
+          name: this.$t("m.Solved_Problems"),
+        },
+        {
+          id: "Failed",
+          name: this.$t("m.Failed_Problems"),
+        },
+      ],
       problem_list: [],
     }
   },
@@ -109,33 +118,33 @@ export default {
       this.requestData()
     },
     initQuery() {
-      this.query.startDate = this.$route.query.startDate || ''
-      this.query.endDate = this.$route.query.endDate || ''
-      this.query.field = this.$route.query.field || ''
-      this.query.difficulty = this.$route.query.difficulty || ''
-      this.query.status = this.$route.query.status || ''
+      this.query.startDate = this.$route.query.startDate || ""
+      this.query.endDate = this.$route.query.endDate || ""
+      this.query.field = this.$route.query.field || ""
+      this.query.difficulty = this.$route.query.difficulty || ""
+      this.query.status = this.$route.query.status || ""
     },
     optionInit() {
-      this.difficultyOptions = Object.keys(DIFFICULTY_MAP).map(key => ({
+      this.difficultyOptions = Object.keys(DIFFICULTY_MAP).map((key) => ({
         id: key,
-        name: DIFFICULTY_MAP[key].value
+        name: DIFFICULTY_MAP[key].value,
       }))
-      this.difficultyOptions.unshift({id: 'All', name: this.$t('m.All')})
-      this.fieldOptions = Object.keys(FIELD_MAP).map(key => ({
+      this.difficultyOptions.unshift({ id: "All", name: this.$t("m.All") })
+      this.fieldOptions = Object.keys(FIELD_MAP).map((key) => ({
         id: key,
-        name: FIELD_MAP[key].value
+        name: FIELD_MAP[key].value,
       }))
-      this.fieldOptions.unshift({id: 'All', name: this.$t('m.All')})
+      this.fieldOptions.unshift({ id: "All", name: this.$t("m.All") })
     },
     requestData() {
       this.isLoading = true
-      api.getUserProblemInfo(this.username, utils.filterEmptyValue(this.query)).then(res => {
-        this.problem_list = res.data.data
-      }).catch(error =>
-        this.error = error.response.status
-      ).finally(() =>
-        this.isLoading = false
-      )
+      api
+        .getUserProblemInfo(this.username, utils.filterEmptyValue(this.query))
+        .then((res) => {
+          this.problem_list = res.data.data
+        })
+        .catch((error) => (this.error = error.response.status))
+        .finally(() => (this.isLoading = false))
     },
     changeDateRange(dateRange) {
       if (dateRange && dateRange.length === 2) {
@@ -143,8 +152,8 @@ export default {
         this.query.endDate = dateRange[1]
       } else {
         // If the date range is invalid, reset the start and end dates
-        this.query.startDate = ''
-        this.query.endDate = ''
+        this.query.startDate = ""
+        this.query.endDate = ""
       }
       this.pushRouter()
     },
@@ -162,9 +171,9 @@ export default {
     },
     pushRouter() {
       this.$router.push({
-        name: 'user-problems',
-        params: {username: this.username},
-        query: utils.filterEmptyValue(this.query)
+        name: "user-problems",
+        params: { username: this.username },
+        query: utils.filterEmptyValue(this.query),
       })
       this.requestData()
     },
@@ -174,15 +183,26 @@ export default {
   },
   computed: {
     username() {
-      let username = '';
-      if (this.$route && this.$route.params && typeof this.$route.params.username === 'string') {
-        username = this.$route.params.username;
+      let username = ""
+      if (
+        this.$route &&
+        this.$route.params &&
+        typeof this.$route.params.username === "string"
+      ) {
+        username = this.$route.params.username
       }
-      if (!username && this.$store && this.$store.state.user && this.$store.state.user.profile && this.$store.state.user.profile.user && typeof this.$store.state.user.profile.user.username === 'string') {
-        username = this.$store.state.user.profile.user.username;
+      if (
+        !username &&
+        this.$store &&
+        this.$store.state.user &&
+        this.$store.state.user.profile &&
+        this.$store.state.user.profile.user &&
+        typeof this.$store.state.user.profile.user.username === "string"
+      ) {
+        username = this.$store.state.user.profile.user.username
       }
-      return username;
-    }
+      return username
+    },
   },
 }
 </script>

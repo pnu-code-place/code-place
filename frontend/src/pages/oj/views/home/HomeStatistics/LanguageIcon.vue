@@ -1,68 +1,66 @@
 <script>
 export default {
-  name: 'LanguageIcon',
+  name: "LanguageIcon",
   data() {
     return {}
   },
   props: {
     language: {
       type: String,
-      default: 'language'
+      default: "language",
     },
     image: {
       type: String,
-      default: 'image'
+      default: "image",
     },
     description: {
       type: String,
-      default: 'description'
+      default: "description",
     },
     lecture: {
       type: Array,
-      default: () => []
+      default: () => [],
     },
     openIndex: {
       type: Number,
-      default: -1
+      default: -1,
     },
     index: {
       type: Number,
-      default: 0
+      default: 0,
     },
     extended: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
   },
   methods: {
     openDetail() {
-      this.$emit('extend', this.index)
-    }
+      this.$emit("extend", this.index)
+    },
   },
   computed: {
     selected() {
       return this.openIndex === this.index
     },
     selectedClass() {
-      return this.selected ? 'selected' : ''
+      return this.selected ? "selected" : ""
     },
     extendedClass() {
-      return this.extended ? 'extended' : ''
-    }
-  }
+      return this.extended ? "extended" : ""
+    },
+  },
 }
 
 // TODO : 애니메이션 기획 및 구현
 </script>
 <template>
   <div :class="`language-info ${selectedClass}`" @mouseenter="openDetail">
-    <img :src="image" alt="language" :class="extendedClass"/>
+    <img :src="image" alt="language" :class="extendedClass" />
   </div>
 </template>
 
 <style scoped lang="less">
-
-
 .language-info {
   display: flex;
   flex-direction: column;
@@ -89,16 +87,15 @@ export default {
   }
 }
 
-
 @keyframes hover {
   0% {
-    transform: translateY(7%)
+    transform: translateY(7%);
   }
   50% {
-    transform: translateY(-7%)
+    transform: translateY(-7%);
   }
   100% {
-    transform: translateY(7%)
+    transform: translateY(7%);
   }
 }
 </style>

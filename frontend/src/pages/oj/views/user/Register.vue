@@ -5,7 +5,14 @@
         <span class="inputName">부산대학교 웹메일</span>
         <div>
           <Icon type="ios-information" size="13" color="#7a7a7a"></Icon>
-          <span>부산대학교 웹메일이 없으신가요? <a href="https://zm911.mailplug.com/member/join" class="webMailSignUpLink">가입하기</a></span>
+          <span
+            >부산대학교 웹메일이 없으신가요?
+            <a
+              href="https://zm911.mailplug.com/member/join"
+              class="webMailSignUpLink"
+              >가입하기</a
+            ></span
+          >
         </div>
       </div>
       <FormItem prop="pnuWebMail">
@@ -27,7 +34,7 @@
             class="emailAuthBtn"
             :disabled="this.emailAuthCodeInputState"
             @click="handleClickEmailAuthBtn"
-          >인증
+            >인증
           </Button>
         </div>
       </FormItem>
@@ -40,13 +47,13 @@
           class="emailCodeInput"
         >
         </Input>
-        <Button type="primary"
-                class="emailAuthBtn emailCodeBtn"
-                @click="handleClickAuthCodeVerificationBtn"
-                :disabled="emailAuthCodeVerifyCompletedState"
-        >인증완료
-        </Button
-        >
+        <Button
+          type="primary"
+          class="emailAuthBtn emailCodeBtn"
+          @click="handleClickAuthCodeVerificationBtn"
+          :disabled="emailAuthCodeVerifyCompletedState"
+          >인증완료
+        </Button>
       </FormItem>
       <div class="inputNameWithDescription">
         <span class="inputName">닉네임</span>
@@ -70,12 +77,10 @@
           type="primary"
           class="nicknameAuthBtn"
           @click="handleClickNicknameAuthBtn"
-        >중복체크
+          >중복체크
         </Button>
       </FormItem>
-      <div class="inputName">
-        학번
-      </div>
+      <div class="inputName">학번</div>
       <FormItem prop="student_id">
         <Input
           type="text"
@@ -86,9 +91,7 @@
         >
         </Input>
       </FormItem>
-      <div class="inputName">
-        이름(실명)
-      </div>
+      <div class="inputName">이름(실명)</div>
       <FormItem prop="real_name">
         <Input
           type="text"
@@ -99,14 +102,20 @@
         >
         </Input>
       </FormItem>
-      <div class="inputName">
-        단과대학 선택
-      </div>
-      <CustomDropDown style="margin-bottom: 20px" :options="this.collegeList" nameKey="college_name" @dropdownChange="handleCollegeChange"/>
-      <div class="inputName">
-        학과선택
-      </div>
-      <CustomDropDown style="margin-bottom: 20px" :options="this.majorList" nameKey="department_name" @dropdownChange="handleMajorChange"/>
+      <div class="inputName">단과대학 선택</div>
+      <CustomDropDown
+        style="margin-bottom: 20px"
+        :options="this.collegeList"
+        nameKey="college_name"
+        @dropdownChange="handleCollegeChange"
+      />
+      <div class="inputName">학과선택</div>
+      <CustomDropDown
+        style="margin-bottom: 20px"
+        :options="this.majorList"
+        nameKey="department_name"
+        @dropdownChange="handleMajorChange"
+      />
       <div class="inputNameWithDescription">
         <span class="inputName">비밀번호</span>
         <div>
@@ -125,14 +134,16 @@
           >
           </Input>
           <i
-            :class="['fa', 'fa-lg', passwordFieldType === 'password' ? 'fa-eye' : 'fa-eye-slash']"
+            :class="[
+              'fa',
+              'fa-lg',
+              passwordFieldType === 'password' ? 'fa-eye' : 'fa-eye-slash',
+            ]"
             @click="togglePasswordVisibility"
           ></i>
         </div>
       </FormItem>
-      <div class="inputName">
-        비밀번호 확인
-      </div>
+      <div class="inputName">비밀번호 확인</div>
       <FormItem prop="passwordAgain">
         <Input
           type="password"
@@ -156,72 +167,72 @@
       </Button>
       <div style="text-align: center">
         <a class="redirectLogin" @click.stop="switchMode('login')">{{
-            $t("m.UserLogin")
-          }}</a>
+          $t("m.UserLogin")
+        }}</a>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import {mapGetters, mapActions} from "vuex";
-import api from "@oj/api";
-import {FormMixin} from "@oj/components/mixins";
-import CustomDropDown from "../../components/dropdown/CustomDropdown.vue";
+import { mapGetters, mapActions } from "vuex"
+import api from "@oj/api"
+import { FormMixin } from "@oj/components/mixins"
+import CustomDropDown from "../../components/dropdown/CustomDropdown.vue"
 
 export default {
   mixins: [FormMixin],
   components: {
-    CustomDropDown
+    CustomDropDown,
   },
   mounted() {
-    this.getCollegeList();
-    this.getCaptchaSrc();
+    this.getCollegeList()
+    this.getCaptchaSrc()
   },
   data() {
     const CheckPassword = (rule, value, callback) => {
       if (this.formRegister.password !== "") {
-        this.$refs.formRegister.validateField("passwordAgain");
+        this.$refs.formRegister.validateField("passwordAgain")
       }
-      callback();
-    };
+      callback()
+    }
 
     const CheckUsernameNotExist = (rule, value, callback) => {
       api.checkUsernameOrEmail(value, undefined).then(
-        res => {
+        (res) => {
           if (res.data.data.username === true) {
-            callback(new Error(this.$i18n.t("m.The_username_already_exists")));
+            callback(new Error(this.$i18n.t("m.The_username_already_exists")))
           } else {
-            callback();
+            callback()
           }
         },
-        _ => callback()
-      );
-    };
+        (_) => callback(),
+      )
+    }
     const CheckEmailNotExist = (rule, value, callback) => {
       api.checkUsernameOrEmail(undefined, value).then(
-        res => {
+        (res) => {
           if (res.data.data.email === true) {
-            callback(new Error(this.$i18n.t("m.The_email_already_exists")));
+            callback(new Error(this.$i18n.t("m.The_email_already_exists")))
           } else {
-            callback();
+            callback()
           }
         },
-        _ => callback()
-      );
-    };
+        (_) => callback(),
+      )
+    }
 
     const CheckAgainPassword = (rule, value, callback) => {
       if (value !== this.formRegister.password) {
-        callback(new Error(this.$i18n.t("m.password_does_not_match")));
+        callback(new Error(this.$i18n.t("m.password_does_not_match")))
       }
-      callback();
-    };
+      callback()
+    }
 
     return {
       pusanDomain: "@pusan.ac.kr",
       btnRegisterLoading: false,
-      passwordFieldType: 'password',
+      passwordFieldType: "password",
       nicknameVerifyCompletedState: false,
       emailAuthCodeInputState: false,
       emailAuthCodeVerifyCompletedState: false,
@@ -235,102 +246,115 @@ export default {
         departmentId: "",
         password: "",
         passwordAgain: "",
-        captcha: ""
+        captcha: "",
       },
       ruleRegister: {
         password: [
-          {required: true, trigger: "blur", min: 8, max: 20},
-          {validator: CheckPassword, trigger: "blur"}
+          { required: true, trigger: "blur", min: 8, max: 20 },
+          { validator: CheckPassword, trigger: "blur" },
         ],
         passwordAgain: [
-          {required: true, validator: CheckAgainPassword, trigger: "change"}
+          { required: true, validator: CheckAgainPassword, trigger: "change" },
         ],
       },
       collegeList: [],
-      majorList: []
-    };
+      majorList: [],
+    }
   },
   methods: {
     ...mapActions(["changeModalStatus", "getProfile"]),
     handleClickEmailAuthBtn() {
-      api.applyUserEmailValidCheck(this.pusanEmail)
-        .then(res => {
-          this.$success("인증 메일이 성공적으로 전송되었습니다.");
-          this.emailAuthCodeInputState = true;
+      api
+        .applyUserEmailValidCheck(this.pusanEmail)
+        .then((res) => {
+          this.$success("인증 메일이 성공적으로 전송되었습니다.")
+          this.emailAuthCodeInputState = true
         })
-        .catch(error => {
+        .catch((error) => {
           if (error.response) {
             switch (error.response.status) {
               case 400:
-                this.$error("중복된 이메일이 존재합니다. 다른 이메일을 이용해주세요.");
-                break;
+                this.$error(
+                  "중복된 이메일이 존재합니다. 다른 이메일을 이용해주세요.",
+                )
+                break
               default:
-                this.$error("알 수 없는 오류가 발생하였습니다.");
+                this.$error("알 수 없는 오류가 발생하였습니다.")
             }
           }
         })
     },
     handleClickNicknameAuthBtn() {
-      if(this.formRegister.username.length < 3 || this.formRegister.username.length > 8){
-        this.$error("3글자 이상, 8글자 이하만 가능합니다.");
+      if (
+        this.formRegister.username.length < 3 ||
+        this.formRegister.username.length > 8
+      ) {
+        this.$error("3글자 이상, 8글자 이하만 가능합니다.")
         return
       }
-      api.nicknameValidCheck(this.formRegister.username)
-        .then(res => {
-          this.$success("사용 가능한 닉네임입니다.");
+      api
+        .nicknameValidCheck(this.formRegister.username)
+        .then((res) => {
+          this.$success("사용 가능한 닉네임입니다.")
         })
-        .catch(error => {
+        .catch((error) => {
           if (error.response) {
             switch (error.response.status) {
               case 400:
-                this.$error("중복된 닉네임이 존재합니다. 다른 닉네임을 이용해주세요.");
-                break;
+                this.$error(
+                  "중복된 닉네임이 존재합니다. 다른 닉네임을 이용해주세요.",
+                )
+                break
               default:
-                this.$error("알 수 없는 오류가 발생하였습니다.");
+                this.$error("알 수 없는 오류가 발생하였습니다.")
             }
           }
-        });
+        })
     },
     async handleClickAuthCodeVerificationBtn() {
       let res = await api.userEmailValidCheck(this.pusanEmail, this.pnuAuthCode)
       if (res.status === 200) {
         this.emailAuthCodeVerifyCompletedState = true
-        this.$success("인증 완료되었습니다.");
+        this.$success("인증 완료되었습니다.")
       }
       console.log(res)
     },
     switchMode(mode) {
       this.changeModalStatus({
         mode,
-        visible: true
-      });
+        visible: true,
+      })
     },
     togglePasswordVisibility() {
-      this.passwordFieldType = this.passwordFieldType === 'password' ? 'text' : 'password'
+      this.passwordFieldType =
+        this.passwordFieldType === "password" ? "text" : "password"
     },
     handleRegister() {
       if (!this.emailAuthCodeVerifyCompletedState) {
         this.$error("웹메일 인증이 완료되지 않았습니다.")
         return
       }
-      this.validateForm("formRegister").then(valid => {
-        let formData = Object.assign({}, this.formRegister);
+      this.validateForm("formRegister").then((valid) => {
+        let formData = Object.assign({}, this.formRegister)
         formData["email"] = this.pusanEmail
-        delete formData["passwordAgain"];
-        this.btnRegisterLoading = true;
-        api.register(formData).then(
-          res => {
-            this.$success(this.$i18n.t("m.Thanks_for_registering"));
-            this.switchMode("login");
-            this.btnRegisterLoading = false;
-          },
-          _ => {
-            this.btnRegisterLoading = false;
-          }
-        ).catch(err => {
-          this.$error(err.data)
-        });
-      });
+        delete formData["passwordAgain"]
+        this.btnRegisterLoading = true
+        api
+          .register(formData)
+          .then(
+            (res) => {
+              this.$success(this.$i18n.t("m.Thanks_for_registering"))
+              this.switchMode("login")
+              this.btnRegisterLoading = false
+            },
+            (_) => {
+              this.btnRegisterLoading = false
+            },
+          )
+          .catch((err) => {
+            this.$error(err.data)
+          })
+      })
     },
     handleCollegeChange(collegeId) {
       this.formRegister.collegeId = collegeId
@@ -346,15 +370,15 @@ export default {
     async getMajorList(collegeId) {
       let res = await api.getMajorList(collegeId)
       this.majorList = res.data.data
-    }
+    },
   },
   computed: {
     pusanEmail() {
-      return this.formRegister.email + this.pusanDomain;
+      return this.formRegister.email + this.pusanDomain
     },
-    ...mapGetters(["website", "modalStatus"])
-  }
-};
+    ...mapGetters(["website", "modalStatus"]),
+  },
+}
 </script>
 
 <style scoped lang="less">
@@ -405,7 +429,6 @@ export default {
 
 .emailAuthInput {
   display: flex;
-
 }
 
 button:disabled {
@@ -442,7 +465,6 @@ button:disabled {
   border-radius: 8px;
   width: 78px;
 }
-
 
 .emailCodeInput {
   width: 280px;
@@ -485,7 +507,7 @@ button:disabled {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap : 5px;
+  gap: 5px;
 
   .email-input {
     display: flex;

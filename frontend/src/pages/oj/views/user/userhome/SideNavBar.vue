@@ -1,42 +1,68 @@
 <template>
   <nav class="side-nav sticky">
     <ul class="nav-content">
-      <router-link :to="{name:'user-dashboard', params: {username:username}}">{{ $t('m.OJ_Status') }}</router-link>
-      <router-link :to="{name:'user-problems', params: {username:username}}">{{ $t('m.Problem_Status') }}</router-link>
-      <router-link :to="{name:'user-community', params: {username:username}}" :disabled="true" class="disabled">
-        {{ $t('m.Community') }}
+      <router-link
+        :to="{ name: 'user-dashboard', params: { username: username } }"
+        >{{ $t("m.OJ_Status") }}</router-link
+      >
+      <router-link
+        :to="{ name: 'user-problems', params: { username: username } }"
+        >{{ $t("m.Problem_Status") }}</router-link
+      >
+      <router-link
+        :to="{ name: 'user-community', params: { username: username } }"
+        :disabled="true"
+        class="disabled"
+      >
+        {{ $t("m.Community") }}
       </router-link>
     </ul>
-    <a v-if="this.isAdminRole" target="_blank" class="admin-manual" href="https://www.notion.so/swei2024/Admin-0aab8a955eda4d0b94dd3a52b1af501e?pvs=4">{{$t('m.Admin_Manual')}}</a>
+    <a
+      v-if="this.isAdminRole"
+      target="_blank"
+      class="admin-manual"
+      href="https://www.notion.so/swei2024/Admin-0aab8a955eda4d0b94dd3a52b1af501e?pvs=4"
+      >{{ $t("m.Admin_Manual") }}</a
+    >
   </nav>
 </template>
 
 <script>
-import {mapGetters} from "vuex";
+import { mapGetters } from "vuex"
 
 export default {
   name: "side-nav-bar",
   computed: {
-    ...mapGetters(['isAdminRole']),
+    ...mapGetters(["isAdminRole"]),
     username() {
-      let username = '';
+      let username = ""
 
-      if (this.$route && this.$route.params && typeof this.$route.params.username === 'string') {
-        username = this.$route.params.username;
+      if (
+        this.$route &&
+        this.$route.params &&
+        typeof this.$route.params.username === "string"
+      ) {
+        username = this.$route.params.username
       }
 
-      if (!username && this.$store && this.$store.state.user && this.$store.state.user.profile && this.$store.state.user.profile.user && typeof this.$store.state.user.profile.user.username === 'string') {
-        username = this.$store.state.user.profile.user.username;
+      if (
+        !username &&
+        this.$store &&
+        this.$store.state.user &&
+        this.$store.state.user.profile &&
+        this.$store.state.user.profile.user &&
+        typeof this.$store.state.user.profile.user.username === "string"
+      ) {
+        username = this.$store.state.user.profile.user.username
       }
 
-      return username;
-    }
-  }
+      return username
+    },
+  },
 }
 </script>
 
 <style scoped lang="less">
-
 .side-nav {
   position: relative;
   width: 17%;

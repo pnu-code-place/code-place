@@ -5,60 +5,97 @@
         <el-row :gutter="20">
           <el-col :span="12">
             <el-form-item :label="$t('m.Server')" required>
-              <el-input v-model="smtp.server" :placeholder="$t('m.SMTP_Server_Address')"></el-input>
+              <el-input
+                v-model="smtp.server"
+                :placeholder="$t('m.SMTP_Server_Address')"
+              ></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item :label="$t('m.Port')" required>
-              <el-input type="number" v-model="smtp.port" :placeholder="$t('m.SMTP_Server_Port')"></el-input>
+              <el-input
+                type="number"
+                v-model="smtp.port"
+                :placeholder="$t('m.SMTP_Server_Port')"
+              ></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item :label="$t('m.Email')" required>
-              <el-input v-model="smtp.email" :placeholder="$t('m.SMTP_Server_Email')"></el-input>
+              <el-input
+                v-model="smtp.email"
+                :placeholder="$t('m.SMTP_Server_Email')"
+              ></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item :label="$t('m.Password')" label-width="90px" required>
-              <el-input v-model="smtp.password" type="password" :placeholder="$t('m.SMTP_Server_Password')"></el-input>
+              <el-input
+                v-model="smtp.password"
+                type="password"
+                :placeholder="$t('m.SMTP_Server_Password')"
+              ></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="24">
             <el-form-item label="TLS">
-              <el-switch
-                v-model="smtp.tls">
-              </el-switch>
+              <el-switch v-model="smtp.tls"> </el-switch>
             </el-form-item>
           </el-col>
         </el-row>
       </el-form>
-      <el-button type="primary" @click="saveSMTPConfig">{{$t('m.Save')}}</el-button>
-      <el-button type="warning" @click="testSMTPConfig"
-                 v-if="saved" :loading="loadingBtnTest">{{$t('m.SMTP_Test_Email')}}</el-button>
+      <el-button type="primary" @click="saveSMTPConfig">{{
+        $t("m.Save")
+      }}</el-button>
+      <el-button
+        type="warning"
+        @click="testSMTPConfig"
+        v-if="saved"
+        :loading="loadingBtnTest"
+        >{{ $t("m.SMTP_Test_Email") }}</el-button
+      >
     </Panel>
 
     <Panel :title="$t('m.Website_Config')">
-      <el-form label-position="left" label-width="100px" ref="form" :model="websiteConfig">
+      <el-form
+        label-position="left"
+        label-width="100px"
+        ref="form"
+        :model="websiteConfig"
+      >
         <el-row :gutter="20">
           <el-col :span="8">
             <el-form-item :label="$t('m.Base_Url')" required>
-              <el-input v-model="websiteConfig.website_base_url" :placeholder="$t('m.Web_Config_Url')"></el-input>
+              <el-input
+                v-model="websiteConfig.website_base_url"
+                :placeholder="$t('m.Web_Config_Url')"
+              ></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="8">
             <el-form-item :label="$t('m.Name')" required>
-              <el-input v-model="websiteConfig.website_name" :placeholder="$t('m.Web_Config_Name')"></el-input>
+              <el-input
+                v-model="websiteConfig.website_name"
+                :placeholder="$t('m.Web_Config_Name')"
+              ></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="8">
             <el-form-item :label="$t('m.Shortcut')" required>
-              <el-input v-model="websiteConfig.website_name_shortcut" :placeholder="$t('m.Web_Config_Shortcut')"></el-input>
+              <el-input
+                v-model="websiteConfig.website_name_shortcut"
+                :placeholder="$t('m.Web_Config_Shortcut')"
+              ></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="24">
             <el-form-item :label="$t('m.Footer')" required>
-              <el-input type="textarea" :autosize="{ minRows: 2, maxRows: 4}" v-model="websiteConfig.website_footer"
-                        :placeholder="$t('m.Web_Config_Footer')"></el-input>
+              <el-input
+                type="textarea"
+                :autosize="{ minRows: 2, maxRows: 4 }"
+                v-model="websiteConfig.website_footer"
+                :placeholder="$t('m.Web_Config_Footer')"
+              ></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="24">
@@ -67,16 +104,21 @@
                 <el-switch
                   v-model="websiteConfig.allow_register"
                   active-color="#13ce66"
-                  inactive-color="#ff4949">
+                  inactive-color="#ff4949"
+                >
                 </el-switch>
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item :label="$t('m.Submission_List_Show_All')" label-width="200px">
+              <el-form-item
+                :label="$t('m.Submission_List_Show_All')"
+                label-width="200px"
+              >
                 <el-switch
                   v-model="websiteConfig.submission_list_show_all"
                   active-color="#13ce66"
-                  inactive-color="#ff4949">
+                  inactive-color="#ff4949"
+                >
                 </el-switch>
               </el-form-item>
             </el-col>
@@ -89,72 +131,84 @@
 </template>
 
 <script>
-  import api from '../../api.js'
+import api from "../../api.js"
 
-  export default {
-    name: 'Conf',
-    data () {
-      return {
-        init: false,
-        saved: false,
-        loadingBtnTest: false,
-        smtp: {
-          server: 'smtp.example.com',
-          port: 25,
-          password: '',
-          email: 'email@example.com',
-          tls: true
-        },
-        websiteConfig: {}
-      }
-    },
-    mounted () {
-      api.getSMTPConfig().then(res => {
-        if (res.data.data) {
-          this.smtp = res.data.data
-        } else {
-          this.init = true
-          this.$warning('Please setup SMTP config at first')
-        }
-      })
-      api.getWebsiteConfig().then(res => {
-        this.websiteConfig = res.data.data
-      }).catch(() => {
-      })
-    },
-    methods: {
-      saveSMTPConfig () {
-        if (!this.init) {
-          api.editSMTPConfig(this.smtp).then(() => {
-            this.saved = true
-          }, () => {
-          })
-        } else {
-          api.createSMTPConfig(this.smtp).then(() => {
-            this.saved = true
-          }, () => {
-          })
-        }
+export default {
+  name: "Conf",
+  data() {
+    return {
+      init: false,
+      saved: false,
+      loadingBtnTest: false,
+      smtp: {
+        server: "smtp.example.com",
+        port: 25,
+        password: "",
+        email: "email@example.com",
+        tls: true,
       },
-      testSMTPConfig () {
-        this.$prompt('Please input your email', '', {
-          inputPattern: /[\w!#$%&'*+/=?^_`{|}~-]+(?:\.[\w!#$%&'*+/=?^_`{|}~-]+)*@(?:[\w](?:[\w-]*[\w])?\.)+[\w](?:[\w-]*[\w])?/,
-          inputErrorMessage: 'Error email format'
-        }).then(({value}) => {
-          this.loadingBtnTest = true
-          api.testSMTPConfig(value).then(() => {
-            this.loadingBtnTest = false
-          }, () => {
-            this.loadingBtnTest = false
-          })
-        }).catch(() => {
-        })
-      },
-      saveWebsiteConfig () {
-        api.editWebsiteConfig(this.websiteConfig).then(() => {
-        }).catch(() => {
-        })
-      }
+      websiteConfig: {},
     }
-  }
+  },
+  mounted() {
+    api.getSMTPConfig().then((res) => {
+      if (res.data.data) {
+        this.smtp = res.data.data
+      } else {
+        this.init = true
+        this.$warning("Please setup SMTP config at first")
+      }
+    })
+    api
+      .getWebsiteConfig()
+      .then((res) => {
+        this.websiteConfig = res.data.data
+      })
+      .catch(() => {})
+  },
+  methods: {
+    saveSMTPConfig() {
+      if (!this.init) {
+        api.editSMTPConfig(this.smtp).then(
+          () => {
+            this.saved = true
+          },
+          () => {},
+        )
+      } else {
+        api.createSMTPConfig(this.smtp).then(
+          () => {
+            this.saved = true
+          },
+          () => {},
+        )
+      }
+    },
+    testSMTPConfig() {
+      this.$prompt("Please input your email", "", {
+        inputPattern:
+          /[\w!#$%&'*+/=?^_`{|}~-]+(?:\.[\w!#$%&'*+/=?^_`{|}~-]+)*@(?:[\w](?:[\w-]*[\w])?\.)+[\w](?:[\w-]*[\w])?/,
+        inputErrorMessage: "Error email format",
+      })
+        .then(({ value }) => {
+          this.loadingBtnTest = true
+          api.testSMTPConfig(value).then(
+            () => {
+              this.loadingBtnTest = false
+            },
+            () => {
+              this.loadingBtnTest = false
+            },
+          )
+        })
+        .catch(() => {})
+    },
+    saveWebsiteConfig() {
+      api
+        .editWebsiteConfig(this.websiteConfig)
+        .then(() => {})
+        .catch(() => {})
+    },
+  },
+}
 </script>

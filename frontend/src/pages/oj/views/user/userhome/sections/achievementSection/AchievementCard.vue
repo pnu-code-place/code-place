@@ -1,13 +1,13 @@
 <script>
-import AchievementBadge from "../dashboardSection/AchievementBadge.vue";
-import HorizontalGauge from "../dashboardSection/HorizontalGauge.vue";
+import AchievementBadge from "../dashboardSection/AchievementBadge.vue"
+import HorizontalGauge from "../dashboardSection/HorizontalGauge.vue"
 
 export default {
-  name: 'GoalCard',
-  components: {AchievementBadge, HorizontalGauge},
+  name: "GoalCard",
+  components: { AchievementBadge, HorizontalGauge },
   data() {
     return {
-      extended: false
+      extended: false,
     }
   },
   props: {
@@ -20,64 +20,69 @@ export default {
         acquireTime: {
           type: String,
           default: "",
-          required: false
+          required: false,
         },
         goal: Number,
-        current: Number
+        current: Number,
       },
-      required: true
+      required: true,
     },
     acquired: {
       type: Boolean,
-      default: false
+      default: false,
     },
     extendReverse: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
   },
   methods: {
     extend() {
-      this.extended = true;
+      this.extended = true
     },
     retract() {
-      this.extended = false;
-    }
+      this.extended = false
+    },
   },
   computed: {
     acquireDate() {
-      return this.acquired ? this.achievement.acquireTime.split("T")[0] : "";
+      return this.acquired ? this.achievement.acquireTime.split("T")[0] : ""
     },
     progress() {
-      return (this.achievement.current / this.achievement.goal).toFixed(1);
+      return (this.achievement.current / this.achievement.goal).toFixed(1)
     },
     progressPercent() {
-      return `${this.progress * 100}%`;
-    }
-  }
+      return `${this.progress * 100}%`
+    },
+  },
 }
 </script>
 
 <template>
   <li class="goal-card" @mouseover="extend" @mouseleave="retract">
     <div class="goal-card__image">
-      <AchievementBadge :title="achievement.title" :acquireTime="achievement.acquireTime" :image="achievement.image"
-                        :description="achievement.description"
-                        :greyscale="!acquired" :tooltip-disabled="true"/>
+      <AchievementBadge
+        :title="achievement.title"
+        :acquireTime="achievement.acquireTime"
+        :image="achievement.image"
+        :description="achievement.description"
+        :greyscale="!acquired"
+        :tooltip-disabled="true"
+      />
     </div>
     <div class="goal-card__extend">
       <div class="goal-card__info">
         <h3>{{ achievement.title }}</h3>
         <p>{{ achievement.description }}</p>
         <div v-if="acquired" class="goal-card__date goal-card__additional">
-          <p>{{ $t('m.Date') }} : {{ acquireDate }}</p>
+          <p>{{ $t("m.Date") }} : {{ acquireDate }}</p>
         </div>
         <div v-else class="goal-card__progress goal-card__additional">
           <p>{{ achievement.current }} / {{ achievement.goal }}</p>
           <div class="progress-wrapper">
             <HorizontalGauge :progress="progress"></HorizontalGauge>
           </div>
-          <p>{{progressPercent}}</p>
+          <p>{{ progressPercent }}</p>
         </div>
       </div>
     </div>
@@ -85,16 +90,18 @@ export default {
 </template>
 
 <style scoped lang="less">
-
-.slide-enter-active, .slide-leave-active {
+.slide-enter-active,
+.slide-leave-active {
   transition: all 0.3s ease;
 }
 
-.slide-enter-from, .slide-leave-to {
+.slide-enter-from,
+.slide-leave-to {
   transform: translateX(-50%) translateY(0%);
 }
 
-.slide-enter-to, .slide-leave-from {
+.slide-enter-to,
+.slide-leave-from {
   transform: translateX(0%) translateY(0%);
 }
 
@@ -144,7 +151,6 @@ export default {
 }
 
 .goal-card:hover {
-
   .goal-card__image {
     z-index: 15;
   }
@@ -168,5 +174,4 @@ export default {
     }
   }
 }
-
 </style>

@@ -1,46 +1,56 @@
 <template>
   <div class="announcements">
     <h1 class="title main-title">
-      {{ $t('m.Announcements') }}
+      {{ $t("m.Announcements") }}
     </h1>
     <div class="announcement-container">
-      <div class="no-announcement" v-if="!announcements.length" key="no-announcement">
-        <p>{{ $t('m.No_Announcements') }}</p>
+      <div
+        class="no-announcement"
+        v-if="!announcements.length"
+        key="no-announcement"
+      >
+        <p>{{ $t("m.No_Announcements") }}</p>
       </div>
       <table v-else class="announcement-table" key="list">
         <thead>
-        <tr>
-          <th class="id">{{ $t('m.ID') }}</th>
-          <th class="title">{{ $t('m.Title') }}</th>
-          <th class="date">{{ $t('m.Date') }}</th>
-          <th class="author">{{ $t('m.Author') }}</th>
-        </tr>
+          <tr>
+            <th class="id">{{ $t("m.ID") }}</th>
+            <th class="title">{{ $t("m.Title") }}</th>
+            <th class="date">{{ $t("m.Date") }}</th>
+            <th class="author">{{ $t("m.Author") }}</th>
+          </tr>
         </thead>
         <tbody>
-        <announcement-item v-for="announcement in announcements" :key="announcement.title" :announcement="announcement">
-        </announcement-item>
+          <announcement-item
+            v-for="announcement in announcements"
+            :key="announcement.title"
+            :announcement="announcement"
+          >
+          </announcement-item>
         </tbody>
       </table>
-      <Pagination v-if="!isContest"
-                  key="page"
-                  :total="total"
-                  :page-size="limit"
-                  @on-change="getAnnouncementList">
+      <Pagination
+        v-if="!isContest"
+        key="page"
+        :total="total"
+        :page-size="limit"
+        @on-change="getAnnouncementList"
+      >
       </Pagination>
     </div>
   </div>
 </template>
 
 <script>
-import api from '@oj/api'
-import Pagination from '@oj/components/Pagination'
-import AnnouncementItem from "./AnnouncementItem.vue";
+import api from "@oj/api"
+import Pagination from "@oj/components/Pagination"
+import AnnouncementItem from "./AnnouncementItem.vue"
 
 export default {
-  name: 'Announcement',
+  name: "Announcement",
   components: {
     AnnouncementItem,
-    Pagination
+    Pagination,
   },
   data() {
     return {
@@ -48,8 +58,8 @@ export default {
       total: 10,
       btnLoading: false,
       announcements: [],
-      announcement: '',
-      listVisible: true
+      announcement: "",
+      listVisible: true,
     }
   },
   mounted() {
@@ -65,22 +75,28 @@ export default {
     },
     getAnnouncementList(page = 1) {
       this.btnLoading = true
-      api.getAnnouncementList((page - 1) * this.limit, this.limit).then(res => {
-        this.btnLoading = false
-        this.announcements = res.data.data.results
-        this.total = res.data.data.total
-      }, () => {
-        this.btnLoading = false
-      })
+      api.getAnnouncementList((page - 1) * this.limit, this.limit).then(
+        (res) => {
+          this.btnLoading = false
+          this.announcements = res.data.data.results
+          this.total = res.data.data.total
+        },
+        () => {
+          this.btnLoading = false
+        },
+      )
     },
     getContestAnnouncementList() {
       this.btnLoading = true
-      api.getContestAnnouncementList(this.$route.params.contestID).then(res => {
-        this.btnLoading = false
-        this.announcements = res.data.data
-      }, () => {
-        this.btnLoading = false
-      })
+      api.getContestAnnouncementList(this.$route.params.contestID).then(
+        (res) => {
+          this.btnLoading = false
+          this.announcements = res.data.data
+        },
+        () => {
+          this.btnLoading = false
+        },
+      )
     },
     goAnnouncement(announcement) {
       this.announcement = announcement
@@ -90,15 +106,17 @@ export default {
   computed: {
     title() {
       if (this.listVisible) {
-        return this.isContest ? this.$i18n.t('m.Contest_Announcements') : this.$i18n.t('m.Announcements')
+        return this.isContest
+          ? this.$i18n.t("m.Contest_Announcements")
+          : this.$i18n.t("m.Announcements")
       } else {
         return this.announcement.title
       }
     },
     isContest() {
       return !!this.$route.params.contestID
-    }
-  }
+    },
+  },
 }
 </script>
 
@@ -159,6 +177,5 @@ export default {
   text-align: center;
   font-size: 18px;
   padding: 20px;
-
 }
 </style>

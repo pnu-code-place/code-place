@@ -1,27 +1,27 @@
-import api from '@oj/api'
+import api from "@oj/api"
 
 export default {
-  data () {
+  data() {
     return {
-      captchaSrc: ''
+      captchaSrc: "",
     }
   },
   methods: {
-    validateForm (formName) {
+    validateForm(formName) {
       return new Promise((resolve, reject) => {
-        this.$refs[formName].validate(valid => {
+        this.$refs[formName].validate((valid) => {
           if (!valid) {
-            this.$error('please validate the error fields')
+            this.$error("please validate the error fields")
           } else {
             resolve(valid)
           }
         })
       })
     },
-    getCaptchaSrc () {
-      api.getCaptcha().then(res => {
+    getCaptchaSrc() {
+      api.getCaptcha().then((res) => {
         this.captchaSrc = res.data.data
       })
-    }
-  }
+    },
+  },
 }

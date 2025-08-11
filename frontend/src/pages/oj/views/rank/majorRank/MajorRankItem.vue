@@ -1,28 +1,27 @@
 <script>
-import {comma} from "../../../../../utils/utils";
-import MajorRankPerson from "./MajorRankPerson.vue";
+import { comma } from "../../../../../utils/utils"
+import MajorRankPerson from "./MajorRankPerson.vue"
 
 export default {
-  name: 'MajorRankItem',
-  components: {MajorRankPerson},
+  name: "MajorRankItem",
+  components: { MajorRankPerson },
   methods: {
     comma,
   },
   data() {
     return {
-      PEOPLE_TO_SHOW: 5
+      PEOPLE_TO_SHOW: 5,
     }
   },
   props: {
     major: {
       type: Object,
-      default: () => {
-      }
+      default: () => {},
     },
     ranking: {
       type: Number,
-      default: 0
-    }
+      default: 0,
+    },
   },
   computed: {
     peopleNum() {
@@ -30,37 +29,49 @@ export default {
     },
     rankingClass() {
       if (this.ranking === 1) {
-        return 'first'
+        return "first"
       } else if (this.ranking === 2) {
-        return 'second'
+        return "second"
       } else if (this.ranking === 3) {
-        return 'third'
+        return "third"
       }
     },
     majorRankClass() {
       return `major-info ${this.rankingClass}`
-    }
-  }
+    },
+  },
 }
 </script>
 
 <template>
   <div class="major-rank-item">
     <div :class="this.majorRankClass">
-      <div class="rank vertical-center horizontal-center">{{ major.rank }}{{$t("m.Th")}}</div>
-      <div class="major vertical-center">{{ major.major }}
+      <div class="rank vertical-center horizontal-center">
+        {{ major.rank }}{{ $t("m.Th") }}
+      </div>
+      <div class="major vertical-center">
+        {{ major.major }}
         <div class="users">
-          <major-rank-person v-for="(user, index) in this.major.people" :ranking="index+1" :user="user" :key="index"  :user-num="peopleNum"/>
+          <major-rank-person
+            v-for="(user, index) in this.major.people"
+            :ranking="index + 1"
+            :user="user"
+            :key="index"
+            :user-num="peopleNum"
+          />
         </div>
       </div>
-      <div class="score vertical-center">{{ comma(major.score) }}{{$t("m.Point")}}</div>
-      <div class="people vertical-center">{{ comma(major.population) }}{{$t("m.People")}}</div>
+      <div class="score vertical-center">
+        {{ comma(major.score) }}{{ $t("m.Point") }}
+      </div>
+      <div class="people vertical-center">
+        {{ comma(major.population) }}{{ $t("m.People") }}
+      </div>
     </div>
   </div>
 </template>
 
 <style scoped lang="less">
-
 .vertical-center {
   display: flex;
   align-items: center;
@@ -96,9 +107,9 @@ export default {
     padding: 0 10px;
     font-weight: 600;
 
-    .users{
-      display:flex;
-      justify-content:end;
+    .users {
+      display: flex;
+      justify-content: end;
     }
   }
 

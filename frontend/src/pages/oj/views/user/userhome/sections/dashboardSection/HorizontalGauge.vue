@@ -2,42 +2,42 @@
 export default {
   data() {
     return {
-      mounted: false
+      mounted: false,
     }
   },
   mounted() {
-    this.mounted = true;
+    this.mounted = true
   },
-  name : 'horizontal-gauge',
-  props: ['progress'],
+  name: "horizontal-gauge",
+  props: ["progress"],
   computed: {
     gaugeWidth() {
-      return `${this.progress * 100}%`;
-    }
-  }
+      return `${this.progress * 100}%`
+    },
+  },
 }
 </script>
 
 <template>
   <div class="horizontal-gauge">
-    <div class="gauge-background">
-    </div>
-    <transition name = "gauge">
-    <div v-if="this.mounted" class="gauge-bar" :style="{width : gaugeWidth}">
-      <div class="overlay"></div>
-    </div>
+    <div class="gauge-background"></div>
+    <transition name="gauge">
+      <div v-if="this.mounted" class="gauge-bar" :style="{ width: gaugeWidth }">
+        <div class="overlay"></div>
+      </div>
     </transition>
   </div>
 </template>
 
 <style scoped lang="less">
-
-.gauge-enter-active, .gauge-leave-active {
+.gauge-enter-active,
+.gauge-leave-active {
   transition: all 1.5s ease-out;
 }
 
-.gauge-enter, .gauge-leave-to {
-  transform : translateX(-100%);
+.gauge-enter,
+.gauge-leave-to {
+  transform: translateX(-100%);
 }
 
 .horizontal-gauge {
@@ -45,8 +45,8 @@ export default {
   height: 100%;
   position: relative;
   overflow: hidden;
-  display : flex;
-  justify-content : center;
+  display: flex;
+  justify-content: center;
 
   .gauge-background {
     width: 100%;
@@ -73,18 +73,20 @@ export default {
       left: 0;
       width: 300%;
       height: 100%;
-      background-image: linear-gradient(to right,
-      rgba(255, 255, 255, 0) 0%,
-      rgba(255, 255, 255, 0.6) 10%,
-      rgba(255, 255, 255, 0) 20%,
-      rgba(255, 255, 255, 0.6) 30%,
-      rgba(255, 255, 255, 0) 40%,
-      rgba(255, 255, 255, 0.6) 50%,
-      rgba(255, 255, 255, 0) 60%,
-      rgba(255, 255, 255, 0.6) 70%,
-      rgba(255, 255, 255, 0) 80%,
-      rgba(255, 255, 255, 0.6) 90%,
-      rgba(255, 255, 255, 0) 100%);
+      background-image: linear-gradient(
+        to right,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.6) 10%,
+        rgba(255, 255, 255, 0) 20%,
+        rgba(255, 255, 255, 0.6) 30%,
+        rgba(255, 255, 255, 0) 40%,
+        rgba(255, 255, 255, 0.6) 50%,
+        rgba(255, 255, 255, 0) 60%,
+        rgba(255, 255, 255, 0.6) 70%,
+        rgba(255, 255, 255, 0) 80%,
+        rgba(255, 255, 255, 0.6) 90%,
+        rgba(255, 255, 255, 0) 100%
+      );
       animation: shine 7s linear infinite;
     }
   }
