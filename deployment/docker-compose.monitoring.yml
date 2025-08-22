@@ -1,0 +1,65 @@
+version: "3.9"
+
+networks:
+  monitoring:
+    driver: overlay
+    attachable: true
+
+volumes:
+  prometheus-data:
+  grafana-data:
+
+services:
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.52.0
+    networks:
+      - monitoring
+    ports:
+      - "8080:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk
+    deploy:
+      mode: global
+      restart_policy:
+        condition: on-failure
+
+  prometheus:
+    image: prom/prometheus:v3.5.0
+    networks:
+      - monitoring
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      restart_policy:
+        condition: on-failure
+    depends_on:
+      - cadvisor
+
+  grafana:
+    image: grafana/grafana:11.6.3
+    networks:
+      - monitoring
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      restart_policy:
+        condition: on-failure
+    depends_on:
+      - prometheus
