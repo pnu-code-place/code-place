@@ -21,7 +21,7 @@ services:
       - /var/run:/var/run:rw
       - /sys:/sys:ro
       - /var/lib/docker/:/var/lib/docker:ro
-      - /dev/disk/:/dev/disk
+      - /dev/disk/:/dev/disk:ro
     deploy:
       mode: global
       restart_policy:
@@ -34,7 +34,7 @@ services:
     ports:
       - "9090:9090"
     volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ${PWD}/prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus-data:/prometheus
     deploy:
       replicas: 1
