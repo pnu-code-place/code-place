@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   auth-server:
-    image: registry.copl-dev.site/code-place-hub/auth-server:latest
+    image: registry.code-place-dev.site/code-place-hub/auth-server:latest
     ports:
       - "3444:80"
     env_file:
