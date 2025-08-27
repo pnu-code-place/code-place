@@ -2,28 +2,28 @@ version: "3.9"
 
 services:
   frontend:
-    image: registry.copl-dev.site/code-place-dev/frontend:latest
+    image: registry.code-place-dev.site/code-place-dev/frontend:latest
     ports:
       - "8001:8000"
       - "1444:1443"
     volumes:
-      - /etc/letsencrypt/live/copl-dev.site/fullchain.pem:/etc/letsencrypt/live/copl-dev.site/fullchain.pem:ro
-      - /etc/letsencrypt/live/copl-dev.site/privkey.pem:/etc/letsencrypt/live/copl-dev.site/privkey.pem:ro
+      - /etc/letsencrypt/live/code-place-dev.site/fullchain.pem:/etc/letsencrypt/live/code-place-dev.site/fullchain.pem:ro
+      - /etc/letsencrypt/live/code-place-dev.site/privkey.pem:/etc/letsencrypt/live/code-place-dev.site/privkey.pem:ro
       - data_volume:/data:ro
 
   backend:
-    image: registry.copl-dev.site/code-place-dev/backend:latest
+    image: registry.code-place-dev.site/code-place-dev/backend:latest
     volumes:
       - data_volume:/data:rw
 
   celery-beat:
-    image: registry.copl-dev.site/code-place-dev/backend:latest
+    image: registry.code-place-dev.site/code-place-dev/backend:latest
 
   celery-worker:
-    image: registry.copl-dev.site/code-place-dev/backend:latest
+    image: registry.code-place-dev.site/code-place-dev/backend:latest
 
   oj-judge:
-    image: registry.copl-dev.site/code-place-dev/judge-server:1.0.0-beta
+    image: registry.code-place-dev.site/code-place-dev/judge-server:1.0.0-beta
 
   oj-postgres:
     ports:
