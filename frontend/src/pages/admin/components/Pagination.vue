@@ -37,17 +37,17 @@ export default {
   methods: {
     onChange(page) {
       if (page < 1) {
-        page = 1;
+        page = 1
       }
-      this.$emit("update:current", page);
-      this.$emit("on-change", page);
+      this.$emit("update:current", page)
+      this.$emit("on-change", page)
     },
     onPageSizeChange(pageSize) {
-      this.$emit("update:pageSize", pageSize);
-      this.$emit("on-page-size-change", pageSize);
+      this.$emit("update:pageSize", pageSize)
+      this.$emit("on-page-size-change", pageSize)
     },
   },
-};
+}
 </script>
 
 <style scoped lang="less">

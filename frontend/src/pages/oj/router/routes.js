@@ -14,20 +14,20 @@ import {
   SubmissionDetails,
   SubmissionList,
   UserHome,
-} from "../views";
+} from "../views"
 
-import * as Contest from "@oj/views/contest";
-import * as Setting from "@oj/views/setting";
-import Notice from "../views/notice/Notice.vue";
-import DashboardSection from "../views/user/userhome/sections/dashboardSection/DashboardSection.vue";
-import ProblemSection from "../views/user/userhome/sections/problemSection/ProblemSection.vue";
-import communitySection from "../views/user/userhome/sections/communitySection/CommunitySection.vue";
-import AchievementSection from "../views/user/userhome/sections/achievementSection/AchievementSection.vue";
-import SoaringRank from "../views/rank/SurgeRank.vue";
-import MajorRank from "../views/rank/majorRank/MajorRank.vue";
-import UserRank from "../views/rank/UserRank.vue";
-import SettingDemo from "../views/setting/UserSetting.vue";
-import AnnouncementDetail from "../views/notice/AnnouncementDetail.vue";
+import * as Contest from "@oj/views/contest"
+import * as Setting from "@oj/views/setting"
+import Notice from "../views/notice/Notice.vue"
+import DashboardSection from "../views/user/userhome/sections/dashboardSection/DashboardSection.vue"
+import ProblemSection from "../views/user/userhome/sections/problemSection/ProblemSection.vue"
+import communitySection from "../views/user/userhome/sections/communitySection/CommunitySection.vue"
+import AchievementSection from "../views/user/userhome/sections/achievementSection/AchievementSection.vue"
+import SoaringRank from "../views/rank/SurgeRank.vue"
+import MajorRank from "../views/rank/majorRank/MajorRank.vue"
+import UserRank from "../views/rank/UserRank.vue"
+import SettingDemo from "../views/setting/UserSetting.vue"
+import AnnouncementDetail from "../views/notice/AnnouncementDetail.vue"
 
 export default [
   {
@@ -258,4 +258,4 @@ export default [
     meta: { title: "404" },
     component: NotFound,
   },
-];
+]

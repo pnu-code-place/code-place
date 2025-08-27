@@ -5,7 +5,7 @@
     </div>
     <div>
       <div class="announcement-header csep" @click="goAnnouncement('')">
-        <img :src="this.logos.csep" alt="" class="cople-logo">
+        <img :src="this.logos.csep" alt="" class="cople-logo" />
         <span class="facility-name">{{ $t("m.CSEP") }}</span>
         <span class="facility-description">
           <span class="plusDiv">
@@ -37,7 +37,7 @@
     </div>
     <div>
       <div class="announcement-header sw" @click="goSW">
-        <img :src="this.logos.sw" alt="">
+        <img :src="this.logos.sw" alt="" />
         <span class="facility-name">{{ $t("m.SWCenter") }}</span>
         <span class="facility-description">
           <span class="plusDiv">
@@ -71,13 +71,13 @@
 </template>
 
 <script>
-import api from '@oj/api'
-import ShineWrapper from "../../../components/ShineWrapper.vue";
-import HomeNoticeItem from "./HomeNoticeItem.vue";
+import api from "@oj/api"
+import ShineWrapper from "../../../components/ShineWrapper.vue"
+import HomeNoticeItem from "./HomeNoticeItem.vue"
 
 export default {
-  name: 'HomeNoticeBox',
-  components: {HomeNoticeItem, ShineWrapper},
+  name: "HomeNoticeBox",
+  components: { HomeNoticeItem, ShineWrapper },
   data() {
     return {
       limit: 10,
@@ -87,13 +87,13 @@ export default {
       errorCSPE: false,
       errorSW: false,
       csepAnnouncements: [],
-      announcement: '',
+      announcement: "",
       swAnnouncements: [],
-      swUrl: 'https://swedu.pusan.ac.kr/swedu/index.do',
+      swUrl: "https://swedu.pusan.ac.kr/swedu/index.do",
       logos: {
-        csep: require('@/assets/code-place-logo.svg'),
-        sw: require('@/assets/pnu.png')
-      }
+        csep: require("@/assets/code-place-logo.svg"),
+        sw: require("@/assets/pnu.png"),
+      },
     }
   },
   mounted() {
@@ -102,42 +102,45 @@ export default {
   },
   methods: {
     getAnnouncementList(page = 1) {
-      this.loadingCSEP = true;
+      this.loadingCSEP = true
       api.getAnnouncementList((page - 1) * this.limit, this.limit).then(
-        res => {
-          this.loadingCSEP = false;
-          this.csepAnnouncements = res.data.data.results;
-          this.total = res.data.data.total;
+        (res) => {
+          this.loadingCSEP = false
+          this.csepAnnouncements = res.data.data.results
+          this.total = res.data.data.total
         },
         () => {
-          this.loadingCSEP = false;
-          this.errorCSPE = true;
-        }
-      );
+          this.loadingCSEP = false
+          this.errorCSPE = true
+        },
+      )
     },
     getSWCenterList() {
-      this.loadingSW = true;
+      this.loadingSW = true
       api.getSWCenterList().then(
-        res => {
-          this.loadingSW = false;
-          this.swAnnouncements = res.data.data;
-          this.total = res.data.data.total;
+        (res) => {
+          this.loadingSW = false
+          this.swAnnouncements = res.data.data
+          this.total = res.data.data.total
         },
         () => {
-          this.loadingSW = false;
-          this.errorSW = true;
-        }
-      );
+          this.loadingSW = false
+          this.errorSW = true
+        },
+      )
     },
     goSW() {
-      window.open(this.swUrl);
+      window.open(this.swUrl)
     },
     handleRoute(route) {
-      this.$router.push({name: route});
+      this.$router.push({ name: route })
     },
     goAnnouncement(announcement) {
-      this.$router.push({name: "notice", params: {announcement: announcement}});
-    }
+      this.$router.push({
+        name: "notice",
+        params: { announcement: announcement },
+      })
+    },
   },
 }
 </script>
@@ -226,8 +229,6 @@ export default {
   }
 
   .facility-description {
-
-
     span {
       color: var(--box-background-color);
       font-size: 12px;
@@ -287,4 +288,3 @@ export default {
   }
 }
 </style>
-

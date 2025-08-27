@@ -12,10 +12,10 @@ services:
       - data_volume:/data:ro
       - /etc/letsencrypt/live/code.pusan.ac.kr/fullchain.pem:/etc/letsencrypt/live/code.pusan.ac.kr/fullchain.pem:ro
       - /etc/letsencrypt/live/code.pusan.ac.kr/privkey.pem:/etc/letsencrypt/live/code.pusan.ac.kr/privkey.pem:ro
-      - /etc/letsencrypt/live/copl-dev.site/fullchain.pem:/etc/letsencrypt/live/copl-dev.site/fullchain.pem:ro
-      - /etc/letsencrypt/live/copl-dev.site/privkey.pem:/etc/letsencrypt/live/copl-dev.site/privkey.pem:ro
-      - /etc/letsencrypt/live/registry.copl-dev.site/fullchain.pem:/etc/letsencrypt/live/registry.copl-dev.site/fullchain.pem:ro
-      - /etc/letsencrypt/live/registry.copl-dev.site/privkey.pem:/etc/letsencrypt/live/registry.copl-dev.site/privkey.pem:ro
+      - /etc/letsencrypt/live/code-place-dev.site/fullchain.pem:/etc/letsencrypt/live/code-place-dev.site/fullchain.pem:ro
+      - /etc/letsencrypt/live/code-place-dev.site/privkey.pem:/etc/letsencrypt/live/code-place-dev.site/privkey.pem:ro
+      - /etc/letsencrypt/live/registry.code-place-dev.site/fullchain.pem:/etc/letsencrypt/live/registry.code-place-dev.site/fullchain.pem:ro
+      - /etc/letsencrypt/live/registry.code-place-dev.site/privkey.pem:/etc/letsencrypt/live/registry.code-place-dev.site/privkey.pem:ro
     networks:
       - prod-network
 

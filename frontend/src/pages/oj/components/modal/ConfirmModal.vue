@@ -45,20 +45,20 @@ export default {
   },
   methods: {
     onCloseEmit() {
-      this.$emit("onClose");
+      this.$emit("onClose")
     },
     onConfirmButtonClickEmit() {
-      this.$emit("onConfirmButtonClick");
+      this.$emit("onConfirmButtonClick")
     },
   },
   computed: {
     modalStyles() {
       return {
         width: `${this.width}px`,
-      };
+      }
     },
   },
-};
+}
 </script>
 
 <style lang="less" scoped>

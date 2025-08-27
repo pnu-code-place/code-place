@@ -16,39 +16,40 @@ export default {
             real_name: null,
             student_id: null,
             school: "대학",
-            major: "전공"
+            major: "전공",
           },
           title: "제목",
           content: "<p>컨텐츠가 없습니다.</p>",
           create_time: "2024-07-21T16:33:17.914693Z",
           last_update_time: "2024-07-21T16:33:17.914733Z",
-          visible: true
+          visible: true,
         }
-      }
-    }
+      },
+    },
   },
   computed: {
     createTime() {
       if (this.announcement.create_time.split("T").length > 1) {
         return this.announcement.create_time.split("T")[0]
-      }
-      else {
+      } else {
         return this.announcement.create_time
       }
-    }
+    },
   },
   methods: {
     goAnnouncement() {
-      this.$router.push({ name: 'notice-details', params: { noticeID: this.announcement.id } })
+      this.$router.push({
+        name: "notice-details",
+        params: { noticeID: this.announcement.id },
+      })
     },
-  }
+  },
 }
-
 </script>
 
 <template>
   <tr class="announcement-item" @click="goAnnouncement">
-    <td class="id">{{ announcement.id}}</td>
+    <td class="id">{{ announcement.id }}</td>
     <td class="title">{{ announcement.title }}</td>
     <td class="date">{{ this.createTime }}</td>
     <td class="creator">{{ announcement.created_by.username }}</td>

@@ -24,10 +24,10 @@ export default {
   },
   methods: {
     onRuleChangeEventEmit(month) {
-      this.$emit("onRuleChange", month);
+      this.$emit("onRuleChange", month)
     },
   },
-};
+}
 </script>
 
 <style scoped lang="less">

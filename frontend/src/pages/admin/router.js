@@ -1,5 +1,5 @@
-import Vue from "vue";
-import VueRouter from "vue-router";
+import Vue from "vue"
+import VueRouter from "vue-router"
 // 引入 view 组件
 import {
   Announcement,
@@ -19,8 +19,8 @@ import {
   ProblemImportOrExport,
   AdminCatalog,
   PopupManagement,
-} from "./views";
-Vue.use(VueRouter);
+} from "./views"
+Vue.use(VueRouter)
 
 export default new VueRouter({
   mode: "history",
@@ -148,4 +148,4 @@ export default new VueRouter({
       redirect: "/login",
     },
   ],
-});
+})

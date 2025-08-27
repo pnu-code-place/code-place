@@ -1,134 +1,177 @@
 <script>
-import {DIFFICULTY_MAP} from "../../../../../../../utils/constants";
+import { DIFFICULTY_MAP } from "../../../../../../../utils/constants"
 
 export default {
-  name: 'difficulty-summary',
-  props: ['difficultyInfo'],
+  name: "difficulty-summary",
+  props: ["difficultyInfo"],
   data() {
     return {
       DIFFICULTY_LABEL: {
-        verylow: {label: 'Very Low', color: DIFFICULTY_MAP.VeryLow.textColor, tableLabel: '아주 쉬움'},
-        low: {label: 'Low', color: DIFFICULTY_MAP.Low.textColor, tableLabel: '쉬움'},
-        mid: {label: 'Mid', color: DIFFICULTY_MAP.Mid.textColor, tableLabel: '보통'},
-        high: {label: 'High', color: DIFFICULTY_MAP.High.textColor, tableLabel: '어려움'},
-        veryhigh: {label: 'Very High', color: DIFFICULTY_MAP.VeryHigh.textColor, tableLabel: '아주 어려움'},
+        verylow: {
+          label: "Very Low",
+          color: DIFFICULTY_MAP.VeryLow.textColor,
+          tableLabel: "아주 쉬움",
+        },
+        low: {
+          label: "Low",
+          color: DIFFICULTY_MAP.Low.textColor,
+          tableLabel: "쉬움",
+        },
+        mid: {
+          label: "Mid",
+          color: DIFFICULTY_MAP.Mid.textColor,
+          tableLabel: "보통",
+        },
+        high: {
+          label: "High",
+          color: DIFFICULTY_MAP.High.textColor,
+          tableLabel: "어려움",
+        },
+        veryhigh: {
+          label: "Very High",
+          color: DIFFICULTY_MAP.VeryHigh.textColor,
+          tableLabel: "아주 어려움",
+        },
       },
       DIFFICULTY_NAME_TO_CODE: {
-        verylow: 'VeryLow',
-        low: 'Low',
-        mid: 'Mid',
-        high: 'High',
-        veryhigh: 'VeryHigh',
-      }
+        verylow: "VeryLow",
+        low: "Low",
+        mid: "Mid",
+        high: "High",
+        veryhigh: "VeryHigh",
+      },
     }
   },
   methods: {
     getProportion(value) {
       if (this.totalScore === 0) {
-        return 0;
+        return 0
       }
-      return (value / this.totalScore * 100).toFixed(1);
+      return ((value / this.totalScore) * 100).toFixed(1)
     },
     chartLabel(params) {
       // 이니셜을 표시해주는 함수
-      const initial = params.name.split(' ').map((word) => word[0]).join('')
-      return params.percent >= 10 ? initial : ''
+      const initial = params.name
+        .split(" ")
+        .map((word) => word[0])
+        .join("")
+      return params.percent >= 10 ? initial : ""
     },
     goDifficulty(difficulty) {
-      this.$router.push({name: 'user-problems', params: {username: this.$route.params.username}, query: {difficulty: this.DIFFICULTY_NAME_TO_CODE[difficulty]}})
+      this.$router.push({
+        name: "user-problems",
+        params: { username: this.$route.params.username },
+        query: { difficulty: this.DIFFICULTY_NAME_TO_CODE[difficulty] },
+      })
       window.location.reload()
-    }
+    },
   },
   computed: {
     labelColors() {
-      return Object.keys(this.difficultyInfo).map((key) => this.DIFFICULTY_LABEL[key].color)
+      return Object.keys(this.difficultyInfo).map(
+        (key) => this.DIFFICULTY_LABEL[key].color,
+      )
     },
     totalScore() {
       return Object.keys(this.difficultyInfo).reduce((acc, key) => {
-        return acc + this.difficultyInfo[key].total_score;
+        return acc + this.difficultyInfo[key].total_score
       }, 0)
     },
     pieChartData() {
       return Object.keys(this.difficultyInfo).map((key) => {
         return {
           value: this.difficultyInfo[key].total_score,
-          name: this.DIFFICULTY_LABEL[key].label
+          name: this.DIFFICULTY_LABEL[key].label,
         }
       })
     },
     pieChartOption() {
       return {
         tooltip: {
-          trigger: 'item',
-          formatter: '<div style="padding:2px 8px">{b}: {c} points ({d}%)</div>'
+          trigger: "item",
+          formatter:
+            '<div style="padding:2px 8px">{b}: {c} points ({d}%)</div>',
         },
         series: [
           {
-            name: '문제 난이도',
-            type: 'pie',
-            radius: ['15%', '90%'],
+            name: "문제 난이도",
+            type: "pie",
+            radius: ["15%", "90%"],
             data: this.pieChartData,
             itemStyle: {
               normal: {
                 label: {
-                  position: 'inside',
+                  position: "inside",
                   formatter: (params) => {
                     return this.chartLabel(params)
                   },
                   textStyle: {
-                    color: '#ffffff',
+                    color: "#ffffff",
                     fontSize: 14,
-                    fontWeight: 'bold'
-                  }
+                    fontWeight: "bold",
+                  },
                 },
                 labelLine: {
-                  show: false
-                }
-              }
+                  show: false,
+                },
+              },
             },
-            animationType: 'scale',
-            animationEasing: 'cubicOut',
+            animationType: "scale",
+            animationEasing: "cubicOut",
             animationDelay: function (idx) {
-              return Math.random() * 200;
-            }
-          }
+              return Math.random() * 200
+            },
+          },
         ],
-        color: this.labelColors
+        color: this.labelColors,
       }
-    }
-  }
+    },
+  },
 }
 </script>
 
 <template>
   <div class="difficulty-summary">
     <div class="graph-wrapper">
-      <ECharts :options="pieChartOption" style="width: 100%; height: 100%"/>
+      <ECharts :options="pieChartOption" style="width: 100%; height: 100%" />
     </div>
     <div class="table-wrapper">
       <table>
         <thead>
-        <tr>
-          <th>{{$t('m.Difficulty')}}</th>
-          <th>{{$t('m.DifficultySolved')}}</th>
-          <th><span class="score">{{$t('m.UserHomeScore')}}</span>
-            <span class="ratio">({{$t('m.Ratio')}})</span></th>
-        </tr>
+          <tr>
+            <th>{{ $t("m.Difficulty") }}</th>
+            <th>{{ $t("m.DifficultySolved") }}</th>
+            <th>
+              <span class="score">{{ $t("m.UserHomeScore") }}</span>
+              <span class="ratio">({{ $t("m.Ratio") }})</span>
+            </th>
+          </tr>
         </thead>
         <tbody>
-        <tr class="part-row" v-for="(difficulty, key, index) in difficultyInfo" :key="index" @click="goDifficulty(key)">
-          <td class="part-name-wrapper" :style="{color:DIFFICULTY_LABEL[key].color}">{{ DIFFICULTY_LABEL[key].tableLabel }}</td>
-          <td class="solve-number">{{ difficulty.solve_number }}</td>
-          <td class="difficulty-score">{{ difficulty.total_score }}
-            <span class="ratio">({{ getProportion(difficulty.total_score) }}%)</span>
-          </td>
-        </tr>
+          <tr
+            class="part-row"
+            v-for="(difficulty, key, index) in difficultyInfo"
+            :key="index"
+            @click="goDifficulty(key)"
+          >
+            <td
+              class="part-name-wrapper"
+              :style="{ color: DIFFICULTY_LABEL[key].color }"
+            >
+              {{ DIFFICULTY_LABEL[key].tableLabel }}
+            </td>
+            <td class="solve-number">{{ difficulty.solve_number }}</td>
+            <td class="difficulty-score">
+              {{ difficulty.total_score }}
+              <span class="ratio"
+                >({{ getProportion(difficulty.total_score) }}%)</span
+              >
+            </td>
+          </tr>
         </tbody>
       </table>
     </div>
-    <div class="dummy">
-
-    </div>
+    <div class="dummy"></div>
   </div>
 </template>
 
@@ -151,7 +194,6 @@ export default {
 
   .graph-wrapper {
     width: 30%;
-
   }
 
   .table-wrapper {
@@ -176,7 +218,7 @@ export default {
 
         th:first-child {
           width: 50%;
-          text-align: left
+          text-align: left;
         }
 
         th:nth-child(2) {
@@ -201,7 +243,7 @@ export default {
 
         .part-name-wrapper {
           font-weight: 600;
-          text-align: left
+          text-align: left;
         }
 
         .difficulty-score {

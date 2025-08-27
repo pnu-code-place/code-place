@@ -1,6 +1,6 @@
 <script setup>
 export default {
-  name: 'DashboardSkeleton'
+  name: "DashboardSkeleton",
 }
 </script>
 
@@ -11,12 +11,12 @@ export default {
       <div class="dashboard-skeleton__header__subtitle"></div>
     </div>
     <div class="dashboard-skeleton__content">
-      <div class="dashboard-skeleton__content__row"/>
-      <div class="dashboard-skeleton__content__row"/>
-      <div class="dashboard-skeleton__content__row"/>
-      <div class="dashboard-skeleton__content__row"/>
-      <div class="dashboard-skeleton__content__row"/>
-      <div class="dashboard-skeleton__content__row"/>
+      <div class="dashboard-skeleton__content__row" />
+      <div class="dashboard-skeleton__content__row" />
+      <div class="dashboard-skeleton__content__row" />
+      <div class="dashboard-skeleton__content__row" />
+      <div class="dashboard-skeleton__content__row" />
+      <div class="dashboard-skeleton__content__row" />
     </div>
   </div>
 </template>
@@ -63,6 +63,4 @@ export default {
     }
   }
 }
-
-
 </style>

@@ -9,9 +9,9 @@ export default {
       report_icon: require("@/assets/icon_bug.png"),
       report_url:
         "https://evening-mirror-c09.notion.site/a7568fd7e0334a509c081567223cd454?pvs=4",
-    };
+    }
   },
-};
+}
 </script>
 
 <template>

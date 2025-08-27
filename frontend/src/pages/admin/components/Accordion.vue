@@ -1,7 +1,7 @@
 <template>
   <div class="accordion">
     <header>
-      <h2>{{title}}</h2>
+      <h2>{{ title }}</h2>
       <div class="header_right">
         <slot name="header"></slot>
       </div>
@@ -9,51 +9,53 @@
     <div class="body" v-show="isOpen">
       <slot></slot>
     </div>
-    <footer @click="isOpen = !isOpen"><i :class="{'rotate': !isOpen}" class="el-icon-caret-top"></i></footer>
+    <footer @click="isOpen = !isOpen">
+      <i :class="{ rotate: !isOpen }" class="el-icon-caret-top"></i>
+    </footer>
   </div>
 </template>
 
 <script>
-  export default{
-    name: 'Accordion',
-    props: {
-      title: {
-        type: String,
-        required: true
-      }
+export default {
+  name: "Accordion",
+  props: {
+    title: {
+      type: String,
+      required: true,
     },
-    data () {
-      return {
-        isOpen: true
-      }
+  },
+  data() {
+    return {
+      isOpen: true,
     }
-  }
+  },
+}
 </script>
 
 <style lang="less" scoped>
-.accordion{
+.accordion {
   border: 1px solid #eaeefb;
-  header{
+  header {
     position: relative;
-    h2{
+    h2 {
       font-size: 14px;
       margin: 0 0 0 10px;
       line-height: 50px;
     }
-    .header_right{
+    .header_right {
       right: 5px;
       top: 5px;
       position: absolute;
     }
   }
-  .body{
+  .body {
     background-color: #f9fafc;
     border-top: 1px solid #eaeefb;
     clear: both;
     overflow: hidden;
     padding: 15px 10px;
   }
-  footer{
+  footer {
     border-top: 1px solid #eaeefb;
     height: 36px;
     box-sizing: border-box;
@@ -64,11 +66,11 @@
     margin-top: -1px;
     color: #d3dce6;
     cursor: pointer;
-    transition: .2s;
-    &:hover{
+    transition: 0.2s;
+    &:hover {
       background-color: #f9fafc;
     }
-    .rotate{
+    .rotate {
       transform: rotate(180deg);
     }
   }

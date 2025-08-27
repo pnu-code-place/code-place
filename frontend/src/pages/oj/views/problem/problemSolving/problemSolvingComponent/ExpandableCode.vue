@@ -20,7 +20,7 @@
 </template>
 
 <script>
-import CodeHighlight from "./CodeHighlight.vue";
+import CodeHighlight from "./CodeHighlight.vue"
 
 export default {
   name: "ExpandableCode",
@@ -52,14 +52,14 @@ export default {
   data() {
     return {
       isExpanded: false,
-    };
+    }
   },
   methods: {
     toggleExpansion() {
-      this.isExpanded = !this.isExpanded;
+      this.isExpanded = !this.isExpanded
     },
   },
-};
+}
 </script>
 
 <style scoped lang="less">

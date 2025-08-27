@@ -1,83 +1,85 @@
 <template>
   <div>
-    <codemirror ref="myCm"
-                :value="value"
-                :key="key"
-                :options="cmOptions"
-                @ready="onCmReady"
-                @input="onCmCodeChange"
-                :style="{'font-size': fontSize+'px'}">
+    <codemirror
+      ref="myCm"
+      :value="value"
+      :key="key"
+      :options="cmOptions"
+      @ready="onCmReady"
+      @input="onCmCodeChange"
+      :style="{ 'font-size': fontSize + 'px' }"
+    >
     </codemirror>
   </div>
 </template>
 
 <script>
 // language js
-import 'codemirror/mode/javascript/javascript.js'
-import { codemirror } from 'vue-codemirror'
+import "codemirror/mode/javascript/javascript.js"
+import { codemirror } from "vue-codemirror"
 
 // require styles
-import 'codemirror/lib/codemirror.css'
-import 'codemirror/theme/ayu-mirage.css' //dark mode 고정
-import '../../../../../../styles/github-light.css'//bright mode 고정
+import "codemirror/lib/codemirror.css"
+import "codemirror/theme/ayu-mirage.css" //dark mode 고정
+import "../../../../../../styles/github-light.css" //bright mode 고정
 
 // mode
-import 'codemirror/mode/clike/clike.js'
-import 'codemirror/mode/python/python.js'
-import 'codemirror/mode/go/go.js'
-import 'codemirror/mode/javascript/javascript.js'
+import "codemirror/mode/clike/clike.js"
+import "codemirror/mode/python/python.js"
+import "codemirror/mode/go/go.js"
+import "codemirror/mode/javascript/javascript.js"
 
 // active-line.js
-import 'codemirror/addon/selection/active-line.js'
-import utils from "../../../../../../utils/utils";
+import "codemirror/addon/selection/active-line.js"
+import utils from "../../../../../../utils/utils"
 
 // match-bracket
-import 'codemirror/addon/edit/matchbrackets.js'
+import "codemirror/addon/edit/matchbrackets.js"
 
 // foldGutter
-import 'codemirror/addon/fold/foldgutter.css'
-import 'codemirror/addon/fold/foldgutter.js'
-import 'codemirror/addon/fold/brace-fold.js'
-import 'codemirror/addon/fold/indent-fold.js'
-import 'codemirror/addon/edit/closebrackets.js'
-import {mapGetters} from "vuex";
+import "codemirror/addon/fold/foldgutter.css"
+import "codemirror/addon/fold/foldgutter.js"
+import "codemirror/addon/fold/brace-fold.js"
+import "codemirror/addon/fold/indent-fold.js"
+import "codemirror/addon/edit/closebrackets.js"
+import { mapGetters } from "vuex"
 
 export default {
-  name:"CodeEditor",
-  components:{
-    codemirror
+  name: "CodeEditor",
+  components: {
+    codemirror,
   },
   props: {
     value: {
       type: String,
-      default: ''
+      default: "",
     },
     languages: {
       type: Array,
       default: () => {
-        return ['C', 'C++', 'Java', 'Python3']
-      }
+        return ["C", "C++", "Java", "Python3"]
+      },
     },
     language: {
       type: String,
-      default: 'C++'
+      default: "C++",
     },
-    cursorPos:{
-      type: Object
+    cursorPos: {
+      type: Object,
     },
-    theme:{
-      type: Boolean
-    }
+    theme: {
+      type: Boolean,
+    },
   },
-  data () {
+  data() {
     return {
       key: 0,
       code: "",
       fontSize: 14,
       cmOptions: {
         tabSize: 4,
-        mode: 'text/x-csrc',
-        theme: this.isDarkMode ? 'ayu-mirage' : 'github-light',
+        mode: "text/x-csrc",
+        theme: this.isDarkMode ? "ayu-mirage" : "github-light",
         lineNumbers: true,
         line: true,
         styleActiveLine: true,
@@ -85,20 +87,20 @@ export default {
         indentUnit: 4,
         // 여러 라인을 동시에 탭할때 인덴트 함
         extraKeys: {
-          "Tab": "indentMore"
+          Tab: "indentMore",
         },
         foldGutter: true,
         smartIndent: true,
         autofocus: true,
         autoCloseBrackets: true,
         autoResize: true,
-        gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter'],
-        scrollbarStyle: 'native',
+        gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
+        scrollbarStyle: "native",
         matchBrackets: true,
       },
       mode: {
-        'C++': 'text/x-csrc'
-      }
+        "C++": "text/x-csrc",
+      },
     }
   },
   methods: {
@@ -107,95 +109,95 @@ export default {
     },
     onCmCodeChange(newCode) {
       this.value = newCode
-      this.$emit('update:value', newCode)
-      this.$emit('update:cursorPos', {
+      this.$emit("update:value", newCode)
+      this.$emit("update:cursorPos", {
         ln: this.codemirror.doc.getCursor().line,
-        ch: this.codemirror.doc.getCursor().ch
+        ch: this.codemirror.doc.getCursor().ch,
       })
     },
     blockPasteFromExternalSource() {
-      let lastInternalText = '';
+      let lastInternalText = ""
 
       // 내부 복사 이벤트 감지
       this.codemirror.on("copy", (cm, e) => {
-        lastInternalText = cm.getSelection();
-      });
+        lastInternalText = cm.getSelection()
+      })
 
       // 잘라내기 이벤트 감지
       this.codemirror.on("cut", (cm, e) => {
-        lastInternalText = cm.getSelection();
-      });
+        lastInternalText = cm.getSelection()
+      })
 
       // 붙여넣기 이벤트 처리
       this.codemirror.on("paste", (cm, e) => {
         // 기본 붙여넣기 동작 방지
-        e.preventDefault();
+        e.preventDefault()
 
         // 클립보드의 내용 가져오기
-        navigator.clipboard.readText().then(clipText => {
+        navigator.clipboard.readText().then((clipText) => {
           // 클립보드 내용이 마지막으로 내부에서 복사 또는 잘라내기한 텍스트와 일치하는지 확인
           if (clipText === lastInternalText) {
             // 내부에서 복사 또는 잘라내기한 텍스트라면 붙여넣기 허용
-            cm.replaceSelection(clipText);
+            cm.replaceSelection(clipText)
           } else {
             // 외부 텍스트라면 경고 메시지 표시
-            alert("외부 소스로부터의 붙여넣기는 허용되지 않습니다.");
+            alert("외부 소스로부터의 붙여넣기는 허용되지 않습니다.")
           }
-        });
-      });
+        })
+      })
     },
     resetCM() {
-      this.value = ''
+      this.value = ""
     },
-    onLangChange (newVal) {
-      this.codemirror.setOption('mode', this.mode[newVal])
-      this.$emit('changeLang', newVal)
+    onLangChange(newVal) {
+      this.codemirror.setOption("mode", this.mode[newVal])
+      this.$emit("changeLang", newVal)
     },
-    toggleTheme(value){
-        this.codemirror.setOption('theme', value)
+    toggleTheme(value) {
+      this.codemirror.setOption("theme", value)
     },
   },
   computed: {
-    ...mapGetters(['isDarkMode']),
+    ...mapGetters(["isDarkMode"]),
     codemirror() {
       return this.$refs.myCm.codemirror
     },
   },
   mounted() {
-    let customTheme = this.isDarkMode ? 'ayu-mirage' : 'github-light'
-    this.codemirror.setOption('theme', customTheme)
+    let customTheme = this.isDarkMode ? "ayu-mirage" : "github-light"
+    this.codemirror.setOption("theme", customTheme)
     this.theme = customTheme
 
     this.code = this.value
 
-    utils.getLanguages().then(languages => {
+    utils.getLanguages().then((languages) => {
       let mode = {}
-      languages.forEach(lang => {
+      languages.forEach((lang) => {
         mode[lang.name] = lang.content_type
       })
       this.mode = mode
-      this.codemirror.setOption('mode', this.mode[this.language])
+      this.codemirror.setOption("mode", this.mode[this.language])
     })
 
     let checkContest = this.$route.path.split("/").indexOf("contest") > 0
-    if (checkContest){
+    if (checkContest) {
       this.blockPasteFromExternalSource()
     }
-    this.$emit('update:cursorPos', {
+    this.$emit("update:cursorPos", {
       ln: this.codemirror.doc.getCursor().line,
-      ch: this.codemirror.doc.getCursor().ch
+      ch: this.codemirror.doc.getCursor().ch,
     })
   },
-  watch:{
-    isDarkMode(value){
-      let customTheme = value ? 'ayu-mirage' : 'github-light'
+  watch: {
+    isDarkMode(value) {
+      let customTheme = value ? "ayu-mirage" : "github-light"
       this.toggleTheme(customTheme)
       this.theme = value
     },
-    language(value){
-      this.codemirror.setOption('mode', this.mode[value])
-    }
-  }
+    language(value) {
+      this.codemirror.setOption("mode", this.mode[value])
+    },
+  },
 }
 </script>
 
@@ -208,9 +210,7 @@ export default {
 
 .cm-s-ayu-mirage .CodeMirror-matchingbracket {
   text-decoration: none !important;
-  color:white !important;
-  background: #283a61;;
+  color: white !important;
+  background: #283a61;
 }
 </style>
-
-

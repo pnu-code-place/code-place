@@ -1,17 +1,17 @@
 <script>
-import {LanguageImageSrc, TierImageSrc} from "../../../../../utils/constants";
-import HorizontalGauge from "./sections/dashboardSection/HorizontalGauge.vue";
-import {comma, getTier} from "../../../../../utils/utils";
-import ShineWrapper from "../../../components/ShineWrapper.vue";
+import { LanguageImageSrc, TierImageSrc } from "../../../../../utils/constants"
+import HorizontalGauge from "./sections/dashboardSection/HorizontalGauge.vue"
+import { comma, getTier } from "../../../../../utils/utils"
+import ShineWrapper from "../../../components/ShineWrapper.vue"
 
 export default {
   name: "user-card",
-  components: {HorizontalGauge, ShineWrapper},
+  components: { HorizontalGauge, ShineWrapper },
   props: {
     loading: {
       type: Boolean,
       required: true,
-      default: false
+      default: false,
     },
     profile: {
       type: Object,
@@ -19,34 +19,34 @@ export default {
       default: () => {
         return {
           user: {
-            username: 'username',
-            tier: 'bronze',
-            email: 'email'
+            username: "username",
+            tier: "bronze",
+            email: "email",
           },
-          avatar: 'avatar',
-          school: 'school',
-          major: 'major',
-          mood: 'mood',
-          github: 'github'
+          avatar: "avatar",
+          school: "school",
+          major: "major",
+          mood: "mood",
+          github: "github",
         }
-      }
+      },
     },
     ojStatus: {
       type: Object,
       required: true,
       default: () => {
         return {
-          tier: 'bronze',
+          tier: "bronze",
           total_score: 0,
           current_tier_score: 0,
           next_tier_score: 0,
           total_rank_percentage: 0,
           total_rank: 0,
           submission_number: 0,
-          accepted_number: 0
+          accepted_number: 0,
         }
-      }
-    }
+      },
+    },
   },
   computed: {
     languageImage() {
@@ -56,63 +56,74 @@ export default {
       if (this.profile.language) {
         return LanguageImageSrc[this.profile.language]
       }
-      return LanguageImageSrc['undefined']
+      return LanguageImageSrc["undefined"]
     },
     TierImageSrc() {
       return TierImageSrc
     },
     isMyProfile() {
-      return this.$store.getters.user.username === this.profile.user.username;
+      return this.$store.getters.user.username === this.profile.user.username
     },
     gaugeWidth() {
-      return (this.ojStatus.total_score - this.ojStatus.current_tier_score) / (this.ojStatus.next_tier_score - this.ojStatus.current_tier_score);
+      return (
+        (this.ojStatus.total_score - this.ojStatus.current_tier_score) /
+        (this.ojStatus.next_tier_score - this.ojStatus.current_tier_score)
+      )
     },
     rankPercent() {
       // 소숫점 1자리까지
-      return Math.round(this.ojStatus.total_rank_percentage * 1000) / 10;
+      return Math.round(this.ojStatus.total_rank_percentage * 1000) / 10
     },
     rankingOffset() {
       if (this.ojStatus.total_rank < 10) {
-        return 0;
+        return 0
       }
-      return (this.ojStatus.total_rank - 4) / 10;
+      return (this.ojStatus.total_rank - 4) / 10
     },
     rankQuery() {
-      return {offset: this.rankingOffset}
-    }
+      return { offset: this.rankingOffset }
+    },
   },
   methods: {
     getTier,
     comma,
     goSubmission() {
-      this.$router.push({name: 'submission-list', query: {username: this.profile.user.username}})
+      this.$router.push({
+        name: "submission-list",
+        query: { username: this.profile.user.username },
+      })
     },
     goSolved() {
       this.$router.push({
-        name: 'user-problems',
-        params: {username: this.profile.user.username},
-        query: {status: "Solved"}
+        name: "user-problems",
+        params: { username: this.profile.user.username },
+        query: { status: "Solved" },
       })
       window.location.reload()
     },
     goRanking() {
-      this.$router.push({name: 'user-rank', query:this.rankQuery})
-    }
+      this.$router.push({ name: "user-rank", query: this.rankQuery })
+    },
   },
   data() {
     return {
-      githubIcon: require('../../../../../assets/github.png')
+      githubIcon: require("../../../../../assets/github.png"),
     }
-  }
-};
+  },
+}
 </script>
 
 <template>
   <div class="user-card">
     <div class="user-info">
       <div class="avatar-wrapper">
-        <img v-if="!this.loading" class="avatar" :src="profile.avatar" alt="user avatar image"/>
-        <div v-else class="avatar skeleton"/>
+        <img
+          v-if="!this.loading"
+          class="avatar"
+          :src="profile.avatar"
+          alt="user avatar image"
+        />
+        <div v-else class="avatar skeleton" />
       </div>
       <div class="info-column">
         <div class="info-column__top">
@@ -128,17 +139,29 @@ export default {
         </div>
         <div class="info-column__bottom">
           <div class="modify-button-wrapper">
-<!--            <router-link class="modify-button" v-if="isMyProfile" :to="{name : 'default-setting'}">-->
-<!--              {{ $t('m.User_Setting') }}-->
-<!--            </router-link>-->
-            <router-link class="modify-button" v-if="isMyProfile" :to="{name: 'user-setting'}">
-                {{ $t('m.User_Setting') }}
+            <!--            <router-link class="modify-button" v-if="isMyProfile" :to="{name : 'default-setting'}">-->
+            <!--              {{ $t('m.User_Setting') }}-->
+            <!--            </router-link>-->
+            <router-link
+              class="modify-button"
+              v-if="isMyProfile"
+              :to="{ name: 'user-setting' }"
+            >
+              {{ $t("m.User_Setting") }}
             </router-link>
           </div>
           <div class="icons">
-            <img class="language-badge icon" :src="this.languageImageSrc" alt="user language"/>
+            <img
+              class="language-badge icon"
+              :src="this.languageImageSrc"
+              alt="user language"
+            />
             <a :href="profile.github">
-              <img class="icon__github icon" :src="this.githubIcon" alt="icon of github, it's so cute"/>
+              <img
+                class="icon__github icon"
+                :src="this.githubIcon"
+                alt="icon of github, it's so cute"
+              />
             </a>
           </div>
         </div>
@@ -148,53 +171,69 @@ export default {
       <div class="tier-info__top">
         <div class="tier-mark-wrapper">
           <shine-wrapper v-if="!this.loading">
-            <img :src="TierImageSrc[ojStatus.tier]" class="rank-mark" alt="rank emblem"/>
+            <img
+              :src="TierImageSrc[ojStatus.tier]"
+              class="rank-mark"
+              alt="rank emblem"
+            />
           </shine-wrapper>
-          <div class="skeleton" v-else/>
+          <div class="skeleton" v-else />
         </div>
         <div class="tier-progress">
-          <div class="tier-name" v-if="!this.loading">{{ getTier(ojStatus.tier) }}</div>
-          <div class="skeleton" v-else/>
+          <div class="tier-name" v-if="!this.loading">
+            {{ getTier(ojStatus.tier) }}
+          </div>
+          <div class="skeleton" v-else />
           <div class="progress-container" v-if="!this.loading">
             <span v-if="!this.loading" class="progress-info">
-              {{ comma(ojStatus.total_score) }} / {{ comma(ojStatus.next_tier_score) }}
+              {{ comma(ojStatus.total_score) }} /
+              {{ comma(ojStatus.next_tier_score) }}
             </span>
             <div v-else class="skeleton"></div>
             <div class="gauge-wrapper">
               <horizontal-gauge :progress="gaugeWidth"></horizontal-gauge>
             </div>
             <span class="progress-next">
-              {{ $t('m.Until_Promotion_Before') }}
-            <span class="progress-next-number">
-              {{ comma(ojStatus.next_tier_score - ojStatus.total_score) }}{{ $t('m.Point') }}
-            </span>
-              {{ $t('m.Until_Promotion_After') }}
+              {{ $t("m.Until_Promotion_Before") }}
+              <span class="progress-next-number">
+                {{ comma(ojStatus.next_tier_score - ojStatus.total_score)
+                }}{{ $t("m.Point") }}
+              </span>
+              {{ $t("m.Until_Promotion_After") }}
             </span>
           </div>
-          <div v-else class="skeleton">
-          </div>
+          <div v-else class="skeleton"></div>
         </div>
       </div>
       <div class="tier-info__bottom">
         <div class="content score">
-          <span class="header">{{ $t('m.UserHomeScore') }}</span>
-          <span class="value" v-if="!this.loading">{{ comma(ojStatus.total_score) }}</span>
-          <div class="skeleton" v-else/>
+          <span class="header">{{ $t("m.UserHomeScore") }}</span>
+          <span class="value" v-if="!this.loading">{{
+            comma(ojStatus.total_score)
+          }}</span>
+          <div class="skeleton" v-else />
         </div>
         <div class="content ranking clickable" @click="goRanking">
-          <span class="header">{{ $t('m.Ranking') }}</span>
-          <span class="value" v-if="!this.loading">{{ ojStatus.total_rank }} ({{ $t('m.TOP') }} {{ rankPercent }}%)</span>
-          <div class="skeleton" v-else/>
+          <span class="header">{{ $t("m.Ranking") }}</span>
+          <span class="value" v-if="!this.loading"
+            >{{ ojStatus.total_rank }} ({{ $t("m.TOP") }}
+            {{ rankPercent }}%)</span
+          >
+          <div class="skeleton" v-else />
         </div>
         <div class="content submission clickable" @click="goSubmission">
-          <span class="header">{{ $t('m.Submit') }}</span>
-          <span class="value" v-if="!this.loading">{{ ojStatus.submission_number }}</span>
-          <div class="skeleton" v-else/>
+          <span class="header">{{ $t("m.Submit") }}</span>
+          <span class="value" v-if="!this.loading">{{
+            ojStatus.submission_number
+          }}</span>
+          <div class="skeleton" v-else />
         </div>
         <div class="content solve clickable" @click="goSolved">
-          <span class="header">{{ $t('m.UserHomeSolved') }}</span>
-          <span class="value" v-if="!this.loading">{{ ojStatus.accepted_number }}</span>
-          <div class="skeleton" v-else/>
+          <span class="header">{{ $t("m.UserHomeSolved") }}</span>
+          <span class="value" v-if="!this.loading">{{
+            ojStatus.accepted_number
+          }}</span>
+          <div class="skeleton" v-else />
         </div>
       </div>
     </div>
@@ -392,7 +431,7 @@ export default {
           font-weight: 600;
           padding: 5px;
           color: var(--box-background-color);
-          background-color: var(--point-color)
+          background-color: var(--point-color);
         }
 
         .value {
@@ -422,7 +461,6 @@ export default {
 .icon {
   width: 30px;
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-
 
   &__github {
     border-radius: 50%;

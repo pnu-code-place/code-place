@@ -48,9 +48,9 @@
 </template>
 
 <script>
-import api from "@oj/api";
-import SubmissionRow from "./SubmissionRow.vue";
-import SubmissionDropdown from "./SubmissionDropdown.vue";
+import api from "@oj/api"
+import SubmissionRow from "./SubmissionRow.vue"
+import SubmissionDropdown from "./SubmissionDropdown.vue"
 
 export default {
   name: "SubmissionList",
@@ -80,26 +80,26 @@ export default {
     return {
       submissions: [],
       selectedSubmissionId: null,
-    };
+    }
   },
   computed: {
     themeClass() {
-      return this.isDarkMode ? "dark-theme" : "light-theme";
+      return this.isDarkMode ? "dark-theme" : "light-theme"
     },
   },
   mounted() {
-    this.fetchSubmissions();
+    this.fetchSubmissions()
   },
   watch: {
     async lastSubmissionId(newId, oldId) {
       if (newId !== oldId && newId) {
         try {
-          await this.fetchSubmissions();
-          await this.$nextTick();
-          this.selectSubmissionById(newId);
+          await this.fetchSubmissions()
+          await this.$nextTick()
+          this.selectSubmissionById(newId)
         } catch (error) {
-          console.error("Failed to process lastSubmissionId change:", error);
-          this.selectedSubmissionId = null;
+          console.error("Failed to process lastSubmissionId change:", error)
+          this.selectedSubmissionId = null
         }
       }
     },
@@ -107,59 +107,57 @@ export default {
   methods: {
     async fetchSubmissions() {
       try {
-        console.log("Contest ID:", this.contestID);
+        console.log("Contest ID:", this.contestID)
         const params = {
           myself: "1",
           problem_id: this.problemID,
           ...(this.contestID && { contest_id: this.contestID }),
-        };
-        const res = await api.getSubmissionList(0, 100, params);
-        this.submissions = res.data.data.results;
+        }
+        const res = await api.getSubmissionList(0, 100, params)
+        this.submissions = res.data.data.results
       } catch (error) {
-        console.error("Failed to fetch submission list:", error);
+        console.error("Failed to fetch submission list:", error)
       }
     },
 
     selectSubmissionById(submissionId) {
-      const submission = this.submissions.find(
-        (sub) => sub.id === submissionId
-      );
+      const submission = this.submissions.find((sub) => sub.id === submissionId)
       if (submission) {
-        this.handleSubmissionClick(submission);
+        this.handleSubmissionClick(submission)
       } else {
-        console.warn("Submission not found for ID:", submissionId);
-        this.selectedSubmissionId = null;
+        console.warn("Submission not found for ID:", submissionId)
+        this.selectedSubmissionId = null
       }
     },
 
     async handleSubmissionClick(submission) {
       if (this.selectedSubmissionId === submission.id) {
-        this.selectedSubmissionId = null;
-        return;
+        this.selectedSubmissionId = null
+        return
       }
 
-      this.selectedSubmissionId = submission.id;
+      this.selectedSubmissionId = submission.id
 
       if (!submission.code) {
-        await this.fetchSubmissionDetails(submission);
+        await this.fetchSubmissionDetails(submission)
       }
 
-      this.$emit("submissionSelected", submission);
+      this.$emit("submissionSelected", submission)
     },
 
     async fetchSubmissionDetails(submission) {
       try {
-        const res = await api.getSubmission(submission.id);
-        const { code, first_failed_tc_io } = res.data.data;
+        const res = await api.getSubmission(submission.id)
+        const { code, first_failed_tc_io } = res.data.data
 
-        this.$set(submission, "code", code);
-        this.$set(submission, "first_failed_tc_io", first_failed_tc_io);
+        this.$set(submission, "code", code)
+        this.$set(submission, "first_failed_tc_io", first_failed_tc_io)
       } catch (error) {
-        console.error("Failed to fetch submission details:", error);
+        console.error("Failed to fetch submission details:", error)
       }
     },
   },
-};
+}
 </script>
 
 <style scoped lang="less">

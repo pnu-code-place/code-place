@@ -1,4 +1,4 @@
-import i18n from "@/i18n";
+import i18n from "@/i18n"
 
 export const JUDGE_COLOR = {
   WRONG: {
@@ -17,7 +17,7 @@ export const JUDGE_COLOR = {
     color: "#f19b8f", // 부드러운 빨강/살색
     textColor: "#4a2d2d",
   },
-};
+}
 
 export const JUDGE_STATUS = {
   "-2": {
@@ -80,7 +80,7 @@ export const JUDGE_STATUS = {
     color: "yellow",
     ...JUDGE_COLOR.PENDING,
   },
-};
+}
 
 export const LANGUAGE_COLOR = {
   C: {
@@ -143,7 +143,7 @@ export const LANGUAGE_COLOR = {
       textColor: "#ffffff",
     },
   },
-};
+}
 
 export const HIGHLIGHT_JS_LANGUAGES = {
   C: "c",
@@ -154,13 +154,13 @@ export const HIGHLIGHT_JS_LANGUAGES = {
   Python3: "python",
   sh: "bash",
   plaintext: "plaintext",
-};
+}
 
 export const CONTEST_STATUS = {
   NOT_START: "1",
   UNDERWAY: "0",
   ENDED: "-1",
-};
+}
 
 export const CONTEST_STATUS_REVERSE = {
   1: {
@@ -175,35 +175,35 @@ export const CONTEST_STATUS_REVERSE = {
     name: i18n.t("m.Contest_Status_Ended"),
     color: "red",
   },
-};
+}
 
 export const RULE_TYPE = {
   ACM: "ACM",
   OI: "OI",
-};
+}
 
 export const CONTEST_TYPE = {
   PUBLIC: "Public",
   PRIVATE: "Password Protected",
-};
+}
 
 export const USER_TYPE = {
   REGULAR_USER: "Regular User",
   ADMIN: "Admin",
   SUPER_ADMIN: "Super Admin",
-};
+}
 
 export const PROBLEM_PERMISSION = {
   NONE: "None",
   OWN: "Own",
   ALL: "All",
-};
+}
 
 export const STORAGE_KEY = {
   AUTHED: "authed",
   PROBLEM_CODE: "problemCode",
   languages: "languages",
-};
+}
 
 export const DIFFICULTY_MAP = {
   VeryLow: {
@@ -226,7 +226,7 @@ export const DIFFICULTY_MAP = {
     value: "매우 어려움",
     textColor: "#c02b2b",
   },
-};
+}
 
 export const FIELD_MAP = {
   0: {
@@ -265,7 +265,7 @@ export const FIELD_MAP = {
     backgroundImage: require("../assets/fieldBackground/algorithm.svg"),
     maxScore: 25600,
   },
-};
+}
 
 export const TierImageSrc = {
   //unranked
@@ -295,7 +295,7 @@ export const TierImageSrc = {
   diamond1: require("@/assets/tiers/diamond/diamond1.svg"),
   diamond2: require("@/assets/tiers/diamond/diamond2.svg"),
   diamond3: require("@/assets/tiers/diamond/diamond3.svg"),
-};
+}
 
 export const FamilySiteContentSrc = {
   sw_convergence: {
@@ -323,7 +323,7 @@ export const FamilySiteContentSrc = {
     banner_name: "부산대학교:SW역량지원시스템",
     url: "https://swcss.pusan.ac.kr/",
   },
-};
+}
 
 export const LanguageImageSrc = {
   "C++": require("@/assets/languages/cpp.png"),
@@ -332,30 +332,30 @@ export const LanguageImageSrc = {
   C: require("@/assets/languages/c.png"),
   JavaScript: require("@/assets/languages/javascript.png"),
   undefined: require("@/assets/languages/c.png"),
-};
+}
 
 export const AwardImageSrc = {
   1: require("@/assets/awards/first.svg"),
   2: require("@/assets/awards/second.svg"),
   3: require("@/assets/awards/third.svg"),
-};
+}
 
 export function getTierImageSrc(tier) {
-  return TierImageSrc[tier];
+  return TierImageSrc[tier]
 }
 
 export function getAwardImageSrc(rank) {
-  return AwardImageSrc[rank];
+  return AwardImageSrc[rank]
 }
 
 export function buildProblemCodeKey(problemID, contestID = null) {
   if (contestID) {
-    return `${STORAGE_KEY.PROBLEM_CODE}_${contestID}_${problemID}`;
+    return `${STORAGE_KEY.PROBLEM_CODE}_${contestID}_${problemID}`
   }
-  return `${STORAGE_KEY.PROBLEM_CODE}_NaN_${problemID}`;
+  return `${STORAGE_KEY.PROBLEM_CODE}_NaN_${problemID}`
 }
 
-export const GOOGLE_ANALYTICS_ID = "UA-111499601-1";
+export const GOOGLE_ANALYTICS_ID = "UA-111499601-1"
 
 export const MONTH = {
   JAN: {
@@ -406,7 +406,7 @@ export const MONTH = {
     name: i18n.t("m.DEC"),
     number: 12,
   },
-};
+}
 
 export const LANGUAGE_INFO = [
   {
@@ -477,4 +477,4 @@ export const LANGUAGE_INFO = [
       "최신 프레임워크와 라이브러리(React, Angular, Vue.js 등)의 등장으로 JavaScript의 활용 범위가 더욱 확장되었습니다.",
     lectures: ["인터넷과웹기초", "웹응용프로그래밍", "컴퓨터그래픽스(WebGL)"],
   },
-];
+]

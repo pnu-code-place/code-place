@@ -2,7 +2,7 @@
   <div class="contestBox">
     <div class="contestTitle">
       <p>{{ contest.title }}</p>
-      <div slot="extra" style="flex-shrink: 0;">
+      <div slot="extra" style="flex-shrink: 0">
         <Tag type="dot" :color="countdownColor">
           <span id="countdown">{{ countdown }}</span>
         </Tag>
@@ -45,35 +45,35 @@
 </template>
 
 <script>
-import moment from "moment";
-import api from "@oj/api";
-import { mapState, mapGetters, mapActions } from "vuex";
-import { types } from "@/store";
-import { CONTEST_STATUS_REVERSE, CONTEST_STATUS } from "@/utils/constants";
-import time from "@/utils/time";
+import moment from "moment"
+import api from "@oj/api"
+import { mapState, mapGetters, mapActions } from "vuex"
+import { types } from "@/store"
+import { CONTEST_STATUS_REVERSE, CONTEST_STATUS } from "@/utils/constants"
+import time from "@/utils/time"
 
 export default {
   name: "ContestDetail",
   mounted() {
-    this.contestID = this.$route.params.contestID;
+    this.contestID = this.$route.params.contestID
   },
   methods: {
     checkPassword() {
       if (this.contestPassword === "") {
-        this.$error("Password can't be empty");
-        return;
+        this.$error("Password can't be empty")
+        return
       }
-      this.btnLoading = true;
+      this.btnLoading = true
       api.checkContestPassword(this.contestID, this.contestPassword).then(
         (res) => {
-          this.$success("Succeeded");
-          this.$store.commit(types.CONTEST_ACCESS, { access: true });
-          this.btnLoading = false;
+          this.$success("Succeeded")
+          this.$store.commit(types.CONTEST_ACCESS, { access: true })
+          this.btnLoading = false
         },
         (res) => {
-          this.btnLoading = false;
-        }
-      );
+          this.btnLoading = false
+        },
+      )
     },
   },
   computed: {
@@ -83,11 +83,11 @@ export default {
     ...mapGetters(["contestStatus", "countdown", "passwordFormVisible"]),
     countdownColor() {
       if (this.contestStatus) {
-        return CONTEST_STATUS_REVERSE[this.contestStatus].color;
+        return CONTEST_STATUS_REVERSE[this.contestStatus].color
       }
     },
   },
-};
+}
 </script>
 
 <style lang="less" scoped>

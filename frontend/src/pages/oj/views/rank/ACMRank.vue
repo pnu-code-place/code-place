@@ -1,11 +1,17 @@
 <template>
   <div class="acm-rank">
-    <h1 class="main-title">{{ $t('m.Top_Users') }}</h1>
+    <h1 class="main-title">{{ $t("m.Top_Users") }}</h1>
     <div class="main-contents">
       <header class="routers">
-        <router-link class="" to="user-rank">{{ $t('m.User_Rank') }}</router-link>
-        <router-link class="" to="surge-rank">{{ $t('m.Today_User') }}</router-link>
-        <router-link class="" to="major-rank">{{ $t('m.Major_Rank') }}</router-link>
+        <router-link class="" to="user-rank">{{
+          $t("m.User_Rank")
+        }}</router-link>
+        <router-link class="" to="surge-rank">{{
+          $t("m.Today_User")
+        }}</router-link>
+        <router-link class="" to="major-rank">{{
+          $t("m.Major_Rank")
+        }}</router-link>
       </header>
       <div class="acm-rank__contents">
         <router-view></router-view>
@@ -15,7 +21,6 @@
 </template>
 
 <script>
-
 export default {}
 </script>
 
@@ -40,11 +45,11 @@ export default {}
       border: 1px solid #dedede;
       border-radius: 10px 10px 0 0;
       background-color: #495060;
-      color : #e6f2ff;
+      color: #e6f2ff;
 
       &:hover {
         background-color: #5b6375;
-        color : #e6f2ff;
+        color: #e6f2ff;
       }
     }
 

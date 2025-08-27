@@ -1,82 +1,86 @@
-import api from '@oj/api'
-import ScreenFull from '@admin/components/ScreenFull.vue'
-import { mapGetters, mapState } from 'vuex'
-import { types } from '@/store'
-import { CONTEST_STATUS } from '@/utils/constants'
+import api from "@oj/api"
+import ScreenFull from "@admin/components/ScreenFull.vue"
+import { mapGetters, mapState } from "vuex"
+import { types } from "@/store"
+import { CONTEST_STATUS } from "@/utils/constants"
 
 export default {
   components: {
-    ScreenFull
+    ScreenFull,
   },
   computed: {
-    ...mapGetters(['isContestAdmin']),
+    ...mapGetters(["isContestAdmin"]),
     ...mapState({
-      'contest': state => state.contest.contest,
-      'contestProblems': state => state.contest.contestProblems
+      contest: (state) => state.contest.contest,
+      contestProblems: (state) => state.contest.contestProblems,
     }),
     showChart: {
-      get () {
+      get() {
         return this.$store.state.contest.itemVisible.chart
       },
-      set (value) {
-        this.$store.commit(types.CHANGE_CONTEST_ITEM_VISIBLE, {chart: value})
-      }
+      set(value) {
+        this.$store.commit(types.CHANGE_CONTEST_ITEM_VISIBLE, { chart: value })
+      },
     },
     showMenu: {
-      get () {
+      get() {
         return this.$store.state.contest.itemVisible.menu
       },
-      set (value) {
-        this.$store.commit(types.CHANGE_CONTEST_ITEM_VISIBLE, {menu: value})
+      set(value) {
+        this.$store.commit(types.CHANGE_CONTEST_ITEM_VISIBLE, { menu: value })
         this.$nextTick(() => {
           if (this.showChart) {
             this.$refs.chart.resize()
           }
           this.$refs.tableRank.handleResize()
         })
-      }
+      },
     },
     showRealName: {
-      get () {
+      get() {
         return this.$store.state.contest.itemVisible.realName
       },
-      set (value) {
-        this.$store.commit(types.CHANGE_CONTEST_ITEM_VISIBLE, {realName: value})
+      set(value) {
+        this.$store.commit(types.CHANGE_CONTEST_ITEM_VISIBLE, {
+          realName: value,
+        })
         if (value) {
           this.columns.splice(2, 0, {
-            title: 'RealName',
-            align: 'center',
+            title: "RealName",
+            align: "center",
             width: 150,
-            render: (h, {row}) => {
-              return h('span', row.user.real_name)
-            }
+            render: (h, { row }) => {
+              return h("span", row.user.real_name)
+            },
           })
         } else {
           this.columns.splice(2, 1)
         }
-      }
+      },
     },
     forceUpdate: {
-      get () {
+      get() {
         return this.$store.state.contest.forceUpdate
       },
-      set (value) {
-        this.$store.commit(types.CHANGE_RANK_FORCE_UPDATE, {value: value})
-      }
+      set(value) {
+        this.$store.commit(types.CHANGE_RANK_FORCE_UPDATE, { value: value })
+      },
     },
     limit: {
-      get () {
+      get() {
         return this.$store.state.contest.rankLimit
       },
-      set (value) {
-        this.$store.commit(types.CHANGE_CONTEST_RANK_LIMIT, {rankLimit: value})
-      }
+      set(value) {
+        this.$store.commit(types.CHANGE_CONTEST_RANK_LIMIT, {
+          rankLimit: value,
+        })
+      },
     },
-    refreshDisabled () {
+    refreshDisabled() {
       return this.contest.status === CONTEST_STATUS.ENDED
-    }
+    },
   },
-  beforeDestroy () {
+  beforeDestroy() {
     clearInterval(this.refreshFunc)
-  }
+  },
 }

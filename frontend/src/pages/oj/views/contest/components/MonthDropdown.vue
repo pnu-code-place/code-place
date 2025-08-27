@@ -34,10 +34,10 @@ export default {
   },
   methods: {
     onMonthChangeEventEmit(month) {
-      this.$emit("onMonthChange", month);
+      this.$emit("onMonthChange", month)
     },
   },
-};
+}
 </script>
 
 <style scoped lang="less">

@@ -1,13 +1,13 @@
 <script>
-import ShineWrapper from "../../../components/ShineWrapper.vue";
-import {comma} from "../../../../../utils/utils";
-import {TierImageSrc} from "../../../../../utils/constants";
+import ShineWrapper from "../../../components/ShineWrapper.vue"
+import { comma } from "../../../../../utils/utils"
+import { TierImageSrc } from "../../../../../utils/constants"
 
 export default {
-  name: 'TestItem',
+  name: "TestItem",
   data() {
     return {
-      faceImage: require('@/assets/github.png')
+      faceImage: require("@/assets/github.png"),
     }
   },
   computed: {
@@ -16,27 +16,30 @@ export default {
     },
     shift() {
       return `shift-${this.userNum - this.ranking}`
-    }
+    },
   },
   methods: {
     comma,
     goUserInfo() {
-      this.$router.push({name: 'user-home', params: {username: this.user.username}})
+      this.$router.push({
+        name: "user-home",
+        params: { username: this.user.username },
+      })
     },
   },
-  components: {ShineWrapper},
+  components: { ShineWrapper },
   props: {
     user: {
       type: Object,
       default: () => {
         return {
-          mood: '',
-          username: '',
+          mood: "",
+          username: "",
           score: 0,
-          tier: 'sprout',
-          avatar_url: ''
+          tier: "sprout",
+          avatar_url: "",
         }
-      }
+      },
     },
     ranking: {
       type: Number,
@@ -45,30 +48,31 @@ export default {
     userNum: {
       type: Number,
       default: 1,
-    }
-  }
+    },
+  },
 }
 </script>
 
 <template>
   <div :class="'extend-badge ' + `shrink ${this.shift}`" @click="goUserInfo">
-    <img class="user-avatar" :src="this.user.avatar_url"/>
+    <img class="user-avatar" :src="this.user.avatar_url" />
     <div class="detail">
       <div class="user-name">{{ this.user.username }}</div>
-      <div class="user-score">{{ comma(this.user.score) }}{{ $t('m.Point') }}</div>
+      <div class="user-score">
+        {{ comma(this.user.score) }}{{ $t("m.Point") }}
+      </div>
     </div>
     <!--      <img :src="this.tierImageSrc"/>-->
     <div class="tier-wrapper">
       <shine-wrapper class="tier-mark-wrapper">
         <!--      <img src="@/assets/github.png"/>-->
-        <img class="tier" :src="tierImageSrc[user.tier]" alt='tier-mark'>
+        <img class="tier" :src="tierImageSrc[user.tier]" alt="tier-mark" />
       </shine-wrapper>
     </div>
   </div>
 </template>
 
 <style scoped lang="less">
-
 .extend-badge {
   --user-avatar-size: var(--major-info-height);
   display: flex;
@@ -78,7 +82,7 @@ export default {
   border-radius: calc(var(--user-avatar-size) / 2);
   gap: 10px;
   transition: all 0.5s ease-in-out;
-  box-shadow: 0 3px 3px rgba(0, 0, 0, 0.50);
+  box-shadow: 0 3px 3px rgba(0, 0, 0, 0.5);
   padding-right: 10px;
   cursor: pointer;
   background-color: var(--box-background-color);
@@ -106,7 +110,6 @@ export default {
     text-overflow: clip;
     height: 100%;
   }
-
 }
 
 .contents {

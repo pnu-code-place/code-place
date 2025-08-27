@@ -28,10 +28,10 @@
 </template>
 
 <script>
-import CodeHighlight from "./CodeHighlight.vue";
-import TestCaseInfo from "./TestCaseInfo.vue";
-import ExpandableCode from "./ExpandableCode.vue";
-import { HIGHLIGHT_JS_LANGUAGES } from "../../../../../../utils/constants";
+import CodeHighlight from "./CodeHighlight.vue"
+import TestCaseInfo from "./TestCaseInfo.vue"
+import ExpandableCode from "./ExpandableCode.vue"
+import { HIGHLIGHT_JS_LANGUAGES } from "../../../../../../utils/constants"
 
 export default {
   name: "SubmissionErrorDropdown",
@@ -57,18 +57,18 @@ export default {
   computed: {
     shouldShowTestCase() {
       // contestID가 없고, 실패한 테스트케이스 정보가 있을 때만 표시
-      if (this.contestID) return false;
+      if (this.contestID) return false
 
-      const tcInfo = this.submission.first_failed_tc_io;
-      return tcInfo && tcInfo.input && tcInfo.output;
+      const tcInfo = this.submission.first_failed_tc_io
+      return tcInfo && tcInfo.input && tcInfo.output
     },
   },
   methods: {
     getHljsLanguage(language) {
-      return HIGHLIGHT_JS_LANGUAGES[language] || "plaintext";
+      return HIGHLIGHT_JS_LANGUAGES[language] || "plaintext"
     },
   },
-};
+}
 </script>
 
 <style scoped lang="less">

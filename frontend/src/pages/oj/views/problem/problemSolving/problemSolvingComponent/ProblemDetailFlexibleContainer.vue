@@ -234,9 +234,9 @@
 </template>
 
 <script>
-import { defineComponent } from "vue";
-import FieldCategoryBox from "../../../../components/FieldCategoryBox.vue";
-import { DIFFICULTY_MAP, FIELD_MAP } from "../../../../../../utils/constants";
+import { defineComponent } from "vue"
+import FieldCategoryBox from "../../../../components/FieldCategoryBox.vue"
+import { DIFFICULTY_MAP, FIELD_MAP } from "../../../../../../utils/constants"
 
 export default defineComponent({
   props: {
@@ -250,44 +250,44 @@ export default defineComponent({
         openFieldDropdown: false,
         openCategoryDropdown: false,
       },
-    };
+    }
   },
   methods: {
     scrollField() {
-      this.$refs.field.scrollIntoView({ behavior: "smooth" });
-      this.dropdown.openFieldDropdown = true;
+      this.$refs.field.scrollIntoView({ behavior: "smooth" })
+      this.dropdown.openFieldDropdown = true
     },
     scrollCategory() {
-      this.$refs.category.scrollIntoView({ behavior: "smooth" });
-      this.dropdown.openCategoryDropdown = true;
+      this.$refs.category.scrollIntoView({ behavior: "smooth" })
+      this.dropdown.openCategoryDropdown = true
     },
     toggleDropdown(type) {
       if (type === "field") {
-        this.dropdown.openFieldDropdown = !this.dropdown.openFieldDropdown;
-        return;
+        this.dropdown.openFieldDropdown = !this.dropdown.openFieldDropdown
+        return
       }
-      this.dropdown.openCategoryDropdown = !this.dropdown.openCategoryDropdown;
+      this.dropdown.openCategoryDropdown = !this.dropdown.openCategoryDropdown
     },
     onCopy(event) {
-      this.$success("Code copied");
+      this.$success("Code copied")
     },
     onCopyError(e) {
-      this.$error("Failed to copy code");
+      this.$error("Failed to copy code")
     },
   },
   computed: {
     FIELD_MAP() {
-      return FIELD_MAP;
+      return FIELD_MAP
     },
     DIFFICULTY_MAP() {
-      return DIFFICULTY_MAP;
+      return DIFFICULTY_MAP
     },
     getDifficulty() {
-      let difficultyInfo = DIFFICULTY_MAP[this.problem.difficulty];
-      return difficultyInfo.value;
+      let difficultyInfo = DIFFICULTY_MAP[this.problem.difficulty]
+      return difficultyInfo.value
     },
   },
-});
+})
 </script>
 
 <style scoped lang="less">
@@ -436,7 +436,9 @@ export default defineComponent({
 
 .slide-enter-active,
 .slide-leave-active {
-  transition: max-height 0.3s ease, opacity 0.3s ease;
+  transition:
+    max-height 0.3s ease,
+    opacity 0.3s ease;
   overflow: hidden;
 }
 

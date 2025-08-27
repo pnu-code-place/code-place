@@ -1,14 +1,13 @@
 <script>
-
-import {defineComponent} from "vue";
-import ShineWrapper from "../../../components/ShineWrapper.vue";
+import { defineComponent } from "vue"
+import ShineWrapper from "../../../components/ShineWrapper.vue"
 
 export default defineComponent({
-  name: 'HomeNoticeItem',
-  components: {ShineWrapper},
+  name: "HomeNoticeItem",
+  components: { ShineWrapper },
   data() {
     return {
-      DAYS_TO_BE_NEW: 3
+      DAYS_TO_BE_NEW: 3,
     }
   },
   props: {
@@ -16,65 +15,70 @@ export default defineComponent({
       type: Object,
       default: () => {
         return {
-          title: 'title',
-          create_time: '2024-10-10',
-          new_flag: false
+          title: "title",
+          create_time: "2024-10-10",
+          new_flag: false,
         }
-      }
+      },
     },
     isCSEP: {
       type: Boolean,
-      default: false
+      default: false,
     },
     isSW: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
   },
   computed: {
     dateStr() {
       if (this.isCSEP) {
-        let onlyDate = new Date(this.announcement.create_time);
-        return onlyDate.toLocaleDateString();
+        let onlyDate = new Date(this.announcement.create_time)
+        return onlyDate.toLocaleDateString()
       } else if (this.isSW) {
-        return this.announcement.pubDate.split(' ')[0];
+        return this.announcement.pubDate.split(" ")[0]
       }
     },
     isNew() {
       if (this.isCSEP) {
-        const currentTime = new Date().getTime();
-        const createTimestamp = new Date(this.announcement.create_time).getTime();
-        const oneDayInMilliseconds = 24 * 60 * 60 * 1000 * this.DAYS_TO_BE_NEW;
-        return (currentTime - createTimestamp) <= oneDayInMilliseconds;
+        const currentTime = new Date().getTime()
+        const createTimestamp = new Date(
+          this.announcement.create_time,
+        ).getTime()
+        const oneDayInMilliseconds = 24 * 60 * 60 * 1000 * this.DAYS_TO_BE_NEW
+        return currentTime - createTimestamp <= oneDayInMilliseconds
       } else if (this.isSW) {
-        this.dateStr === new Date().toISOString().split('T')[0];
+        this.dateStr === new Date().toISOString().split("T")[0]
       }
     },
     csepClass() {
-      return this.isCSEP ? 'csep' : '';
+      return this.isCSEP ? "csep" : ""
     },
     swClass() {
-      return this.isSW ? 'sw-center' : '';
+      return this.isSW ? "sw-center" : ""
     },
     itemClass() {
-      return `${this.csepClass} ${this.swClass}`;
-    }
+      return `${this.csepClass} ${this.swClass}`
+    },
   },
   methods: {
     goAnnouncement() {
-      this.$router.push({name: 'notice-details', params: {noticeID: this.announcement.id}});
+      this.$router.push({
+        name: "notice-details",
+        params: { noticeID: this.announcement.id },
+      })
     },
     goSW() {
-      window.open(this.announcement.link);
+      window.open(this.announcement.link)
     },
     clickHandler() {
       if (this.isCSEP) {
-        this.goAnnouncement();
+        this.goAnnouncement()
       } else if (this.isSW) {
-        this.goSW();
+        this.goSW()
       }
-    }
-  }
+    },
+  },
 })
 </script>
 
@@ -87,11 +91,11 @@ export default defineComponent({
         </div>
         <span class="new-annotator" v-if="isNew"><span>NEW</span></span>
         <span class="csep-annotator" v-if="isCSEP">
-                  <shine-wrapper>COPL</shine-wrapper>
-          </span>
+          <shine-wrapper>COPL</shine-wrapper>
+        </span>
         <span class="sw-center-annotator" v-if="isSW">
-                  <shine-wrapper>SW</shine-wrapper>
-          </span>
+          <shine-wrapper>SW</shine-wrapper>
+        </span>
       </div>
       <div class="right">
         <div class="date">
@@ -164,7 +168,11 @@ li {
       }
 
       .sw-center-annotator {
-        background-image: linear-gradient(45deg, var(--pnu-blue), var(--pnu-green));
+        background-image: linear-gradient(
+          45deg,
+          var(--pnu-blue),
+          var(--pnu-green)
+        );
         border-radius: 4px;
         color: #ffffff;
         font-size: 10px;
@@ -193,7 +201,11 @@ li {
 
   &.sw-center {
     // duel background color divided by diagonal line
-    background-image: linear-gradient(45deg, var(--pale-pnu-blue), var(--pale-pnu-green));
+    background-image: linear-gradient(
+      45deg,
+      var(--pale-pnu-blue),
+      var(--pale-pnu-green)
+    );
   }
 
   &:hover {

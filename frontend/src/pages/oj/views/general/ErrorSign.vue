@@ -1,69 +1,69 @@
 <script>
 export default {
-  name: 'ErrorSign',
+  name: "ErrorSign",
   data() {
     return {
       errorStatus: {
         code: 0,
-        description: '',
-        solution: ''
+        description: "",
+        solution: "",
       },
       errorInfo: {
         404: {
-          code: '404',
-          description: this.$t('m.No_Response'),
-          solution: this.$t('m.Reload_Page')
+          code: "404",
+          description: this.$t("m.No_Response"),
+          solution: this.$t("m.Reload_Page"),
         },
         500: {
-          code: '500',
-          description: this.$t('m.Server_Error'),
-          solution: this.$t('m.Try_Again_Later')
+          code: "500",
+          description: this.$t("m.Server_Error"),
+          solution: this.$t("m.Try_Again_Later"),
         },
         504: {
-          code: '504',
-          description: this.$t('m.Gateway_Timeout'),
-          solution: this.$t('m.Try_Again_Later')
-        }
-      }
+          code: "504",
+          description: this.$t("m.Gateway_Timeout"),
+          solution: this.$t("m.Try_Again_Later"),
+        },
+      },
     }
   },
   props: {
     code: {
       type: Number,
-      default: 404
+      default: 404,
     },
     description: {
       type: String,
-      default: ''
+      default: "",
     },
     solution: {
       type: String,
-      default: ''
-    }
+      default: "",
+    },
   },
   methods: {
     init() {
       if (Object.keys(this.errorInfo).includes(this.code.toString())) {
-        this.errorStatus.code = this.code;
+        this.errorStatus.code = this.code
         if (this.description) {
-          this.errorStatus.description = this.description;
+          this.errorStatus.description = this.description
         } else {
-          this.errorStatus.description = this.errorInfo[this.code].description;
+          this.errorStatus.description = this.errorInfo[this.code].description
         }
         if (this.solution) {
-          this.errorStatus.solution = this.solution;
+          this.errorStatus.solution = this.solution
         } else {
-          this.errorStatus.solution = this.errorInfo[this.code].solution;
+          this.errorStatus.solution = this.errorInfo[this.code].solution
         }
       } else {
-        this.errorStatus.code = this.code;
-        this.errorStatus.description = this.description;
-        this.errorStatus.solution = this.solution;
+        this.errorStatus.code = this.code
+        this.errorStatus.description = this.description
+        this.errorStatus.solution = this.solution
       }
-    }
+    },
   },
   mounted() {
-    this.init();
+    this.init()
   },
 }
 </script>

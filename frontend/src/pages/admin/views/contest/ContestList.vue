@@ -65,8 +65,8 @@
                 scope.row.status === '-1'
                   ? 'danger'
                   : scope.row.status === '0'
-                  ? 'success'
-                  : 'primary'
+                    ? 'success'
+                    : 'primary'
               "
             >
               {{ scope.row.status | contestStatus }}
@@ -160,10 +160,10 @@
 </template>
 
 <script>
-import api from "../../api.js";
-import utils from "@/utils/utils";
-import { CONTEST_STATUS_REVERSE } from "@/utils/constants";
-import router from "../../router";
+import api from "../../api.js"
+import utils from "@/utils/utils"
+import { CONTEST_STATUS_REVERSE } from "@/utils/constants"
+import router from "../../router"
 
 export default {
   name: "ContestList",
@@ -178,80 +178,80 @@ export default {
       currentPage: 1,
       currentId: 1,
       downloadDialogVisible: false,
-    };
+    }
   },
   mounted() {
-    this.getContestList(this.currentPage);
+    this.getContestList(this.currentPage)
   },
   filters: {
     contestStatus(value) {
-      return CONTEST_STATUS_REVERSE[value].name;
+      return CONTEST_STATUS_REVERSE[value].name
     },
   },
   methods: {
     currentChange(page) {
-      this.currentPage = page;
-      this.getContestList(page);
+      this.currentPage = page
+      this.getContestList(page)
     },
     getContestList(page) {
-      this.loading = true;
+      this.loading = true
       api
         .getContestList((page - 1) * this.pageSize, this.pageSize, this.keyword)
         .then(
           (res) => {
-            this.loading = false;
-            this.total = res.data.data.total;
-            this.contestList = res.data.data.results;
+            this.loading = false
+            this.total = res.data.data.total
+            this.contestList = res.data.data.results
           },
           (res) => {
-            this.loading = false;
-          }
-        );
+            this.loading = false
+          },
+        )
     },
     openDownloadOptions(contestId) {
-      this.downloadDialogVisible = true;
-      this.currentId = contestId;
+      this.downloadDialogVisible = true
+      this.currentId = contestId
     },
     downloadSubmissions() {
-      let excludeAdmin = this.excludeAdmin ? "1" : "0";
-      let url = `/admin/download_submissions?contest_id=${this.currentId}&exclude_admin=${excludeAdmin}`;
-      utils.downloadFile(url);
+      let excludeAdmin = this.excludeAdmin ? "1" : "0"
+      let url = `/admin/download_submissions?contest_id=${this.currentId}&exclude_admin=${excludeAdmin}`
+      utils.downloadFile(url)
     },
     goSubmission(contestId) {
-      this.$router.push({ name: "contest-submission", params: { contestId } });
+      this.$router.push({ name: "contest-submission", params: { contestId } })
     },
     goEdit(contestId) {
-      this.$router.push({ name: "edit-contest", params: { contestId } });
+      this.$router.push({ name: "edit-contest", params: { contestId } })
     },
     goContestAnnouncement(contestId) {
       this.$router.push({
         name: "contest-announcement",
         params: { contestId },
-      });
+      })
     },
     goContestProblemList(contestId) {
       this.$router.push({
         name: "contest-problem-list",
         params: { contestId },
-      });
+      })
     },
     handleVisibleSwitch(row) {
-      api.editContest(row);
+      api.editContest(row)
     },
     deleteContest(contestId) {
       if (confirm(`정말 삭제하시겠습니까?`)) {
         api.deleteContest(contestId).then((res) => {
-          this.$router.go(0);
-        });
+          this.$router.go(0)
+        })
       }
     },
   },
   watch: {
     keyword() {
-      this.currentChange(1);
+      this.currentChange(1)
     },
   },
-};
+}
 </script>
 
 <style lang="less" scoped></style>

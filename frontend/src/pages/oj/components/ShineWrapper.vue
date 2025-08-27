@@ -1,14 +1,14 @@
 <script>
 export default {
-  name: 'ShineWrapper',
+  name: "ShineWrapper",
   props: {
     disabled: {
       type: Boolean,
       default() {
         return false
-      }
-    }
-  }
+      },
+    },
+  },
 }
 </script>
 
@@ -41,10 +41,12 @@ export default {
       left: 0;
       width: 200%;
       height: 200%;
-      background-image: linear-gradient(to bottom right,
-      rgba(255, 255, 255, 0) 0%,
-      rgba(255, 255, 255, 0.5) 50%,
-      rgba(255, 255, 255, 0) 100%);
+      background-image: linear-gradient(
+        to bottom right,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.5) 50%,
+        rgba(255, 255, 255, 0) 100%
+      );
       animation: shine 3s infinite;
     }
   }

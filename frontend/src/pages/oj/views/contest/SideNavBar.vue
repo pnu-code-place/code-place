@@ -21,11 +21,11 @@
 </template>
 
 <script>
-import SideNavBar from "./SideNavBar.vue";
-import moment from "moment";
-import { mapState, mapGetters, mapActions } from "vuex";
-import { types } from "@/store";
-import time from "@/utils/time";
+import SideNavBar from "./SideNavBar.vue"
+import moment from "moment"
+import { mapState, mapGetters, mapActions } from "vuex"
+import { types } from "@/store"
+import time from "@/utils/time"
 
 export default {
   name: "side-nav-bar",
@@ -33,14 +33,14 @@ export default {
     return {
       btnLoading: false,
       contestID: "",
-    };
+    }
   },
   mounted() {
-    this.contestID = this.$route.params.contestID;
+    this.contestID = this.$route.params.contestID
   },
   methods: {
     handleRoute(route) {
-      this.$router.push(route);
+      this.$router.push(route)
     },
   },
   computed: {
@@ -53,10 +53,10 @@ export default {
       "OIContestRealTimePermission",
     ]),
     showAdminHelper() {
-      return this.isContestAdmin && this.contestRuleType === "ACM";
+      return this.isContestAdmin && this.contestRuleType === "ACM"
     },
   },
-};
+}
 </script>
 
 <style scoped lang="less">
