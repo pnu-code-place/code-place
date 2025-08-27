@@ -14,8 +14,6 @@ services:
     image: gcr.io/cadvisor/cadvisor:v0.52.0
     networks:
       - monitoring
-    ports:
-      - "8080:8080"
     volumes:
       - /:/rootfs:ro
       - /var/run:/var/run:rw
@@ -31,8 +29,6 @@ services:
     image: prom/prometheus:v3.5.0
     networks:
       - monitoring
-    ports:
-      - "9090:9090"
     volumes:
       - ${PWD}/prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus-data:/prometheus
