@@ -2,6 +2,8 @@ import hashlib
 import json
 import logging
 from urllib.parse import urljoin
+
+from django.utils import timezone
 from utils.shortcuts import get_env
 
 import requests
@@ -165,6 +167,7 @@ class JudgeDispatcher(DispatcherBase):
                 cache.lpush(CacheKey.waiting_queue, json.dumps(data))
                 return
             Submission.objects.filter(id=self.submission.id).update(result=JudgeStatus.JUDGING)
+            self.submission.judge_time = timezone.now()
             resp = self._request(urljoin(server.service_url, "/judge"), data=data)
 
         if not resp:

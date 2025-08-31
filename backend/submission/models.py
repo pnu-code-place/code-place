@@ -28,6 +28,7 @@ class Submission(models.Model):
     contest = models.ForeignKey(Contest, null=True, on_delete=models.CASCADE)
     problem = models.ForeignKey(Problem, on_delete=models.CASCADE)
     create_time = models.DateTimeField(auto_now_add=True)
+    judge_time = models.DateTimeField(null=True)
     user_id = models.IntegerField(db_index=True)
     username = models.TextField()
     code = models.TextField()
