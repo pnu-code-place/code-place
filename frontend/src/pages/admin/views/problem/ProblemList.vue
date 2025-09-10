@@ -111,6 +111,14 @@
           @click="addProblemDialogVisible = true"
           >{{ $t("m.Button_Add_Public_Problem") }}
         </el-button>
+        <el-button
+          v-if="contestId"
+          type="primary"
+          size="small"
+          icon="el-icon-plus"
+          @click="importProblemDialogVisible = true"
+          >{{ $t("m.Button_Add_From_Contest") }}
+        </el-button>
         <el-pagination
           class="page"
           layout="prev, pager, next"
@@ -153,6 +161,18 @@
         @on-change="getProblemList"
       ></add-problem-component>
     </el-dialog>
+    <el-dialog
+      :title="$t('m.Button_Add_From_Contest')"
+      v-if="contestId"
+      width="80%"
+      :visible.sync="importProblemDialogVisible"
+      @close-on-click-modal="false"
+    >
+      <import-from-contest
+        :contestID="contestId"
+        @on-change="getProblemList"
+      ></import-from-contest>
+    </el-dialog>
   </div>
 </template>
 
@@ -160,6 +180,7 @@
 import api from "../../api.js"
 import utils from "@/utils/utils"
 import AddProblemComponent from "./AddPublicProblem.vue"
+import ImportFromContest from "./ImportFromContest.vue"
 
 // A list of routers which need problems list
 const PROBLEM_LIST_ROUTES = ["problem-list", "contest-problem-list"]
@@ -168,6 +189,7 @@ export default {
   name: "ProblemList",
   components: {
     AddProblemComponent,
+    ImportFromContest,
   },
   data() {
     return {
@@ -185,6 +207,7 @@ export default {
       InlineEditDialogVisible: false,
       makePublicDialogVisible: false,
       addProblemDialogVisible: false,
+      importProblemDialogVisible: false,
     }
   },
   mounted() {

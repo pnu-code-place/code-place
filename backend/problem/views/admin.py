@@ -1,7 +1,7 @@
 import hashlib
 import json
 import os
-# import shutil
+import shutil
 import tempfile
 import zipfile
 from wsgiref.util import FileWrapper
@@ -467,6 +467,66 @@ class ContestProblemAPI(ProblemBase):
         # if os.path.isdir(d):
         #    shutil.rmtree(d, ignore_errors=True)
         problem.delete()
+        return self.success()
+
+
+class ImportContestProblemAPI(APIView):
+
+    def post(self, request):
+        """기존에 존재하는 대회의 문제를 다른 대회로 복사하는 API."""
+        data = request.data
+        from_contest_id = data.get("from_contest_id")
+        to_contest_id = data.get("contest_id")
+
+        if not from_contest_id or not to_contest_id:
+            return self.error("from_contest_id and contest_id are required")
+
+        try:
+            from_contest = Contest.objects.get(id=from_contest_id)
+            to_contest = Contest.objects.get(id=to_contest_id)
+        except Contest.DoesNotExist:
+            return self.error("Contest does not exist")
+
+        # Permission check
+        ensure_created_by(to_contest, request.user)
+        if not request.user.is_super_admin():
+            if from_contest.created_by != request.user:
+                return self.error("You don't have permission to import from this contest.")
+
+        source_problems = Problem.objects.filter(contest=from_contest).order_by('create_time')
+
+        with transaction.atomic():
+            for problem in source_problems:
+                # 이미 존재하는 문제는 건너띔 - _id로 판단
+                if Problem.objects.filter(contest=to_contest, _id=problem._id).exists():
+                    continue
+
+                tags = problem.tags.all()
+
+                # 새로운 테스트케이스 디렉토리 복사
+                new_test_case_id = None
+                if problem.test_case_id:
+                    src_dir = os.path.join(settings.TEST_CASE_DIR, problem.test_case_id)
+                    if os.path.isdir(src_dir):
+                        new_test_case_id = rand_str()
+                        dest_dir = os.path.join(settings.TEST_CASE_DIR, new_test_case_id)
+                        shutil.copytree(src_dir, dest_dir)
+
+                # PK를 None으로 설정하여 새 객체로 저장
+                problem.pk = None
+
+                problem.contest = to_contest
+                problem.is_public = False
+                problem.visible = True
+                if new_test_case_id:
+                    problem.test_case_id = new_test_case_id
+                problem.submission_number = 0
+                problem.accepted_number = 0
+                problem.statistic_info = {}
+                problem.created_by = request.user
+                problem.save()
+                problem.tags.set(tags)
+
         return self.success()
 
 

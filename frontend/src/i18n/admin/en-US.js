@@ -230,6 +230,8 @@ export const m = {
   AddProblem_Table_Option: "옵션",
   AddProblem_Modal_Title: "확인",
   AddProblem_Modal_Content: "추가하려는 문제 번호를 기입해주세요.",
+  Import_Contest_Problems_Confirm: "이 대회의 모든 문제를 가져오시겠습니까?",
+  Import_Successfully: "문제를 성공적으로 가져왔습니다.",
 
   // ImportAndExport.vue
   ImportAndExport_ID: "ID",
@@ -352,6 +354,9 @@ export const m = {
   // Modal
   Modal_Confirm: "확인",
   Modal_Cancel: "취소",
+  Yes: "예",
+  No: "아니오",
+  Warning: "경고",
 
   // Icon
   Icon_Edit: "수정",
@@ -365,6 +370,7 @@ export const m = {
   Icon_Submission_State: "제출 현황",
   Icon_Submission_Download: "제출물 다운로드",
   Icon_Contest_Rank_Download: "대회 랭킹 다운로드",
+  Import: "가져오기",
 
   // Button
   Button_Choose_File: "파일 선택",
@@ -374,6 +380,7 @@ export const m = {
   Button_Upload: "업로드",
   Button_Create: "생성하기",
   Button_Add_Public_Problem: "기존 문제 추가하기",
+  Button_Add_From_Contest: "이전 대회 문제 가져오기",
 
   // Search
   Search_Keywords: "검색어",
@@ -388,4 +395,9 @@ export const m = {
   School_Email: "학교 이메일",
   College: "단과대학",
   Major: "전공",
+
+  // ImportFromContest
+  Contest_Name: "대회명",
+  Contest_Creator: "대회 생성자",
+  Contest_Visible: "대회 공개 여부",
 }
