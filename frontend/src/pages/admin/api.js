@@ -223,6 +223,12 @@ export default {
       params: params,
     })
   },
+  getContestListForProblem(params) {
+    params = utils.filterEmptyValue(params)
+    return ajax("admin/contest", "get", {
+      params,
+    })
+  },
   getContestAnnouncementList(contestID) {
     return ajax("admin/contest/announcement", "get", {
       params: {
@@ -341,6 +347,12 @@ export default {
   },
   addProblemFromPublic(data) {
     return ajax("admin/contest/add_problem_from_public", "post", {
+      data,
+    })
+  },
+  importContestProblems(contestId, data) {
+    data.contest_id = contestId
+    return ajax("admin/contest/import_problem", "post", {
       data,
     })
   },
