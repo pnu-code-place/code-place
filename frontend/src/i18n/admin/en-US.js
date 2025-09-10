@@ -395,4 +395,9 @@ export const m = {
   School_Email: "학교 이메일",
   College: "단과대학",
   Major: "전공",
+
+  // ImportFromContest
+  Contest_Name: "대회명",
+  Contest_Creator: "대회 생성자",
+  Contest_Visible: "대회 공개 여부",
 }
