@@ -104,7 +104,8 @@ export default {
           this.$emit("on-change")
           this.$success(this.$t('m.Import_Successfully'))
         })
-      }).catch(() => {
+      }).catch((error) => {
+        // this.$error(error)
       })
     },
   },
