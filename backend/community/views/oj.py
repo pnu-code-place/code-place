@@ -4,7 +4,7 @@ from account.decorators import check_contest_permission
 
 from ..models import Post, Comment
 from ..serializers import PostSerializer, CreatePostSerializer, CommentSerializer
-from contest.models import Contest, ContestStatus
+from contest.models import Contest
 from problem.models import Problem
 
 
@@ -152,9 +152,7 @@ class CommentAPIView(APIView):
     """특정 게시글의 댓글 생성 및 목록 조회를 위한 API"""
 
     def get(self, request, post_id):
-        """
-        댓글 목록 조회
-        """
+        """댓글 목록 조회"""
         try:
             Post.objects.get(id=post_id)  # 게시글 존재 여부 확인
         except Post.DoesNotExist:
@@ -166,14 +164,11 @@ class CommentAPIView(APIView):
         root_comments = comments.filter(parent_comment__isnull=True)
         data = self.paginate_data(request, root_comments, CommentSerializer)
 
-        # TODO: 대댓글(replies)을 효율적으로 포함시키는 로직 추가 필요 (예: 재귀적 serializer)
         return self.success(data)
 
     @login_required
     def post(self, request, post_id):
-        """
-        댓글 생성
-        """
+        """댓글 생성"""
         try:
             post = Post.objects.get(id=post_id)
         except Post.DoesNotExist:
@@ -202,15 +197,11 @@ class CommentAPIView(APIView):
 
 
 class CommentDetailAPIView(APIView):
-    """
-    특정 댓글 수정 및 삭제를 위한 API
-    """
+    """특정 댓글 수정 및 삭제를 위한 API"""
 
     @login_required
-    def put(self, request, comment_id):
-        """
-        댓글 수정
-        """
+    def put(self, request, post_id, comment_id):
+        """댓글 수정"""
         try:
             comment = Comment.objects.get(id=comment_id)
         except Comment.DoesNotExist:
@@ -228,7 +219,7 @@ class CommentDetailAPIView(APIView):
         return self.success(CommentSerializer(comment).data)
 
     @login_required
-    def delete(self, request, comment_id):
+    def delete(self, request, post_id, comment_id):
         """댓글 삭제"""
         try:
             comment = Comment.objects.get(id=comment_id)

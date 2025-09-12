@@ -13,17 +13,17 @@ urlpatterns = [
         name="community_posts",
     ),
     url(
-        r"^community/posts/(?P<post_id>\d+)/$",
+        r"^community/posts/(?P<post_id>\d+)/?$",
         PostDetailAPIView.as_view(),
         name="community_post_detail",
     ),
     url(
-        r"^community/posts/(?P<post_id>\d+)/comments/$",
+        r"^community/posts/(?P<post_id>\d+)/comments/?$",
         CommentAPIView.as_view(),
         name="community_post_comments",
     ),
     url(
-        r"^community/comments/(?P<comment_id>\d+)/$",
+        r"^community/post/(?P<post_id>d+)/comments/(?P<comment_id>\d+)/?$",
         CommentDetailAPIView.as_view(),
         name="community_comment_detail",
     ),
