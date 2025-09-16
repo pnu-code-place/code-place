@@ -1,10 +1,6 @@
 from django.conf.urls import url
-from ..views.oj import (
-    CommentAPIView,
-    PostAPIView,
-    PostDetailAPIView,
-    CommentDetailAPIView,
-)
+
+from ..views.oj import (CommentAPIView, CommentDetailAPIView, PostAPIView, PostDetailAPIView, PostStatusUpdateAPIView)
 
 urlpatterns = [
     url(
@@ -18,12 +14,17 @@ urlpatterns = [
         name="community_post_detail",
     ),
     url(
+        r"^community/posts/(?P<post_id>\d+)/status/?$",
+        PostStatusUpdateAPIView.as_view(),
+        name="community_post_status",
+    ),
+    url(
         r"^community/posts/(?P<post_id>\d+)/comments/?$",
         CommentAPIView.as_view(),
         name="community_post_comments",
     ),
     url(
-        r"^community/post/(?P<post_id>d+)/comments/(?P<comment_id>\d+)/?$",
+        r"^community/posts/(?P<post_id>\d+)/comments/(?P<comment_id>\d+)/?$",
         CommentDetailAPIView.as_view(),
         name="community_comment_detail",
     ),

@@ -45,12 +45,8 @@ class Post(models.Model):
     content = RichTextField()
     author = models.ForeignKey(User, on_delete=models.CASCADE)
 
-    problem = models.ForeignKey(
-        Problem, null=True, blank=True, on_delete=models.CASCADE
-    )
-    contest = models.ForeignKey(
-        Contest, null=True, blank=True, on_delete=models.CASCADE
-    )
+    problem = models.ForeignKey(Problem, null=True, blank=True, on_delete=models.CASCADE)
+    contest = models.ForeignKey(Contest, null=True, blank=True, on_delete=models.CASCADE)
 
     post_type = models.CharField(
         max_length=20,
@@ -67,14 +63,6 @@ class Post(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
-    @property
-    def community_type(self) -> CommunityType:
-        if self.problem:
-            return self.CommunityType.PROBLEM
-        elif self.contest:
-            return self.CommunityType.CONTEST
-        return self.CommunityType.GENERAL
 
     class Meta:
         ordering = ["-created_at"]
@@ -95,9 +83,7 @@ class Comment(models.Model):
     post = models.ForeignKey(Post, related_name="comments", on_delete=models.CASCADE)
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     content = RichTextField()
-    parent_comment = models.ForeignKey(
-        "self", null=True, blank=True, related_name="replies", on_delete=models.CASCADE
-    )
+    parent_comment = models.ForeignKey("self", null=True, blank=True, related_name="replies", on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
