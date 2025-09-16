@@ -15,7 +15,6 @@ class Post(models.Model):
         author (ForeignKey): 작성자 (User 모델 외래 키)
         problem (ForeignKey): 연관된 문제 (Problem 모델 외래 키, community_type이 'PROBLEM'일 경우)
         contest (ForeignKey): 연관된 대회 (Contest 모델 외래 키, community_type이 'CONTEST'일 경우)
-        community_type (CharField): 커뮤니티 종류 (일반, 문제, 대회)
         post_type (CharField): 게시글 종류 (질문, 글, 공지)
         question_status (CharField): 질문 상태 (진행중, 해결됨), post_type이 'QUESTION'일 경우
         created_at (DateTimeField): 생성 일시 (자동 생성)
@@ -24,20 +23,23 @@ class Post(models.Model):
 
     class CommunityType(models.TextChoices):
         """게시글의 커뮤니티 종류"""
-        GENERAL = 'GENERAL', '일반'
-        PROBLEM = 'PROBLEM', '문제'
-        CONTEST = 'CONTEST', '대회'
+
+        GENERAL = "GENERAL", "일반"
+        PROBLEM = "PROBLEM", "문제"
+        CONTEST = "CONTEST", "대회"
 
     class PostType(models.TextChoices):
         """게시글의 종류"""
-        QUESTION = 'QUESTION', '질문'
-        ARTICLE = 'ARTICLE', '글'
-        ANNOUNCEMENT = 'ANNOUNCEMENT', '공지'
+
+        QUESTION = "QUESTION", "질문"
+        ARTICLE = "ARTICLE", "글"
+        ANNOUNCEMENT = "ANNOUNCEMENT", "공지"
 
     class QuestionStatus(models.TextChoices):
         """질문 게시글의 상태"""
-        OPEN = 'OPEN', '진행중'
-        CLOSED = 'CLOSED', '해결됨'
+
+        OPEN = "OPEN", "진행중"
+        CLOSED = "CLOSED", "해결됨"
 
     title = models.CharField(max_length=200)
     content = RichTextField()
@@ -45,12 +47,6 @@ class Post(models.Model):
 
     problem = models.ForeignKey(Problem, null=True, blank=True, on_delete=models.CASCADE)
     contest = models.ForeignKey(Contest, null=True, blank=True, on_delete=models.CASCADE)
-
-    community_type = models.CharField(
-        max_length=20,
-        choices=CommunityType.choices,
-        default=CommunityType.GENERAL,
-    )
 
     post_type = models.CharField(
         max_length=20,
@@ -61,14 +57,15 @@ class Post(models.Model):
     question_status = models.CharField(
         max_length=20,
         choices=QuestionStatus.choices,
-        default=QuestionStatus.OPEN,
+        null=True,
+        blank=True,
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ['-created_at']
+        ordering = ["-created_at"]
 
 
 class Comment(models.Model):
@@ -82,12 +79,13 @@ class Comment(models.Model):
         created_at (DateTimeField): 생성 일시 (자동 생성)
         updated_at (DateTimeField): 수정 일시 (자동 업데이트)
     """
-    post = models.ForeignKey(Post, related_name='comments', on_delete=models.CASCADE)
+
+    post = models.ForeignKey(Post, related_name="comments", on_delete=models.CASCADE)
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     content = RichTextField()
-    parent_comment = models.ForeignKey('self', null=True, blank=True, related_name='replies', on_delete=models.CASCADE)
+    parent_comment = models.ForeignKey("self", null=True, blank=True, related_name="replies", on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ['created_at']  # 댓글은 오래된 순서대로 정렬
+        ordering = ["created_at"]  # 댓글은 오래된 순서대로 정렬
