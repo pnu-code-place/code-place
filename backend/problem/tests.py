@@ -7,6 +7,7 @@ from zipfile import ZipFile
 
 from django.conf import settings
 from django.db import DatabaseError
+from django.utils import timezone
 
 from utils.constants import Difficulty
 from utils.api.tests import APITestCase
@@ -190,7 +191,7 @@ class ProblemAdminAPITest(APITestCase):
         self.test_create_problem()
 
         resp = self.client.post(self.url, data=self.data)
-        self.assertTrue(resp, "Display ID already exists")
+        self.assertFailed(resp, "Problem ID already exists")
 
     def test_spj(self):
         data = copy.deepcopy(self.data)
@@ -234,8 +235,8 @@ class ProblemAPITest(ProblemCreateTestBase):
         resp = self.client.get(f"{self.url}?limit=10")
         self.assertSuccess(resp)
 
-    def get_one_problem(self):
-        resp = self.client.get(self.url + "?id=" + self.problem._id)
+    def test_get_one_problem(self):
+        resp = self.client.get(self.url + "?problem_id=" + self.problem._id)
         self.assertSuccess(resp)
 
 
@@ -245,7 +246,13 @@ class ContestProblemAdminTest(APITestCase):
         self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
         self.url = self.reverse("contest_problem_admin_api")
         self.create_admin()
-        self.contest = self.client.post(self.reverse("contest_admin_api"), data=DEFAULT_CONTEST_DATA).data["data"]
+        contest_data = copy.deepcopy(DEFAULT_CONTEST_DATA)
+        contest_data["allow_paste"] = True
+        contest_data["start_time"] = timezone.localtime(timezone.now())
+        contest_data["end_time"] = timezone.localtime(timezone.now()) + timedelta(days=1)
+        resp = self.client.post(self.reverse("contest_admin_api"), data=contest_data)
+        self.assertSuccess(resp)
+        self.contest = resp.data["data"]
 
     def test_create_contest_problem(self):
         data = copy.deepcopy(DEFAULT_PROBLEM_DATA)
@@ -276,9 +283,13 @@ class ContestProblemTest(ProblemCreateTestBase):
         admin = self.create_admin()
         url = self.reverse("contest_admin_api")
         contest_data = copy.deepcopy(DEFAULT_CONTEST_DATA)
+        contest_data["allow_paste"] = True
         contest_data["password"] = ""
-        contest_data["start_time"] = contest_data["start_time"] + timedelta(hours=1)
-        self.contest = self.client.post(url, data=contest_data).data["data"]
+        contest_data["start_time"] = timezone.localtime(timezone.now()) + timedelta(hours=1)
+        contest_data["end_time"] = timezone.localtime(timezone.now()) + timedelta(days=2)
+        resp = self.client.post(url, data=contest_data)
+        self.assertSuccess(resp)
+        self.contest = resp.data["data"]
         self.problem = self.add_problem(DEFAULT_PROBLEM_DATA, admin)
         self.problem.contest_id = self.contest["id"]
         self.problem.save()
@@ -317,9 +328,13 @@ class AddProblemFromPublicProblemAPITest(ProblemCreateTestBase):
         admin = self.create_admin()
         url = self.reverse("contest_admin_api")
         contest_data = copy.deepcopy(DEFAULT_CONTEST_DATA)
+        contest_data["allow_paste"] = True
         contest_data["password"] = ""
-        contest_data["start_time"] = contest_data["start_time"] + timedelta(hours=1)
-        self.contest = self.client.post(url, data=contest_data).data["data"]
+        contest_data["start_time"] = timezone.localtime(timezone.now()) + timedelta(hours=1)
+        contest_data["end_time"] = timezone.localtime(timezone.now()) + timedelta(days=2)
+        resp = self.client.post(url, data=contest_data)
+        self.assertSuccess(resp)
+        self.contest = resp.data["data"]
         self.problem = self.add_problem(DEFAULT_PROBLEM_DATA, admin)
         self.url = self.reverse("add_contest_problem_from_public_api")
         self.data = {"display_id": "1000", "contest_id": self.contest["id"], "problem_id": self.problem.id}
@@ -525,7 +540,12 @@ class UpdateBonusProblemTest(APITestCase):
 
         # Create contest problems (should be excluded from bonus selection)
         contest_data = copy.deepcopy(DEFAULT_CONTEST_DATA)
-        contest = self.client.post(self.reverse("contest_admin_api"), data=contest_data).data["data"]
+        contest_data["allow_paste"] = True
+        contest_data["start_time"] = timezone.localtime(timezone.now())
+        contest_data["end_time"] = timezone.localtime(timezone.now()) + timedelta(days=1)
+        resp = self.client.post(self.reverse("contest_admin_api"), data=contest_data)
+        self.assertSuccess(resp)
+        contest = resp.data["data"]
 
         contest_problem = ProblemCreateTestBase.create_problem_with_custom_field(
             self.admin,
