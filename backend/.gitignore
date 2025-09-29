@@ -72,6 +72,8 @@ data/public/avatar/*
 data/public/banner/*
 data/public/popup/*
 data/config/*
+data/postgres/*
+data/redis/*
 !data/config/.gitkeep
 
 http_locations.conf
