@@ -16,8 +16,8 @@ fi
 
 sleep 2
 docker rm -f oj-postgres-dev oj-redis-dev
-docker run -it -d -e POSTGRES_DB=onlinejudge -e POSTGRES_USER=onlinejudge -e POSTGRES_PASSWORD=onlinejudge -p 127.0.0.1:5435:5432 --name oj-postgres-dev postgres:10
-docker run -it -d -p 127.0.0.1:6380:6379 --name oj-redis-dev redis:4.0-alpine
+docker run -it -d -e POSTGRES_DB=onlinejudge -e POSTGRES_USER=onlinejudge -e POSTGRES_PASSWORD=onlinejudge -p 127.0.0.1:5435:5432 --name oj-postgres-dev -v ./data/postgres:/var/lib/postgresql/data postgres:10
+docker run -it -d -p 127.0.0.1:6380:6379 --name oj-redis-dev -v ./data/redis:/data redis:4.0-alpine
 
 if [ "$1" = "--migrate" ]; then
     sleep 3

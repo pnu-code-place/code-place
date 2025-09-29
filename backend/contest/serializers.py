@@ -26,6 +26,7 @@ class CreateConetestSeriaizer(serializers.Serializer):
     password = serializers.CharField(allow_blank=True, max_length=32)
     visible = serializers.BooleanField()
     real_time_rank = serializers.BooleanField()
+    allow_paste = serializers.BooleanField()
     allowed_ip_ranges = serializers.ListField(child=serializers.CharField(max_length=32), allow_empty=True)
 
 
@@ -38,6 +39,7 @@ class EditConetestSeriaizer(serializers.Serializer):
     password = serializers.CharField(allow_blank=True, allow_null=True, max_length=32)
     visible = serializers.BooleanField()
     real_time_rank = serializers.BooleanField()
+    allow_paste = serializers.BooleanField()
     allowed_ip_ranges = serializers.ListField(child=serializers.CharField(max_length=32))
 
 

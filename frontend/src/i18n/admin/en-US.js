@@ -269,6 +269,7 @@ export const m = {
   Contest_Status: "활성화",
   Allowed_IP_Ranges: "허용된 IP 범위",
   CIDR_Network: "CIDR 네트워크",
+  Allow_Paste: "붙여넣기 허용",
 
   // ContestList.vue
   Contest_List_Page_Title: "대회 목록",

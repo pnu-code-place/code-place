@@ -54,6 +54,7 @@
           :language="language"
           :cursorPos.sync="cursorPos"
           :theme.sync="theme"
+          :allowPaste="allowPaste"
           ref="myCm"
         />
         <StickyLnCol :cursorPos="cursorPos" />
@@ -144,6 +145,7 @@ export default {
         difficulty: "",
         tags: [],
         io_mode: { io_mode: "Standard IO" },
+        allow_paste: true,
       },
       submission: {
         result: "0",
@@ -422,6 +424,12 @@ export default {
           query: { problemID: this.problemID },
         }
       }
+    },
+    allowPaste() {
+      if (this.problem && this.problem.allow_paste !== undefined) {
+        return this.problem.allow_paste
+      }
+      return true // 만약 정의되어 있지 않은 경우 기본값은 true
     },
   },
   beforeRouteLeave(to, from, next) {

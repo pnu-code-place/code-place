@@ -20,6 +20,7 @@ class Contest(models.Model):
     end_time = models.DateTimeField()
     create_time = models.DateTimeField(auto_now_add=True)
     last_update_time = models.DateTimeField(auto_now=True)
+    allow_paste = models.BooleanField(default=True)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
     # 是否可见 false的话相当于删除
     visible = models.BooleanField(default=True)
