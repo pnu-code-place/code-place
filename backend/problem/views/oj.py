@@ -74,12 +74,14 @@ class ProblemAPI(APIView):
     def get(self, request):
         # 问题详情页
         problem_id = request.GET.get("problem_id")
+        # problem_id가 제공되면 문제 상세 정보를 반환합니다.
         if problem_id:
             try:
                 problem = Problem.objects.select_related("created_by") \
                     .get(_id=problem_id, contest_id__isnull=True, visible=True)
                 problem_data = ProblemSerializer(problem).data
                 self._add_problem_status(request, problem_data)
+                problem_data["allow_paste"] = True  # 기본 문제는 복사 붙여넣기 허용
                 return self.success(problem_data)
             except Problem.DoesNotExist:
                 return self.error("Problem does not exist")
@@ -143,6 +145,7 @@ class ContestProblemAPI(APIView):
                 ])
             else:
                 problem_data = ProblemSafeSerializer(problem).data
+            problem_data["allow_paste"] = self.contest.allow_paste  # 대회의 복사 붙여넣기 허용 여부 반환
             return self.success(problem_data)
 
         contest_problems = Problem.objects.select_related("created_by").filter(contest=self.contest, visible=True)
