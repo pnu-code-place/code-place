@@ -70,6 +70,10 @@ export default {
     theme: {
       type: Boolean,
     },
+    allowPaste: {
+      type: Boolean,
+      default: true,
+    },
   },
   data() {
     return {
@@ -133,6 +137,13 @@ export default {
         // 기본 붙여넣기 동작 방지
         e.preventDefault()
 
+        if (this.allowPaste === true) {
+          // 붙여넣기 허용 시 기본 동작 수행
+          cm.replaceSelection(e.clipboardData.getData("text"))
+          return
+        }
+
+        // 붙여넣기 금지 시 클립보드 내용 확인
         // 클립보드의 내용 가져오기
         navigator.clipboard.readText().then((clipText) => {
           // 클립보드 내용이 마지막으로 내부에서 복사 또는 잘라내기한 텍스트와 일치하는지 확인
@@ -141,7 +152,9 @@ export default {
             cm.replaceSelection(clipText)
           } else {
             // 외부 텍스트라면 경고 메시지 표시
-            alert("외부 소스로부터의 붙여넣기는 허용되지 않습니다.")
+            alert(
+              "해당 문제에서는 외부 소스로부터의 붙여넣기가 허용되지 않습니다.",
+            )
           }
         })
       })

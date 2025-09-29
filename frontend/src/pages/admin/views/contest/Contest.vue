@@ -82,6 +82,16 @@
               </el-switch>
             </el-form-item>
           </el-col>
+          <el-col :span="8">
+            <el-form-item :label="$t('m.Allow_Paste')">
+              <el-switch
+                v-model="contest.allow_paste"
+                active-color="#13ce66"
+                inactive-color="#ff4949"
+              >
+              </el-switch>
+            </el-form-item>
+          </el-col>
           <el-col :span="24">
             <el-form-item :label="$t('m.Allowed_IP_Ranges')">
               <div
@@ -140,6 +150,7 @@ export default {
         password: "",
         real_time_rank: true,
         visible: true,
+        allow_paste: true,
         allowed_ip_ranges: [
           {
             value: "",
@@ -195,6 +206,9 @@ export default {
             ranges.push({ value: "" })
           }
           data.allowed_ip_ranges = ranges
+          if (data.allow_paste === undefined) {
+            data.allow_paste = true
+          }
           this.contest = data
         })
         .catch(() => {})
