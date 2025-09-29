@@ -23,7 +23,7 @@ services:
     image: registry.code-place-dev.site/code-place-dev/backend:latest
 
   oj-judge:
-    image: registry.code-place-dev.site/code-place-dev/judge-server:1.0.1
+    image: registry.code-place-dev.site/code-place-dev/judge-server:1.0.2
 
   oj-postgres:
     ports:

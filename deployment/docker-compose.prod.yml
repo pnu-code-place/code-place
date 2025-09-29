@@ -52,7 +52,7 @@ services:
         condition: on-failure
 
   oj-judge:
-    image: registry.code-place-dev.site/code-place-prod/judge-server:1.0.1
+    image: registry.code-place-dev.site/code-place-prod/judge-server:1.0.2
     deploy:
       replicas: 6
       update_config:
