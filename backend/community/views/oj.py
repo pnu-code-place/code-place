@@ -79,9 +79,9 @@ class PostAPIView(APIView):
             except Contest.DoesNotExist:
                 return self.error("Contest does not exist")
         elif problem_id:
-            posts = posts.filter(problem_id=problem_id, contest__isnull=True)
+            posts = posts.filter(problem_id=problem_id, contest_id__isnull=True)
         else:
-            posts = posts.filter(contest__isnull=True, problem__isnull=True)
+            posts = posts.filter(contest_id__isnull=True, problem_id__isnull=True)
 
         if post_type:
             posts = posts.filter(post_type=post_type)
