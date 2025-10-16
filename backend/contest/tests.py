@@ -16,7 +16,8 @@ DEFAULT_CONTEST_DATA = {
     "password": "123",
     "allowed_ip_ranges": [],
     "visible": True,
-    "real_time_rank": True
+    "real_time_rank": True,
+    "allow_paste": True
 }
 
 
