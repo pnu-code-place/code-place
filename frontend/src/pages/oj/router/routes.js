@@ -28,8 +28,15 @@ import MajorRank from "../views/rank/majorRank/MajorRank.vue"
 import UserRank from "../views/rank/UserRank.vue"
 import SettingDemo from "../views/setting/UserSetting.vue"
 import AnnouncementDetail from "../views/notice/AnnouncementDetail.vue"
+import { Community } from "../views/community";
 
 export default [
+  {
+    name: "community",
+    path: "/community",
+    meta: { title: "Community" },
+    component: Community,
+  },
   {
     name: "home",
     path: "/",

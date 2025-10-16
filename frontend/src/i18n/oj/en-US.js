@@ -525,4 +525,9 @@ export const m = {
   Image_Max_Size_Notice: "최대 10MB 이하 jpeg, png 첨부 가능",
   Image_Max_Size_Alert: "10MB 이하의 사진을 올려주세요.",
   Bring_Image: "이미지 가져오기",
+
+  // Community.vue
+  Community_Title: "제목",
+  Community_Author: "작성자",
+  Community_CreatedAt: "작성일",
 }
