@@ -9,6 +9,7 @@ class ReplySerializer(serializers.ModelSerializer):
     """대댓글을 위한 Serializer (재귀 호출의 깊이를 제한)"""
 
     author_name = serializers.CharField(source="author.username", read_only=True)
+    author_avatar = serializers.CharField(source="author.userprofile.avatar", read_only=True)
 
     class Meta:
         model = Comment
@@ -16,6 +17,7 @@ class ReplySerializer(serializers.ModelSerializer):
             "id",
             "author",
             "author_name",
+            "author_avatar",
             "content",
             "parent_comment",
             "created_at",
@@ -27,6 +29,7 @@ class CommentSerializer(serializers.ModelSerializer):
     """댓글과 대댓글을 포함하는 Serializer"""
 
     author_name = serializers.CharField(source="author.username", read_only=True)
+    author_avatar = serializers.CharField(source="author.userprofile.avatar", read_only=True)
     replies = ReplySerializer(many=True, read_only=True)
 
     class Meta:
@@ -36,6 +39,7 @@ class CommentSerializer(serializers.ModelSerializer):
             "post",
             "author",
             "author_name",
+            "author_avatar",
             "content",
             "parent_comment",
             "created_at",
@@ -45,10 +49,52 @@ class CommentSerializer(serializers.ModelSerializer):
         read_only_fields = ["post", "author"]
 
 
-class PostSerializer(serializers.ModelSerializer):
+class PostListSerializer(serializers.ModelSerializer):
+    """게시글 목록을 위한 Serializer"""
+
+    content_preview = serializers.SerializerMethodField()
+    author_name = serializers.CharField(source="author.username", read_only=True)
+    author_avatar = serializers.CharField(source="author.userprofile.avatar", read_only=True)
+    community_type = serializers.SerializerMethodField()
+    comment_count = serializers.IntegerField(source="comments.count", read_only=True)
+
+    class Meta:
+        model = Post
+        fields = [
+            "id",
+            "title",
+            "content_preview",
+            "author",
+            "author_name",
+            "author_avatar",
+            "community_type",
+            "post_type",
+            "question_status",
+            "created_at",
+            "updated_at",
+            "problem",
+            "contest",
+            "comment_count",
+        ]
+
+    def get_content_preview(self, obj):
+        """게시글 내용의 미리보기(처음 100자)를 반환합니다."""
+        return obj.content[:100] + ("..." if len(obj.content) > 100 else "")
+
+    def get_community_type(self, obj):
+        """게시글이 속한 커뮤니티 유형을 반환합니다."""
+        if obj.problem_id:
+            return Post.CommunityType.PROBLEM
+        elif obj.contest_id:
+            return Post.CommunityType.CONTEST
+        return Post.CommunityType.GENERAL
+
+
+class PostDetailSerializer(serializers.ModelSerializer):
     """게시글을 위한 Serializer"""
 
     author_name = serializers.CharField(source="author.username", read_only=True)
+    author_avatar = serializers.CharField(source="author.userprofile.avatar", read_only=True)
     community_type = serializers.SerializerMethodField()
     comments = serializers.SerializerMethodField()
 
@@ -60,6 +106,7 @@ class PostSerializer(serializers.ModelSerializer):
             "content",
             "author",
             "author_name",
+            "author_avatar",
             "community_type",
             "post_type",
             "question_status",
