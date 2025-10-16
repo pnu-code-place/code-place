@@ -1,3 +1,4 @@
+from django.db.models import Count
 from account.decorators import check_contest_permission, login_required
 from contest.models import Contest
 from problem.models import Problem
@@ -66,7 +67,8 @@ class PostAPIView(APIView):
         problem_id = request.GET.get("problem_id")
         post_type = request.GET.get("post_type")
 
-        posts = (Post.objects.select_related("author__userprofile").prefetch_related("comments").all())
+        posts = Post.objects.select_related("author__userprofile").annotate(
+            comment_count=Count('comments')).all().order_by("-created_at")
 
         if contest_id:
             try:

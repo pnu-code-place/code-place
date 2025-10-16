@@ -27,10 +27,33 @@
           <tr v-for="post in posts" :key="post.id">
             <td>{{ post.id }}</td>
             <td class="td-title">
-              <p class="community-title">{{ post.title }}</p>
+              <div class="title-wrapper">
+                <p class="community-title">{{ post.title }}</p>
+                <span v-if="post.comment_count > 0" class="comment-count">
+                  <i class="fa fa-comment"></i>
+                  {{ post.comment_count }}
+                </span>
+              </div>
               <p class="community-content">{{ post.content_preview }}</p>
             </td>
-            <td>{{ post.author_name }}</td>
+            <td class="user-info">
+              <router-link
+                :to="{
+                  name: 'user-home',
+                  params: { username: post.author_name },
+                }"
+              >
+                <img
+                  class="avatar"
+                  :src="
+                    post.author_avatar ||
+                    'https://cdn-icons-png.flaticon.com/512/473/473406.png'
+                  "
+                  alt="avatar"
+                />
+                <span>{{ post.author_name }}</span>
+              </router-link>
+            </td>
             <td style="font-size: 13px">
               <p>{{ post.created_at | localtime("YYYY / MM / DD") }}</p>
             </td>
@@ -178,15 +201,48 @@ main {
       padding-left: 50px;
       text-align: left;
 
+      .title-wrapper {
+        display: flex;
+        align-items: center;
+      }
       .community-title {
         font-size: 18px;
         font-weight: 600;
+        margin-right: 8px;
+      }
+      .comment-count {
+        font-size: 14px;
+        color: #8792a2;
+
+        .fa-comment {
+          margin-right: 3px;
+        }
       }
 
       .community-content {
         color: #a9a9a9;
         font-size: 14px;
       }
+    }
+    .user-info {
+      width: 200px;
+    }
+    .user-info a {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      color: #495060;
+    }
+    .user-info a:hover {
+      color: #2d8cf0;
+    }
+    .avatar {
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      margin-right: 10px;
+      background: linear-gradient(90deg, #f0f0f0 25%, #f5f5f5 50%, #f0f0f0 75%);
     }
   }
 }
