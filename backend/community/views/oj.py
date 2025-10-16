@@ -1,11 +1,12 @@
+from django.db.models import Count
 from account.decorators import check_contest_permission, login_required
 from contest.models import Contest
 from problem.models import Problem
 from utils.api import APIView, validate_serializer
 
 from ..models import Comment, Post
-from ..serializers import (CommentSerializer, CreatePostSerializer, PostSerializer, PostStatusUpdateSerializer,
-                           PostUpdateSerializer)
+from ..serializers import (CommentSerializer, CreatePostSerializer, PostListSerializer, PostDetailSerializer,
+                           PostStatusUpdateSerializer, PostUpdateSerializer)
 
 
 class PostAPIView(APIView):
@@ -58,7 +59,7 @@ class PostAPIView(APIView):
                 return self.error("Problem does not exist")
 
         post = Post.objects.create(**post_data)
-        return self.success(PostSerializer(post).data)
+        return self.success(PostDetailSerializer(post).data)
 
     def get(self, request):
         """게시글 목록을 조회합니다."""
@@ -66,8 +67,8 @@ class PostAPIView(APIView):
         problem_id = request.GET.get("problem_id")
         post_type = request.GET.get("post_type")
 
-        posts = (Post.objects.select_related("author").prefetch_related("comments__author",
-                                                                        "comments__replies__author").all())
+        posts = Post.objects.select_related("author__userprofile").annotate(
+            comment_count=Count('comments')).all().order_by("-created_at")
 
         if contest_id:
             try:
@@ -86,7 +87,7 @@ class PostAPIView(APIView):
         if post_type:
             posts = posts.filter(post_type=post_type)
 
-        data = self.paginate_data(request, posts, PostSerializer)
+        data = self.paginate_data(request, posts, PostListSerializer)
         return self.success(data)
 
 
@@ -97,7 +98,7 @@ class PostDetailAPIView(APIView):
         """특정 ID의 게시글을 조회합니다."""
         try:
             return (Post.objects.select_related("author", "contest", "problem").prefetch_related(
-                "comments__author", "comments__replies__author").get(id=post_id))
+                "comments__author__userprofile", "comments__replies__author__userprofile").get(id=post_id))
         except Post.DoesNotExist:
             return None
 
@@ -117,7 +118,7 @@ class PostDetailAPIView(APIView):
             if error:
                 return self.error("No permission to access this contest's community")
 
-        return self.success(PostSerializer(post).data)
+        return self.success(PostDetailSerializer(post).data)
 
     @validate_serializer(PostUpdateSerializer)
     @login_required
@@ -135,7 +136,7 @@ class PostDetailAPIView(APIView):
             setattr(post, key, value)
         post.save()
 
-        return self.success(PostSerializer(post).data)
+        return self.success(PostDetailSerializer(post).data)
 
     @login_required
     def delete(self, request, post_id):
@@ -171,7 +172,7 @@ class PostStatusUpdateAPIView(APIView):
 
         post.question_status = request.data["question_status"]
         post.save()
-        return self.success(PostSerializer(post).data)
+        return self.success(PostDetailSerializer(post).data)
 
 
 class CommentAPIView(APIView):
