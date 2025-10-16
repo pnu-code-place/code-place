@@ -384,6 +384,17 @@ export default {
   getBanners() {
     return ajax("banner", "get")
   },
+
+  getCommunityPostList(offset, limit) {
+    const params = {
+      offset,
+      limit,
+    }
+
+    return ajax("community/posts", "get", {
+      params,
+    })
+  },
 }
 
 /**
