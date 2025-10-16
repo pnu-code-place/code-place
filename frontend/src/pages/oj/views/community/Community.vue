@@ -96,8 +96,8 @@ export default {
               (err.response &&
                 err.response.data &&
                 err.response.data.message) ||
-              "알 수 없는 오류가 발생했습니다.",
-            solution: "잠시 후 다시 시도해 주세요.",
+              this.$t("m.Community_Default_Error_Description"),
+            solution: this.$t("m.Community_Default_Error_Solution"),
           }
         })
         .finally(() => {
