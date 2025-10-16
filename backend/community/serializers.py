@@ -56,7 +56,7 @@ class PostListSerializer(serializers.ModelSerializer):
     author_name = serializers.CharField(source="author.username", read_only=True)
     author_avatar = serializers.CharField(source="author.userprofile.avatar", read_only=True)
     community_type = serializers.SerializerMethodField()
-    comment_count = serializers.IntegerField(source="comment_count", read_only=True)
+    comment_count = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Post
