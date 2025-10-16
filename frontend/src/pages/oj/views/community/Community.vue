@@ -28,7 +28,7 @@
             <td>{{ post.id }}</td>
             <td class="td-title">
               <p class="community-title">{{ post.title }}</p>
-              <p class="community-content">{{ truncate(post.content, 100) }}</p>
+              <p class="community-content">{{ post.content_preview }}</p>
             </td>
             <td>{{ post.author_name }}</td>
             <td style="font-size: 13px">
@@ -112,17 +112,6 @@ export default {
       this.query.page = 1
       this.query.limit = size
       this.fetchPosts()
-    },
-    truncate(text, length) {
-      if (!text) return ""
-
-      text = String(text)
-
-      if (text.length > length) {
-        return text.substring(0, length) + "..."
-      }
-
-      return text
     },
   },
 }
