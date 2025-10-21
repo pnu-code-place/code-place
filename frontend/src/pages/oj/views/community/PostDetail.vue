@@ -24,7 +24,7 @@
           </div>
         </div>
       </div>
-      <div class="post-content" v-html="post.content"></div>
+      <div class="post-content" v-html="sanitizedContent"></div>
       <div class="post-comments">
         <h2>{{ $t("m.Community_Comments") }} {{ commentCount }}</h2>
         <div class="comment-form">
@@ -139,6 +139,7 @@
 <script>
 import api from "../../api"
 import ErrorSign from "../general/ErrorSign.vue"
+import DOMPurify from "dompurify"
 import { DEFAULT_AVATAR } from "@/utils/constants"
 
 export default {
@@ -229,6 +230,14 @@ export default {
     },
   },
   computed: {
+    /**
+     * 게시글 내용을 표시할 때 v-html을 사용하는데, 이는 XSS 공격에 취약할 수 있습니다.
+     * 따라서 DOMPurify를 사용하여 게시글 내용을 안전하게 sanitize하는 작업을 수행합니다.
+     */
+    sanitizedContent() {
+      if (!this.post || !this.post.content) return ""
+      return DOMPurify.sanitize(this.post.content)
+    },
     defaultAvatar() {
       return DEFAULT_AVATAR
     },

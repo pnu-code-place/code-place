@@ -18,6 +18,7 @@
     "axios": "^0.25.0",
     "babel-polyfill": "^6.26.0",
     "browser-detect": "^0.2.27",
+    "dompurify": "^3.3.0",
     "echarts": "^3.8.5",
     "element-ui": "^2.3.7",
     "font-awesome": "^4.7.0",
