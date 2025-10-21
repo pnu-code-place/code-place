@@ -205,6 +205,12 @@ export const STORAGE_KEY = {
   languages: "languages",
 }
 
+// NOTE: 기본적으로 백엔드에서 user profile을 생성할 때 default avatar가
+// 설정되지만, 모종의 이유로 null이 들어오는 경우에도 대처하기 위해 상수로 정의해두었습니다.
+// 하지만 백엔드에서 default avatar 경로가 바뀌면 여기도 같이 수정해주어야 합니다.
+// 혹시 더 나은 대안이 있다면 없애주세요.
+export const DEFAULT_AVATAR = "/public/avatar/default.png"
+
 export const DIFFICULTY_MAP = {
   VeryLow: {
     value: "매우 쉬움",

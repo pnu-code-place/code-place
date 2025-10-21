@@ -24,7 +24,7 @@
           </th>
         </thead>
         <tbody>
-          <tr v-for="post in posts" :key="post.id">
+          <tr v-for="post in posts" :key="post.id" @click="goToPost(post.id)" class="post-row">
             <td>{{ post.id }}</td>
             <td class="td-title">
               <div class="title-wrapper">
@@ -136,6 +136,9 @@ export default {
       this.query.limit = size
       this.fetchPosts()
     },
+    goToPost(postId) {
+      this.$router.push({ name: "community-detail", params: { postId } })
+    },
   },
 }
 </script>
@@ -186,6 +189,10 @@ main {
 
     tbody tr:hover {
       background-color: #f5f7fa;
+    }
+
+    .post-row {
+      cursor: pointer;
     }
 
     td {
