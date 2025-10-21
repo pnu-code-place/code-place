@@ -28,8 +28,8 @@ import MajorRank from "../views/rank/majorRank/MajorRank.vue"
 import UserRank from "../views/rank/UserRank.vue"
 import SettingDemo from "../views/setting/UserSetting.vue"
 import AnnouncementDetail from "../views/notice/AnnouncementDetail.vue"
-import { Community } from "../views/community";
-import CommunityDetail from "../views/community/CommunityDetail.vue";
+import { Community } from "../views/community"
+import PostDetail from "../views/community/PostDetail.vue"
 
 export default [
   {
@@ -42,7 +42,7 @@ export default [
     name: "community-detail",
     path: "/community/:postId",
     meta: { title: "Community Detail" },
-    component: CommunityDetail,
+    component: PostDetail,
   },
   {
     name: "home",

@@ -63,8 +63,26 @@
               {{ comment.created_at | localtime("YYYY-MM-DD HH:mm") }}
             </div>
           </div>
-          <div class="comment-content">{{ comment.content }}</div>
-          <div v-if="comment.replies" class="replies">
+          <div class="comment-body">
+            <div class="comment-content">{{ comment.content }}</div>
+            <button class="reply-icon-btn" @click="showReplyForm(comment.id)">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <polyline points="9 14 4 9 9 4"></polyline>
+                <path d="M20 20v-7a4 4 0 0 0-4-4H4"></path>
+              </svg>
+            </button>
+          </div>
+          <div v-if="comment.replies && comment.replies.length" class="replies">
             <div
               v-for="reply in comment.replies"
               :key="reply.id"
@@ -93,7 +111,23 @@
                   {{ reply.created_at | localtime("YYYY-MM-DD HH:mm") }}
                 </div>
               </div>
-              <div class="comment-content">{{ reply.content }}</div>
+              <div class="comment-body">
+                <div class="comment-content">{{ reply.content }}</div>
+              </div>
+            </div>
+          </div>
+          <div v-if="replyingTo === comment.id" class="comment-form reply-form">
+            <textarea
+              v-model="replyContent"
+              :placeholder="$t('m.Community_Create_Comment_Placeholder')"
+            ></textarea>
+            <div class="reply-form-actions">
+              <button @click="submitReply(comment.id)">
+                {{ $t("m.Community_Create_Comment_Btn") }}
+              </button>
+              <button @click="cancelReply">
+                {{ $t("m.Community_Create_Comment_Cancel_Btn") }}
+              </button>
             </div>
           </div>
         </div>
@@ -116,7 +150,7 @@ import api from "../../api"
 import ErrorSign from "../general/ErrorSign.vue"
 
 export default {
-  name: "CommunityDetail",
+  name: "PostDetail",
   components: {
     ErrorSign,
   },
@@ -126,6 +160,8 @@ export default {
       error: null,
       isLoading: false,
       commentContent: "",
+      replyingTo: null,
+      replyContent: "",
     }
   },
   created() {
@@ -169,6 +205,34 @@ export default {
         })
         .catch(() => {
           this.$error("Failed to submit comment.")
+        })
+    },
+    showReplyForm(commentId) {
+      if (this.replyingTo === commentId) {
+        this.replyingTo = null
+      } else {
+        this.replyingTo = commentId
+        this.replyContent = ""
+      }
+    },
+    cancelReply() {
+      this.replyingTo = null
+      this.replyContent = ""
+    },
+    submitReply(parentCommentId) {
+      if (!this.replyContent.trim()) {
+        this.$error("Reply cannot be empty.")
+        return
+      }
+      const postId = this.$route.params.postId
+      api
+        .createCommunityComment(postId, this.replyContent, parentCommentId)
+        .then(() => {
+          this.cancelReply()
+          this.fetchPostDetail()
+        })
+        .catch(() => {
+          this.$error("Failed to submit reply.")
         })
     },
   },
@@ -253,6 +317,7 @@ main {
   color: #444;
   margin-bottom: 40px;
   min-height: 200px;
+  white-space: pre-wrap;
 }
 
 .post-comments h2 {
@@ -299,6 +364,7 @@ main {
 }
 
 .comment {
+  // position: relative;
   margin-bottom: 20px;
   padding-bottom: 20px;
   border-bottom: 1px solid #f0f0f0;
@@ -320,23 +386,97 @@ main {
   color: #aaa;
 }
 
+.comment-body {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-left: 48px;
+}
+
 .comment-content {
   font-size: 15px;
   color: #555;
-  padding-left: 48px;
+  white-space: pre-wrap;
   line-height: 1.7;
+  flex-grow: 1;
+}
+
+.reply-icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 20px;
+  flex-shrink: 0;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.2s,
+    visibility 0.2s;
+}
+
+.comment:hover .reply-icon-btn {
+  opacity: 0.6;
+  visibility: visible;
+}
+
+.reply-icon-btn:hover {
+  opacity: 1;
+}
+
+.reply-icon-btn svg {
+  width: 20px;
+  height: 20px;
+  stroke: #555;
+}
+
+.reply-form {
+  margin-left: 48px;
+  margin-top: 16px;
+  background-color: #f8f9fa;
+  padding: 16px;
+  border-radius: 8px;
+}
+
+.reply-form textarea {
+  min-height: 80px;
+  border: 1px solid #e0e0e0;
+}
+
+.reply-form-actions {
+  text-align: right;
+  margin-top: 10px;
+}
+
+.reply-form-actions button {
+  padding: 8px 18px;
+  font-size: 14px;
+  margin-left: 10px;
+}
+
+.reply-form-actions button:last-child {
+  background-color: #aaa;
+}
+.reply-form-actions button:last-child:hover {
+  background-color: #bbb;
 }
 
 .replies {
   margin-top: 20px;
-  padding-left: 48px;
+  margin-left: 18px;
+  padding-left: 30px;
+  border-left: 2px solid #eef1f6;
 }
 
 .reply {
   padding: 16px;
-  background-color: #f7f8fa;
+  background-color: #f8f9fa;
   border-radius: 8px;
   margin-top: 12px;
   border-bottom: none;
+}
+
+.reply .comment-body {
+  padding-left: 0;
 }
 </style>

@@ -535,4 +535,5 @@ export const m = {
   Community_Comments: "댓글",
   Community_Create_Comment_Placeholder: "댓글을 작성해주세요.",
   Community_Create_Comment_Btn: "작성하기",
+  Community_Create_Comment_Cancel_Btn: "취소",
 }
