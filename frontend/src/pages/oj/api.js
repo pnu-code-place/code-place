@@ -444,6 +444,15 @@ export default {
      */
     return ajax(`community/posts/${postId}`, "get")
   },
+
+  createCommunityComment(postId, content, parent_comment = null) {
+    return ajax(`community/posts/${postId}/comments`, "post", {
+      data: {
+        content,
+        parent_comment,
+      },
+    })
+  },
 }
 
 /**

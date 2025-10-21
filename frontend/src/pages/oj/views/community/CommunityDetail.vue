@@ -30,6 +30,15 @@
       <div class="post-content" v-html="post.content"></div>
       <div class="post-comments">
         <h2>{{ $t("m.Community_Comments") }} {{ commentCount }}</h2>
+        <div class="comment-form">
+          <textarea
+            v-model="commentContent"
+            :placeholder="$t('m.Community_Create_Comment_Placeholder')"
+          ></textarea>
+          <button @click="submitComment">
+            {{ $t("m.Community_Create_Comment_Btn") }}
+          </button>
+        </div>
         <div v-for="comment in post.comments" :key="comment.id" class="comment">
           <div class="comment-header">
             <div class="user-info">
@@ -116,6 +125,7 @@ export default {
       post: null,
       error: null,
       isLoading: false,
+      commentContent: "",
     }
   },
   created() {
@@ -145,10 +155,25 @@ export default {
           this.isLoading = false
         })
     },
+    submitComment() {
+      if (!this.commentContent.trim()) {
+        this.$error("Comment cannot be empty.")
+        return
+      }
+      const postId = this.$route.params.postId
+      api
+        .createCommunityComment(postId, this.commentContent)
+        .then(() => {
+          this.commentContent = ""
+          this.fetchPostDetail()
+        })
+        .catch(() => {
+          this.$error("Failed to submit comment.")
+        })
+    },
   },
   computed: {
     commentCount() {
-      // 댓글 개수는 comments + replies의 합계로 계산합니다.
       if (!this.post || !this.post.comments) return 0
 
       let count = this.post.comments.length
@@ -167,24 +192,25 @@ export default {
 <style lang="less" scoped>
 main {
   width: var(--global-width);
-  margin: 20px auto;
-  background-color: #fff;
-  padding: 20px;
-  border-radius: var(--container-border-radius);
-  border: 1px solid var(--container-border-color);
+  margin: 40px auto;
+  background-color: #ffffff;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   min-height: 70vh;
 }
 
 .post-header {
-  border-bottom: 1px solid #eee;
-  padding-bottom: 20px;
-  margin-bottom: 20px;
+  border-bottom: 1px solid #e8e8e8;
+  padding-bottom: 24px;
+  margin-bottom: 24px;
 }
 
 .post-title {
-  font-size: 28px;
-  font-weight: 600;
-  margin-bottom: 20px;
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: #333;
 }
 
 .post-meta {
@@ -204,8 +230,9 @@ main {
   display: flex;
   align-items: center;
   text-decoration: none;
-  color: #333;
+  color: #555;
   font-weight: 500;
+  transition: color 0.3s;
 }
 
 .user-info a:hover {
@@ -213,36 +240,68 @@ main {
 }
 
 .avatar {
-  width: 30px;
-  height: 30px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  margin-right: 10px;
+  margin-right: 12px;
+  border: 2px solid #f0f0f0;
 }
 
 .post-content {
   font-size: 16px;
   line-height: 1.8;
-  color: #333;
+  color: #444;
   margin-bottom: 40px;
   min-height: 200px;
 }
 
 .post-comments h2 {
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 600;
-  margin-bottom: 20px;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 10px;
+  margin-bottom: 24px;
+  border-bottom: 2px solid #2d8cf0;
+  padding-bottom: 12px;
+  color: #333;
+}
+
+.comment-form {
+  margin-bottom: 30px;
+  text-align: right;
+}
+
+.comment-form textarea {
+  width: 100%;
+  min-height: 100px;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 15px;
+  resize: vertical;
+  margin-bottom: 10px;
+}
+
+.comment-form button {
+  padding: 10px 20px;
+  background-color: #2d8cf0;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.comment-form button:hover {
+  background-color: #57a3f3;
 }
 
 .post-comments {
-  padding: 20px;
+  padding-top: 20px;
 }
 
 .comment {
   margin-bottom: 20px;
   padding-bottom: 20px;
-  border-bottom: 1px solid #f5f5f5;
+  border-bottom: 1px solid #f0f0f0;
 }
 
 .comment:last-child {
@@ -253,7 +312,7 @@ main {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 .comment-date {
@@ -264,19 +323,20 @@ main {
 .comment-content {
   font-size: 15px;
   color: #555;
-  padding-left: 40px;
+  padding-left: 48px;
+  line-height: 1.7;
 }
 
 .replies {
-  margin-top: 15px;
-  padding-left: 40px;
+  margin-top: 20px;
+  padding-left: 48px;
 }
 
 .reply {
-  padding: 15px;
-  background-color: #f9f9f9;
-  border-radius: 5px;
-  margin-top: 10px;
+  padding: 16px;
+  background-color: #f7f8fa;
+  border-radius: 8px;
+  margin-top: 12px;
   border-bottom: none;
 }
 </style>

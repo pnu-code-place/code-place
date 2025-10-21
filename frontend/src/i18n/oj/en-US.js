@@ -533,4 +533,6 @@ export const m = {
   Community_Default_Error_Description: "알 수 없는 오류가 발생했습니다.",
   Community_Default_Error_Solution: "잠시 후 다시 시도해 주세요.",
   Community_Comments: "댓글",
+  Community_Create_Comment_Placeholder: "댓글을 작성해주세요.",
+  Community_Create_Comment_Btn: "작성하기",
 }
