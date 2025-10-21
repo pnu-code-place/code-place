@@ -13,10 +13,7 @@
             >
               <img
                 class="avatar"
-                :src="
-                  post.author_avatar ||
-                  'https://cdn-icons-png.flaticon.com/512/473/473406.png'
-                "
+                :src="post.author_avatar || defaultAvatar"
                 alt="avatar"
               />
               <span>{{ post.author_name }}</span>
@@ -50,10 +47,7 @@
               >
                 <img
                   class="avatar"
-                  :src="
-                    comment.author_avatar ||
-                    'https://cdn-icons-png.flaticon.com/512/473/473406.png'
-                  "
+                  :src="comment.author_avatar || defaultAvatar"
                   alt="avatar"
                 />
                 <span>{{ comment.author_name }}</span>
@@ -98,10 +92,7 @@
                   >
                     <img
                       class="avatar"
-                      :src="
-                        reply.author_avatar ||
-                        'https://cdn-icons-png.flaticon.com/512/473/473406.png'
-                      "
+                      :src="reply.author_avatar || defaultAvatar"
                       alt="avatar"
                     />
                     <span>{{ reply.author_name }}</span>
@@ -148,6 +139,7 @@
 <script>
 import api from "../../api"
 import ErrorSign from "../general/ErrorSign.vue"
+import { DEFAULT_AVATAR } from "@/utils/constants"
 
 export default {
   name: "PostDetail",
@@ -237,6 +229,9 @@ export default {
     },
   },
   computed: {
+    defaultAvatar() {
+      return DEFAULT_AVATAR
+    },
     commentCount() {
       if (!this.post || !this.post.comments) return 0
 
