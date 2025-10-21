@@ -29,6 +29,7 @@ import UserRank from "../views/rank/UserRank.vue"
 import SettingDemo from "../views/setting/UserSetting.vue"
 import AnnouncementDetail from "../views/notice/AnnouncementDetail.vue"
 import { Community } from "../views/community";
+import CommunityDetail from "../views/community/CommunityDetail.vue";
 
 export default [
   {
@@ -36,6 +37,12 @@ export default [
     path: "/community",
     meta: { title: "Community" },
     component: Community,
+  },
+  {
+    name: "community-detail",
+    path: "/community/:postId",
+    meta: { title: "Community Detail" },
+    component: CommunityDetail,
   },
   {
     name: "home",

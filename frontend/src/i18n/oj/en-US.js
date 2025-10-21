@@ -532,4 +532,5 @@ export const m = {
   Community_CreatedAt: "작성일",
   Community_Default_Error_Description: "알 수 없는 오류가 발생했습니다.",
   Community_Default_Error_Solution: "잠시 후 다시 시도해 주세요.",
+  Community_Comments: "댓글",
 }

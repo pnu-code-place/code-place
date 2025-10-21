@@ -395,6 +395,55 @@ export default {
       params,
     })
   },
+
+  getCommunityPostDetail(postId) {
+    /*
+     {
+        "error": null,
+        "data": {
+            "id": 6,
+            "title": "일반 게시글 2번입니다.",
+            "content": "취업이 고민입니다... 저는 어떤 회사에 갈 수 있을까요? 선배님들의 조언이 궁금합니다.",
+            "author": 1,
+            "author_name": "root",
+            "author_avatar": "/public/avatar/default.png",
+            "community_type": "GENERAL",
+            "post_type": "ARTICLE",
+            "question_status": null,
+            "created_at": "2025-10-13T13:05:19.570215+09:00",
+            "updated_at": "2025-10-13T13:05:19.570239+09:00",
+            "problem": null,
+            "contest": null,
+            "comments": [
+                {
+                    "id": 1,
+                    "post": 6,
+                    "author": 1,
+                    "author_name": "root",
+                    "author_avatar": "/public/avatar/default.png",
+                    "content": "일반 게시글 2번에 대한 질문이 있습니다",
+                    "parent_comment": null,
+                    "created_at": "2025-10-16T15:06:08.192757+09:00",
+                    "updated_at": "2025-10-16T15:06:08.192811+09:00",
+                    "replies": [
+                        {
+                            "id": 2,
+                            "author": 1,
+                            "author_name": "root",
+                            "author_avatar": "/public/avatar/default.png",
+                            "content": "일반 게시글 2번에 대한 질문에 대한 댓글입니다.",
+                            "parent_comment": 1,
+                            "created_at": "2025-10-16T15:07:04.941115+09:00",
+                            "updated_at": "2025-10-16T15:07:04.941122+09:00"
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+     */
+    return ajax(`community/posts/${postId}`, "get")
+  },
 }
 
 /**
