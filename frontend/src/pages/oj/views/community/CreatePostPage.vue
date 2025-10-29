@@ -14,7 +14,7 @@
           <Col :span="4">
           <FormItem :label="$t('m.Community_Post_Type')" prop="post_type">
             <Select v-model="post.post_type" size="large">
-              <Option v-for="(type, key) in POST_TYPE" :key="key" :value="key">{{ type.name }}</Option>
+              <Option v-for="(type, key) in availablePostTypes" :key="key" :value="key">{{ type.name }}</Option>
             </Select>
           </FormItem>
           </Col>
@@ -32,7 +32,7 @@
           </Button>
           <Button @click="$router.go(-1)" style="margin-left: 8px">{{
             $t("m.Cancel")
-          }}</Button>
+            }}</Button>
         </div>
       </Form>
     </Card>
@@ -42,6 +42,7 @@
 <script>
 import api from "@oj/api";
 import { POST_TYPE } from "@/utils/constants";
+import { mapGetters } from "vuex";
 
 export default {
   name: "CreatePostPage",
@@ -70,8 +71,13 @@ export default {
     };
   },
   computed: {
-    POST_TYPE() {
-      // Exclude ANNOUNCEMENT for non-admin users if needed
+    ...mapGetters(["isSuperAdmin"]),
+    availablePostTypes() {
+      // Super Admin이 아닌 경우 ANNOUNCEMENT 타입 제외
+      if (!this.isSuperAdmin) {
+        const { ANNOUNCEMENT, ...filteredTypes } = POST_TYPE;
+        return filteredTypes;
+      }
       return POST_TYPE;
     },
   },
