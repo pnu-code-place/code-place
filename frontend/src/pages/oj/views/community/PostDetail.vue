@@ -25,10 +25,10 @@
             </div>
             <div v-if="isEditing" class="post-edit-actions">
               <Select v-model="editedPostType" size="small" style="width: 120px; margin-right: 8px;">
-                <Option v-for="(type, key) in POST_TYPE" :key="key" :value="key">{{ type.name }}</Option>
+                <Option v-for="(type, key) in availablePostTypes" :key="key" :value="key">{{ type.name }}</Option>
               </Select>
               <button class="post-save-btn" @click="updatePost" :disabled="isLoading">{{ $t('m.Community_Post_Save')
-              }}</button>
+                }}</button>
               <button class="post-cancel-btn" @click="cancelEdit">{{ $t('m.Community_Post_Cancel') }}</button>
             </div>
           </div>
@@ -175,7 +175,6 @@ export default {
   },
   created() {
     this.fetchPostDetail()
-    console.log(this.user);
   },
   methods: {
     fetchPostDetail() {
@@ -368,7 +367,7 @@ export default {
     isAuthor() {
       return this.user && this.post && this.user.id === this.post.author
     },
-    POST_TYPE() {
+    availablePostTypes() {
       // Super Admin이 아닌 경우 ANNOUNCEMENT 타입 제외
       if (!this.isSuperAdmin) {
         const { ANNOUNCEMENT, ...filteredTypes } = POST_TYPE;

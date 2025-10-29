@@ -14,7 +14,7 @@
           <Col :span="4">
           <FormItem :label="$t('m.Community_Post_Type')" prop="post_type">
             <Select v-model="post.post_type" size="large">
-              <Option v-for="(type, key) in POST_TYPE" :key="key" :value="key">{{ type.name }}</Option>
+              <Option v-for="(type, key) in availablePostTypes" :key="key" :value="key">{{ type.name }}</Option>
             </Select>
           </FormItem>
           </Col>
@@ -72,7 +72,7 @@ export default {
   },
   computed: {
     ...mapGetters(["isSuperAdmin"]),
-    POST_TYPE() {
+    availablePostTypes() {
       // Super Admin이 아닌 경우 ANNOUNCEMENT 타입 제외
       if (!this.isSuperAdmin) {
         const { ANNOUNCEMENT, ...filteredTypes } = POST_TYPE;
