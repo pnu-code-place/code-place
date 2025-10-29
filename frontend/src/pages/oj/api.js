@@ -409,10 +409,32 @@ export default {
     })
   },
 
+  updateCommunityComment(postId, commentId, content) {
+    return ajax(`community/posts/${postId}/comments/${commentId}`, "put", {
+      data: {
+        content,
+      },
+    })
+  },
+
+  deleteCommunityComment(postId, commentId) {
+    return ajax(`community/posts/${postId}/comments/${commentId}`, "delete")
+  },
+
   createPost(post) {
     return ajax("community/posts", "post", {
       data: post,
     })
+  },
+
+  updateCommunityPost(postId, post) {
+    return ajax(`community/posts/${postId}`, "put", {
+      data: post,
+    })
+  },
+
+  deleteCommunityPost(postId) {
+    return ajax(`community/posts/${postId}`, "delete")
   },
 }
 
