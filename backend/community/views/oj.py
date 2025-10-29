@@ -28,6 +28,10 @@ class PostAPIView(APIView):
         if contest_id and problem_id:
             return self.error("Cannot specify both contest and problem")
 
+        # ANNOUNCEMENT 타입은 Super Admin만 생성 가능
+        if data["post_type"] == Post.PostType.ANNOUNCEMENT and not request.user.is_super_admin():
+            return self.error("Only Super Admin can create announcement posts")
+
         post_data = {
             "title": data["title"],
             "content": data["content"],
@@ -132,6 +136,12 @@ class PostDetailAPIView(APIView):
             return self.error("No permission to edit this post")
 
         data = request.data
+        
+        # ANNOUNCEMENT 타입으로 변경하려는 경우 Super Admin 권한 체크
+        if "post_type" in data and data["post_type"] == Post.PostType.ANNOUNCEMENT:
+            if not request.user.is_super_admin():
+                return self.error("Only Super Admin can set post type to announcement")
+        
         for key, value in data.items():
             setattr(post, key, value)
         post.save()

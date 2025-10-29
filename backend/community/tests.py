@@ -78,6 +78,33 @@ class CommunityAPITest(APITestCase):
         self.assertEqual(response.data["data"]["title"], "New Post")
         self.assertEqual(response.data["data"]["community_type"], "GENERAL")
 
+    def test_create_announcement_post_by_non_super_admin(self):
+        """일반 사용자는 공지사항 게시글을 생성할 수 없다."""
+        self.client.force_login(self.user)
+        response = self.client.post(
+            self.post_list_url,
+            {
+                "title": "Announcement Post",
+                "content": "Content",
+                "post_type": "ANNOUNCEMENT"
+            },
+        )
+        self.assertFailed(response, "Only Super Admin can create announcement posts")
+
+    def test_create_announcement_post_by_super_admin(self):
+        """Super Admin은 공지사항 게시글을 생성할 수 있다."""
+        self.client.force_login(self.admin)
+        response = self.client.post(
+            self.post_list_url,
+            {
+                "title": "Announcement Post",
+                "content": "Content",
+                "post_type": "ANNOUNCEMENT"
+            },
+        )
+        self.assertSuccess(response)
+        self.assertEqual(response.data["data"]["post_type"], "ANNOUNCEMENT")
+
     def test_create_problem_post(self):
         """문제에 대한 게시글을 생성할 수 있다."""
         self.client.force_login(self.user)
@@ -304,6 +331,19 @@ class CommunityAPITest(APITestCase):
         response = self.client.put(self.post_detail_url, {"title": "Updated Title"})
         self.assertSuccess(response)
         self.assertEqual(response.data["data"]["title"], "Updated Title")
+
+    def test_update_post_type_to_announcement_by_non_super_admin(self):
+        """일반 사용자는 게시글을 ANNOUNCEMENT 타입으로 변경할 수 없다."""
+        self.client.force_login(self.user)
+        response = self.client.put(self.post_detail_url, {"post_type": "ANNOUNCEMENT"})
+        self.assertFailed(response, "Only Super Admin can set post type to announcement")
+
+    def test_update_post_type_to_announcement_by_super_admin(self):
+        """Super Admin은 게시글을 ANNOUNCEMENT 타입으로 변경할 수 있다."""
+        self.client.force_login(self.admin)
+        response = self.client.put(self.post_detail_url, {"post_type": "ANNOUNCEMENT"})
+        self.assertSuccess(response)
+        self.assertEqual(response.data["data"]["post_type"], "ANNOUNCEMENT")
 
     def test_update_post_by_other_user(self):
         """다른 사용자는 게시글을 수정할 수 없다."""
@@ -595,4 +635,3 @@ class CommunityAPITest(APITestCase):
         self.client.force_login(self.other_user)
         response = self.client.delete(comment_detail_url)
         self.assertFailed(response, "No permission to delete this comment")
-
