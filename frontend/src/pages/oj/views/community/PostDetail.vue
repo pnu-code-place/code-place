@@ -3,7 +3,8 @@
     <div class="contents" v-if="post">
       <div class="post-header">
         <h1 class="post-title" v-if="!isEditing">{{ post.title }}</h1>
-        <Input v-else v-model="editedTitle" size="large" placeholder="제목을 입력하세요" class="edit-title-input" />
+        <Input v-else v-model="editedTitle" size="large" :placeholder="$t('m.Community_Title_Placeholder')"
+          class="edit-title-input" />
         <div class="post-meta">
           <div class="user-info">
             <router-link :to="{
@@ -19,22 +20,23 @@
               {{ post.created_at | localtime("YYYY-MM-DD HH:mm") }}
             </div>
             <div v-if="isAuthor && !isEditing" class="post-edit-actions">
-              <button class="post-edit-btn" @click="enterEditMode">수정</button>
-              <button class="post-delete-btn" @click="deletePost(post.id)">삭제</button>
+              <button class="post-edit-btn" @click="enterEditMode">{{ $t('m.Community_Post_Edit') }}</button>
+              <button class="post-delete-btn" @click="deletePost(post.id)">{{ $t('m.Community_Post_Delete') }}</button>
             </div>
             <div v-if="isEditing" class="post-edit-actions">
               <Select v-model="editedPostType" size="small" style="width: 120px; margin-right: 8px;">
                 <Option v-for="(type, key) in POST_TYPE" :key="key" :value="key">{{ type.name }}</Option>
               </Select>
-              <button class="post-save-btn" @click="updatePost" :disabled="isLoading">저장</button>
-              <button class="post-cancel-btn" @click="cancelEdit">취소</button>
+              <button class="post-save-btn" @click="updatePost" :disabled="isLoading">{{ $t('m.Community_Post_Save')
+              }}</button>
+              <button class="post-cancel-btn" @click="cancelEdit">{{ $t('m.Community_Post_Cancel') }}</button>
             </div>
           </div>
         </div>
       </div>
       <div class="post-content" v-if="!isEditing" v-html="sanitizedContent"></div>
       <Input v-else v-model="editedContent" type="textarea" :autosize="{ minRows: 10, maxRows: 20 }"
-        placeholder="내용을 입력하세요" class="edit-content-input" />
+        :placeholder="$t('m.Community_Content_Placeholder')" class="edit-content-input" />
       <div class="post-comments">
         <h2>{{ $t("m.Community_Comments") }} {{ commentCount }}</h2>
         <div class="comment-form">
@@ -71,17 +73,17 @@
               </button>
               <button v-if="isCommentAuthor(comment) && editingCommentId !== comment.id" class="edit-icon-btn"
                 @click="enterCommentEditMode(comment)">
-                수정
+                {{ $t('m.Community_Comment_Edit') }}
               </button>
               <button v-if="isCommentAuthor(comment) && editingCommentId !== comment.id" class="delete-icon-btn"
                 @click="deleteComment(comment.id)">
-                삭제
+                {{ $t('m.Community_Comment_Delete') }}
               </button>
               <button v-if="editingCommentId === comment.id" class="save-btn" @click="updateComment(comment.id)">
-                저장
+                {{ $t('m.Community_Comment_Save') }}
               </button>
               <button v-if="editingCommentId === comment.id" class="cancel-btn" @click="cancelCommentEdit">
-                취소
+                {{ $t('m.Community_Comment_Cancel') }}
               </button>
             </div>
           </div>
@@ -107,16 +109,16 @@
                 <div class="comment-actions" v-if="isCommentAuthor(reply)">
                   <button v-if="editingCommentId !== reply.id" class="edit-icon-btn"
                     @click="enterCommentEditMode(reply)">
-                    수정
+                    {{ $t('m.Community_Comment_Edit') }}
                   </button>
                   <button v-if="editingCommentId !== reply.id" class="delete-icon-btn" @click="deleteComment(reply.id)">
-                    삭제
+                    {{ $t('m.Community_Comment_Delete') }}
                   </button>
                   <button v-if="editingCommentId === reply.id" class="save-btn" @click="updateComment(reply.id)">
-                    저장
+                    {{ $t('m.Community_Comment_Save') }}
                   </button>
                   <button v-if="editingCommentId === reply.id" class="cancel-btn" @click="cancelCommentEdit">
-                    취소
+                    {{ $t('m.Community_Comment_Cancel') }}
                   </button>
                 </div>
               </div>
@@ -257,11 +259,11 @@ export default {
     },
     updatePost() {
       if (!this.editedTitle.trim()) {
-        this.$error("제목을 입력해주세요.")
+        this.$error(this.$t("m.Community_Title_Required"))
         return
       }
       if (!this.editedContent.trim()) {
-        this.$error("내용을 입력해주세요.")
+        this.$error(this.$t("m.Community_Content_Required"))
         return
       }
 
@@ -276,12 +278,12 @@ export default {
       api
         .updateCommunityPost(postId, updatedData)
         .then((res) => {
-          this.$success("게시글이 수정되었습니다.")
+          this.$success(this.$t("m.Community_Post_Edit_Success"))
           this.post = res.data.data
           this.isEditing = false
         })
         .catch((err) => {
-          const errorMsg = (err.response && err.response.data && err.response.data.data) || "게시글 수정에 실패했습니다."
+          const errorMsg = (err.response && err.response.data && err.response.data.data) || this.$t("m.Community_Post_Edit_Failed")
           this.$error(errorMsg)
         })
         .finally(() => {
@@ -301,7 +303,7 @@ export default {
     },
     updateComment(commentId) {
       if (!this.editedCommentContent.trim()) {
-        this.$error("댓글 내용을 입력해주세요.")
+        this.$error(this.$t("m.Community_Comment_Content_Required"))
         return
       }
 
@@ -309,18 +311,18 @@ export default {
       api
         .updateCommunityComment(postId, commentId, this.editedCommentContent)
         .then(() => {
-          this.$success("댓글이 수정되었습니다.")
+          this.$success(this.$t("m.Community_Comment_Edit_Success"))
           this.editingCommentId = null
           this.editedCommentContent = ""
           this.fetchPostDetail()
         })
         .catch((err) => {
-          const errorMsg = (err.response && err.response.data && err.response.data.data) || "댓글 수정에 실패했습니다."
+          const errorMsg = (err.response && err.response.data && err.response.data.data) || this.$t("m.Community_Comment_Edit_Failed")
           this.$error(errorMsg)
         })
     },
     deleteComment(commentId) {
-      if (!confirm("댓글을 삭제하시겠습니까?")) {
+      if (!confirm(this.$t("m.Community_Comment_Delete_Confirm"))) {
         return
       }
 
@@ -328,16 +330,16 @@ export default {
       api
         .deleteCommunityComment(postId, commentId)
         .then(() => {
-          this.$success("댓글이 삭제되었습니다.")
+          this.$success(this.$t("m.Community_Comment_Delete_Success"))
           this.fetchPostDetail()
         })
         .catch((err) => {
-          const errorMsg = (err.response && err.response.data && err.response.data.data) || "댓글 삭제에 실패했습니다."
+          const errorMsg = (err.response && err.response.data && err.response.data.data) || this.$t("m.Community_Comment_Delete_Failed")
           this.$error(errorMsg)
         })
     },
     deletePost() {
-      if (!confirm("게시글을 삭제하시겠습니까?")) {
+      if (!confirm(this.$t("m.Community_Post_Delete_Confirm"))) {
         return
       }
 
@@ -346,11 +348,11 @@ export default {
       api
         .deleteCommunityPost(postId)
         .then(() => {
-          this.$success("게시글이 삭제되었습니다.")
+          this.$success(this.$t("m.Community_Post_Delete_Success"))
           this.$router.push({ name: "community" })
         })
         .catch((err) => {
-          const errorMsg = (err.response && err.response.data && err.response.data.data) || "게시글 삭제에 실패했습니다."
+          const errorMsg = (err.response && err.response.data && err.response.data.data) || this.$t("m.Community_Post_Delete_Failed")
           this.$error(errorMsg)
         })
         .finally(() => {
