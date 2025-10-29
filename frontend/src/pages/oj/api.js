@@ -408,6 +408,12 @@ export default {
       },
     })
   },
+
+  createPost(post) {
+    return ajax("community/posts", "post", {
+      data: post,
+    })
+  },
 }
 
 /**
