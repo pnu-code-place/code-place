@@ -145,6 +145,24 @@ export const LANGUAGE_COLOR = {
   },
 }
 
+export const POST_TYPE = {
+  QUESTION: {
+    name: "질문",
+    color: "#E8F5FF", // A lighter, calmer blue
+    textColor: "#1A73E8", // A darker blue for text
+  },
+  ARTICLE: {
+    name: "일반 글",
+    color: "#F1F3F4", // A light gray
+    textColor: "#3C4043", // A dark gray for text
+  },
+  ANNOUNCEMENT: {
+    name: "공지사항",
+    color: "#FFF8E1", // A soft yellow
+    textColor: "#E67E22", // A warm orange for text
+  },
+}
+
 export const HIGHLIGHT_JS_LANGUAGES = {
   C: "c",
   "C++": "cpp",
