@@ -446,13 +446,13 @@ main {
 }
 
 .post-header {
-  padding: 32px 40px;
+  padding: 32px 40px 16px 40px;
   border-bottom: 2px solid #f0f3f7;
   background: linear-gradient(to bottom, #fafbfc 0%, #ffffff 100%);
 }
 
 .title-section {
-  margin-bottom: 20px;
+  margin-bottom: 28px;
 }
 
 .post-title {
