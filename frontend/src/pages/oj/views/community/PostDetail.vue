@@ -2,23 +2,43 @@
   <main>
     <div class="contents" v-if="post">
       <div class="post-header">
-        <h1 class="post-title" v-if="!isEditing">{{ post.title }}</h1>
+        <div class="title-section" v-if="!isEditing">
+          <h1 class="post-title">{{ post.title }}</h1>
+          <div class="badges-container">
+            <span v-if="POST_TYPE[post.post_type]" class="post-type-badge" :style="{
+              backgroundColor: POST_TYPE[post.post_type].color,
+              color: POST_TYPE[post.post_type].textColor
+            }">
+              {{ POST_TYPE[post.post_type].name }}
+            </span>
+            <span v-if="post.post_type === 'QUESTION' && QUESTION_STATUS[post.question_status]"
+              class="question-status-badge" :style="{
+                backgroundColor: QUESTION_STATUS[post.question_status].color,
+                color: QUESTION_STATUS[post.question_status].textColor
+              }">
+              {{ QUESTION_STATUS[post.question_status].name }}
+            </span>
+          </div>
+        </div>
         <Input v-else v-model="editedTitle" size="large" :placeholder="$t('m.Community_Title_Placeholder')"
           class="edit-title-input" />
         <div class="post-meta">
-          <div class="user-info">
-            <router-link :to="{
-              name: 'user-home',
-              params: { username: post.author_name },
-            }">
-              <img class="avatar" :src="post.author_avatar || defaultAvatar" alt="avatar" />
-              <span>{{ post.author_name }}</span>
-            </router-link>
-          </div>
-          <div class="post-actions">
+          <div class="post-meta-left">
+            <div class="user-info">
+              <router-link :to="{
+                name: 'user-home',
+                params: { username: post.author_name },
+              }">
+                <img class="avatar" :src="post.author_avatar || defaultAvatar" alt="avatar" />
+                <span>{{ post.author_name }}</span>
+              </router-link>
+            </div>
             <div class="post-date">
+              <Icon type="ios-time-outline"></Icon>
               {{ post.created_at | localtime("YYYY-MM-DD HH:mm") }}
             </div>
+          </div>
+          <div class="post-meta-right">
             <div v-if="isAuthor && !isEditing" class="post-edit-actions">
               <button class="post-edit-btn" @click="enterEditMode">{{ $t('m.Community_Post_Edit') }}</button>
               <button class="post-delete-btn" @click="deletePost(post.id)">{{ $t('m.Community_Post_Delete') }}</button>
@@ -57,6 +77,7 @@
               </router-link>
             </div>
             <div class="comment-date">
+              <Icon type="ios-time-outline"></Icon>
               {{ comment.created_at | localtime("YYYY-MM-DD HH:mm") }}
             </div>
           </div>
@@ -100,6 +121,7 @@
                   </router-link>
                 </div>
                 <div class="comment-date">
+                  <Icon type="ios-time-outline"></Icon>
                   {{ reply.created_at | localtime("YYYY-MM-DD HH:mm") }}
                 </div>
               </div>
@@ -149,7 +171,7 @@
 import api from "../../api"
 import ErrorSign from "../general/ErrorSign.vue"
 import DOMPurify from "dompurify"
-import { DEFAULT_AVATAR, POST_TYPE } from "@/utils/constants"
+import { DEFAULT_AVATAR, POST_TYPE, QUESTION_STATUS } from "@/utils/constants"
 import { mapGetters } from "vuex";
 
 export default {
@@ -361,6 +383,12 @@ export default {
   },
   computed: {
     ...mapGetters(["user", "isSuperAdmin"]),
+    POST_TYPE() {
+      return POST_TYPE;
+    },
+    QUESTION_STATUS() {
+      return QUESTION_STATUS;
+    },
     /**
      * 현재 사용자가 게시글 작성자인지 확인
      */
@@ -405,41 +433,77 @@ export default {
 <style lang="less" scoped>
 main {
   width: var(--global-width);
-  margin: 40px auto;
-  background-color: #ffffff;
-  padding: 40px;
+  margin: 0 auto;
+  padding: 30px 0;
+}
+
+.contents {
+  background: white;
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  min-height: 70vh;
+  border: 1px solid #e8ecef;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
 }
 
 .post-header {
-  border-bottom: 1px solid #e8e8e8;
-  padding-bottom: 24px;
-  margin-bottom: 24px;
+  padding: 32px 40px 16px 40px;
+  border-bottom: 2px solid #f0f3f7;
+  background: linear-gradient(to bottom, #fafbfc 0%, #ffffff 100%);
+}
+
+.title-section {
+  margin-bottom: 28px;
 }
 
 .post-title {
-  font-size: 32px;
-  font-weight: 700;
-  margin-bottom: 16px;
-  color: #333;
+  font-size: 28px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0 0 12px 0;
+  line-height: 1.3;
+}
+
+.badges-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.post-type-badge {
+  padding: 6px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.question-status-badge {
+  padding: 6px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: all 0.2s ease;
 }
 
 .edit-title-input {
   margin-bottom: 16px;
+  width: 100%;
 
   /deep/ input {
-    font-size: 32px;
-    font-weight: 700;
-    color: #333;
-    border: 1px solid #e8e8e8;
-    border-radius: 4px;
-    padding: 24px 16px;
+    font-size: 24px;
+    font-weight: 600;
+    color: #2c3e50;
+    border: 1px solid #e8ecef;
+    border-radius: 8px;
+    padding: 16px;
+    transition: all 0.3s ease;
 
     &:focus {
-      border-color: #2d8cf0;
-      box-shadow: 0 0 0 2px rgba(45, 140, 240, 0.1);
+      border-color: #3498db;
+      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
     }
   }
 }
@@ -448,14 +512,33 @@ main {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 14px;
-  color: #888;
+  flex-wrap: wrap;
+  gap: 16px;
 }
 
-.post-actions {
+.post-meta-left {
   display: flex;
   align-items: center;
   gap: 16px;
+  flex: 1;
+}
+
+.post-meta-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.post-date {
+  font-size: 13px;
+  color: #95a5a6;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #f8f9fa;
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-weight: 500;
 }
 
 .post-edit-actions {
@@ -468,69 +551,64 @@ main {
 .post-delete-btn,
 .post-save-btn,
 .post-cancel-btn {
-  padding: 6px 14px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
   font-size: 13px;
   cursor: pointer;
-  transition: all 0.2s;
-  background: white;
+  transition: all 0.3s ease;
   font-weight: 500;
 }
 
 .post-edit-btn {
-  color: #2d8cf0;
-  border-color: #2d8cf0;
+  background: #ecf5ff;
+  color: #3498db;
 }
 
 .post-edit-btn:hover {
-  background: #2d8cf0;
+  background: #3498db;
   color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(52, 152, 219, 0.2);
 }
 
 .post-delete-btn {
-  color: #ed4014;
-  border-color: #ed4014;
+  background: #ffebee;
+  color: #e74c3c;
 }
 
 .post-delete-btn:hover {
-  background: #ed4014;
+  background: #e74c3c;
   color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(231, 76, 60, 0.2);
 }
 
 .post-save-btn {
-  background: #2d8cf0;
+  background: #3498db;
   color: white;
-  border-color: #2d8cf0;
 }
 
 .post-save-btn:hover {
-  background: #2573d0;
-  border-color: #2573d0;
+  background: #2980b9;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
 }
 
 .post-save-btn:disabled {
-  background: #ccc;
-  border-color: #ccc;
+  background: #bdc3c7;
   cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 .post-cancel-btn {
-  color: #666;
-  border-color: #ddd;
+  background: #f8f9fa;
+  color: #7f8c8d;
 }
 
 .post-cancel-btn:hover {
-  background: #f5f5f5;
-}
-
-.edit-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.post-edit-form {
-  margin-bottom: 40px;
+  background: #ecf0f1;
 }
 
 .user-info {
@@ -542,140 +620,190 @@ main {
   display: flex;
   align-items: center;
   text-decoration: none;
-  color: #555;
+  color: #495060;
+  transition: all 0.2s ease;
+  gap: 10px;
   font-weight: 500;
-  transition: color 0.3s;
 }
 
 .user-info a:hover {
-  color: #2d8cf0;
+  color: #3498db;
+}
+
+.user-info a:hover .avatar {
+  transform: scale(1.1);
+  border-color: #3498db;
 }
 
 .avatar {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  margin-right: 12px;
-  border: 2px solid #f0f0f0;
+  border: 2px solid #f0f3f7;
+  transition: all 0.3s ease;
+  object-fit: cover;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
 .post-content {
   font-size: 16px;
   line-height: 1.8;
-  color: #444;
-  margin-bottom: 40px;
+  color: #2c3e50;
+  padding: 40px;
   min-height: 200px;
   white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .edit-content-input {
-  margin-bottom: 40px;
+  padding: 0 40px 40px;
 
   /deep/ textarea {
     font-size: 16px;
     line-height: 1.8;
-    color: #444;
-    border: 1px solid #e8e8e8;
-    border-radius: 4px;
-    padding: 12px;
+    color: #2c3e50;
+    border: 1px solid #e8ecef;
+    border-radius: 8px;
+    padding: 16px;
+    transition: all 0.3s ease;
 
     &:focus {
-      border-color: #2d8cf0;
+      border-color: #3498db;
+      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
     }
   }
 }
 
-.post-comments h2 {
-  font-size: 22px;
-  font-weight: 600;
-  margin-bottom: 24px;
-  border-bottom: 2px solid #2d8cf0;
-  padding-bottom: 12px;
-  color: #333;
+.post-comments {
+  padding: 32px 40px;
+  background: #fafbfc;
+  border-top: 2px solid #f0f3f7;
+
+  h2 {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 24px;
+    color: #2c3e50;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    &:before {
+      content: "💬";
+      font-size: 24px;
+    }
+  }
 }
 
 .comment-form {
-  margin-bottom: 30px;
-  text-align: right;
-}
+  margin-bottom: 32px;
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid #e8ecef;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
 
-.comment-form textarea {
-  width: 100%;
-  min-height: 100px;
-  padding: 12px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 15px;
-  resize: vertical;
-  margin-bottom: 10px;
-}
+  textarea {
+    width: 100%;
+    min-height: 100px;
+    padding: 14px;
+    border: 1px solid #e8ecef;
+    border-radius: 8px;
+    font-size: 15px;
+    resize: vertical;
+    margin-bottom: 12px;
+    transition: all 0.3s ease;
+    font-family: inherit;
+    color: #2c3e50;
+    line-height: 1.6;
 
-.comment-form button {
-  padding: 10px 20px;
-  background-color: #2d8cf0;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
+    &:focus {
+      outline: none;
+      border-color: #3498db;
+      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+    }
 
-.comment-form button:hover {
-  background-color: #57a3f3;
-}
+    &::placeholder {
+      color: #bdc3c7;
+    }
+  }
 
-.post-comments {
-  padding-top: 20px;
+  button {
+    padding: 10px 24px;
+    background: #3498db;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    font-size: 14px;
+
+    &:hover {
+      background: #2980b9;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
+    }
+  }
 }
 
 .comment {
-  // position: relative;
-  margin-bottom: 20px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid #f0f0f0;
-}
+  background: white;
+  margin-bottom: 16px;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid #e8ecef;
+  transition: all 0.3s ease;
 
-.comment:last-child {
-  border-bottom: none;
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border-color: #d5dce0;
+  }
+
+  &:last-child {
+    margin-bottom: 0;
+  }
 }
 
 .comment-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 
 .comment-date {
   font-size: 12px;
-  color: #aaa;
+  color: #95a5a6;
+  background: #f8f9fa;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-weight: 500;
 }
 
 .comment-body {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  padding-left: 48px;
+  gap: 16px;
 }
 
 .comment-content {
   font-size: 15px;
-  color: #555;
+  color: #2c3e50;
   white-space: pre-wrap;
   line-height: 1.7;
   flex-grow: 1;
+  word-break: break-word;
 }
 
 .comment-actions {
   display: flex;
-  gap: 8px;
-  margin-left: 12px;
+  gap: 6px;
   flex-shrink: 0;
   opacity: 0;
   visibility: hidden;
-  transition:
-    opacity 0.2s,
-    visibility 0.2s;
+  transition: opacity 0.2s, visibility 0.2s;
 }
 
 .comment:hover .comment-actions {
@@ -687,122 +815,148 @@ main {
   flex-grow: 1;
   width: 100%;
   min-height: 80px;
-  padding: 8px 12px;
-  border: 1px solid #e8e8e8;
-  border-radius: 4px;
+  padding: 12px;
+  border: 1px solid #e8ecef;
+  border-radius: 8px;
   font-size: 15px;
-  color: #555;
+  color: #2c3e50;
   line-height: 1.7;
   resize: vertical;
   font-family: inherit;
-}
+  transition: all 0.3s ease;
 
-.comment-edit-textarea:focus {
-  outline: none;
-  border-color: #2d8cf0;
+  &:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+  }
 }
 
 .reply-icon-btn,
 .edit-icon-btn,
 .delete-icon-btn {
-  background: none;
+  background: #f8f9fa;
   border: none;
   cursor: pointer;
-  padding: 4px 8px;
+  padding: 6px 12px;
   font-size: 13px;
-  color: #666;
-  transition: color 0.2s;
+  color: #7f8c8d;
+  transition: all 0.2s ease;
+  border-radius: 6px;
+  font-weight: 500;
+
+  &:hover {
+    background: #ecf0f1;
+  }
 }
 
 .reply-icon-btn:hover,
 .edit-icon-btn:hover {
-  color: #2d8cf0;
+  color: #3498db;
 }
 
 .delete-icon-btn:hover {
-  color: #ed4014;
+  color: #e74c3c;
+  background: #ffebee;
 }
 
 .save-btn,
 .cancel-btn {
-  padding: 4px 12px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  padding: 6px 14px;
+  border: none;
+  border-radius: 6px;
   font-size: 13px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
+  font-weight: 500;
 }
 
 .save-btn {
-  background: #2d8cf0;
+  background: #3498db;
   color: white;
-  border-color: #2d8cf0;
-}
 
-.save-btn:hover {
-  background: #2573d0;
+  &:hover {
+    background: #2980b9;
+  }
 }
 
 .cancel-btn {
-  background: white;
-  color: #666;
-}
+  background: #f8f9fa;
+  color: #7f8c8d;
 
-.cancel-btn:hover {
-  background: #f5f5f5;
+  &:hover {
+    background: #ecf0f1;
+  }
 }
 
 .reply-icon-btn svg {
-  width: 20px;
-  height: 20px;
-  stroke: #555;
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
 }
 
 .reply-form {
-  margin-left: 48px;
   margin-top: 16px;
-  background-color: #f8f9fa;
+  background: #f8f9fa;
   padding: 16px;
   border-radius: 8px;
-}
+  border: 1px solid #e8ecef;
 
-.reply-form textarea {
-  min-height: 80px;
-  border: 1px solid #e0e0e0;
+  textarea {
+    min-height: 80px;
+    background: white;
+  }
 }
 
 .reply-form-actions {
-  text-align: right;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
   margin-top: 10px;
-}
 
-.reply-form-actions button {
-  padding: 8px 18px;
-  font-size: 14px;
-  margin-left: 10px;
-}
+  button {
+    padding: 8px 18px;
+    font-size: 14px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
 
-.reply-form-actions button:last-child {
-  background-color: #aaa;
-}
+    &:first-child {
+      background: #3498db;
+      color: white;
 
-.reply-form-actions button:last-child:hover {
-  background-color: #bbb;
+      &:hover {
+        background: #2980b9;
+      }
+    }
+
+    &:last-child {
+      background: #95a5a6;
+      color: white;
+
+      &:hover {
+        background: #7f8c8d;
+      }
+    }
+  }
 }
 
 .replies {
-  margin-top: 20px;
-  margin-left: 18px;
-  padding-left: 30px;
-  border-left: 2px solid #eef1f6;
+  margin-top: 16px;
+  margin-left: 20px;
+  padding-left: 20px;
+  border-left: 3px solid #e8ecef;
 }
 
 .reply {
-  padding: 16px;
-  background-color: #f8f9fa;
-  border-radius: 8px;
-  margin-top: 12px;
-  border-bottom: none;
+  background: #fafbfc;
+  border: 1px solid #e8ecef;
+
+  &:hover {
+    background: white;
+  }
 }
 
 .reply .comment-body {
