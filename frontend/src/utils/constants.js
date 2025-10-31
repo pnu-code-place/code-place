@@ -163,6 +163,19 @@ export const POST_TYPE = {
   },
 }
 
+export const QUESTION_STATUS = {
+  OPEN: {
+    name: "미해결",
+    color: "#FFF3E0", // Soft orange background
+    textColor: "#F57C00", // Orange text
+  },
+  CLOSED: {
+    name: "해결됨",
+    color: "#E8F5E9", // Soft green background
+    textColor: "#43A047", // Green text
+  },
+}
+
 export const HIGHLIGHT_JS_LANGUAGES = {
   C: "c",
   "C++": "cpp",

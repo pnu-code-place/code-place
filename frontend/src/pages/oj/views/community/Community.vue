@@ -4,53 +4,67 @@
       :solution="this.error.solution || ''" />
     <div class="contents" v-else>
       <div class="session-title-wrapper">
-        <h1 class="session-title main-title">{{ $t("m.Community") }}</h1>
+        <h1 class="session-title main-title">
+          <Icon type="ios-chatbubbles" size="32"></Icon>
+          {{ $t("m.Community") }}
+        </h1>
+        <div class="stats-info">
+          <span class="total-posts">총 {{ total }}개의 게시글</span>
+        </div>
       </div>
       <div class="box-wrapper">
         <div class="left-container">
-          <table class="community-table">
-            <thead>
-              <th>ID</th>
-              <th style="padding-left: 50px; text-align: left">
-                {{ $t("m.Community_Title") }}
-              </th>
-              <th>
-                {{ $t("m.Community_Author") }}
-              </th>
-              <th>
-                {{ $t("m.Community_CreatedAt") }}
-              </th>
-            </thead>
-            <tbody>
-              <tr v-for="post in posts" :key="post.id" @click="goToPost(post.id)" class="post-row">
-                <td>{{ post.id }}</td>
-                <td class="td-title">
-                  <div class="title-wrapper">
-                    <p class="community-title">{{ post.title }}</p>
-                    <span v-if="post.comment_count > 0" class="comment-count">
-                      <i class="fa fa-comment"></i>
-                      {{ post.comment_count }}
+          <div class="posts-list">
+            <div v-for="post in posts" :key="post.id" @click="goToPost(post.id)" class="post-card">
+              <div class="card-left">
+                <div class="post-meta">
+                  <span class="post-id">#{{ post.id }}</span>
+                  <span v-if="POST_TYPE[post.post_type]" class="post-type-label" :style="{
+                    backgroundColor: POST_TYPE[post.post_type].color,
+                    color: POST_TYPE[post.post_type].textColor
+                  }">
+                    {{ POST_TYPE[post.post_type].name }}
+                  </span>
+                  <span v-if="post.post_type === 'QUESTION' && QUESTION_STATUS[post.question_status]"
+                    class="question-status-label" :style="{
+                      backgroundColor: QUESTION_STATUS[post.question_status].color,
+                      color: QUESTION_STATUS[post.question_status].textColor
+                    }">
+                    {{ QUESTION_STATUS[post.question_status].name }}
+                  </span>
+                </div>
+
+                <div class="card-content">
+                  <h3 class="post-title">{{ post.title }}</h3>
+                  <p v-if="post.content_preview" class="post-preview">{{ post.content_preview }}</p>
+                </div>
+
+                <div class="card-footer">
+                  <div class="author-info">
+                    <router-link :to="{
+                      name: 'user-home',
+                      params: { username: post.author_name },
+                    }" @click.native.stop>
+                      <img class="avatar"
+                        :src="post.author_avatar || 'https://cdn-icons-png.flaticon.com/512/473/473406.png'"
+                        alt="avatar" />
+                      <span class="author-name">{{ post.author_name }}</span>
+                    </router-link>
+                  </div>
+                  <div class="post-stats">
+                    <span class="post-date">
+                      <Icon type="ios-time-outline"></Icon>
+                      {{ post.created_at | localtime("YYYY.MM.DD") }}
+                    </span>
+                    <span class="comment-count">
+                      <Icon type="ios-chatbubbles-outline"></Icon>
+                      {{ post.comment_count || 0 }}
                     </span>
                   </div>
-                  <p class="community-content">{{ post.content_preview }}</p>
-                </td>
-                <td class="user-info">
-                  <router-link :to="{
-                    name: 'user-home',
-                    params: { username: post.author_name },
-                  }">
-                    <img class="avatar" :src="post.author_avatar ||
-                      'https://cdn-icons-png.flaticon.com/512/473/473406.png'
-                      " alt="avatar" />
-                    <span>{{ post.author_name }}</span>
-                  </router-link>
-                </td>
-                <td style="font-size: 13px">
-                  <p>{{ post.created_at | localtime("YYYY / MM / DD") }}</p>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                </div>
+              </div>
+            </div>
+          </div>
           <Pagination :total="total" :page-size.sync="query.limit" @on-change="handlePageChange"
             :current.sync="query.page" :show-sizer="true" @on-page-size-change="handleSizeChange"></Pagination>
         </div>
@@ -67,6 +81,7 @@ import api from "../../api"
 import Pagination from "@/pages/admin/components/Pagination.vue"
 import ErrorSign from "../general/ErrorSign.vue"
 import CreatePost from "./communityComponent/CreatePost.vue";
+import { POST_TYPE, QUESTION_STATUS } from "../../../../utils/constants";
 
 export default {
   name: "Community",
@@ -89,6 +104,14 @@ export default {
         limit: 10,
       },
     }
+  },
+  computed: {
+    POST_TYPE() {
+      return POST_TYPE;
+    },
+    QUESTION_STATUS() {
+      return QUESTION_STATUS;
+    },
   },
   methods: {
     async fetchPosts() {
@@ -140,129 +163,229 @@ main {
   width: var(--global-width);
 
   .session-title-wrapper {
-    margin: 0 4px 20px;
+    margin: 0 4px 30px;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    padding: 0 10px;
   }
 
   .session-title {
     font-weight: 700;
+    font-size: 32px;
+    color: #2c3e50;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    .ivu-icon {
+      color: #3498db;
+    }
+  }
+
+  .stats-info {
+    .total-posts {
+      font-size: 14px;
+      color: #7f8c8d;
+      background: #ecf0f1;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-weight: 500;
+    }
   }
 
   .box-wrapper {
     display: flex;
     justify-content: space-between;
+    gap: 24px;
   }
 
   .left-container {
-    width: 72%;
-    height: 100%;
+    flex: 1;
+    min-width: 0;
   }
 
   .right-container {
-    width: 26%;
-    height: auto;
+    width: 320px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
   }
 
-  .community-table {
-    margin-bottom: 20px;
-    border: 1px solid var(--container-border-color);
-    border-radius: var(--container-border-radius);
-    background-color: white;
-    text-align: center;
-    border-collapse: collapse;
-    width: 100%;
+  .posts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 30px;
+  }
 
-    thead {
-      border-bottom: 1px solid var(--container-border-color);
+  .post-card {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e8ecef;
+    padding: 24px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+
+    &:hover {
+      transform: translateX(4px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+      border-color: #3498db;
+
+      .post-title {
+        color: #3498db;
+      }
     }
 
-    th {
-      padding: 10px 0px;
-      font-size: 16px;
+    .card-left {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .post-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .post-id {
+      font-size: 13px;
       font-weight: 600;
-      color: var(--container-comment-color);
+      color: #95a5a6;
+      background: #f8f9fa;
+      padding: 4px 10px;
+      border-radius: 6px;
     }
 
-    tbody tr {
-      transition: all 0.3s ease;
-      border-bottom: 1px solid var(--container-border-color);
+    .post-type-label {
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+      transition: all 0.2s ease;
     }
 
-    tbody tr:last-child {
-      border-bottom: none;
+    .question-status-label {
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+      transition: all 0.2s ease;
     }
 
-    tbody tr:hover {
-      background-color: #f5f7fa;
+    .card-content {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
 
-    .post-row {
-      cursor: pointer;
+    .post-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: #2c3e50;
+      line-height: 1.4;
+      margin: 0;
+      transition: color 0.3s ease;
+      word-break: break-word;
     }
 
-    td {
-      cursor: default;
-      width: 80px;
-      padding: 10px;
-      font-size: 15px;
+    .post-preview {
+      font-size: 14px;
+      color: #7f8c8d;
+      line-height: 1.6;
+      margin: 0;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      -webkit-box-orient: vertical;
+      text-overflow: ellipsis;
     }
 
-    .td-title {
-      cursor: pointer;
-      width: 350px;
-      padding-left: 50px;
-      text-align: left;
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 16px;
+      border-top: 1px solid #f0f3f7;
+    }
 
-      .title-wrapper {
+    .author-info {
+      a {
         display: flex;
         align-items: center;
-      }
+        text-decoration: none;
+        color: #495060;
+        transition: all 0.2s ease;
+        gap: 10px;
 
-      .community-title {
-        font-size: 18px;
-        font-weight: 600;
-        margin-right: 8px;
-      }
+        &:hover {
+          color: #3498db;
 
-      .comment-count {
-        font-size: 14px;
-        color: #8792a2;
-
-        .fa-comment {
-          margin-right: 3px;
+          .avatar {
+            transform: scale(1.1);
+            border-color: #3498db;
+          }
         }
       }
 
-      .community-content {
-        color: #a9a9a9;
+      .avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: 2px solid #f0f3f7;
+        transition: all 0.3s ease;
+        object-fit: cover;
+      }
+
+      .author-name {
+        font-size: 14px;
+        font-weight: 500;
+      }
+    }
+
+    .post-stats {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .post-date {
+      font-size: 12px;
+      color: #95a5a6;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: #f8f9fa;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-weight: 500;
+
+      .ivu-icon {
         font-size: 14px;
       }
     }
 
-    .user-info {
-      width: 200px;
-    }
-
-    .user-info a {
+    .comment-count {
+      font-size: 13px;
+      color: #7f8c8d;
       display: flex;
       align-items: center;
-      justify-content: center;
-      text-decoration: none;
-      color: #495060;
-    }
+      gap: 5px;
+      background: #f8f9fa;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-weight: 500;
 
-    .user-info a:hover {
-      color: #2d8cf0;
-    }
-
-    .avatar {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      margin-right: 10px;
-      background: linear-gradient(90deg, #f0f0f0 25%, #f5f5f5 50%, #f0f0f0 75%);
+      .ivu-icon {
+        font-size: 15px;
+      }
     }
   }
 }
