@@ -53,10 +53,6 @@ export default {
     transition: opacity 0.3s ease;
   }
 
-  .ivu-icon {
-    transition: transform 0.3s ease;
-  }
-
   span {
     position: relative;
     z-index: 1;
@@ -69,10 +65,6 @@ export default {
 
     &::before {
       opacity: 1;
-    }
-
-    .ivu-icon {
-      transform: scale(1.1) rotate(5deg);
     }
   }
 

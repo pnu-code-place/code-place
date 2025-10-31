@@ -48,7 +48,7 @@
                 <Option v-for="(type, key) in availablePostTypes" :key="key" :value="key">{{ type.name }}</Option>
               </Select>
               <button class="post-save-btn" @click="updatePost" :disabled="isLoading">{{ $t('m.Community_Post_Save')
-              }}</button>
+                }}</button>
               <button class="post-cancel-btn" @click="cancelEdit">{{ $t('m.Community_Post_Cancel') }}</button>
             </div>
           </div>
@@ -539,10 +539,6 @@ main {
   padding: 6px 12px;
   border-radius: 12px;
   font-weight: 500;
-
-  .ivu-icon {
-    font-size: 14px;
-  }
 }
 
 .post-edit-actions {
