@@ -58,7 +58,7 @@
                 <Option v-for="(type, key) in availablePostTypes" :key="key" :value="key">{{ type.name }}</Option>
               </Select>
               <button class="post-save-btn" @click="updatePost" :disabled="isLoading">{{ $t('m.Community_Post_Save')
-              }}</button>
+                }}</button>
               <button class="post-cancel-btn" @click="cancelEdit">{{ $t('m.Community_Post_Cancel') }}</button>
             </div>
           </div>
@@ -451,6 +451,9 @@ export default {
         return { backgroundColor: '', color: '' }
       }
       const status = QUESTION_STATUS[this.post.question_status]
+      if (!status) {
+        return { backgroundColor: '', color: '' }
+      }
       return {
         backgroundColor: status.color,
         color: status.textColor
