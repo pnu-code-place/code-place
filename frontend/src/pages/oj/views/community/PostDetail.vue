@@ -40,9 +40,10 @@
           </div>
           <div class="post-meta-right">
             <div v-if="isAuthor && !isEditing" class="post-edit-actions">
-              <button v-if="post.post_type === 'QUESTION'" class="question-status-toggle-btn"
-                :class="post.question_status === 'CLOSED' ? 'status-closed' : 'status-open'"
-                @click="toggleQuestionStatus">
+              <button v-if="post.post_type === 'QUESTION'" class="question-status-toggle-btn" :style="{
+                backgroundColor: getQuestionStatusStyle.backgroundColor,
+                color: getQuestionStatusStyle.color
+              }" @click="toggleQuestionStatus">
                 <Icon
                   :type="post.question_status === 'CLOSED' ? 'ios-checkmark-circle' : 'ios-checkmark-circle-outline'">
                 </Icon>
@@ -445,6 +446,16 @@ export default {
     defaultAvatar() {
       return DEFAULT_AVATAR
     },
+    getQuestionStatusStyle() {
+      if (!this.post || !this.post.question_status) {
+        return { backgroundColor: '', color: '' }
+      }
+      const status = QUESTION_STATUS[this.post.question_status]
+      return {
+        backgroundColor: status.color,
+        color: status.textColor
+      }
+    },
     commentCount() {
       if (!this.post || !this.post.comments) return 0
 
@@ -596,28 +607,12 @@ main {
 }
 
 .question-status-toggle-btn {
-  &.status-open {
-    background: #e8f5e9;
-    color: #27ae60;
+  transition: all 0.3s ease;
 
-    &:hover {
-      background: #27ae60;
-      color: white;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 8px rgba(39, 174, 96, 0.2);
-    }
-  }
-
-  &.status-closed {
-    background: #fff3e0;
-    color: #f39c12;
-
-    &:hover {
-      background: #f39c12;
-      color: white;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 8px rgba(243, 156, 18, 0.2);
-    }
+  &:hover {
+    filter: brightness(0.95);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
   }
 }
 
