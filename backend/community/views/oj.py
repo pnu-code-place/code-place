@@ -70,6 +70,7 @@ class PostAPIView(APIView):
         contest_id = request.GET.get("contest_id")
         problem_id = request.GET.get("problem_id")
         post_type = request.GET.get("post_type")
+        question_status = request.GET.get("question_status")
 
         posts = Post.objects.select_related("author__userprofile").annotate(
             comment_count=Count('comments')).all().order_by("-created_at")
@@ -90,6 +91,9 @@ class PostAPIView(APIView):
 
         if post_type:
             posts = posts.filter(post_type=post_type)
+
+        if question_status:
+            posts = posts.filter(question_status=question_status)
 
         data = self.paginate_data(request, posts, PostListSerializer)
         return self.success(data)
@@ -136,12 +140,12 @@ class PostDetailAPIView(APIView):
             return self.error("No permission to edit this post")
 
         data = request.data
-        
+
         # ANNOUNCEMENT 타입으로 변경하려는 경우 Super Admin 권한 체크
         if "post_type" in data and data["post_type"] == Post.PostType.ANNOUNCEMENT:
             if not request.user.is_super_admin():
                 return self.error("Only Super Admin can set post type to announcement")
-        
+
         for key, value in data.items():
             setattr(post, key, value)
         post.save()

@@ -385,11 +385,19 @@ export default {
     return ajax("banner", "get")
   },
 
-  getCommunityPostList(offset, limit) {
+  getCommunityPostList(
+    offset,
+    limit,
+    post_type = null,
+    question_status = null,
+  ) {
     const params = {
       offset,
       limit,
     }
+
+    if (post_type) params.post_type = post_type
+    if (question_status) params.question_status = question_status
 
     return ajax("community/posts", "get", {
       params,

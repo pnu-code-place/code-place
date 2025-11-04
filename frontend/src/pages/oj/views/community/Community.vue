@@ -70,6 +70,7 @@
         </div>
         <div class="right-container">
           <CreatePost />
+          <QuestionList />
         </div>
       </div>
     </div>
@@ -82,11 +83,13 @@ import Pagination from "@/pages/admin/components/Pagination.vue"
 import ErrorSign from "../general/ErrorSign.vue"
 import CreatePost from "./communityComponent/CreatePost.vue";
 import { POST_TYPE, QUESTION_STATUS } from "../../../../utils/constants";
+import QuestionList from "./communityComponent/QuestionList.vue";
 
 export default {
   name: "Community",
   components: {
     CreatePost,
+    QuestionList,
     Pagination,
     ErrorSign,
   },
