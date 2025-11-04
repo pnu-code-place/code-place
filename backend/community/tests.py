@@ -274,6 +274,20 @@ class CommunityAPITest(APITestCase):
         self.client.post(
             self.post_list_url,
             {
+                "title": "Closed Question Post",
+                "content": "Content",
+                "post_type": "QUESTION",
+            },
+        )
+
+        # 질문 게시글 상태를 'CLOSED'로 변경
+        closed_post = Post.objects.get(title="Closed Question Post")
+        closed_post.question_status = Post.QuestionStatus.CLOSED
+        closed_post.save()
+
+        self.client.post(
+            self.post_list_url,
+            {
                 "title": "Article Post",
                 "content": "Content",
                 "post_type": "ARTICLE",
@@ -281,6 +295,15 @@ class CommunityAPITest(APITestCase):
         )
 
         response = self.client.get(self.post_list_url, {"post_type": "QUESTION"})
+        self.assertSuccess(response)
+        self.assertEqual(response.data["data"]["total"], 2)
+
+        # self.general_post + 방금 생성한 ARTICLE 게시글
+        response = self.client.get(self.post_list_url, {"post_type": "ARTICLE"})
+        self.assertSuccess(response)
+        self.assertEqual(response.data["data"]["total"], 2)
+
+        response = self.client.get(self.post_list_url, {"question_status": "CLOSED"})
         self.assertSuccess(response)
         self.assertEqual(response.data["data"]["total"], 1)
 
@@ -328,34 +351,34 @@ class CommunityAPITest(APITestCase):
     def test_update_post_by_author(self):
         """게시글 작성자는 게시글을 수정할 수 있다."""
         self.client.force_login(self.user)
-        response = self.client.put(self.post_detail_url, {"title": "Updated Title"})
+        response = self.client.patch(self.post_detail_url, {"title": "Updated Title"})
         self.assertSuccess(response)
         self.assertEqual(response.data["data"]["title"], "Updated Title")
 
     def test_update_post_type_to_announcement_by_non_super_admin(self):
         """일반 사용자는 게시글을 ANNOUNCEMENT 타입으로 변경할 수 없다."""
         self.client.force_login(self.user)
-        response = self.client.put(self.post_detail_url, {"post_type": "ANNOUNCEMENT"})
+        response = self.client.patch(self.post_detail_url, {"post_type": "ANNOUNCEMENT"})
         self.assertFailed(response, "Only Super Admin can set post type to announcement")
 
     def test_update_post_type_to_announcement_by_super_admin(self):
         """Super Admin은 게시글을 ANNOUNCEMENT 타입으로 변경할 수 있다."""
         self.client.force_login(self.admin)
-        response = self.client.put(self.post_detail_url, {"post_type": "ANNOUNCEMENT"})
+        response = self.client.patch(self.post_detail_url, {"post_type": "ANNOUNCEMENT"})
         self.assertSuccess(response)
         self.assertEqual(response.data["data"]["post_type"], "ANNOUNCEMENT")
 
     def test_update_post_by_other_user(self):
         """다른 사용자는 게시글을 수정할 수 없다."""
         self.client.force_login(self.other_user)
-        response = self.client.put(self.post_detail_url, {"title": "Updated by other"})
+        response = self.client.patch(self.post_detail_url, {"title": "Updated by other"})
         self.assertFailed(response, "No permission to edit this post")
 
     def test_update_post_not_exist(self):
         """존재하지 않는 게시글은 수정할 수 없다."""
         self.client.force_login(self.user)
         url = self.reverse("community_post_detail", kwargs={"post_id": 9999})
-        response = self.client.put(url, {"title": "Updated"})
+        response = self.client.patch(url, {"title": "Updated"})
         self.assertFailed(response, "Post does not exist")
 
     def test_delete_post_by_author(self):
@@ -384,62 +407,6 @@ class CommunityAPITest(APITestCase):
         self.client.force_login(self.other_user)
         response = self.client.delete(self.post_detail_url)
         self.assertFailed(response, "No permission to delete this post")
-
-    def test_update_question_status(self):
-        """질문 게시글의 상태를 변경할 수 있다."""
-        self.client.force_login(self.user)
-        # 질문 게시글 생성
-        q_post_resp = self.client.post(
-            self.post_list_url,
-            {
-                "title": "Question",
-                "content": "Q Content",
-                "post_type": "QUESTION"
-            },
-        )
-        self.assertSuccess(q_post_resp)
-        post_id = q_post_resp.data["data"]["id"]
-        status_url = self.reverse("community_post_status", kwargs={"post_id": post_id})
-
-        # 상태 변경
-        response = self.client.post(status_url, {"question_status": "CLOSED"})
-        self.assertSuccess(response)
-        self.assertEqual(response.data["data"]["question_status"], "CLOSED")
-
-    def test_update_question_status_post_not_exist(self):
-        """존재하지 않는 게시글의 상태를 변경할 수 없다."""
-        self.client.force_login(self.user)
-        status_url = self.reverse("community_post_status", kwargs={"post_id": 9999})
-        response = self.client.post(status_url, {"question_status": "CLOSED"})
-        self.assertFailed(response, "Post does not exist")
-
-    def test_update_question_status_not_question_post(self):
-        """질문 게시글이 아닌 게시글의 상태를 변경할 수 없다."""
-        self.client.force_login(self.user)
-        status_url = self.reverse("community_post_status", kwargs={"post_id": self.general_post.id})
-        response = self.client.post(status_url, {"question_status": "CLOSED"})
-        self.assertFailed(response, "This is not a question post.")
-
-    def test_update_question_status_by_other_user(self):
-        """다른 사용자는 질문 게시글의 상태를 변경할 수 없다."""
-        self.client.force_login(self.user)
-        # 질문 게시글 생성
-        q_post_resp = self.client.post(
-            self.post_list_url,
-            {
-                "title": "Question",
-                "content": "Q Content",
-                "post_type": "QUESTION"
-            },
-        )
-        self.assertSuccess(q_post_resp)
-        post_id = q_post_resp.data["data"]["id"]
-        self.client.logout()
-
-        self.client.force_login(self.other_user)
-        status_url = self.reverse("community_post_status", kwargs={"post_id": post_id})
-        response = self.client.post(status_url, {"question_status": "CLOSED"})
-        self.assertFailed(response, "No permission to change status of this post")
 
     def test_get_comment_list(self):
         """게시글의 댓글 목록을 조회할 수 있다."""

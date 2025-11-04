@@ -436,7 +436,7 @@ export default {
   },
 
   updateCommunityPost(postId, post) {
-    return ajax(`community/posts/${postId}`, "put", {
+    return ajax(`community/posts/${postId}`, "patch", {
       data: post,
     })
   },

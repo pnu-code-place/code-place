@@ -148,9 +148,4 @@ class PostUpdateSerializer(serializers.Serializer):
     title = serializers.CharField(max_length=200, required=False)
     content = serializers.CharField(required=False)
     post_type = serializers.ChoiceField(choices=Post.PostType.choices, required=False)
-
-
-class PostStatusUpdateSerializer(serializers.Serializer):
-    """질문 게시글 상태 수정을 위한 Serializer"""
-
-    question_status = serializers.ChoiceField(choices=Post.QuestionStatus.choices)
+    question_status = serializers.ChoiceField(choices=Post.QuestionStatus.choices, required=False)
