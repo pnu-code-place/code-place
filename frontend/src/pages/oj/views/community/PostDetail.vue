@@ -40,6 +40,15 @@
           </div>
           <div class="post-meta-right">
             <div v-if="isAuthor && !isEditing" class="post-edit-actions">
+              <button v-if="post.post_type === 'QUESTION'" class="question-status-toggle-btn"
+                :class="post.question_status === 'CLOSED' ? 'status-closed' : 'status-open'"
+                @click="toggleQuestionStatus">
+                <Icon
+                  :type="post.question_status === 'CLOSED' ? 'ios-checkmark-circle' : 'ios-checkmark-circle-outline'">
+                </Icon>
+                {{ post.question_status === 'CLOSED' ? $t('m.Community_Question_Reopen') :
+                  $t('m.Community_Question_Close') }}
+              </button>
               <button class="post-edit-btn" @click="enterEditMode">{{ $t('m.Community_Post_Edit') }}</button>
               <button class="post-delete-btn" @click="deletePost(post.id)">{{ $t('m.Community_Post_Delete') }}</button>
             </div>
@@ -48,7 +57,7 @@
                 <Option v-for="(type, key) in availablePostTypes" :key="key" :value="key">{{ type.name }}</Option>
               </Select>
               <button class="post-save-btn" @click="updatePost" :disabled="isLoading">{{ $t('m.Community_Post_Save')
-                }}</button>
+              }}</button>
               <button class="post-cancel-btn" @click="cancelEdit">{{ $t('m.Community_Post_Cancel') }}</button>
             </div>
           </div>
@@ -379,6 +388,28 @@ export default {
         .finally(() => {
           this.isLoading = false
         })
+    },
+    toggleQuestionStatus() {
+      const newStatus = this.post.question_status === 'CLOSED' ? 'OPEN' : 'CLOSED'
+      const postId = this.$route.params.postId
+
+      this.isLoading = true
+      api
+        .updateCommunityPost(postId, { question_status: newStatus })
+        .then((res) => {
+          this.post = res.data.data
+          const message = newStatus === 'CLOSED'
+            ? this.$t("m.Community_Question_Closed_Success")
+            : this.$t("m.Community_Question_Reopened_Success")
+          this.$success(message)
+        })
+        .catch((err) => {
+          const errorMsg = (err.response && err.response.data && err.response.data.data) || this.$t("m.Community_Question_Status_Update_Failed")
+          this.$error(errorMsg)
+        })
+        .finally(() => {
+          this.isLoading = false
+        })
     }
   },
   computed: {
@@ -550,7 +581,8 @@ main {
 .post-edit-btn,
 .post-delete-btn,
 .post-save-btn,
-.post-cancel-btn {
+.post-cancel-btn,
+.question-status-toggle-btn {
   padding: 8px 16px;
   border: none;
   border-radius: 8px;
@@ -558,6 +590,35 @@ main {
   cursor: pointer;
   transition: all 0.3s ease;
   font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.question-status-toggle-btn {
+  &.status-open {
+    background: #e8f5e9;
+    color: #27ae60;
+
+    &:hover {
+      background: #27ae60;
+      color: white;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(39, 174, 96, 0.2);
+    }
+  }
+
+  &.status-closed {
+    background: #fff3e0;
+    color: #f39c12;
+
+    &:hover {
+      background: #f39c12;
+      color: white;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(243, 156, 18, 0.2);
+    }
+  }
 }
 
 .post-edit-btn {
