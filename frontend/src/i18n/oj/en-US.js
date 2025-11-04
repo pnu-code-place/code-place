@@ -563,4 +563,11 @@ export const m = {
   Community_Comment_Delete_Confirm: "댓글을 삭제하시겠습니까?",
   Community_Comment_Delete_Success: "댓글이 삭제되었습니다.",
   Community_Comment_Delete_Failed: "댓글 삭제에 실패했습니다.",
+
+  // QuestionList.vue
+  Community_Question_Title: "친구들의 질문",
+  Community_Question_Subtitle: "답변으로 도움을 주세요!",
+  Community_Question_No_Questions: "현재는 등록된 질문이 없어요.",
+  Community_Question_Open: "미해결",
+  Community_Question_Closed: "해결됨",
 }
