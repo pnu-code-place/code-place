@@ -40,6 +40,16 @@
           </div>
           <div class="post-meta-right">
             <div v-if="isAuthor && !isEditing" class="post-edit-actions">
+              <button v-if="post.post_type === 'QUESTION'" class="question-status-toggle-btn" :style="{
+                backgroundColor: getQuestionStatusStyle.backgroundColor,
+                color: getQuestionStatusStyle.color
+              }" @click="toggleQuestionStatus">
+                <Icon
+                  :type="post.question_status === 'CLOSED' ? 'ios-checkmark-circle' : 'ios-checkmark-circle-outline'">
+                </Icon>
+                {{ post.question_status === 'CLOSED' ? $t('m.Community_Question_Reopen') :
+                  $t('m.Community_Question_Close') }}
+              </button>
               <button class="post-edit-btn" @click="enterEditMode">{{ $t('m.Community_Post_Edit') }}</button>
               <button class="post-delete-btn" @click="deletePost(post.id)">{{ $t('m.Community_Post_Delete') }}</button>
             </div>
@@ -379,6 +389,28 @@ export default {
         .finally(() => {
           this.isLoading = false
         })
+    },
+    toggleQuestionStatus() {
+      const newStatus = this.post.question_status === 'CLOSED' ? 'OPEN' : 'CLOSED'
+      const postId = this.$route.params.postId
+
+      this.isLoading = true
+      api
+        .updateCommunityPost(postId, { question_status: newStatus })
+        .then((res) => {
+          this.post = res.data.data
+          const message = newStatus === 'CLOSED'
+            ? this.$t("m.Community_Question_Closed_Success")
+            : this.$t("m.Community_Question_Reopened_Success")
+          this.$success(message)
+        })
+        .catch((err) => {
+          const errorMsg = (err.response && err.response.data && err.response.data.data) || this.$t("m.Community_Question_Status_Update_Failed")
+          this.$error(errorMsg)
+        })
+        .finally(() => {
+          this.isLoading = false
+        })
     }
   },
   computed: {
@@ -413,6 +445,19 @@ export default {
     },
     defaultAvatar() {
       return DEFAULT_AVATAR
+    },
+    getQuestionStatusStyle() {
+      if (!this.post || !this.post.question_status) {
+        return { backgroundColor: '', color: '' }
+      }
+      const status = QUESTION_STATUS[this.post.question_status]
+      if (!status) {
+        return { backgroundColor: '', color: '' }
+      }
+      return {
+        backgroundColor: status.color,
+        color: status.textColor
+      }
     },
     commentCount() {
       if (!this.post || !this.post.comments) return 0
@@ -550,7 +595,8 @@ main {
 .post-edit-btn,
 .post-delete-btn,
 .post-save-btn,
-.post-cancel-btn {
+.post-cancel-btn,
+.question-status-toggle-btn {
   padding: 8px 16px;
   border: none;
   border-radius: 8px;
@@ -558,6 +604,19 @@ main {
   cursor: pointer;
   transition: all 0.3s ease;
   font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.question-status-toggle-btn {
+  transition: all 0.3s ease;
+
+  &:hover {
+    filter: brightness(0.95);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
 }
 
 .post-edit-btn {
