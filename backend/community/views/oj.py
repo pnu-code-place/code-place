@@ -6,7 +6,7 @@ from utils.api import APIView, validate_serializer
 
 from ..models import Comment, Post
 from ..serializers import (CommentSerializer, CreatePostSerializer, PostListSerializer, PostDetailSerializer,
-                           PostStatusUpdateSerializer, PostUpdateSerializer)
+                           PostUpdateSerializer)
 
 
 class PostAPIView(APIView):
@@ -130,7 +130,7 @@ class PostDetailAPIView(APIView):
 
     @validate_serializer(PostUpdateSerializer)
     @login_required
-    def put(self, request, post_id):
+    def patch(self, request, post_id):
         """특정 게시글을 수정합니다."""
         post = self.get_post(post_id)
         if not post:
@@ -164,29 +164,6 @@ class PostDetailAPIView(APIView):
 
         post.delete()
         return self.success()
-
-
-class PostStatusUpdateAPIView(APIView):
-    """질문 게시글 상태 변경 API"""
-
-    @validate_serializer(PostStatusUpdateSerializer)
-    @login_required
-    def post(self, request, post_id):
-        """질문 게시글의 상태를 변경합니다."""
-        try:
-            post = Post.objects.get(id=post_id)
-        except Post.DoesNotExist:
-            return self.error("Post does not exist")
-
-        if post.post_type != Post.PostType.QUESTION:
-            return self.error("This is not a question post.")
-
-        if post.author != request.user and not request.user.is_super_admin():
-            return self.error("No permission to change status of this post")
-
-        post.question_status = request.data["question_status"]
-        post.save()
-        return self.success(PostDetailSerializer(post).data)
 
 
 class CommentAPIView(APIView):
