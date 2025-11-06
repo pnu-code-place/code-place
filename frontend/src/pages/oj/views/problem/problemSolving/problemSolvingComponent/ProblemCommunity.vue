@@ -144,7 +144,7 @@ export default {
       },
       query: {
         page: 1,
-        limit: 15,
+        limit: 10,
       },
     }
   },
@@ -374,7 +374,7 @@ export default {
   flex-direction: column;
   gap: 10px;
   margin-bottom: 16px;
-  padding-right: 5px;
+  padding: 2px 5px 0 0;
 
   &::-webkit-scrollbar {
     width: 6px;
