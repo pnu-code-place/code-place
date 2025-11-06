@@ -76,21 +76,21 @@ export default {
 
 <style lang="less" scoped>
 .question-list-widget {
-  background: white;
+  background: var(--bg-color);
   border-radius: 12px;
-  border: 1px solid #e8ecef;
+  border: 1px solid var(--border-color);
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   transition: all 0.3s ease;
 
   &:hover {
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 4px 16px rgba(50, 48, 107, 0.12);
   }
 }
 
 .widget-header {
   padding: 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--point-color);
   color: white;
   text-align: center;
 
@@ -122,22 +122,22 @@ export default {
   }
 
   &::-webkit-scrollbar-track {
-    background: #f8f9fa;
+    background: var(--bg-color);
   }
 
   &::-webkit-scrollbar-thumb {
-    background: #d5dce0;
+    background: var(--border-color);
     border-radius: 3px;
 
     &:hover {
-      background: #bdc3c7;
+      background: rgba(50, 48, 107, 0.3);
     }
   }
 }
 
 .question-item {
   padding: 16px;
-  border-bottom: 1px solid #f0f3f7;
+  border-bottom: 1px solid var(--border-color);
   cursor: pointer;
   transition: all 0.3s ease;
   display: flex;
@@ -148,10 +148,10 @@ export default {
   }
 
   &:hover {
-    background: #f8f9fa;
+    background: rgba(50, 48, 107, 0.05);
 
     .question-title {
-      color: #3498db;
+      color: var(--point-color);
     }
   }
 }
@@ -187,7 +187,7 @@ export default {
 .question-title {
   font-size: 14px;
   font-weight: 600;
-  color: #2c3e50;
+  color: var(--text-color);
   margin: 0 0 8px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -204,7 +204,8 @@ export default {
   align-items: center;
   gap: 12px;
   font-size: 12px;
-  color: #95a5a6;
+  color: var(--text-color);
+  opacity: 0.6;
 
   span {
     display: flex;
@@ -228,7 +229,8 @@ export default {
 .empty-state {
   padding: 40px 20px;
   text-align: center;
-  color: #bdc3c7;
+  color: var(--text-color);
+  opacity: 0.4;
 
   .ivu-icon {
     margin-bottom: 12px;

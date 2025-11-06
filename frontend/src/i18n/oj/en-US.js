@@ -574,4 +574,29 @@ export const m = {
   Community_Question_No_Questions: "현재는 등록된 질문이 없어요.",
   Community_Question_Open: "미해결",
   Community_Question_Closed: "해결됨",
+
+  // ProblemCommunity.vue
+  Problem_Community_Question_List: "질문 목록",
+  Problem_Community_Question_Count: "개의 질문",
+  Problem_Community_Create_Question: "질문 작성",
+  Problem_Community_No_Questions: "아직 질문이 없습니다",
+  Problem_Community_No_Questions_Subtitle:
+    "이 문제에 대해 궁금한 점을 질문해보세요!",
+  Problem_Community_First_Question: "첫 질문 작성하기",
+  Problem_Community_Loading: "로딩 중...",
+  Problem_Community_Error: "질문 목록을 불러오는데 실패했습니다.",
+  Problem_Community_Modal_Title: "새 질문 작성",
+  Problem_Community_Modal_Problem_Label: "질문할 문제",
+  Problem_Community_Modal_Title_Label: "질문 제목",
+  Problem_Community_Modal_Title_Placeholder:
+    "질문 제목을 입력하세요 (예: 시간 초과가 발생합니다)",
+  Problem_Community_Modal_Content_Label: "질문 내용",
+  Problem_Community_Modal_Content_Placeholder:
+    "질문 내용을 자세히 작성해주세요\n\n• 어떤 부분이 궁금하신가요?\n• 어떤 시도를 해보셨나요?\n• 예상 결과와 실제 결과는 무엇인가요?",
+  Problem_Community_Modal_Cancel: "취소",
+  Problem_Community_Modal_Submit: "질문 등록",
+  Problem_Community_Create_Success: "질문이 작성되었습니다.",
+  Problem_Community_Create_Failed: "질문 작성에 실패했습니다.",
+  Problem_Community_Title_Required: "제목을 입력해주세요.",
+  Problem_Community_Content_Required: "내용을 입력해주세요.",
 }

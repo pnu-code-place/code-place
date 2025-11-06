@@ -390,6 +390,8 @@ export default {
     limit,
     post_type = null,
     question_status = null,
+    problem_id = null,
+    contest_id = null,
   ) {
     const params = {
       offset,
@@ -398,6 +400,8 @@ export default {
 
     if (post_type) params.post_type = post_type
     if (question_status) params.question_status = question_status
+    if (problem_id) params.problem_id = problem_id
+    if (contest_id) params.contest_id = contest_id
 
     return ajax("community/posts", "get", {
       params,
