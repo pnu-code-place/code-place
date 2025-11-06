@@ -5,6 +5,7 @@
         <div class="title-section" v-if="!isEditing">
           <h1 class="post-title">{{ post.title }}</h1>
           <div class="badges-container">
+            <span v-if="isNewPost" class="new-badge">NEW</span>
             <span v-if="POST_TYPE[post.post_type]" class="post-type-badge" :style="{
               backgroundColor: POST_TYPE[post.post_type].color,
               color: POST_TYPE[post.post_type].textColor
@@ -48,7 +49,7 @@
                   :type="post.question_status === 'CLOSED' ? 'ios-checkmark-circle' : 'ios-checkmark-circle-outline'">
                 </Icon>
                 {{ post.question_status === 'CLOSED' ? $t('m.Community_Question_Reopen') :
-                  $t('m.Community_Question_Close') }}
+                $t('m.Community_Question_Close') }}
               </button>
               <button class="post-edit-btn" @click="enterEditMode">{{ $t('m.Community_Post_Edit') }}</button>
               <button class="post-delete-btn" @click="deletePost(post.id)">{{ $t('m.Community_Post_Delete') }}</button>
@@ -422,6 +423,17 @@ export default {
       return QUESTION_STATUS;
     },
     /**
+     * 게시글이 3일 이내에 작성되었는지 확인
+     */
+    isNewPost() {
+      if (!this.post || !this.post.created_at) return false;
+      const postDate = new Date(this.post.created_at);
+      const now = new Date();
+      const diffTime = Math.abs(now - postDate);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return diffDays <= 3;
+    },
+    /**
      * 현재 사용자가 게시글 작성자인지 확인
      */
     isAuthor() {
@@ -513,6 +525,30 @@ main {
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
+}
+
+.new-badge {
+  padding: 6px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  color: #ffffff;
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+  animation: pulse 2s ease-in-out infinite;
+  box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.05);
+  }
 }
 
 .post-type-badge {
