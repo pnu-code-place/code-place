@@ -19,6 +19,7 @@
               <div class="card-left">
                 <div class="post-meta">
                   <span class="post-id">#{{ post.id }}</span>
+                  <span v-if="isNewPost(post)" class="new-badge">NEW</span>
                   <span v-if="POST_TYPE[post.post_type]" class="post-type-label" :style="{
                     backgroundColor: POST_TYPE[post.post_type].color,
                     color: POST_TYPE[post.post_type].textColor
@@ -117,6 +118,17 @@ export default {
     },
   },
   methods: {
+    /**
+     * 게시글이 3일 이내에 작성되었는지 확인
+     */
+    isNewPost(post) {
+      if (!post || !post.created_at) return false;
+      const postDate = new Date(post.created_at);
+      const now = new Date();
+      const diffTime = Math.abs(now - postDate);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return diffDays <= 3;
+    },
     async fetchPosts() {
       this.isLoading = true
 
@@ -261,6 +273,30 @@ main {
       background: #f8f9fa;
       padding: 4px 10px;
       border-radius: 6px;
+    }
+
+    .new-badge {
+      font-size: 12px;
+      font-weight: 700;
+      color: #ffffff;
+      background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+      padding: 4px 10px;
+      border-radius: 12px;
+      white-space: nowrap;
+      animation: pulse 2s ease-in-out infinite;
+      box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.05);
+      }
     }
 
     .post-type-label {
