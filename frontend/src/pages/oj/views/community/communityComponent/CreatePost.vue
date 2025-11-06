@@ -28,7 +28,7 @@ export default {
   font-size: 16px;
   font-weight: 600;
   color: #fff;
-  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+  background: var(--point-color);
   border: none;
   border-radius: 12px;
   cursor: pointer;
@@ -37,7 +37,7 @@ export default {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.2);
+  box-shadow: 0 4px 12px rgba(50, 48, 107, 0.25);
   position: relative;
   overflow: hidden;
 
@@ -60,8 +60,8 @@ export default {
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(52, 152, 219, 0.3);
-    background: linear-gradient(135deg, #2980b9 0%, #3498db 100%);
+    box-shadow: 0 6px 16px rgba(50, 48, 107, 0.35);
+    background: #4a4890;
 
     &::before {
       opacity: 1;
@@ -70,7 +70,7 @@ export default {
 
   &:active {
     transform: translateY(0);
-    box-shadow: 0 2px 8px rgba(52, 152, 219, 0.2);
+    box-shadow: 0 2px 8px rgba(50, 48, 107, 0.25);
   }
 }
 </style>
