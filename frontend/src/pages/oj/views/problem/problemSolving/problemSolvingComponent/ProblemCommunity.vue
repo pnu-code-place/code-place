@@ -149,7 +149,10 @@ export default {
     }
   },
   mounted() {
-    this.fetchPosts()
+    // problem.id가 로드 된 후 fetchPosts 호출
+    if (this.problem && this.problem.id) {
+      this.fetchPosts()
+    }
   },
   computed: {
     ...mapGetters(["user"]),
@@ -159,6 +162,19 @@ export default {
     defaultAvatar() {
       return DEFAULT_AVATAR
     },
+  },
+  watch: {
+    // NOTE: problem prop이 변경될 때 (로드될 때) fetchPosts 호출
+    // 이 로직이 없으면 문제 정보가 로드되기 전에 mounted 훅에서
+    // fetchPosts가 호출되어 문제 ID가 undefined 인 경우가 발생합니다.
+    'problem.id': {
+      handler(newVal) {
+        if (newVal) {
+          this.fetchPosts()
+        }
+      },
+      immediate: false
+    }
   },
   methods: {
     isNewPost(post) {
@@ -182,7 +198,7 @@ export default {
           this.query.limit,
           'QUESTION',
           null,
-          this.problemID,
+          this.problem.id,
           null
         )
         this.posts = res.data.data.results
@@ -218,7 +234,7 @@ export default {
           title: this.newPost.title,
           content: this.newPost.content,
           post_type: "QUESTION",
-          problem_id: this.problemID,
+          problem_id: this.problem.id,
         })
         this.$success(this.$i18n.t("m.Problem_Community_Create_Success"))
         this.showCreateModal = false
