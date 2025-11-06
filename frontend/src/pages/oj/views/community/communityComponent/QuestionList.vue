@@ -26,7 +26,7 @@
               {{ question.author_name }}
             </span>
             <span class="comments" v-if="question.comment_count > 0">
-              <Icon type="ios-chatbubbles-outline"></Icon>
+              <Icon type="ios-chatbubble-outline"></Icon>
               {{ question.comment_count }}
             </span>
           </div>

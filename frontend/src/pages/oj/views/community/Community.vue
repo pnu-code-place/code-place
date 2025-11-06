@@ -57,7 +57,7 @@
                       {{ post.created_at | localtime("YYYY.MM.DD") }}
                     </span>
                     <span class="comment-count">
-                      <Icon type="ios-chatbubbles-outline"></Icon>
+                      <Icon type="ios-chatbubble"></Icon>
                       {{ post.comment_count || 0 }}
                     </span>
                   </div>
