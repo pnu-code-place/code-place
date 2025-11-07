@@ -49,7 +49,7 @@
                   :type="post.question_status === 'CLOSED' ? 'ios-checkmark-circle' : 'ios-checkmark-circle-outline'">
                 </Icon>
                 {{ post.question_status === 'CLOSED' ? $t('m.Community_Question_Reopen') :
-                $t('m.Community_Question_Close') }}
+                  $t('m.Community_Question_Close') }}
               </button>
               <button class="post-edit-btn" @click="enterEditMode">{{ $t('m.Community_Post_Edit') }}</button>
               <button class="post-delete-btn" @click="deletePost(post.id)">{{ $t('m.Community_Post_Delete') }}</button>
@@ -59,7 +59,7 @@
                 <Option v-for="(type, key) in availablePostTypes" :key="key" :value="key">{{ type.name }}</Option>
               </Select>
               <button class="post-save-btn" @click="updatePost" :disabled="isLoading">{{ $t('m.Community_Post_Save')
-                }}</button>
+              }}</button>
               <button class="post-cancel-btn" @click="cancelEdit">{{ $t('m.Community_Post_Cancel') }}</button>
             </div>
           </div>

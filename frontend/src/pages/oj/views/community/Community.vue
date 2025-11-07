@@ -4,10 +4,7 @@
       :solution="this.error.solution || ''" />
     <div class="contents" v-else>
       <div class="session-title-wrapper">
-        <h1 class="session-title main-title">
-          <Icon type="ios-chatbubbles" size="32"></Icon>
-          {{ $t("m.Community") }}
-        </h1>
+        <h1 class="session-title main-title">{{ $t("m.Community") }}</h1>
         <div class="stats-info">
           <span class="total-posts">총 {{ total }}개의 게시글</span>
         </div>
@@ -178,7 +175,7 @@ main {
   width: var(--global-width);
 
   .session-title-wrapper {
-    margin: 0 4px 30px;
+    margin: 0 4px 20px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -187,15 +184,6 @@ main {
 
   .session-title {
     font-weight: 700;
-    font-size: 32px;
-    color: #2c3e50;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-
-    .ivu-icon {
-      color: #3498db;
-    }
   }
 
   .stats-info {

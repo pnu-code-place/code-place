@@ -1,5 +1,5 @@
 <template>
-  <div class="problem-community-wrapper">
+  <div class="problem-community-wrapper" :class="themeClass">
     <div class="community-header">
       <div class="header-left">
         <h3 class="community-title">
@@ -129,6 +129,10 @@ export default {
       type: Object,
       required: true,
     },
+    isDarkMode: {
+      type: Boolean,
+      default: false,
+    }
   },
   data() {
     return {
@@ -156,6 +160,9 @@ export default {
   },
   computed: {
     ...mapGetters(["user"]),
+    themeClass() {
+      return this.isDarkMode ? "dark-theme" : "light-theme"
+    },
     QUESTION_STATUS() {
       return QUESTION_STATUS
     },
@@ -256,6 +263,26 @@ export default {
 </script>
 
 <style lang="less" scoped>
+.light-theme {
+  --hover-bg: #f5f6fa;
+  --pagination-bg: #fff;
+  --pagination-border: #dcdee2;
+  --pagination-hover-bg: #f5f6fa;
+  --pagination-active-bg: var(--point-color);
+  --pagination-active-color: #fff;
+  --pagination-text: #515a6e;
+}
+
+.dark-theme {
+  --hover-bg: #3a3f4d;
+  --pagination-bg: #2b2f3a;
+  --pagination-border: #3a3a4a;
+  --pagination-hover-bg: #3a3f4d;
+  --pagination-active-bg: var(--point-color);
+  --pagination-active-color: #fff;
+  --pagination-text: #e6e6e6;
+}
+
 .problem-community-wrapper {
   height: 100%;
   display: flex;
@@ -417,16 +444,10 @@ export default {
   border-radius: 8px;
   padding: 16px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background 0.2s ease;
 
   &:hover {
-    border-color: var(--point-color);
-    box-shadow: 0 2px 12px rgba(50, 48, 107, 0.15);
-    transform: translateY(-1px);
-
-    .post-title {
-      color: var(--point-color);
-    }
+    background: var(--hover-bg);
   }
 }
 
@@ -555,6 +576,84 @@ export default {
   padding-top: 16px;
   border-top: 1px solid var(--border-color);
   margin-top: auto;
+
+  /deep/ .ivu-page {
+    .ivu-page-item {
+      background-color: var(--pagination-bg);
+      border: 1px solid var(--pagination-border);
+      color: var(--pagination-text);
+
+      &:hover {
+        background-color: var(--pagination-hover-bg);
+        border-color: var(--point-color);
+        color: var(--point-color);
+      }
+
+      a {
+        color: var(--pagination-text);
+      }
+    }
+
+    .ivu-page-item-active {
+      background-color: var(--pagination-active-bg);
+      border-color: var(--pagination-active-bg);
+
+      a {
+        color: var(--pagination-active-color);
+      }
+
+      &:hover {
+        background-color: var(--pagination-active-bg);
+        border-color: var(--pagination-active-bg);
+
+        a {
+          color: var(--pagination-active-color);
+        }
+      }
+    }
+
+    .ivu-page-prev,
+    .ivu-page-next {
+      background-color: var(--pagination-bg);
+      border: 1px solid var(--pagination-border);
+
+      a {
+        color: var(--pagination-text);
+      }
+
+      &:hover {
+        background-color: var(--pagination-hover-bg);
+        border-color: var(--point-color);
+
+        a {
+          color: var(--point-color);
+        }
+      }
+    }
+
+    .ivu-page-disabled {
+      background-color: var(--pagination-bg);
+      border: 1px solid var(--pagination-border);
+      opacity: 0.4;
+
+      a {
+        color: var(--pagination-text);
+      }
+
+      &:hover {
+        background-color: var(--pagination-bg);
+        border-color: var(--pagination-border);
+
+        a {
+          color: var(--pagination-text);
+        }
+      }
+    }
+
+    .ivu-page-total {
+      color: var(--pagination-text);
+    }
+  }
 }
 
 // Modal styles

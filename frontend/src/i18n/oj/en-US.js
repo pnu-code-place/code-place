@@ -574,6 +574,8 @@ export const m = {
   Community_Question_No_Questions: "현재는 등록된 질문이 없어요.",
   Community_Question_Open: "미해결",
   Community_Question_Closed: "해결됨",
+  Community_Question_Closed_Success: "질문이 성공적으로 닫혔습니다.",
+  Community_Question_Reopened_Success: "질문이 성공적으로 다시 열렸습니다.",
 
   // ProblemCommunity.vue
   Problem_Community_Question_List: "질문 목록",

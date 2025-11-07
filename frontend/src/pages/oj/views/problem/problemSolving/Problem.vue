@@ -23,7 +23,7 @@
             <SubmissionList v-if="isInitialized" v-show="leftPainActiveTab === 'submission'" :problemID="problemID"
               :contestID="contestID" :lastSubmissionId="lastSubmissionId" :isDarkMode="isDarkMode" />
             <ProblemCommunity v-if="isInitialized" v-show="leftPainActiveTab === 'community'" :problemID="problemID"
-              :problem="problem" />
+              :problem="problem" :isDarkMode="isDarkMode" />
           </div>
         </div>
       </pane>
