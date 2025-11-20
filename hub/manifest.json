@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Code Place Hub",
   "description": "Code Place 문제 풀이를 GitHub에 업로드 해주는 확장 프로그램입니다.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": "boksam",
   "action": {
     "default_icon": "assets/thumbnail.png",
