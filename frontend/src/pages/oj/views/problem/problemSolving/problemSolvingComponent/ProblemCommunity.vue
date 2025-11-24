@@ -15,15 +15,14 @@
         <div class="question-status-bar">
           <Dropdown @on-click="filterByQuestionStatus" trigger="click" class="dropdown">
             <span style="font-weight: bold; font-size: 15px; padding-right: 10px">
-              {{ query.question_status === 'ALL' ? '전체' :
-                query.question_status === 'OPEN' ? '미해결' :
-                  query.question_status === 'CLOSED' ? '해결됨' : '상태' }}
+              {{ query.question_status === 'ALL' ? '전체' : QUESTION_STATUS[query.question_status].name }}
             </span>
             <Icon type="arrow-down-b"></Icon>
             <Dropdown-menu slot="list">
               <Dropdown-item name="ALL">전체</Dropdown-item>
-              <Dropdown-item name="OPEN">미해결</Dropdown-item>
-              <Dropdown-item name="CLOSED">해결됨</Dropdown-item>
+              <Dropdown-item v-for="(val, k) in QUESTION_STATUS" :key="k" :name="k">
+                {{ val.name }}
+              </Dropdown-item>
             </Dropdown-menu>
           </Dropdown>
         </div>
