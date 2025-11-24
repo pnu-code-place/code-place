@@ -1,4 +1,4 @@
-from django.db.models import Count
+from django.db.models import Count, Q
 from account.decorators import check_contest_permission, login_required
 from contest.models import Contest
 from problem.models import Problem
@@ -71,10 +71,21 @@ class PostAPIView(APIView):
         problem_id = request.GET.get("problem_id")
         post_type = request.GET.get("post_type")
         question_status = request.GET.get("question_status")
+        keyword = request.GET.get("keyword", "").strip()
+        sort_type = request.GET.get("sort_type")
 
         posts = Post.objects.select_related("author__userprofile").annotate(
             comment_count=Count('comments')).all().order_by("-created_at")
 
+        if sort_type == "NEWEST":
+            posts = posts.order_by("-created_at")
+        elif sort_type == "OLDEST":
+            posts = posts.order_by("created_at")
+        elif sort_type == "COMMENT":
+            posts = posts.order_by("-comment_count")
+        else:
+            posts = posts.order_by("-created_at")
+        
         if contest_id:
             try:
                 self.contest = Contest.objects.get(id=contest_id, visible=True)
@@ -94,7 +105,13 @@ class PostAPIView(APIView):
 
         if question_status:
             posts = posts.filter(question_status=question_status)
+        
+        if keyword:
+            posts = posts.filter(
+                Q(title__icontains=keyword) | Q(content__icontains=keyword)
+            )
 
+        
         data = self.paginate_data(request, posts, PostListSerializer)
         return self.success(data)
 
