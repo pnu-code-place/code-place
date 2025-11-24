@@ -22,46 +22,40 @@
 
               <Dropdown @on-click="filterByType" trigger="click" class="dropdown">
                 <span style="font-weight: bold; font-size: 15px; padding-right: 10px">
-                  {{ query.post_type === 'ALL' ? '전체' :
-                    query.post_type === 'ANNOUNCEMENT' ? '공지사항' :
-                      query.post_type === 'QUESTION' ? '질문' :
-                        query.post_type === 'ARTICLE' ? '일반 글' : '유형' }}
+                  {{ query.post_type === "ALL" ? '전체' : POST_TYPE[query.post_type].name }}
                 </span>
                 <Icon type="arrow-down-b"></Icon>
                 <Dropdown-menu slot="list">
                   <Dropdown-item name="ALL">전체</Dropdown-item>
-                  <Dropdown-item name="ANNOUNCEMENT">공지사항</Dropdown-item>
-                  <Dropdown-item name="QUESTION">질문</Dropdown-item>
-                  <Dropdown-item name="ARTICLE">일반 글</Dropdown-item>
+                  <Dropdown-item v-for="(val, k) in POST_TYPE" :key="k" :name="k">
+                    {{ val.name }}
+                  </Dropdown-item>
                 </Dropdown-menu>
               </Dropdown>
 
               <Dropdown v-if="query.post_type === 'QUESTION'" @on-click="filterByQuestionStatus" trigger="click"
                 class="dropdown">
                 <span style="font-weight: bold; font-size: 15px; padding-right: 10px">
-                  {{ query.question_status === 'ALL' ? '전체' :
-                    query.question_status === 'OPEN' ? '미해결' :
-                      query.question_status === 'CLOSED' ? '해결됨' : '상태' }}
+                  {{ query.question_status === 'ALL' ? '전체' : QUESTION_STATUS[query.question_status].name }}
                 </span>
                 <Icon type="arrow-down-b"></Icon>
                 <Dropdown-menu slot="list">
                   <Dropdown-item name="ALL">전체</Dropdown-item>
-                  <Dropdown-item name="OPEN">미해결</Dropdown-item>
-                  <Dropdown-item name="CLOSED">해결됨</Dropdown-item>
+                  <Dropdown-item v-for="(val, k) in QUESTION_STATUS" :key="k" :name="k">
+                    {{ val.name }}
+                  </Dropdown-item>
                 </Dropdown-menu>
               </Dropdown>
 
               <Dropdown @on-click="filterBySort" trigger="click" class="dropdown">
                 <span style="font-weight: bold; font-size: 15px; padding-right: 10px">
-                  {{ query.sort_type === 'NEWEST' ? '최신순' :
-                    query.sort_type === 'OLDEST' ? '오래된 순' :
-                      query.sort_type === 'COMMENT' ? '댓글 많은 순' : '정렬' }}
+                  {{ SORT_TYPE[query.sort_type] ? SORT_TYPE[query.sort_type].name : "정렬" }}
                 </span>
                 <Icon type="arrow-down-b"></Icon>
                 <Dropdown-menu slot="list">
-                  <Dropdown-item name="NEWEST">최신순</Dropdown-item>
-                  <Dropdown-item name="OLDEST">오래된 순</Dropdown-item>
-                  <Dropdown-item name="COMMENT">댓글 많은 순</Dropdown-item>
+                  <Dropdown-item v-for="(val, k) in SORT_TYPE" :key="k" :name="k">
+                    {{ val.name }}
+                  </Dropdown-item>
                 </Dropdown-menu>
               </Dropdown>
             </div>
@@ -136,7 +130,7 @@ import api from "../../api"
 import Pagination from "@/pages/admin/components/Pagination.vue"
 import ErrorSign from "../general/ErrorSign.vue"
 import CreatePost from "./communityComponent/CreatePost.vue";
-import { POST_TYPE, QUESTION_STATUS } from "../../../../utils/constants";
+import { POST_TYPE, QUESTION_STATUS, SORT_TYPE } from "../../../../utils/constants";
 import QuestionList from "./communityComponent/QuestionList.vue";
 
 export default {
@@ -173,6 +167,9 @@ export default {
     QUESTION_STATUS() {
       return QUESTION_STATUS;
     },
+    SORT_TYPE() {
+      return SORT_TYPE;
+    }
   },
   methods: {
     /**
