@@ -7,9 +7,30 @@
         </h3>
         <span class="question-count">{{ total }}{{ $t("m.Problem_Community_Question_Count") }}</span>
       </div>
-      <Button type="primary" size="default" @click="showCreateModal = true" class="create-btn">
-        {{ $t("m.Problem_Community_Create_Question") }}
-      </Button>
+      <div class="filter-bar">
+        <div class="search-bar">
+          <Input v-model="query.keyword" placeholder="검색어를 입력하세요" icon="ios-search-strong" @on-enter="applySearch">
+          </Input>
+        </div>
+        <div class="question-status-bar">
+          <Dropdown @on-click="filterByQuestionStatus" trigger="click" class="dropdown">
+            <span style="font-weight: bold; font-size: 15px; padding-right: 10px">
+              {{ query.question_status === 'ALL' ? '전체' :
+                query.question_status === 'OPEN' ? '미해결' :
+                  query.question_status === 'CLOSED' ? '해결됨' : '상태' }}
+            </span>
+            <Icon type="arrow-down-b"></Icon>
+            <Dropdown-menu slot="list">
+              <Dropdown-item name="ALL">전체</Dropdown-item>
+              <Dropdown-item name="OPEN">미해결</Dropdown-item>
+              <Dropdown-item name="CLOSED">해결됨</Dropdown-item>
+            </Dropdown-menu>
+          </Dropdown>
+        </div>
+        <Button type="primary" size="default" @click="showCreateModal = true" class="create-btn">
+          {{ $t("m.Problem_Community_Create_Question") }}
+        </Button>
+      </div>
     </div>
 
     <div v-if="isLoading" class="loading-state">
@@ -149,6 +170,8 @@ export default {
       query: {
         page: 1,
         limit: 10,
+        keyword: "",
+        question_status: "ALL",
       },
     }
   },
@@ -197,6 +220,7 @@ export default {
       this.error = null
 
       const offset = (this.query.page - 1) * this.query.limit
+      const questionStatus = this.query.question_status === "ALL" ? "" : this.query.question_status
 
       try {
         // problem_id를 파라미터로 전달하여 해당 문제의 질문만 가져옴
@@ -204,8 +228,10 @@ export default {
           offset,
           this.query.limit,
           'QUESTION',
-          null,
+          questionStatus,
           this.problem.id,
+          null,
+          this.query.keyword,
           null
         )
         this.posts = res.data.data.results
@@ -258,6 +284,15 @@ export default {
         this.isCreating = false
       }
     },
+    async applySearch() {
+      this.query.page = 1
+      this.fetchPosts()
+    },
+    async filterByQuestionStatus(questionStatus) {
+      this.query.question_status = questionStatus
+      this.query.page = 1
+      this.fetchPosts()
+    }
   },
 }
 </script>
@@ -271,6 +306,31 @@ export default {
   --pagination-active-bg: var(--point-color);
   --pagination-active-color: #fff;
   --pagination-text: #515a6e;
+  --input-bg: #fff;
+  --input-border: #dcdee2;
+  --input-text: #515a6e;
+}
+
+.dropdown {
+  cursor: pointer;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 15px;
+  padding-right: 15px;
+
+  background-color: var(--input-bg);
+  border: 1px solid var(--input-border);
+  color: var(--input-text);
+
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+
+  transition: border 0.3s;
+
+  &:hover {
+    border-color: var(--point-color);
+  }
 }
 
 .dark-theme {
@@ -281,6 +341,9 @@ export default {
   --pagination-active-bg: var(--point-color);
   --pagination-active-color: #fff;
   --pagination-text: #e6e6e6;
+  --input-bg: #2b2f3a;
+  --input-border: #3a3a4a;
+  --input-text: #e6e6e6;
 }
 
 .problem-community-wrapper {
@@ -326,24 +389,78 @@ export default {
     font-weight: 500;
   }
 
-  .create-btn {
+  .filter-bar {
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-weight: 600;
-    border-radius: 8px;
-    background: var(--point-color);
-    border-color: var(--point-color);
-    box-shadow: 0 2px 8px rgba(50, 48, 107, 0.25);
-    transition: all 0.3s ease;
+    gap: 8px;
 
-    &:hover {
-      background: #4a4890;
-      border-color: #4a4890;
-      box-shadow: 0 4px 12px rgba(50, 48, 107, 0.35);
-      transform: translateY(-1px);
+    .create-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 600;
+      border-radius: 8px;
+      background: var(--point-color);
+      border-color: var(--point-color);
+      box-shadow: 0 2px 8px rgba(50, 48, 107, 0.25);
+      transition: all 0.3s ease;
+
+      &:hover {
+        background: #4a4890;
+        border-color: #4a4890;
+        box-shadow: 0 4px 12px rgba(50, 48, 107, 0.35);
+        transform: translateY(-1px);
+      }
     }
+
+    .search-bar {
+      width: 190;
+
+      /deep/ .ivu-input {
+        background: var(--input-bg);
+        color: var(--input-text);
+        border: 1px solid var(--input-border);
+
+        &::placeholder {
+          color: var(--input-text);
+          opacity: 0.4;
+        }
+
+        &:focus {
+          border-color: var(--point-color);
+          box-shadow: 0 0 0 3px rgba(50, 48, 107, 0.25);
+        }
+      }
+    }
+
+    .question-status-bar {
+      /deep/ .ivu-select-dropdown {
+        background: var(--input-bg);
+        border: 1px solid var(--input-border);
+      }
+
+      /deep/ .ivu-dropdown-item {
+        color: var(--input-text);
+        transition: background 0.2s;
+
+        &:hover {
+          background: var(--hover-bg);
+          color: var(--input-text);
+        }
+      }
+    }
+
+    .search_icon {
+      font-size: 23px;
+      cursor: pointer;
+    }
+
+    .search_icon:hover {
+      color: #2d8cf0;
+    }
+
   }
+
 }
 
 .loading-state,
