@@ -76,16 +76,6 @@ class PostAPIView(APIView):
 
         posts = Post.objects.select_related("author__userprofile").annotate(
             comment_count=Count('comments')).all().order_by("-created_at")
-
-        if sort_type == "NEWEST":
-            posts = posts.order_by("-created_at")
-        elif sort_type == "OLDEST":
-            posts = posts.order_by("created_at")
-        elif sort_type == "COMMENT":
-            posts = posts.order_by("-comment_count")
-        else:
-            posts = posts.order_by("-created_at")
-        
         if contest_id:
             try:
                 self.contest = Contest.objects.get(id=contest_id, visible=True)
@@ -111,7 +101,15 @@ class PostAPIView(APIView):
                 Q(title__icontains=keyword) | Q(content__icontains=keyword)
             )
 
-        
+        if sort_type == Post.SortType.NEWEST:
+            posts = posts.order_by("-created_at")
+        elif sort_type == Post.SortType.OLDEST:
+            posts = posts.order_by("created_at")
+        elif sort_type == Post.SortType.COMMENT:
+            posts = posts.order_by("-comment_count")
+        else:
+            posts = posts.order_by("-created_at")
+
         data = self.paginate_data(request, posts, PostListSerializer)
         return self.success(data)
 
