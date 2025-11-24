@@ -283,11 +283,11 @@ export default {
         this.isCreating = false
       }
     },
-    async applySearch() {
+    applySearch() {
       this.query.page = 1
       this.fetchPosts()
     },
-    async filterByQuestionStatus(questionStatus) {
+    filterByQuestionStatus(questionStatus) {
       this.query.question_status = questionStatus
       this.query.page = 1
       this.fetchPosts()
