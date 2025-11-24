@@ -4,38 +4,22 @@
       <i class="fas fa-code" />
       <span>코드 작성</span>
     </div>
-    <div
-      style="display: flex; justify-content: space-between; align-items: center"
-    >
+    <div style="display: flex; justify-content: space-between; align-items: center">
       <Tooltip :content="'언어 선택'" placement="bottom">
         <Dropdown @on-click="changeLanguage" trigger="click" class="dropdown">
-          <span
-            style="font-size: 13px; padding-right: 3px; font-weight: 450"
-            :id="`code-language-${problem._id}`"
-          >
+          <span style="font-size: 13px; padding-right: 3px; font-weight: 450" :id="`code-language-${problem._id}`">
             {{ language }}
           </span>
           <i class="fas fa-chevron-down"></i>
           <Dropdown-menu slot="list">
-            <Dropdown-item
-              :name="item"
-              v-for="item in problem.languages"
-              :key="item"
-              >{{ item }}
+            <Dropdown-item :name="item" v-for="item in problem.languages" :key="item">{{ item }}
             </Dropdown-item>
           </Dropdown-menu>
         </Dropdown>
       </Tooltip>
-      <SubmissionBtn
-        :isSubmitting="isSubmitting"
-        @create-submission="$emit('create-submission')"
-      />
-      <SubmissionStatus
-        :statusVisible="statusVisible"
-        :contestID="contestID"
-        :result="result"
-        :submissionId="submissionId"
-      />
+      <SubmissionBtn :isSubmitting="isSubmitting" @create-submission="$emit('create-submission')" />
+      <SubmissionStatus :statusVisible="statusVisible" :contestID="contestID" :result="result"
+        :submissionId="submissionId" />
       <!--      <Tooltip :content="'글자 크기 키우기'" placement="bottom-end">-->
       <!--        <CustomIconBtn @click="changeFontSize(fontSize+1)" :wrapperSize="30" iconClass="fas fa-plus"/>-->
       <!--      </Tooltip>-->
