@@ -3,14 +3,70 @@
     <ErrorSign v-if="this.error" :code="this.error.code || 404" :description="this.error.description || ''"
       :solution="this.error.solution || ''" />
     <div class="contents" v-else>
-      <div class="session-title-wrapper">
-        <h1 class="session-title main-title">{{ $t("m.Community") }}</h1>
-        <div class="stats-info">
-          <span class="total-posts">총 {{ total }}개의 게시글</span>
-        </div>
-      </div>
       <div class="box-wrapper">
         <div class="left-container">
+          <div class="community-header">
+            <div class="header-left">
+              <div class="main-title">
+                <h1 class="session-title main-title">{{ $t("m.Community") }}</h1>
+              </div>
+              <div class="stats-info">
+                <span class="total-posts">{{ total }}개의 게시글</span>
+              </div>
+            </div>
+            <div class="header-right">
+              <div class="search-bar">
+                <Input v-model="query.keyword" placeholder="검색어를 입력하세요" icon="ios-search-strong"
+                  @on-enter="applySearch" />
+              </div>
+
+              <Dropdown @on-click="filterByType" trigger="click" class="dropdown">
+                <span style="font-weight: bold; font-size: 15px; padding-right: 10px">
+                  {{ query.post_type === 'ALL' ? '전체' :
+                    query.post_type === 'ANNOUNCEMENT' ? '공지사항' :
+                      query.post_type === 'QUESTION' ? '질문' :
+                        query.post_type === 'ARTICLE' ? '일반 글' : '유형' }}
+                </span>
+                <Icon type="arrow-down-b"></Icon>
+                <Dropdown-menu slot="list">
+                  <Dropdown-item name="ALL">전체</Dropdown-item>
+                  <Dropdown-item name="ANNOUNCEMENT">공지사항</Dropdown-item>
+                  <Dropdown-item name="QUESTION">질문</Dropdown-item>
+                  <Dropdown-item name="ARTICLE">일반 글</Dropdown-item>
+                </Dropdown-menu>
+              </Dropdown>
+
+              <Dropdown v-if="query.post_type === 'QUESTION'" @on-click="filterByQuestionStatus" trigger="click"
+                class="dropdown">
+                <span style="font-weight: bold; font-size: 15px; padding-right: 10px">
+                  {{ query.question_status === 'ALL' ? '전체' :
+                    query.question_status === 'OPEN' ? '미해결' :
+                      query.question_status === 'CLOSED' ? '해결됨' : '상태' }}
+                </span>
+                <Icon type="arrow-down-b"></Icon>
+                <Dropdown-menu slot="list">
+                  <Dropdown-item name="ALL">전체</Dropdown-item>
+                  <Dropdown-item name="OPEN">미해결</Dropdown-item>
+                  <Dropdown-item name="CLOSED">해결됨</Dropdown-item>
+                </Dropdown-menu>
+              </Dropdown>
+
+              <Dropdown @on-click="filterBySort" trigger="click" class="dropdown">
+                <span style="font-weight: bold; font-size: 15px; padding-right: 10px">
+                  {{ query.sort_type === 'NEWEST' ? '최신순' :
+                    query.sort_type === 'OLDEST' ? '오래된 순' :
+                      query.sort_type === 'COMMENT' ? '댓글 많은 순' : '정렬' }}
+                </span>
+                <Icon type="arrow-down-b"></Icon>
+                <Dropdown-menu slot="list">
+                  <Dropdown-item name="NEWEST">최신순</Dropdown-item>
+                  <Dropdown-item name="OLDEST">오래된 순</Dropdown-item>
+                  <Dropdown-item name="COMMENT">댓글 많은 순</Dropdown-item>
+                </Dropdown-menu>
+              </Dropdown>
+            </div>
+
+          </div>
           <div class="posts-list">
             <div v-for="post in posts" :key="post.id" @click="goToPost(post.id)" class="post-card">
               <div class="card-left">
@@ -103,6 +159,10 @@ export default {
       query: {
         page: 1,
         limit: 10,
+        post_type: "ALL",
+        sort_type: "NEWEST",
+        keyword: "",
+        question_status: "ALL",
       },
     }
   },
@@ -130,9 +190,19 @@ export default {
       this.isLoading = true
 
       const offset = (this.query.page - 1) * this.query.limit
-
+      const serverPostType = this.query.post_type === "ALL" ? "" : this.query.post_type
+      const questionStatus = this.query.question_status === "ALL" ? "" : this.query.question_status
       api
-        .getCommunityPostList(offset, this.query.limit)
+        .getCommunityPostList(
+          offset,
+          this.query.limit,
+          serverPostType,
+          questionStatus,
+          null,
+          null,
+          this.query.keyword,
+          this.query.sort_type
+        )
         .then((res) => {
           this.posts = res.data.data.results
           this.total = res.data.data.total
@@ -166,6 +236,28 @@ export default {
     goToPost(postId) {
       this.$router.push({ name: "community-detail", params: { postId } })
     },
+    filterByType(postType) {
+      this.query.post_type = postType
+      this.query.page = 1
+      if (postType !== "QUESTION") {
+        this.query.question_status = "ALL"
+      }
+      this.fetchPosts()
+    },
+    filterBySort(sortType) {
+      this.query.sort_type = sortType
+      this.query.page = 1
+      this.fetchPosts()
+    },
+    applySearch() {
+      this.query.page = 1
+      this.fetchPosts()
+    },
+    filterByQuestionStatus(questionStatus) {
+      this.query.question_status = questionStatus
+      this.query.page = 1
+      this.fetchPosts()
+    }
   },
 }
 </script>
@@ -174,7 +266,7 @@ export default {
 main {
   width: var(--global-width);
 
-  .session-title-wrapper {
+  .community-header {
     margin: 0 4px 20px;
     display: flex;
     align-items: center;
@@ -415,5 +507,54 @@ main {
       }
     }
   }
+
+  .header-right {
+    display: flex;
+  }
+
+  .header-left {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+}
+
+
+
+.search-bar {
+  width: 190px;
+
+  /deep/ .ivu-input {
+    background: #fff;
+    color: #515a6e;
+    border: 1px solid #dcdee2;
+
+    &::placeholder {
+      color: #515a6e;
+      opacity: 0.4;
+    }
+
+    &:focus {
+      border-color: #2d8cf0;
+      box-shadow: 0 0 0 3px rgba(45, 140, 240, 0.2);
+    }
+  }
+}
+
+.dropdown {
+  cursor: pointer;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 15px;
+  padding-right: 15px;
+  background-color: #fff;
+  border-radius: 7px;
+  border: 1px solid #dedede;
+  display: flex;
+  align-items: center;
+}
+
+.dropdown:not(:first-child) {
+  margin-left: 5px;
 }
 </style>
