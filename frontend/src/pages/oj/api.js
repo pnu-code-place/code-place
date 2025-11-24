@@ -392,6 +392,8 @@ export default {
     question_status = null,
     problem_id = null,
     contest_id = null,
+    keyword = null,
+    sort_type = null,
   ) {
     const params = {
       offset,
@@ -402,6 +404,8 @@ export default {
     if (question_status) params.question_status = question_status
     if (problem_id) params.problem_id = problem_id
     if (contest_id) params.contest_id = contest_id
+    if (keyword) params.keyword = keyword
+    if (sort_type) params.sort_type = sort_type
 
     return ajax("community/posts", "get", {
       params,
