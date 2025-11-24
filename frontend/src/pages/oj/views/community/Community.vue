@@ -20,40 +20,40 @@
                   @on-enter="applySearch" />
               </div>
 
-              <Dropdown @on-click="filterByType" trigger="click" class="dropdown">
+              <Dropdown @on-click="filter" trigger="click" class="dropdown">
                 <span style="font-weight: bold; font-size: 15px; padding-right: 10px">
                   {{ query.post_type === "ALL" ? '전체' : POST_TYPE[query.post_type].name }}
                 </span>
                 <Icon type="arrow-down-b"></Icon>
                 <Dropdown-menu slot="list">
-                  <Dropdown-item name="ALL">전체</Dropdown-item>
-                  <Dropdown-item v-for="(val, k) in POST_TYPE" :key="k" :name="k">
+                  <Dropdown-item :name="{ type: 'post_type', value: 'ALL' }">전체</Dropdown-item>
+                  <Dropdown-item v-for="(val, k) in POST_TYPE" :key="k" :name="{ type: 'post_type', value: k }">
                     {{ val.name }}
                   </Dropdown-item>
                 </Dropdown-menu>
               </Dropdown>
 
-              <Dropdown v-if="query.post_type === 'QUESTION'" @on-click="filterByQuestionStatus" trigger="click"
-                class="dropdown">
+              <Dropdown v-if="query.post_type === 'QUESTION'" @on-click="filter" trigger="click" class="dropdown">
                 <span style="font-weight: bold; font-size: 15px; padding-right: 10px">
                   {{ query.question_status === 'ALL' ? '전체' : QUESTION_STATUS[query.question_status].name }}
                 </span>
                 <Icon type="arrow-down-b"></Icon>
                 <Dropdown-menu slot="list">
-                  <Dropdown-item name="ALL">전체</Dropdown-item>
-                  <Dropdown-item v-for="(val, k) in QUESTION_STATUS" :key="k" :name="k">
+                  <Dropdown-item :name="{ type: 'question_status', value: 'ALL' }">전체</Dropdown-item>
+                  <Dropdown-item v-for="(val, k) in QUESTION_STATUS" :key="k"
+                    :name="{ type: 'question_status', value: k }">
                     {{ val.name }}
                   </Dropdown-item>
                 </Dropdown-menu>
               </Dropdown>
 
-              <Dropdown @on-click="filterBySort" trigger="click" class="dropdown">
+              <Dropdown @on-click="filter" trigger="click" class="dropdown">
                 <span style="font-weight: bold; font-size: 15px; padding-right: 10px">
                   {{ SORT_TYPE[query.sort_type] ? SORT_TYPE[query.sort_type].name : "정렬" }}
                 </span>
                 <Icon type="arrow-down-b"></Icon>
                 <Dropdown-menu slot="list">
-                  <Dropdown-item v-for="(val, k) in SORT_TYPE" :key="k" :name="k">
+                  <Dropdown-item v-for="(val, k) in SORT_TYPE" :key="k" :name="{ type: 'sort_type', value: k }">
                     {{ val.name }}
                   </Dropdown-item>
                 </Dropdown-menu>
@@ -233,28 +233,31 @@ export default {
     goToPost(postId) {
       this.$router.push({ name: "community-detail", params: { postId } })
     },
-    filterByType(postType) {
-      this.query.post_type = postType
-      this.query.page = 1
-      if (postType !== "QUESTION") {
-        this.query.question_status = "ALL"
+    filter({ type, value }) {
+      const q = this.query;
+      q.page = 1;
+
+      if (type === 'post_type') {
+        q.post_type = value;
+        if (value !== 'QUESTION') {
+          q.question_status = 'ALL';
+        }
       }
-      this.fetchPosts()
-    },
-    filterBySort(sortType) {
-      this.query.sort_type = sortType
-      this.query.page = 1
-      this.fetchPosts()
+
+      if (type === 'sort_type') {
+        q.sort_type = value;
+      }
+
+      if (type === 'question_status') {
+        q.question_status = value;
+      }
+
+      this.fetchPosts();
     },
     applySearch() {
       this.query.page = 1
       this.fetchPosts()
     },
-    filterByQuestionStatus(questionStatus) {
-      this.query.question_status = questionStatus
-      this.query.page = 1
-      this.fetchPosts()
-    }
   },
 }
 </script>
