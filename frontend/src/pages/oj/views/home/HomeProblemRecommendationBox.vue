@@ -1,9 +1,7 @@
 <template>
   <div class="problemRecommendationBox">
     <header class="problemRecommendationBoxHeader">
-      <span @click="handleRoute('problem')">{{
-        $t("m.HomeProblemRecommendation")
-      }}</span>
+      <span>{{ $t("m.HomeProblemRecommendation") }}</span>
       <div class="plusDiv">
         <Icon type="ios-information" size="13" color="#7a7a7a"></Icon>
         <span class="plusSpan">{{
@@ -13,26 +11,15 @@
     </header>
     <div class="problemRecommendationBoxBody">
       <template v-for="(problem, index) in problems" v-if="index <= 2">
-        <div
-          @click="enterProblemDetail(problem._id)"
-          class="bonusProblem"
-          :style="{
-            'background-image':
-              'url(' + FIELD_MAP[problem.field].backgroundImage + ')',
-          }"
-        >
+        <div @click="enterProblemDetail(problem._id)" class="bonusProblem" :style="{
+          'background-image':
+            'url(' + FIELD_MAP[problem.field].backgroundImage + ')',
+        }">
           <span>{{ problem.title }}</span>
-          <FieldCategoryBox
-            :boxType="true"
-            :value="FIELD_MAP[problem.field].value"
-            :boxColor="FIELD_MAP[problem.field].boxColor"
-          />
+          <FieldCategoryBox :boxType="true" :value="FIELD_MAP[problem.field].value"
+            :boxColor="FIELD_MAP[problem.field].boxColor" />
           <template v-for="category in [problem.tags[0]]">
-            <FieldCategoryBox
-              :boxType="false"
-              :value="'#' + category"
-              :boxColor="'#ffffff'"
-            />
+            <FieldCategoryBox :boxType="false" :value="'#' + category" :boxColor="'#ffffff'" />
           </template>
         </div>
       </template>
@@ -95,6 +82,7 @@ export default {
   padding-left: 30px;
   padding-right: 30px;
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+
   .problemRecommendationBoxHeader {
     padding-top: 15px;
     padding-bottom: 15px;
@@ -110,17 +98,20 @@ export default {
 
     .plusDiv {
       cursor: pointer;
+
       .plusSpan {
         color: #7a7a7a;
         font-size: 12px;
       }
     }
   }
+
   .problemRecommendationBoxBody {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 20px 0;
+
     span {
       font-size: medium;
       font-weight: bold;
@@ -129,6 +120,7 @@ export default {
       white-space: nowrap;
       overflow: hidden;
     }
+
     .bonusProblem {
       cursor: pointer;
       align-items: center;
@@ -138,11 +130,13 @@ export default {
       background-color: #e9ece9;
       transition: all 0.2s ease-in-out;
     }
+
     .bonusProblem:hover {
       transform: scale(1.11);
     }
   }
 }
+
 .problemRecommendationBox:hover {
   border: 1px solid #cccccc;
 }
