@@ -41,6 +41,14 @@ class Post(models.Model):
         OPEN = "OPEN", "진행중"
         CLOSED = "CLOSED", "해결됨"
 
+    class SortType(models.TextChoices):
+        """게시글 정렬 순서"""
+
+        NEWEST = "NEWEST", "최신순"
+        OLDEST = "OLDEST", "오래된순"
+        COMMENT = "COMMENT", "댓글많은순"
+
+
     title = models.CharField(max_length=200)
     content = RichTextField()
     author = models.ForeignKey(User, on_delete=models.CASCADE)

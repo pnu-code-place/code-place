@@ -175,6 +175,17 @@ export const QUESTION_STATUS = {
     textColor: "#43A047", // Green text
   },
 }
+export const SORT_TYPE = {
+  NEWEST: {
+    name: "최신순"
+  },
+  OLDEST: {
+    name: "오래된 순"
+  },
+  COMMENT: {
+    name: "댓글 많은 순"
+  },
+}
 
 export const HIGHLIGHT_JS_LANGUAGES = {
   C: "c",
