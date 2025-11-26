@@ -40,6 +40,7 @@ class Post(models.Model):
 
         OPEN = "OPEN", "진행중"
         CLOSED = "CLOSED", "해결됨"
+        
     class SortType(models.TextChoices):
         """게시글 정렬 순서"""
 
