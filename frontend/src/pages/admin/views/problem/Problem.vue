@@ -402,6 +402,7 @@
 <script>
 import Simditor from "../../components/Simditor"
 import Accordion from "../../components/Accordion"
+import CodeMirror from "../../components/CodeMirror"
 import api from "../../api"
 import { FIELD_MAP } from "../../../../utils/constants"
 
@@ -415,6 +416,7 @@ export default {
   components: {
     Simditor,
     Accordion,
+    CodeMirror,
   },
   data() {
     return {
