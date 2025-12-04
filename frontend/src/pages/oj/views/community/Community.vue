@@ -81,10 +81,9 @@
                     {{ QUESTION_STATUS[post.question_status].name }}
                   </span>
                 </div>
-
                 <div class="card-content">
                   <h3 class="post-title">{{ post.title }}</h3>
-                  <p v-if="post.content_preview" class="post-preview">{{ post.content_preview }}</p>
+                  <div v-if="post.content_preview" class="post-preview" v-html="post.content_preview"></div>
                 </div>
 
                 <div class="card-footer">
