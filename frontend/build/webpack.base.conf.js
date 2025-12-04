@@ -80,8 +80,8 @@ module.exports = {
       {
         test: /\.js$/,
         loader: 'babel-loader?cacheDirectory=true',
-        exclude: /node_modules/,
-        include: [resolve('src'), resolve('test')]
+        // tiptap관련 라이브러리 babel로 변환
+        include: [resolve('src'), resolve('test'), resolve('node_modules/tiptap'), resolve('node_modules/tiptap-extensions'), resolve('node_modules/prosemirror-tables'), resolve('node_modules/prosemirror-utils')]
       },
       {
         test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
