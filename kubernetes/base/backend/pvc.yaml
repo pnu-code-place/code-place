@@ -1,0 +1,14 @@
+# kubernetes/base/backend/pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: shared-data-pvc
+spec:
+  accessModes:
+    - ReadWriteMany
+
+  storageClassName: longhorn
+
+  resources:
+    requests:
+      storage: 10Gi

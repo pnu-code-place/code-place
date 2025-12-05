@@ -1,0 +1,103 @@
+# kubernetes/base/backend/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  labels:
+    app: backend
+spec:
+  # 기본 복제본 수. 'prod' overlay에서 4로 늘릴 것입니다.
+  replicas: 2
+  selector:
+    matchLabels:
+      app: backend
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      # Private Registry에서 이미지를 가져오기 위한 Secret
+      imagePullSecrets:
+        - name: regcred
+
+      containers:
+        - name: backend
+          # 'prod' 이미지를 기본으로 사용, 'stage' overlay에서 태그를 변경할 수 있습니다.
+          image: registry.code-place-dev.site/code-place-prod/backend:latest
+          imagePullPolicy: Always
+
+          # docker-compose.yml의 entrypoint
+          command: ["/app/deploy/entrypoint.sh"]
+
+          ports:
+            - containerPort: 8000 # Gunicorn
+            - containerPort: 8080 # Judge API
+
+          env:
+            - name: POSTGRES_HOST
+              value: "postgres-cluster-rw" # CNPG가 생성하는 Read-Write 서비스
+            - name: REDIS_HOST
+              value: "redis-standalone" # Redis Operator가 생성하는 서비스
+            - name: FORCE_HTTPS
+              value: "1"
+
+            # 민감 정보는 Secret에서 가져옵니다.
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: pg-credentials
+                  key: username
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: pg-credentials
+                  key: password
+            - name: JUDGE_SERVER_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: pg-credentials
+                  key: JUDGE_SERVER_TOKEN
+            # .env.example 에 있는 다른 키들도 동일한 방식으로 추가합니다.
+            - name: GITHUB_OAUTH_APP_ID
+              valueFrom:
+                secretKeyRef:
+                  name: pg-credentials
+                  key: GITHUB_OAUTH_APP_ID
+            - name: GITHUB_OAUTH_APP_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: pg-credentials
+                  key: GITHUB_OAUTH_APP_SECRET
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: pg-credentials
+                  key: AWS_ACCESS_KEY_ID
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: pg-credentials
+                  key: AWS_SECRET_ACCESS_KEY
+
+          volumeMounts:
+            # 공유 데이터 볼륨 마운트
+            - name: shared-data
+              mountPath: /data
+            # 로그 볼륨 마운트 (docker-compose.yml의 frontend/deploy/nginx/log)
+            - name: nginx-log
+              mountPath: /data/log/nginx
+
+      volumes:
+        - name: shared-data
+          persistentVolumeClaim:
+            claimName: shared-data-pvc
+        # nginx 로그를 저장할 호스트 경로 또는 다른 PVC를 사용할 수 있습니다.
+        # 여기서는 shared-data PVC 내의 경로를 사용합니다.
+        - name: nginx-log
+          persistentVolumeClaim:
+            claimName: shared-data-pvc

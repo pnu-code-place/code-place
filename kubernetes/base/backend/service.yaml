@@ -1,0 +1,21 @@
+# kubernetes/base/backend/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  labels:
+    app: backend
+spec:
+  selector:
+    app: backend
+  ports:
+    # Frontend -> Backend 통신용 (Gunicorn/Django)
+    - name: http
+      port: 8000
+      targetPort: 8000
+      protocol: TCP
+    # Judge Server -> Backend 통신용
+    - name: judge-api
+      port: 8080
+      targetPort: 8080
+      protocol: TCP

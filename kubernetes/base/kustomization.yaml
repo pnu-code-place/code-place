@@ -1,0 +1,33 @@
+# kubernetes/base/kustomization.yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Namespace for all resources
+# namespace: default
+
+resources:
+  # Persistent Volume Claims
+  - ./backend/pvc.yaml
+
+  # Database and Cache
+  - ./postgres/postgres.yaml
+  - ./redis/redis.yaml
+
+  # Application Services
+  - ./backend/service.yaml
+  # - ./frontend/service.yaml
+
+  # Application Deployments
+  - ./backend/deployment.yaml
+  # - ./frontend/deployment.yaml
+  # - ./celery/deployment-beat.yaml
+  # - ./celery/deployment-worker.yaml
+  # - ./judge/deployment.yaml
+  # - ./judge/service.yaml
+
+  # Monitoring (Optional)
+  # - ./monitoring/deployment.yaml
+  # - ./monitoring/service.yaml
+
+commonLabels:
+  app.kubernetes.io/managed-by: kustomize
