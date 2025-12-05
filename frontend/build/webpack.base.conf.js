@@ -80,8 +80,10 @@ module.exports = {
       {
         test: /\.js$/,
         loader: 'babel-loader?cacheDirectory=true',
-        exclude: /node_modules/,
-        include: [resolve('src'), resolve('test')]
+        // include -> inclue 안에 있는 모듈 '만' babel이 로드 합니다.
+        // exclude -> exclude 안에 있는 모듈 '만' babel 로드 시 제외 합니다.
+        // 따라서 현재 include 안에 node_modules 가 없으므로, node_modules 안의 파일은 babel이 로드하지 않습니다.
+        include: [resolve('src'), resolve('test'), resolve('node_modules/tiptap'), resolve('node_modules/tiptap-extensions'), resolve('node_modules/prosemirror-tables'), resolve('node_modules/prosemirror-utils')]
       },
       {
         test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,

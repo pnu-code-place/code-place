@@ -25,11 +25,7 @@
             </Col>
           </Row>
           <FormItem :label="$t('m.Community_Content')" prop="content" class="content-form-item">
-            <Input v-model="post.content" type="textarea" :autosize="{ minRows: 10, maxRows: 20 }"
-              :placeholder="$t('m.Community_Content_Placeholder')" />
-            <!--
-              TODO: Simditor나 다른 WYSIWYG 에디터 컴포넌트로 교체하기
-            -->
+            <TiptapEditor v-model="post.content" />
           </FormItem>
           <div class="form-actions">
             <Button type="primary" @click.prevent="submitPost" :loading="loading" size="large">
@@ -51,9 +47,13 @@
 import api from "@oj/api";
 import { POST_TYPE } from "@/utils/constants";
 import { mapGetters } from "vuex";
+import TiptapEditor from "../../components/TiptapEditor.vue";
 
 export default {
   name: "CreatePostPage",
+  components: {
+    TiptapEditor,
+  },
   data() {
     return {
       loading: false,
@@ -207,12 +207,6 @@ main {
 /deep/ .ivu-select-focused .ivu-select-selection {
   border-color: #3498db;
   box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
-}
-
-/deep/ textarea.ivu-input {
-  line-height: 1.7;
-  resize: vertical;
-  font-family: inherit;
 }
 
 .content-form-item {

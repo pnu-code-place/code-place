@@ -65,9 +65,11 @@
           </div>
         </div>
       </div>
-      <div class="post-content" v-if="!isEditing" v-html="sanitizedContent"></div>
-      <Input v-else v-model="editedContent" type="textarea" :autosize="{ minRows: 10, maxRows: 20 }"
-        :placeholder="$t('m.Community_Content_Placeholder')" class="edit-content-input" />
+      <TiptapEditor class="post-content-editor" v-if="!isEditing" :value="post.content" :editable="false" />
+      <div class="edit-mode-wrapper" v-if="isEditing">
+        <TiptapEditor v-model="editedContent" :editable="true" />
+      </div>
+
       <div class="post-comments">
         <h2>{{ $t("m.Community_Comments") }} {{ commentCount }}</h2>
         <div class="comment-form">
@@ -181,14 +183,15 @@
 <script>
 import api from "../../api"
 import ErrorSign from "../general/ErrorSign.vue"
-import DOMPurify from "dompurify"
 import { DEFAULT_AVATAR, POST_TYPE, QUESTION_STATUS } from "@/utils/constants"
 import { mapGetters } from "vuex";
+import TiptapEditor from "../../components/TiptapEditor.vue";
 
 export default {
   name: "PostDetail",
   components: {
     ErrorSign,
+    TiptapEditor,
   },
   data() {
     return {
@@ -216,7 +219,7 @@ export default {
       api
         .getCommunityPostDetail(postId)
         .then((res) => {
-          this.post = res.data.data
+          this.post = res.data.data;
         })
         .catch((err) => {
           this.error = {
@@ -446,14 +449,6 @@ export default {
         return filteredTypes;
       }
       return POST_TYPE;
-    },
-    /**
-     * 게시글 내용을 표시할 때 v-html을 사용하는데, 이는 XSS 공격에 취약할 수 있습니다.
-     * 따라서 DOMPurify를 사용하여 게시글 내용을 안전하게 sanitize하는 작업을 수행합니다.
-     */
-    sanitizedContent() {
-      if (!this.post || !this.post.content) return ""
-      return DOMPurify.sanitize(this.post.content)
     },
     defaultAvatar() {
       return DEFAULT_AVATAR
@@ -740,33 +735,12 @@ main {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
-.post-content {
-  font-size: 16px;
-  line-height: 1.8;
-  color: #2c3e50;
-  padding: 40px;
-  min-height: 200px;
-  white-space: pre-wrap;
-  word-break: break-word;
+.post-content-editor {
+  padding: 20px 20px 0px 20px;
 }
 
-.edit-content-input {
-  padding: 0 40px 40px;
-
-  /deep/ textarea {
-    font-size: 16px;
-    line-height: 1.8;
-    color: #2c3e50;
-    border: 1px solid #e8ecef;
-    border-radius: 8px;
-    padding: 16px;
-    transition: all 0.3s ease;
-
-    &:focus {
-      border-color: #3498db;
-      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
-    }
-  }
+.edit-mode-wrapper {
+  margin: 30px 40px 20px 40px;
 }
 
 .post-comments {
