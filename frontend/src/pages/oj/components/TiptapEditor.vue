@@ -1,5 +1,6 @@
 <template>
     <div class="editor-wrapper" :class="{ 'is-focused': editor && editor.focused, 'is-readonly': !editable }">
+        <!-- 에티터 메뉴바 -->
         <div class="editor-menubar" v-if="editor && editable">
             <!-- 진하게 -->
             <div class="menubar__button" :class="{ 'is-active': editor.isActive.bold() }"
@@ -78,8 +79,9 @@
                 <Icon type="forward" size="20"></Icon>
             </div>
         </div>
-
-        <div class="editor-content-box" :class="{ 'readonly-content': !editable }">
+        <!-- 에디터 글 쓰는 곳 (최소 높이 지정 가능) -->
+        <div class="editor-content-box" :class="{ 'readonly-content': !editable }" :style="{ minHeight: minHeight }"
+            @click="focusEditor">
             <editor-content class="editor__content" :editor="editor" />
         </div>
     </div>
@@ -102,6 +104,7 @@ import {
     Strike,
     Underline,
     History,
+    Placeholder,
 } from 'tiptap-extensions';
 
 // 언어별 하이라이팅 라이브러리
@@ -158,6 +161,14 @@ export default {
             type: Boolean,
             default: true,
         },
+        minHeight: {
+            type: String,
+            default: '400px',
+        },
+        placeholder: {
+            type: String,
+            default: '',
+        },
     },
     data() {
         return {
@@ -209,12 +220,23 @@ export default {
                             javascript, python, cpp, java, bash, go
                         },
                     }),
+                    new Placeholder({
+                        emptyNodeClass: 'is-empty',
+                        emptyNodeText: this.placeholder,
+                        showOnlyWhenEditable: true,
+                    }),
                 ],
                 content: this.value,
                 onUpdate: ({ getHTML }) => {
                     this.$emit('input', getHTML());
                 },
             });
+        },
+        // 에디터 어느 곳이나 마우스 클릭하면 글 쓰기 모드로 전환
+        focusEditor() {
+            if (this.editor && !this.editor.focused && this.editable) {
+                this.editor.focus()
+            }
         },
     },
 }
@@ -316,13 +338,12 @@ export default {
 
 .editor-content-box {
     background: white;
-    min-height: 400px;
     cursor: text;
     padding: 20px;
 
     &.readonly-content {
         padding: 0;
-        min-height: auto;
+        min-height: auto !important;
     }
 }
 
@@ -331,10 +352,19 @@ export default {
     outline: none;
 }
 
-/* ProseMirror Content Styles */
+// placeholder 스타일
+/deep/ .ProseMirror p.is-empty:first-child::before {
+    content: attr(data-empty-text);
+    float: left;
+    color: #aaa;
+    pointer-events: none;
+    height: 0;
+}
+
 /deep/ .ProseMirror {
     outline: none;
-    min-height: 360px;
+    height: 100%;
+    min-height: inherit;
     font-size: 16px;
     line-height: 1.7;
     color: #2c3e50;
