@@ -15,7 +15,7 @@ spec:
 
   bootstrap:
     initdb:
-      database: csep
-      owner: csep
+      database: code-place
+      owner: code-place
       secret:
         name: pg-credentials
