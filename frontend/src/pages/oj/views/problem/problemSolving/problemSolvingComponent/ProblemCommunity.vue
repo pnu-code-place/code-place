@@ -776,7 +776,7 @@ export default {
   }
 }
 
-// 기본 모달 설정 : top만 padding 100px -> 수정 : top, bottom 모두 padding 주어 화면 중앙에 모달 위치 시키기
+// top, bottom 모두 padding 주어 화면 중앙에 모달이 위치하도록 설정
 /deep/ .create-question-modal {
   display: flex;
   align-items: center;
