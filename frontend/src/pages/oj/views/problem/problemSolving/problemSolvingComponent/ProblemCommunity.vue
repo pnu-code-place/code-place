@@ -65,7 +65,7 @@
           </div>
           <h4 class="post-title">{{ post.title }}</h4>
         </div>
-        <p v-if="post.content_preview" class="post-preview">{{ post.content_preview }}</p>
+        <div v-if="post.content_preview" class="post-preview" v-html="post.content_preview"></div>
         <div class="post-footer">
           <div class="author-info">
             <img class="avatar" :src="post.author_avatar || defaultAvatar" alt="avatar" />
@@ -85,7 +85,7 @@
       </div>
     </div>
 
-    <Modal v-model="showCreateModal" :footer-hide="true" :closable="true" :mask-closable="false" width="650"
+    <Modal v-model="showCreateModal" :footer-hide="true" :closable="true" :mask-closable="false" width="800"
       class-name="create-question-modal">
       <div class="modal-header">
         <h2 class="modal-title">
@@ -113,7 +113,7 @@
           <div class="input-label">
             {{ $t("m.Problem_Community_Modal_Content_Label") }}
           </div>
-          <Input v-model="newPost.content" type="textarea" :autosize="{ minRows: 8, maxRows: 15 }"
+          <TiptapEditor v-model="newPost.content" minHeight="300px" :editable="true"
             :placeholder="$t('m.Problem_Community_Modal_Content_Placeholder')" />
         </FormItem>
       </Form>
@@ -137,9 +137,13 @@
 import api from "@oj/api"
 import { DEFAULT_AVATAR, QUESTION_STATUS } from "@/utils/constants"
 import { mapGetters } from "vuex"
+import TiptapEditor from "../../../../components/TiptapEditor.vue"
 
 export default {
   name: "ProblemCommunity",
+  components: {
+    TiptapEditor
+  },
   props: {
     problemID: {
       type: String,
@@ -772,8 +776,18 @@ export default {
   }
 }
 
-// Modal styles
+// top, bottom 모두 padding 주어 화면 중앙에 모달이 위치하도록 설정
 /deep/ .create-question-modal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: 50px;
+  padding-bottom: 50px;
+
+  .ivu-modal {
+    top: 0;
+  }
+
   .ivu-modal-content {
     border-radius: 16px;
     overflow: hidden;
