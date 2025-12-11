@@ -145,6 +145,48 @@ export const LANGUAGE_COLOR = {
   },
 }
 
+export const POST_TYPE = {
+  QUESTION: {
+    name: "질문",
+    color: "#E8F5FF", // A lighter, calmer blue
+    textColor: "#1A73E8", // A darker blue for text
+  },
+  ARTICLE: {
+    name: "일반 글",
+    color: "#F1F3F4", // A light gray
+    textColor: "#3C4043", // A dark gray for text
+  },
+  ANNOUNCEMENT: {
+    name: "공지사항",
+    color: "#FFF8E1", // A soft yellow
+    textColor: "#E67E22", // A warm orange for text
+  },
+}
+
+export const QUESTION_STATUS = {
+  OPEN: {
+    name: "미해결",
+    color: "#FFF3E0", // Soft orange background
+    textColor: "#F57C00", // Orange text
+  },
+  CLOSED: {
+    name: "해결됨",
+    color: "#E8F5E9", // Soft green background
+    textColor: "#43A047", // Green text
+  },
+}
+export const SORT_TYPE = {
+  NEWEST: {
+    name: "최신순"
+  },
+  OLDEST: {
+    name: "오래된 순"
+  },
+  COMMENT: {
+    name: "댓글 많은 순"
+  },
+}
+
 export const HIGHLIGHT_JS_LANGUAGES = {
   C: "c",
   "C++": "cpp",
@@ -204,6 +246,12 @@ export const STORAGE_KEY = {
   PROBLEM_CODE: "problemCode",
   languages: "languages",
 }
+
+// NOTE: 기본적으로 백엔드에서 user profile을 생성할 때 default avatar가
+// 설정되지만, 모종의 이유로 null이 들어오는 경우에도 대처하기 위해 상수로 정의해두었습니다.
+// 하지만 백엔드에서 default avatar 경로가 바뀌면 여기도 같이 수정해주어야 합니다.
+// 혹시 더 나은 대안이 있다면 없애주세요.
+export const DEFAULT_AVATAR = "/public/avatar/default.png"
 
 export const DIFFICULTY_MAP = {
   VeryLow: {

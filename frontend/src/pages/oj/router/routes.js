@@ -28,8 +28,29 @@ import MajorRank from "../views/rank/majorRank/MajorRank.vue"
 import UserRank from "../views/rank/UserRank.vue"
 import SettingDemo from "../views/setting/UserSetting.vue"
 import AnnouncementDetail from "../views/notice/AnnouncementDetail.vue"
+import { Community } from "../views/community"
+import PostDetail from "../views/community/PostDetail.vue"
+import CreatePostPage from "../views/community/CreatePostPage.vue"
 
 export default [
+  {
+    name: "community",
+    path: "/community",
+    meta: { title: "Community" },
+    component: Community,
+  },
+  {
+    name: "community-create",
+    path: "/community/create",
+    meta: { title: "Create Post" },
+    component: CreatePostPage,
+  },
+  {
+    name: "community-detail",
+    path: "/community/:postId",
+    meta: { title: "Community Detail" },
+    component: PostDetail,
+  },
   {
     name: "home",
     path: "/",

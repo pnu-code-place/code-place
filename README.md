@@ -22,7 +22,7 @@
 ## 배포 주소
 > 운영 서버 주소 : https://code.pusan.ac.kr/
 > 
-> 개발(베타) 서버 주소 : https://copl-dev.site/
+> 개발(베타) 서버 주소 : https://code-place-dev.site/
 
 <br/>
 

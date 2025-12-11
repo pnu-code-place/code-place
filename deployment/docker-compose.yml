@@ -67,6 +67,8 @@ services:
   oj-redis:
     image: redis:4.0-alpine
     restart: always
+    # NOTE: Redis는 채점 요청을 저장하고 Celery의 메시지 큐로 사용되기 때문에 AOF 설정을 사용하여 데이터 영속성을 보장합니다.
+    command: redis-server --appendonly yes --appendfsync everysec
     volumes:
       - ../backend/data/redis:/data
 

@@ -8,9 +8,9 @@
       <Menu-item class="menuItemText" name="/problem">
         {{ $t("m.NavProblems") }}
       </Menu-item>
-      <!--        <Menu-item class="menuItemText" name="/status">-->
-      <!--          {{$t('m.Community')}}-->
-      <!--        </Menu-item>-->
+      <Menu-item class="menuItemText" name="/community">
+        {{$t('m.Community')}}
+      </Menu-item>
       <Menu-item class="menuItemText" name="/contest">
         {{ $t("m.Contests") }}
       </Menu-item>

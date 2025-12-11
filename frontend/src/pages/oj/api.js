@@ -384,6 +384,74 @@ export default {
   getBanners() {
     return ajax("banner", "get")
   },
+
+  getCommunityPostList(
+    offset,
+    limit,
+    post_type = null,
+    question_status = null,
+    problem_id = null,
+    contest_id = null,
+    keyword = null,
+    sort_type = null,
+  ) {
+    const params = {
+      offset,
+      limit,
+    }
+
+    if (post_type) params.post_type = post_type
+    if (question_status) params.question_status = question_status
+    if (problem_id) params.problem_id = problem_id
+    if (contest_id) params.contest_id = contest_id
+    if (keyword) params.keyword = keyword
+    if (sort_type) params.sort_type = sort_type
+
+    return ajax("community/posts", "get", {
+      params,
+    })
+  },
+
+  getCommunityPostDetail(postId) {
+    return ajax(`community/posts/${postId}`, "get")
+  },
+
+  createCommunityComment(postId, content, parent_comment_id = null) {
+    return ajax(`community/posts/${postId}/comments`, "post", {
+      data: {
+        content,
+        parent_comment_id,
+      },
+    })
+  },
+
+  updateCommunityComment(postId, commentId, content) {
+    return ajax(`community/posts/${postId}/comments/${commentId}`, "put", {
+      data: {
+        content,
+      },
+    })
+  },
+
+  deleteCommunityComment(postId, commentId) {
+    return ajax(`community/posts/${postId}/comments/${commentId}`, "delete")
+  },
+
+  createPost(post) {
+    return ajax("community/posts", "post", {
+      data: post,
+    })
+  },
+
+  updateCommunityPost(postId, post) {
+    return ajax(`community/posts/${postId}`, "patch", {
+      data: post,
+    })
+  },
+
+  deleteCommunityPost(postId) {
+    return ajax(`community/posts/${postId}`, "delete")
+  },
 }
 
 /**

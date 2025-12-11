@@ -1,0 +1,21 @@
+apiVersion: redis.redis.opstreelabs.in/v1beta2
+kind: Redis
+metadata:
+  name: redis-standalone
+spec:
+  kubernetesConfig:
+    image: quay.io/opstree/redis:v7.0.15
+    imagePullPolicy: IfNotPresent
+
+  storage:
+    volumeClaimTemplate:
+      spec:
+        storageClassName: longhorn
+        accessModes: ["ReadWriteOnce"] # Standalone은 단일 노드 점유이므로 RWO 사용
+        resources:
+          requests:
+            storage: 10Gi
+
+  podSecurityContext:
+    runAsUser: 1000 # Security: Root가 아닌 redis 기본 유저(ID 1000)로 프로세스 실행
+    fsGroup: 1000 # Permission: PVC 마운트 시 쓰기 권한을 1000번 그룹에 부여
