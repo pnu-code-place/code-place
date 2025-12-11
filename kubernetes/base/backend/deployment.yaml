@@ -1,0 +1,98 @@
+# kubernetes/base/backend/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  labels:
+    app: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: backend
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      imagePullSecrets:
+        - name: regcred
+      containers:
+        - name: backend
+          # TODO: 현재는 Docker Swarm에서 사용하는 방식을 그대로 가져와 latest 로 매번 받아오고 있습니다.
+          # 하지만, 매번 pull 하는 것은 비효율적이므로 특정 버전을 설정한 후 IfNotPresent 로 받아오도록 변경해야 합니다.
+          image: registry.code-place-dev.site/code-place-dev/backend:latest
+          imagePullPolicy: Always
+          command: ["/app/deploy/entrypoint.sh"]
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: "1.5Gi"
+              cpu: "1000m"
+            limits:
+              memory: "2Gi"
+              cpu: "2000m"
+          env:
+            - name: POSTGRES_HOST
+              value: "postgres-rw"
+            - name: POSTGRES_PORT
+              value: "5432"
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: pg-credentials
+                  key: database
+            - name: REDIS_HOST
+              value: "redis-standalone"
+            - name: REDIS_PORT
+              value: "6379"
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: pg-credentials
+                  key: username
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: pg-credentials
+                  key: password
+            - name: JUDGE_SERVER_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: common-credentials
+                  key: JUDGE_SERVER_TOKEN
+            - name: GITHUB_OAUTH_APP_ID
+              valueFrom:
+                secretKeyRef:
+                  name: common-credentials
+                  key: GITHUB_OAUTH_APP_ID
+            - name: GITHUB_OAUTH_APP_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: common-credentials
+                  key: GITHUB_OAUTH_APP_SECRET
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: common-credentials
+                  key: AWS_ACCESS_KEY_ID
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: common-credentials
+                  key: AWS_SECRET_ACCESS_KEY
+          # TODO: Security Context 설정을 추가해야 합니다. 현재 entrypoint.sh 에서 권한을 변경하고 있지만, 보안 강화를 위해 컨테이너 레벨에서 설정하는 것이 좋습니다. (Junwoo)
+          # TODO: Health Check Probe 설정이 필요합니다. 백엔드 쪽에서 수정이 필요하므로 추후에 반영하도록 하겠습니다. (Junwoo)
+          volumeMounts:
+            - name: shared-data
+              mountPath: /data
+      volumes:
+        - name: shared-data
+          persistentVolumeClaim:
+            claimName: shared-data-pvc

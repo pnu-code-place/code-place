@@ -1,0 +1,12 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base
+  - ./secrets/pg-credentials.yaml
+  - ./secrets/regcred.yaml
+  - ./secrets/common-credentials.yaml
+
+namespace: code-place-dev
+
+patches:
+  - backend-deployment-patch.yaml
