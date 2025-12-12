@@ -79,9 +79,9 @@
                 <Icon type="forward" size="20"></Icon>
             </div>
         </div>
-        <!-- 에디터 글 쓰는 곳 (고정높이 지정 가능), (고정높이 넘어갈 시, scroll생성) -->
-        <div class="editor-content-box" :class="{ 'readonly-content': !editable }" :style="{ height: height }"
-            @click="focusEditor">
+        <!-- 에디터 글 쓰는 곳 (고정높이 지정 가능)  -->
+        <div class="editor-content-box" :class="{ 'readonly-content': !editable }"
+            :style="{ height: editable ? height : 'auto' }" @click="focusEditor">
             <editor-content class="editor__content" :editor="editor" />
         </div>
     </div>
