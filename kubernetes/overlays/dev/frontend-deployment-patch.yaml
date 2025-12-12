@@ -1,0 +1,15 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+spec:
+  template:
+    spec:
+      containers:
+        - name: frontend
+          image: registry.code-place-dev.site/code-place-dev/frontend:latest
+          env:
+            - name: FORCE_HTTPS
+              value: "0"
+            - name: SERVER_NAME
+              value: "code-place-dev.site"

@@ -12,9 +12,11 @@ resources:
 
   # Application Services
   - ./backend/service.yaml
+  - ./frontend/service.yaml
 
   # Application Deployments
   - ./backend/deployment.yaml
+  - ./frontend/deployment.yaml
 
 commonLabels:
   app.kubernetes.io/managed-by: kustomize
