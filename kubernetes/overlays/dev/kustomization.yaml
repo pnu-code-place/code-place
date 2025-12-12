@@ -9,4 +9,5 @@ resources:
 namespace: code-place-dev
 
 patches:
-  - backend-deployment-patch.yaml
+  - path: backend-deployment-patch.yaml
+  - path: frontend-deployment-patch.yaml
