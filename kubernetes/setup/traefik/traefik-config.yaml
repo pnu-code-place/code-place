@@ -11,6 +11,13 @@ spec:
       - "--certificatesresolvers.default.acme.httpchallenge.entrypoint=web"
     ports:
       web:
-        exposedPort: 80
+        # NOTE: Traefik Helm Chart v34부터는 `redirections` 사용 (참고: https://newreleases.io/project/github/traefik/traefik-helm-chart/release/v34.0.0)
+        redirections:
+          # HTTP 요청을 HTTPS로 리디렉션
+          entryPoint:
+            to: websecure
+            scheme: https
+            permanent: true
       websecure:
-        exposedPort: 443
+        tls:
+          enabled: true

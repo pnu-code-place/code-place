@@ -4,7 +4,7 @@ metadata:
   name: frontend-ingress
 spec:
   rules:
-    - host: kube.code-place-dev.site
+    - host: k3s.code-place-dev.site
       http:
         paths:
           - path: /
@@ -16,4 +16,4 @@ spec:
                   number: 80
   tls:
     - hosts:
-        - kube.code-place-dev.site
+        - k3s.code-place-dev.site
