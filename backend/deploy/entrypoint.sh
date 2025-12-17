@@ -3,6 +3,8 @@
 APP=/app # 앱 데이터 경로 설정
 DATA=/data # 데이터 디렉토리 경로 설정
 
+DEFAULT_WORKER_NUM=2 # 기본 워커 프로세스 수 설정
+
 # log, config, test_case, avatar, banner, popup 디렉토리 생성
 mkdir -p $DATA/log $DATA/config $DATA/test_case $DATA/public/upload $DATA/public/avatar $DATA/public/website $DATA/public/banner $DATA/public/popup
 
@@ -20,14 +22,9 @@ if [ ! -f "$DATA/public/website/favicon.ico" ]; then
     cp data/public/website/favicon.ico $DATA/public/website
 fi
 
-# CPU 코어 수에 따른 최대 워커 프로세스 수 조정
+# MAX_WORKER_NUM 환경 변수가 설정되지 않은 경우 기본값 사용
 if [ -z "$MAX_WORKER_NUM" ]; then
-    export CPU_CORE_NUM=$(grep -c ^processor /proc/cpuinfo)
-    if [[ $CPU_CORE_NUM -lt 2 ]]; then
-        export MAX_WORKER_NUM=2
-    else
-        export MAX_WORKER_NUM=$(($CPU_CORE_NUM))
-    fi
+    MAX_WORKER_NUM=$DEFAULT_WORKER_NUM
 fi
 
 cd $APP
