@@ -1,0 +1,23 @@
+apiVersion: helm.cattle.io/v1
+kind: HelmChartConfig
+metadata:
+  name: traefik
+  namespace: kube-system
+spec:
+  valuesContent: |-
+    additionalArguments:
+      - "--certificatesresolvers.default.acme.email=<EMAIL_ADDRESS>"
+      - "--certificatesresolvers.default.acme.storage=/data/acme.json"
+      - "--certificatesresolvers.default.acme.httpchallenge.entrypoint=web"
+    ports:
+      web:
+        # NOTE: Traefik Helm Chart v34부터는 `redirections` 사용 (참고: https://newreleases.io/project/github/traefik/traefik-helm-chart/release/v34.0.0)
+        redirections:
+          # HTTP 요청을 HTTPS로 리디렉션
+          entryPoint:
+            to: websecure
+            scheme: https
+            permanent: true
+      websecure:
+        tls:
+          enabled: true

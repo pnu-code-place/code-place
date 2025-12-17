@@ -18,5 +18,8 @@ resources:
   - ./backend/deployment.yaml
   - ./frontend/deployment.yaml
 
+  # Ingress Resources
+  - ./frontend/ingress.yaml
+
 commonLabels:
   app.kubernetes.io/managed-by: kustomize
