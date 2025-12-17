@@ -90,9 +90,23 @@ spec:
           # TODO: Security Context 설정을 추가해야 합니다. 현재 entrypoint.sh 에서 권한을 변경하고 있지만, 보안 강화를 위해 컨테이너 레벨에서 설정하는 것이 좋습니다. (Junwoo)
           # TODO: Health Check Probe 설정이 필요합니다. 백엔드 쪽에서 수정이 필요하므로 추후에 반영하도록 하겠습니다. (Junwoo)
           volumeMounts:
-            - name: shared-data
-              mountPath: /data
+            - name: vol-log
+              mountPath: /data/log
+            - name: vol-testcase
+              mountPath: /data/test_case
+            - name: vol-public
+              mountPath: /data/public
+            - name: vol-config
+              mountPath: /data/config
       volumes:
-        - name: shared-data
+        - name: vol-log
+          emptyDir: {}
+        - name: vol-testcase
           persistentVolumeClaim:
-            claimName: shared-data-pvc
+            claimName: pvc-testcase
+        - name: vol-public
+          persistentVolumeClaim:
+            claimName: pvc-public
+        - name: vol-config
+          persistentVolumeClaim:
+            claimName: pvc-config
