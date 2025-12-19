@@ -13,10 +13,12 @@ resources:
   # Application Services
   - ./backend/service.yaml
   - ./frontend/service.yaml
+  - ./judge-server/service.yaml
 
   # Application Deployments
   - ./backend/deployment.yaml
   - ./frontend/deployment.yaml
+  - ./judge-server/deployment.yaml
 
   # Ingress Resources
   - ./frontend/ingress.yaml
