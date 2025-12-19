@@ -1,0 +1,88 @@
+# kubernetes/base/celery-beat/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: celery-beat
+  labels:
+    app: celery-beat
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: celery-beat
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: celery-beat
+    spec:
+      imagePullSecrets:
+        - name: regcred
+      containers:
+        - name: celery-beat
+          image: registry.code-place-dev.site/code-place-dev/backend:latest
+          imagePullPolicy: IfNotPresent
+          command: ["/app/deploy/entrypoint_beat.sh"]
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          env:
+            - name: POSTGRES_HOST
+              value: "postgres-rw"
+            - name: POSTGRES_PORT
+              value: "5432"
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: pg-credentials
+                  key: database
+            - name: REDIS_HOST
+              value: "redis-standalone"
+            - name: REDIS_PORT
+              value: "6379"
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: pg-credentials
+                  key: username
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: pg-credentials
+                  key: password
+            - name: JUDGE_SERVER_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: common-credentials
+                  key: JUDGE_SERVER_TOKEN
+            - name: GITHUB_OAUTH_APP_ID
+              valueFrom:
+                secretKeyRef:
+                  name: common-credentials
+                  key: GITHUB_OAUTH_APP_ID
+            - name: GITHUB_OAUTH_APP_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: common-credentials
+                  key: GITHUB_OAUTH_APP_SECRET
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: common-credentials
+                  key: AWS_ACCESS_KEY_ID
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: common-credentials
+                  key: AWS_SECRET_ACCESS_KEY
+          volumeMounts:
+            - name: vol-log
+              mountPath: /data/log
+      volumes:
+        - name: vol-log
+          emptyDir: {}

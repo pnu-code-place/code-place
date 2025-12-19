@@ -19,6 +19,8 @@ resources:
   - ./backend/deployment.yaml
   - ./frontend/deployment.yaml
   - ./judge-server/deployment.yaml
+  - ./celery-beat/deployment.yaml
+  - ./celery-worker/deployment.yaml
 
   # Ingress Resources
   - ./frontend/ingress.yaml
