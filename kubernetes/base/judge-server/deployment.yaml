@@ -10,6 +10,11 @@ spec:
   selector:
     matchLabels:
       app: judge-server
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
   template:
     metadata:
       labels:

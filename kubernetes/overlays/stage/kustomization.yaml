@@ -12,3 +12,4 @@ patches:
   - path: backend-deployment-patch.yaml
   - path: frontend-deployment-patch.yaml
   - path: frontend-ingress-patch.yaml
+  - path: judge-server-deployment-patch.yaml
