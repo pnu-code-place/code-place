@@ -7,4 +7,4 @@ spec:
     spec:
       containers:
         - name: backend
-          image: registry.code-place-dev.site/code-place-dev/backend:latest
+          image: harbor.code-place-dev.site/code-place-dev/backend:latest
