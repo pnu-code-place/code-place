@@ -26,18 +26,18 @@ spec:
         - name: backend
           # TODO: 현재는 Docker Swarm에서 사용하는 방식을 그대로 가져와 latest 로 매번 받아오고 있습니다.
           # 하지만, 매번 pull 하는 것은 비효율적이므로 특정 버전을 설정한 후 IfNotPresent 로 받아오도록 변경해야 합니다.
-          image: registry.code-place-dev.site/code-place-dev/backend:latest
+          image: harbor.code-place-dev.site/code-place-dev/backend:latest
           imagePullPolicy: Always
           command: ["/app/deploy/entrypoint.sh"]
           ports:
             - containerPort: 8080
           resources:
             requests:
-              memory: "1.5Gi"
-              cpu: "1000m"
+              memory: "512Mi"
+              cpu: "500m"
             limits:
-              memory: "2Gi"
-              cpu: "2000m"
+              memory: "1Gi"
+              cpu: "1000m"
           env:
             - name: POSTGRES_HOST
               value: "postgres-rw"

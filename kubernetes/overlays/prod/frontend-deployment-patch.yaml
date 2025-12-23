@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+spec:
+  replicas: 4
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    spec:
+      containers:
+        - name: frontend
+          image: harbor.code-place-dev.site/code-place-prod/frontend:latest
+          env:
+            - name: FORCE_HTTPS
+              value: "0"
+            - name: SERVER_NAME
+              value: "code.pusan.ac.kr"
