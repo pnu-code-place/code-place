@@ -12,3 +12,6 @@ patches:
   - path: backend-deployment-patch.yaml
   - path: frontend-deployment-patch.yaml
   - path: frontend-ingress-patch.yaml
+  - path: celery-worker-deployment-patch.yaml
+  - path: celery-beat-deployment-patch.yaml
+  - path: judge-server-deployment-patch.yaml

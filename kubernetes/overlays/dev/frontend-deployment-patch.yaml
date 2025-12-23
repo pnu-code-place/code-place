@@ -7,7 +7,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: registry.code-place-dev.site/code-place-dev/frontend:latest
+          image: harbor.code-place-dev.site/code-place-dev/frontend:latest
           env:
             - name: FORCE_HTTPS
               value: "0"
