@@ -1,0 +1,29 @@
+# kubernetes/base/kustomization.yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  # Persistent Volume Claims
+  - ./backend/pvc.yaml
+
+  # Database and Cache
+  - ./postgres/postgres.yaml
+  - ./redis/redis.yaml
+
+  # Application Services
+  - ./backend/service.yaml
+  - ./frontend/service.yaml
+  - ./judge-server/service.yaml
+
+  # Application Deployments
+  - ./backend/deployment.yaml
+  - ./frontend/deployment.yaml
+  - ./judge-server/deployment.yaml
+  - ./celery-beat/deployment.yaml
+  - ./celery-worker/deployment.yaml
+
+  # Ingress Resources
+  - ./frontend/ingress.yaml
+
+commonLabels:
+  app.kubernetes.io/managed-by: kustomize

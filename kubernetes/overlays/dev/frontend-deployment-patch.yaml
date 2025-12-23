@@ -1,0 +1,15 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+spec:
+  template:
+    spec:
+      containers:
+        - name: frontend
+          image: harbor.code-place-dev.site/code-place-dev/frontend:latest
+          env:
+            - name: FORCE_HTTPS
+              value: "0"
+            - name: SERVER_NAME
+              value: "k3s.code-place-dev.site" # NOTE: 임시 K3s 테스트용 도메인 주소입니다. 추후 수정 예정입니다. (Junwoo)

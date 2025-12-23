@@ -1,0 +1,18 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: judge-server
+  labels:
+    app: judge-server
+spec:
+  replicas: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 2
+      maxSurge: 2
+  template:
+    spec:
+      containers:
+        - name: judge-server
+          image: harbor.code-place-dev.site/code-place-prod/judge-server:1.0.3

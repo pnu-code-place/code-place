@@ -1,0 +1,38 @@
+expose:
+  type: ingress
+  tls:
+    enabled: true
+    certSource: none
+  ingress:
+    hosts:
+      core: ##HARBOR_HOST##
+    # K3s의 기본 IngressClass인 traefik 명시
+    className: "traefik"
+    annotations:
+      traefik.ingress.kubernetes.io/router.entrypoints: websecure
+      traefik.ingress.kubernetes.io/router.tls.certresolver: default
+
+# Harbor 외부 주소
+externalURL: https://##HARBOR_HOST##
+
+# 데이터 영속성을 위해 Longhorn 스토리지 클래스 사용
+persistence:
+  enabled: true
+  persistentVolumeClaim:
+    registry:
+      storageClass: "longhorn"
+      size: 50Gi
+    chartmuseum:
+      storageClass: "longhorn"
+      size: 5Gi
+    jobservice:
+      storageClass: "longhorn"
+      size: 1Gi
+    database:
+      storageClass: "longhorn"
+      size: 1Gi
+    redis:
+      storageClass: "longhorn"
+      size: 1Gi
+
+harborAdminPassword: ##HARBOR_ADMIN_PASSWORD##

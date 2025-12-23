@@ -1,0 +1,55 @@
+# kubernetes/base/frontend/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  labels:
+    app: frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: frontend
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      imagePullSecrets:
+        - name: regcred
+      containers:
+        - name: frontend
+          image: registry.code-place-dev.site/code-place-dev/frontend:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8000
+              name: http
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "250m"
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
+          env:
+            # NOTE: 프론트엔드 Pod에서는 HTTP 만 사용합니다. TLS 종료는 Traefik이 담당합니다.
+            - name: FORCE_HTTPS
+              value: "0"
+            - name: SERVER_NAME
+              value: "localhost"
+          volumeMounts:
+            - name: vol-log
+              mountPath: /data/log
+            - name: vol-public
+              mountPath: /data/public
+      volumes:
+        - name: vol-log
+          emptyDir: {}
+        - name: vol-public
+          persistentVolumeClaim:
+            claimName: pvc-public
