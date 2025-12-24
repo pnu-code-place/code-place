@@ -30,27 +30,39 @@
 
 ### 서비스 아키텍처
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/7c613ce4-5272-48d4-9b3d-a37adcad3457" alt="service architecture"/>
+  <img alt="code-place-arch" src="https://github.com/user-attachments/assets/d1fa97f1-109e-4389-8a4f-b1705a44dac9" />
 </div>
 
 ### 인프라 아키텍처
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/f971f7dd-1f3d-492f-b955-37c4e17bb9c0" alt="infra architecture"/>
+  <img width="1672" height="995" alt="code-place-arch2" src="https://github.com/user-attachments/assets/c2bb781b-05c8-40cd-9558-9a573700af93" />
 </div>
 
 ## 개발 스택
 
 **Devops/Infra** &nbsp;
-<img src="https://img.shields.io/badge/Nginx_1.18.0-3776AB?style=flat-square&logo=Nginx&logoColor=white" /> <img src="https://img.shields.io/badge/Docker_25.0.3-2d8cf0?style=flat-square&logo=docker&logoColor=white"/> <img src="https://img.shields.io/badge/Docker_Compose_3.9-2d8cf0?style=flat-square&logo=docker&logoColor=white"/> <img src="https://img.shields.io/badge/Harbor-F24E1E?style=flat-square&logo=harbor&logoColor=white"/> <img src="https://img.shields.io/badge/Github_Action-000000?style=flat-square&logo=github&logoColor=white"/>
+<img src="https://img.shields.io/badge/K3s-v1.33.6-FFD506?style=flat-square&logo=kubernetes&logoColor=white"/>
+<img src="https://img.shields.io/badge/Kube--Vip-v1.0.2-326CE5?style=flat-square&logo=kubernetes&logoColor=white"/>
+<img src="https://img.shields.io/badge/Longhorn-v1.10.1-00A6D3?style=flat-square&logo=cloudnativecomputingfoundation&logoColor=white"/>
+<img src="https://img.shields.io/badge/Harbor-v2.14.1-60B932?style=flat-square&logo=harbor&logoColor=white"/>
+<img src="https://img.shields.io/badge/Github_Action-000000?style=flat-square&logo=github&logoColor=white"/>
 
 **Database** &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<img src="https://img.shields.io/badge/PostgreSQL_10-302E50?style=flat-square&logo=postgresql&logoColor=white"/> <img src="https://img.shields.io/badge/Redis_4.0-C3002F?style=flat-square&logo=redis&logoColor=white"/>
+<img src="https://img.shields.io/badge/PostgreSQL_14.12-302E50?style=flat-square&logo=postgresql&logoColor=white"/>
+<img src="https://img.shields.io/badge/Redis_7.0.15-C3002F?style=flat-square&logo=redis&logoColor=white"/>
 
 **Backend** &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<img src="https://img.shields.io/badge/Python_3.8.0-3776AB?style=flat-square&logo=Python&logoColor=white" /> <img src="https://img.shields.io/badge/django_3.2.9-092E20?style=flat-square&logo=django&logoColor=white"/> <img src="https://img.shields.io/badge/django--rest--framework_3.12.4-092e20?style=flat-square&logo=django&logoColor=white" />
+<img src="https://img.shields.io/badge/Python_3.11-3776AB?style=flat-square&logo=Python&logoColor=white" />
+<img src="https://img.shields.io/badge/django_3.2.25-092E20?style=flat-square&logo=django&logoColor=white"/>
+<img src="https://img.shields.io/badge/django--rest--framework_3.14.0-092e20?style=flat-square&logo=django&logoColor=white" />
 
 **Frontend** &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<img src="https://img.shields.io/badge/Vue.js_2.5.13-4FC08D?style=flat-square&logo=Vue.js&logoColor=white" /> <img src="https://img.shields.io/badge/Vuex_3.0.1-4FC08D?style=flat-square&logo=Vue.js&logoColor=white" /> <img src="https://img.shields.io/badge/Node.js_16.16.0-339933?style=flat-square&logo=Node.js&logoColor=white" /> <img src="https://img.shields.io/badge/ECharts_3.8.3-F72C5B?style=flat-square" /> <img src="https://img.shields.io/badge/iView_2.8.0-2d8cf0?style=flat-square" /> <img src="https://img.shields.io/badge/Element_2.0.9-409eff?style=flat-square" />
+<img src="https://img.shields.io/badge/Vue.js_2.5.13-4FC08D?style=flat-square&logo=Vue.js&logoColor=white" />
+<img src="https://img.shields.io/badge/Vuex_3.0.1-4FC08D?style=flat-square&logo=Vue.js&logoColor=white" />
+<img src="https://img.shields.io/badge/Node.js_16.16.0-339933?style=flat-square&logo=Node.js&logoColor=white" />
+<img src="https://img.shields.io/badge/ECharts_3.8.3-F72C5B?style=flat-square" />
+<img src="https://img.shields.io/badge/iView_2.8.0-2d8cf0?style=flat-square" />
+<img src="https://img.shields.io/badge/Element_2.0.9-409eff?style=flat-square" />
 
 <br/>
 
@@ -78,7 +90,7 @@
 <br/>
 
 ## 👨‍💻 구성원
-### BE 개발 인원
+### 개발 인원
 <table>
   <tr>
     <td align="center">
@@ -94,21 +106,6 @@
       <img src="https://github.com/Boksam.png" width="80" alt="Boksam"/>
       <br />
       <sub><b>Boksam</b></sub>
-      </a>
-      <br />
-    </td>
-  </tr>
-</table>
-
-
-### FE 개발 인원
-<table>
-  <tr>
-    <td align="center">
-      <a href="https://github.com/hunsy9">
-        <img src="https://github.com/hunsy9.png" width="80" alt="hunsy9"/>
-        <br />
-        <sub><b>hunsy9</b></sub>
       </a>
       <br />
     </td>
@@ -128,8 +125,17 @@
       </a>
       <br />
     </td>
+    <td align="center">
+      <a href="https://github.com/banchan01">
+      <img src="https://github.com/banchan01.png" width="80" alt="banchan01"/>
+      <br />
+      <sub><b>banchan01</b></sub>
+      </a>
+      <br />
+    </td>
   </tr>
 </table>
+
 <br />
 
 ## 💎 라이센스
