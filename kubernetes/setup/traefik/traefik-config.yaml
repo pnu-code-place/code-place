@@ -8,12 +8,17 @@ spec:
     additionalArguments:
       - "--certificatesresolvers.default.acme.email=<EMAIL_ADDRESS>"
       - "--certificatesresolvers.default.acme.storage=/data/acme.json"
-      - "--certificatesresolvers.default.acme.httpchallenge.entrypoint=web"
+      - "--certificatesresolvers.default.acme.tlschallenge=true" # 443 포트를 통해 인증
+
+    service:
+      enabled: true
+      type: LoadBalancer
+      annotations:
+        kube-vip.io/loadbalancerIPs: <가상 IP>
+
     ports:
       web:
-        # NOTE: Traefik Helm Chart v34부터는 `redirections` 사용 (참고: https://newreleases.io/project/github/traefik/traefik-helm-chart/release/v34.0.0)
         redirections:
-          # HTTP 요청을 HTTPS로 리디렉션
           entryPoint:
             to: websecure
             scheme: https
@@ -21,3 +26,31 @@ spec:
       websecure:
         tls:
           enabled: true
+
+    persistence:
+      enabled: true
+      name: data
+      accessMode: ReadWriteMany # 여러 노드에서 읽기/쓰기가 가능하도록 설정
+      size: 128Mi
+      storageClass: "longhorn"
+      path: /data
+
+    # 권한 문제 해결을 위한 initContainer 및 podSecurityContext 설정
+    # acme.json 파일의 권한을 600으로 설정하고 소유자를 Traefik 사용자(UID 65532)로 변경
+    # acme.json이 없는 경우 빈 파일을 생성
+    deployment:
+      initContainers:
+        - name: volume-permissions
+          image: busybox:latest
+          command:
+            - "sh"
+            - "-c"
+            - |
+              touch /data/acme.json
+              chmod 600 /data/acme.json
+              chown 65532:65532 /data/acme.json
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      podSecurityContext:
+        fsGroup: 65532
