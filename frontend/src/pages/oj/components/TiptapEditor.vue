@@ -79,9 +79,9 @@
                 <Icon type="forward" size="20"></Icon>
             </div>
         </div>
-        <!-- 에디터 글 쓰는 곳 (최소 높이 지정 가능) -->
-        <div class="editor-content-box" :class="{ 'readonly-content': !editable }" :style="{ minHeight: minHeight }"
-            @click="focusEditor">
+        <!-- 에디터 글 쓰는 곳 (고정높이 지정 가능)  -->
+        <div class="editor-content-box" :class="{ 'readonly-content': !editable }"
+            :style="{ height: editable ? height : 'auto' }" @click="focusEditor">
             <editor-content class="editor__content" :editor="editor" />
         </div>
     </div>
@@ -161,7 +161,8 @@ export default {
             type: Boolean,
             default: true,
         },
-        minHeight: {
+        // 에디터 기본 높이 설정
+        height: {
             type: String,
             default: '400px',
         },
@@ -340,6 +341,8 @@ export default {
     background: white;
     cursor: text;
     padding: 20px;
+    // 높이가 고정되어있을 때, 컨텐츠가 넘어서면 scroll 생성
+    overflow-y: auto;
 
     &.readonly-content {
         padding: 0;
@@ -348,7 +351,9 @@ export default {
 }
 
 .editor__content {
-    height: 100%;
+    // 컨텐츠 있는만큼 길어짐
+    height: auto;
+    min-height: 100%;
     outline: none;
 }
 
@@ -363,7 +368,7 @@ export default {
 
 /deep/ .ProseMirror {
     outline: none;
-    height: 100%;
+    height: auto;
     min-height: inherit;
     font-size: 16px;
     line-height: 1.7;
