@@ -113,7 +113,7 @@
           <div class="input-label">
             {{ $t("m.Problem_Community_Modal_Content_Label") }}
           </div>
-          <TiptapEditor v-model="newPost.content" height="300px" :editable="true"
+          <TiptapEditor v-model="newPost.content" minHeight="300px" :editable="true"
             :placeholder="$t('m.Problem_Community_Modal_Content_Placeholder')" />
         </FormItem>
       </Form>

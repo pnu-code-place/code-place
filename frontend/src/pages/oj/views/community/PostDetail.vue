@@ -65,10 +65,9 @@
           </div>
         </div>
       </div>
-      <TiptapEditor class="post-content-editor" v-if="!isEditing" :value="post.content" :editable="false"
-        height="400px" />
+      <TiptapEditor class="post-content-editor" v-if="!isEditing" :value="post.content" :editable="false" />
       <div class="edit-mode-wrapper" v-if="isEditing">
-        <TiptapEditor v-model="editedContent" :editable="true" height="400px" />
+        <TiptapEditor v-model="editedContent" :editable="true" />
       </div>
 
       <div class="post-comments">
