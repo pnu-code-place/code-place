@@ -40,6 +40,18 @@ export default [
     component: Community,
   },
   {
+    name: "community-free",
+    path: "/community/free",
+    meta : { title: "Community Free"},
+    component: Community,
+  },
+  {
+    name : "community-question",
+    path : "/community/question",
+    meta : { title: "Community Question"},
+    component: Community,
+  },
+  {
     name: "community-create",
     path: "/community/create",
     meta: { title: "Create Post" },
