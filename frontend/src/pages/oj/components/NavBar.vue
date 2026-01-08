@@ -10,11 +10,11 @@
       </Menu-item>
       <Dropdown class="ivu-menu-item menuItemText" trigger="hover" placement="bottom" @on-click="handleRoute">
         <span class="menuItemText_community" @click="handleRoute('/community')">
-          커뮤니티
+          {{ $t("m.Community") }}
         </span>
         <Dropdown-menu slot="list">
-          <Dropdown-item name="/community/free">자유 게시판</Dropdown-item>
-          <Dropdown-item name="/community/question">질문 게시판</Dropdown-item>
+          <Dropdown-item name="/community/free">{{ $t("m.Community_Free") }}</Dropdown-item>
+          <Dropdown-item name="/community/question">{{ $t("m.Community_Question") }}</Dropdown-item>
         </Dropdown-menu>
       </Dropdown>
       <Menu-item class="menuItemText" name="/contest">
