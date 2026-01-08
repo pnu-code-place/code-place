@@ -88,9 +88,8 @@ class PostAPIView(APIView):
         elif problem_id:
             posts = posts.filter(problem_id=problem_id, contest_id__isnull=True)
         else:
-            # 질문 내부 문제 커뮤니티에 로드
+            # 질문 내부 문제 커뮤니티에 로드 (추가)
             posts = posts.filter(contest_id__isnull=True)
-
         if post_type:
             posts = posts.filter(post_type=post_type)
 
