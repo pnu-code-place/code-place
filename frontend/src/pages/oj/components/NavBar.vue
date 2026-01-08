@@ -8,9 +8,15 @@
       <Menu-item class="menuItemText" name="/problem">
         {{ $t("m.NavProblems") }}
       </Menu-item>
-      <Menu-item class="menuItemText" name="/community">
-        {{$t('m.Community')}}
-      </Menu-item>
+      <Dropdown class="ivu-menu-item menuItemText" trigger="hover" placement="bottom" @on-click="handleRoute">
+        <span class="menuItemText_community" @click="handleRoute('/community')">
+          {{ $t("m.Community") }}
+        </span>
+        <Dropdown-menu slot="list">
+          <Dropdown-item name="/community/free">{{ $t("m.Community_Free") }}</Dropdown-item>
+          <Dropdown-item name="/community/question">{{ $t("m.Community_Question") }}</Dropdown-item>
+        </Dropdown-menu>
+      </Dropdown>
       <Menu-item class="menuItemText" name="/contest">
         {{ $t("m.Contests") }}
       </Menu-item>
@@ -22,19 +28,10 @@
       </Menu-item>
 
       <template v-if="isAuthenticated">
-        <Dropdown
-          class="drop-menu"
-          @on-click="handleRoute"
-          placement="bottom"
-          trigger="click"
-        >
+        <Dropdown class="drop-menu" @on-click="handleRoute" placement="bottom" trigger="click">
           <div style="display: flex; align-items: center">
             <div>
-              <img
-                class="avatar"
-                :src="profile.avatar"
-                alt="avatar of the user"
-              />
+              <img class="avatar" :src="profile.avatar" alt="avatar of the user" />
             </div>
             <div style="margin-left: 10px">
               <Icon type="arrow-down-b" style="cursor: pointer"></Icon>
@@ -60,12 +57,8 @@
         </Dropdown>
       </template>
     </Menu>
-    <Modal
-      v-model="modalVisible"
-      :maskClosable="false"
-      :width="400"
-      :styles="{ top: modalStatus.mode === 'login' ? '10%' : '2%' }"
-    >
+    <Modal v-model="modalVisible" :maskClosable="false" :width="400"
+      :styles="{ top: modalStatus.mode === 'login' ? '10%' : '2%' }">
       <div slot="header" class="modal-title" style="text-align: center">
         {{
           modalStatus.mode === "login"
@@ -153,6 +146,25 @@ export default {
     margin-right: 5%;
     z-index: 1000;
   }
+
+  .menuItemText_community {
+    cursor: pointer;
+  }
+
+  /deep/ .ivu-dropdown-item {
+    padding: 7px 7px;
+    text-align: center;
+    font-size: 14px !important;
+    font-weight: 550 !important;
+  }
+
+  /deep/ .ivu-dropdown-item:hover {
+    color: #3c5977 !important;
+  }
+
+  /deep/ .ivu-select-dropdown {
+    margin-top: 3px !important;
+  }
 }
 
 .modal {
@@ -178,6 +190,7 @@ export default {
 }
 
 @avatar-radius: 50%;
+
 .avatar {
   cursor: pointer;
   width: 35px;

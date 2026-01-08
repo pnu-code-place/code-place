@@ -88,8 +88,8 @@ class PostAPIView(APIView):
         elif problem_id:
             posts = posts.filter(problem_id=problem_id, contest_id__isnull=True)
         else:
-            posts = posts.filter(contest_id__isnull=True, problem_id__isnull=True)
-
+            # 문제 관련 게시글도 커뮤니티 목록에 포함 (problem_id 필터 제거)
+            posts = posts.filter(contest_id__isnull=True)
         if post_type:
             posts = posts.filter(post_type=post_type)
 
@@ -161,8 +161,17 @@ class PostDetailAPIView(APIView):
             if not request.user.is_super_admin():
                 return self.error("Only Super Admin can set post type to announcement")
 
+        # 수정 요청 이전의 게시글 종류 저장
+        old_post_type = post.post_type
+
         for key, value in data.items():
             setattr(post, key, value)
+        
+        # 질문 타입으로 변경 시, 상태가 없거나 이전 타입이 일반글이었다면 미해결로 초기화
+        if post.post_type == Post.PostType.QUESTION:
+            if old_post_type == Post.PostType.ARTICLE or not post.question_status:
+                post.question_status = Post.QuestionStatus.OPEN
+        # db저장
         post.save()
 
         return self.success(PostDetailSerializer(post).data)
