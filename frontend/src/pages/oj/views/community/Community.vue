@@ -141,7 +141,13 @@ export default {
     ErrorSign,
   },
   mounted() {
-    this.fetchPosts()
+    this.initRoute()
+  },
+  // url 변경 여부 탐지
+  watch: {
+    '$route'() {
+      this.initRoute()
+    }
   },
   data() {
     return {
@@ -254,6 +260,20 @@ export default {
       this.fetchPosts();
     },
     applySearch() {
+      this.query.page = 1
+      this.fetchPosts()
+    },
+    // mount시, 쿼리통해 라우팅
+    initRoute() {
+      this.query.post_type = 'ALL'
+      this.query.question_status = 'ALL'
+      this.query.sort_type = 'NEWEST'
+      if (this.$route.path === '/community/free') {
+        this.query.post_type = 'ARTICLE'
+      } else if (this.$route.path === '/community/question') {
+        this.query.post_type = 'QUESTION'
+        this.query.question_status = 'OPEN'
+      }
       this.query.page = 1
       this.fetchPosts()
     },
