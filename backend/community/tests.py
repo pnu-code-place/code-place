@@ -352,6 +352,8 @@ class CommunityAPITest(APITestCase):
 
     def test_get_post_list_order_by_oldest(self):
         """게시글을 오래된 순으로 정렬할 수 있다."""
+        # setup 의 General Post 삭제
+        self.general_post.delete()
         #테스트 데이터 준비
         self.client.force_login(self.user)
         self.client.post(self.post_list_url, {"title" : "Post1", "content": "content1", "post_type": "ARTICLE"})
@@ -369,6 +371,8 @@ class CommunityAPITest(APITestCase):
 
     def test_get_post_list_order_by_comments(self):
         """게시글을 댓글 많은 순으로 정렬할 수 있다."""
+        # setup 의 General Post 삭제
+        self.general_post.delete()
         #테스트 데이터 준비
         self.client.force_login(self.user)
         ## Post1, 댓글 3개
@@ -444,6 +448,24 @@ class CommunityAPITest(APITestCase):
         response = self.client.patch(self.post_detail_url, {"title": "Updated Title"})
         self.assertSuccess(response)
         self.assertEqual(response.data["data"]["title"], "Updated Title")
+
+    def test_update_question_status_when_change_to_question_type(self):
+        """일반글 생성 후 질문글로 변경 시, 미해결상태로 초기화 된다."""
+        self.client.force_login(self.user)
+        # 일반글 작성
+        response = self.client.post(
+            self.post_list_url,
+            {
+                "title": "New Post",
+                "content": "Content",
+                "post_type": "ARTICLE"
+            },
+        )
+        self.assertSuccess(response)
+        # 질문글로 변경
+        response2 = self.client.patch(self.post_detail_url, {"post_type":"QUESTION"})
+        self.assertSuccess(response2)
+        self.assertEqual(response2.data["data"]["question_status"],"OPEN")
 
     def test_update_post_type_to_announcement_by_non_super_admin(self):
         """일반 사용자는 게시글을 ANNOUNCEMENT 타입으로 변경할 수 없다."""
