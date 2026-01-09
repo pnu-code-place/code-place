@@ -462,8 +462,12 @@ class CommunityAPITest(APITestCase):
             },
         )
         self.assertSuccess(response)
+        # 작성한 일반글 url 생성
+        new_post_id = response.data["data"]["id"]
+        new_post_url = self.reverse("community_post_detail", kwargs={"post_id": new_post_id})
+        
         # 질문글로 변경
-        response2 = self.client.patch(self.post_detail_url, {"post_type":"QUESTION"})
+        response2 = self.client.patch(new_post_url, {"post_type":"QUESTION"})
         self.assertSuccess(response2)
         self.assertEqual(response2.data["data"]["question_status"],"OPEN")
 
