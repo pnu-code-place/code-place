@@ -8,7 +8,7 @@
           <div class="community-header">
             <div class="header-left">
               <div class="main-title">
-                <h1 class="session-title main-title">{{ $t("m.Community") }}</h1>
+                <h1 class="session-title main-title">{{ pageTitle }}</h1>
               </div>
               <div class="stats-info">
                 <span class="total-posts">{{ total }}개의 게시글</span>
@@ -174,6 +174,14 @@ export default {
     },
     SORT_TYPE() {
       return SORT_TYPE;
+    },
+    pageTitle() {
+      if (this.$route.path === '/community/free') {
+        return this.$t("m.Community_Free");
+      } else if (this.$route.path === '/community/question') {
+        return this.$t("m.Community_Question")
+      }
+      return this.$t("m.Community");
     }
   },
   methods: {
