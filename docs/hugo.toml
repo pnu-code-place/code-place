@@ -1,0 +1,18 @@
+baseURL = "https://pnu-code-place.github.io/code-place/"
+title = "Code Place Docs"
+theme = "hextra"
+
+[params]
+  # Hextra 테마 전용 설정
+  displayNextPrev = true
+  showFiles = false
+
+[menu]
+  [[menu.main]]
+    name = "User Guide"
+    url = "/user"
+    weight = 1
+  [[menu.main]]
+    name = "Developer Docs"
+    url = "/developer"
+    weight = 2
