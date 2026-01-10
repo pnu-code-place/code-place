@@ -1,0 +1,5 @@
+# NOTE: 빌드 결과물은 GitHub Actions가 자동으로 생성하므로 커밋할 필요 없음
+public/
+resources/
+hugo_stats.json
+.hugo_build.lock
