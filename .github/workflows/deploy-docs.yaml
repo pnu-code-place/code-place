@@ -2,7 +2,7 @@ name: Deploy Docs
 
 on:
   push:
-    branches: ["main"]
+    branches: ["develop"]
     paths:
       - "docs/**" # docs 폴더 변경시에만 실행
 
