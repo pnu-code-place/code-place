@@ -1,0 +1,50 @@
+/* 1. Kakao 폰트 정의 (Weight별 설정) */
+@font-face {
+  font-family: "Kakao";
+  src: url("/code-place/fonts/KakaoSmallSans-Light.woff2") format("woff2");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Kakao";
+  src: url("/code-place/fonts/KakaoSmallSans-Regular.woff2") format("woff2");
+  font-weight: 400; /* normal */
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Kakao";
+  src: url("/code-place/fonts/KakaoSmallSans-Bold.woff2") format("woff2");
+  font-weight: 700; /* bold */
+  font-style: normal;
+  font-display: swap;
+}
+
+/* 2. Pretendard 가변 폰트 정의 */
+@font-face {
+  font-family: "Pretendard";
+  src: url("/code-place/fonts/PretendardVariable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --font-family-sans:
+    "Kakao", "Pretendard", "Microsoft Yahei", sans-serif !important;
+  --font-family-heading: "Kakao", "Pretendard", sans-serif !important;
+  --font-sans: "Kakao", "Pretendard", sans-serif !important;
+}
+
+body {
+  font-family: var(--font-family-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html {
+  font-size: 15px !important;
+}
