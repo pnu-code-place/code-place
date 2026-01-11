@@ -1,20 +1,23 @@
-name: Deploy Docs
+name: Deploy Hugo Docs
 
 on:
   push:
     branches: ["develop"]
     paths:
-      - "docs/**" # docs 폴더 변경시에만 실행
+      - "docs/**"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v4
         with:
-          submodules: recursive # 테마 서브모듈을 불러옴
+          submodules: recursive
           fetch-depth: 0
 
       - name: Setup Hugo
@@ -26,11 +29,21 @@ jobs:
       - name: Build
         run: |
           cd docs
-          hugo --minify
+          # baseURL에 저장소 이름을 포함해야 경로가 깨지지 않습니다.
+          hugo --minify --baseURL "https://pnu-code-place.github.io/code-place/"
 
-      - name: Deploy
-        uses: peaceiris/actions-gh-pages@v3
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs/public
-          publish_branch: gh-pages
+          path: ./docs/public
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

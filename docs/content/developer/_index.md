@@ -1,6 +1,6 @@
 ---
 date: "2026-01-10T17:58:48+09:00"
-draft: true
+draft: false
 title: "Developer"
 ---
 
