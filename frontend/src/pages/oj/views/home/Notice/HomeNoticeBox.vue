@@ -24,14 +24,8 @@
         <span>{{ $t("m.No_Announcements") }}</span>
       </div>
       <ul class="announcements-container" key="list" v-else>
-        <HomeNoticeItem
-          v-for="(announcement, idx) in csepAnnouncements"
-          v-if="idx < 2"
-          :key="announcement.title"
-          :announcement="announcement"
-          :isCSEP="true"
-          :isSW="false"
-        >
+        <HomeNoticeItem v-for="(announcement, idx) in csepAnnouncements" v-if="idx < 3" :key="announcement.title"
+          :announcement="announcement" :isCSEP="true" :isSW="false">
         </HomeNoticeItem>
       </ul>
     </div>
@@ -56,14 +50,8 @@
         <span>{{ $t("m.No_Announcements") }}</span>
       </div>
       <ul class="announcements-container" key="list" v-else>
-        <HomeNoticeItem
-          v-for="(announcement, idx) in swAnnouncements"
-          v-if="idx < 5"
-          :key="announcement.title"
-          :announcement="announcement"
-          :isCSEP="false"
-          :isSW="true"
-        >
+        <HomeNoticeItem v-for="(announcement, idx) in swAnnouncements" v-if="idx < 5" :key="announcement.title"
+          :announcement="announcement" :isCSEP="false" :isSW="true">
         </HomeNoticeItem>
       </ul>
     </div>
@@ -280,9 +268,11 @@ export default {
   0% {
     background-color: #e3e3e3;
   }
+
   50% {
     background-color: #f5f5f5;
   }
+
   100% {
     background-color: #e3e3e3;
   }
