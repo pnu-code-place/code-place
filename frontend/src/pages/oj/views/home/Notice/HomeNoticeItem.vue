@@ -83,10 +83,11 @@ export default defineComponent({
 </script>
 
 <template>
-  <li :class="this.itemClass" @click="clickHandler">
+  <li :class="[this.itemClass, { 'pinned': announcement.is_pinned }]" @click="clickHandler">
     <div class="flex-container">
       <div class="left">
         <div class="title">
+          <span v-if="announcement.is_pinned">📌</span>
           {{ announcement.title }}
         </div>
         <span class="new-annotator" v-if="isNew"><span>NEW</span></span>
@@ -117,6 +118,10 @@ li {
   margin-bottom: 5px;
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   cursor: pointer;
+
+  &.pinned {
+    background-color: rgba(242, 224, 254, 0.5) !important;
+  }
 
   &:last-child {
     border-bottom: none;
@@ -168,11 +173,9 @@ li {
       }
 
       .sw-center-annotator {
-        background-image: linear-gradient(
-          45deg,
-          var(--pnu-blue),
-          var(--pnu-green)
-        );
+        background-image: linear-gradient(45deg,
+            var(--pnu-blue),
+            var(--pnu-green));
         border-radius: 4px;
         color: #ffffff;
         font-size: 10px;
@@ -201,11 +204,9 @@ li {
 
   &.sw-center {
     // duel background color divided by diagonal line
-    background-image: linear-gradient(
-      45deg,
-      var(--pale-pnu-blue),
-      var(--pale-pnu-green)
-    );
+    background-image: linear-gradient(45deg,
+        var(--pale-pnu-blue),
+        var(--pale-pnu-green));
   }
 
   &:hover {
