@@ -80,6 +80,7 @@ http_locations.conf
 https_locations.conf
 
 venv/
+.venv/
 #test docker-compose
 conf/docker-compose.yml
 deploy/swarm/.env
