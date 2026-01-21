@@ -87,7 +87,8 @@ export default defineComponent({
     <div class="flex-container">
       <div class="left">
         <div class="title">
-          <span v-if="announcement.is_pinned">📌</span>
+          <!-- 제목에 📌(&#x1F4CC;) 추가 -->
+          <span v-if="announcement.is_pinned">&#x1F4CC;</span>
           {{ announcement.title }}
         </div>
         <span class="new-annotator" v-if="isNew"><span>NEW</span></span>
