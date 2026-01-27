@@ -12,7 +12,7 @@
         <span class="menuItemText_community" @click="handleRoute('/community')">
           {{ $t("m.Community") }}
         </span>
-        <Dropdown-menu slot="list">
+        <Dropdown-menu class="community-dropdown-menu" slot="list">
           <Dropdown-item name="/community/free">{{ $t("m.Community_Free") }}</Dropdown-item>
           <Dropdown-item name="/community/question">{{ $t("m.Community_Question") }}</Dropdown-item>
         </Dropdown-menu>
@@ -149,6 +149,17 @@ export default {
 
   .menuItemText_community {
     cursor: pointer;
+  }
+
+  /deep/ .community-dropdown-menu .ivu-dropdown-item {
+    padding: 7px 7px;
+    text-align: center;
+    font-size: 14px !important;
+    font-weight: 550 !important;
+  }
+
+  /deep/ .community-dropdown-menu .ivu-dropdown-item:hover {
+    color: #3c5977 !important;
   }
 }
 
