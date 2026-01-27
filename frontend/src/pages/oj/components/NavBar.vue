@@ -12,7 +12,7 @@
         <span class="menuItemText_community" @click="handleRoute('/community')">
           {{ $t("m.Community") }}
         </span>
-        <Dropdown-menu slot="list">
+        <Dropdown-menu class="community-dropdown-menu" slot="list">
           <Dropdown-item name="/community/free">{{ $t("m.Community_Free") }}</Dropdown-item>
           <Dropdown-item name="/community/question">{{ $t("m.Community_Question") }}</Dropdown-item>
         </Dropdown-menu>
