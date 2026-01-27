@@ -150,6 +150,21 @@ export default {
   .menuItemText_community {
     cursor: pointer;
   }
+
+  /deep/ .community-dropdown-menu .ivu-dropdown-item {
+    padding: 7px 7px;
+    text-align: center;
+    font-size: 14px !important;
+    font-weight: 550 !important;
+  }
+
+  /deep/ .community-dropdown-menu .ivu-dropdown-item:hover {
+    color: #3c5977 !important;
+  }
+
+  /deep/ .ivu-select-dropdown {
+    margin-top: 3px !important;
+  }
 }
 
 .modal {
