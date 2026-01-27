@@ -161,10 +161,6 @@ export default {
   /deep/ .community-dropdown-menu .ivu-dropdown-item:hover {
     color: #3c5977 !important;
   }
-
-  /deep/ .ivu-select-dropdown {
-    margin-top: 3px !important;
-  }
 }
 
 .modal {
