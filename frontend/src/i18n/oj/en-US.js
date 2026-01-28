@@ -233,6 +233,8 @@ export const m = {
   NavStatus: "채점 현황",
   Rank: "랭킹",
   Community: "커뮤니티",
+  Community_Free: "자유게시판",
+  Community_Question: "질문게시판",
   ACM_Rank: "ACM 랭크",
   OI_Rank: "OI 랭크",
   About: "About",

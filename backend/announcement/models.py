@@ -12,7 +12,8 @@ class Announcement(models.Model):
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
     last_update_time = models.DateTimeField(auto_now=True)
     visible = models.BooleanField(default=True)
+    is_pinned = models.BooleanField(default=False)
 
     class Meta:
         db_table = "announcement"
-        ordering = ("-create_time",)
+        ordering = ("-is_pinned", "-create_time",)

@@ -26,7 +26,7 @@
             </Dropdown-menu>
           </Dropdown>
         </div>
-        <Button type="primary" size="default" @click="showCreateModal = true" class="create-btn">
+        <Button type="primary" size="default" @click="openCreateModal" class="create-btn">
           {{ $t("m.Problem_Community_Create_Question") }}
         </Button>
       </div>
@@ -44,7 +44,7 @@
     <div v-else-if="posts.length === 0" class="empty-state">
       <h4>{{ $t("m.Problem_Community_No_Questions") }}</h4>
       <p class="empty-subtitle">{{ $t("m.Problem_Community_No_Questions_Subtitle") }}</p>
-      <Button type="primary" @click="showCreateModal = true" class="empty-action-btn">
+      <Button type="primary" @click="openCreateModal" class="empty-action-btn">
         {{ $t("m.Problem_Community_First_Question") }}
       </Button>
     </div>
@@ -113,7 +113,7 @@
           <div class="input-label">
             {{ $t("m.Problem_Community_Modal_Content_Label") }}
           </div>
-          <TiptapEditor v-model="newPost.content" minHeight="300px" :editable="true"
+          <TiptapEditor v-model="newPost.content" height="300px" :editable="true"
             :placeholder="$t('m.Problem_Community_Modal_Content_Placeholder')" />
         </FormItem>
       </Form>
@@ -295,6 +295,11 @@ export default {
       this.query.question_status = questionStatus
       this.query.page = 1
       this.fetchPosts()
+    },
+    // 문제 질문 작성 시, 문제 태그 prefix 추가
+    openCreateModal() {
+      this.newPost.title = `[${this.problem._id}] `
+      this.showCreateModal = true
     }
   },
 }
