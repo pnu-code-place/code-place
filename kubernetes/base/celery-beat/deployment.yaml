@@ -21,7 +21,7 @@ spec:
         - name: regcred
       containers:
         - name: celery-beat
-          image: registry.code-place-dev.site/code-place-dev/backend:latest
+          image: backend:latest
           imagePullPolicy: IfNotPresent
           command: ["/app/deploy/entrypoint_beat.sh"]
           resources:

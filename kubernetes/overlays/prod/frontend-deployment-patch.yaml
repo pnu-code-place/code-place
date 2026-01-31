@@ -13,7 +13,6 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: harbor.code-place-dev.site/code-place-prod/frontend:latest
           env:
             - name: FORCE_HTTPS
               value: "0"

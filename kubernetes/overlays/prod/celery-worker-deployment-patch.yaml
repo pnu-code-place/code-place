@@ -11,8 +11,3 @@ spec:
     rollingUpdate:
       maxUnavailable: 1
       maxSurge: 1
-  template:
-    spec:
-      containers:
-        - name: celery-worker
-          image: harbor.code-place-dev.site/code-place-prod/backend:latest

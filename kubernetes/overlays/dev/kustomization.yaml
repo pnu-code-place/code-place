@@ -15,3 +15,17 @@ patches:
   - path: celery-worker-deployment-patch.yaml
   - path: celery-beat-deployment-patch.yaml
   - path: judge-server-deployment-patch.yaml
+
+# NOTE: base 디렉토리의 이미지 이름과 태그를 오버라이드합니다.
+# `backend`, `frontend` 이미지 태그는 CI 파이프라인에서 자동으로 변경됩니다.
+# `judge-server` 이미지는 자주 변경되지 않으므로 수동으로 설정합니다.
+images:
+  - name: backend
+    newName: harbor.code-place-dev.site/code-place-dev/backend
+    newTag: eb40822b5b950bf75f00ed053609724a2a10be7f-dev
+  - name: frontend
+    newName: harbor.code-place-dev.site/code-place-dev/frontend
+    newTag: 61af4b605d731c1ec378f124b0e9a44c0438d35b-dev
+  - name: judge-server
+    newName: harbor.code-place-dev.site/code-place-dev/judge-server
+    newTag: 1.0.3

@@ -19,7 +19,7 @@ spec:
         - name: regcred
       containers:
         - name: judge-server
-          image: registry.code-place-dev.site/code-place-dev/judge-server:1.0.3
+          image: judge-server:latest
           imagePullPolicy: IfNotPresent
           securityContext:
             capabilities:
