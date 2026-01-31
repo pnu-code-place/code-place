@@ -5,6 +5,7 @@ on:
     paths-ignore:
       - "deployment/**"
       - "scripts/**"
+      - "kubernetes/**"
     branches: [main]
   workflow_dispatch:
 
@@ -81,9 +82,7 @@ jobs:
           context: ./backend
           file: ./backend/Dockerfile
           push: true
-          tags: |
-            ${{ secrets.HARBOR_REGISTRY }}/code-place-prod/backend:${{ github.sha }}-prod
-            ${{ secrets.HARBOR_REGISTRY }}/code-place-prod/backend:latest
+          tags: ${{ secrets.HARBOR_REGISTRY }}/code-place-prod/backend:${{ github.sha }}-prod
 
   ci-frontend:
     needs: [detect-changes-by-component]
@@ -109,9 +108,7 @@ jobs:
           context: ./frontend
           file: ./frontend/Dockerfile
           push: true
-          tags: |
-            ${{ secrets.HARBOR_REGISTRY }}/code-place-prod/frontend:${{ github.sha }}-prod
-            ${{ secrets.HARBOR_REGISTRY }}/code-place-prod/frontend:latest
+          tags: ${{ secrets.HARBOR_REGISTRY }}/code-place-prod/frontend:${{ github.sha }}-prod
           build-args: |
             SERVER_NAME=${{ secrets.PROD_SERVER_NAME }}
             APP_VERSION=${{ github.sha }}
@@ -140,17 +137,59 @@ jobs:
           context: ./hub/auth_server
           file: ./hub/auth_server/Dockerfile
           push: true
-          tags: |
-            ${{ secrets.HARBOR_REGISTRY }}/code-place-hub/auth-server:${{ github.sha }}
-            ${{ secrets.HARBOR_REGISTRY }}/code-place-hub/auth-server:latest
+          tags: ${{ secrets.HARBOR_REGISTRY }}/code-place-hub/auth-server:${{ github.sha }}
 
-  create-release:
-    needs: [check-release-branch, ci-frontend, ci-backend]
+  update-prod-manifest:
+    needs: [check-release-branch, ci-backend, ci-frontend]
     if: |
       always() &&
       needs.check-release-branch.outputs.is_release == 'true' &&
-      (needs.ci-frontend.result == 'success' || needs.ci-frontend.result == 'skipped') &&
-      (needs.ci-backend.result == 'success' || needs.ci-backend.result == 'skipped')
+      (needs.ci-frontend.result == 'success' || needs.ci-backend.result == 'success')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.ACTION_TOKEN }}
+          fetch-depth: 0
+
+      # NOTE: 기존에 kustomize를 사용하였지만 포멧 문제로 yq로 변경 (junwoo)
+      # images.[] .name 에 맞는 항목의 newTag 값을 github.sha 로 변경
+      - name: Update Backend Image Tag
+        if: needs.ci-backend.result == 'success'
+        uses: mikefarah/yq@master
+        with:
+          cmd: yq -i '(.images[] | select(.name == "backend").newTag) = "${{ github.sha }}-prod"' kubernetes/overlays/prod/kustomization.yaml
+
+      - name: Update Frontend Image Tag
+        if: needs.ci-frontend.result == 'success'
+        uses: mikefarah/yq@master
+        with:
+          cmd: yq -i '(.images[] | select(.name == "frontend").newTag) = "${{ github.sha }}-prod"' kubernetes/overlays/prod/kustomization.yaml
+
+      - name: Commit and push changes
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add kubernetes/overlays/prod/kustomization.yaml
+
+          # 변경사항이 없으면 종료
+          if git diff-index --quiet HEAD; then
+            echo "No changes to commit"
+            exit 0
+          fi
+
+          # [skip ci] 태그를 커밋 메시지에 추가하여 추가 CI 실행을 방지
+          git commit -m "ci: Update prod image tags to ${{ github.sha }} [skip ci]"
+          git pull --rebase origin main
+          git push origin main
+
+  create-release:
+    needs: [check-release-branch, update-prod-manifest]
+    if: |
+      always() &&
+      needs.check-release-branch.outputs.is_release == 'true' &&
+      (needs.update-prod-manifest.result == 'success' || needs.update-prod-manifest.result == 'skipped')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code

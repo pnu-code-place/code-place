@@ -8,8 +8,3 @@ spec:
   replicas: 1
   strategy:
     type: Recreate
-  template:
-    spec:
-      containers:
-        - name: celery-beat
-          image: harbor.code-place-dev.site/code-place-dev/backend:latest
