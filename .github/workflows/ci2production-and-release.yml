@@ -152,22 +152,19 @@ jobs:
         with:
           token: ${{ secrets.ACTION_TOKEN }}
 
-      - name: Install Kustomize
-        run: |
-          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash -s -- 5.6.0
-          sudo mv kustomize /usr/local/bin/
-
+      # NOTE: 기존에 kustomize를 사용하였지만 포멧 문제로 yq로 변경 (junwoo)
+      # images.[] .name 에 맞는 항목의 newTag 값을 github.sha-dev로 변경
       - name: Update Backend Image Tag
         if: needs.ci-backend.result == 'success'
-        run: |
-          cd kubernetes/overlays/prod
-          kustomize edit set image backend=${{ secrets.HARBOR_REGISTRY }}/code-place-prod/backend:${{ github.sha }}-prod
+        uses: mikefarah/yq@master
+        with:
+          cmd: yq -i '(.images[] | select(.name == "backend").newTag) = "${{ github.sha }}-prod"' kubernetes/overlays/prod/kustomization.yaml
 
       - name: Update Frontend Image Tag
         if: needs.ci-frontend.result == 'success'
-        run: |
-          cd kubernetes/overlays/prod
-          kustomize edit set image frontend=${{ secrets.HARBOR_REGISTRY }}/code-place-prod/frontend:${{ github.sha }}-prod
+        uses: mikefarah/yq@master
+        with:
+          cmd: yq -i '(.images[] | select(.name == "frontend").newTag) = "${{ github.sha }}-prod"' kubernetes/overlays/prod/kustomization.yaml
 
       - name: Commit and push changes
         run: |
