@@ -87,7 +87,7 @@ jobs:
 
   update-dev-manifest:
     needs: [ci-backend-dev, ci-frontend-dev]
-    if: success() && (needs.ci-backend-dev.result == 'success' || needs.ci-frontend-dev.result == 'success')
+    if: always() && (needs.ci-backend-dev.result == 'success' || needs.ci-frontend-dev.result == 'success')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -97,7 +97,7 @@ jobs:
 
       - name: Install Kustomize
         run: |
-          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh 5.6.0"  | bash
+          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash -s -- 5.6.0
           sudo mv kustomize /usr/local/bin/
 
       - name: Update Backend Image Tag

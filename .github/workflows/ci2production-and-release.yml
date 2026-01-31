@@ -154,7 +154,7 @@ jobs:
 
       - name: Install Kustomize
         run: |
-          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh 5.6.0"  | bash
+          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash -s -- 5.6.0
           sudo mv kustomize /usr/local/bin/
 
       - name: Update Backend Image Tag
