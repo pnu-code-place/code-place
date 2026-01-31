@@ -94,6 +94,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           token: ${{ secrets.ACTION_TOKEN }}
+          fetch-depth: 0
 
       # NOTE: 기존에 kustomize를 사용하였지만 포멧 문제로 yq로 변경 (junwoo)
       # images.[] .name 에 맞는 항목의 newTag 값을 github.sha-dev로 변경
