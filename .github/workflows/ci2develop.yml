@@ -6,6 +6,7 @@ on:
       - "deployment/**"
       - "scripts/**"
       - ".github/**"
+      - "kubernetes/**"
     branches: [develop]
   workflow_dispatch:
 
@@ -53,9 +54,7 @@ jobs:
           context: ./backend
           file: ./backend/Dockerfile
           push: true
-          tags: |
-            ${{ secrets.HARBOR_REGISTRY }}/code-place-dev/backend:${{ github.sha }}-dev
-            ${{ secrets.HARBOR_REGISTRY }}/code-place-dev/backend:latest
+          tags: ${{ secrets.HARBOR_REGISTRY }}/code-place-dev/backend:${{ github.sha }}-dev
 
   ci-frontend-dev:
     needs: [detect-changes-by-component]
@@ -63,7 +62,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: acions/checkout@v2
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
@@ -81,9 +80,52 @@ jobs:
           context: ./frontend
           file: ./frontend/Dockerfile
           push: true
-          tags: |
-            ${{ secrets.HARBOR_REGISTRY }}/code-place-dev/frontend:${{ github.sha }}-dev
-            ${{ secrets.HARBOR_REGISTRY }}/code-place-dev/frontend:latest
+          tags: ${{ secrets.HARBOR_REGISTRY }}/code-place-dev/frontend:${{ github.sha }}-dev
           build-args: |
             SERVER_NAME=${{ secrets.DEV_SERVER_NAME }}
             APP_VERSION=${{ github.sha }}-dev
+
+  update-dev-manifest:
+    needs: [ci-backend-dev, ci-frontend-dev]
+    if: success() && (needs.ci-backend-dev.result == 'success' || needs.ci-frontend-dev.result == 'success')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.ACTION_TOKEN }}
+
+      - name: Install Kustomize
+        run: |
+          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh 5.6.0"  | bash
+          sudo mv kustomize /usr/local/bin/
+
+      - name: Update Backend Image Tag
+        if: needs.ci-backend-dev.result == 'success'
+        run: |
+          cd kubernetes/overlays/dev
+          kustomize edit set image backend=${{ secrets.HARBOR_REGISTRY }}/code-place-dev/backend:${{ github.sha }}-dev
+
+      - name: Update Frontend Image Tag
+        if: needs.ci-frontend-dev.result == 'success'
+        run: |
+          cd kubernetes/overlays/dev
+          kustomize edit set image frontend=${{ secrets.HARBOR_REGISTRY }}/code-place-dev/frontend:${{ github.sha }}-dev
+
+      - name: Commit and push changes
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add kubernetes/overlays/dev/kustomization.yaml
+
+          # 변경사항이 없으면 종료
+          if git diff-index --quiet HEAD; then
+            echo "No changes to commit"
+            exit 0
+          fi
+
+          # 충돌 방지를 위해 최신 develop 브랜치로 rebase 후 push
+          # [skip ci] 태그를 커밋 메시지에 추가하여 추가 CI 실행을 방지
+          git commit -m "ci: Update dev image tags to ${{ github.sha }} [skip ci]"
+          git pull --rebase origin develop
+          git push origin develop
