@@ -128,4 +128,4 @@ jobs:
           # [skip ci] 태그를 커밋 메시지에 추가하여 추가 CI 실행을 방지
           git commit -m "ci: Update dev image tags to ${{ github.sha }} [skip ci]"
           git pull --rebase origin develop
-          git push origin develop
+          git push origin ${{ github.ref_name }}
