@@ -9,6 +9,10 @@ weight: 1
 이 문서에서는 CodePlace의 전체적인 Service Architecture와 트래픽 처리 흐름에 대해 설명합니다.
 {{< /callout >}}
 
+### 0. CodePlace Service-Architecture
+<img width="2017" height="747" alt="image" src="https://github.com/user-attachments/assets/07cfc6cb-863b-4bab-99d9-bb990f43e38e" />
+
+
 ### 1. Entry Point
 
 서비스의 모든 요청 트래픽은 가장 먼저 `Traefik`을 거치게 됩니다. CodePlace에서 `Traefik`은 크게 두 가지 핵심적인 네트워크 처리를 담당합니다.
