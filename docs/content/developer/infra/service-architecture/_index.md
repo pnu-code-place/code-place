@@ -34,14 +34,14 @@ weight: 1
 루트 경로 등 페이지 관련 요청이 들어오면, Nginx는 사전에 빌드된 정적 파일을 브라우저에게 서빙합니다.
 이 과정을 이해하기 위해서는 아래의 내용을 이해하여야 합니다.
 
-- Build Process
+- **Build Process**
 <br>
 Frontend 서버의 궁극적인 목표는 **정적파일 서빙**입니다. **배포 전 단계에서** 수행되는, 코드베이스에서 여러 가지로 흩어져 있는 소스코드를 하나로 묶는 과정이 빌드입니다. Build는 Node.js 환경에서 `Webpack`을 통해서 수행됩니다. 빌드는 **코드 난독화, 압축, 번들링** 등 여러 가지를 포함하는데, 그중 JavaScript 버전 문법 호환성은 `Babel`을 통해 해결합니다. 
 빌드 과정을 거친 결과물(`vendor.js`, **`index.html`**등)은 **nginx 폴더** 안에 저장이 됩니다. 이 결과물을 Nginx가 브라우저에 서빙하는 것입니다.
 
 <br>
 
-- SPA (Single Page Application)
+- **SPA (Single Page Application)**
 <br>
 Code Place는 `SPA`방식을 사용하고 있습니다. `SPA`는 **단일 페이지 애플리케이션**으로, MPA와 대비됩니다. 비교를 위해 `MPA`를 설명하겠습니다. `MPA`는 Multi Page Application으로서, 페이지 이동 시마다 서버에 정적파일을 새로 요청하여 브라우저에 렌더링 하는 방식입니다.
 반면 `SPA`는 최초 접속 시, 위의 빌드과정을 통해 사전에 만들어진 애플리케이션 구동에 필요한 모든 자원(`vendor.js`, `index.html` 등)을 한 번에 로드합니다. 
