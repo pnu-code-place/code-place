@@ -1,15 +1,13 @@
 ---
-title: "서비스 아키텍쳐"
 date: 2026-02-05T18:55:49+09:00
 draft: false
+title: "Service Architecture"
 weight: 1
 ---
 
 {{< callout >}}
-이 문서에서는 CodePlace의 전체적인 서비스 아키텍쳐와 트래픽 처리 흐름에 대해 설명합니다.
+이 문서에서는 CodePlace의 전체적인 Service Architecture와 트래픽 처리 흐름에 대해 설명합니다.
 {{< /callout >}}
-
-## 서비스 아키텍쳐 
 
 ### 1. Entry Point
 
