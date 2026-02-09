@@ -3,9 +3,9 @@
 # https://github.com/grafana-community/helm-charts/blob/main/charts/grafana/values.yaml
 # ========================================================================
 
-# -- 환경과 관계없이 공통으로 적용되는 설정을 정의합니다.
-# -- 환경별로 달라져야 하는 값(예: ingress.hosts)은 여기서 정의하지 않거나,
-# -- overlays의 values 파일에서 덮어쓸 수 있도록 기본값만 정의합니다.
+# 환경과 관계없이 공통으로 적용되는 설정을 정의합니다.
+# 환경별로 달라져야 하는 값(예: ingress.hosts)은 여기서 정의하지 않거나,
+# overlays의 values 파일에서 덮어쓸 수 있도록 기본값만 정의합니다.
 
 # 데이터 영속성 설정
 persistence:
@@ -29,7 +29,7 @@ ingress:
   # - secretName: grafana-tls
   #   hosts:
   #     - grafana.example.com
-# 기본 데이터소스 및 대시보드 설정 (필요시 추가)
+# 기본 데이터소스 및 대시보드 설정
 # datasources:
 #   datasources.yaml:
 #     apiVersion: 1
