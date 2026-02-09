@@ -14,7 +14,7 @@ persistence:
   storageClassName: longhorn
   accessModes:
     - ReadWriteOnce
-  size: 5Gi
+  size: 1Gi
 
 # Ingress 설정 (기본적으로 비활성화, 각 overlay에서 활성화 및 host 설정)
 ingress:
