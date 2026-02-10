@@ -48,9 +48,9 @@ export default {
 </script>
 
 <template>
-  <tr 
-    class="announcement-item" 
-    :class="{ 'pinned': announcement.is_pinned }" 
+  <tr
+    class="announcement-item"
+    :class="{ pinned: announcement.is_pinned }"
     @click="goAnnouncement"
   >
     <td class="id">{{ announcement.id }}</td>
@@ -65,14 +65,16 @@ export default {
 
 <style scoped lang="less">
 .announcement-item.pinned {
-    background-color: rgba(242, 224, 254, 0.5) !important;
-    td {
-      border-bottom: 1px solid #e0e0e0 !important;
-    }
+  background-color: rgba(242, 224, 254, 0.5) !important;
+  td {
+    border-bottom: 1px solid #e0e0e0 !important;
   }
+}
 .announcement-item {
   cursor: pointer;
-  transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  transition:
+    background-color 0.2s ease-in-out,
+    box-shadow 0.2s ease-in-out;
   td {
     padding: 10px;
     border-bottom: 1px solid #f0f0f0;
