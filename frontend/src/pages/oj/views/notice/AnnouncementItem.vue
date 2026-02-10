@@ -48,17 +48,33 @@ export default {
 </script>
 
 <template>
-  <tr class="announcement-item" @click="goAnnouncement">
+  <tr
+    class="announcement-item"
+    :class="{ pinned: announcement.is_pinned }"
+    @click="goAnnouncement"
+  >
     <td class="id">{{ announcement.id }}</td>
-    <td class="title">{{ announcement.title }}</td>
+    <td class="title">
+      <span v-if="announcement.is_pinned">&#x1F4CC; </span>
+      {{ announcement.title }}
+    </td>
     <td class="date">{{ this.createTime }}</td>
     <td class="creator">{{ announcement.created_by.username }}</td>
   </tr>
 </template>
 
 <style scoped lang="less">
+.announcement-item.pinned {
+  background-color: rgba(242, 224, 254, 0.5) !important;
+  td {
+    border-bottom: 1px solid #e0e0e0 !important;
+  }
+}
 .announcement-item {
   cursor: pointer;
+  transition:
+    background-color 0.2s ease-in-out,
+    box-shadow 0.2s ease-in-out;
   td {
     padding: 10px;
     border-bottom: 1px solid #f0f0f0;
@@ -87,6 +103,7 @@ export default {
   }
   &:hover {
     background-color: var(--site-background-color);
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
   }
 }
 </style>
