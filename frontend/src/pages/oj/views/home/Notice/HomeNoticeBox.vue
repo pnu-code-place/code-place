@@ -139,7 +139,7 @@ export default {
   border-radius: 7px;
   border: 1px solid #dedede;
   width: 100%;
-  height: 457px;
+  height: auto;
   padding: 0 30px;
   margin-bottom: 20px;
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
