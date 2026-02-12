@@ -25,7 +25,6 @@
             v-for="announcement in announcements"
             :key="announcement.title"
             :announcement="announcement"
-            :page="currentPage"
           >
           </announcement-item>
         </tbody>

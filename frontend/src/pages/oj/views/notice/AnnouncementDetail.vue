@@ -402,13 +402,13 @@ export default {
 }
 
 .notice-list-btn {
-  background: rgb(228, 228, 228);
+  background: rgb(241, 243, 244);
   color: black;
 }
 
 .notice-list-btn:hover {
-  background: grey;
-  color: white;
+  background: lightgrey;
+  color: rgb(50, 50, 50);
   transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(52, 152, 219, 0.2);
 }

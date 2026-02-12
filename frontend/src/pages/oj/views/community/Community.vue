@@ -1,11 +1,7 @@
 <template>
   <main>
-    <ErrorSign
-      v-if="this.error"
-      :code="this.error.code || 404"
-      :description="this.error.description || ''"
-      :solution="this.error.solution || ''"
-    />
+    <ErrorSign v-if="this.error" :code="this.error.code || 404" :description="this.error.description || ''"
+      :solution="this.error.solution || ''" />
     <div class="contents" v-else>
       <div class="box-wrapper">
         <div class="left-container">
@@ -20,167 +16,85 @@
             </div>
             <div class="header-right">
               <div class="search-bar">
-                <Input
-                  v-model="query.keyword"
-                  placeholder="검색어를 입력하세요"
-                  icon="ios-search-strong"
-                  @on-enter="applySearch"
-                />
+                <Input v-model="query.keyword" placeholder="검색어를 입력하세요" icon="ios-search-strong"
+                  @on-enter="applySearch" />
               </div>
 
               <Dropdown @on-click="filter" trigger="click" class="dropdown">
-                <span
-                  style="
-                    font-weight: bold;
-                    font-size: 15px;
-                    padding-right: 10px;
-                  "
-                >
-                  {{
-                    query.post_type === "ALL"
-                      ? "전체"
-                      : POST_TYPE[query.post_type].name
-                  }}
+                <span style="font-weight: bold; font-size: 15px; padding-right: 10px">
+                  {{ query.post_type === "ALL" ? '전체' : POST_TYPE[query.post_type].name }}
                 </span>
                 <Icon type="arrow-down-b"></Icon>
                 <Dropdown-menu slot="list">
-                  <Dropdown-item :name="{ type: 'post_type', value: 'ALL' }"
-                    >전체</Dropdown-item
-                  >
-                  <Dropdown-item
-                    v-for="(val, k) in POST_TYPE"
-                    :key="k"
-                    :name="{ type: 'post_type', value: k }"
-                  >
+                  <Dropdown-item :name="{ type: 'post_type', value: 'ALL' }">전체</Dropdown-item>
+                  <Dropdown-item v-for="(val, k) in POST_TYPE" :key="k" :name="{ type: 'post_type', value: k }">
                     {{ val.name }}
                   </Dropdown-item>
                 </Dropdown-menu>
               </Dropdown>
 
-              <Dropdown
-                v-if="query.post_type === 'QUESTION'"
-                @on-click="filter"
-                trigger="click"
-                class="dropdown"
-              >
-                <span
-                  style="
-                    font-weight: bold;
-                    font-size: 15px;
-                    padding-right: 10px;
-                  "
-                >
-                  {{
-                    query.question_status === "ALL"
-                      ? "전체"
-                      : QUESTION_STATUS[query.question_status].name
-                  }}
+              <Dropdown v-if="query.post_type === 'QUESTION'" @on-click="filter" trigger="click" class="dropdown">
+                <span style="font-weight: bold; font-size: 15px; padding-right: 10px">
+                  {{ query.question_status === 'ALL' ? '전체' : QUESTION_STATUS[query.question_status].name }}
                 </span>
                 <Icon type="arrow-down-b"></Icon>
                 <Dropdown-menu slot="list">
-                  <Dropdown-item
-                    :name="{ type: 'question_status', value: 'ALL' }"
-                    >전체</Dropdown-item
-                  >
-                  <Dropdown-item
-                    v-for="(val, k) in QUESTION_STATUS"
-                    :key="k"
-                    :name="{ type: 'question_status', value: k }"
-                  >
+                  <Dropdown-item :name="{ type: 'question_status', value: 'ALL' }">전체</Dropdown-item>
+                  <Dropdown-item v-for="(val, k) in QUESTION_STATUS" :key="k"
+                    :name="{ type: 'question_status', value: k }">
                     {{ val.name }}
                   </Dropdown-item>
                 </Dropdown-menu>
               </Dropdown>
 
               <Dropdown @on-click="filter" trigger="click" class="dropdown">
-                <span
-                  style="
-                    font-weight: bold;
-                    font-size: 15px;
-                    padding-right: 10px;
-                  "
-                >
-                  {{
-                    SORT_TYPE[query.sort_type]
-                      ? SORT_TYPE[query.sort_type].name
-                      : "정렬"
-                  }}
+                <span style="font-weight: bold; font-size: 15px; padding-right: 10px">
+                  {{ SORT_TYPE[query.sort_type] ? SORT_TYPE[query.sort_type].name : "정렬" }}
                 </span>
                 <Icon type="arrow-down-b"></Icon>
                 <Dropdown-menu slot="list">
-                  <Dropdown-item
-                    v-for="(val, k) in SORT_TYPE"
-                    :key="k"
-                    :name="{ type: 'sort_type', value: k }"
-                  >
+                  <Dropdown-item v-for="(val, k) in SORT_TYPE" :key="k" :name="{ type: 'sort_type', value: k }">
                     {{ val.name }}
                   </Dropdown-item>
                 </Dropdown-menu>
               </Dropdown>
             </div>
+
           </div>
           <div class="posts-list">
-            <div
-              v-for="post in posts"
-              :key="post.id"
-              @click="goToPost(post.id)"
-              class="post-card"
-            >
+            <div v-for="post in posts" :key="post.id" @click="goToPost(post.id)" class="post-card">
               <div class="card-left">
                 <div class="post-meta">
                   <span class="post-id">#{{ post.id }}</span>
                   <span v-if="isNewPost(post)" class="new-badge">NEW</span>
-                  <span
-                    v-if="POST_TYPE[post.post_type]"
-                    class="post-type-label"
-                    :style="{
-                      backgroundColor: POST_TYPE[post.post_type].color,
-                      color: POST_TYPE[post.post_type].textColor,
-                    }"
-                  >
+                  <span v-if="POST_TYPE[post.post_type]" class="post-type-label" :style="{
+                    backgroundColor: POST_TYPE[post.post_type].color,
+                    color: POST_TYPE[post.post_type].textColor
+                  }">
                     {{ POST_TYPE[post.post_type].name }}
                   </span>
-                  <span
-                    v-if="
-                      post.post_type === 'QUESTION' &&
-                      QUESTION_STATUS[post.question_status]
-                    "
-                    class="question-status-label"
-                    :style="{
-                      backgroundColor:
-                        QUESTION_STATUS[post.question_status].color,
-                      color: QUESTION_STATUS[post.question_status].textColor,
-                    }"
-                  >
+                  <span v-if="post.post_type === 'QUESTION' && QUESTION_STATUS[post.question_status]"
+                    class="question-status-label" :style="{
+                      backgroundColor: QUESTION_STATUS[post.question_status].color,
+                      color: QUESTION_STATUS[post.question_status].textColor
+                    }">
                     {{ QUESTION_STATUS[post.question_status].name }}
                   </span>
                 </div>
                 <div class="card-content">
                   <h3 class="post-title">{{ post.title }}</h3>
-                  <div
-                    v-if="post.content_preview"
-                    class="post-preview"
-                    v-html="post.content_preview"
-                  ></div>
+                  <div v-if="post.content_preview" class="post-preview" v-html="post.content_preview"></div>
                 </div>
 
                 <div class="card-footer">
                   <div class="author-info">
-                    <router-link
-                      :to="{
-                        name: 'user-home',
-                        params: { username: post.author_name },
-                      }"
-                      @click.native.stop
-                    >
-                      <img
-                        class="avatar"
-                        :src="
-                          post.author_avatar ||
-                          'https://cdn-icons-png.flaticon.com/512/473/473406.png'
-                        "
-                        alt="avatar"
-                      />
+                    <router-link :to="{
+                      name: 'user-home',
+                      params: { username: post.author_name },
+                    }" @click.native.stop>
+                      <img class="avatar"
+                        :src="post.author_avatar || 'https://cdn-icons-png.flaticon.com/512/473/473406.png'"
+                        alt="avatar" />
                       <span class="author-name">{{ post.author_name }}</span>
                     </router-link>
                   </div>
@@ -198,14 +112,8 @@
               </div>
             </div>
           </div>
-          <Pagination
-            :total="total"
-            :page-size.sync="query.limit"
-            @on-change="handlePageChange"
-            :current.sync="query.page"
-            :show-sizer="true"
-            @on-page-size-change="handleSizeChange"
-          ></Pagination>
+          <Pagination :total="total" :page-size.sync="query.limit" @on-change="handlePageChange"
+            :current.sync="query.page" :show-sizer="true" @on-page-size-change="handleSizeChange"></Pagination>
         </div>
         <div class="right-container">
           <CreatePost />
@@ -220,13 +128,9 @@
 import api from "../../api"
 import Pagination from "@/pages/admin/components/Pagination.vue"
 import ErrorSign from "../general/ErrorSign.vue"
-import CreatePost from "./communityComponent/CreatePost.vue"
-import {
-  POST_TYPE,
-  QUESTION_STATUS,
-  SORT_TYPE,
-} from "../../../../utils/constants"
-import QuestionList from "./communityComponent/QuestionList.vue"
+import CreatePost from "./communityComponent/CreatePost.vue";
+import { POST_TYPE, QUESTION_STATUS, SORT_TYPE } from "../../../../utils/constants";
+import QuestionList from "./communityComponent/QuestionList.vue";
 
 export default {
   name: "Community",
@@ -241,9 +145,9 @@ export default {
   },
   // url 변경 여부 탐지
   watch: {
-    $route() {
+    '$route'() {
       this.initRoute()
-    },
+    }
   },
   data() {
     return {
@@ -263,43 +167,41 @@ export default {
   },
   computed: {
     POST_TYPE() {
-      return POST_TYPE
+      return POST_TYPE;
     },
     QUESTION_STATUS() {
-      return QUESTION_STATUS
+      return QUESTION_STATUS;
     },
     SORT_TYPE() {
-      return SORT_TYPE
+      return SORT_TYPE;
     },
     pageTitle() {
-      if (this.$route.path === "/community/free") {
-        return this.$t("m.Community_Free")
-      } else if (this.$route.path === "/community/question") {
+      if (this.$route.path === '/community/free') {
+        return this.$t("m.Community_Free");
+      } else if (this.$route.path === '/community/question') {
         return this.$t("m.Community_Question")
       }
-      return this.$t("m.Community")
-    },
+      return this.$t("m.Community");
+    }
   },
   methods: {
     /**
      * 게시글이 3일 이내에 작성되었는지 확인
      */
     isNewPost(post) {
-      if (!post || !post.created_at) return false
-      const postDate = new Date(post.created_at)
-      const now = new Date()
-      const diffTime = Math.abs(now - postDate)
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-      return diffDays <= 3
+      if (!post || !post.created_at) return false;
+      const postDate = new Date(post.created_at);
+      const now = new Date();
+      const diffTime = Math.abs(now - postDate);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      return diffDays <= 3;
     },
     async fetchPosts() {
       this.isLoading = true
 
       const offset = (this.query.page - 1) * this.query.limit
-      const serverPostType =
-        this.query.post_type === "ALL" ? "" : this.query.post_type
-      const questionStatus =
-        this.query.question_status === "ALL" ? "" : this.query.question_status
+      const serverPostType = this.query.post_type === "ALL" ? "" : this.query.post_type
+      const questionStatus = this.query.question_status === "ALL" ? "" : this.query.question_status
       api
         .getCommunityPostList(
           offset,
@@ -309,7 +211,7 @@ export default {
           null,
           null,
           this.query.keyword,
-          this.query.sort_type,
+          this.query.sort_type
         )
         .then((res) => {
           this.posts = res.data.data.results
@@ -345,25 +247,25 @@ export default {
       this.$router.push({ name: "community-detail", params: { postId } })
     },
     filter({ type, value }) {
-      const q = this.query
-      q.page = 1
+      const q = this.query;
+      q.page = 1;
 
-      if (type === "post_type") {
-        q.post_type = value
-        if (value !== "QUESTION") {
-          q.question_status = "ALL"
+      if (type === 'post_type') {
+        q.post_type = value;
+        if (value !== 'QUESTION') {
+          q.question_status = 'ALL';
         }
       }
 
-      if (type === "sort_type") {
-        q.sort_type = value
+      if (type === 'sort_type') {
+        q.sort_type = value;
       }
 
-      if (type === "question_status") {
-        q.question_status = value
+      if (type === 'question_status') {
+        q.question_status = value;
       }
 
-      this.fetchPosts()
+      this.fetchPosts();
     },
     applySearch() {
       this.query.page = 1
@@ -371,14 +273,14 @@ export default {
     },
     // mount시, 쿼리통해 라우팅
     initRoute() {
-      this.query.post_type = "ALL"
-      this.query.question_status = "ALL"
-      this.query.sort_type = "NEWEST"
-      if (this.$route.path === "/community/free") {
-        this.query.post_type = "ARTICLE"
-      } else if (this.$route.path === "/community/question") {
-        this.query.post_type = "QUESTION"
-        this.query.question_status = "OPEN"
+      this.query.post_type = 'ALL'
+      this.query.question_status = 'ALL'
+      this.query.sort_type = 'NEWEST'
+      if (this.$route.path === '/community/free') {
+        this.query.post_type = 'ARTICLE'
+      } else if (this.$route.path === '/community/question') {
+        this.query.post_type = 'QUESTION'
+        this.query.question_status = 'OPEN'
       }
       this.query.page = 1
       this.fetchPosts()
@@ -493,6 +395,7 @@ main {
     }
 
     @keyframes pulse {
+
       0%,
       100% {
         transform: scale(1);
@@ -642,6 +545,8 @@ main {
     align-items: center;
   }
 }
+
+
 
 .search-bar {
   width: 190px;
