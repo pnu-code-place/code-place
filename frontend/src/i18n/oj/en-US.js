@@ -548,7 +548,7 @@ export const m = {
   Community_Content_Placeholder: "내용을 입력해주세요.",
   Community_Post_Edit: "수정",
   Community_Post_Delete: "삭제",
-  Community_Back: "목록",
+  Community_List: "목록",
   Community_Post_Save: "저장",
   Community_Post_Cancel: "취소",
   Community_Post_Edit_Success: "게시글이 수정되었습니다.",

@@ -3,7 +3,16 @@
     <div class="contents" v-if="post">
       <div class="post-header">
         <div class="title-section" v-if="!isEditing">
-          <h1 class="post-title">{{ post.title }}</h1>
+          <div class="sub-title-section">
+            <h1 class="post-title">
+              {{ post.title }}
+            </h1>
+            <div class="post-actions-always-visible">
+              <button class="community-back-btn" @click="goback">
+                {{ $t("m.Community_List") }}
+              </button>
+            </div>
+          </div>
           <div class="badges-container">
             <span v-if="isNewPost" class="new-badge">NEW</span>
             <span
@@ -61,11 +70,6 @@
             </div>
           </div>
           <div class="post-meta-right">
-            <div class="post-actions-always-visible">
-              <button class="community-back-btn" @click="goback">
-                {{ $t("m.Community_Back") }}
-              </button>
-            </div>
             <div v-if="isAuthor && !isEditing" class="post-edit-actions">
               <button
                 v-if="post.post_type === 'QUESTION'"
@@ -696,6 +700,11 @@ main {
   margin-bottom: 28px;
 }
 
+.sub-title-section {
+  display: flex;
+  justify-content: space-between;
+}
+
 .post-title {
   font-size: 28px;
   font-weight: 600;
@@ -864,13 +873,13 @@ main {
 }
 
 .community-back-btn {
-  background: rgb(228, 228, 228);
+  background: rgb(241, 243, 244);
   color: black;
 }
 
 .community-back-btn:hover {
-  background: grey;
-  color: white;
+  background: lightgrey;
+  color: rgb(50, 50, 50);
   transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(93, 93, 93, 0.2);
 }
