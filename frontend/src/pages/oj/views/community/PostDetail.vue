@@ -360,11 +360,22 @@ export default {
       editedPostType: "",
       editingCommentId: null,
       editedCommentContent: "",
+      prevRoute: null,
     }
   },
   created() {
     this.fetchPostDetail()
   },
+
+  beforeRouteEnter(to, from, next) {
+    next((vm) => {
+      const validBoards = ["community", "community-free", "community-question"]
+      if (from.name && validBoards.includes(from.name)) {
+        sessionStorage.setItem("last_community_board", from.name)
+      }
+    })
+  },
+
   methods: {
     fetchPostDetail() {
       this.isLoading = true
@@ -434,14 +445,16 @@ export default {
         })
     },
     goback() {
-      if (this.post.post_type === "QUESTION") {
-        this.$router.push({
-          name: "community-question",
-        })
+      const lastBoard = sessionStorage.getItem("last_community_board")
+
+      if (lastBoard) {
+        this.$router.push({ name: lastBoard })
       } else {
-        this.$router.push({
-          name: "community-free",
-        })
+        if (this.post.post_type === "QUESTION") {
+          this.$router.push({ name: "community-question" })
+        } else {
+          this.$router.push({ name: "community" })
+        }
       }
     },
     enterEditMode() {
