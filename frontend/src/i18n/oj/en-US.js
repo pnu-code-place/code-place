@@ -253,6 +253,7 @@ export const m = {
   // announcements.vue
   Refresh: "새로고침",
   Back: "뒤로가기",
+  Notice_List: "목록",
   No_Announcements: "공지사항이 없습니다",
   Next_Announcement: "다음 공지",
   Before_Announcement: "이전 공지",

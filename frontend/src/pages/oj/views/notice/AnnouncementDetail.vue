@@ -118,6 +118,11 @@ export default {
         params: { noticeID: this.nextAnnouncementId },
       })
     },
+    goList() {
+      this.$router.push({
+        name: "notice",
+      })
+    },
   },
   computed: {
     createDate() {
@@ -207,6 +212,9 @@ export default {
         ></div>
       </div>
     </div>
+    <button class="notice-list-btn" @click="goList">
+      {{ $t("m.Notice_List") }}
+    </button>
     <!--    <div class="other-announcements">-->
     <!--      <div class="other-announcement-wrapper">-->
     <!--        <div class="announcement-skeleton" v-if="this.loadingNext">-->
@@ -377,5 +385,31 @@ export default {
   100% {
     opacity: 0.5;
   }
+}
+
+.notice-list-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.notice-list-btn {
+  background: rgb(241, 243, 244);
+  color: black;
+}
+
+.notice-list-btn:hover {
+  background: lightgrey;
+  color: rgb(50, 50, 50);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(52, 152, 219, 0.2);
 }
 </style>

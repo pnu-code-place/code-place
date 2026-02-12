@@ -31,7 +31,7 @@
       </table>
       <Pagination
         v-if="!isContest"
-        key="page"
+        :current="currentPage"
         :total="total"
         :page-size="limit"
         @on-change="getAnnouncementList"
@@ -67,13 +67,20 @@ export default {
   },
   methods: {
     init() {
+      const savedPage = Number(sessionStorage.getItem("noticePage")) || 1
+      this.currentPage = savedPage
+
       if (this.isContest) {
         this.getContestAnnouncementList()
       } else {
         this.getAnnouncementList()
       }
     },
-    getAnnouncementList(page = 1) {
+    getAnnouncementList(page = this.currentPage) {
+      this.currentPage = page
+
+      sessionStorage.setItem("noticePage", page)
+
       this.btnLoading = true
       api.getAnnouncementList((page - 1) * this.limit, this.limit).then(
         (res) => {
