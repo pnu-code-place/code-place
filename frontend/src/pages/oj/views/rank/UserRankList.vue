@@ -38,7 +38,7 @@ export default {
     <tbody>
       <tr
         v-if="isLoading"
-        v-for="index in 10"
+        v-for="index in limit"
         :key="index"
         class="skeleton-row"
       >

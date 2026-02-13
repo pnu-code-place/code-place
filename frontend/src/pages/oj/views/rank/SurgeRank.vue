@@ -7,11 +7,15 @@
       :solution="this.error.solution || ''"
     />
     <div class="soaring-rank" v-else>
-      <UserList :userList="surgeUsers" :is-loading="isLoading" :limit="limit" />
+      <UserList
+        :userList="surgeUsers"
+        :is-loading="isLoading"
+        :limit="query.limit"
+      />
       <Pagination
         :total="total"
-        :page-size.sync="limit"
-        :current.sync="page"
+        :page-size.sync="query.limit"
+        :current.sync="query.page"
         @on-change="getSurgeUsers"
         show-sizer
         @on-page-size-change="getSurgeUsers(1)"
@@ -38,7 +42,7 @@ export default {
       error: null,
 
       total: 0,
-      limit: 30,
+      // limit: 10,
       query: {
         page: 1,
         limit: 10,
@@ -52,9 +56,9 @@ export default {
     },
     getSurgeUsers() {
       this.isLoading = true
-      const offset = (this.query.page - 1) * this.limit
+      const offset = (this.query.page - 1) * this.query.limit
       api
-        .getSurgeUsers(offset, this.limit)
+        .getSurgeUsers(offset, this.query.limit)
         .then((res) => {
           this.surgeUsers = res.data.data.results
           this.total = res.data.data.total
