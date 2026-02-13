@@ -25,7 +25,7 @@ export default {
       error: null,
 
       total: 0,
-      limit: 10,
+      // limit: 10,
       query: {
         page: 1,
         limit: 10,
@@ -79,9 +79,9 @@ export default {
       let offset = (this.query.page - 1) * this.query.limit + 3
       this.isLoading = true
       api
-        .getUserRank(offset, this.limit, RULE_TYPE.ACM)
+        .getUserRank(offset, this.query.limit, RULE_TYPE.ACM)
         .then((res) => {
-          this.total = res.data.data.total - 3
+          this.total = Math.max(0, res.data.data.total - 3)
           this.dataRank = res.data.data.results
           if (this.dataRank.length === 0) {
             this.error = {
