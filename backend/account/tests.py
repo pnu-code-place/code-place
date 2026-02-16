@@ -448,7 +448,7 @@ class CalculateUserScoreFluctuationAPITest(APITestCase):
 
         user_score.refresh_from_db()
 
-        self.assertEqual(user_score.fluctuation, 200)  # 300 - 100 = 200
+        self.assertEqual(user_score.fluctuation, 200)    # 300 - 100 = 200
 
     def test_database_error_calculate_user_score_fluctuation(self):
         user_score = self.user.userscore
@@ -460,7 +460,7 @@ class CalculateUserScoreFluctuationAPITest(APITestCase):
         with mock.patch('account.models.UserScore.objects.update', side_effect=DatabaseError("Test Database Error")):
             with self.assertRaises(DatabaseError):
                 calculate_user_score_fluctuation()
-        self.assertEqual(user_score.fluctuation, 0)  # Fluctuation should not change if error occurs
+        self.assertEqual(user_score.fluctuation, 0)    # Fluctuation should not change if error occurs
 
 
 # class UserChangePasswordAPITest(APITestCase):

@@ -82,7 +82,7 @@ class TestTestCaseCacheManager(TestCase):
         self.assertIsNone(result)
         mock_read_file.assert_called_once_with(testcase_dir, testcase_idx)
 
-    @patch('utils.testcase_cache.logger')  # 실제 모듈 경로에 맞게 수정
+    @patch('utils.testcase_cache.logger')    # 실제 모듈 경로에 맞게 수정
     def test_read_testcase_invalid_directory_name(self, mock_logger):
         """잘못된 디렉토리 이름 검증 테스트"""
         result = TestCaseCacheManager._read_testcase_from_file("problem-1", 1)
@@ -91,7 +91,7 @@ class TestTestCaseCacheManager(TestCase):
         mock_logger.error.assert_called_with(
             "Invalid testcase directory name. Only alphanumeric characters are allowed.")
 
-    @patch('utils.testcase_cache.logger')  # 실제 모듈 경로에 맞게 수정
+    @patch('utils.testcase_cache.logger')    # 실제 모듈 경로에 맞게 수정
     def test_read_testcase_invalid_index_negative(self, mock_logger):
         """음수 인덱스 검증 테스트"""
         result = TestCaseCacheManager._read_testcase_from_file("problem1", -1)
@@ -99,7 +99,7 @@ class TestTestCaseCacheManager(TestCase):
         self.assertIsNone(result)
         mock_logger.error.assert_called_with("Invalid testcase index. It must be a non-negative integer.")
 
-    @patch('utils.testcase_cache.logger')  # 실제 모듈 경로에 맞게 수정
+    @patch('utils.testcase_cache.logger')    # 실제 모듈 경로에 맞게 수정
     def test_read_testcase_invalid_index_non_integer(self, mock_logger):
         """정수가 아닌 인덱스 검증 테스트"""
         result = TestCaseCacheManager._read_testcase_from_file("problem1", "invalid")
@@ -109,14 +109,14 @@ class TestTestCaseCacheManager(TestCase):
 
     @override_settings(TEST_CASE_DIR="/test/cases")
     @patch('os.path.abspath')
-    @patch('utils.testcase_cache.logger')  # 실제 모듈 경로에 맞게 수정
+    @patch('utils.testcase_cache.logger')    # 실제 모듈 경로에 맞게 수정
     def test_read_testcase_path_traversal_attack(self, mock_logger, mock_abspath):
         """경로 순회 공격 방지 테스트"""
         # abspath 모킹 - 악성 경로로 설정
         mock_abspath.side_effect = [
-            "/test/cases",  # base_dir
-            "/etc/passwd",  # input_file_path (악성)
-            "/test/cases/problem1/1.out"  # output_file_path
+            "/test/cases",    # base_dir
+            "/etc/passwd",    # input_file_path (악성)
+            "/test/cases/problem1/1.out"    # output_file_path
         ]
 
         result = TestCaseCacheManager._read_testcase_from_file("problem1", 1)
@@ -130,9 +130,9 @@ class TestTestCaseCacheManager(TestCase):
     def test_read_testcase_from_file_success(self, mock_abspath, mock_file):
         """파일 읽기 성공 테스트"""
         mock_abspath.side_effect = [
-            "/test/cases",  # base_dir
-            "/test/cases/problem5/5.in",  # input_file_path
-            "/test/cases/problem5/5.out"  # output_file_path
+            "/test/cases",    # base_dir
+            "/test/cases/problem5/5.in",    # input_file_path
+            "/test/cases/problem5/5.out"    # output_file_path
         ]
 
         mock_file.side_effect = [
@@ -151,13 +151,13 @@ class TestTestCaseCacheManager(TestCase):
     @override_settings(TEST_CASE_DIR="/test/cases")
     @patch("builtins.open", side_effect=FileNotFoundError("File not found"))
     @patch('os.path.abspath')
-    @patch('utils.testcase_cache.logger')  # 실제 모듈 경로에 맞게 수정
+    @patch('utils.testcase_cache.logger')    # 실제 모듈 경로에 맞게 수정
     def test_read_testcase_from_file_not_found(self, mock_logger, mock_abspath, mock_open_file):
         """파일이 존재하지 않는 경우 테스트"""
         mock_abspath.side_effect = [
-            "/test/cases",  # base_dir
-            "/test/cases/problem6/6.in",  # input_file_path
-            "/test/cases/problem6/6.out"  # output_file_path
+            "/test/cases",    # base_dir
+            "/test/cases/problem6/6.in",    # input_file_path
+            "/test/cases/problem6/6.out"    # output_file_path
         ]
 
         result = TestCaseCacheManager._read_testcase_from_file("problem6", 6)
@@ -170,13 +170,13 @@ class TestTestCaseCacheManager(TestCase):
     @override_settings(TEST_CASE_DIR="/test/cases")
     @patch("builtins.open", side_effect=IOError("IO Error"))
     @patch('os.path.abspath')
-    @patch('utils.testcase_cache.logger')  # 실제 모듈 경로에 맞게 수정
+    @patch('utils.testcase_cache.logger')    # 실제 모듈 경로에 맞게 수정
     def test_read_testcase_from_file_io_error(self, mock_logger, mock_abspath, mock_open_file):
         """IO 에러 발생 시 테스트"""
         mock_abspath.side_effect = [
-            "/test/cases",  # base_dir
-            "/test/cases/problem7/7.in",  # input_file_path
-            "/test/cases/problem7/7.out"  # output_file_path
+            "/test/cases",    # base_dir
+            "/test/cases/problem7/7.in",    # input_file_path
+            "/test/cases/problem7/7.out"    # output_file_path
         ]
 
         result = TestCaseCacheManager._read_testcase_from_file("problem7", 7)
@@ -188,7 +188,7 @@ class TestTestCaseCacheManager(TestCase):
 
     def test_cache_timeout_setting(self):
         """캐시 타임아웃 설정 테스트"""
-        self.assertEqual(TestCaseCacheManager.DEFAULT_TIMEOUT, 3600)  # 1시간
+        self.assertEqual(TestCaseCacheManager.DEFAULT_TIMEOUT, 3600)    # 1시간
 
     def test_cache_prefix_setting(self):
         """캐시 프리픽스 설정 테스트"""
@@ -221,9 +221,9 @@ class TestTestCaseCacheManager(TestCase):
 
         with patch('os.path.abspath') as mock_abspath:
             mock_abspath.side_effect = [
-                "/test/cases",  # base_dir
-                "/test/cases/test/1.in",  # input_file_path
-                "/test/cases/test/1.out"  # output_file_path
+                "/test/cases",    # base_dir
+                "/test/cases/test/1.in",    # input_file_path
+                "/test/cases/test/1.out"    # output_file_path
             ]
 
             with patch("builtins.open", side_effect=FileNotFoundError()):
