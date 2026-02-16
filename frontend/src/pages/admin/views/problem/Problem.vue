@@ -1,103 +1,75 @@
 <template>
   <div class="problem">
-    <Panel :title="title">
-      <el-form
-        ref="form"
-        :model="problem"
-        label-position="top"
-        label-width="70px"
+    <div class="tab-headers">
+      <div
+        class="tab-header"
+        :class="{ active: activeTab === 'edit' }"
+        @click="activeTab = 'edit'"
       >
-        <el-row :gutter="20">
-          <el-col :span="6">
-            <el-form-item
-              prop="_id"
-              :label="$t('m.Display_ID')"
-              :required="
-                this.routeName === 'create-contest-problem' ||
-                this.routeName === 'edit-contest-problem'
-              "
+        {{ $t("m.Question_Creation") }}
+      </div>
+      <div
+        class="tab-header"
+        :class="{ active: activeTab === 'preview' }"
+        @click="activeTab = 'preview'"
+      >
+        Preview
+      </div>
+    </div>
+    <div class="tab-content">
+      <div v-show="activeTab === 'edit'" class="detailCard">
+        <div class="header-input-container">
+          <div class="header-question-id">
+            <!-- 문제 번호 글자 -->
+            <label class="custom-label"
+              ><span class="required-asterisk">*</span
+              >{{ $t("m.Display_ID") }}</label
             >
-              <el-row>
-                <el-col :span="16">
-                  <el-input
-                    :placeholder="$t('m.Display_ID')"
-                    v-model="problem._id"
-                  ></el-input>
-                </el-col>
-                <el-col :span="2">
-                  <el-button type="primary" @click="checkDuplicateProblemId">
-                    중복확인
-                  </el-button>
-                </el-col>
-              </el-row>
-            </el-form-item>
-          </el-col>
-          <el-col :span="18">
-            <el-form-item prop="title" :label="$t('m.Title')" required>
-              <el-input
-                :placeholder="$t('m.Title')"
-                v-model="problem.title"
-              ></el-input>
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row :gutter="20">
-          <el-col :span="24">
-            <el-form-item
-              prop="description"
-              :label="$t('m.Description')"
-              required
+            <!-- 문제 번호 input 칸 -->
+            <el-input
+              class="id_input"
+              v-model="problem._id"
+              :placeholder="$t('m.Display_ID')"
+            />
+            <!-- 중복확인 버튼 -->
+            <el-button
+              class="duplicate-btn"
+              type="primary"
+              size="small"
+              @click="checkDuplicateProblemId"
             >
-              <Simditor v-model="problem.description"></Simditor>
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row :gutter="20">
-          <el-col :span="24">
-            <el-form-item
-              prop="input_description"
-              :label="$t('m.Input_Description')"
-              required
+              {{ $t("m.Check_ID_Duplication") }}
+            </el-button>
+          </div>
+          <div class="header-title">
+            <!-- 문제 제목 글자 -->
+            <label class="custom-label"
+              ><span class="required-asterisk">*</span
+              >{{ $t("m.Question_Title") }}</label
             >
-              <Simditor v-model="problem.input_description"></Simditor>
-            </el-form-item>
-          </el-col>
-          <el-col :span="24">
-            <el-form-item
-              prop="output_description"
-              :label="$t('m.Output_Description')"
-              required
+            <!-- 문제 제목 input 칸 -->
+            <el-input
+              class="title_input"
+              v-model="problem.title"
+              :placeholder="$t('m.Question_Title')"
+            />
+          </div>
+        </div>
+
+        <div class="meta-data">
+          <div class="form-group difficulty-field">
+            <!-- 난이도 글자 -->
+            <label class="custom-label"
+              ><span class="required-asterisk">*</span
+              >{{ $t("m.Difficulty") }}</label
             >
-              <Simditor v-model="problem.output_description"></Simditor>
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row :gutter="20">
-          <el-col :span="8">
-            <el-form-item :label="$t('m.Time_Limit') + ' (ms)'" required>
-              <el-input
-                type="Number"
-                :placeholder="$t('m.Time_Limit')"
-                v-model="problem.time_limit"
-              ></el-input>
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-form-item :label="$t('m.Memory_limit') + ' (MB)'" required>
-              <el-input
-                type="Number"
-                :placeholder="$t('m.Memory_limit')"
-                v-model="problem.memory_limit"
-              ></el-input>
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-form-item :label="$t('m.Difficulty')">
+            <div style="display: flex; align-items: center; gap: 10px">
               <el-select
                 class="difficulty-select"
                 size="small"
                 :placeholder="$t('m.Difficulty')"
                 v-model="problem.difficulty"
+                style="width: 150px"
               >
                 <el-option :label="$t('m.VeryLow')" value="VeryLow"></el-option>
                 <el-option :label="$t('m.Low')" value="Low"></el-option>
@@ -108,9 +80,191 @@
                   value="VeryHigh"
                 ></el-option>
               </el-select>
-            </el-form-item>
-          </el-col>
-        </el-row>
+
+              <div class="headerDetailBtn">
+                <Icon type="ios-pie" color="#F8B193" />
+                영역
+              </div>
+              <div class="headerDetailBtn">
+                <Icon type="ios-pricetag" color="#FF9F9F" />
+                태그
+              </div>
+            </div>
+          </div>
+
+          <!-- Commented out old Field/Tag inputs as requested -->
+          <!-- <div class="form-group category-field">
+              <label class="custom-label"><span class="required-asterisk">*</span>{{ $t('m.Field') }}</label>
+              <el-select class="difficulty-select" size="small" :placeholder="$t('m.Field')" v-model="problem.field">
+                <el-option :label="$t('m.Field_Impl')" :value="0"></el-option>
+                <el-option :label="$t('m.Field_Math')" :value="1"></el-option>
+                <el-option :label="$t('m.Field_DataStructure')" :value="2"></el-option>
+                <el-option :label="$t('m.Field_Search')" :value="3"></el-option>
+                <el-option :label="$t('m.Field_Sorting')" :value="4"></el-option>
+                <el-option :label="$t('m.Field_Algorithm')" :value="5"></el-option>
+              </el-select>
+            </div>
+            <div class="form-group tag-field">
+              <label class="custom-label"><span class="required-asterisk">*</span>{{ $t('m.Tag') }}</label>
+              <div class="tags-container">
+                <span class="tags">
+                  <el-tag v-for="tag in problem.tags" :closable="true" :close-transition="false" :key="tag"
+                    type="success" @close="closeTag(tag)">{{ tag }}</el-tag>
+                </span>
+                <el-autocomplete v-if="inputVisible" size="mini" class="input-new-tag" popper-class="problem-tag-poper"
+                  v-model="tagInput" :trigger-on-focus="false" @keyup.enter.native="addTag" @select="addTag"
+                  :fetch-suggestions="querySearch">
+                </el-autocomplete>
+                <el-button class="button-new-tag" v-else size="small" @click="inputVisible = true">+ {{
+                  $t("m.New_Tag")
+                }}</el-button>
+              </div>
+              <div class="el-form-item__error" v-if="error.tags">
+                {{ error.tags }}
+              </div>
+            </div> -->
+          <!-- 언어 선택 -->
+          <div class="form-group language-field">
+            <label class="custom-label"
+              ><span class="required-asterisk">*</span
+              >{{ $t("m.Languages") }}</label
+            >
+            <div class="language-container">
+              <el-tooltip
+                v-for="lang in allLanguage.languages"
+                :key="'spj' + lang.name"
+                effect="dark"
+                :content="lang.description"
+                placement="top-start"
+              >
+                <div
+                  class="language-btn"
+                  :class="{ active: problem.languages.includes(lang.name) }"
+                  @click="toggleLanguage(lang.name)"
+                >
+                  <i
+                    v-if="problem.languages.includes(lang.name)"
+                    class="el-icon-check check-icon"
+                  ></i>
+                  {{ lang.name }}
+                </div>
+              </el-tooltip>
+            </div>
+            <div class="el-form-item__error" v-if="error.languages">
+              {{ error.languages }}
+            </div>
+          </div>
+        </div>
+
+        <!-- 설명 -->
+        <div class="description-box">
+          <!-- Description -->
+          <div class="form-group">
+            <label class="custom-label"
+              ><span class="required-asterisk">*</span
+              >{{ $t("m.Description") }}</label
+            >
+            <Simditor v-model="problem.description"></Simditor>
+          </div>
+          <!-- Input Description -->
+          <div class="form-group">
+            <label class="custom-label"
+              ><span class="required-asterisk">*</span
+              >{{ $t("m.Input_Description") }}</label
+            >
+            <Simditor v-model="problem.input_description"></Simditor>
+          </div>
+          <!-- Output Description -->
+          <div class="form-group">
+            <label class="custom-label"
+              ><span class="required-asterisk">*</span
+              >{{ $t("m.Output_Description") }}</label
+            >
+            <Simditor v-model="problem.output_description"></Simditor>
+          </div>
+        </div>
+
+        <!-- 예제 입력 / 출력 -->
+        <div class="sample-box">
+          <div
+            v-for="(sample, index) in problem.samples"
+            :key="'sample' + index"
+            class="sample-item"
+          >
+            <div class="sample-content">
+              <div class="form-group sample-input">
+                <label class="custom-label">
+                  <span class="required-asterisk">*</span
+                  >{{ $t("m.Input_Samples") }} {{ index + 1 }}
+                </label>
+                <el-input
+                  class="sample-textarea"
+                  :rows="5"
+                  type="textarea"
+                  :placeholder="$t('m.Input_Samples') + ' ' + (index + 1)"
+                  v-model="sample.input"
+                ></el-input>
+              </div>
+              <div class="form-group sample-output">
+                <div class="custom-label-with-btn">
+                  <label class="custom-label">
+                    <span class="required-asterisk">*</span
+                    >{{ $t("m.Output_Samples") }} {{ index + 1 }}
+                  </label>
+                  <button
+                    type="button"
+                    class="delete-btn"
+                    @click="deleteSample(index)"
+                  >
+                    <i class="el-icon-delete"> Delete</i>
+                  </button>
+                </div>
+                <el-input
+                  class="sample-textarea"
+                  :rows="5"
+                  type="textarea"
+                  :placeholder="$t('m.Output_Samples') + ' ' + (index + 1)"
+                  v-model="sample.output"
+                ></el-input>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 예시 추가 버튼 -->
+        <div class="add-sample-btn">
+          <button type="button" class="add-samples" @click="addSample()">
+            <i class="el-icon-plus"></i>{{ $t("m.Add_Sample") }}
+          </button>
+        </div>
+
+        <!-- 시간 / 메모리 제한 -->
+        <div>
+          <div class="form-group">
+            <label class="custom-label"
+              ><span class="required-asterisk">*</span
+              >{{ $t("m.Time_Limit") }} (ms)</label
+            >
+            <el-input
+              type="Number"
+              :placeholder="$t('m.Time_Limit')"
+              v-model="problem.time_limit"
+            ></el-input>
+          </div>
+          <div class="form-group">
+            <label class="custom-label"
+              ><span class="required-asterisk">*</span
+              >{{ $t("m.Memory_limit") }} (MB)</label
+            >
+            <el-input
+              type="Number"
+              :placeholder="$t('m.Memory_limit')"
+              v-model="problem.memory_limit"
+            ></el-input>
+          </div>
+        </div>
+
+        <!-- 공개 / 제출 공유 여부 -->
         <el-row :gutter="20">
           <el-col :span="4">
             <el-form-item :label="$t('m.Visible')">
@@ -132,135 +286,12 @@
               </el-switch>
             </el-form-item>
           </el-col>
-          <el-col :span="8">
-            <el-form-item :label="$t('m.Field')" :error="error.tags" required>
-              <el-select
-                class="difficulty-select"
-                size="small"
-                :placeholder="$t('m.Field')"
-                v-model="problem.field"
-              >
-                <el-option :label="$t('m.Field_Impl')" :value="0"></el-option>
-                <el-option :label="$t('m.Field_Math')" :value="1"></el-option>
-                <el-option
-                  :label="$t('m.Field_DataStructure')"
-                  :value="2"
-                ></el-option>
-                <el-option :label="$t('m.Field_Search')" :value="3"></el-option>
-                <el-option
-                  :label="$t('m.Field_Sorting')"
-                  :value="4"
-                ></el-option>
-                <el-option
-                  :label="$t('m.Field_Algorithm')"
-                  :value="5"
-                ></el-option>
-              </el-select>
-            </el-form-item>
-            <el-form-item :label="$t('m.Tag')" :error="error.tags" required>
-              <span class="tags">
-                <el-tag
-                  v-for="tag in problem.tags"
-                  :closable="true"
-                  :close-transition="false"
-                  :key="tag"
-                  type="success"
-                  @close="closeTag(tag)"
-                  >{{ tag }}</el-tag
-                >
-              </span>
-              <el-autocomplete
-                v-if="inputVisible"
-                size="mini"
-                class="input-new-tag"
-                popper-class="problem-tag-poper"
-                v-model="tagInput"
-                :trigger-on-focus="false"
-                @keyup.enter.native="addTag"
-                @select="addTag"
-                :fetch-suggestions="querySearch"
-              >
-              </el-autocomplete>
-              <el-button
-                class="button-new-tag"
-                v-else
-                size="small"
-                @click="inputVisible = true"
-                >+ {{ $t("m.New_Tag") }}</el-button
-              >
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-form-item
-              :label="$t('m.Languages')"
-              :error="error.languages"
-              required
-            >
-              <el-checkbox-group v-model="problem.languages">
-                <el-tooltip
-                  class="spj-radio"
-                  v-for="lang in allLanguage.languages"
-                  :key="'spj' + lang.name"
-                  effect="dark"
-                  :content="lang.description"
-                  placement="top-start"
-                >
-                  <el-checkbox :label="lang.name"></el-checkbox>
-                </el-tooltip>
-              </el-checkbox-group>
-            </el-form-item>
-          </el-col>
         </el-row>
-        <div>
-          <el-form-item
-            v-for="(sample, index) in problem.samples"
-            :key="'sample' + index"
-          >
-            <Accordion :title="'Sample' + (index + 1)">
-              <el-button
-                type="warning"
-                size="small"
-                icon="el-icon-delete"
-                slot="header"
-                @click="deleteSample(index)"
-              >
-                Delete
-              </el-button>
-              <el-row :gutter="20">
-                <el-col :span="12">
-                  <el-form-item :label="$t('m.Input_Samples')" required>
-                    <el-input
-                      :rows="5"
-                      type="textarea"
-                      :placeholder="$t('m.Input_Samples')"
-                      v-model="sample.input"
-                    >
-                    </el-input>
-                  </el-form-item>
-                </el-col>
-                <el-col :span="12">
-                  <el-form-item :label="$t('m.Output_Samples')" required>
-                    <el-input
-                      :rows="5"
-                      type="textarea"
-                      :placeholder="$t('m.Output_Samples')"
-                      v-model="sample.output"
-                    >
-                    </el-input>
-                  </el-form-item>
-                </el-col>
-              </el-row>
-            </Accordion>
-          </el-form-item>
-        </div>
-        <div class="add-sample-btn">
-          <button type="button" class="add-samples" @click="addSample()">
-            <i class="el-icon-plus"></i>{{ $t("m.Add_Sample") }}
-          </button>
-        </div>
+        <!-- 힌트 -->
         <el-form-item style="margin-top: 20px" :label="$t('m.Hint')">
           <Simditor v-model="problem.hint" placeholder=""></Simditor>
         </el-form-item>
+        <!-- 코드 템플릿 -->
         <el-form-item :label="$t('m.Code_Template')">
           <el-row>
             <el-col :span="24" v-for="(v, k) in template" :key="'template' + k">
@@ -273,6 +304,7 @@
             </el-col>
           </el-row>
         </el-form-item>
+        <!-- 스페셜 저지 -->
         <el-form-item :label="$t('m.Special_Judge')" :error="error.spj">
           <el-col :span="24">
             <el-checkbox
@@ -282,6 +314,7 @@
             >
           </el-col>
         </el-form-item>
+        <!-- 스페셜 저지 코드 -->
         <el-form-item v-if="problem.spj">
           <Accordion :title="$t('m.Special_Judge_Code')">
             <template slot="header">
@@ -314,6 +347,8 @@
             ></code-mirror>
           </Accordion>
         </el-form-item>
+
+        <!-- 종류 / 테케 / 입출력모드 / 배점 설정 -->
         <el-row :gutter="20">
           <el-col :span="4">
             <el-form-item :label="$t('m.Type')">
@@ -386,16 +421,24 @@
             </el-table>
           </el-col>
         </el-row>
-
+        <!-- 출처 -->
         <el-form-item :label="$t('m.Source')">
           <el-input
             :placeholder="$t('m.Source')"
             v-model="problem.source"
           ></el-input>
         </el-form-item>
+        <!-- 제출 -->
         <save @click.native="submit()">Save</save>
-      </el-form>
-    </Panel>
+      </div>
+
+      <div v-show="activeTab === 'preview'" class="preview-content">
+        <!-- Preview content will be here -->
+        <div class="empty-preview" style="text-align: center; padding: 50px">
+          PREVIEW
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -420,6 +463,7 @@ export default {
   },
   data() {
     return {
+      activeTab: "edit",
       loadingCompile: false,
       mode: "",
       contest: {},
@@ -540,7 +584,7 @@ export default {
   },
   watch: {
     $route() {
-      this.$refs.form.resetFields()
+      this.resetProblem()
       this.problem = this.reProblem
     },
     "problem.languages"(newVal) {
@@ -581,6 +625,14 @@ export default {
     },
   },
   methods: {
+    toggleLanguage(langName) {
+      const index = this.problem.languages.indexOf(langName)
+      if (index !== -1) {
+        this.problem.languages.splice(index, 1)
+      } else {
+        this.problem.languages.push(langName)
+      }
+    },
     switchSpj() {
       if (this.testCaseUploaded) {
         this.$confirm(
@@ -793,56 +845,463 @@ export default {
         })
         .catch(() => {})
     },
+    resetProblem() {
+      this.problem = JSON.parse(JSON.stringify(this.reProblem))
+      this.template = {}
+      this.testCaseUploaded = false
+      this.inputVisible = false
+      this.tagInput = ""
+      this.spjMode = ""
+      this.error = {
+        tags: "",
+        spj: "",
+        languages: "",
+        testCase: "",
+      }
+    },
   },
 }
 </script>
 
 <style lang="less" scoped>
 .problem {
-  .difficulty-select {
-    width: 120px;
+  height: 100%;
+  overflow-y: scroll;
+  display: flex;
+  flex-direction: column;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
   }
-  .spj-radio {
-    margin-left: 10px;
-    &:last-child {
-      margin-right: 20px;
-    }
+
+  &::-webkit-scrollbar-track {
+    background: var(--dropdown-bg);
+    border-radius: 4px;
   }
-  .input-new-tag {
-    width: 78px;
+
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--border-color);
+    border-radius: 4px;
+    border: 2px solid var(--dropdown-bg);
   }
-  .button-new-tag {
-    height: 24px;
-    line-height: 22px;
-    padding-top: 0;
-    padding-bottom: 0;
+
+  .tab-headers {
+    display: flex;
+    margin-bottom: -1px;
+    z-index: 10;
+    position: relative;
   }
-  .tags {
-    .el-tag {
-      margin-right: 10px;
-    }
-  }
-  .accordion {
-    margin-bottom: 10px;
-  }
-  .add-samples {
-    width: 100%;
-    background-color: #fff;
-    border: 1px dashed #aaa;
-    outline: none;
+
+  .tab-header {
+    padding: 10px 25px;
     cursor: pointer;
-    color: #666;
-    height: 35px;
+    border-radius: 5px 5px 0 0;
+    border: 1px solid transparent;
+    border-bottom: 1px solid #dcdfe6;
+    background-color: #f5f7fa;
+    color: #909399;
+    transition: all 0.3s;
     font-size: 14px;
-    &:hover {
-      background-color: #f9fafc;
+    font-weight: 500;
+
+    &.active {
+      font-weight: 700;
+      color: #303133;
+      background-color: #ffffff;
+      border: 1px solid #dcdfe6;
+      border-bottom: 1px solid #ffffff;
+      margin-bottom: -1px;
     }
-    i {
-      margin-right: 10px;
+
+    &:hover:not(.active) {
+      color: #409eff;
+      background-color: #f5f7fa;
     }
   }
-  .add-sample-btn {
-    margin-bottom: 10px;
+
+  .tab-content {
+    overflow-y: auto;
+    border: 1px solid #dcdfe6;
+    border-radius: 5px;
+    border-top-left-radius: 0;
+    padding: 30px 30px 0px 25px;
+    background-color: #ffffff;
+    min-height: 400px;
+  }
+
+  .meta-data {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+    // 요소를 양쪽 끝으로 정렬
+    justify-content: space-between;
+    width: 100%;
+    align-items: flex-start;
+  }
+
+  .language-field {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+
+    .language-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .language-btn {
+      padding: 8px 16px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      cursor: pointer;
+      background-color: #ffffff;
+      display: flex;
+      align-items: center;
+      font-size: 14px;
+      color: #606266;
+      user-select: none;
+
+      &:hover {
+        border-color: #67c23a;
+        color: #67c23a;
+      }
+
+      &.active {
+        border-color: #67c23a;
+        background-color: #f0f9eb;
+        color: #67c23a;
+        font-weight: bold;
+      }
+
+      .check-icon {
+        margin-right: 5px;
+        font-weight: bold;
+      }
+    }
+  }
+}
+
+.sample-box {
+  margin-top: 20px;
+}
+
+.sample-item {
+  margin-bottom: 20px;
+
+  .sample-content {
+    display: flex;
+    gap: 20px;
+
+    .sample-input,
+    .sample-output {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .custom-label-with-btn {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      .custom-label {
+        margin-bottom: 0;
+      }
+    }
+
+    .delete-btn {
+      background-color: #ffffff;
+      border: 1px solid #fbc4c4;
+      border-radius: 4px;
+      color: #f56c6c;
+      cursor: pointer;
+      font-size: 13px;
+      padding: 5px 12px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s ease;
+
+      i {
+        font-size: 14px;
+      }
+
+      &:hover {
+        background-color: #fef0f0;
+        border-color: #f56c6c;
+        color: #f56c6c;
+        box-shadow: 0 2px 4px rgba(245, 108, 108, 0.1);
+      }
+
+      &:active {
+        background-color: #fbdada;
+      }
+    }
+
+    .sample-textarea {
+      /deep/ .el-textarea__inner {
+        font-family: inherit;
+        font-size: 14px;
+        line-height: 1.6;
+        border: 1px solid #dcdfe6;
+        border-radius: 8px;
+        padding: 15px;
+        background-color: #f9fafb;
+        transition: all 0.3s ease;
+        min-height: 180px;
+        resize: none;
+
+        &:focus {
+          background-color: #ffffff;
+          border-color: #409eff;
+          box-shadow: 0 0 0 3px rgba(64, 158, 255, 0.1);
+          outline: 0;
+        }
+
+        &::placeholder {
+          color: #c0c4cc;
+        }
+      }
+    }
+  }
+}
+
+.add-sample-btn {
+  display: flex;
+  justify-content: center;
+
+  .add-samples {
+    background-color: #ffffff;
+    border: 1px dashed #409eff;
+    border-radius: 8px;
+    color: #409eff;
+    cursor: pointer;
+    font-size: 12px;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    font-weight: 600;
+
+    &:hover {
+      background-color: #ecf5ff;
+    }
+
+    &:active {
+      background-color: #d9ecff;
+    }
+  }
+}
+
+.detailCard {
+  border: none;
+  flex: 1;
+  height: max-content;
+  background-color: var(--bg-color);
+
+  .header-input-container {
+    display: flex;
+    align-items: center;
+    gap: 50px;
+    // margin-bottom: 20px;
+    border-bottom: 1px solid #dcdfe6;
+    padding-bottom: 18px;
+
+    .header-title {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .header-question-id {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .duplicate-btn {
+      white-space: nowrap;
+    }
+  }
+
+  .required-asterisk {
+    color: #f56c6c;
+    margin-right: 4px;
+  }
+
+  // 공통 스타일 Mixin
+  .common-input-style() {
+    /deep/ .el-input__inner {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--ps-content-title-color);
+      border: none;
+      border-bottom: 1px solid var(--border-color);
+      border-radius: 0;
+      height: auto;
+      padding-left: 0;
+      padding-right: 0;
+      line-height: normal;
+      background-color: transparent;
+      box-shadow: none;
+
+      &:focus {
+        border-bottom: 1px solid #409eff;
+      }
+    }
+  }
+
+  .common-input-style() {
+    /deep/ .el-input__inner {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--ps-content-title-color);
+      border: none;
+      border-bottom: 1px solid var(--border-color);
+      border-radius: 0;
+      height: auto;
+      padding-left: 0;
+      padding-right: 0;
+      line-height: normal;
+      background-color: transparent;
+      box-shadow: none;
+
+      &:focus {
+        border-bottom: 1px solid #409eff;
+      }
+    }
+  }
+
+  /deep/ .el-form-item__content {
+    margin-left: 0 !important;
+  }
+
+  .id_input {
+    width: 80px;
+    .common-input-style();
+
+    /deep/ .el-input__inner {
+      text-align: left;
+    }
+  }
+
+  .title_input {
+    width: 500px;
+    .common-input-style();
+  }
+}
+
+.custom-label {
+  font-size: 14px;
+  color: #606266;
+  line-height: 40px;
+  padding: 0 0 10px;
+  display: inline-block;
+  font-weight: 700;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 22px; // Match standard el-form-item margin
+}
+
+.headerDetailBtn {
+  background-color: var(--header-btn-color);
+  cursor: pointer;
+  font-weight: 550;
+  padding: 3px 8px;
+  margin-right: 10px;
+  border-radius: 8px;
+
+  i {
+    margin-right: 5px;
+  }
+}
+
+.headerDetailBtn:hover {
+  color: var(--text-color);
+  background-color: var(--custom-btn-hover-color);
+}
+
+.hintCard {
+  border: 1px solid var(--ps-content-pre-border-color);
+  background-color: var(--ps-content-pre-background-color);
+}
+
+.detailInfoContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-top: 30px;
+}
+
+.detailInfoBox {
+  padding-left: 20px;
+  padding-right: 30px;
+  padding-top: 15px;
+  cursor: pointer;
+  border-top: 1px solid var(--border-color);
+
+  .detailInfoBoxHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .dropdown-content {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .dropdown-badge {
+    background-color: var(--header-btn-color);
+    padding: 3px 8px;
+    font-weight: 500;
+    margin-right: 10px;
+    border-radius: 8px;
+  }
+}
+
+.slide-enter-active,
+.slide-leave-active {
+  transition:
+    max-height 0.3s ease,
+    opacity 0.3s ease;
+  overflow: hidden;
+}
+
+.slide-enter,
+.slide-leave-to {
+  max-height: 0;
+  opacity: 0;
+}
+
+.slide-enter-to,
+.slide-leave {
+  max-height: 100px;
+  opacity: 1;
+}
+
+/deep/ .simditor {
+  border-radius: 8px;
+  border: 1px solid #dcdfe6;
+  overflow: hidden;
+
+  .simditor-toolbar {
+    border-radius: 8px 8px 0 0;
+    border-bottom: 1px solid #dcdfe6;
+    background: #f5f7fa;
+  }
+
+  .simditor-body {
+    min-height: 200px;
+    padding: 15px;
+    border-radius: 0 0 8px 8px;
   }
 }
 </style>
@@ -851,6 +1310,7 @@ export default {
 .problem-tag-poper {
   width: 200px !important;
 }
+
 .dialog-compile-error {
   width: auto;
   max-width: 80%;
