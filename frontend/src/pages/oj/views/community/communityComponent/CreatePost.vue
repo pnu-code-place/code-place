@@ -11,10 +11,10 @@ export default {
   name: "CreatePost",
   methods: {
     goToCreatePost() {
-      this.$router.push({ name: "community-create" });
+      this.$router.push({ name: "community-create" })
     },
   },
-};
+}
 </script>
 
 <style lang="less" scoped>
@@ -42,13 +42,17 @@ export default {
   overflow: hidden;
 
   &::before {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%);
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.1) 0%,
+      rgba(255, 255, 255, 0) 100%
+    );
     opacity: 0;
     transition: opacity 0.3s ease;
   }

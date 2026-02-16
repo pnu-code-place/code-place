@@ -8,13 +8,22 @@
       <Menu-item class="menuItemText" name="/problem">
         {{ $t("m.NavProblems") }}
       </Menu-item>
-      <Dropdown class="ivu-menu-item menuItemText" trigger="hover" placement="bottom" @on-click="handleRoute">
+      <Dropdown
+        class="ivu-menu-item menuItemText"
+        trigger="hover"
+        placement="bottom"
+        @on-click="handleRoute"
+      >
         <span class="menuItemText_community" @click="handleRoute('/community')">
           {{ $t("m.Community") }}
         </span>
         <Dropdown-menu class="community-dropdown-menu" slot="list">
-          <Dropdown-item name="/community/free">{{ $t("m.Community_Free") }}</Dropdown-item>
-          <Dropdown-item name="/community/question">{{ $t("m.Community_Question") }}</Dropdown-item>
+          <Dropdown-item name="/community/free">{{
+            $t("m.Community_Free")
+          }}</Dropdown-item>
+          <Dropdown-item name="/community/question">{{
+            $t("m.Community_Question")
+          }}</Dropdown-item>
         </Dropdown-menu>
       </Dropdown>
       <Menu-item class="menuItemText" name="/contest">
@@ -28,10 +37,19 @@
       </Menu-item>
 
       <template v-if="isAuthenticated">
-        <Dropdown class="drop-menu" @on-click="handleRoute" placement="bottom" trigger="click">
+        <Dropdown
+          class="drop-menu"
+          @on-click="handleRoute"
+          placement="bottom"
+          trigger="click"
+        >
           <div style="display: flex; align-items: center">
             <div>
-              <img class="avatar" :src="profile.avatar" alt="avatar of the user" />
+              <img
+                class="avatar"
+                :src="profile.avatar"
+                alt="avatar of the user"
+              />
             </div>
             <div style="margin-left: 10px">
               <Icon type="arrow-down-b" style="cursor: pointer"></Icon>
@@ -57,8 +75,12 @@
         </Dropdown>
       </template>
     </Menu>
-    <Modal v-model="modalVisible" :maskClosable="false" :width="400"
-      :styles="{ top: modalStatus.mode === 'login' ? '10%' : '2%' }">
+    <Modal
+      v-model="modalVisible"
+      :maskClosable="false"
+      :width="400"
+      :styles="{ top: modalStatus.mode === 'login' ? '10%' : '2%' }"
+    >
       <div slot="header" class="modal-title" style="text-align: center">
         {{
           modalStatus.mode === "login"

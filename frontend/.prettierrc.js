@@ -4,5 +4,5 @@ module.exports = {
   trailingComma: "all",
   printWidth: 80,
   endOfLine: "lf",
-  singleAttributePerLine: false
+  singleAttributePerLine: false,
 }
