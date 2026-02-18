@@ -236,18 +236,18 @@ CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 CELERY_BEAT_SCHEDULE = {
     'calculate_user_score_basis': {
         'task': 'account.tasks.calculate_user_score_basis',
-        'schedule': celery.schedules.crontab(minute=0, hour=0),  # Every day at midnight
+        'schedule': celery.schedules.crontab(minute=0, hour=0),    # Every day at midnight
     },
     'calculate_user_score_fluctuation': {
         'task': 'account.tasks.calculate_user_score_fluctuation',
-        'schedule': celery.schedules.crontab(minute='*/1'),  # Every minute
+        'schedule': celery.schedules.crontab(minute='*/1'),    # Every minute
     },
     'update_weekly_stats': {
         'task': 'problem.tasks.update_weekly_stats',
-        'schedule': celery.schedules.crontab(hour=0, minute=0, day_of_week='mon'),  # Every Monday at midnight
+        'schedule': celery.schedules.crontab(hour=0, minute=0, day_of_week='mon'),    # Every Monday at midnight
     },
     'update_bonus_problem': {
         'task': 'problem.tasks.update_bonus_problem',
-        'schedule': celery.schedules.crontab(hour=0, minute=0, day_of_week='mon'),  # Every Monday at midnight
+        'schedule': celery.schedules.crontab(hour=0, minute=0, day_of_week='mon'),    # Every Monday at midnight
     }
 }

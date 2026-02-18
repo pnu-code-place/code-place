@@ -177,13 +177,13 @@ export const QUESTION_STATUS = {
 }
 export const SORT_TYPE = {
   NEWEST: {
-    name: "최신순"
+    name: "최신순",
   },
   OLDEST: {
-    name: "오래된 순"
+    name: "오래된 순",
   },
   COMMENT: {
-    name: "댓글 많은 순"
+    name: "댓글 많은 순",
   },
 }
 
