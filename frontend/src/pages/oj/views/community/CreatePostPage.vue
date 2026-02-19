@@ -9,26 +9,50 @@
       </div>
 
       <div class="form-card">
-        <Form :model="post" :rules="ruleValidate" ref="form" label-position="top">
+        <Form
+          :model="post"
+          :rules="ruleValidate"
+          ref="form"
+          label-position="top"
+        >
           <Row :gutter="20">
             <Col :span="20">
-            <FormItem :label="$t('m.Community_Title')" prop="title">
-              <Input v-model="post.title" type="text" size="large" :placeholder="$t('m.Community_Title_Placeholder')" />
-            </FormItem>
+              <FormItem :label="$t('m.Community_Title')" prop="title">
+                <Input
+                  v-model="post.title"
+                  type="text"
+                  size="large"
+                  :placeholder="$t('m.Community_Title_Placeholder')"
+                />
+              </FormItem>
             </Col>
             <Col :span="4">
-            <FormItem :label="$t('m.Community_Post_Type')" prop="post_type">
-              <Select v-model="post.post_type" size="large">
-                <Option v-for="(type, key) in availablePostTypes" :key="key" :value="key">{{ type.name }}</Option>
-              </Select>
-            </FormItem>
+              <FormItem :label="$t('m.Community_Post_Type')" prop="post_type">
+                <Select v-model="post.post_type" size="large">
+                  <Option
+                    v-for="(type, key) in availablePostTypes"
+                    :key="key"
+                    :value="key"
+                    >{{ type.name }}</Option
+                  >
+                </Select>
+              </FormItem>
             </Col>
           </Row>
-          <FormItem :label="$t('m.Community_Content')" prop="content" class="content-form-item">
+          <FormItem
+            :label="$t('m.Community_Content')"
+            prop="content"
+            class="content-form-item"
+          >
             <TiptapEditor v-model="post.content" />
           </FormItem>
           <div class="form-actions">
-            <Button type="primary" @click.prevent="submitPost" :loading="loading" size="large">
+            <Button
+              type="primary"
+              @click.prevent="submitPost"
+              :loading="loading"
+              size="large"
+            >
               <Icon type="ios-checkmark-circle-outline"></Icon>
               {{ $t("m.Submit") }}
             </Button>
@@ -44,10 +68,10 @@
 </template>
 
 <script>
-import api from "@oj/api";
-import { POST_TYPE } from "@/utils/constants";
-import { mapGetters } from "vuex";
-import TiptapEditor from "../../components/TiptapEditor.vue";
+import api from "@oj/api"
+import { POST_TYPE } from "@/utils/constants"
+import { mapGetters } from "vuex"
+import TiptapEditor from "../../components/TiptapEditor.vue"
 
 export default {
   name: "CreatePostPage",
@@ -66,7 +90,11 @@ export default {
       },
       ruleValidate: {
         title: [
-          { required: true, message: this.$t("m.Community_Title_Required"), trigger: "blur" },
+          {
+            required: true,
+            message: this.$t("m.Community_Title_Required"),
+            trigger: "blur",
+          },
         ],
         content: [
           {
@@ -76,48 +104,48 @@ export default {
           },
         ],
       },
-    };
+    }
   },
   computed: {
     ...mapGetters(["isSuperAdmin"]),
     availablePostTypes() {
       // Super Admin이 아닌 경우 ANNOUNCEMENT 타입 제외
       if (!this.isSuperAdmin) {
-        const { ANNOUNCEMENT, ...filteredTypes } = POST_TYPE;
-        return filteredTypes;
+        const { ANNOUNCEMENT, ...filteredTypes } = POST_TYPE
+        return filteredTypes
       }
-      return POST_TYPE;
+      return POST_TYPE
     },
   },
   created() {
-    this.post.problem_id = this.$route.query.problemID || null;
-    this.post.contest_id = this.$route.query.contestID || null;
+    this.post.problem_id = this.$route.query.problemID || null
+    this.post.contest_id = this.$route.query.contestID || null
   },
   methods: {
     submitPost() {
       this.$refs.form.validate((valid) => {
         if (valid) {
-          this.loading = true;
+          this.loading = true
           api
             .createPost(this.post)
             .then((res) => {
-              this.$success("Post created successfully");
+              this.$success("Post created successfully")
               this.$router.push({
                 name: "community-detail",
                 params: { postId: res.data.data.id },
-              });
+              })
             })
             .catch((err) => {
-              console.error("Error creating post:", err);
+              console.error("Error creating post:", err)
             })
             .finally(() => {
-              this.loading = false;
-            });
+              this.loading = false
+            })
         }
-      });
+      })
     },
   },
-};
+}
 </script>
 
 <style lang="less" scoped>

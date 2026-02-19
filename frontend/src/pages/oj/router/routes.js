@@ -42,13 +42,13 @@ export default [
   {
     name: "community-free",
     path: "/community/free",
-    meta : { title: "Community Free"},
+    meta: { title: "Community Free" },
     component: Community,
   },
   {
-    name : "community-question",
-    path : "/community/question",
-    meta : { title: "Community Question"},
+    name: "community-question",
+    path: "/community/question",
+    meta: { title: "Community Question" },
     component: Community,
   },
   {

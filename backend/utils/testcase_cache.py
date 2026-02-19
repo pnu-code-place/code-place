@@ -12,7 +12,7 @@ class TestCaseCacheManager:
     """테스트 케이스의 Input/Output을 캐싱하는 클래스입니다."""
 
     CACHE_PREFIX = "testcase"
-    DEFAULT_TIMEOUT = 60 * 60  # 1 시간
+    DEFAULT_TIMEOUT = 60 * 60    # 1 시간
 
     @classmethod
     def _get_cache_key(cls, testcase_dir: str, testcase_idx: int) -> str:

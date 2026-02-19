@@ -312,26 +312,28 @@ class SubmissionRankAPITest(SubmissionCreateTestBase):
         self.url = self.reverse("submission_rank_api")
 
     def test_get_submission_rank_success(self):
-        submission = self.create_submission(self.user,
-                                            self.problem,
-                                            result=JudgeStatus.ACCEPTED,
-                                            statistic_info={
-                                                "time_cost": 100,
-                                                "memory_cost": 1024
-                                            })
+        submission = self.create_submission(
+            self.user,
+            self.problem,
+            result=JudgeStatus.ACCEPTED,
+            statistic_info={
+                "time_cost": 100,
+                "memory_cost": 1024
+            })
 
         resp = self.client.get(f"{self.url}?submission_id={submission.id}")
         self.assertSuccess(resp)
         self.assertIn("solved_rank", resp.data["data"])
 
     def test_statistic_info_invalid(self):
-        submission = self.create_submission(self.user,
-                                            self.problem,
-                                            result=JudgeStatus.ACCEPTED,
-                                            statistic_info={
-                                                "time_cost": "invalid",
-                                                "memory_cost": "invalid"
-                                            })
+        submission = self.create_submission(
+            self.user,
+            self.problem,
+            result=JudgeStatus.ACCEPTED,
+            statistic_info={
+                "time_cost": "invalid",
+                "memory_cost": "invalid"
+            })
 
         resp = self.client.get(f"{self.url}?submission_id={submission.id}")
         self.assertFailed(resp, "Invalid submission statistic_info")
@@ -344,26 +346,28 @@ class SubmissionRankAPITest(SubmissionCreateTestBase):
         self.assertFailed(resp, "Invalid submission statistic_info")
 
     def test_reject_contest_problem(self):
-        submission = self.create_submission(self.user,
-                                            self.contest_problem,
-                                            contest_id=self.contest["id"],
-                                            result=JudgeStatus.ACCEPTED,
-                                            statistic_info={
-                                                "time_cost": 100,
-                                                "memory_cost": 1024
-                                            })
+        submission = self.create_submission(
+            self.user,
+            self.contest_problem,
+            contest_id=self.contest["id"],
+            result=JudgeStatus.ACCEPTED,
+            statistic_info={
+                "time_cost": 100,
+                "memory_cost": 1024
+            })
 
         resp = self.client.get(f"{self.url}?submission_id={submission.id}")
         self.assertFailed(resp, "This API is not available for contest submissions")
 
     def test_reject_unauthorized_user(self):
-        submission = self.create_submission(user=self.user,
-                                            problem=self.problem,
-                                            result=JudgeStatus.ACCEPTED,
-                                            statistic_info={
-                                                "time_cost": 100,
-                                                "memory_cost": 1024
-                                            })
+        submission = self.create_submission(
+            user=self.user,
+            problem=self.problem,
+            result=JudgeStatus.ACCEPTED,
+            statistic_info={
+                "time_cost": 100,
+                "memory_cost": 1024
+            })
 
         # 다른 유저로 요청
         other_user = self.create_user(
@@ -384,34 +388,28 @@ class SubmissionRankAPITest(SubmissionCreateTestBase):
         problem = self.problem
 
         # user1: Accepted, time_cost 100, memory_cost 1024, 제출 시각 가장 빠름
-        sub1 = self.create_submission(user1,
-                                      problem,
-                                      result=JudgeStatus.ACCEPTED,
-                                      statistic_info={
-                                          "time_cost": 100,
-                                          "memory_cost": 1024
-                                      })
+        sub1 = self.create_submission(
+            user1, problem, result=JudgeStatus.ACCEPTED, statistic_info={
+                "time_cost": 100,
+                "memory_cost": 1024
+            })
         # 인위적으로 생성 시간 조절 (예: sub1가 가장 먼저 제출)
         Submission.objects.filter(id=sub1.id).update(create_time=timezone.now() - timedelta(minutes=10))
 
         # user2: Accepted, time_cost 200, memory_cost 2048
-        sub2 = self.create_submission(user2,
-                                      problem,
-                                      result=JudgeStatus.ACCEPTED,
-                                      statistic_info={
-                                          "time_cost": 200,
-                                          "memory_cost": 2048
-                                      })
+        sub2 = self.create_submission(
+            user2, problem, result=JudgeStatus.ACCEPTED, statistic_info={
+                "time_cost": 200,
+                "memory_cost": 2048
+            })
         Submission.objects.filter(id=sub2.id).update(create_time=timezone.now() - timedelta(minutes=5))
 
         # user3: Accepted, time_cost 150, memory_cost 1024
-        sub3 = self.create_submission(user3,
-                                      problem,
-                                      result=JudgeStatus.ACCEPTED,
-                                      statistic_info={
-                                          "time_cost": 150,
-                                          "memory_cost": 1024
-                                      })
+        sub3 = self.create_submission(
+            user3, problem, result=JudgeStatus.ACCEPTED, statistic_info={
+                "time_cost": 150,
+                "memory_cost": 1024
+            })
         Submission.objects.filter(id=sub3.id).update(create_time=timezone.now() - timedelta(minutes=1))
 
         # user3의 제출물로 랭크 조회
@@ -444,13 +442,11 @@ class SubmissionRankAPITest(SubmissionCreateTestBase):
 
     def test_get_submission_rank_total_zero(self):
         # Accepted된 submission이 없는 상태: 새로 제출 생성 (Accepted 외 상태로)
-        submission = self.create_submission(self.user,
-                                            self.problem,
-                                            result=JudgeStatus.PENDING,
-                                            statistic_info={
-                                                "time_cost": 100,
-                                                "memory_cost": 1024
-                                            })
+        submission = self.create_submission(
+            self.user, self.problem, result=JudgeStatus.PENDING, statistic_info={
+                "time_cost": 100,
+                "memory_cost": 1024
+            })
 
         resp = self.client.get(f"{self.url}?submission_id={submission.id}")
         self.assertSuccess(resp)
