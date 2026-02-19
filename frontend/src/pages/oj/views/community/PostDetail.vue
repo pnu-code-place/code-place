@@ -3,7 +3,16 @@
     <div class="contents" v-if="post">
       <div class="post-header">
         <div class="title-section" v-if="!isEditing">
-          <h1 class="post-title">{{ post.title }}</h1>
+          <div class="sub-title-section">
+            <h1 class="post-title">
+              {{ post.title }}
+            </h1>
+            <div class="post-actions-always-visible">
+              <button class="community-back-btn" @click="goback">
+                {{ $t("m.Community_List") }}
+              </button>
+            </div>
+          </div>
           <div class="badges-container">
             <span v-if="isNewPost" class="new-badge">NEW</span>
             <span
@@ -355,11 +364,22 @@ export default {
       editedPostType: "",
       editingCommentId: null,
       editedCommentContent: "",
+      prevRoute: null,
     }
   },
   created() {
     this.fetchPostDetail()
   },
+
+  beforeRouteEnter(to, from, next) {
+    next((vm) => {
+      const validBoards = ["community", "community-free", "community-question"]
+      if (from.name && validBoards.includes(from.name)) {
+        sessionStorage.setItem("last_community_board", from.name)
+      }
+    })
+  },
+
   methods: {
     fetchPostDetail() {
       this.isLoading = true
@@ -427,6 +447,19 @@ export default {
         .catch(() => {
           this.$error("Failed to submit reply.")
         })
+    },
+    goback() {
+      const lastBoard = sessionStorage.getItem("last_community_board")
+
+      if (lastBoard) {
+        this.$router.push({ name: lastBoard })
+      } else {
+        if (this.post.post_type === "QUESTION") {
+          this.$router.push({ name: "community-question" })
+        } else {
+          this.$router.push({ name: "community" })
+        }
+      }
     },
     enterEditMode() {
       this.isEditing = true
@@ -667,6 +700,11 @@ main {
   margin-bottom: 28px;
 }
 
+.sub-title-section {
+  display: flex;
+  justify-content: space-between;
+}
+
 .post-title {
   font-size: 28px;
   font-weight: 600;
@@ -786,7 +824,8 @@ main {
 .post-delete-btn,
 .post-save-btn,
 .post-cancel-btn,
-.question-status-toggle-btn {
+.question-status-toggle-btn,
+.community-back-btn {
   padding: 8px 16px;
   border: none;
   border-radius: 8px;
@@ -831,6 +870,18 @@ main {
   color: white;
   transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(231, 76, 60, 0.2);
+}
+
+.community-back-btn {
+  background: rgb(241, 243, 244);
+  color: black;
+}
+
+.community-back-btn:hover {
+  background: lightgrey;
+  color: rgb(50, 50, 50);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(93, 93, 93, 0.2);
 }
 
 .post-save-btn {

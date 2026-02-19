@@ -280,6 +280,12 @@ export default {
       return this.$t("m.Community")
     },
   },
+  created() {
+    this.restoreState() // 복구 로직 실행
+  },
+  beforeRouteEnter(to, from, next) {
+    next()
+  },
   methods: {
     /**
      * 게시글이 3일 이내에 작성되었는지 확인
@@ -369,8 +375,25 @@ export default {
       this.query.page = 1
       this.fetchPosts()
     },
+    restoreState() {
+      const savedJSON = sessionStorage.getItem("communityState")
+      if (!savedJSON) return false
+
+      const savedData = JSON.parse(savedJSON)
+
+      if (savedData.routeName === this.$route.name) {
+        this.query = savedData.query
+        this.fetchPosts()
+        return true
+      }
+      return false
+    },
     // mount시, 쿼리통해 라우팅
     initRoute() {
+      if (this.restoreState()) {
+        return
+      }
+
       this.query.post_type = "ALL"
       this.query.question_status = "ALL"
       this.query.sort_type = "NEWEST"
@@ -383,6 +406,18 @@ export default {
       this.query.page = 1
       this.fetchPosts()
     },
+  },
+  beforeRouteLeave(to, from, next) {
+    if (to.name === "community-detail") {
+      const stateToSave = {
+        query: this.query,
+        routeName: from.name,
+      }
+      sessionStorage.setItem("communityState", JSON.stringify(stateToSave))
+    } else {
+      sessionStorage.removeItem("communityState")
+    }
+    next()
   },
 }
 </script>
