@@ -14,11 +14,12 @@ class AnnouncementAdminAPI(APIView):
         publish announcement
         """
         data = request.data
-        announcement = Announcement.objects.create(title=data["title"],
-                                                   content=data["content"],
-                                                   created_by=request.user,
-                                                   visible=data["visible"],
-                                                   is_pinned=data["is_pinned"])
+        announcement = Announcement.objects.create(
+            title=data["title"],
+            content=data["content"],
+            created_by=request.user,
+            visible=data["visible"],
+            is_pinned=data["is_pinned"])
         return self.success(AnnouncementSerializer(announcement).data)
 
     @validate_serializer(EditAnnouncementSerializer)

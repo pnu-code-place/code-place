@@ -1,17 +1,17 @@
-'use strict'
-require('./check-versions')()
+"use strict"
+require("./check-versions")()
 
-const config = require('../config')
+const config = require("../config")
 if (!process.env.NODE_ENV) {
   process.env.NODE_ENV = JSON.parse(config.dev.env.NODE_ENV)
 }
 
-const opn = require('opn')
-const path = require('path')
-const express = require('express')
-const webpack = require('webpack')
-const proxyMiddleware = require('http-proxy-middleware')
-const webpackConfig = require('./webpack.dev.conf')
+const opn = require("opn")
+const path = require("path")
+const express = require("express")
+const webpack = require("webpack")
+const proxyMiddleware = require("http-proxy-middleware")
+const webpackConfig = require("./webpack.dev.conf")
 
 // default port where dev server listens for incoming traffic
 const port = process.env.PORT || config.dev.port
@@ -24,14 +24,14 @@ const proxyTable = config.dev.proxyTable
 const app = express()
 const compiler = webpack(webpackConfig)
 
-const devMiddleware = require('webpack-dev-middleware')(compiler, {
+const devMiddleware = require("webpack-dev-middleware")(compiler, {
   publicPath: webpackConfig.output.publicPath,
-  quiet: true
+  quiet: true,
 })
 
-const hotMiddleware = require('webpack-hot-middleware')(compiler, {
+const hotMiddleware = require("webpack-hot-middleware")(compiler, {
   log: false,
-  heartbeat: 2000
+  heartbeat: 2000,
 })
 // force page reload when html-webpack-plugin template changes
 // currently disabled until this is resolved:
@@ -50,7 +50,7 @@ app.use(hotMiddleware)
 // proxy api requests
 Object.keys(proxyTable).forEach(function (context) {
   let options = proxyTable[context]
-  if (typeof options === 'string') {
+  if (typeof options === "string") {
     options = { target: options }
   }
   app.use(proxyMiddleware(options.filter || context, options))
@@ -58,22 +58,27 @@ Object.keys(proxyTable).forEach(function (context) {
 
 // handle fallback for HTML5 history API
 const rewrites = {
-  rewrites: [{
-    from: '/admin/', // 正则或者字符串
-    to: '/admin/index.html', // 字符串或者函数
-  }]
+  rewrites: [
+    {
+      from: "/admin/", // 正则或者字符串
+      to: "/admin/index.html", // 字符串或者函数
+    },
+  ],
 }
-const historyMiddleware = require('connect-history-api-fallback')(rewrites);
+const historyMiddleware = require("connect-history-api-fallback")(rewrites)
 app.use(historyMiddleware)
 
 // serve webpack bundle output
 app.use(devMiddleware)
 
 // serve pure static assets
-const staticPath = path.posix.join(config.dev.assetsPublicPath, config.dev.assetsSubDirectory)
-app.use(staticPath, express.static('./static'))
+const staticPath = path.posix.join(
+  config.dev.assetsPublicPath,
+  config.dev.assetsSubDirectory,
+)
+app.use(staticPath, express.static("./static"))
 
-const uri = 'http://localhost:' + port
+const uri = "http://localhost:" + port
 
 var _resolve
 var _reject
@@ -83,20 +88,20 @@ var readyPromise = new Promise((resolve, reject) => {
 })
 
 var server
-var portfinder = require('portfinder')
+var portfinder = require("portfinder")
 portfinder.basePort = port
 
-console.log('> Starting dev server...')
+console.log("> Starting dev server...")
 devMiddleware.waitUntilValid(() => {
   portfinder.getPort((err, port) => {
     if (err) {
       _reject(err)
     }
     process.env.PORT = port
-    var uri = 'http://localhost:' + port
-    console.log('> Listening at ' + uri + '\n')
+    var uri = "http://localhost:" + port
+    console.log("> Listening at " + uri + "\n")
     // when env is testing, don't need open it
-    if (autoOpenBrowser && process.env.NODE_ENV !== 'testing') {
+    if (autoOpenBrowser && process.env.NODE_ENV !== "testing") {
       opn(uri)
     }
     server = app.listen(port)
@@ -108,5 +113,5 @@ module.exports = {
   ready: readyPromise,
   close: () => {
     server.close()
-  }
+  },
 }

@@ -73,13 +73,14 @@ class SubmissionAPI(APIView):
             return self.error("Problem not exist")
         if data["language"] not in problem.languages:
             return self.error(f"{data['language']} is now allowed in the problem")
-        submission = Submission.objects.create(user_id=request.user.id,
-                                               username=request.user.username,
-                                               language=data["language"],
-                                               code=data["code"],
-                                               problem_id=problem.id,
-                                               ip=request.session["ip"],
-                                               contest_id=data.get("contest_id"))
+        submission = Submission.objects.create(
+            user_id=request.user.id,
+            username=request.user.username,
+            language=data["language"],
+            code=data["code"],
+            problem_id=problem.id,
+            ip=request.session["ip"],
+            contest_id=data.get("contest_id"))
         # use this for debug
         # JudgeDispatcher(submission.id, problem.id).judge()
 
@@ -184,7 +185,7 @@ class SubmissionListAPI(APIView):
         # 사용자 필터링
         if (myself and myself == "1") or not SysOptions.submission_list_show_all:
             submissions = submissions.filter(user_id=request.user.id)
-        elif username and not contest_id:  # 대회에서는 username 검색 제한
+        elif username and not contest_id:    # 대회에서는 username 검색 제한
             submissions = submissions.filter(username__icontains=username)
 
         if result:
@@ -242,8 +243,8 @@ class SubmissionExistsAPI(APIView):
         if not request.GET.get("problem_id"):
             return self.error("Parameter error, problem_id is required")
         return self.success(
-            request.user.is_authenticated and
-            Submission.objects.filter(problem_id=request.GET["problem_id"], user_id=request.user.id).exists())
+            request.user.is_authenticated
+            and Submission.objects.filter(problem_id=request.GET["problem_id"], user_id=request.user.id).exists())
 
 
 class SubmissionRankAPI(APIView):

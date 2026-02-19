@@ -7,16 +7,9 @@
     >
     </el-input>
     <el-table :data="contests" v-loading="loading">
-      <el-table-column
-        :label="$t('m.Contest_ID')"
-        width="100"
-        prop="id"
-      >
+      <el-table-column :label="$t('m.Contest_ID')" width="100" prop="id">
       </el-table-column>
-      <el-table-column
-        :label="$t('m.Contest_Name')"
-        prop="title"
-      >
+      <el-table-column :label="$t('m.Contest_Name')" prop="title">
       </el-table-column>
       <el-table-column
         :label="$t('m.Contest_Creator')"
@@ -30,7 +23,7 @@
       >
         <template slot-scope="scope">
           <el-tag :type="scope.row.visible ? 'success' : 'danger'">
-            {{ scope.row.visible ? $t('m.Yes') : $t('m.No') }}
+            {{ scope.row.visible ? $t("m.Yes") : $t("m.No") }}
           </el-tag>
         </template>
       </el-table-column>
@@ -99,14 +92,23 @@ export default {
         })
     },
     handleImport(contestId) {
-      this.$confirm(this.$t('m.Import_Contest_Problems_Confirm'), this.$t('m.Warning')).then(() => {
-        api.importContestProblems(this.contestID, { from_contest_id: contestId }).then(() => {
-          this.$emit("on-change")
-          this.$success(this.$t('m.Import_Successfully'))
+      this.$confirm(
+        this.$t("m.Import_Contest_Problems_Confirm"),
+        this.$t("m.Warning"),
+      )
+        .then(() => {
+          api
+            .importContestProblems(this.contestID, {
+              from_contest_id: contestId,
+            })
+            .then(() => {
+              this.$emit("on-change")
+              this.$success(this.$t("m.Import_Successfully"))
+            })
         })
-      }).catch((error) => {
-        // this.$error(error)
-      })
+        .catch((error) => {
+          // this.$error(error)
+        })
     },
   },
   watch: {
