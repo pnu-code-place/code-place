@@ -284,9 +284,6 @@ export default {
     this.restoreState() // 복구 로직 실행
   },
   beforeRouteEnter(to, from, next) {
-    if (from.name !== "community-detail") {
-      sessionStorage.removeItem("community_restore_data")
-    }
     next()
   },
   methods: {
