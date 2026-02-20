@@ -95,11 +95,9 @@ class PostAPIView(APIView):
 
         if question_status:
             posts = posts.filter(question_status=question_status)
-        
+
         if keyword:
-            posts = posts.filter(
-                Q(title__icontains=keyword) | Q(content__icontains=keyword)
-            )
+            posts = posts.filter(Q(title__icontains=keyword) | Q(content__icontains=keyword))
 
         if sort_type == Post.SortType.NEWEST:
             posts = posts.order_by("-created_at")
@@ -166,7 +164,7 @@ class PostDetailAPIView(APIView):
 
         for key, value in data.items():
             setattr(post, key, value)
-        
+
         # 질문 타입으로 변경 시, 상태가 없거나 이전 타입이 일반글이었다면 미해결로 초기화
         if post.post_type == Post.PostType.QUESTION:
             if old_post_type == Post.PostType.ARTICLE or not post.question_status:
@@ -200,8 +198,9 @@ class CommentAPIView(APIView):
         except Post.DoesNotExist:
             return self.error("Post does not exist")
 
-        comments = (Comment.objects.filter(
-            post_id=post_id).select_related("author").prefetch_related("replies__author").order_by("created_at"))
+        comments = (
+            Comment.objects.filter(
+                post_id=post_id).select_related("author").prefetch_related("replies__author").order_by("created_at"))
 
         root_comments = comments.filter(parent_comment__isnull=True)
         data = self.paginate_data(request, root_comments, CommentSerializer)

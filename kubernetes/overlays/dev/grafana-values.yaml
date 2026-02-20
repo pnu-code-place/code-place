@@ -1,0 +1,10 @@
+# kubernetes/overlays/dev/grafana-values.yaml
+# dev 환경용 Grafana values
+
+ingress:
+  enabled: true
+  hosts:
+    - monitoring.code-place-dev.site
+  tls:
+    - hosts:
+        - monitoring.code-place-dev.site
