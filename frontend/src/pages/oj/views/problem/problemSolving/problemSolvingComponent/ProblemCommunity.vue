@@ -5,28 +5,54 @@
         <h3 class="community-title">
           {{ $t("m.Problem_Community_Question_List") }}
         </h3>
-        <span class="question-count">{{ total }}{{ $t("m.Problem_Community_Question_Count") }}</span>
+        <span class="question-count"
+          >{{ total }}{{ $t("m.Problem_Community_Question_Count") }}</span
+        >
       </div>
       <div class="filter-bar">
         <div class="search-bar">
-          <Input v-model="query.keyword" placeholder="검색어를 입력하세요" icon="ios-search-strong" @on-enter="applySearch">
+          <Input
+            v-model="query.keyword"
+            placeholder="검색어를 입력하세요"
+            icon="ios-search-strong"
+            @on-enter="applySearch"
+          >
           </Input>
         </div>
         <div class="question-status-bar">
-          <Dropdown @on-click="filterByQuestionStatus" trigger="click" class="dropdown">
-            <span style="font-weight: bold; font-size: 15px; padding-right: 10px">
-              {{ query.question_status === 'ALL' ? '전체' : QUESTION_STATUS[query.question_status].name }}
+          <Dropdown
+            @on-click="filterByQuestionStatus"
+            trigger="click"
+            class="dropdown"
+          >
+            <span
+              style="font-weight: bold; font-size: 15px; padding-right: 10px"
+            >
+              {{
+                query.question_status === "ALL"
+                  ? "전체"
+                  : QUESTION_STATUS[query.question_status].name
+              }}
             </span>
             <Icon type="arrow-down-b"></Icon>
             <Dropdown-menu slot="list">
               <Dropdown-item name="ALL">전체</Dropdown-item>
-              <Dropdown-item v-for="(val, k) in QUESTION_STATUS" :key="k" :name="k">
+              <Dropdown-item
+                v-for="(val, k) in QUESTION_STATUS"
+                :key="k"
+                :name="k"
+              >
                 {{ val.name }}
               </Dropdown-item>
             </Dropdown-menu>
           </Dropdown>
         </div>
-        <Button type="primary" size="default" @click="openCreateModal" class="create-btn">
+        <Button
+          type="primary"
+          size="default"
+          @click="openCreateModal"
+          class="create-btn"
+        >
           {{ $t("m.Problem_Community_Create_Question") }}
         </Button>
       </div>
@@ -43,32 +69,53 @@
 
     <div v-else-if="posts.length === 0" class="empty-state">
       <h4>{{ $t("m.Problem_Community_No_Questions") }}</h4>
-      <p class="empty-subtitle">{{ $t("m.Problem_Community_No_Questions_Subtitle") }}</p>
+      <p class="empty-subtitle">
+        {{ $t("m.Problem_Community_No_Questions_Subtitle") }}
+      </p>
       <Button type="primary" @click="openCreateModal" class="empty-action-btn">
         {{ $t("m.Problem_Community_First_Question") }}
       </Button>
     </div>
 
     <div v-else class="posts-list">
-      <div v-for="post in posts" :key="post.id" class="post-item" @click="goToPost(post.id)">
+      <div
+        v-for="post in posts"
+        :key="post.id"
+        class="post-item"
+        @click="goToPost(post.id)"
+      >
         <div class="post-header">
           <div class="post-meta">
             <span class="post-id">#{{ post.id }}</span>
             <span v-if="isNewPost(post)" class="new-badge">NEW</span>
-            <span v-if="post.post_type === 'QUESTION' && QUESTION_STATUS[post.question_status]"
-              class="question-status-badge" :style="{
+            <span
+              v-if="
+                post.post_type === 'QUESTION' &&
+                QUESTION_STATUS[post.question_status]
+              "
+              class="question-status-badge"
+              :style="{
                 backgroundColor: QUESTION_STATUS[post.question_status].color,
-                color: QUESTION_STATUS[post.question_status].textColor
-              }">
+                color: QUESTION_STATUS[post.question_status].textColor,
+              }"
+            >
               {{ QUESTION_STATUS[post.question_status].name }}
             </span>
           </div>
           <h4 class="post-title">{{ post.title }}</h4>
         </div>
-        <div v-if="post.content_preview" class="post-preview" v-html="post.content_preview"></div>
+        <div
+          v-if="post.content_preview"
+          class="post-preview"
+          v-html="post.content_preview"
+        ></div>
         <div class="post-footer">
           <div class="author-info">
-            <img class="avatar" :src="post.author_avatar || defaultAvatar" alt="avatar" />
+            <img
+              class="avatar"
+              :src="post.author_avatar || defaultAvatar"
+              alt="avatar"
+            />
             <span class="author-name">{{ post.author_name }}</span>
           </div>
           <div class="post-stats">
@@ -85,8 +132,14 @@
       </div>
     </div>
 
-    <Modal v-model="showCreateModal" :footer-hide="true" :closable="true" :mask-closable="false" width="800"
-      class-name="create-question-modal">
+    <Modal
+      v-model="showCreateModal"
+      :footer-hide="true"
+      :closable="true"
+      :mask-closable="false"
+      width="800"
+      class-name="create-question-modal"
+    >
       <div class="modal-header">
         <h2 class="modal-title">
           {{ $t("m.Problem_Community_Modal_Title") }}
@@ -106,29 +159,54 @@
           <div class="input-label">
             {{ $t("m.Problem_Community_Modal_Title_Label") }}
           </div>
-          <Input v-model="newPost.title" :placeholder="$t('m.Problem_Community_Modal_Title_Placeholder')"
-            maxlength="100" show-word-limit size="large" />
+          <Input
+            v-model="newPost.title"
+            :placeholder="$t('m.Problem_Community_Modal_Title_Placeholder')"
+            maxlength="100"
+            show-word-limit
+            size="large"
+          />
         </FormItem>
         <FormItem class="form-item">
           <div class="input-label">
             {{ $t("m.Problem_Community_Modal_Content_Label") }}
           </div>
-          <TiptapEditor v-model="newPost.content" height="300px" :editable="true"
-            :placeholder="$t('m.Problem_Community_Modal_Content_Placeholder')" />
+          <TiptapEditor
+            v-model="newPost.content"
+            height="300px"
+            :editable="true"
+            :placeholder="$t('m.Problem_Community_Modal_Content_Placeholder')"
+          />
         </FormItem>
       </Form>
       <div class="modal-footer">
-        <Button @click="showCreateModal = false" size="large" class="cancel-btn">{{
-          $t("m.Problem_Community_Modal_Cancel") }}</Button>
-        <Button type="primary" @click="createPost" :loading="isCreating" size="large" class="submit-btn">
+        <Button
+          @click="showCreateModal = false"
+          size="large"
+          class="cancel-btn"
+          >{{ $t("m.Problem_Community_Modal_Cancel") }}</Button
+        >
+        <Button
+          type="primary"
+          @click="createPost"
+          :loading="isCreating"
+          size="large"
+          class="submit-btn"
+        >
           {{ $t("m.Problem_Community_Modal_Submit") }}
         </Button>
       </div>
     </Modal>
 
     <div v-if="total > query.limit" class="pagination-wrapper">
-      <Page :total="total" :page-size="query.limit" :current="query.page" @on-change="handlePageChange" size="small"
-        show-total />
+      <Page
+        :total="total"
+        :page-size="query.limit"
+        :current="query.page"
+        @on-change="handlePageChange"
+        size="small"
+        show-total
+      />
     </div>
   </div>
 </template>
@@ -142,7 +220,7 @@ import TiptapEditor from "../../../../components/TiptapEditor.vue"
 export default {
   name: "ProblemCommunity",
   components: {
-    TiptapEditor
+    TiptapEditor,
   },
   props: {
     problemID: {
@@ -156,7 +234,7 @@ export default {
     isDarkMode: {
       type: Boolean,
       default: false,
-    }
+    },
   },
   data() {
     return {
@@ -200,14 +278,14 @@ export default {
     // NOTE: problem prop이 변경될 때 (로드될 때) fetchPosts 호출
     // 이 로직이 없으면 문제 정보가 로드되기 전에 mounted 훅에서
     // fetchPosts가 호출되어 문제 ID가 undefined 인 경우가 발생합니다.
-    'problem.id': {
+    "problem.id": {
       handler(newVal) {
         if (newVal) {
           this.fetchPosts()
         }
       },
-      immediate: false
-    }
+      immediate: false,
+    },
   },
   methods: {
     isNewPost(post) {
@@ -223,19 +301,20 @@ export default {
       this.error = null
 
       const offset = (this.query.page - 1) * this.query.limit
-      const questionStatus = this.query.question_status === "ALL" ? "" : this.query.question_status
+      const questionStatus =
+        this.query.question_status === "ALL" ? "" : this.query.question_status
 
       try {
         // problem_id를 파라미터로 전달하여 해당 문제의 질문만 가져옴
         const res = await api.getCommunityPostList(
           offset,
           this.query.limit,
-          'QUESTION',
+          "QUESTION",
           questionStatus,
           this.problem.id,
           null,
           this.query.keyword,
-          null
+          null,
         )
         this.posts = res.data.data.results
         this.total = res.data.data.total
@@ -281,7 +360,9 @@ export default {
         this.query.page = 1
         this.fetchPosts()
       } catch (err) {
-        const errorMsg = (err.response && err.response.data && err.response.data.data) || this.$i18n.t("m.Problem_Community_Create_Failed")
+        const errorMsg =
+          (err.response && err.response.data && err.response.data.data) ||
+          this.$i18n.t("m.Problem_Community_Create_Failed")
         this.$error(errorMsg)
       } finally {
         this.isCreating = false
@@ -300,7 +381,7 @@ export default {
     openCreateModal() {
       this.newPost.title = `[${this.problem._id}] `
       this.showCreateModal = true
-    }
+    },
   },
 }
 </script>
@@ -466,9 +547,7 @@ export default {
     .search_icon:hover {
       color: #2d8cf0;
     }
-
   }
-
 }
 
 .loading-state,

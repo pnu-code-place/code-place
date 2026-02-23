@@ -23,14 +23,27 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('title', models.CharField(max_length=200)),
                 ('content', utils.models.RichTextField()),
-                ('community_type', models.CharField(choices=[('GENERAL', '일반'), ('PROBLEM', '문제'), ('CONTEST', '대회')], default='GENERAL', max_length=20)),
-                ('post_type', models.CharField(choices=[('QUESTION', '질문'), ('ARTICLE', '글'), ('ANNOUNCEMENT', '공지')], default='ARTICLE', max_length=20)),
-                ('question_status', models.CharField(choices=[('OPEN', '진행중'), ('CLOSED', '해결됨')], default='OPEN', max_length=20)),
+                ('community_type',
+                 models.CharField(
+                     choices=[('GENERAL', '일반'), ('PROBLEM', '문제'), ('CONTEST', '대회')],
+                     default='GENERAL',
+                     max_length=20)),
+                ('post_type',
+                 models.CharField(
+                     choices=[('QUESTION', '질문'), ('ARTICLE', '글'), ('ANNOUNCEMENT', '공지')],
+                     default='ARTICLE',
+                     max_length=20)),
+                ('question_status',
+                 models.CharField(choices=[('OPEN', '진행중'), ('CLOSED', '해결됨')], default='OPEN', max_length=20)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('author', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
-                ('contest', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='contest.contest')),
-                ('problem', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='problem.problem')),
+                ('contest',
+                 models.ForeignKey(
+                     blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='contest.contest')),
+                ('problem',
+                 models.ForeignKey(
+                     blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='problem.problem')),
             ],
             options={
                 'ordering': ['-created_at'],
@@ -44,8 +57,16 @@ class Migration(migrations.Migration):
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('author', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
-                ('parent_comment', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='replies', to='community.comment')),
-                ('post', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='comments', to='community.post')),
+                ('parent_comment',
+                 models.ForeignKey(
+                     blank=True,
+                     null=True,
+                     on_delete=django.db.models.deletion.CASCADE,
+                     related_name='replies',
+                     to='community.comment')),
+                ('post',
+                 models.ForeignKey(
+                     on_delete=django.db.models.deletion.CASCADE, related_name='comments', to='community.post')),
             ],
             options={
                 'ordering': ['created_at'],
