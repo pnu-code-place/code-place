@@ -5,6 +5,14 @@ export default {
       activeTab: "all",
     }
   },
+  methods: {
+    goToCreatePost() {
+      this.$router.push({
+        name: "contest-community-create",
+        params: { contestID: this.$route.params.contestID },
+      })
+    },
+  },
 }
 </script>
 
@@ -29,29 +37,9 @@ export default {
           </button>
         </div>
       </div>
-      <Button class="write-btn">{{
+      <Button class="write-btn" @click="goToCreatePost">{{
         $t("m.Community_Create_Comment_Btn")
       }}</Button>
-    </div>
-    <div class="posts-list">
-      <div v-for="post in posts" :key="post.id" class="post-card">
-        <div class="post-meta">
-          <span class="post-id">#{{ post.id }}</span>
-          <span class="post-type">{{ post.type }}</span>
-        </div>
-
-        <h3 class="post-title">{{ post.title }}</h3>
-
-        <p class="post-content">
-          {{ post.content }}
-        </p>
-
-        <div class="post-footer">
-          <span class="post-author">{{ post.author }}</span>
-          <span class="post-date">{{ post.date }}</span>
-          <span class="comment-count">💬 {{ post.comments }}</span>
-        </div>
-      </div>
     </div>
   </div>
 </template>

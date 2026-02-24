@@ -171,6 +171,11 @@ export default [
         path: "community",
         component: Contest.ContestCommunity,
       },
+      {
+        name: "contest-community-create",
+        path: "community/create",
+        component: CreatePostPage,
+      },
     ],
   },
   {
