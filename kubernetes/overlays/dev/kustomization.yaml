@@ -14,7 +14,7 @@ patches:
   - path: celery-beat-deployment-patch.yaml
   - path: judge-server-deployment-patch.yaml
 # NOTE: base 디렉토리의 이미지 이름과 태그를 오버라이드합니다.
-# `backend`, `frontend` 이미지 태그는 CI 파이프라인에서 자동으로 변경됩니다.
+# `backend`, `frontend`, `hub-auth` 이미지 태그는 CI 파이프라인에서 자동으로 변경됩니다.
 # `judge-server` 이미지는 자주 변경되지 않으므로 수동으로 설정합니다.
 images:
   - name: backend
@@ -26,3 +26,6 @@ images:
   - name: judge-server
     newName: harbor.code-place-dev.site/code-place-dev/judge-server
     newTag: 1.0.3
+  - name: hub-auth
+    newName: harbor.code-place-dev.site/code-place-dev/hub-auth
+    newTag: 1.0.0
