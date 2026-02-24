@@ -137,7 +137,7 @@ jobs:
           context: ./hub/auth_server
           file: ./hub/auth_server/Dockerfile
           push: true
-          tags: ${{ secrets.HARBOR_REGISTRY }}/code-place-prod/hub-auth:${{ github.sha }}
+          tags: ${{ secrets.HARBOR_REGISTRY }}/code-place-prod/hub-auth:${{ github.sha }}-prod
 
   update-prod-manifest:
     needs: [check-release-branch, ci-backend, ci-frontend, ci-hub-auth]
