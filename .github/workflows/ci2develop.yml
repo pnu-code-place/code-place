@@ -85,9 +85,37 @@ jobs:
             SERVER_NAME=${{ secrets.DEV_SERVER_NAME }}
             APP_VERSION=${{ github.sha }}-dev
 
+  ci-hub-auth-dev:
+    needs: [detect-changes-by-component]
+    if: ${{ needs.detect-changes-by-component.outputs.hub-auth == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Login to Harbor
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ secrets.HARBOR_REGISTRY }}
+          username: ${{ secrets.HARBOR_USERNAME }}
+          password: ${{ secrets.HARBOR_PASSWORD }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v2
+        with:
+          context: ./hub/auth_server
+          file: ./hub/auth_server/Dockerfile
+          push: true
+          tags: ${{ secrets.HARBOR_REGISTRY }}/code-place-dev/hub-auth:${{ github.sha }}-dev
+
   update-dev-manifest:
-    needs: [ci-backend-dev, ci-frontend-dev]
-    if: always() && (needs.ci-backend-dev.result == 'success' || needs.ci-frontend-dev.result == 'success')
+    needs: [ci-backend-dev, ci-frontend-dev, ci-hub-auth-dev]
+    if: |
+      always() &&
+      (needs.ci-backend-dev.result == 'success' || needs.ci-frontend-dev.result == 'success' || needs.ci-hub-auth-dev.result == 'success')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -109,6 +137,12 @@ jobs:
         uses: mikefarah/yq@master
         with:
           cmd: yq -i '(.images[] | select(.name == "frontend").newTag) = "${{ github.sha }}-dev"' kubernetes/overlays/dev/kustomization.yaml
+
+      - name: Update Hub Auth Image Tag
+        if: needs.ci-hub-auth-dev.result == 'success'
+        uses: mikefarah/yq@master
+        with:
+          cmd: yq -i '(.images[] | select(.name == "hub-auth").newTag) = "${{ github.sha }}-dev"' kubernetes/overlays/dev/kustomization.yaml
 
       - name: Commit and push changes
         run: |
