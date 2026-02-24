@@ -166,6 +166,11 @@ export default [
         path: "rank",
         component: Contest.ContestRank,
       },
+      {
+        name: "contest-community",
+        path: "community",
+        component: Contest.ContestCommunity,
+      },
     ],
   },
   {

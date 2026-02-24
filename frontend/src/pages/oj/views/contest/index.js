@@ -5,6 +5,7 @@ const ContestProblemList = () => import("./children/ContestProblemList.vue")
 const ContestRank = () => import("./children/ContestRank.vue")
 const Announcements = () => import("./children/Announcements.vue")
 const Overview = () => import("./children/Overview.vue")
+const ContestCommunity = () => import("./children/ContestCommunity.vue")
 
 export {
   ContestDetails,
@@ -14,4 +15,5 @@ export {
   ContestRank,
   Announcements,
   Overview,
+  ContestCommunity,
 }
