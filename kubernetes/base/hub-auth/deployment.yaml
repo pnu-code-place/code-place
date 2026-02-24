@@ -25,23 +25,23 @@ spec:
         - name: hub-auth
           image: hub-auth:latest
           imagePullPolicy: Always
-      ports:
-        - containerPort: 80
-      resources:
-        requests:
-          memory: "128Mi"
-          cpu: "250m"
-        limits:
-          memory: "256Mi"
-          cpu: "500m"
-      env:
-        - name: GITHUB_OAUTH_APP_ID
-          valueFrom:
-            secretKeyRef:
-              name: common-credentials
-              key: GITHUB_OAUTH_APP_ID
-        - name: GITHUB_OAUTH_APP_SECRET
-          valueFrom:
-            secretKeyRef:
-              name: common-credentials
-              key: GITHUB_OAUTH_APP_SECRET
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "250m"
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
+          env:
+            - name: GITHUB_OAUTH_APP_ID
+              valueFrom:
+                secretKeyRef:
+                  name: common-credentials
+                  key: GITHUB_OAUTH_APP_ID
+            - name: GITHUB_OAUTH_APP_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: common-credentials
+                  key: GITHUB_OAUTH_APP_SECRET
