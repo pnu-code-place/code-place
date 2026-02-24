@@ -137,14 +137,14 @@ jobs:
           context: ./hub/auth_server
           file: ./hub/auth_server/Dockerfile
           push: true
-          tags: ${{ secrets.HARBOR_REGISTRY }}/code-place-hub/auth-server:${{ github.sha }}
+          tags: ${{ secrets.HARBOR_REGISTRY }}/code-place-prod/hub-auth:${{ github.sha }}
 
   update-prod-manifest:
-    needs: [check-release-branch, ci-backend, ci-frontend]
+    needs: [check-release-branch, ci-backend, ci-frontend, ci-hub-auth]
     if: |
       always() &&
       needs.check-release-branch.outputs.is_release == 'true' &&
-      (needs.ci-frontend.result == 'success' || needs.ci-backend.result == 'success')
+      (needs.ci-frontend.result == 'success' || needs.ci-backend.result == 'success' || needs.ci-hub-auth.result == 'success')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -166,6 +166,12 @@ jobs:
         uses: mikefarah/yq@master
         with:
           cmd: yq -i '(.images[] | select(.name == "frontend").newTag) = "${{ github.sha }}-prod"' kubernetes/overlays/prod/kustomization.yaml
+
+      - name: Update Hub Auth Image Tag
+        if: needs.ci-hub-auth.result == 'success'
+        uses: mikefarah/yq@master
+        with:
+          cmd: yq -i '(.images[] | select(.name == "hub-auth").newTag) = "${{ github.sha }}-prod"' kubernetes/overlays/prod/kustomization.yaml
 
       - name: Commit and push changes
         run: |
