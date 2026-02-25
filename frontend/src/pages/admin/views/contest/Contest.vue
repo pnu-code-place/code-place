@@ -16,6 +16,8 @@
               <Simditor v-model="contest.description"></Simditor>
             </el-form-item>
           </el-col>
+        </el-row>
+        <el-row :gutter="20">
           <el-col :span="8">
             <el-form-item :label="$t('m.Contest_Start_Time')" required>
               <el-date-picker
@@ -36,14 +38,8 @@
               </el-date-picker>
             </el-form-item>
           </el-col>
-          <el-col :span="8">
-            <el-form-item :label="$t('m.Contest_Password')">
-              <el-input
-                v-model="contest.password"
-                :placeholder="$t('m.Contest_Password')"
-              ></el-input>
-            </el-form-item>
-          </el-col>
+        </el-row>
+        <el-row>
           <el-col :span="8">
             <el-form-item :label="$t('m.Contest_Rule_Type')">
               <el-radio
@@ -93,6 +89,14 @@
             </el-form-item>
           </el-col>
           <el-col :span="24">
+            <el-col :span="8">
+              <el-form-item :label="$t('m.Contest_Password')">
+                <el-input
+                  v-model="contest.password"
+                  :placeholder="$t('m.Contest_Password')"
+                ></el-input>
+              </el-form-item>
+            </el-col>
             <el-form-item :label="$t('m.Allowed_IP_Ranges')">
               <div
                 v-for="(range, index) in contest.allowed_ip_ranges"
