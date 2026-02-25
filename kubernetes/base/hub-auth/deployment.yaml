@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hub-auth
+  labels:
+    app: hub-auth
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hub-auth
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: hub-auth
+    spec:
+      imagePullSecrets:
+        - name: regcred
+      containers:
+        - name: hub-auth
+          image: hub-auth:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "250m"
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
+          env:
+            - name: GITHUB_OAUTH_APP_ID
+              valueFrom:
+                secretKeyRef:
+                  name: common-credentials
+                  key: GITHUB_OAUTH_APP_ID
+            - name: GITHUB_OAUTH_APP_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: common-credentials
+                  key: GITHUB_OAUTH_APP_SECRET
