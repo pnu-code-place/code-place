@@ -11,87 +11,109 @@
               ></el-input>
             </el-form-item>
           </el-col>
+
           <el-col :span="24">
             <el-form-item :label="$t('m.ContestDescription')" required>
               <Simditor v-model="contest.description"></Simditor>
             </el-form-item>
           </el-col>
-          <el-col :span="8">
-            <el-form-item :label="$t('m.Contest_Start_Time')" required>
-              <el-date-picker
-                v-model="contest.start_time"
-                type="datetime"
-                :placeholder="$t('m.Contest_Start_Time')"
-              >
-              </el-date-picker>
-            </el-form-item>
+
+          <el-col :span="24">
+            <el-row :gutter="20">
+              <el-col :span="8">
+                <el-form-item :label="$t('m.Contest_Start_Time')" required>
+                  <el-date-picker
+                    v-model="contest.start_time"
+                    type="datetime"
+                    :placeholder="$t('m.Contest_Start_Time')"
+                  >
+                  </el-date-picker>
+                </el-form-item>
+              </el-col>
+              <el-col :span="8">
+                <el-form-item :label="$t('m.Contest_End_Time')" required>
+                  <el-date-picker
+                    v-model="contest.end_time"
+                    type="datetime"
+                    :placeholder="$t('m.Contest_End_Time')"
+                  >
+                  </el-date-picker>
+                </el-form-item>
+              </el-col>
+            </el-row>
           </el-col>
-          <el-col :span="8">
-            <el-form-item :label="$t('m.Contest_End_Time')" required>
-              <el-date-picker
-                v-model="contest.end_time"
-                type="datetime"
-                :placeholder="$t('m.Contest_End_Time')"
-              >
-              </el-date-picker>
-            </el-form-item>
+
+          <el-col :span="24">
+            <el-row :gutter="20">
+              <el-col :span="8">
+                <el-form-item :label="$t('m.Contest_Rule_Type')">
+                  <el-radio
+                    class="radio"
+                    v-model="contest.rule_type"
+                    label="ACM"
+                    :disabled="disableRuleType"
+                    >ACM</el-radio
+                  >
+                  <el-radio
+                    class="radio"
+                    v-model="contest.rule_type"
+                    label="OI"
+                    :disabled="disableRuleType"
+                    >OI</el-radio
+                  >
+                </el-form-item>
+              </el-col>
+              <el-col :span="8">
+                <el-form-item :label="$t('m.Contest_Status')">
+                  <el-switch
+                    v-model="contest.visible"
+                    active-text=""
+                    inactive-text=""
+                  >
+                  </el-switch>
+                </el-form-item>
+              </el-col>
+            </el-row>
           </el-col>
-          <el-col :span="8">
-            <el-form-item :label="$t('m.Contest_Password')">
-              <el-input
-                v-model="contest.password"
-                :placeholder="$t('m.Contest_Password')"
-              ></el-input>
-            </el-form-item>
+
+          <el-col :span="24">
+            <el-row :gutter="20">
+              <el-col :span="8">
+                <el-form-item :label="$t('m.Real_Time_Rank')">
+                  <el-switch
+                    v-model="contest.real_time_rank"
+                    active-color="#13ce66"
+                    inactive-color="#dc3644"
+                  >
+                  </el-switch>
+                </el-form-item>
+              </el-col>
+              <el-col :span="8">
+                <el-form-item :label="$t('m.Allow_Paste')">
+                  <el-switch
+                    v-model="contest.allow_paste"
+                    active-color="#13ce66"
+                    inactive-color="#dc3644"
+                  >
+                  </el-switch>
+                </el-form-item>
+              </el-col>
+            </el-row>
           </el-col>
-          <el-col :span="8">
-            <el-form-item :label="$t('m.Contest_Rule_Type')">
-              <el-radio
-                class="radio"
-                v-model="contest.rule_type"
-                label="ACM"
-                :disabled="disableRuleType"
-                >ACM</el-radio
-              >
-              <el-radio
-                class="radio"
-                v-model="contest.rule_type"
-                label="OI"
-                :disabled="disableRuleType"
-                >OI</el-radio
-              >
-            </el-form-item>
+
+          <el-col :span="24">
+            <el-row :gutter="20">
+              <el-col :span="8">
+                <el-form-item :label="$t('m.Contest_Password')">
+                  <el-input
+                    v-model="contest.password"
+                    :placeholder="$t('m.Contest_Password')"
+                  ></el-input>
+                </el-form-item>
+              </el-col>
+            </el-row>
           </el-col>
-          <el-col :span="8">
-            <el-form-item :label="$t('m.Real_Time_Rank')">
-              <el-switch
-                v-model="contest.real_time_rank"
-                active-color="#13ce66"
-                inactive-color="#ff4949"
-              >
-              </el-switch>
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-form-item :label="$t('m.Contest_Status')">
-              <el-switch
-                v-model="contest.visible"
-                active-text=""
-                inactive-text=""
-              >
-              </el-switch>
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
-            <el-form-item :label="$t('m.Allow_Paste')">
-              <el-switch
-                v-model="contest.allow_paste"
-                active-color="#13ce66"
-                inactive-color="#ff4949"
-              >
-              </el-switch>
-            </el-form-item>
-          </el-col>
+
           <el-col :span="24">
             <el-form-item :label="$t('m.Allowed_IP_Ranges')">
               <div
