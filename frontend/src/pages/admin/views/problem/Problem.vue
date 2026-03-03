@@ -1,23 +1,9 @@
 <template>
-  <div class="problem">
-    <div class="tab-headers">
-      <div
-        class="tab-header"
-        :class="{ active: activeTab === 'edit' }"
-        @click="activeTab = 'edit'"
-      >
-        {{ $t("m.Question_Creation") }}
-      </div>
-      <div
-        class="tab-header"
-        :class="{ active: activeTab === 'preview' }"
-        @click="activeTab = 'preview'"
-      >
-        Preview
-      </div>
-    </div>
-    <div class="tab-content">
-      <div v-show="activeTab === 'edit'" class="detailCard">
+  <div class="problem view">
+    <Panel
+      :title="mode === 'edit' ? $t('m.Edit_Problem') : $t('m.Create_Problem')"
+    >
+      <div class="detailCard">
         <div class="header-input-container">
           <div class="header-question-id">
             <!-- 문제 번호 글자 -->
@@ -32,14 +18,12 @@
               :placeholder="$t('m.Display_ID')"
             />
             <!-- 중복확인 버튼 -->
-            <el-button
-              class="duplicate-btn"
-              type="primary"
-              size="small"
+            <button
+              class="duplicate-check-btn"
               @click="checkDuplicateProblemId"
             >
               {{ $t("m.Check_ID_Duplication") }}
-            </el-button>
+            </button>
           </div>
           <div class="header-title">
             <!-- 문제 제목 글자 -->
@@ -57,19 +41,18 @@
         </div>
 
         <div class="meta-data">
+          <!-- 난이도 -->
           <div class="form-group difficulty-field">
-            <!-- 난이도 글자 -->
             <label class="custom-label"
               ><span class="required-asterisk">*</span
               >{{ $t("m.Difficulty") }}</label
             >
-            <div style="display: flex; align-items: center; gap: 10px">
+            <div class="difficulty-row">
               <el-select
                 class="difficulty-select"
                 size="small"
                 :placeholder="$t('m.Difficulty')"
                 v-model="problem.difficulty"
-                style="width: 150px"
               >
                 <el-option :label="$t('m.VeryLow')" value="VeryLow"></el-option>
                 <el-option :label="$t('m.Low')" value="Low"></el-option>
@@ -80,49 +63,9 @@
                   value="VeryHigh"
                 ></el-option>
               </el-select>
-
-              <div class="headerDetailBtn">
-                <Icon type="ios-pie" color="#F8B193" />
-                영역
-              </div>
-              <div class="headerDetailBtn">
-                <Icon type="ios-pricetag" color="#FF9F9F" />
-                태그
-              </div>
             </div>
           </div>
 
-          <!-- Commented out old Field/Tag inputs as requested -->
-          <!-- <div class="form-group category-field">
-              <label class="custom-label"><span class="required-asterisk">*</span>{{ $t('m.Field') }}</label>
-              <el-select class="difficulty-select" size="small" :placeholder="$t('m.Field')" v-model="problem.field">
-                <el-option :label="$t('m.Field_Impl')" :value="0"></el-option>
-                <el-option :label="$t('m.Field_Math')" :value="1"></el-option>
-                <el-option :label="$t('m.Field_DataStructure')" :value="2"></el-option>
-                <el-option :label="$t('m.Field_Search')" :value="3"></el-option>
-                <el-option :label="$t('m.Field_Sorting')" :value="4"></el-option>
-                <el-option :label="$t('m.Field_Algorithm')" :value="5"></el-option>
-              </el-select>
-            </div>
-            <div class="form-group tag-field">
-              <label class="custom-label"><span class="required-asterisk">*</span>{{ $t('m.Tag') }}</label>
-              <div class="tags-container">
-                <span class="tags">
-                  <el-tag v-for="tag in problem.tags" :closable="true" :close-transition="false" :key="tag"
-                    type="success" @close="closeTag(tag)">{{ tag }}</el-tag>
-                </span>
-                <el-autocomplete v-if="inputVisible" size="mini" class="input-new-tag" popper-class="problem-tag-poper"
-                  v-model="tagInput" :trigger-on-focus="false" @keyup.enter.native="addTag" @select="addTag"
-                  :fetch-suggestions="querySearch">
-                </el-autocomplete>
-                <el-button class="button-new-tag" v-else size="small" @click="inputVisible = true">+ {{
-                  $t("m.New_Tag")
-                }}</el-button>
-              </div>
-              <div class="el-form-item__error" v-if="error.tags">
-                {{ error.tags }}
-              </div>
-            </div> -->
           <!-- 언어 선택 -->
           <div class="form-group language-field">
             <label class="custom-label"
@@ -146,7 +89,10 @@
                     v-if="problem.languages.includes(lang.name)"
                     class="el-icon-check check-icon"
                   ></i>
-                  {{ lang.name }}
+                  <span v-else class="empty-box"></span>
+                  <span class="lang-text" :data-text="lang.name">{{
+                    lang.name
+                  }}</span>
                 </div>
               </el-tooltip>
             </div>
@@ -246,6 +192,7 @@
               >{{ $t("m.Time_Limit") }} (ms)</label
             >
             <el-input
+              class="limit-input"
               type="Number"
               :placeholder="$t('m.Time_Limit')"
               v-model="problem.time_limit"
@@ -257,6 +204,7 @@
               >{{ $t("m.Memory_limit") }} (MB)</label
             >
             <el-input
+              class="limit-input"
               type="Number"
               :placeholder="$t('m.Memory_limit')"
               v-model="problem.memory_limit"
@@ -264,181 +212,406 @@
           </div>
         </div>
 
-        <!-- 공개 / 제출 공유 여부 -->
-        <el-row :gutter="20">
-          <el-col :span="4">
-            <el-form-item :label="$t('m.Visible')">
-              <el-switch
-                v-model="problem.visible"
-                active-text=""
-                inactive-text=""
-              >
-              </el-switch>
-            </el-form-item>
-          </el-col>
-          <el-col :span="4">
-            <el-form-item :label="$t('m.ShareSubmission')">
-              <el-switch
-                v-model="problem.share_submission"
-                active-text=""
-                inactive-text=""
-              >
-              </el-switch>
-            </el-form-item>
-          </el-col>
-        </el-row>
         <!-- 힌트 -->
-        <el-form-item style="margin-top: 20px" :label="$t('m.Hint')">
-          <Simditor v-model="problem.hint" placeholder=""></Simditor>
-        </el-form-item>
-        <!-- 코드 템플릿 -->
-        <el-form-item :label="$t('m.Code_Template')">
-          <el-row>
-            <el-col :span="24" v-for="(v, k) in template" :key="'template' + k">
-              <el-form-item>
-                <el-checkbox v-model="v.checked">{{ k }}</el-checkbox>
-                <div v-if="v.checked">
-                  <code-mirror v-model="v.code" :mode="v.mode"></code-mirror>
-                </div>
-              </el-form-item>
-            </el-col>
-          </el-row>
-        </el-form-item>
-        <!-- 스페셜 저지 -->
-        <el-form-item :label="$t('m.Special_Judge')" :error="error.spj">
-          <el-col :span="24">
-            <el-checkbox
-              v-model="problem.spj"
-              @click.native.prevent="switchSpj()"
-              >{{ $t("m.Use_Special_Judge") }}</el-checkbox
-            >
-          </el-col>
-        </el-form-item>
-        <!-- 스페셜 저지 코드 -->
-        <el-form-item v-if="problem.spj">
-          <Accordion :title="$t('m.Special_Judge_Code')">
-            <template slot="header">
-              <span>{{ $t("m.SPJ_language") }}</span>
-              <el-radio-group v-model="problem.spj_language">
-                <el-tooltip
-                  class="spj-radio"
-                  v-for="lang in allLanguage.spj_languages"
-                  :key="lang.name"
-                  effect="dark"
-                  :content="lang.description"
-                  placement="top-start"
-                >
-                  <el-radio :label="lang.name">{{ lang.name }}</el-radio>
-                </el-tooltip>
-              </el-radio-group>
-              <el-button
-                type="primary"
-                size="small"
-                icon="el-icon-fa-random"
-                @click="compileSPJ"
-                :loading="loadingCompile"
-              >
-                {{ $t("m.Compile") }}
-              </el-button>
-            </template>
-            <code-mirror
-              v-model="problem.spj_code"
-              :mode="spjMode"
-            ></code-mirror>
-          </Accordion>
-        </el-form-item>
+        <div class="form-group">
+          <label class="custom-label">
+            {{ $t("m.Hint") }}
+          </label>
+          <Simditor v-model="problem.hint"></Simditor>
+        </div>
 
         <!-- 종류 / 테케 / 입출력모드 / 배점 설정 -->
-        <el-row :gutter="20">
-          <el-col :span="4">
-            <el-form-item :label="$t('m.Type')">
-              <el-radio-group
-                v-model="problem.rule_type"
-                :disabled="disableRuleType"
-              >
-                <el-radio label="ACM">ACM</el-radio>
-                <el-radio label="OI">OI</el-radio>
-              </el-radio-group>
-            </el-form-item>
-          </el-col>
-          <el-col :span="6">
-            <el-form-item :label="$t('m.TestCase')" :error="error.testcase">
-              <el-upload
-                action="/api/admin/test_case"
-                name="file"
-                :data="{ spj: problem.spj }"
-                :show-file-list="true"
-                :on-success="uploadSucceeded"
-                :on-error="uploadFailed"
-              >
-                <el-button
-                  size="small"
-                  type="primary"
-                  icon="el-icon-fa-upload"
-                  >{{ $t("m.Button_Choose_File") }}</el-button
+        <div class="test-case-settings">
+          <div class="settings-row">
+            <div class="left-settings">
+              <!-- 테스트 케이스 업로드 -->
+              <div class="setting-item">
+                <div
+                  class="form-group"
+                  :class="{ 'has-error': error.testCase }"
                 >
-              </el-upload>
-            </el-form-item>
-          </el-col>
+                  <label class="custom-label col-label">
+                    {{ $t("m.TestCase") }}
+                    <span v-if="error.testCase" class="error-msg">{{
+                      error.testCase
+                    }}</span>
+                  </label>
+                  <div class="upload-container">
+                    <el-upload
+                      action="/api/admin/test_case"
+                      name="file"
+                      :data="{ spj: problem.spj }"
+                      :show-file-list="true"
+                      :on-success="uploadSucceeded"
+                      :on-error="uploadFailed"
+                    >
+                      <button type="button" class="duplicate-btn upload-btn">
+                        <i class="el-icon-fa-upload"></i>
+                        {{ $t("m.Button_Choose_File") }}
+                      </button>
+                    </el-upload>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-          <el-col :span="6">
-            <el-form-item :label="$t('m.IOMode')">
-              <el-radio-group v-model="problem.io_mode.io_mode">
-                <el-radio label="Standard IO">Standard IO</el-radio>
-                <el-radio label="File IO">File IO</el-radio>
-              </el-radio-group>
-            </el-form-item>
-          </el-col>
-
-          <el-col :span="4" v-if="problem.io_mode.io_mode == 'File IO'">
-            <el-form-item :label="$t('m.InputFileName')" required>
-              <el-input type="text" v-model="problem.io_mode.input"></el-input>
-            </el-form-item>
-          </el-col>
-          <el-col :span="4" v-if="problem.io_mode.io_mode == 'File IO'">
-            <el-form-item :label="$t('m.OutputFileName')" required>
-              <el-input type="text" v-model="problem.io_mode.output"></el-input>
-            </el-form-item>
-          </el-col>
-
-          <el-col :span="24">
-            <el-table :data="problem.test_case_score" style="width: 100%">
-              <el-table-column prop="input_name" :label="$t('m.Input')">
-              </el-table-column>
-              <el-table-column prop="output_name" :label="$t('m.Output')">
-              </el-table-column>
-              <el-table-column prop="score" :label="$t('m.Score')">
-                <template slot-scope="scope">
-                  <el-input
-                    size="small"
-                    :placeholder="$t('m.Score')"
-                    v-model="scope.row.score"
-                    :disabled="problem.rule_type !== 'OI'"
+            <div class="right-settings">
+              <!-- 종류 선택 -->
+              <div class="setting-item">
+                <div class="form-group">
+                  <label class="custom-label">{{ $t("m.Type") }}</label>
+                  <div class="segmented-control">
+                    <label class="custom-radio">
+                      <input
+                        type="radio"
+                        value="ACM"
+                        v-model="problem.rule_type"
+                        :disabled="disableRuleType"
+                      />
+                      <span class="radio-text">ACM</span>
+                    </label>
+                    <label class="custom-radio">
+                      <input
+                        type="radio"
+                        value="OI"
+                        v-model="problem.rule_type"
+                        :disabled="disableRuleType"
+                      />
+                      <span class="radio-text">OI</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <!-- 입출력 모드 -->
+              <div class="setting-item">
+                <div class="form-group">
+                  <label class="custom-label">{{ $t("m.IOMode") }}</label>
+                  <div class="segmented-control">
+                    <label class="custom-radio">
+                      <input
+                        type="radio"
+                        value="Standard IO"
+                        v-model="problem.io_mode.io_mode"
+                      />
+                      <span class="radio-text">Standard IO</span>
+                    </label>
+                    <label class="custom-radio">
+                      <input
+                        type="radio"
+                        value="File IO"
+                        v-model="problem.io_mode.io_mode"
+                      />
+                      <span class="radio-text">File IO</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <!-- File IO 입력 파일 -->
+              <div
+                class="setting-item"
+                v-if="problem.io_mode.io_mode == 'File IO'"
+              >
+                <div class="form-group">
+                  <label class="custom-label"
+                    ><span class="required-asterisk">*</span
+                    >{{ $t("m.InputFileName") }}</label
                   >
-                  </el-input>
-                </template>
-              </el-table-column>
-            </el-table>
-          </el-col>
-        </el-row>
+                  <input
+                    type="text"
+                    class="limit-input custom-input"
+                    v-model="problem.io_mode.input"
+                  />
+                </div>
+              </div>
+              <!-- File IO 출력 파일 -->
+              <div
+                class="setting-item"
+                v-if="problem.io_mode.io_mode == 'File IO'"
+              >
+                <div class="form-group">
+                  <label class="custom-label"
+                    ><span class="required-asterisk">*</span
+                    >{{ $t("m.OutputFileName") }}</label
+                  >
+                  <input
+                    type="text"
+                    class="limit-input custom-input"
+                    v-model="problem.io_mode.output"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 테스트 케이스 표 (테케 업로드 시 생성)-->
+          <div
+            class="table-container"
+            v-if="problem.test_case_score && problem.test_case_score.length > 0"
+          >
+            <table class="custom-table">
+              <colgroup>
+                <col class="col-30" />
+                <col class="col-30" />
+                <col class="col-40" />
+              </colgroup>
+              <thead>
+                <tr>
+                  <th>
+                    {{ $t("m.Input") }}
+                  </th>
+                  <th>
+                    {{ $t("m.Output") }}
+                  </th>
+                  <th>
+                    {{ $t("m.Score") }}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="(row, index) in problem.test_case_score"
+                  :key="index"
+                >
+                  <td>
+                    {{ row.input_name }}
+                  </td>
+                  <td>
+                    {{ row.output_name }}
+                  </td>
+                  <td>
+                    <input
+                      type="number"
+                      class="limit-input score-input"
+                      :placeholder="$t('m.Score')"
+                      v-model="row.score"
+                      :disabled="problem.rule_type !== 'OI'"
+                    />
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 코드 템플릿 -->
+        <div class="form-group">
+          <label class="custom-label">{{ $t("m.Code_Template") }}</label>
+          <div class="template-container">
+            <div class="template-tabs">
+              <label
+                v-for="(v, k, index) in template"
+                :key="'template-tab' + k"
+                class="custom-checkbox"
+                :class="{
+                  'is-active-tab':
+                    activeTemplateLanguage === k ||
+                    (!activeTemplateLanguage && index === 0),
+                  'is-disabled-tab': !problem.languages.includes(k),
+                }"
+                @click="
+                  problem.languages.includes(k)
+                    ? (activeTemplateLanguage = k)
+                    : null
+                "
+              >
+                <input
+                  type="checkbox"
+                  v-model="v.checked"
+                  :disabled="!problem.languages.includes(k)"
+                />
+                <span class="checkbox-text">
+                  <i v-if="v.checked" class="el-icon-check check-icon"></i>
+                  <span v-else class="empty-box"></span>
+                  <span class="lang-text" :data-text="k">{{ k }}</span>
+                </span>
+              </label>
+            </div>
+
+            <div v-for="(v, k, index) in template" :key="'template-editor' + k">
+              <div
+                v-if="
+                  activeTemplateLanguage === k ||
+                  (!activeTemplateLanguage && index === 0)
+                "
+                class="template-editor-area"
+              >
+                <div :class="{ 'is-disabled': !v.checked }">
+                  <div class="template-editor-header">
+                    <span class="editor-lang-badge">{{ k }}</span>
+                    <span class="editor-lang-label">코드 템플릿</span>
+                  </div>
+                  <div class="template-editor">
+                    <code-mirror v-model="v.code" :mode="v.mode"></code-mirror>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 스페셜 저지 -->
+        <div class="form-group">
+          <label class="custom-label">{{ $t("m.Special_Judge") }}</label>
+          <div class="spj-toggle-row">
+            <span class="spj-toggle-label">{{
+              $t("m.Use_Special_Judge")
+            }}</span>
+            <label class="spj-toggle">
+              <input
+                type="checkbox"
+                :checked="problem.spj"
+                @click.prevent="switchSpj()"
+              />
+              <span
+                class="spj-toggle-track"
+                :class="{ 'is-on': problem.spj }"
+              ></span>
+            </label>
+          </div>
+          <div class="el-form-item__error" v-if="error.spj">
+            {{ error.spj }}
+          </div>
+        </div>
+
+        <!-- 스페셜 저지 코드 -->
+        <div v-if="problem.spj" class="form-group">
+          <div class="spj-editor-controls">
+            <label class="custom-label spj-label">{{
+              $t("m.Special_Judge_Code")
+            }}</label>
+            <span class="spj-lang-label">{{ $t("m.SPJ_language") }}</span>
+            <div class="spj-radio-group">
+              <label
+                v-for="lang in allLanguage.spj_languages"
+                :key="lang.name"
+                class="spj-radio-btn"
+                :class="{ active: problem.spj_language === lang.name }"
+                :title="lang.description"
+              >
+                <input
+                  type="radio"
+                  :value="lang.name"
+                  v-model="problem.spj_language"
+                />
+                {{ lang.name }}
+              </label>
+            </div>
+            <button
+              class="spj-compile-btn"
+              @click="compileSPJ"
+              :disabled="loadingCompile"
+            >
+              <i v-if="loadingCompile" class="el-icon-loading"></i>
+              <i v-else class="el-icon-fa-random"></i>
+              {{ $t("m.Compile") }}
+            </button>
+          </div>
+          <code-mirror v-model="problem.spj_code" :mode="spjMode"></code-mirror>
+        </div>
+
+        <!-- 영역 -->
+        <div class="form-group category-field section-divider">
+          <label class="custom-label"
+            ><span class="required-asterisk">*</span
+            ><Icon type="ios-pie" color="#F8B193" class="field-icon" />{{
+              $t("m.Field")
+            }}</label
+          >
+          <el-select
+            class="difficulty-select field-select"
+            size="small"
+            :placeholder="$t('m.Field')"
+            v-model="problem.field"
+          >
+            <el-option :label="$t('m.Field_Impl')" :value="0"></el-option>
+            <el-option :label="$t('m.Field_Math')" :value="1"></el-option>
+            <el-option
+              :label="$t('m.Field_DataStructure')"
+              :value="2"
+            ></el-option>
+            <el-option :label="$t('m.Field_Search')" :value="3"></el-option>
+            <el-option :label="$t('m.Field_Sorting')" :value="4"></el-option>
+            <el-option :label="$t('m.Field_Algorithm')" :value="5"></el-option>
+          </el-select>
+        </div>
+
+        <!-- 태그 -->
+        <div class="form-group tag-field section-divider">
+          <label class="custom-label"
+            ><span class="required-asterisk">*</span
+            ><Icon type="ios-pricetag" color="#FF9F9F" class="field-icon" />{{
+              $t("m.Tag")
+            }}</label
+          >
+          <div class="tags-container">
+            <span v-for="tag in problem.tags" :key="tag" class="tag-chip">
+              {{ tag }}
+              <button class="tag-chip-close" @click="closeTag(tag)">×</button>
+            </span>
+            <input
+              v-if="inputVisible"
+              v-model="tagInput"
+              class="tag-input"
+              :placeholder="$t('m.New_Tag')"
+              @keyup.enter="addTag"
+              @blur="addTag"
+              ref="tagInputRef"
+            />
+            <button v-else class="tag-add-btn" @click="inputVisible = true">
+              + {{ $t("m.New_Tag") }}
+            </button>
+          </div>
+          <div class="el-form-item__error" v-if="error.tags">
+            {{ error.tags }}
+          </div>
+        </div>
+
         <!-- 출처 -->
-        <el-form-item :label="$t('m.Source')">
-          <el-input
+        <div class="form-group section-divider">
+          <label class="custom-label"
+            ><Icon type="ios-contact" color="#90B8E7" class="source-icon" />{{
+              $t("m.Source")
+            }}</label
+          >
+
+          <input
+            class="source-custom-input source-input"
             :placeholder="$t('m.Source')"
             v-model="problem.source"
-          ></el-input>
-        </el-form-item>
-        <!-- 제출 -->
-        <save @click.native="submit()">Save</save>
-      </div>
+          />
+        </div>
+        <!-- 공개 / 제출 공유 여부 -->
+        <div class="form-group">
+          <div class="toggle-row">
+            <div class="toggle-item">
+              <span class="toggle-label">{{ $t("m.Visible") }}</span>
+              <label class="spj-toggle">
+                <input type="checkbox" v-model="problem.visible" />
+                <span
+                  class="spj-toggle-track"
+                  :class="{ 'is-on': problem.visible }"
+                ></span>
+              </label>
+            </div>
+            <div class="toggle-item">
+              <span class="toggle-label">{{ $t("m.ShareSubmission") }}</span>
+              <label class="spj-toggle">
+                <input type="checkbox" v-model="problem.share_submission" />
+                <span
+                  class="spj-toggle-track"
+                  :class="{ 'is-on': problem.share_submission }"
+                ></span>
+              </label>
+            </div>
+          </div>
+        </div>
 
-      <div v-show="activeTab === 'preview'" class="preview-content">
-        <!-- Preview content will be here -->
-        <div class="empty-preview" style="text-align: center; padding: 50px">
-          PREVIEW
+        <!-- 제출 -->
+        <div class="submit-row">
+          <save @click.native="submit()">Save</save>
         </div>
       </div>
-    </div>
+    </Panel>
   </div>
 </template>
 
@@ -489,6 +662,7 @@ export default {
       inputVisible: false,
       tagInput: "",
       template: {},
+      activeTemplateLanguage: null,
       title: "",
       spjMode: "",
       disableRuleType: false,
@@ -589,28 +763,41 @@ export default {
     },
     "problem.languages"(newVal) {
       let data = {}
-      // use deep copy to avoid infinite loop
-      let languages = JSON.parse(JSON.stringify(newVal)).sort()
-      for (let item of languages) {
-        if (this.template[item] === undefined) {
-          let langConfig = this.allLanguage.languages.find((lang) => {
-            return lang.name === item
-          })
-          if (this.problem.template[item] === undefined) {
-            data[item] = {
-              checked: false,
-              code: langConfig.config.template,
-              mode: langConfig.content_type,
+      let selectedLanguages = JSON.parse(JSON.stringify(newVal || [])).sort()
+
+      if (this.allLanguage && this.allLanguage.languages) {
+        let allLangs = this.allLanguage.languages.sort((a, b) =>
+          a.name.localeCompare(b.name),
+        )
+
+        for (let langConfig of allLangs) {
+          let langName = langConfig.name
+          let isSelected = selectedLanguages.includes(langName)
+
+          if (this.template[langName] === undefined) {
+            if (this.problem.template[langName] === undefined) {
+              data[langName] = {
+                checked: isSelected,
+                code: langConfig.config.template,
+                mode: langConfig.content_type,
+              }
+            } else {
+              data[langName] = {
+                checked: true,
+                code: this.problem.template[langName],
+                mode: langConfig.content_type,
+              }
             }
           } else {
-            data[item] = {
-              checked: true,
-              code: this.problem.template[item],
-              mode: langConfig.content_type,
+            let existingData = JSON.parse(
+              JSON.stringify(this.template[langName]),
+            )
+
+            if (!isSelected) {
+              existingData.checked = false
             }
+            data[langName] = existingData
           }
-        } else {
-          data[item] = this.template[item]
         }
       }
       this.template = data
@@ -975,12 +1162,48 @@ export default {
         font-weight: bold;
       }
 
+      .empty-box {
+        display: inline-block;
+        box-sizing: border-box;
+        width: 16px;
+        height: 16px;
+        border: 1px solid #dcdfe6;
+        border-radius: 2px;
+        margin-right: 6px;
+        background-color: #ffffff;
+      }
+
       .check-icon {
-        margin-right: 5px;
+        display: inline-block;
+        width: 16px;
+        text-align: center;
+        color: #67c23a;
         font-weight: bold;
+        margin-right: 6px;
+      }
+
+      .lang-text {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        &::after {
+          content: attr(data-text);
+          font-weight: bold;
+          height: 0;
+          visibility: hidden;
+          overflow: hidden;
+          user-select: none;
+          pointer-events: none;
+        }
       }
     }
   }
+}
+
+.section-divider {
+  border-bottom: 1px solid #dcdfe6;
+  padding-bottom: 18px;
+  margin-bottom: 4px;
 }
 
 .sample-box {
@@ -1106,24 +1329,32 @@ export default {
     display: flex;
     align-items: center;
     gap: 50px;
-    // margin-bottom: 20px;
+
     border-bottom: 1px solid #dcdfe6;
     padding-bottom: 18px;
 
     .header-title {
       display: flex;
       gap: 20px;
-      align-items: center;
+      align-items: flex-start;
+
+      .custom-label {
+        line-height: 1.4;
+        padding: 0;
+        margin-top: 5px;
+      }
     }
 
     .header-question-id {
       display: flex;
       gap: 20px;
-      align-items: center;
-    }
+      align-items: flex-start;
 
-    .duplicate-btn {
-      white-space: nowrap;
+      .custom-label {
+        line-height: 1.4;
+        padding: 0;
+        margin-top: 5px;
+      }
     }
   }
 
@@ -1132,37 +1363,16 @@ export default {
     margin-right: 4px;
   }
 
-  // 공통 스타일 Mixin
-  .common-input-style() {
+  // 헤더 전용 공통 스타일
+  .header-common-style() {
     /deep/ .el-input__inner {
-      font-size: 20px;
+      font-size: 16px;
       font-weight: 700;
       color: var(--ps-content-title-color);
       border: none;
       border-bottom: 1px solid var(--border-color);
       border-radius: 0;
-      height: auto;
-      padding-left: 0;
-      padding-right: 0;
-      line-height: normal;
-      background-color: transparent;
-      box-shadow: none;
-
-      &:focus {
-        border-bottom: 1px solid #409eff;
-      }
-    }
-  }
-
-  .common-input-style() {
-    /deep/ .el-input__inner {
-      font-size: 20px;
-      font-weight: 700;
-      color: var(--ps-content-title-color);
-      border: none;
-      border-bottom: 1px solid var(--border-color);
-      border-radius: 0;
-      height: auto;
+      height: 30px;
       padding-left: 0;
       padding-right: 0;
       line-height: normal;
@@ -1181,7 +1391,7 @@ export default {
 
   .id_input {
     width: 80px;
-    .common-input-style();
+    .header-common-style();
 
     /deep/ .el-input__inner {
       text-align: left;
@@ -1190,8 +1400,631 @@ export default {
 
   .title_input {
     width: 500px;
-    .common-input-style();
+    .header-common-style();
   }
+
+  .limit-input {
+    width: 130px;
+  }
+
+  .test-case-settings {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    align-items: flex-start;
+    margin-bottom: 20px;
+
+    .settings-row {
+      display: flex;
+      width: 100%;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .left-settings {
+      flex: 0 0 auto;
+    }
+
+    .right-settings {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      flex: 1;
+      justify-content: flex-end;
+    }
+
+    .setting-item {
+      flex: 0 0 auto;
+    }
+
+    .table-container {
+      flex: 0 0 100%;
+      width: 100%;
+    }
+
+    .segmented-control {
+      display: inline-flex;
+      background-color: #f1f5f9;
+      padding: 4px;
+      border-radius: 8px;
+      gap: 2px;
+      margin-top: 10px;
+    }
+
+    .custom-radio {
+      cursor: pointer;
+      display: inline-flex;
+      margin: 0;
+
+      input[type="radio"] {
+        display: none;
+      }
+
+      .radio-text {
+        display: inline-block;
+        padding: 6px 18px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        color: #64748b;
+        transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+        user-select: none;
+      }
+
+      input[type="radio"]:checked + .radio-text {
+        background-color: #ffffff;
+        color: #0f172a;
+        box-shadow:
+          0 1px 3px rgba(0, 0, 0, 0.1),
+          0 1px 2px rgba(0, 0, 0, 0.06);
+      }
+
+      input[type="radio"]:disabled + .radio-text {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      &:hover input[type="radio"]:not(:checked):not(:disabled) + .radio-text {
+        color: #334155;
+      }
+    }
+
+    .col-label {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .error-msg {
+      color: #f56c6c;
+      font-size: 12px;
+      margin-top: 4px;
+    }
+
+    .upload-container {
+      margin-top: 10px;
+    }
+
+    .upload-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px 14px;
+      background-color: #eff6ff;
+      color: #1d4ed8;
+      border: 1px solid #bfdbfe;
+      border-radius: 5px;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.2px;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+
+      i {
+        margin-right: 6px;
+        font-size: 14px;
+        color: #3b82f6;
+        transition: color 0.2s ease;
+      }
+
+      &:hover {
+        background-color: #dbeafe;
+        border-color: #93c5fd;
+        color: #1e40af;
+        box-shadow:
+          0 2px 4px -1px rgba(59, 130, 246, 0.1),
+          0 1px 2px -1px rgba(59, 130, 246, 0.06);
+        transform: translateY(-1px);
+
+        i {
+          color: #2563eb;
+        }
+      }
+
+      &:active {
+        background-color: #bfdbfe;
+        border-color: #60a5fa;
+        transform: translateY(0);
+        box-shadow: none;
+        transition: none;
+      }
+    }
+
+    .custom-input {
+      padding: 8px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      margin-top: 10px;
+      font-size: 14px;
+      color: #334155;
+      background-color: #ffffff;
+      transition: all 0.2s ease;
+
+      &:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        outline: none;
+      }
+    }
+
+    .score-input {
+      padding: 8px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      width: 100px;
+      color: #334155;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s ease;
+
+      &:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        outline: none;
+      }
+
+      &:disabled {
+        background-color: #f8fafc;
+        color: #94a3b8;
+        cursor: not-allowed;
+      }
+    }
+
+    .template-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    .custom-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      text-align: left;
+      margin-top: 15px;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+      overflow: hidden;
+      table-layout: fixed;
+
+      thead {
+        background-color: #f5f7fa !important;
+      }
+
+      th {
+        padding: 12px 16px;
+        background-color: #f5f7fa !important;
+        color: #475569;
+        font-weight: 600;
+        font-size: 13px;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        border-bottom: 1px solid #e2e8f0;
+      }
+
+      tr {
+        background-color: #ffffff;
+
+        &:last-child td {
+          border-bottom: none;
+        }
+      }
+
+      td {
+        padding: 12px 16px;
+        color: #334155;
+        font-size: 14px;
+        border-bottom: 1px dashed #cbd5e1;
+        vertical-align: middle;
+        word-break: break-all;
+      }
+
+      .empty-table-data {
+        padding: 48px;
+        text-align: center;
+        color: #94a3b8;
+        font-size: 14px;
+        background-color: #ffffff;
+      }
+    }
+  }
+}
+
+.template-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.custom-checkbox {
+  display: inline-flex;
+  cursor: pointer;
+  user-select: none;
+  align-self: flex-start;
+  width: fit-content;
+
+  input[type="checkbox"] {
+    display: none !important;
+  }
+
+  .checkbox-text {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 16px;
+    background-color: #ffffff;
+    border: 1px solid #dcdfe6;
+    border-radius: 4px;
+    color: #606266;
+    font-size: 14px;
+    transition: all 0.2s ease;
+  }
+
+  .empty-box {
+    display: inline-block;
+    box-sizing: border-box;
+    width: 16px;
+    height: 16px;
+    border: 1px solid #dcdfe6;
+    border-radius: 2px;
+    margin-right: 6px;
+    background-color: #ffffff;
+  }
+
+  .check-icon {
+    display: inline-block;
+    width: 16px;
+    text-align: center;
+    color: #67c23a;
+    font-weight: bold;
+    margin-right: 6px;
+  }
+
+  .lang-text {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    &::after {
+      content: attr(data-text);
+      font-weight: bold;
+      height: 0;
+      visibility: hidden;
+      overflow: hidden;
+      user-select: none;
+      pointer-events: none;
+    }
+  }
+
+  &:hover .checkbox-text {
+    border-color: #67c23a;
+    color: #67c23a;
+  }
+
+  input[type="checkbox"]:checked + .checkbox-text {
+    color: #67c23a;
+    border-color: #67c23a;
+    background-color: #f0f9eb;
+    font-weight: bold;
+  }
+
+  &.is-disabled-tab {
+    opacity: 0.45;
+    cursor: not-allowed;
+
+    .checkbox-text {
+      pointer-events: none;
+    }
+
+    &:hover .checkbox-text {
+      border-color: #dcdfe6;
+      color: #606266;
+    }
+  }
+}
+
+.template-editor-area {
+  animation: fadeIn 0.3s ease;
+}
+
+.template-editor-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px 4px 0 0;
+
+  .editor-lang-badge {
+    font-size: 12px;
+    font-weight: 700;
+    color: #ffffff;
+    background-color: #67c23a;
+    padding: 2px 8px;
+    border-radius: 3px;
+    letter-spacing: 0.03em;
+  }
+
+  .editor-lang-label {
+    font-size: 12px;
+    color: #94a3b8;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.template-editor {
+  overflow: hidden;
+  transition: opacity 0.3s ease;
+}
+
+.is-disabled {
+  opacity: 0.6;
+  pointer-events: none;
+  filter: grayscale(100%);
+  transition: opacity 0.3s ease;
+}
+
+.spj-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+
+  input[type="checkbox"] {
+    display: none;
+  }
+
+  .spj-toggle-track {
+    position: relative;
+    width: 44px;
+    height: 24px;
+    background-color: #dcdfe6;
+    border-radius: 12px;
+    transition: background-color 0.25s ease;
+    flex-shrink: 0;
+
+    &::after {
+      content: "";
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 18px;
+      height: 18px;
+      background-color: #ffffff;
+      border-radius: 50%;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+      transition: transform 0.25s ease;
+    }
+  }
+
+  .spj-toggle-track.is-on {
+    background-color: #409eff;
+
+    &::after {
+      transform: translateX(20px);
+    }
+  }
+
+  .spj-toggle-label {
+    font-size: 14px;
+    color: #606266;
+  }
+}
+
+.spj-lang-label {
+  font-size: 14px;
+  color: #606266;
+  margin-right: 10px;
+}
+
+.spj-radio-group {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-right: 12px;
+}
+
+.spj-editor-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  background-color: #f0f9eb;
+  border: 1px solid #b3e19d;
+  border-radius: 20px;
+  font-size: 13px;
+  color: #529b2e;
+  font-weight: 500;
+
+  .tag-chip-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    background: none;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 14px;
+    color: #529b2e;
+    padding: 0;
+    line-height: 1;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+
+    &:hover {
+      opacity: 1;
+      background-color: #b3e19d;
+    }
+  }
+}
+
+.tag-input {
+  padding: 4px 10px;
+  border: 1px solid #dcdfe6;
+  border-radius: 20px;
+  font-size: 13px;
+  outline: none;
+  width: 100px;
+  transition: border-color 0.2s;
+
+  &:focus {
+    border-color: #67c23a;
+  }
+}
+
+.tag-add-btn {
+  padding: 4px 12px;
+  background: none;
+  border: 1px dashed #dcdfe6;
+  border-radius: 20px;
+  font-size: 13px;
+  color: #909399;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    border-color: #67c23a;
+    color: #67c23a;
+  }
+}
+
+.spj-radio-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 12px;
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  color: #606266;
+  transition: all 0.2s;
+  user-select: none;
+
+  input[type="radio"] {
+    display: none;
+  }
+
+  &:hover {
+    border-color: #67c23a;
+    color: #67c23a;
+  }
+
+  &.active {
+    border-color: #67c23a;
+    background-color: #f0f9eb;
+    color: #67c23a;
+    font-weight: bold;
+  }
+}
+
+.custom-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #606266;
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+
+  &::placeholder {
+    color: #c0c4cc;
+  }
+
+  &:focus {
+    border-color: #409eff;
+  }
+}
+
+.spj-compile-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background-color: #409eff;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: #66b1ff;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.toggle-row {
+  display: flex;
+  gap: 32px;
+  align-items: center;
+}
+
+.toggle-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.toggle-label {
+  font-size: 14px;
+  color: #606266;
+  user-select: none;
 }
 
 .custom-label {
@@ -1206,7 +2039,7 @@ export default {
 .form-group {
   display: flex;
   flex-direction: column;
-  margin-bottom: 22px; // Match standard el-form-item margin
+  margin-bottom: 22px;
 }
 
 .headerDetailBtn {
@@ -1315,5 +2148,103 @@ export default {
   width: auto;
   max-width: 80%;
   overflow-x: scroll;
+}
+
+.duplicate-check-btn {
+  margin-top: 2px;
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  height: 28px;
+  box-sizing: border-box;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+  background: #ffffff;
+  color: #409eff;
+  border: 1px solid #409eff;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #ecf5ff;
+    border-color: #66b1ff;
+    color: #66b1ff;
+  }
+
+  &:active {
+    background: #d9ecff;
+  }
+}
+
+.difficulty-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.difficulty-select {
+  width: 110px;
+}
+
+.field-select {
+  width: 100px;
+}
+
+.field-icon {
+  margin-right: 5px;
+  margin-left: 2px;
+}
+
+.source-icon {
+  margin-right: 5px;
+}
+
+.source-custom-input {
+  padding: 8px 12px;
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #606266;
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+
+  &::placeholder {
+    color: #c0c4cc;
+  }
+
+  &:focus {
+    border-color: #409eff;
+  }
+}
+
+.source-input {
+  width: 200px;
+}
+
+.spj-toggle-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.spj-label {
+  margin-bottom: 0;
+  flex: 1;
+}
+
+.submit-row {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.col-30 {
+  width: 30%;
+}
+
+.col-40 {
+  width: 40%;
 }
 </style>
