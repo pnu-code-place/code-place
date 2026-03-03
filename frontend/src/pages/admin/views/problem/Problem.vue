@@ -639,7 +639,6 @@ export default {
   },
   data() {
     return {
-      activeTab: "edit",
       loadingCompile: false,
       mode: "",
       contest: {},
@@ -762,7 +761,6 @@ export default {
   watch: {
     $route() {
       this.resetProblem()
-      this.problem = this.reProblem
     },
     "problem.languages"(newVal) {
       let data = {}
