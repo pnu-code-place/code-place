@@ -569,9 +569,12 @@
         <!-- 출처 -->
         <div class="form-group section-divider">
           <label class="custom-label"
-            ><Icon type="ios-contact" color="#90B8E7" class="source-icon" />{{
-              $t("m.Source")
-            }}</label
+            ><Icon
+              type="paperclip"
+              color="#90B8E7"
+              class="field-icon"
+              size="18"
+            />{{ $t("m.Source") }}</label
           >
 
           <input
