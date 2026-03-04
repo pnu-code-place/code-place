@@ -11,7 +11,6 @@ import { codemirror } from "vue-codemirror"
 import "codemirror/lib/codemirror.css"
 import "codemirror/mode/clike/clike.js"
 import "codemirror/mode/python/python.js"
-import "codemirror/theme/solarized.css"
 export default {
   name: "CodeMirror",
   data() {
@@ -21,12 +20,12 @@ export default {
         mode: "text/x-csrc",
         lineNumbers: true,
         lineWrapping: false,
-        theme: "solarized",
+        theme: "default",
         tabSize: 4,
         line: true,
         foldGutter: true,
         gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
-        autofocus: true,
+        autofocus: false,
       },
     }
   },
@@ -66,12 +65,40 @@ export default {
 }
 </script>
 
-<style scoped>
+<style>
 .CodeMirror {
   height: auto !important;
+  font-family: "Courier New", Courier, monospace !important;
+  font-size: 14px;
+  line-height: 1.6;
+  background-color: #f8fafc !important;
+  color: #334155 !important;
 }
+
 .CodeMirror-scroll {
-  min-height: 300px;
-  max-height: 1000px;
+  height: 300px;
+  overflow-y: auto !important;
+}
+
+.CodeMirror-lines {
+  padding: 8px 0 !important;
+}
+
+.CodeMirror-gutters {
+  background-color: #f8fafc !important;
+  border-right: 1px solid #e2e8f0 !important;
+  padding-right: 5px;
+}
+
+.CodeMirror-linenumber {
+  color: #94a3b8 !important;
+}
+
+.CodeMirror-activeline-background {
+  background: #f1f5f9 !important;
+}
+
+.CodeMirror-selected {
+  background: #cbd5e1 !important;
 }
 </style>
