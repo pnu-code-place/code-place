@@ -22,7 +22,7 @@
 ## 배포 주소
 > 운영 서버 주소 : https://code.pusan.ac.kr/
 > 
-> 개발(베타) 서버 주소 : https://code-place-dev.site/
+> 개발(베타) 서버 주소 : [https://code-place-dev.site/](https://k3s.code-place-dev.site/)
 
 <br/>
 
@@ -130,6 +130,22 @@
       <img src="https://github.com/banchan01.png" width="80" alt="banchan01"/>
       <br />
       <sub><b>banchan01</b></sub>
+      </a>
+      <br />
+    </td>
+    <td align="center">
+      <a href="https://github.com/wlsgur11">
+      <img src="https://github.com/wlsgur11.png" width="80" alt="wlsgur11"/>
+      <br />
+      <sub><b>wlsgur11</b></sub>
+      </a>
+      <br />
+    </td>
+    <td align="center">
+      <a href="https://github.com/taekoong">
+      <img src="https://github.com/taekoong.png" width="80" alt="taekoong"/>
+      <br />
+      <sub><b>taekoong</b></sub>
       </a>
       <br />
     </td>
