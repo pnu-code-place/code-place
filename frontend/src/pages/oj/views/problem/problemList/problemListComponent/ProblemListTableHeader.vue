@@ -16,7 +16,9 @@
         trigger="click"
         class="dropdown difficultyDropdown"
       >
-        <span style="font-weight: bold; font-size: 15px; padding-right: 10px"
+        <span
+          class="dropdown-label"
+          style="font-weight: bold; font-size: 15px; padding-right: 10px"
           >{{
             query.difficulty === ""
               ? this.$i18n.t("m.Difficulty")
@@ -24,7 +26,7 @@
           }}
         </span>
         <Icon type="arrow-down-b"></Icon>
-        <Dropdown-menu slot="list">
+        <Dropdown-menu slot="list" class="problem-dropdown-menu">
           <Dropdown-item name="">{{ $t("m.All") }}</Dropdown-item>
           <Dropdown-item name="VeryLow">{{ $t("m.VeryLow") }}</Dropdown-item>
           <Dropdown-item name="Low">{{ $t("m.Low") }}</Dropdown-item>
@@ -38,7 +40,9 @@
         trigger="click"
         class="dropdown fieldDropdown"
       >
-        <span style="font-weight: bold; font-size: 15px; padding-right: 10px"
+        <span
+          class="dropdown-label"
+          style="font-weight: bold; font-size: 15px; padding-right: 10px"
           >{{
             query.field === ""
               ? this.$i18n.t("m.Field")
@@ -46,7 +50,7 @@
           }}
         </span>
         <Icon type="arrow-down-b"></Icon>
-        <Dropdown-menu slot="list">
+        <Dropdown-menu slot="list" class="problem-dropdown-menu">
           <Dropdown-item name="">{{ $t("m.All") }}</Dropdown-item>
           <Dropdown-item name="0">{{ $t("m.Field_Impl") }}</Dropdown-item>
           <Dropdown-item name="2">{{
@@ -61,9 +65,11 @@
       <Dropdown
         @on-click="filterByCategory"
         trigger="click"
-        class="dropdown difficultyDropdown"
+        class="dropdown categoryDropdown"
       >
-        <span style="font-weight: bold; font-size: 15px; padding-right: 10px"
+        <span
+          class="dropdown-label"
+          style="font-weight: bold; font-size: 15px; padding-right: 10px"
           >{{
             query.tag === ""
               ? this.$i18n.t("m.Category")
@@ -71,7 +77,7 @@
           }}
         </span>
         <Icon type="arrow-down-b"></Icon>
-        <Dropdown-menu slot="list">
+        <Dropdown-menu slot="list" class="problem-dropdown-menu">
           <Dropdown-item name="">{{ $t("m.All") }}</Dropdown-item>
           <template v-for="(problem, idx) in this.problemList">
             <template v-for="(problemTag, idx) in problem.tags">
@@ -166,6 +172,8 @@ export default {
     background-color: var(--box-background-color);
     border-radius: 7px;
     border: 1px solid #dedede;
+    display: flex;
+    align-items: center;
   }
 
   .dropdown:not(:first-child) {
@@ -174,6 +182,16 @@ export default {
 
   .difficultyDropdown {
     cursor: pointer;
+  }
+
+  /deep/ .problem-dropdown-menu .ivu-dropdown-item {
+    text-align: center;
+    min-width: 100%;
+    width: 100%;
+  }
+
+  /deep/ .ivu-select-dropdown {
+    margin-top: 12px;
   }
 }
 </style>

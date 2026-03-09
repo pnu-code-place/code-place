@@ -43,7 +43,7 @@
                   }}
                 </span>
                 <Icon type="arrow-down-b"></Icon>
-                <Dropdown-menu slot="list">
+                <Dropdown-menu slot="list" class="community-dropdown-menu">
                   <Dropdown-item :name="{ type: 'post_type', value: 'ALL' }"
                     >전체</Dropdown-item
                   >
@@ -77,7 +77,7 @@
                   }}
                 </span>
                 <Icon type="arrow-down-b"></Icon>
-                <Dropdown-menu slot="list">
+                <Dropdown-menu slot="list" class="community-dropdown-menu">
                   <Dropdown-item
                     :name="{ type: 'question_status', value: 'ALL' }"
                     >전체</Dropdown-item
@@ -107,7 +107,7 @@
                   }}
                 </span>
                 <Icon type="arrow-down-b"></Icon>
-                <Dropdown-menu slot="list">
+                <Dropdown-menu slot="list" class="community-dropdown-menu">
                   <Dropdown-item
                     v-for="(val, k) in SORT_TYPE"
                     :key="k"
@@ -713,5 +713,15 @@ main {
 
 .dropdown:not(:first-child) {
   margin-left: 5px;
+}
+
+/deep/ .community-dropdown-menu .ivu-dropdown-item {
+  text-align: center;
+  min-width: 100%;
+  width: 100%;
+}
+
+/deep/ .ivu-select-dropdown {
+  margin-top: 12px;
 }
 </style>
