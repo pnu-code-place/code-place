@@ -68,7 +68,7 @@ export default {
 </script>
 
 <style scoped>
-.admin-code-mirror ::v-deep .CodeMirror {
+.admin-code-mirror /deep/ .CodeMirror {
   height: auto !important;
   font-family: "Courier New", Courier, monospace !important;
   font-size: 14px;
@@ -77,30 +77,30 @@ export default {
   color: #334155 !important;
 }
 
-.admin-code-mirror ::v-deep .CodeMirror-scroll {
+.admin-code-mirror /deep/ .CodeMirror-scroll {
   height: 300px;
   overflow-y: auto !important;
 }
 
-.admin-code-mirror ::v-deep .CodeMirror-lines {
+.admin-code-mirror /deep/ .CodeMirror-lines {
   padding: 8px 0 !important;
 }
 
-.admin-code-mirror ::v-deep .CodeMirror-gutters {
+.admin-code-mirror /deep/ .CodeMirror-gutters {
   background-color: #f8fafc !important;
   border-right: 1px solid #e2e8f0 !important;
   padding-right: 5px;
 }
 
-.admin-code-mirror ::v-deep .CodeMirror-linenumber {
+.admin-code-mirror /deep/ .CodeMirror-linenumber {
   color: #94a3b8 !important;
 }
 
-.admin-code-mirror ::v-deep .CodeMirror-activeline-background {
+.admin-code-mirror /deep/ .CodeMirror-activeline-background {
   background: #f1f5f9 !important;
 }
 
-.admin-code-mirror ::v-deep .CodeMirror-selected {
+.admin-code-mirror /deep/ .CodeMirror-selected {
   background: #cbd5e1 !important;
 }
 </style>
