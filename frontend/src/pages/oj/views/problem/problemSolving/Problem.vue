@@ -285,7 +285,7 @@ export default {
         this.code = this.codePerLanguage[newLang]
       }
       // 변경 언어로 작성된 코드가 존재하지 않음 + 변경언어 template 존재하는 경우
-      else if (this.problem.template[newLang]) {
+      else if (this.problem.template && this.problem.template[newLang]) {
         this.code = this.problem.template[newLang]
       }
       // 변경 언어로 작성된 코드가 존재하지 않음 + 변경언어 template 존재하지 않는 경우
