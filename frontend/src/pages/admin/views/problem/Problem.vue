@@ -747,6 +747,7 @@ export default {
             data.spj_code = ""
           }
           data.spj_language = data.spj_language || "C"
+          this.template = {}
           this.problem = data
           this.testCaseUploaded = true
         })
@@ -778,7 +779,7 @@ export default {
           if (this.template[langName] === undefined) {
             if (this.problem.template[langName] === undefined) {
               data[langName] = {
-                checked: isSelected,
+                checked: false,
                 code: langConfig.config.template,
                 mode: langConfig.content_type,
               }

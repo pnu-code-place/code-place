@@ -7,7 +7,7 @@
     <div
       style="display: flex; justify-content: space-between; align-items: center"
     >
-      <Tooltip :content="'언어 선택'" placement="bottom">
+      <Tooltip :content="'언어 선택'" placement="top">
         <Dropdown @on-click="changeLanguage" trigger="click" class="dropdown">
           <span
             style="font-size: 13px; padding-right: 3px; font-weight: 450"

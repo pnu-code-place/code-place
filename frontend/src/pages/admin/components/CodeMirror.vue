@@ -1,9 +1,11 @@
 <template>
-  <codemirror
-    v-model="currentValue"
-    :options="options"
-    ref="editor"
-  ></codemirror>
+  <div class="admin-code-mirror">
+    <codemirror
+      v-model="currentValue"
+      :options="options"
+      ref="editor"
+    ></codemirror>
+  </div>
 </template>
 <script>
 // import { codemirror } from 'vue-codemirror-lite'
@@ -65,8 +67,8 @@ export default {
 }
 </script>
 
-<style>
-.CodeMirror {
+<style scoped>
+.admin-code-mirror /deep/ .CodeMirror {
   height: auto !important;
   font-family: "Courier New", Courier, monospace !important;
   font-size: 14px;
@@ -75,30 +77,30 @@ export default {
   color: #334155 !important;
 }
 
-.CodeMirror-scroll {
+.admin-code-mirror /deep/ .CodeMirror-scroll {
   height: 300px;
   overflow-y: auto !important;
 }
 
-.CodeMirror-lines {
+.admin-code-mirror /deep/ .CodeMirror-lines {
   padding: 8px 0 !important;
 }
 
-.CodeMirror-gutters {
+.admin-code-mirror /deep/ .CodeMirror-gutters {
   background-color: #f8fafc !important;
   border-right: 1px solid #e2e8f0 !important;
   padding-right: 5px;
 }
 
-.CodeMirror-linenumber {
+.admin-code-mirror /deep/ .CodeMirror-linenumber {
   color: #94a3b8 !important;
 }
 
-.CodeMirror-activeline-background {
+.admin-code-mirror /deep/ .CodeMirror-activeline-background {
   background: #f1f5f9 !important;
 }
 
-.CodeMirror-selected {
+.admin-code-mirror /deep/ .CodeMirror-selected {
   background: #cbd5e1 !important;
 }
 </style>
