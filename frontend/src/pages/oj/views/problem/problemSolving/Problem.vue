@@ -136,6 +136,7 @@ export default {
       submitting: false,
       code: "",
       language: "C++",
+      codePerLanguage: {},
       languages: {
         type: Array,
         default: () => {
@@ -276,11 +277,22 @@ export default {
       event.returnValue = ""
     },
     changeLanguage(newLang) {
-      if (this.problem.template[newLang]) {
-        if (this.code.trim() === "") {
-          this.code = this.problem.template[newLang]
-        }
+      // 현재 작성 중인 코드 저장
+      this.codePerLanguage[this.language] = this.code
+
+      // 변경 언어로 작성된 코드가 존재 하는 경우
+      if (this.codePerLanguage[newLang] !== undefined) {
+        this.code = this.codePerLanguage[newLang]
       }
+      // 변경 언어로 작성된 코드가 존재하지 않음 + 변경언어 template 존재하는 경우
+      else if (this.problem.template && this.problem.template[newLang]) {
+        this.code = this.problem.template[newLang]
+      }
+      // 변경 언어로 작성된 코드가 존재하지 않음 + 변경언어 template 존재하지 않는 경우
+      else {
+        this.code = ""
+      }
+
       this.language = newLang
       this.$refs.myCm.onLangChange(newLang)
     },
