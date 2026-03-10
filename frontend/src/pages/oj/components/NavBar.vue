@@ -37,19 +37,10 @@
       </Menu-item>
 
       <template v-if="isAuthenticated">
-        <Dropdown
-          class="drop-menu"
-          @on-click="handleRoute"
-          placement="bottom"
-          trigger="click"
-        >
+        <Dropdown class="drop-menu" @on-click="handleRoute" placement="bottom" trigger="click">
           <div style="display: flex; align-items: center">
             <div>
-              <img
-                class="avatar"
-                :src="profile.avatar"
-                alt="avatar of the user"
-              />
+              <img class="avatar" :src="profile.avatar" alt="avatar of the user" />
             </div>
             <div style="margin-left: 10px">
               <Icon type="arrow-down-b" style="cursor: pointer"></Icon>
@@ -75,12 +66,8 @@
         </Dropdown>
       </template>
     </Menu>
-    <Modal
-      v-model="modalVisible"
-      :maskClosable="false"
-      :width="400"
-      :styles="{ top: modalStatus.mode === 'login' ? '10%' : '2%' }"
-    >
+    <Modal v-model="modalVisible" :maskClosable="false" :width="400"
+      :styles="{ top: modalStatus.mode === 'login' ? '10%' : '2%' }">
       <div slot="header" class="modal-title" style="text-align: center">
         {{
           modalStatus.mode === "login"

@@ -2,57 +2,28 @@
   <div class="announcement view">
     <Panel :title="$t('m.General_Announcement')">
       <div class="list">
-        <el-table
-          v-loading="loading"
-          element-loading-text="loading"
-          ref="table"
-          :data="announcementList"
-          style="width: 100%"
-        >
-          <el-table-column
-            width="100"
-            prop="id"
-            :label="$t('m.Announcement_Table_Id')"
-          >
+        <el-table v-loading="loading" element-loading-text="loading" ref="table" :data="announcementList"
+          style="width: 100%">
+          <el-table-column width="100" prop="id" :label="$t('m.Announcement_Table_Id')">
           </el-table-column>
-          <el-table-column
-            prop="title"
-            :label="$t('m.Announcement_Table_Title')"
-          >
+          <el-table-column prop="title" :label="$t('m.Announcement_Table_Title')">
           </el-table-column>
-          <el-table-column
-            prop="create_time"
-            :label="$t('m.Announcement_Table_CreateTime')"
-          >
+          <el-table-column prop="create_time" :label="$t('m.Announcement_Table_CreateTime')">
             <template slot-scope="scope">
               {{ scope.row.create_time | localtime }}
             </template>
           </el-table-column>
-          <el-table-column
-            prop="last_update_time"
-            :label="$t('m.Announcement_Table_LastUpdateTime')"
-          >
+          <el-table-column prop="last_update_time" :label="$t('m.Announcement_Table_LastUpdateTime')">
             <template slot-scope="scope">
               {{ scope.row.last_update_time | localtime }}
             </template>
           </el-table-column>
-          <el-table-column
-            prop="created_by.username"
-            :label="$t('m.Announcement_Table_Author')"
-          >
+          <el-table-column prop="created_by.username" :label="$t('m.Announcement_Table_Author')">
           </el-table-column>
-          <el-table-column
-            width="100"
-            prop="visible"
-            :label="$t('m.Announcement_Table_Visible')"
-          >
+          <el-table-column width="100" prop="visible" :label="$t('m.Announcement_Table_Visible')">
             <template slot-scope="scope">
-              <el-switch
-                v-model="scope.row.visible"
-                active-text=""
-                inactive-text=""
-                @change="handleVisibleSwitch(scope.row)"
-              >
+              <el-switch v-model="scope.row.visible" active-text="" inactive-text=""
+                @change="handleVisibleSwitch(scope.row)">
               </el-switch>
             </template>
           </el-table-column>
@@ -77,53 +48,28 @@
             width="200"
           >
             <div slot-scope="scope">
-              <icon-btn
-                :name="$t('m.Icon_Edit')"
-                icon="edit"
-                @click.native="openAnnouncementDialog(scope.row.id)"
-              ></icon-btn>
-              <icon-btn
-                :name="$t('m.Icon_Delete')"
-                icon="trash"
-                @click.native="deleteAnnouncement(scope.row.id)"
-              ></icon-btn>
+              <icon-btn :name="$t('m.Icon_Edit')" icon="edit"
+                @click.native="openAnnouncementDialog(scope.row.id)"></icon-btn>
+              <icon-btn :name="$t('m.Icon_Delete')" icon="trash"
+                @click.native="deleteAnnouncement(scope.row.id)"></icon-btn>
             </div>
           </el-table-column>
         </el-table>
         <div class="panel-options">
-          <el-button
-            type="primary"
-            size="small"
-            @click="openAnnouncementDialog(null)"
-            icon="el-icon-plus"
-            >{{ $t("m.Announcement_Create") }}</el-button
-          >
-          <el-pagination
-            v-if="!contestID"
-            class="page"
-            layout="prev, pager, next"
-            @current-change="currentChange"
-            :page-size="pageSize"
-            :total="total"
-          >
+          <el-button type="primary" size="small" @click="openAnnouncementDialog(null)" icon="el-icon-plus">{{
+            $t("m.Announcement_Create") }}</el-button>
+          <el-pagination v-if="!contestID" class="page" layout="prev, pager, next" @current-change="currentChange"
+            :page-size="pageSize" :total="total">
           </el-pagination>
         </div>
       </div>
     </Panel>
     <!--对话框-->
-    <el-dialog
-      :title="announcementDialogTitle"
-      :visible.sync="showEditAnnouncementDialog"
-      @open="onOpenEditDialog"
-      :close-on-click-modal="false"
-    >
+    <el-dialog :title="announcementDialogTitle" :visible.sync="showEditAnnouncementDialog" @open="onOpenEditDialog"
+      :close-on-click-modal="false">
       <el-form label-position="top">
         <el-form-item :label="$t('m.Announcement_Title')" required>
-          <el-input
-            v-model="announcement.title"
-            :placeholder="$t('m.Announcement_Title')"
-            class="title-input"
-          >
+          <el-input v-model="announcement.title" :placeholder="$t('m.Announcement_Title')" class="title-input">
           </el-input>
         </el-form-item>
         <el-form-item :label="$t('m.Announcement_Content')" required>
@@ -343,6 +289,16 @@ export default {
         is_pinned: row.is_pinned,
       })
     },
+    handlePinSwitch(row) {
+      this.mode = "edit"
+      this.submitAnnouncement({
+        id: row.id,
+        title: row.title,
+        content: row.content,
+        visible: row.visible,
+        is_pinned: row.is_pinned,
+      })
+    }
   },
   watch: {
     $route() {
