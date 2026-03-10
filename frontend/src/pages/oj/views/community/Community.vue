@@ -716,7 +716,6 @@ main {
 }
 
 /deep/ .community-dropdown-menu .ivu-dropdown-item {
-  text-align: center;
   min-width: 100%;
   width: 100%;
 }
