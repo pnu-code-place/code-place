@@ -311,38 +311,50 @@ class CommunityAPITest(APITestCase):
         """키워드로 게시글을 필터링할 수 있다."""
         # 테스트 데이터 준비
         self.client.force_login(self.user)
-        self.client.post(self.post_list_url, {"title":"HI Annyeong", "content" : "What Im saying is HIIIIIIII","post_type" : "ARTICLE" })
-        self.client.post(self.post_list_url, {"title":"HI Annyeong", "content" : "What Im saying is HIIIIIIII","post_type" : "QUESTION" })
-        self.client.post(self.post_list_url, {"title":"Bye Jalga", "content" : "What Im saying is B22222","post_type" : "ARTICLE" })
+        self.client.post(self.post_list_url, {
+            "title": "HI Annyeong",
+            "content": "What Im saying is HIIIIIIII",
+            "post_type": "ARTICLE"
+        })
+        self.client.post(self.post_list_url, {
+            "title": "HI Annyeong",
+            "content": "What Im saying is HIIIIIIII",
+            "post_type": "QUESTION"
+        })
+        self.client.post(self.post_list_url, {
+            "title": "Bye Jalga",
+            "content": "What Im saying is B22222",
+            "post_type": "ARTICLE"
+        })
 
         # API 호출
-        response = self.client.get(self.post_list_url, {"keyword" : "HI"})
+        response = self.client.get(self.post_list_url, {"keyword": "HI"})
         # 상태값 검증
         self.assertSuccess(response)
         self.assertEqual(response.data["data"]["total"], 2)
 
         # API 호출
-        response = self.client.get(self.post_list_url, {"keyword" : "Bye"})
+        response = self.client.get(self.post_list_url, {"keyword": "Bye"})
         # 상태값 검증
         self.assertSuccess(response)
         self.assertEqual(response.data["data"]["total"], 1)
 
         # API 호출
-        response = self.client.get(self.post_list_url, {"keyword" : "is"})
+        response = self.client.get(self.post_list_url, {"keyword": "is"})
         # 상태값 검증
         self.assertSuccess(response)
-        self.assertEqual(response.data["data"]["total"],3)
-    
+        self.assertEqual(response.data["data"]["total"], 3)
+
     def test_get_post_list_order_by_newest(self):
         """게시글을 최신 순으로 정렬할 수 있다."""
         #테스트 데이터 준비
         self.client.force_login(self.user)
-        self.client.post(self.post_list_url, {"title" : "Post1", "content": "content1", "post_type": "ARTICLE"})
-        self.client.post(self.post_list_url, {"title" : "Post2", "content": "content2", "post_type": "QUESTION"})
-        self.client.post(self.post_list_url, {"title" : "Post3", "content": "content3", "post_type": "ARTICLE"})
+        self.client.post(self.post_list_url, {"title": "Post1", "content": "content1", "post_type": "ARTICLE"})
+        self.client.post(self.post_list_url, {"title": "Post2", "content": "content2", "post_type": "QUESTION"})
+        self.client.post(self.post_list_url, {"title": "Post3", "content": "content3", "post_type": "ARTICLE"})
 
         # API 호출
-        response = self.client.get(self.post_list_url, {"sort_type" : "NEWEST"})
+        response = self.client.get(self.post_list_url, {"sort_type": "NEWEST"})
         # 상태값 검증
         self.assertSuccess(response)
         results = response.data["data"]["results"]
@@ -356,12 +368,12 @@ class CommunityAPITest(APITestCase):
         self.general_post.delete()
         #테스트 데이터 준비
         self.client.force_login(self.user)
-        self.client.post(self.post_list_url, {"title" : "Post1", "content": "content1", "post_type": "ARTICLE"})
-        self.client.post(self.post_list_url, {"title" : "Post2", "content": "content2", "post_type": "QUESTION"})
-        self.client.post(self.post_list_url, {"title" : "Post3", "content": "content3", "post_type": "ARTICLE"})
+        self.client.post(self.post_list_url, {"title": "Post1", "content": "content1", "post_type": "ARTICLE"})
+        self.client.post(self.post_list_url, {"title": "Post2", "content": "content2", "post_type": "QUESTION"})
+        self.client.post(self.post_list_url, {"title": "Post3", "content": "content3", "post_type": "ARTICLE"})
 
         #API 호출
-        response = self.client.get(self.post_list_url, {"sort_type" : "OLDEST"})
+        response = self.client.get(self.post_list_url, {"sort_type": "OLDEST"})
         #상태값 검증
         self.assertSuccess(response)
         results = response.data["data"]["results"]
@@ -376,13 +388,13 @@ class CommunityAPITest(APITestCase):
         #테스트 데이터 준비
         self.client.force_login(self.user)
         ## Post1, 댓글 3개
-        self.client.post(self.post_list_url, {"title" : "Post1", "content": "content1", "post_type": "ARTICLE"})
+        self.client.post(self.post_list_url, {"title": "Post1", "content": "content1", "post_type": "ARTICLE"})
         post1 = Post.objects.get(title="Post1")
         Comment.objects.create(post=post1, author=self.user, content="comment1")
         Comment.objects.create(post=post1, author=self.user, content="comment2")
         Comment.objects.create(post=post1, author=self.user, content="comment3")
         ## Post2, 댓글 5개
-        self.client.post(self.post_list_url, {"title" : "Post2", "content": "content2", "post_type": "QUESTION"})
+        self.client.post(self.post_list_url, {"title": "Post2", "content": "content2", "post_type": "QUESTION"})
         post2 = Post.objects.get(title="Post2")
         Comment.objects.create(post=post2, author=self.user, content="comment1")
         Comment.objects.create(post=post2, author=self.user, content="comment2")
@@ -390,10 +402,10 @@ class CommunityAPITest(APITestCase):
         Comment.objects.create(post=post2, author=self.user, content="comment4")
         Comment.objects.create(post=post2, author=self.user, content="comment5")
         ## Post3, 댓글 0개
-        self.client.post(self.post_list_url, {"title" : "Post3", "content": "content3", "post_type": "ARTICLE"})
+        self.client.post(self.post_list_url, {"title": "Post3", "content": "content3", "post_type": "ARTICLE"})
 
         #API 호출
-        response = self.client.get(self.post_list_url, {"sort_type" : "COMMENT"})
+        response = self.client.get(self.post_list_url, {"sort_type": "COMMENT"})
         #상태값 검증
         self.assertSuccess(response)
         results = response.data["data"]["results"]
@@ -465,11 +477,11 @@ class CommunityAPITest(APITestCase):
         # 작성한 일반글 url 생성
         new_post_id = response.data["data"]["id"]
         new_post_url = self.reverse("community_post_detail", kwargs={"post_id": new_post_id})
-        
+
         # 질문글로 변경
-        response2 = self.client.patch(new_post_url, {"post_type":"QUESTION"})
+        response2 = self.client.patch(new_post_url, {"post_type": "QUESTION"})
         self.assertSuccess(response2)
-        self.assertEqual(response2.data["data"]["question_status"],"OPEN")
+        self.assertEqual(response2.data["data"]["question_status"], "OPEN")
 
     def test_update_post_type_to_announcement_by_non_super_admin(self):
         """일반 사용자는 게시글을 ANNOUNCEMENT 타입으로 변경할 수 없다."""

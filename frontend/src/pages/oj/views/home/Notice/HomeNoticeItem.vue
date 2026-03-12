@@ -83,7 +83,10 @@ export default defineComponent({
 </script>
 
 <template>
-  <li :class="[this.itemClass, { 'pinned': announcement.is_pinned }]" @click="clickHandler">
+  <li
+    :class="[this.itemClass, { pinned: announcement.is_pinned }]"
+    @click="clickHandler"
+  >
     <div class="flex-container">
       <div class="left">
         <div class="title">

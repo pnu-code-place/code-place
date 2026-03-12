@@ -177,13 +177,13 @@ export const QUESTION_STATUS = {
 }
 export const SORT_TYPE = {
   NEWEST: {
-    name: "최신순"
+    name: "최신순",
   },
   OLDEST: {
-    name: "오래된 순"
+    name: "오래된 순",
   },
   COMMENT: {
-    name: "댓글 많은 순"
+    name: "댓글 많은 순",
   },
 }
 
@@ -348,7 +348,7 @@ export const TierImageSrc = {
 export const FamilySiteContentSrc = {
   sw_convergence: {
     src: require("@/assets/familyContents/micon_0.svg"),
-    banner_name: "부산대학교:소프트웨어융합교육원",
+    banner_name: "부산대학교:AI융합교육원",
     url: "https://swedu.pusan.ac.kr/",
   },
   sw_support: {

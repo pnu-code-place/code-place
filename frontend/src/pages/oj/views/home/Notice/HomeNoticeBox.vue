@@ -1,7 +1,7 @@
 <template>
   <div class="noticeBox">
     <div class="noticeBoxHeader">
-      <span @click="handleRoute('notice')">공지사항</span>
+      <span>공지사항</span>
     </div>
     <div>
       <div class="announcement-header csep" @click="goAnnouncement('')">
@@ -24,8 +24,14 @@
         <span>{{ $t("m.No_Announcements") }}</span>
       </div>
       <ul class="announcements-container" key="list" v-else>
-        <HomeNoticeItem v-for="(announcement, idx) in csepAnnouncements" v-if="idx < 3" :key="announcement.title"
-          :announcement="announcement" :isCSEP="true" :isSW="false">
+        <HomeNoticeItem
+          v-for="(announcement, idx) in csepAnnouncements"
+          v-if="idx < 3"
+          :key="announcement.title"
+          :announcement="announcement"
+          :isCSEP="true"
+          :isSW="false"
+        >
         </HomeNoticeItem>
       </ul>
     </div>
@@ -120,9 +126,6 @@ export default {
     goSW() {
       window.open(this.swUrl)
     },
-    handleRoute(route) {
-      this.$router.push({ name: route })
-    },
     goAnnouncement(announcement) {
       this.$router.push({
         name: "notice",
@@ -139,7 +142,7 @@ export default {
   border-radius: 7px;
   border: 1px solid #dedede;
   width: 100%;
-  height: 457px;
+  height: auto;
   padding: 0 30px;
   margin-bottom: 20px;
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);

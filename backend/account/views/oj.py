@@ -246,13 +246,14 @@ class UserRegisterAPI(APIView):
             user = User.objects.create(username=data["username"], email=data["email"])
             user.set_password(data["password"])
             user.save()
-            user_profile = UserProfile.objects.create(user=user,
-                                                      school=college.college_name,
-                                                      major=department.department_name,
-                                                      college=college,
-                                                      department=department,
-                                                      real_name=data["real_name"],
-                                                      student_id=data["student_id"])
+            user_profile = UserProfile.objects.create(
+                user=user,
+                school=college.college_name,
+                major=department.department_name,
+                college=college,
+                department=department,
+                real_name=data["real_name"],
+                student_id=data["student_id"])
             user_profile.save()
             user_score = UserScore.objects.create(user=user)
             user_score.save()

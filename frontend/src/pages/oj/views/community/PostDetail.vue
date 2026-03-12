@@ -3,34 +3,64 @@
     <div class="contents" v-if="post">
       <div class="post-header">
         <div class="title-section" v-if="!isEditing">
-          <h1 class="post-title">{{ post.title }}</h1>
+          <div class="sub-title-section">
+            <h1 class="post-title">
+              {{ post.title }}
+            </h1>
+            <div class="post-actions-always-visible">
+              <button class="community-back-btn" @click="goback">
+                {{ $t("m.Community_List") }}
+              </button>
+            </div>
+          </div>
           <div class="badges-container">
             <span v-if="isNewPost" class="new-badge">NEW</span>
-            <span v-if="POST_TYPE[post.post_type]" class="post-type-badge" :style="{
-              backgroundColor: POST_TYPE[post.post_type].color,
-              color: POST_TYPE[post.post_type].textColor
-            }">
+            <span
+              v-if="POST_TYPE[post.post_type]"
+              class="post-type-badge"
+              :style="{
+                backgroundColor: POST_TYPE[post.post_type].color,
+                color: POST_TYPE[post.post_type].textColor,
+              }"
+            >
               {{ POST_TYPE[post.post_type].name }}
             </span>
-            <span v-if="post.post_type === 'QUESTION' && QUESTION_STATUS[post.question_status]"
-              class="question-status-badge" :style="{
+            <span
+              v-if="
+                post.post_type === 'QUESTION' &&
+                QUESTION_STATUS[post.question_status]
+              "
+              class="question-status-badge"
+              :style="{
                 backgroundColor: QUESTION_STATUS[post.question_status].color,
-                color: QUESTION_STATUS[post.question_status].textColor
-              }">
+                color: QUESTION_STATUS[post.question_status].textColor,
+              }"
+            >
               {{ QUESTION_STATUS[post.question_status].name }}
             </span>
           </div>
         </div>
-        <Input v-else v-model="editedTitle" size="large" :placeholder="$t('m.Community_Title_Placeholder')"
-          class="edit-title-input" />
+        <Input
+          v-else
+          v-model="editedTitle"
+          size="large"
+          :placeholder="$t('m.Community_Title_Placeholder')"
+          class="edit-title-input"
+        />
         <div class="post-meta">
           <div class="post-meta-left">
             <div class="user-info">
-              <router-link :to="{
-                name: 'user-home',
-                params: { username: post.author_name },
-              }">
-                <img class="avatar" :src="post.author_avatar || defaultAvatar" alt="avatar" />
+              <router-link
+                :to="{
+                  name: 'user-home',
+                  params: { username: post.author_name },
+                }"
+              >
+                <img
+                  class="avatar"
+                  :src="post.author_avatar || defaultAvatar"
+                  alt="avatar"
+                />
                 <span>{{ post.author_name }}</span>
               </router-link>
             </div>
@@ -41,32 +71,70 @@
           </div>
           <div class="post-meta-right">
             <div v-if="isAuthor && !isEditing" class="post-edit-actions">
-              <button v-if="post.post_type === 'QUESTION'" class="question-status-toggle-btn" :style="{
-                backgroundColor: getQuestionStatusStyle.backgroundColor,
-                color: getQuestionStatusStyle.color
-              }" @click="toggleQuestionStatus">
+              <button
+                v-if="post.post_type === 'QUESTION'"
+                class="question-status-toggle-btn"
+                :style="{
+                  backgroundColor: getQuestionStatusStyle.backgroundColor,
+                  color: getQuestionStatusStyle.color,
+                }"
+                @click="toggleQuestionStatus"
+              >
                 <Icon
-                  :type="post.question_status === 'CLOSED' ? 'ios-checkmark-circle' : 'ios-checkmark-circle-outline'">
+                  :type="
+                    post.question_status === 'CLOSED'
+                      ? 'ios-checkmark-circle'
+                      : 'ios-checkmark-circle-outline'
+                  "
+                >
                 </Icon>
-                {{ post.question_status === 'CLOSED' ? $t('m.Community_Question_Reopen') :
-                  $t('m.Community_Question_Close') }}
+                {{
+                  post.question_status === "CLOSED"
+                    ? $t("m.Community_Question_Reopen")
+                    : $t("m.Community_Question_Close")
+                }}
               </button>
-              <button class="post-edit-btn" @click="enterEditMode">{{ $t('m.Community_Post_Edit') }}</button>
-              <button class="post-delete-btn" @click="deletePost(post.id)">{{ $t('m.Community_Post_Delete') }}</button>
+              <button class="post-edit-btn" @click="enterEditMode">
+                {{ $t("m.Community_Post_Edit") }}
+              </button>
+              <button class="post-delete-btn" @click="deletePost(post.id)">
+                {{ $t("m.Community_Post_Delete") }}
+              </button>
             </div>
             <div v-if="isEditing" class="post-edit-actions">
-              <Select v-model="editedPostType" size="small" style="width: 120px; margin-right: 8px;">
-                <Option v-for="(type, key) in availablePostTypes" :key="key" :value="key">{{ type.name }}</Option>
+              <Select
+                v-model="editedPostType"
+                size="small"
+                style="width: 120px; margin-right: 8px"
+              >
+                <Option
+                  v-for="(type, key) in availablePostTypes"
+                  :key="key"
+                  :value="key"
+                  >{{ type.name }}</Option
+                >
               </Select>
-              <button class="post-save-btn" @click="updatePost" :disabled="isLoading">{{ $t('m.Community_Post_Save')
-              }}</button>
-              <button class="post-cancel-btn" @click="cancelEdit">{{ $t('m.Community_Post_Cancel') }}</button>
+              <button
+                class="post-save-btn"
+                @click="updatePost"
+                :disabled="isLoading"
+              >
+                {{ $t("m.Community_Post_Save") }}
+              </button>
+              <button class="post-cancel-btn" @click="cancelEdit">
+                {{ $t("m.Community_Post_Cancel") }}
+              </button>
             </div>
           </div>
         </div>
       </div>
-      <TiptapEditor class="post-content-editor" v-if="!isEditing" :value="post.content" :editable="false"
-        height="400px" />
+      <TiptapEditor
+        class="post-content-editor"
+        v-if="!isEditing"
+        :value="post.content"
+        :editable="false"
+        height="400px"
+      />
       <div class="edit-mode-wrapper" v-if="isEditing">
         <TiptapEditor v-model="editedContent" :editable="true" height="400px" />
       </div>
@@ -74,7 +142,10 @@
       <div class="post-comments">
         <h2>{{ $t("m.Community_Comments") }} {{ commentCount }}</h2>
         <div class="comment-form">
-          <textarea v-model="commentContent" :placeholder="$t('m.Community_Create_Comment_Placeholder')"></textarea>
+          <textarea
+            v-model="commentContent"
+            :placeholder="$t('m.Community_Create_Comment_Placeholder')"
+          ></textarea>
           <button @click="submitComment">
             {{ $t("m.Community_Create_Comment_Btn") }}
           </button>
@@ -82,11 +153,17 @@
         <div v-for="comment in post.comments" :key="comment.id" class="comment">
           <div class="comment-header">
             <div class="user-info">
-              <router-link :to="{
-                name: 'user-home',
-                params: { username: comment.author_name },
-              }">
-                <img class="avatar" :src="comment.author_avatar || defaultAvatar" alt="avatar" />
+              <router-link
+                :to="{
+                  name: 'user-home',
+                  params: { username: comment.author_name },
+                }"
+              >
+                <img
+                  class="avatar"
+                  :src="comment.author_avatar || defaultAvatar"
+                  alt="avatar"
+                />
                 <span>{{ comment.author_name }}</span>
               </router-link>
             </div>
@@ -96,41 +173,88 @@
             </div>
           </div>
           <div class="comment-body">
-            <div v-if="editingCommentId !== comment.id" class="comment-content">{{ comment.content }}</div>
-            <textarea v-else v-model="editedCommentContent" class="comment-edit-textarea"></textarea>
+            <div v-if="editingCommentId !== comment.id" class="comment-content">
+              {{ comment.content }}
+            </div>
+            <textarea
+              v-else
+              v-model="editedCommentContent"
+              class="comment-edit-textarea"
+            ></textarea>
             <div class="comment-actions">
-              <button v-if="editingCommentId !== comment.id" class="reply-icon-btn" @click="showReplyForm(comment.id)">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <button
+                v-if="editingCommentId !== comment.id"
+                class="reply-icon-btn"
+                @click="showReplyForm(comment.id)"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
                   <polyline points="9 14 4 9 9 4"></polyline>
                   <path d="M20 20v-7a4 4 0 0 0-4-4H4"></path>
                 </svg>
               </button>
-              <button v-if="isCommentAuthor(comment) && editingCommentId !== comment.id" class="edit-icon-btn"
-                @click="enterCommentEditMode(comment)">
-                {{ $t('m.Community_Comment_Edit') }}
+              <button
+                v-if="
+                  isCommentAuthor(comment) && editingCommentId !== comment.id
+                "
+                class="edit-icon-btn"
+                @click="enterCommentEditMode(comment)"
+              >
+                {{ $t("m.Community_Comment_Edit") }}
               </button>
-              <button v-if="isCommentAuthor(comment) && editingCommentId !== comment.id" class="delete-icon-btn"
-                @click="deleteComment(comment.id)">
-                {{ $t('m.Community_Comment_Delete') }}
+              <button
+                v-if="
+                  isCommentAuthor(comment) && editingCommentId !== comment.id
+                "
+                class="delete-icon-btn"
+                @click="deleteComment(comment.id)"
+              >
+                {{ $t("m.Community_Comment_Delete") }}
               </button>
-              <button v-if="editingCommentId === comment.id" class="save-btn" @click="updateComment(comment.id)">
-                {{ $t('m.Community_Comment_Save') }}
+              <button
+                v-if="editingCommentId === comment.id"
+                class="save-btn"
+                @click="updateComment(comment.id)"
+              >
+                {{ $t("m.Community_Comment_Save") }}
               </button>
-              <button v-if="editingCommentId === comment.id" class="cancel-btn" @click="cancelCommentEdit">
-                {{ $t('m.Community_Comment_Cancel') }}
+              <button
+                v-if="editingCommentId === comment.id"
+                class="cancel-btn"
+                @click="cancelCommentEdit"
+              >
+                {{ $t("m.Community_Comment_Cancel") }}
               </button>
             </div>
           </div>
           <div v-if="comment.replies && comment.replies.length" class="replies">
-            <div v-for="reply in comment.replies" :key="reply.id" class="comment reply">
+            <div
+              v-for="reply in comment.replies"
+              :key="reply.id"
+              class="comment reply"
+            >
               <div class="comment-header">
                 <div class="user-info">
-                  <router-link :to="{
-                    name: 'user-home',
-                    params: { username: reply.author_name },
-                  }">
-                    <img class="avatar" :src="reply.author_avatar || defaultAvatar" alt="avatar" />
+                  <router-link
+                    :to="{
+                      name: 'user-home',
+                      params: { username: reply.author_name },
+                    }"
+                  >
+                    <img
+                      class="avatar"
+                      :src="reply.author_avatar || defaultAvatar"
+                      alt="avatar"
+                    />
                     <span>{{ reply.author_name }}</span>
                   </router-link>
                 </div>
@@ -140,28 +264,55 @@
                 </div>
               </div>
               <div class="comment-body">
-                <div v-if="editingCommentId !== reply.id" class="comment-content">{{ reply.content }}</div>
-                <textarea v-else v-model="editedCommentContent" class="comment-edit-textarea"></textarea>
+                <div
+                  v-if="editingCommentId !== reply.id"
+                  class="comment-content"
+                >
+                  {{ reply.content }}
+                </div>
+                <textarea
+                  v-else
+                  v-model="editedCommentContent"
+                  class="comment-edit-textarea"
+                ></textarea>
                 <div class="comment-actions" v-if="isCommentAuthor(reply)">
-                  <button v-if="editingCommentId !== reply.id" class="edit-icon-btn"
-                    @click="enterCommentEditMode(reply)">
-                    {{ $t('m.Community_Comment_Edit') }}
+                  <button
+                    v-if="editingCommentId !== reply.id"
+                    class="edit-icon-btn"
+                    @click="enterCommentEditMode(reply)"
+                  >
+                    {{ $t("m.Community_Comment_Edit") }}
                   </button>
-                  <button v-if="editingCommentId !== reply.id" class="delete-icon-btn" @click="deleteComment(reply.id)">
-                    {{ $t('m.Community_Comment_Delete') }}
+                  <button
+                    v-if="editingCommentId !== reply.id"
+                    class="delete-icon-btn"
+                    @click="deleteComment(reply.id)"
+                  >
+                    {{ $t("m.Community_Comment_Delete") }}
                   </button>
-                  <button v-if="editingCommentId === reply.id" class="save-btn" @click="updateComment(reply.id)">
-                    {{ $t('m.Community_Comment_Save') }}
+                  <button
+                    v-if="editingCommentId === reply.id"
+                    class="save-btn"
+                    @click="updateComment(reply.id)"
+                  >
+                    {{ $t("m.Community_Comment_Save") }}
                   </button>
-                  <button v-if="editingCommentId === reply.id" class="cancel-btn" @click="cancelCommentEdit">
-                    {{ $t('m.Community_Comment_Cancel') }}
+                  <button
+                    v-if="editingCommentId === reply.id"
+                    class="cancel-btn"
+                    @click="cancelCommentEdit"
+                  >
+                    {{ $t("m.Community_Comment_Cancel") }}
                   </button>
                 </div>
               </div>
             </div>
           </div>
           <div v-if="replyingTo === comment.id" class="comment-form reply-form">
-            <textarea v-model="replyContent" :placeholder="$t('m.Community_Create_Comment_Placeholder')"></textarea>
+            <textarea
+              v-model="replyContent"
+              :placeholder="$t('m.Community_Create_Comment_Placeholder')"
+            ></textarea>
             <div class="reply-form-actions">
               <button @click="submitReply(comment.id)">
                 {{ $t("m.Community_Create_Comment_Btn") }}
@@ -175,7 +326,12 @@
       </div>
     </div>
     <div v-else>
-      <ErrorSign v-if="error" :code="error.code" :description="error.description" :solution="error.solution" />
+      <ErrorSign
+        v-if="error"
+        :code="error.code"
+        :description="error.description"
+        :solution="error.solution"
+      />
       <div v-else>Loading...</div>
     </div>
   </main>
@@ -185,8 +341,8 @@
 import api from "../../api"
 import ErrorSign from "../general/ErrorSign.vue"
 import { DEFAULT_AVATAR, POST_TYPE, QUESTION_STATUS } from "@/utils/constants"
-import { mapGetters } from "vuex";
-import TiptapEditor from "../../components/TiptapEditor.vue";
+import { mapGetters } from "vuex"
+import TiptapEditor from "../../components/TiptapEditor.vue"
 
 export default {
   name: "PostDetail",
@@ -208,11 +364,22 @@ export default {
       editedPostType: "",
       editingCommentId: null,
       editedCommentContent: "",
+      prevRoute: null,
     }
   },
   created() {
     this.fetchPostDetail()
   },
+
+  beforeRouteEnter(to, from, next) {
+    next((vm) => {
+      const validBoards = ["community", "community-free", "community-question"]
+      if (from.name && validBoards.includes(from.name)) {
+        sessionStorage.setItem("last_community_board", from.name)
+      }
+    })
+  },
+
   methods: {
     fetchPostDetail() {
       this.isLoading = true
@@ -220,7 +387,7 @@ export default {
       api
         .getCommunityPostDetail(postId)
         .then((res) => {
-          this.post = res.data.data;
+          this.post = res.data.data
         })
         .catch((err) => {
           this.error = {
@@ -281,6 +448,19 @@ export default {
           this.$error("Failed to submit reply.")
         })
     },
+    goback() {
+      const lastBoard = sessionStorage.getItem("last_community_board")
+
+      if (lastBoard) {
+        this.$router.push({ name: lastBoard })
+      } else {
+        if (this.post.post_type === "QUESTION") {
+          this.$router.push({ name: "community-question" })
+        } else {
+          this.$router.push({ name: "community" })
+        }
+      }
+    },
     enterEditMode() {
       this.isEditing = true
       this.editedTitle = this.post.title
@@ -319,7 +499,9 @@ export default {
           this.isEditing = false
         })
         .catch((err) => {
-          const errorMsg = (err.response && err.response.data && err.response.data.data) || this.$t("m.Community_Post_Edit_Failed")
+          const errorMsg =
+            (err.response && err.response.data && err.response.data.data) ||
+            this.$t("m.Community_Post_Edit_Failed")
           this.$error(errorMsg)
         })
         .finally(() => {
@@ -353,7 +535,9 @@ export default {
           this.fetchPostDetail()
         })
         .catch((err) => {
-          const errorMsg = (err.response && err.response.data && err.response.data.data) || this.$t("m.Community_Comment_Edit_Failed")
+          const errorMsg =
+            (err.response && err.response.data && err.response.data.data) ||
+            this.$t("m.Community_Comment_Edit_Failed")
           this.$error(errorMsg)
         })
     },
@@ -370,7 +554,9 @@ export default {
           this.fetchPostDetail()
         })
         .catch((err) => {
-          const errorMsg = (err.response && err.response.data && err.response.data.data) || this.$t("m.Community_Comment_Delete_Failed")
+          const errorMsg =
+            (err.response && err.response.data && err.response.data.data) ||
+            this.$t("m.Community_Comment_Delete_Failed")
           this.$error(errorMsg)
         })
     },
@@ -388,7 +574,9 @@ export default {
           this.$router.push({ name: "community" })
         })
         .catch((err) => {
-          const errorMsg = (err.response && err.response.data && err.response.data.data) || this.$t("m.Community_Post_Delete_Failed")
+          const errorMsg =
+            (err.response && err.response.data && err.response.data.data) ||
+            this.$t("m.Community_Post_Delete_Failed")
           this.$error(errorMsg)
         })
         .finally(() => {
@@ -396,7 +584,8 @@ export default {
         })
     },
     toggleQuestionStatus() {
-      const newStatus = this.post.question_status === 'CLOSED' ? 'OPEN' : 'CLOSED'
+      const newStatus =
+        this.post.question_status === "CLOSED" ? "OPEN" : "CLOSED"
       const postId = this.$route.params.postId
 
       this.isLoading = true
@@ -404,38 +593,41 @@ export default {
         .updateCommunityPost(postId, { question_status: newStatus })
         .then((res) => {
           this.post = res.data.data
-          const message = newStatus === 'CLOSED'
-            ? this.$t("m.Community_Question_Closed_Success")
-            : this.$t("m.Community_Question_Reopened_Success")
+          const message =
+            newStatus === "CLOSED"
+              ? this.$t("m.Community_Question_Closed_Success")
+              : this.$t("m.Community_Question_Reopened_Success")
           this.$success(message)
         })
         .catch((err) => {
-          const errorMsg = (err.response && err.response.data && err.response.data.data) || this.$t("m.Community_Question_Status_Update_Failed")
+          const errorMsg =
+            (err.response && err.response.data && err.response.data.data) ||
+            this.$t("m.Community_Question_Status_Update_Failed")
           this.$error(errorMsg)
         })
         .finally(() => {
           this.isLoading = false
         })
-    }
+    },
   },
   computed: {
     ...mapGetters(["user", "isSuperAdmin"]),
     POST_TYPE() {
-      return POST_TYPE;
+      return POST_TYPE
     },
     QUESTION_STATUS() {
-      return QUESTION_STATUS;
+      return QUESTION_STATUS
     },
     /**
      * 게시글이 3일 이내에 작성되었는지 확인
      */
     isNewPost() {
-      if (!this.post || !this.post.created_at) return false;
-      const postDate = new Date(this.post.created_at);
-      const now = new Date();
-      const diffTime = Math.abs(now - postDate);
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      return diffDays <= 3;
+      if (!this.post || !this.post.created_at) return false
+      const postDate = new Date(this.post.created_at)
+      const now = new Date()
+      const diffTime = Math.abs(now - postDate)
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+      return diffDays <= 3
     },
     /**
      * 현재 사용자가 게시글 작성자인지 확인
@@ -446,25 +638,25 @@ export default {
     availablePostTypes() {
       // Super Admin이 아닌 경우 ANNOUNCEMENT 타입 제외
       if (!this.isSuperAdmin) {
-        const { ANNOUNCEMENT, ...filteredTypes } = POST_TYPE;
-        return filteredTypes;
+        const { ANNOUNCEMENT, ...filteredTypes } = POST_TYPE
+        return filteredTypes
       }
-      return POST_TYPE;
+      return POST_TYPE
     },
     defaultAvatar() {
       return DEFAULT_AVATAR
     },
     getQuestionStatusStyle() {
       if (!this.post || !this.post.question_status) {
-        return { backgroundColor: '', color: '' }
+        return { backgroundColor: "", color: "" }
       }
       const status = QUESTION_STATUS[this.post.question_status]
       if (!status) {
-        return { backgroundColor: '', color: '' }
+        return { backgroundColor: "", color: "" }
       }
       return {
         backgroundColor: status.color,
-        color: status.textColor
+        color: status.textColor,
       }
     },
     commentCount() {
@@ -508,6 +700,11 @@ main {
   margin-bottom: 28px;
 }
 
+.sub-title-section {
+  display: flex;
+  justify-content: space-between;
+}
+
 .post-title {
   font-size: 28px;
   font-weight: 600;
@@ -536,7 +733,6 @@ main {
 }
 
 @keyframes pulse {
-
   0%,
   100% {
     transform: scale(1);
@@ -628,7 +824,8 @@ main {
 .post-delete-btn,
 .post-save-btn,
 .post-cancel-btn,
-.question-status-toggle-btn {
+.question-status-toggle-btn,
+.community-back-btn {
   padding: 8px 16px;
   border: none;
   border-radius: 8px;
@@ -673,6 +870,18 @@ main {
   color: white;
   transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(231, 76, 60, 0.2);
+}
+
+.community-back-btn {
+  background: rgb(241, 243, 244);
+  color: black;
+}
+
+.community-back-btn:hover {
+  background: lightgrey;
+  color: rgb(50, 50, 50);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(93, 93, 93, 0.2);
 }
 
 .post-save-btn {
@@ -873,7 +1082,9 @@ main {
   flex-shrink: 0;
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.2s, visibility 0.2s;
+  transition:
+    opacity 0.2s,
+    visibility 0.2s;
 }
 
 .comment:hover .comment-actions {

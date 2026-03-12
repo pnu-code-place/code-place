@@ -1,27 +1,22 @@
 {
   "presets": [
-    ["env", {
-      "modules": false,
-      "targets": {
-        "browsers": ["> 1%", "last 2 versions", "not ie <= 9"]
-      },
-      "useBuiltIns": true
-    }],
+    [
+      "env",
+      {
+        "modules": false,
+        "targets": {
+          "browsers": ["> 1%", "last 2 versions", "not ie <= 9"]
+        },
+        "useBuiltIns": true
+      }
+    ],
     "stage-2"
   ],
-  "plugins": [
-    "transform-runtime",
-    "syntax-dynamic-import"
-  ],
+  "plugins": ["transform-runtime", "syntax-dynamic-import"],
   "env": {
     "test": {
-      "presets": [
-        "env",
-        "stage-2"
-      ],
-      "plugins": [
-        "istanbul"
-      ]
+      "presets": ["env", "stage-2"],
+      "plugins": ["istanbul"]
     }
   }
 }

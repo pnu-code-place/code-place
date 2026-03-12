@@ -4,35 +4,73 @@
       <pane :size="50">
         <div class="left-pain-wrapper">
           <div class="tab-headers">
-            <div class="tab-header" :class="{ active: leftPainActiveTab === 'problem' }"
-              @click="leftPainActiveTab = 'problem'">
+            <div
+              class="tab-header"
+              :class="{ active: leftPainActiveTab === 'problem' }"
+              @click="leftPainActiveTab = 'problem'"
+            >
               문제 설명
             </div>
-            <div class="tab-header" :class="{ active: leftPainActiveTab === 'submission' }"
-              @click="leftPainActiveTab = 'submission'">
+            <div
+              class="tab-header"
+              :class="{ active: leftPainActiveTab === 'submission' }"
+              @click="leftPainActiveTab = 'submission'"
+            >
               제출 현황
             </div>
-            <div class="tab-header" :class="{ active: leftPainActiveTab === 'community' }"
-              @click="leftPainActiveTab = 'community'">
+            <div
+              class="tab-header"
+              :class="{ active: leftPainActiveTab === 'community' }"
+              @click="leftPainActiveTab = 'community'"
+            >
               질문하기
             </div>
           </div>
           <div class="tab-content">
-            <ProblemDetailFlexibleContainer v-show="leftPainActiveTab === 'problem'" :problem="problem"
-              :contestID="contestID" />
-            <SubmissionList v-if="isInitialized" v-show="leftPainActiveTab === 'submission'" :problemID="problemID"
-              :contestID="contestID" :lastSubmissionId="lastSubmissionId" :isDarkMode="isDarkMode" />
-            <ProblemCommunity v-if="isInitialized" v-show="leftPainActiveTab === 'community'" :problemID="problemID"
-              :problem="problem" :isDarkMode="isDarkMode" />
+            <ProblemDetailFlexibleContainer
+              v-show="leftPainActiveTab === 'problem'"
+              :problem="problem"
+              :contestID="contestID"
+            />
+            <SubmissionList
+              v-if="isInitialized"
+              v-show="leftPainActiveTab === 'submission'"
+              :problemID="problemID"
+              :contestID="contestID"
+              :lastSubmissionId="lastSubmissionId"
+              :isDarkMode="isDarkMode"
+            />
+            <ProblemCommunity
+              v-if="isInitialized"
+              v-show="leftPainActiveTab === 'community'"
+              :problemID="problemID"
+              :problem="problem"
+              :isDarkMode="isDarkMode"
+            />
           </div>
         </div>
       </pane>
       <pane min-size="30" :size="50">
-        <CodeEditorHeader @create-submission="submitCode" @change-language="changeLanguage" :problem="problem"
-          :language.sync="language" :statusVisible="statusVisible" :contestID="contestID" :result="result"
-          :submissionId="submissionId" :isSubmitting="submitting" />
-        <CodeEditor :value.sync="code" :languages="problem.languages" :language="language" :cursorPos.sync="cursorPos"
-          :theme.sync="theme" :allowPaste="allowPaste" ref="myCm" />
+        <CodeEditorHeader
+          @create-submission="submitCode"
+          @change-language="changeLanguage"
+          :problem="problem"
+          :language.sync="language"
+          :statusVisible="statusVisible"
+          :contestID="contestID"
+          :result="result"
+          :submissionId="submissionId"
+          :isSubmitting="submitting"
+        />
+        <CodeEditor
+          :value.sync="code"
+          :languages="problem.languages"
+          :language="language"
+          :cursorPos.sync="cursorPos"
+          :theme.sync="theme"
+          :allowPaste="allowPaste"
+          ref="myCm"
+        />
         <StickyLnCol :cursorPos="cursorPos" />
       </pane>
     </splitpanes>
@@ -98,6 +136,7 @@ export default {
       submitting: false,
       code: "",
       language: "C++",
+      codePerLanguage: {},
       languages: {
         type: Array,
         default: () => {
@@ -238,11 +277,22 @@ export default {
       event.returnValue = ""
     },
     changeLanguage(newLang) {
-      if (this.problem.template[newLang]) {
-        if (this.code.trim() === "") {
-          this.code = this.problem.template[newLang]
-        }
+      // 현재 작성 중인 코드 저장
+      this.codePerLanguage[this.language] = this.code
+
+      // 변경 언어로 작성된 코드가 존재 하는 경우
+      if (this.codePerLanguage[newLang] !== undefined) {
+        this.code = this.codePerLanguage[newLang]
       }
+      // 변경 언어로 작성된 코드가 존재하지 않음 + 변경언어 template 존재하는 경우
+      else if (this.problem.template && this.problem.template[newLang]) {
+        this.code = this.problem.template[newLang]
+      }
+      // 변경 언어로 작성된 코드가 존재하지 않음 + 변경언어 template 존재하지 않는 경우
+      else {
+        this.code = ""
+      }
+
       this.language = newLang
       this.$refs.myCm.onLangChange(newLang)
     },
@@ -481,7 +531,7 @@ export default {
   color: var(--text-color);
 }
 
-.splitpanes--vertical>.splitpanes__splitter {
+.splitpanes--vertical > .splitpanes__splitter {
   min-width: 4px !important;
   margin-top: 350px;
   margin-bottom: 350px;
@@ -490,7 +540,7 @@ export default {
   border-radius: 10px;
 }
 
-.splitpanes--vertical>.splitpanes__splitter:hover {
+.splitpanes--vertical > .splitpanes__splitter:hover {
   background: rgba(143, 143, 143, 0.67);
 }
 

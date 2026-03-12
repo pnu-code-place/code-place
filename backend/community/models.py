@@ -48,7 +48,6 @@ class Post(models.Model):
         OLDEST = "OLDEST", "오래된순"
         COMMENT = "COMMENT", "댓글많은순"
 
-
     title = models.CharField(max_length=200)
     content = RichTextField()
     author = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -96,4 +95,4 @@ class Comment(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ["created_at"]  # 댓글은 오래된 순서대로 정렬
+        ordering = ["created_at"]    # 댓글은 오래된 순서대로 정렬

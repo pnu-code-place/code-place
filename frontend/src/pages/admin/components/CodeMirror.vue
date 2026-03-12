@@ -1,9 +1,11 @@
 <template>
-  <codemirror
-    v-model="currentValue"
-    :options="options"
-    ref="editor"
-  ></codemirror>
+  <div class="admin-code-mirror">
+    <codemirror
+      v-model="currentValue"
+      :options="options"
+      ref="editor"
+    ></codemirror>
+  </div>
 </template>
 <script>
 // import { codemirror } from 'vue-codemirror-lite'
@@ -11,7 +13,6 @@ import { codemirror } from "vue-codemirror"
 import "codemirror/lib/codemirror.css"
 import "codemirror/mode/clike/clike.js"
 import "codemirror/mode/python/python.js"
-import "codemirror/theme/solarized.css"
 export default {
   name: "CodeMirror",
   data() {
@@ -21,12 +22,12 @@ export default {
         mode: "text/x-csrc",
         lineNumbers: true,
         lineWrapping: false,
-        theme: "solarized",
+        theme: "default",
         tabSize: 4,
         line: true,
         foldGutter: true,
         gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
-        autofocus: true,
+        autofocus: false,
       },
     }
   },
@@ -67,11 +68,39 @@ export default {
 </script>
 
 <style scoped>
-.CodeMirror {
+.admin-code-mirror /deep/ .CodeMirror {
   height: auto !important;
+  font-family: "Courier New", Courier, monospace !important;
+  font-size: 14px;
+  line-height: 1.6;
+  background-color: #f8fafc !important;
+  color: #334155 !important;
 }
-.CodeMirror-scroll {
-  min-height: 300px;
-  max-height: 1000px;
+
+.admin-code-mirror /deep/ .CodeMirror-scroll {
+  height: 300px;
+  overflow-y: auto !important;
+}
+
+.admin-code-mirror /deep/ .CodeMirror-lines {
+  padding: 8px 0 !important;
+}
+
+.admin-code-mirror /deep/ .CodeMirror-gutters {
+  background-color: #f8fafc !important;
+  border-right: 1px solid #e2e8f0 !important;
+  padding-right: 5px;
+}
+
+.admin-code-mirror /deep/ .CodeMirror-linenumber {
+  color: #94a3b8 !important;
+}
+
+.admin-code-mirror /deep/ .CodeMirror-activeline-background {
+  background: #f1f5f9 !important;
+}
+
+.admin-code-mirror /deep/ .CodeMirror-selected {
+  background: #cbd5e1 !important;
 }
 </style>

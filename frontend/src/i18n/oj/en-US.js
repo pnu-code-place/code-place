@@ -105,7 +105,7 @@ export const m = {
   Contest_Announcements: "대회 공지사항",
   By: "By",
   CSEP: "코드플레이스",
-  SWCenter: "소프트웨어융합교육원",
+  SWCenter: "AI융합교육원",
   CSEPDescription: "코드플레이스",
   // ApplyResetPassword.vue
   The_email_doesnt_exist: "존재하지 않는 이메일입니다.",
@@ -253,6 +253,7 @@ export const m = {
   // announcements.vue
   Refresh: "새로고침",
   Back: "뒤로가기",
+  Notice_List: "목록",
   No_Announcements: "공지사항이 없습니다",
   Next_Announcement: "다음 공지",
   Before_Announcement: "이전 공지",
@@ -503,7 +504,7 @@ export const m = {
   // footer.vue
   PNUCSEP: "부산대학교 코드플레이스",
   AddressPNUCSEP:
-    "부산광역시 금정구 부산대학로63번길 2 (장전동) 부산대학교 소프트웨어융합교육원",
+    "부산광역시 금정구 부산대학로63번길 2 (장전동) 부산대학교 AI융합교육원",
   UserGuide: "사용자 가이드",
   ReportBugAndInconvenience: "버그 및 불편사항 제보",
   Developer: "개발진",
@@ -548,6 +549,7 @@ export const m = {
   Community_Content_Placeholder: "내용을 입력해주세요.",
   Community_Post_Edit: "수정",
   Community_Post_Delete: "삭제",
+  Community_List: "목록",
   Community_Post_Save: "저장",
   Community_Post_Cancel: "취소",
   Community_Post_Edit_Success: "게시글이 수정되었습니다.",

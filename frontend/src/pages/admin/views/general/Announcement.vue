@@ -27,14 +27,26 @@
               </el-switch>
             </template>
           </el-table-column>
-          <el-table-column width="100" prop="is_pinned" :label="$t('m.Announcement_Table_Pin')">
+          <el-table-column
+            width="100"
+            prop="is_pinned"
+            :label="$t('m.Announcement_Table_Pin')"
+          >
             <template slot-scope="scope">
-              <el-switch v-model="scope.row.is_pinned" active-text="" inactive-text=""
-                @change="handlePinSwitch(scope.row)">
+              <el-switch
+                v-model="scope.row.is_pinned"
+                active-text=""
+                inactive-text=""
+                @change="handlePinSwitch(scope.row)"
+              >
               </el-switch>
             </template>
           </el-table-column>
-          <el-table-column fixed="right" :label="$t('m.Announcement_Table_Option')" width="200">
+          <el-table-column
+            fixed="right"
+            :label="$t('m.Announcement_Table_Option')"
+            width="200"
+          >
             <div slot-scope="scope">
               <icon-btn :name="$t('m.Icon_Edit')" icon="edit"
                 @click.native="openAnnouncementDialog(scope.row.id)"></icon-btn>
@@ -66,12 +78,20 @@
         <div class="toggle-container">
           <div class="visible-box">
             <span>{{ $t("m.Announcement_visible") }}</span>
-            <el-switch v-model="announcement.visible" active-text="" inactive-text="">
+            <el-switch
+              v-model="announcement.visible"
+              active-text=""
+              inactive-text=""
+            >
             </el-switch>
           </div>
           <div class="visible-box">
             <span>{{ $t("m.Announcement_Pin") }}</span>
-            <el-switch v-model="announcement.is_pinned" active-text="" inactive-text="">
+            <el-switch
+              v-model="announcement.is_pinned"
+              active-text=""
+              inactive-text=""
+            >
             </el-switch>
           </div>
         </div>
@@ -250,6 +270,16 @@ export default {
       }
     },
     handleVisibleSwitch(row) {
+      this.mode = "edit"
+      this.submitAnnouncement({
+        id: row.id,
+        title: row.title,
+        content: row.content,
+        visible: row.visible,
+        is_pinned: row.is_pinned,
+      })
+    },
+    handlePinSwitch(row) {
       this.mode = "edit"
       this.submitAnnouncement({
         id: row.id,

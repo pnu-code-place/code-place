@@ -9,10 +9,25 @@
     </div>
 
     <div class="question-items">
-      <div v-for="question in questions" :key="question.id" class="question-item" @click="goToQuestion(question.id)">
+      <div
+        v-for="question in questions"
+        :key="question.id"
+        class="question-item"
+        @click="goToQuestion(question.id)"
+      >
         <div class="question-status">
-          <span class="status-badge" :class="question.question_status === 'OPEN' ? 'status-open' : 'status-closed'">
-            {{ question.question_status === 'OPEN' ? $t("m.Community_Question_Open") : $t("m.Community_Question_Closed")
+          <span
+            class="status-badge"
+            :class="
+              question.question_status === 'OPEN'
+                ? 'status-open'
+                : 'status-closed'
+            "
+          >
+            {{
+              question.question_status === "OPEN"
+                ? $t("m.Community_Question_Open")
+                : $t("m.Community_Question_Closed")
             }}
           </span>
         </div>
@@ -20,9 +35,14 @@
           <h4 class="question-title">{{ question.title }}</h4>
           <div class="question-meta">
             <span class="author">
-              <img class="avatar"
-                :src="question.author_avatar || 'https://cdn-icons-png.flaticon.com/512/473/473406.png'"
-                :alt="question.author_name" />
+              <img
+                class="avatar"
+                :src="
+                  question.author_avatar ||
+                  'https://cdn-icons-png.flaticon.com/512/473/473406.png'
+                "
+                :alt="question.author_name"
+              />
               {{ question.author_name }}
             </span>
             <span class="comments" v-if="question.comment_count > 0">
@@ -42,7 +62,7 @@
 </template>
 
 <script>
-import api from "@oj/api";
+import api from "@oj/api"
 
 export default {
   name: "QuestionList",
@@ -50,28 +70,31 @@ export default {
     return {
       questions: [],
       isLoading: false,
-    };
+    }
   },
   mounted() {
-    this.fetchQuestions();
+    this.fetchQuestions()
   },
   methods: {
     async fetchQuestions() {
-      this.isLoading = true;
+      this.isLoading = true
       try {
-        const res = await api.getCommunityPostList(0, 5, 'QUESTION', 'OPEN');
-        this.questions = res.data.data.results;
+        const res = await api.getCommunityPostList(0, 5, "QUESTION", "OPEN")
+        this.questions = res.data.data.results
       } catch (err) {
-        console.error("Failed to fetch questions:", err);
+        console.error("Failed to fetch questions:", err)
       } finally {
-        this.isLoading = false;
+        this.isLoading = false
       }
     },
     goToQuestion(questionId) {
-      this.$router.push({ name: "community-detail", params: { postId: questionId } });
+      this.$router.push({
+        name: "community-detail",
+        params: { postId: questionId },
+      })
     },
   },
-};
+}
 </script>
 
 <style lang="less" scoped>
@@ -169,13 +192,13 @@ export default {
   white-space: nowrap;
 
   &.status-open {
-    background: #FFF3E0;
-    color: #F57C00;
+    background: #fff3e0;
+    color: #f57c00;
   }
 
   &.status-closed {
-    background: #E8F5E9;
-    color: #43A047;
+    background: #e8f5e9;
+    color: #43a047;
   }
 }
 

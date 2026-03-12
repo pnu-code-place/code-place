@@ -1,4 +1,4 @@
-from utils.constants import ContestRuleType  # noqa
+from utils.constants import ContestRuleType    # noqa
 from django.db import models
 from django.utils.timezone import now
 from utils.models import JSONField

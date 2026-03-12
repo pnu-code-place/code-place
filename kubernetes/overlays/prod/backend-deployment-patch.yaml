@@ -9,8 +9,3 @@ spec:
     rollingUpdate:
       maxUnavailable: 2
       maxSurge: 2
-  template:
-    spec:
-      containers:
-        - name: backend
-          image: harbor.code-place-dev.site/code-place-prod/backend:latest

@@ -1,31 +1,35 @@
 module.exports = {
   root: true,
-  parser: 'babel-eslint',
-  parserOptions: {
-    sourceType: 'module',
+  // 각 환경의 전역 변수 인식
+  env: {
+    browser: true, // for browser
+    node: true, // for node.js
   },
-  // https://github.com/feross/standard/blob/master/RULES.md#javascript-standard-style
-  extends: ['standard', 'prettier'],
-  lintOnSave: false,
-  // required to lint *.vue files
-  plugins: ['html'],
+  parser: "vue-eslint-parser",
+  parserOptions: {
+    parser: "babel-eslint",
+    sourceType: "module",
+  },
+  // Apply external rule-sets
+  extends: ["eslint:recommended", "plugin:vue/essential", "prettier"],
+  // Vue 파일 지원 ESLint 확장플러그인 등록
+  plugins: ["vue"],
   // add your custom rules here
   rules: {
-    'prettier/prettier': 'error',
     // allow paren-less arrow functions
-    'arrow-parens': 0,
+    "arrow-parens": 0,
     // allow async-await
-    'generator-star-spacing': 0,
+    "generator-star-spacing": 0,
     // allow debugger during development
-    'no-debugger': process.env.NODE_ENV === 'production' ? 2 : 0,
-    'no-irregular-whitespace': [
-      'error',
+    "no-debugger": process.env.NODE_ENV === "production" ? 2 : 0,
+    "no-irregular-whitespace": [
+      "error",
       {
         skipComments: true,
         skipTemplates: true,
       },
     ],
-    'no-unused-vars': ['warn'],
-    quotes: ['off', 'single'],
+    "no-unused-vars": ["warn"],
+    quotes: ["off", "single"],
   },
 }

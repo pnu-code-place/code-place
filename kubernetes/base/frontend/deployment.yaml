@@ -24,7 +24,7 @@ spec:
         - name: regcred
       containers:
         - name: frontend
-          image: registry.code-place-dev.site/code-place-dev/frontend:latest
+          image: frontend:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 8000

@@ -16,4 +16,7 @@ class Announcement(models.Model):
 
     class Meta:
         db_table = "announcement"
-        ordering = ("-is_pinned", "-create_time",)
+        ordering = (
+            "-is_pinned",
+            "-create_time",
+        )
