@@ -29,4 +29,4 @@ images:
     newTag: 1.0.3
   - name: hub-auth
     newName: harbor.code-place-dev.site/code-place-dev/hub-auth
-    newTag: 1.0.0
+    newTag: e000ffc019bcf819f31b2009a813ab43002187d6-dev
