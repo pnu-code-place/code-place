@@ -83,7 +83,7 @@ export default {
 footer {
   position: absolute;
   bottom: 0;
-  width: 100vw;
+  width: 100%;
   min-width: var(--global-width);
   height: var(--footer-height);
   background-color: var(--box-background-color);
