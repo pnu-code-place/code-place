@@ -18,7 +18,7 @@
             {{ $t("m.Solved_Problems") }}
           </th>
           <th v-for="problem in contestProblems">
-            <CustomTooltip :content="problem._id" placement="top">
+            <CustomTooltip :content="problem.title" placement="top">
               <a
                 style="
                   color: #6ccbff;
@@ -57,26 +57,29 @@
             </td>
             <td>{{ rank.accepted_number }}</td>
             <td v-for="problem in contestProblems">
-              <div
-                v-if="rank[problem.id].isSet"
-                style="
-                  display: flex;
-                  flex-direction: column;
-                  align-items: center;
-                "
+              <CustomTooltip
+                v-if="rank[problem.id].status === 'ac'"
+                :content="`${rank[problem.id].attempt_count}회 시도`"
+                placement="top"
               >
-                <span
-                  style="
-                    font-size: 12px;
-                    background-color: rgb(128, 128, 128);
-                    padding: 2px 4px;
-                    border-radius: 5px;
-                    color: white;
-                  "
-                >
-                  {{ rank[problem.id].ac_time | localtime("MM/DD") }}</span
-                >
-                {{ rank[problem.id].ac_time | localtime("HH:mm:ss") }}
+                <div class="problem-status ac">
+                  <span class="problem-status-date">
+                    {{ rank[problem.id].ac_time | localtime("MM/DD") }}
+                  </span>
+                  <span class="problem-status-time">
+                    {{ rank[problem.id].ac_time | localtime("HH:mm:ss") }}
+                  </span>
+                </div>
+              </CustomTooltip>
+              <div
+                v-else-if="rank[problem.id].status"
+                class="problem-status"
+                :class="rank[problem.id].status"
+              >
+                <span class="problem-status-label">WA</span>
+                <span class="problem-status-time">
+                  {{ rank[problem.id].error_number || "-" }}
+                </span>
               </div>
             </td>
           </tr>
@@ -145,17 +148,28 @@ export default {
     addRankData(dataRank, problems) {
       problems.forEach((problem) => {
         dataRank.forEach((rank, idx) => {
-          dataRank[idx][problem.id] = { isSet: false, problemId: problem._id }
+          dataRank[idx][problem.id] = {
+            status: "",
+            error_number: 0,
+            problemId: problem._id,
+          }
         })
       })
       dataRank.forEach((rank, i) => {
         let info = rank.submission_info
         Object.keys(info).forEach((problemID) => {
           if (!dataRank[i][problemID]) return
-          dataRank[i][problemID].ac_time = moment(this.contest.start_time)
-            .add(info[problemID].ac_time, "seconds")
-            .format()
-          dataRank[i][problemID].isSet = true
+          dataRank[i][problemID].error_number = info[problemID].error_number || 0
+          if (info[problemID].is_ac) {
+            dataRank[i][problemID].ac_time = moment(this.contest.start_time)
+              .add(info[problemID].ac_time, "seconds")
+              .format()
+            dataRank[i][problemID].attempt_count =
+              dataRank[i][problemID].error_number + 1
+            dataRank[i][problemID].status = "ac"
+          } else {
+            dataRank[i][problemID].status = "wa"
+          }
         })
         dataRank[i].idx = (this.page - 1) * this.limit + i + 1
       })
@@ -215,5 +229,36 @@ export default {
   tr {
     font-size: 1.05em;
   }
+}
+
+.problem-status {
+  display: inline-flex;
+  min-width: 58px;
+  flex-direction: column;
+  align-items: center;
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.problem-status-date,
+.problem-status-label {
+  font-size: 11px;
+}
+
+.problem-status-time {
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.problem-status.ac {
+  background: #e8f7ee;
+  color: #1f8f52;
+}
+
+.problem-status.wa {
+  background: #fff1eb;
+  color: #c7512d;
 }
 </style>

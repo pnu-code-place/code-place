@@ -16,7 +16,7 @@
           <th>{{ $t("m.Contest_Participant") }}</th>
           <th>{{ $t("m.Total_Score") }}</th>
           <th v-for="problem in contestProblems">
-            <CustomTooltip :content="problem._id" placement="top">
+            <CustomTooltip :content="problem.title" placement="top">
               <a
                 style="
                   color: #6ccbff;
