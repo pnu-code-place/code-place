@@ -40,9 +40,6 @@ spec:
             - "0.9"
             - --max-model-len
             - "4096"
-            - --kv-cache-dtype
-            - fp8
-            - --calculate-kv-scales
             - --enable-prefix-caching
             - --max-num-seqs
             - "60"

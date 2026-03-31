@@ -8,6 +8,8 @@
 ## 전제 조건
 
 - 클러스터에 NVIDIA device plugin 이 설치되어 있어야 합니다.
+- **GPU 아키텍처**: CUDA compute capability 8.0 이상 (A100, L40S, H100 등) 을 권장합니다.
+  - `cu130` 이미지는 NVIDIA 드라이버 **570.x 이상**이 필요합니다.
 - `vLLM`을 띄울 GPU 노드 정확히 1대에만 아래 라벨이 붙어 있어야 합니다.
 
 ```bash
@@ -38,17 +40,18 @@ kubectl describe pod -n code-place-dev -l app=vllm
 - 이미지: `vllm/vllm-openai:v0.18.1-cu130`
 - 모델: `Qwen/Qwen2.5-Coder-7B-Instruct`
 - 포트: `8000`
-- 주요 옵션: `--dtype auto`, `--gpu-memory-utilization 0.9`, `--max-model-len 4096`, `--kv-cache-dtype fp8`, `--calculate-kv-scales`, `--enable-prefix-caching`, `--enable-chunked-prefill`, `--max-num-seqs 60`
+- 주요 옵션: `--dtype auto`, `--gpu-memory-utilization 0.9`, `--max-model-len 4096`, `--enable-prefix-caching`, `--enable-chunked-prefill`, `--max-num-seqs 60`
 - 리소스: `cpu: 16`, `memory: 64Gi`, `nvidia.com/gpu: 1`
-- PVC: `vllm-hf-cache`, `storageClassName: longhorn`, `20Gi`, `ReadWriteOnce`
+- PVC: `vllm-hf-cache`, `storageClassName: longhorn`, `50Gi`, `ReadWriteOnce`
 
 ## 운영 메모
 
 - `strategy: Recreate` 를 사용하므로 단일 replica 와 RWO PVC 조합에서 교체가 단순합니다.
-- `startupProbe` 는 첫 모델 다운로드와 초기 로딩 시간을 길게 허용합니다.
+- `startupProbe` 는 첫 모델 다운로드와 초기 로딩 시간을 길게 허용합니다 (`periodSeconds: 10` × `failureThreshold: 180` = 최대 30분).
 - `readinessProbe` 가 통과하기 전까지는 서비스 트래픽을 받지 않습니다.
 - `livenessProbe` 가 계속 실패하면 쿠버네티스가 컨테이너를 재시작합니다.
 - `Service` 는 `ClusterIP` 이므로 외부에 직접 노출되지 않습니다.
 - Longhorn replica 수는 YAML 에서 고정하지 않고, 필요하면 Longhorn UI 에서 직접 조정하는 전제를 둡니다.
 - `max-num-seqs=60` 은 처리량 위주 값이라, 메모리 압박이나 OOM 이 보이면 가장 먼저 낮춰야 합니다.
+- fp8 KV 캐시 (`--kv-cache-dtype fp8`, `--calculate-kv-scales`) 는 CUDA compute capability **8.9 이상** (Ada Lovelace: L40S/RTX 4090, Hopper: H100) GPU 에서만 지원됩니다. 해당 아키텍처 미만의 GPU 에서 사용하려면 해당 옵션을 제거하고 기본값(auto) 을 사용하십시오.
 - 더 보수적으로 운영하려면 이미지 tag 대신 digest 로 pin 하는 것이 가장 안전합니다.
