@@ -55,7 +55,9 @@
                 {{ rank.user.username }}
               </a>
             </td>
-            <td>{{ rank.accepted_number }}</td>
+            <td>
+              <span class="accepted-count-value">{{ rank.accepted_number }}</span>
+            </td>
             <td v-for="problem in contestProblems">
               <CustomTooltip
                 v-if="rank[problem.id].status === 'ac'"
@@ -260,5 +262,12 @@ export default {
 .problem-status.wa {
   background: #fff1eb;
   color: #c7512d;
+}
+
+.accepted-count-value {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1;
+  color: #2f3c57;
 }
 </style>
