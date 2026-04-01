@@ -18,6 +18,7 @@ spec:
       labels:
         app: vllm
     spec:
+      runtimeClassName: nvidia
       terminationGracePeriodSeconds: 180
       nodeSelector:
         workload.code-place.ai/vllm: "true"
@@ -26,6 +27,9 @@ spec:
       containers:
         - name: vllm
           image: vllm/vllm-openai:v0.18.1-cu130
+          env:
+            - name: VLLM_PORT
+              value: "8000"
           imagePullPolicy: IfNotPresent
           args:
             - --model
@@ -58,7 +62,7 @@ spec:
           resources:
             requests:
               cpu: "16"
-              memory: 64Gi
+              memory: 32Gi
               nvidia.com/gpu: "1"
             limits:
               cpu: "16"
