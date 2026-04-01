@@ -3,7 +3,7 @@ kind: Cluster
 metadata:
   name: postgres
 spec:
-  instances: 2
+  instances: 3
 
   imageName: ghcr.io/cloudnative-pg/postgresql:14.12
 
@@ -11,7 +11,7 @@ spec:
 
   storage:
     storageClass: longhorn
-    size: 50Gi
+    size: 30Gi
 
   bootstrap:
     initdb:
