@@ -5,7 +5,7 @@
         <p>{{ $t("m.Rank") }}</p>
       </div>
       <div
-        v-if="!dataRank.length"
+        v-if="!loadingRank && !dataRank.length"
         style="text-align: center; font-size: 16px; padding-top: 50px"
       >
         {{ $t("m.No_Submissions") }}
@@ -35,7 +35,28 @@
             </CustomTooltip>
           </th>
         </thead>
-        <tbody>
+        <tbody v-if="loadingRank">
+          <tr
+            v-for="row in 5"
+            :key="`acm-rank-skeleton-${row}`"
+          >
+            <td><div class="rank-skeleton-box rank-skeleton-box-sm"><SkeletonBox /></div></td>
+            <td>
+              <div class="rank-skeleton-user">
+                <div class="rank-skeleton-avatar"><SkeletonBox /></div>
+                <div class="rank-skeleton-box rank-skeleton-box-md"><SkeletonBox /></div>
+              </div>
+            </td>
+            <td><div class="rank-skeleton-box rank-skeleton-box-sm"><SkeletonBox /></div></td>
+            <td
+              v-for="problem in skeletonProblemCount"
+              :key="`acm-rank-skeleton-problem-${row}-${problem}`"
+            >
+              <div class="rank-skeleton-box rank-skeleton-box-sm"><SkeletonBox /></div>
+            </td>
+          </tr>
+        </tbody>
+        <tbody v-else>
           <tr v-for="rank in dataRank">
             <td>{{ rank.idx }}</td>
             <td>
@@ -108,12 +129,14 @@ import ContestRankMixin from "./contestRankMixin"
 import time from "@/utils/time"
 import utils from "@/utils/utils"
 import CustomTooltip from "@oj/components/CustomTooltip"
+import SkeletonBox from "@oj/components/SkeletonBox"
 
 export default {
   name: "acm-contest-rank",
   components: {
     Pagination,
     CustomTooltip,
+    SkeletonBox,
   },
   mixins: [ContestRankMixin],
   data() {
@@ -122,7 +145,13 @@ export default {
       page: 1,
       contestID: "",
       dataRank: [],
+      loadingRank: false,
     }
+  },
+  computed: {
+    skeletonProblemCount() {
+      return this.contestProblems.length || 4
+    },
   },
   mounted() {
     this.contestID = this.$route.params.contestID
@@ -131,6 +160,7 @@ export default {
   methods: {
     ...mapActions(["getContestProblems"]),
     updateContestData() {
+      this.loadingRank = true
       let params = {
         offset: (this.page - 1) * this.limit,
         limit: this.limit,
@@ -143,8 +173,11 @@ export default {
 
         this.getContestProblems().then((res) => {
           this.addRankData(dataRank, res.data.data)
+          this.loadingRank = false
         })
         this.total = res.data.data.total
+      }).catch(() => {
+        this.loadingRank = false
       })
     },
     addRankData(dataRank, problems) {
@@ -269,5 +302,40 @@ export default {
   font-weight: 600;
   line-height: 1;
   color: #2f3c57;
+}
+
+.rank-skeleton-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+}
+
+.rank-skeleton-avatar {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+}
+
+.rank-skeleton-avatar /deep/ .skeleton {
+  border-radius: 50%;
+}
+
+.rank-skeleton-user-text {
+  width: 120px;
+  height: 18px;
+}
+
+.rank-skeleton-box {
+  height: 18px;
+  margin: 0 auto;
+}
+
+.rank-skeleton-box-sm {
+  width: 42px;
+}
+
+.rank-skeleton-box-md {
+  width: 120px;
 }
 </style>
