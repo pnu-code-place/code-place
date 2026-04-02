@@ -181,3 +181,57 @@ class ContestRankAPITest(APITestCase):
     def get_contest_rank(self):
         resp = self.client.get(self.url + "?contest_id=" + self.acm_contest.id)
         self.assertSuccess(resp)
+
+
+class ContestParticipantsAPITest(APITestCase):
+
+    def setUp(self):
+        from problem.tests import DEFAULT_PROBLEM_DATA, ProblemCreateTestBase
+
+        self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
+        self.admin = self.create_admin()
+        self.user = self.create_user(email="test@test.com", username="test", password="test1234!", login=False)
+        self.contest = Contest.objects.create(created_by=self.admin, **DEFAULT_CONTEST_DATA)
+        self.problem = ProblemCreateTestBase.add_problem(DEFAULT_PROBLEM_DATA, self.admin)
+        self.problem.contest_id = self.contest.id
+        self.problem.save()
+        self.url = self.reverse("contest_participants_api")
+
+    def test_participants_are_grouped_by_user_id(self):
+        from submission.models import JudgeStatus, Submission
+
+        Submission.objects.create(
+            user_id=self.user.id,
+            username="oldname",
+            language="C++",
+            code="test code",
+            problem_id=self.problem.id,
+            ip="127.0.0.1",
+            contest_id=self.contest.id,
+            result=JudgeStatus.PENDING,
+            statistic_info={"time_cost": "100", "memory_cost": "1024"},
+            shared=False,
+            first_failed_tc_idx=None,
+        )
+        Submission.objects.create(
+            user_id=self.user.id,
+            username="newname",
+            language="C++",
+            code="test code",
+            problem_id=self.problem.id,
+            ip="127.0.0.1",
+            contest_id=self.contest.id,
+            result=JudgeStatus.PENDING,
+            statistic_info={"time_cost": "100", "memory_cost": "1024"},
+            shared=False,
+            first_failed_tc_idx=None,
+        )
+
+        resp = self.client.get(f"{self.url}?contest_id={self.contest.id}")
+        self.assertSuccess(resp)
+
+        participants = resp.data["data"]
+        self.assertEqual(len(participants), 1)
+        self.assertEqual(participants[0]["user_id"], self.user.id)
+        self.assertEqual(participants[0]["username"], self.user.username)
+        self.assertEqual(participants[0]["submission_count"], 2)

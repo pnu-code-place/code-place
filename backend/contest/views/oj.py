@@ -157,7 +157,7 @@ class ContestParticipantsAPI(APIView):
 
         submissions = Submission.objects.filter(contest_id=contest_id)
 
-        user_submissions = submissions.values('user_id', 'username').annotate(
+        user_submissions = submissions.values('user_id').annotate(
             submission_count=Count('id'), last_submission_ip=Max('ip')).order_by('user_id')
 
         # UserProfile 정보 가져오기
@@ -174,7 +174,7 @@ class ContestParticipantsAPI(APIView):
             profile = user_profile_dict.get(submission['user_id'])
             result.append({
                 'user_id': submission['user_id'],
-                'username': submission['username'],
+                'username': user.username if user else None,
                 'email': user.email if user else None,
                 'avatar': profile.avatar if profile else None,
                 'school': profile.school if profile else None,
