@@ -208,6 +208,8 @@ export default {
 }
 .problemTable {
   text-align: center;
+  border-collapse: collapse;
+  border-spacing: 0;
   th {
     color: #7e7e7e;
     font-size: 1.3em;

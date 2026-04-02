@@ -74,9 +74,14 @@
                 {{ rank.user.username }}
               </a>
             </td>
-            <td>{{ rank.total_score }}</td>
+            <td>
+              <span class="total-score-value">{{ rank.total_score }}</span>
+            </td>
             <td v-for="problem in contestProblems">
-              <div v-if="rank[problem.id].isSet">
+              <div
+                v-if="rank[problem.id] && rank[problem.id].isSet"
+                class="problem-score"
+              >
                 {{ rank[problem.id].total_score }}
               </div>
             </td>
@@ -143,10 +148,13 @@ export default {
         const data = res.data.data.results
         let dataRank = JSON.parse(JSON.stringify(data))
 
-        this.getContestProblems().then((res) => {
-          this.addRankData(dataRank, res.data.data)
-          this.loadingRank = false
-        })
+        this.getContestProblems()
+          .then((res) => {
+            this.addRankData(dataRank, res.data.data)
+          })
+          .finally(() => {
+            this.loadingRank = false
+          })
         this.total = res.data.data.total
       }).catch(() => {
         this.loadingRank = false
@@ -161,6 +169,7 @@ export default {
       dataRank.forEach((rank, i) => {
         let info = rank.submission_info
         Object.keys(info).forEach((problemID) => {
+          if (!dataRank[i][problemID]) return
           dataRank[i][problemID].total_score = info[problemID]
           dataRank[i][problemID].isSet = true
         })
@@ -207,6 +216,8 @@ export default {
 .OIRankContent {
   text-align: center;
   display: block;
+  border-collapse: collapse;
+  border-spacing: 0;
   padding-top: 50px;
   max-width: 928px;
   overflow-y: visible;
@@ -219,11 +230,31 @@ export default {
   }
   td {
     border-top: 1px solid rgba(0, 0, 0, 0.1);
-    padding: 10px 0px;
+    padding: 6px 8px;
   }
   tr {
     font-size: 1.05em;
   }
+}
+
+.problem-score {
+  display: inline-flex;
+  min-width: 54px;
+  justify-content: center;
+  align-items: center;
+  border-radius: 8px;
+  padding: 12px 8px;
+  background: #f5f7fb;
+  color: #495060;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.total-score-value {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1;
+  color: #2f3c57;
 }
 
 .rank-skeleton-user {

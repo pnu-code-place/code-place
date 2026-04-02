@@ -247,6 +247,8 @@ export default {
 .ACMRankContent {
   text-align: center;
   display: block;
+  border-collapse: collapse;
+  border-spacing: 0;
   padding-top: 50px;
   max-width: 928px;
   overflow-y: visible;
@@ -259,7 +261,7 @@ export default {
   }
   td {
     border-top: 1px solid rgba(0, 0, 0, 0.1);
-    padding: 10px 0px;
+    padding: 6px 8px;
   }
   tr {
     font-size: 1.05em;

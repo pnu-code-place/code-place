@@ -42,7 +42,6 @@ export default {
   },
   mounted() {
     this.getWebsiteConfig()
-    this.init()
   },
   methods: {
     ...mapActions(["getWebsiteConfig", "changeDomTitle"]),
