@@ -293,8 +293,8 @@ export default {
 }
 
 .problem-status.wa {
-  background: #fff1eb;
-  color: #c7512d;
+  background: #f3f4f7;
+  color: #5b6472;
 }
 
 .accepted-count-value {
