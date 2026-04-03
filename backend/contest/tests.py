@@ -1,6 +1,7 @@
 import copy
 from datetime import datetime, timedelta
 
+from django.conf import settings
 from django.utils import timezone
 
 from utils.api.tests import APITestCase
@@ -235,3 +236,33 @@ class ContestParticipantsAPITest(APITestCase):
         self.assertEqual(participants[0]["user_id"], self.user.id)
         self.assertEqual(participants[0]["username"], self.user.username)
         self.assertEqual(participants[0]["submission_count"], 2)
+
+    def test_participants_fallback_to_submission_username_when_user_is_missing(self):
+        from submission.models import JudgeStatus, Submission
+
+        Submission.objects.create(
+            user_id=self.user.id,
+            username="ghostuser",
+            language="C++",
+            code="test code",
+            problem_id=self.problem.id,
+            ip="127.0.0.1",
+            contest_id=self.contest.id,
+            result=JudgeStatus.PENDING,
+            statistic_info={"time_cost": "100", "memory_cost": "1024"},
+            shared=False,
+            first_failed_tc_idx=None,
+        )
+
+        self.user.delete()
+
+        resp = self.client.get(f"{self.url}?contest_id={self.contest.id}")
+        self.assertSuccess(resp)
+
+        participants = resp.data["data"]
+        self.assertEqual(len(participants), 1)
+        self.assertEqual(participants[0]["username"], "ghostuser")
+        self.assertEqual(participants[0]["email"], "")
+        self.assertEqual(participants[0]["avatar"], f"{settings.AVATAR_URI_PREFIX}/default.png")
+        self.assertEqual(participants[0]["school"], "")
+        self.assertEqual(participants[0]["major"], "")

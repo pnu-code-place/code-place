@@ -56,7 +56,7 @@ const getters = {
     }
     return !state.access
   },
-  OIContestRealTimePermission: (state, getters, _, rootGetters) => {
+  OIContestRealTimePermission: (state, getters) => {
     if (
       getters.contestRuleType === "ACM" ||
       getters.contestStatus === CONTEST_STATUS.ENDED
@@ -213,14 +213,15 @@ const actions = {
           })
           resolve(res)
         },
-        () => {
+        (err) => {
           commit(types.CHANGE_CONTEST_PROBLEMS, { contestProblems: [] })
+          reject(err)
         },
       )
     })
   },
   getContestAccess({ commit, rootState }) {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       api
         .getContestAccess(rootState.route.params.contestID)
         .then((res) => {

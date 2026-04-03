@@ -8,13 +8,13 @@ from .models import ACMContestRank, OIContestRank
 
 class ContestUserSubmissionSummarySerializer(serializers.Serializer):
     user_id = serializers.IntegerField()
-    username = serializers.CharField()
-    email = serializers.EmailField()
-    avatar = serializers.CharField()
-    school = serializers.CharField()
-    major = serializers.CharField()
+    username = serializers.CharField(allow_blank=True)
+    email = serializers.CharField(allow_blank=True)
+    avatar = serializers.CharField(allow_blank=True)
+    school = serializers.CharField(allow_blank=True)
+    major = serializers.CharField(allow_blank=True)
     submission_count = serializers.IntegerField()
-    last_submission_ip = serializers.CharField()
+    last_submission_ip = serializers.CharField(allow_blank=True)
 
 
 class CreateConetestSeriaizer(serializers.Serializer):

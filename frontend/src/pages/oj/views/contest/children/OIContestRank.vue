@@ -5,7 +5,13 @@
         <p>{{ $t("m.Rank") }}</p>
       </div>
       <div
-        v-if="!loadingRank && !myDataRank.length"
+        v-if="!loadingRank && rankLoadError"
+        style="text-align: center; font-size: 16px; padding-top: 50px"
+      >
+        {{ $t("m.Unknown_Error") }}
+      </div>
+      <div
+        v-else-if="!loadingRank && !myDataRank.length"
         style="text-align: center; font-size: 16px; padding-top: 50px"
       >
         {{ $t("m.No_Submissions") }}
@@ -15,7 +21,10 @@
           <th style="width: 50px">{{ $t("m.Contest_Rank") }}</th>
           <th>{{ $t("m.Contest_Participant") }}</th>
           <th>{{ $t("m.Total_Score") }}</th>
-          <th v-for="problem in contestProblems">
+          <th
+            v-for="problem in contestProblems"
+            :key="`oi-rank-header-${problem.id}`"
+          >
             <CustomTooltip :content="problem.title" placement="top">
               <a
                 style="
@@ -55,7 +64,10 @@
           </tr>
         </tbody>
         <tbody v-else>
-          <tr v-for="rank in myDataRank">
+          <tr
+            v-for="rank in myDataRank"
+            :key="`oi-rank-row-${rank.id || rank.user.id}`"
+          >
             <td>{{ rank.idx }}</td>
             <td>
               <a
@@ -77,7 +89,10 @@
             <td>
               <span class="total-score-value">{{ rank.total_score }}</span>
             </td>
-            <td v-for="problem in contestProblems">
+            <td
+              v-for="problem in contestProblems"
+              :key="`oi-rank-problem-${rank.id || rank.user.id}-${problem.id}`"
+            >
               <div
                 v-if="rank[problem.id] && rank[problem.id].isSet"
                 class="problem-score"
@@ -104,12 +119,11 @@ import { mapActions } from "vuex"
 import api from "@oj/api"
 import Pagination from "@oj/components/Pagination"
 import ContestRankMixin from "./contestRankMixin"
-import utils from "@/utils/utils"
 import CustomTooltip from "@oj/components/CustomTooltip"
 import SkeletonBox from "@oj/components/SkeletonBox"
 
 export default {
-  name: "acm-contest-rank",
+  name: "oi-contest-rank",
   components: {
     Pagination,
     CustomTooltip,
@@ -123,6 +137,7 @@ export default {
       contestID: "",
       myDataRank: [],
       loadingRank: false,
+      rankLoadError: false,
     }
   },
   computed: {
@@ -138,6 +153,7 @@ export default {
     ...mapActions(["getContestProblems"]),
     updateContestData() {
       this.loadingRank = true
+      this.rankLoadError = false
       let params = {
         offset: (this.page - 1) * this.limit,
         limit: this.limit,
@@ -148,15 +164,16 @@ export default {
         const data = res.data.data.results
         let dataRank = JSON.parse(JSON.stringify(data))
 
-        this.getContestProblems()
+        this.total = res.data.data.total
+        return this.getContestProblems()
           .then((res) => {
             this.addRankData(dataRank, res.data.data)
           })
-          .finally(() => {
-            this.loadingRank = false
-          })
-        this.total = res.data.data.total
       }).catch(() => {
+        this.myDataRank = []
+        this.total = 0
+        this.rankLoadError = true
+      }).finally(() => {
         this.loadingRank = false
       })
     },

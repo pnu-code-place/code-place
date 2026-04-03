@@ -46,7 +46,11 @@
         <th>{{ $t("m.Th_Problem_Submission_State") }}</th>
       </thead>
       <tbody>
-        <tr v-for="problem in problems" @click="goContestProblem(problem._id)">
+        <tr
+          v-for="problem in problems"
+          :key="`contest-problem-row-${problem._id}`"
+          @click="goContestProblem(problem._id)"
+        >
           <td style="white-space: nowrap; text-align: left">
             {{ problem._id }}
           </td>
@@ -77,7 +81,11 @@
         <th>{{ $t("m.Th_Problem_Submission_State") }}</th>
       </thead>
       <tbody>
-        <tr v-for="problem in problems" @click="goContestProblem(problem._id)">
+        <tr
+          v-for="problem in problems"
+          :key="`contest-problem-row-compact-${problem._id}`"
+          @click="goContestProblem(problem._id)"
+        >
           <td>{{ problem._id }}</td>
           <td class="TableTitle">
             {{ problem.title }}
@@ -93,13 +101,11 @@
 import { mapState, mapGetters } from "vuex"
 import { ProblemMixin } from "@oj/components/mixins"
 import { DIFFICULTY_MAP, FIELD_MAP } from "../../../../../utils/constants"
-import FieldCategoryBox from "../../../components/FieldCategoryBox.vue"
 import CustomTooltip from "@oj/components/CustomTooltip"
-import Pagination from "@/pages/admin/components/Pagination"
 
 export default {
   name: "ContestProblemList",
-  components: { FieldCategoryBox, CustomTooltip, Pagination },
+  components: { CustomTooltip },
   mixins: [ProblemMixin],
   data() {
     return {
@@ -118,15 +124,17 @@ export default {
       this.getContestProblems()
     },
     getContestProblems() {
-      this.$store.dispatch("getContestProblems", this.keyword).then((res) => {
-        if (this.isAuthenticated) {
-          if (this.contestRuleType === "ACM") {
-            this.addStatusColumn(this.ACMTableColumns, res.data.data)
-          } else if (this.OIContestRealTimePermission) {
-            this.addStatusColumn(this.ACMTableColumns, res.data.data)
+      this.$store.dispatch("getContestProblems", this.keyword)
+        .then((res) => {
+          if (this.isAuthenticated) {
+            if (this.contestRuleType === "ACM") {
+              this.addStatusColumn(this.ACMTableColumns, res.data.data)
+            } else if (this.OIContestRealTimePermission) {
+              this.addStatusColumn(this.ACMTableColumns, res.data.data)
+            }
           }
-        }
-      })
+        })
+        .catch(() => {})
     },
     goContestProblem(id) {
       this.$router.push({

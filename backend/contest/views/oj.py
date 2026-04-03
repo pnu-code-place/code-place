@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db.models import OuterRef, Count, Subquery, F, Max
 from django.http import HttpResponse
 from django.utils.timezone import now
@@ -158,7 +159,9 @@ class ContestParticipantsAPI(APIView):
         submissions = Submission.objects.filter(contest_id=contest_id)
 
         user_submissions = submissions.values('user_id').annotate(
-            submission_count=Count('id'), last_submission_ip=Max('ip')).order_by('user_id')
+            submission_count=Count('id'),
+            last_submission_ip=Max('ip'),
+            fallback_username=Max('username')).order_by('user_id')
 
         # UserProfile 정보 가져오기
         user_profiles = UserProfile.objects.filter(user_id__in=[sub['user_id'] for sub in user_submissions])
@@ -172,15 +175,20 @@ class ContestParticipantsAPI(APIView):
         for submission in user_submissions:
             user = user_dict.get(submission['user_id'])
             profile = user_profile_dict.get(submission['user_id'])
+            username = user.username if user else (submission['fallback_username'] or "")
+            email = user.email if user and user.email else ""
+            avatar = profile.avatar if profile else f"{settings.AVATAR_URI_PREFIX}/default.png"
+            school = profile.school if profile and profile.school else ""
+            major = profile.major if profile and profile.major else ""
             result.append({
                 'user_id': submission['user_id'],
-                'username': user.username if user else None,
-                'email': user.email if user else None,
-                'avatar': profile.avatar if profile else None,
-                'school': profile.school if profile else None,
-                'major': profile.major if profile else None,
+                'username': username,
+                'email': email,
+                'avatar': avatar,
+                'school': school,
+                'major': major,
                 'submission_count': submission['submission_count'],
-                'last_submission_ip': submission['last_submission_ip']
+                'last_submission_ip': submission['last_submission_ip'] or ""
             })
 
         serializer = ContestUserSubmissionSummarySerializer(result, many=True)
