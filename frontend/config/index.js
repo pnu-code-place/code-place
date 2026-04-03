@@ -3,13 +3,11 @@
 // see http://vuejs-templates.github.io/webpack for documentation.
 
 const path = require("path")
-const target = process.env.TARGET || "https://code.pusan.ac.kr"
-
 const commonProxy = {
   onProxyReq: (proxyReq, req, res) => {
-    proxyReq.setHeader("Referer", target)
+    proxyReq.setHeader("Referer", process.env.TARGET)
   },
-  target,
+  target: process.env.TARGET,
   changeOrigin: true,
 }
 
