@@ -241,6 +241,10 @@ class ContestParticipantsAPITest(APITestCase):
         resp = self.client.get(self.url)
         self.assertFailed(resp, "Invalid parameter, contest_id is required")
 
+    def test_participants_rejects_invalid_contest_id(self):
+        resp = self.client.get(f"{self.url}?contest_id=abc")
+        self.assertFailed(resp, "Invalid parameter, contest_id is required")
+
     def test_participants_fallback_to_submission_username_when_user_is_missing(self):
         from submission.models import JudgeStatus, Submission
 

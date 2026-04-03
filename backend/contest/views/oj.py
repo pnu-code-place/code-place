@@ -155,7 +155,7 @@ class ContestParticipantsAPI(APIView):
     @login_required
     def get(self, request):
         contest_id = request.GET.get("contest_id")
-        if not contest_id:
+        if not contest_id or not check_is_id(contest_id):
             return self.error("Invalid parameter, contest_id is required")
 
         try:

@@ -9,7 +9,7 @@ from .models import ACMContestRank, OIContestRank
 class ContestUserSubmissionSummarySerializer(serializers.Serializer):
     user_id = serializers.IntegerField()
     username = serializers.CharField(allow_blank=True)
-    email = serializers.CharField(allow_blank=True)
+    email = serializers.EmailField(allow_blank=True, required=False)
     avatar = serializers.CharField(allow_blank=True)
     school = serializers.CharField(allow_blank=True)
     major = serializers.CharField(allow_blank=True)
