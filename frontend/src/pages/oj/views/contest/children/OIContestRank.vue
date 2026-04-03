@@ -5,7 +5,13 @@
         <p>{{ $t("m.Rank") }}</p>
       </div>
       <div
-        v-if="!myDataRank.length"
+        v-if="!loadingRank && rankLoadError"
+        style="text-align: center; font-size: 16px; padding-top: 50px"
+      >
+        {{ $t("m.Unknown_Error") }}
+      </div>
+      <div
+        v-else-if="!loadingRank && !myDataRank.length"
         style="text-align: center; font-size: 16px; padding-top: 50px"
       >
         {{ $t("m.No_Submissions") }}
@@ -15,8 +21,11 @@
           <th style="width: 50px">{{ $t("m.Contest_Rank") }}</th>
           <th>{{ $t("m.Contest_Participant") }}</th>
           <th>{{ $t("m.Total_Score") }}</th>
-          <th v-for="problem in contestProblems">
-            <CustomTooltip :content="problem._id" placement="top">
+          <th
+            v-for="problem in contestProblems"
+            :key="`oi-rank-header-${problem.id}`"
+          >
+            <CustomTooltip :content="problem.title" placement="top">
               <a
                 style="
                   color: #6ccbff;
@@ -33,8 +42,32 @@
             </CustomTooltip>
           </th>
         </thead>
-        <tbody>
-          <tr v-for="rank in myDataRank">
+        <tbody v-if="loadingRank">
+          <tr
+            v-for="row in 5"
+            :key="`oi-rank-skeleton-${row}`"
+          >
+            <td><div class="rank-skeleton-box rank-skeleton-box-sm"><SkeletonBox /></div></td>
+            <td>
+              <div class="rank-skeleton-user">
+                <div class="rank-skeleton-avatar"><SkeletonBox /></div>
+                <div class="rank-skeleton-box rank-skeleton-box-md"><SkeletonBox /></div>
+              </div>
+            </td>
+            <td><div class="rank-skeleton-box rank-skeleton-box-sm"><SkeletonBox /></div></td>
+            <td
+              v-for="problem in skeletonProblemCount"
+              :key="`oi-rank-skeleton-problem-${row}-${problem}`"
+            >
+              <div class="rank-skeleton-box rank-skeleton-box-sm"><SkeletonBox /></div>
+            </td>
+          </tr>
+        </tbody>
+        <tbody v-else>
+          <tr
+            v-for="rank in myDataRank"
+            :key="`oi-rank-row-${rank.id || rank.user.id}`"
+          >
             <td>{{ rank.idx }}</td>
             <td>
               <a
@@ -53,9 +86,17 @@
                 {{ rank.user.username }}
               </a>
             </td>
-            <td>{{ rank.total_score }}</td>
-            <td v-for="problem in contestProblems">
-              <div v-if="rank[problem.id].isSet">
+            <td>
+              <span class="total-score-value">{{ rank.total_score }}</span>
+            </td>
+            <td
+              v-for="problem in contestProblems"
+              :key="`oi-rank-problem-${rank.id || rank.user.id}-${problem.id}`"
+            >
+              <div
+                v-if="rank[problem.id] && rank[problem.id].isSet"
+                class="problem-score"
+              >
                 {{ rank[problem.id].total_score }}
               </div>
             </td>
@@ -78,14 +119,15 @@ import { mapActions } from "vuex"
 import api from "@oj/api"
 import Pagination from "@oj/components/Pagination"
 import ContestRankMixin from "./contestRankMixin"
-import utils from "@/utils/utils"
 import CustomTooltip from "@oj/components/CustomTooltip"
+import SkeletonBox from "@oj/components/SkeletonBox"
 
 export default {
-  name: "acm-contest-rank",
+  name: "oi-contest-rank",
   components: {
     Pagination,
     CustomTooltip,
+    SkeletonBox,
   },
   mixins: [ContestRankMixin],
   data() {
@@ -94,7 +136,14 @@ export default {
       page: 1,
       contestID: "",
       myDataRank: [],
+      loadingRank: false,
+      rankLoadError: false,
     }
+  },
+  computed: {
+    skeletonProblemCount() {
+      return this.contestProblems.length || 4
+    },
   },
   mounted() {
     this.contestID = this.$route.params.contestID
@@ -103,6 +152,8 @@ export default {
   methods: {
     ...mapActions(["getContestProblems"]),
     updateContestData() {
+      this.loadingRank = true
+      this.rankLoadError = false
       let params = {
         offset: (this.page - 1) * this.limit,
         limit: this.limit,
@@ -113,10 +164,17 @@ export default {
         const data = res.data.data.results
         let dataRank = JSON.parse(JSON.stringify(data))
 
-        this.getContestProblems().then((res) => {
-          this.addRankData(dataRank, res.data.data)
-        })
         this.total = res.data.data.total
+        return this.getContestProblems()
+          .then((res) => {
+            this.addRankData(dataRank, res.data.data)
+          })
+      }).catch(() => {
+        this.myDataRank = []
+        this.total = 0
+        this.rankLoadError = true
+      }).finally(() => {
+        this.loadingRank = false
       })
     },
     addRankData(dataRank, problems) {
@@ -128,6 +186,7 @@ export default {
       dataRank.forEach((rank, i) => {
         let info = rank.submission_info
         Object.keys(info).forEach((problemID) => {
+          if (!dataRank[i][problemID]) return
           dataRank[i][problemID].total_score = info[problemID]
           dataRank[i][problemID].isSet = true
         })
@@ -174,6 +233,8 @@ export default {
 .OIRankContent {
   text-align: center;
   display: block;
+  border-collapse: collapse;
+  border-spacing: 0;
   padding-top: 50px;
   max-width: 928px;
   overflow-y: visible;
@@ -186,10 +247,65 @@ export default {
   }
   td {
     border-top: 1px solid rgba(0, 0, 0, 0.1);
-    padding: 10px 0px;
+    padding: 6px 8px;
   }
   tr {
     font-size: 1.05em;
   }
+}
+
+.problem-score {
+  display: inline-flex;
+  min-width: 54px;
+  justify-content: center;
+  align-items: center;
+  border-radius: 8px;
+  padding: 12px 8px;
+  background: #f5f7fb;
+  color: #495060;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.total-score-value {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1;
+  color: #2f3c57;
+}
+
+.rank-skeleton-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+}
+
+.rank-skeleton-avatar {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+}
+
+.rank-skeleton-avatar /deep/ .skeleton {
+  border-radius: 50%;
+}
+
+.rank-skeleton-user-text {
+  width: 120px;
+  height: 18px;
+}
+
+.rank-skeleton-box {
+  height: 18px;
+  margin: 0 auto;
+}
+
+.rank-skeleton-box-sm {
+  width: 42px;
+}
+
+.rank-skeleton-box-md {
+  width: 120px;
 }
 </style>
