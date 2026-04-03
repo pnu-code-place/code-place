@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.db.models import OuterRef, Count, Subquery, F, Max
+from django.db.models import OuterRef, Count, Subquery
 from django.http import HttpResponse
 from django.utils.timezone import now
 from django.core.cache import cache
@@ -157,11 +157,12 @@ class ContestParticipantsAPI(APIView):
         contest_id = request.GET.get("contest_id")
 
         submissions = Submission.objects.filter(contest_id=contest_id)
+        latest_submission = submissions.filter(user_id=OuterRef('user_id')).order_by('-create_time', '-id')
 
         user_submissions = submissions.values('user_id').annotate(
             submission_count=Count('id'),
-            last_submission_ip=Max('ip'),
-            fallback_username=Max('username')).order_by('user_id')
+            last_submission_ip=Subquery(latest_submission.values('ip')[:1]),
+            fallback_username=Subquery(latest_submission.values('username')[:1])).order_by('user_id')
 
         # UserProfile 정보 가져오기
         user_profiles = UserProfile.objects.filter(user_id__in=[sub['user_id'] for sub in user_submissions])

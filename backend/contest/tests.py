@@ -240,19 +240,34 @@ class ContestParticipantsAPITest(APITestCase):
     def test_participants_fallback_to_submission_username_when_user_is_missing(self):
         from submission.models import JudgeStatus, Submission
 
-        Submission.objects.create(
+        older_submission = Submission.objects.create(
             user_id=self.user.id,
-            username="ghostuser",
+            username="zzz_user",
             language="C++",
             code="test code",
             problem_id=self.problem.id,
-            ip="127.0.0.1",
+            ip="9.9.9.9",
             contest_id=self.contest.id,
             result=JudgeStatus.PENDING,
             statistic_info={"time_cost": "100", "memory_cost": "1024"},
             shared=False,
             first_failed_tc_idx=None,
         )
+        latest_submission = Submission.objects.create(
+            user_id=self.user.id,
+            username="aaa_user",
+            language="C++",
+            code="test code",
+            problem_id=self.problem.id,
+            ip="1.1.1.1",
+            contest_id=self.contest.id,
+            result=JudgeStatus.PENDING,
+            statistic_info={"time_cost": "100", "memory_cost": "1024"},
+            shared=False,
+            first_failed_tc_idx=None,
+        )
+        Submission.objects.filter(id=older_submission.id).update(create_time=timezone.now() - timedelta(minutes=1))
+        Submission.objects.filter(id=latest_submission.id).update(create_time=timezone.now())
 
         self.user.delete()
 
@@ -261,8 +276,9 @@ class ContestParticipantsAPITest(APITestCase):
 
         participants = resp.data["data"]
         self.assertEqual(len(participants), 1)
-        self.assertEqual(participants[0]["username"], "ghostuser")
+        self.assertEqual(participants[0]["username"], "aaa_user")
         self.assertEqual(participants[0]["email"], "")
         self.assertEqual(participants[0]["avatar"], f"{settings.AVATAR_URI_PREFIX}/default.png")
         self.assertEqual(participants[0]["school"], "")
         self.assertEqual(participants[0]["major"], "")
+        self.assertEqual(participants[0]["last_submission_ip"], "1.1.1.1")

@@ -96,7 +96,7 @@
               :key="`acm-rank-problem-${rank.id || rank.user.id}-${problem.id}`"
             >
               <CustomTooltip
-                v-if="rank[problem.id].status === 'ac'"
+                v-if="rank[problem.id] && rank[problem.id].status === 'ac'"
                 :content="`${rank[problem.id].attempt_count}회 시도`"
                 placement="top"
               >
@@ -110,7 +110,7 @@
                 </div>
               </CustomTooltip>
               <div
-                v-else-if="rank[problem.id].status"
+                v-else-if="rank[problem.id] && rank[problem.id].status"
                 class="problem-status"
                 :class="rank[problem.id].status"
               >
