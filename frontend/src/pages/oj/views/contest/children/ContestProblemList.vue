@@ -24,7 +24,13 @@
       />
     </div>
     <div
-      v-if="problems.length === 0"
+      v-if="problemLoadError"
+      style="text-align: center; font-size: 16px"
+    >
+      {{ $t("m.Unknown_Error") }}
+    </div>
+    <div
+      v-else-if="problems.length === 0"
       style="text-align: center; font-size: 16px"
     >
       {{ $t("m.No_Problems") }}
@@ -113,6 +119,7 @@ export default {
       totalProblems: 0,
       limit: 10,
       page: 1,
+      problemLoadError: false,
     }
   },
   mounted() {
@@ -124,6 +131,7 @@ export default {
       this.getContestProblems()
     },
     getContestProblems() {
+      this.problemLoadError = false
       this.$store.dispatch("getContestProblems", this.keyword)
         .then((res) => {
           if (this.isAuthenticated) {
@@ -134,7 +142,10 @@ export default {
             }
           }
         })
-        .catch(() => {})
+        .catch((err) => {
+          this.problemLoadError = true
+          console.error("Failed to fetch contest problems:", err)
+        })
     },
     goContestProblem(id) {
       this.$router.push({

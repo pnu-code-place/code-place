@@ -9,7 +9,7 @@ from utils.constants import CacheKey, CONTEST_PASSWORD_SESSION_KEY
 from utils.contest_ranking_writer import ContestRankingWriter
 from utils.shortcuts import datetime2str, check_is_id
 from account.models import AdminType, User, UserProfile
-from account.decorators import login_required, check_contest_permission, check_contest_password
+from account.decorators import login_required, check_contest_permission, check_contest_password, ensure_created_by
 
 from utils.constants import ContestRuleType, ContestStatus
 from ..models import ContestAnnouncement, Contest, OIContestRank, ACMContestRank
@@ -155,6 +155,14 @@ class ContestParticipantsAPI(APIView):
     @login_required
     def get(self, request):
         contest_id = request.GET.get("contest_id")
+        if not contest_id:
+            return self.error("Invalid parameter, contest_id is required")
+
+        try:
+            contest = Contest.objects.get(id=contest_id)
+            ensure_created_by(contest, request.user)
+        except Contest.DoesNotExist:
+            return self.error("Contest does not exist")
 
         submissions = Submission.objects.filter(contest_id=contest_id)
         latest_submission = submissions.filter(user_id=OuterRef('user_id')).order_by('-create_time', '-id')
