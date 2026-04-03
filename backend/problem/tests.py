@@ -289,8 +289,13 @@ class ProblemLLMHintAPITest(ProblemCreateTestBase):
         mocked_post.assert_called_once()
         self.assertEqual(mocked_post.call_args.args[0], get_vllm_chat_completions_url())
         self.assertEqual(mocked_post.call_args.kwargs["json"]["model"], VLLM_MODEL)
+        self.assertIn("힌트는 정확히 1개만 제공하라.", mocked_post.call_args.kwargs["json"]["messages"][0]["content"])
+        self.assertIn("너무 추상적인 조언 대신", mocked_post.call_args.kwargs["json"]["messages"][0]["content"])
         self.assertIn(self.problem._id, mocked_post.call_args.kwargs["json"]["messages"][1]["content"])
         self.assertNotIn("<p>", mocked_post.call_args.kwargs["json"]["messages"][1]["content"])
+        self.assertIn("짧은 힌트 하나만 작성해라.", mocked_post.call_args.kwargs["json"]["messages"][1]["content"])
+        self.assertIn("관찰 포인트를 짚어라.", mocked_post.call_args.kwargs["json"]["messages"][1]["content"])
+        self.assertEqual(mocked_post.call_args.kwargs["json"]["temperature"], 0.65)
         self.assertEqual(mocked_post.call_args.kwargs["stream"], True)
         self.assertEqual(
             mocked_post.call_args.kwargs["timeout"],
