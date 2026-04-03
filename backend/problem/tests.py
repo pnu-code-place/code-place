@@ -1,10 +1,12 @@
 import copy
 import hashlib
+import json
 import os
 import shutil
 from datetime import timedelta
 from zipfile import ZipFile
 
+import requests
 from django.conf import settings
 from django.db import DatabaseError
 from django.utils import timezone
@@ -18,6 +20,8 @@ from .models import Problem, ProblemRuleType
 from .tasks import update_weekly_stats, update_bonus_problem
 from contest.models import Contest
 from contest.tests import DEFAULT_CONTEST_DATA
+from .llm_hint import (CLUSTER_VLLM_CHAT_COMPLETIONS_URL, LOCAL_VLLM_CHAT_COMPLETIONS_URL, VLLM_MODEL,
+                       get_vllm_chat_completions_url)
 
 from .views.admin import TestCaseAPI
 from .utils import parse_problem_template
@@ -238,6 +242,112 @@ class ProblemAPITest(ProblemCreateTestBase):
     def test_get_one_problem(self):
         resp = self.client.get(self.url + "?problem_id=" + self.problem._id)
         self.assertSuccess(resp)
+
+
+class ProblemLLMHintAPITest(ProblemCreateTestBase):
+
+    def setUp(self):
+        self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
+        self.url = self.reverse("problem_llm_hint_api")
+        self.admin = self.create_admin(login=False)
+        self.problem = self.add_problem(DEFAULT_PROBLEM_DATA, self.admin)
+        self.hidden_problem = self.create_problem_with_custom_field(self.admin, _id="A-211", visible=False)
+        self.create_user(email="test@test.com", username="test", password="test1234!")
+
+    @staticmethod
+    def _streaming_body(response):
+        return "".join(
+            chunk.decode("utf-8") if isinstance(chunk, bytes) else chunk
+            for chunk in response.streaming_content
+        )
+
+    @staticmethod
+    def _mock_streaming_response(lines):
+        response = mock.Mock()
+        response.raise_for_status.return_value = None
+        response.iter_lines.return_value = lines
+        response.close.return_value = None
+        return response
+
+    @mock.patch("problem.llm_hint.requests.post")
+    def test_stream_llm_hint(self, mocked_post):
+        mocked_post.return_value = self._mock_streaming_response([
+            'data: {"choices":[{"delta":{"content":"힌트 "}}]}',
+            'data: {"choices":[{"delta":{"content":"스트림"}}]}',
+            "data: [DONE]",
+        ])
+
+        resp = self.client.get(f"{self.url}?problem_id={self.problem._id}")
+        body = self._streaming_body(resp)
+
+        self.assertEqual(resp["Content-Type"], "text/event-stream")
+        self.assertIn('event: chunk', body)
+        self.assertIn(json.dumps({"text": "힌트 "}, ensure_ascii=False), body)
+        self.assertIn(json.dumps({"text": "스트림"}, ensure_ascii=False), body)
+        self.assertIn('event: done', body)
+        mocked_post.assert_called_once()
+        self.assertEqual(mocked_post.call_args.args[0], get_vllm_chat_completions_url())
+        self.assertEqual(mocked_post.call_args.kwargs["json"]["model"], VLLM_MODEL)
+        self.assertIn(self.problem._id, mocked_post.call_args.kwargs["json"]["messages"][1]["content"])
+        self.assertNotIn("<p>", mocked_post.call_args.kwargs["json"]["messages"][1]["content"])
+        self.assertEqual(mocked_post.call_args.kwargs["stream"], True)
+
+    def test_stream_llm_hint_requires_login(self):
+        self.client.logout()
+
+        resp = self.client.get(f"{self.url}?problem_id={self.problem._id}")
+        body = self._streaming_body(resp)
+
+        self.assertIn('event: app-error', body)
+        self.assertIn("로그인이 필요합니다.", body)
+
+    def test_stream_llm_hint_with_missing_problem(self):
+        resp = self.client.get(f"{self.url}?problem_id=NOT-EXIST")
+        body = self._streaming_body(resp)
+
+        self.assertIn('event: app-error', body)
+        self.assertIn("문제를 찾을 수 없습니다.", body)
+
+    def test_stream_llm_hint_with_hidden_problem(self):
+        resp = self.client.get(f"{self.url}?problem_id={self.hidden_problem._id}")
+        body = self._streaming_body(resp)
+
+        self.assertIn('event: app-error', body)
+        self.assertIn("문제를 찾을 수 없습니다.", body)
+
+    @mock.patch("problem.llm_hint.requests.post")
+    def test_stream_llm_hint_works_in_production(self, mocked_post):
+        mocked_post.return_value = self._mock_streaming_response([
+            'data: {"choices":[{"delta":{"content":"힌트 "}}]}',
+            'data: {"choices":[{"delta":{"content":"스트림"}}]}',
+            "data: [DONE]",
+        ])
+
+        with mock.patch.dict(os.environ, {"OJ_ENV": "production"}, clear=False):
+            resp = self.client.get(f"{self.url}?problem_id={self.problem._id}")
+        body = self._streaming_body(resp)
+
+        self.assertIn('event: chunk', body)
+        self.assertIn(json.dumps({"text": "힌트 "}, ensure_ascii=False), body)
+        self.assertIn(json.dumps({"text": "스트림"}, ensure_ascii=False), body)
+        self.assertIn('event: done', body)
+
+    @mock.patch("problem.llm_hint.requests.post", side_effect=requests.Timeout)
+    def test_stream_llm_hint_handles_timeout(self, mocked_post):
+        resp = self.client.get(f"{self.url}?problem_id={self.problem._id}")
+        body = self._streaming_body(resp)
+
+        mocked_post.assert_called_once()
+        self.assertIn('event: app-error', body)
+        self.assertIn("힌트를 생성하지 못했습니다.", body)
+
+    def test_get_vllm_chat_completions_url_for_local(self):
+        with mock.patch.dict(os.environ, {}, clear=True):
+            self.assertEqual(get_vllm_chat_completions_url(), LOCAL_VLLM_CHAT_COMPLETIONS_URL)
+
+    def test_get_vllm_chat_completions_url_for_kubernetes(self):
+        with mock.patch.dict(os.environ, {"KUBERNETES_SERVICE_HOST": "10.0.0.1"}, clear=False):
+            self.assertEqual(get_vllm_chat_completions_url(), CLUSTER_VLLM_CHAT_COMPLETIONS_URL)
 
 
 class ContestProblemAdminTest(APITestCase):

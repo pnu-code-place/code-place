@@ -1,17 +1,19 @@
 import logging
 import random
+import json
 
 from django.db import transaction
 from django.db.models import Count, F, Q
-from django.http import HttpResponseBadRequest, HttpResponseNotFound
+from django.http import HttpResponseBadRequest, HttpResponseNotFound, StreamingHttpResponse
 
-from account.decorators import (check_contest_permission, login_required, scheduler_only)
+from account.decorators import (check_contest_permission, scheduler_only)
 from account.models import UserProfile, UserScore
 from contest.models import ContestRuleType
 from submission.models import JudgeStatus, Submission
 from utils.api import APIView
 from utils.constants import Difficulty, ProblemField, Tier
 
+from ..llm_hint import LLMHintError, stream_problem_hint
 from ..models import (Problem, ProblemRuleType, ProblemTag, get_default_week_info)
 from ..serializers import (MostDifficultProblemSerializer, ProblemSafeSerializer, ProblemSerializer,
                            RecommendBonusProblemSerializer, TagSerializer)
@@ -114,6 +116,54 @@ class ProblemAPI(APIView):
         data = self.paginate_data(request, problems, ProblemSerializer)
         self._add_problem_status(request, data)
         return self.success(data)
+
+
+class ProblemLLMHintAPI(APIView):
+
+    @staticmethod
+    def _format_sse_event(event, data):
+        return f"event: {event}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
+
+    def _streaming_response(self, generator):
+        response = StreamingHttpResponse(generator, content_type="text/event-stream")
+        response["Cache-Control"] = "no-cache"
+        response["X-Accel-Buffering"] = "no"
+        return response
+
+    def _error_response(self, message, err="llm-hint-unavailable"):
+        def generator():
+            yield self._format_sse_event("app-error", {"error": err, "message": message})
+            yield self._format_sse_event("done", {"done": True})
+
+        return self._streaming_response(generator())
+
+    def get(self, request):
+        if not request.user.is_authenticated:
+            return self._error_response("로그인이 필요합니다.", err="permission-denied")
+
+        problem_id = request.GET.get("problem_id")
+        if not problem_id:
+            return self._error_response("문제 번호가 필요합니다.")
+
+        try:
+            problem = Problem.objects.get(_id=problem_id, contest_id__isnull=True, visible=True)
+        except Problem.DoesNotExist:
+            return self._error_response("문제를 찾을 수 없습니다.")
+
+        def generator():
+            try:
+                for chunk in stream_problem_hint(problem):
+                    yield self._format_sse_event("chunk", {"text": chunk})
+                yield self._format_sse_event("done", {"done": True})
+            except LLMHintError as exc:
+                logger.warning("Failed to stream LLM hint for problem %s: %s", problem_id, exc)
+                yield self._format_sse_event(
+                    "app-error",
+                    {"error": "llm-hint-unavailable", "message": "힌트를 생성하지 못했습니다."},
+                )
+                yield self._format_sse_event("done", {"done": True})
+
+        return self._streaming_response(generator())
 
 
 class ContestProblemAPI(APIView):
