@@ -1,6 +1,5 @@
 <template>
   <div class="submissionBtnWrapper" @click="submitCode">
-    <i class="fas fa-cloud" />
     <span>제출</span>
   </div>
 </template>
@@ -44,11 +43,11 @@ export default defineComponent({
   align-items: center;
   justify-content: space-evenly;
   border-radius: 10px;
-  width: 60px;
-  height: 32px;
+  padding: 6px 12px;
   cursor: pointer;
   transition: width 0.3s;
-  background-color: var(--submit-btn-color);
+  background-color: #4398ff;
+  color: white;
   i {
     font-size: smaller;
   }
@@ -56,5 +55,6 @@ export default defineComponent({
 
 .submissionBtnWrapper:hover {
   background-color: var(--submit-btn-hover-color);
+  color: #4398ff;
 }
 </style>

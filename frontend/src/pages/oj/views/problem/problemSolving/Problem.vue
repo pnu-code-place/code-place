@@ -51,27 +51,31 @@
         </div>
       </pane>
       <pane min-size="30" :size="50">
-        <CodeEditorHeader
-          @create-submission="submitCode"
-          @change-language="changeLanguage"
-          :problem="problem"
-          :language.sync="language"
-          :statusVisible="statusVisible"
-          :contestID="contestID"
-          :result="result"
-          :submissionId="submissionId"
-          :isSubmitting="submitting"
-        />
-        <CodeEditor
-          :value.sync="code"
-          :languages="problem.languages"
-          :language="language"
-          :cursorPos.sync="cursorPos"
-          :theme.sync="theme"
-          :allowPaste="allowPaste"
-          ref="myCm"
-        />
-        <StickyLnCol :cursorPos="cursorPos" />
+        <div class="editor-pane-wrapper">
+          <CodeEditorHeader
+            @create-submission="submitCode"
+            @change-language="changeLanguage"
+            @open-ai="$refs.bottomDrag.show()"
+            :problem="problem"
+            :language.sync="language"
+            :statusVisible="statusVisible"
+            :contestID="contestID"
+            :result="result"
+            :submissionId="submissionId"
+            :isSubmitting="submitting"
+          />
+          <CodeEditor
+            :value.sync="code"
+            :languages="problem.languages"
+            :language="language"
+            :cursorPos.sync="cursorPos"
+            :theme.sync="theme"
+            :allowPaste="allowPaste"
+            ref="myCm"
+          />
+          <BottomDrag ref="bottomDrag" :result="result" />
+          <StickyLnCol :cursorPos="cursorPos" />
+        </div>
       </pane>
     </splitpanes>
   </div>
@@ -100,6 +104,7 @@ import StickyLnCol from "./problemSolvingComponent/StickyLnCol.vue"
 import CodeEditor from "./problemSolvingComponent/CodeEditor.vue"
 import SubmissionList from "./problemSolvingComponent/SubmissionList.vue"
 import ProblemCommunity from "./problemSolvingComponent/ProblemCommunity.vue"
+import BottomDrag from "./problemSolvingComponent/BottomDrag.vue"
 
 const filtedStatus = ["-1", "-2", "0", "1", "2", "3", "4", "8"]
 
@@ -117,6 +122,7 @@ export default {
     FieldCategoryBox,
     Splitpanes,
     Pane,
+    BottomDrag,
   },
   mixins: [FormMixin],
   data() {
@@ -557,6 +563,11 @@ export default {
 }
 
 .left-pain-wrapper {
+  height: 100%;
+}
+
+.editor-pane-wrapper {
+  position: relative;
   height: 100%;
 }
 

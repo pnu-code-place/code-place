@@ -1,0 +1,311 @@
+<template>
+  <div v-show="visible" class="editor-container">
+    <div class="divider" @mousedown="startDrag"></div>
+
+    <div class="editor-bottom">
+      <!-- 탭 헤더 -->
+      <div class="tab-header">
+        <div class="tab-left">
+          <span :class="{ active: tab === 'result' }" @click="tab = 'result'"
+            >실행 결과</span
+          >
+          <span :class="{ active: tab === 'ai' }" @click="tab = 'ai'"
+            >AI 조교</span
+          >
+        </div>
+        <div class="tab-right-group">
+          <div class="tab-right" v-if="tab === 'ai'">
+            <span class="hint-count">남은 횟수 : [문제: 3/5 · 전체: 23/30]</span>
+            <button class="hint-btn" @click="requestHint" :disabled="isLoading">
+            {{ isLoading ? "생각 중..." : "AI조교 힌트받기" }}
+          </button>
+          </div>
+          <span class="close-btn" @click="visible = false">✕</span>
+        </div>
+      </div>
+
+      <!-- 내용 -->
+      <div class="terminal-body">
+        <!-- AI 조교 탭 -->
+        <div v-if="tab === 'ai'" class="ai-chat">
+          <div v-for="(msg, i) in messages" :key="i" class="chat-row">
+            <div class="avatar" :class="{ thinking: msg.thinking }">
+              <img src="@/assets/images/AIAssistant.svg" alt="AI" />
+            </div>
+            <div v-if="msg.thinking" class="bubble thinking-bubble">
+              생각 중...
+            </div>
+            <div v-else class="bubble" v-html="msg.text"></div>
+          </div>
+        </div>
+
+        <!-- 실행 결과 탭 -->
+        <div v-else class="result-message">실행 결과가 여기에 표시됩니다.</div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  props: {
+    result: Object,
+  },
+
+  data() {
+    return {
+      visible: false,
+      tab: "ai",
+      isDragging: false,
+      isLoading: false,
+      messages: [],
+    }
+  },
+
+  methods: {
+    show() {
+      this.visible = true
+    },
+
+    requestHint() {
+      if (this.isLoading) return
+
+      this.isLoading = true
+      this.messages.push({ text: "", thinking: true })
+
+      setTimeout(() => {
+        const mockHint = "입력을 <strong>아스키 코드</strong>를 활용하여 숫자 형태로 바꾸는 방법을 활용해보세요. <strong>이중 for문</strong>을 사용하지 않는 것이 핵심입니다."
+        this.messages.splice(this.messages.length - 1, 1, { text: mockHint, thinking: false })
+        this.isLoading = false
+      }, 1500)
+    },
+
+    startDrag() {
+      this.isDragging = true
+    },
+
+    onMouseMove(e) {
+      if (!this.isDragging) return
+
+      const parentRect = this.$el.parentElement.getBoundingClientRect()
+      const newHeight = parentRect.bottom - e.clientY
+
+      if (newHeight > 120 && newHeight < parentRect.height - 60) {
+        this.$el.style.height = `${newHeight}px`
+      }
+    },
+
+    onMouseUp() {
+      this.isDragging = false
+    },
+  },
+
+  mounted() {
+    window.addEventListener("mousemove", this.onMouseMove)
+    window.addEventListener("mouseup", this.onMouseUp)
+  },
+
+  beforeDestroy() {
+    window.removeEventListener("mousemove", this.onMouseMove)
+    window.removeEventListener("mouseup", this.onMouseUp)
+  },
+}
+</script>
+
+<style scoped>
+.editor-container {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 260px;
+  display: flex;
+  flex-direction: column;
+  z-index: 10;
+}
+
+/* 구분선 */
+.divider {
+  height: 6px;
+  cursor: row-resize;
+  background-color: transparent;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.divider::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 3px;
+  background: #ccc;
+  border-radius: 2px;
+}
+
+/* 하단 패널 */
+.editor-bottom {
+  flex: 1;
+  border-top: 1px solid #e0e0e0;
+  background: #f8f9ff;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* 탭 헤더 */
+.tab-header {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 16px;
+  border-bottom: 1px solid #e8e8e8;
+  background: #fff;
+  flex-shrink: 0;
+  height: 42px;
+}
+
+.tab-left {
+  display: flex;
+  gap: 4px;
+  height: 100%;
+}
+
+.tab-left span {
+  cursor: pointer;
+  color: #999;
+  font-size: 14px;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  border-bottom: 2px solid transparent;
+}
+
+.tab-left span.active {
+  color: #3a3fc4;
+  border-bottom: 2px solid #3a3fc4;
+  font-weight: 600;
+}
+
+.tab-right-group {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tab-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hint-count {
+  font-size: 12px;
+  color: #555;
+  white-space: nowrap;
+}
+
+.hint-btn {
+  background-color: #eef0ff;
+  color: #3a3fc4;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.hint-btn:hover:not(:disabled) {
+  background-color: #dde0ff;
+}
+
+.hint-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.close-btn {
+  margin-left: 0;
+  color: #aaa;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.close-btn:hover {
+  background-color: #eee;
+  color: #555;
+}
+
+/* 내용 영역 */
+.terminal-body {
+  padding: 16px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* AI 채팅 */
+.ai-chat {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.chat-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.avatar {
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  background-color: #dde0ff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  filter: invert(28%) sepia(60%) saturate(500%) hue-rotate(210deg)
+    brightness(80%);
+}
+
+.bubble {
+  background: #eef0ff;
+  border-radius: 0 12px 12px 12px;
+  padding: 12px 16px;
+  font-size: 14px;
+  color: #222;
+  line-height: 1.6;
+  max-width: 85%;
+}
+
+.bubble :deep(strong) {
+  color: #3a3fc4;
+}
+
+.thinking-bubble {
+  background: #f0f0f0;
+  color: #888;
+  font-style: italic;
+  border-radius: 0 12px 12px 12px;
+  padding: 10px 16px;
+}
+
+/* 실행 결과 */
+.result-message {
+  color: #666;
+  font-size: 14px;
+}
+</style>
