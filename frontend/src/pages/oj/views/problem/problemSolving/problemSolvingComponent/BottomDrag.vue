@@ -15,11 +15,22 @@
         </div>
         <div class="tab-right-group">
           <div class="tab-right" v-if="tab === 'ai'">
-            <span class="hint-count"
-              >남은 횟수 : [문제: 3/5 · 전체: 23/30]</span
+            <span class="hint-count">
+              남은 횟수 : [문제: {{ 5 - problemHintsRemaining }}/5 · 전체:
+              {{ 30 - dailyHintsRemaining }}/30]
+            </span>
+            <button
+              class="hint-btn"
+              @click="requestHint"
+              :disabled="isLoading || hintsExhausted"
             >
-            <button class="hint-btn" @click="requestHint" :disabled="isLoading">
-              {{ isLoading ? "생각 중..." : "AI조교 힌트받기" }}
+              {{
+                isLoading
+                  ? "생각 중..."
+                  : hintsExhausted
+                    ? "횟수 초과"
+                    : "AI조교 힌트받기"
+              }}
             </button>
           </div>
           <button
@@ -83,10 +94,56 @@ export default {
       isLoading: false,
       messages: [],
       eventSource: null,
+      hintUsage: {
+        date: "",
+        dailyCount: 0,
+        problems: {},
+      },
     }
   },
 
+  computed: {
+    problemHintsUsed() {
+      return this.hintUsage.problems[this.problemID] || 0
+    },
+    problemHintsRemaining() {
+      return Math.max(0, 5 - this.problemHintsUsed)
+    },
+    dailyHintsRemaining() {
+      return Math.max(0, 30 - this.hintUsage.dailyCount)
+    },
+    hintsExhausted() {
+      return this.problemHintsRemaining <= 0 || this.dailyHintsRemaining <= 0
+    },
+  },
+
   methods: {
+    loadHintUsage() {
+      const today = new Date().toISOString().slice(0, 10)
+      const saved = JSON.parse(localStorage.getItem("aiHintUsage") || "{}")
+      if (saved.date === today) {
+        this.hintUsage = saved
+      } else {
+        this.hintUsage = { date: today, dailyCount: 0, problems: {} }
+        this.saveHintUsage()
+      }
+    },
+
+    saveHintUsage() {
+      localStorage.setItem("aiHintUsage", JSON.stringify(this.hintUsage))
+    },
+
+    incrementHintCount() {
+      const today = new Date().toISOString().slice(0, 10)
+      if (this.hintUsage.date !== today) {
+        this.hintUsage = { date: today, dailyCount: 0, problems: {} }
+      }
+      this.hintUsage.dailyCount += 1
+      this.hintUsage.problems[this.problemID] =
+        (this.hintUsage.problems[this.problemID] || 0) + 1
+      this.saveHintUsage()
+    },
+
     show() {
       this.visible = true
       this.tab = "ai"
@@ -94,7 +151,7 @@ export default {
     },
 
     requestHint() {
-      if (this.isLoading || !this.problemID) return
+      if (this.isLoading || !this.problemID || this.hintsExhausted) return
       if (this.contestID) {
         this.messages.push({
           text: "AI 조교는 공개 문제에서만 지원됩니다.",
@@ -159,6 +216,7 @@ export default {
       })
 
       eventSource.addEventListener("done", () => {
+        this.incrementHintCount()
         this.isLoading = false
         this.closeEventSource()
       })
@@ -216,6 +274,7 @@ export default {
   mounted() {
     window.addEventListener("mousemove", this.onMouseMove)
     window.addEventListener("mouseup", this.onMouseUp)
+    this.loadHintUsage()
   },
 
   beforeDestroy() {
