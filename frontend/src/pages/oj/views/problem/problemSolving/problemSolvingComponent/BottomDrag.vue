@@ -16,8 +16,8 @@
         <div class="tab-right-group">
           <div class="tab-right" v-if="tab === 'ai'">
             <span class="hint-count">
-              남은 횟수 : [문제: {{ 5 - problemHintsRemaining }}/5 · 전체:
-              {{ 30 - dailyHintsRemaining }}/30]
+              남은 횟수 : [문제: {{ problemHintsRemaining }}/5 · 전체:
+              {{ dailyHintsRemaining }}/30]
             </span>
             <button
               class="hint-btn"
