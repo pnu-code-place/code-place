@@ -22,7 +22,14 @@
               {{ isLoading ? "생각 중..." : "AI조교 힌트받기" }}
             </button>
           </div>
-          <span class="close-btn" @click="visible = false">✕</span>
+          <button
+            type="button"
+            class="close-btn"
+            aria-label="AI 조교 닫기"
+            @click="visible = false"
+          >
+            ✕
+          </button>
         </div>
       </div>
 
@@ -261,8 +268,8 @@ export default {
 /* 하단 패널 */
 .editor-bottom {
   flex: 1;
-  border-top: 1px solid #e0e0e0;
-  background: #f8f9ff;
+  border-top: 1px solid var(--ai-assistant-border-color);
+  background: var(--ai-assistant-panel-bg);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -274,8 +281,8 @@ export default {
   align-items: center;
   gap: 4px;
   padding: 0 16px;
-  border-bottom: 1px solid #e8e8e8;
-  background: #fff;
+  border-bottom: 1px solid var(--ai-assistant-header-border-color);
+  background: var(--ai-assistant-header-bg);
   flex-shrink: 0;
   height: 42px;
 }
@@ -288,7 +295,7 @@ export default {
 
 .tab-left span {
   cursor: pointer;
-  color: #999;
+  color: var(--ai-assistant-tab-text-color);
   font-size: 14px;
   padding: 0 10px;
   display: flex;
@@ -297,8 +304,8 @@ export default {
 }
 
 .tab-left span.active {
-  color: #3a3fc4;
-  border-bottom: 2px solid #3a3fc4;
+  color: var(--ai-assistant-tab-active-color);
+  border-bottom: 2px solid var(--ai-assistant-tab-active-color);
   font-weight: 600;
 }
 
@@ -317,13 +324,13 @@ export default {
 
 .hint-count {
   font-size: 12px;
-  color: #555;
+  color: var(--ai-assistant-subtle-text-color);
   white-space: nowrap;
 }
 
 .hint-btn {
-  background-color: #eef0ff;
-  color: #3a3fc4;
+  background-color: var(--ai-assistant-subtle-bg);
+  color: var(--ai-assistant-tab-active-color);
   border: none;
   border-radius: 4px;
   padding: 6px 14px;
@@ -334,7 +341,7 @@ export default {
 }
 
 .hint-btn:hover:not(:disabled) {
-  background-color: #dde0ff;
+  background-color: var(--ai-assistant-subtle-hover-bg);
 }
 
 .hint-btn:disabled {
@@ -344,16 +351,18 @@ export default {
 
 .close-btn {
   margin-left: 0;
-  color: #aaa;
+  color: var(--ai-assistant-close-text-color);
   font-size: 12px;
   cursor: pointer;
   padding: 2px 6px;
   border-radius: 4px;
+  border: none;
+  background: transparent;
 }
 
 .close-btn:hover {
-  background-color: #eee;
-  color: #555;
+  background-color: var(--ai-assistant-close-hover-bg);
+  color: var(--ai-assistant-close-hover-text-color);
 }
 
 /* 내용 영역 */
@@ -380,7 +389,7 @@ export default {
   width: 52px;
   height: 52px;
   flex-shrink: 0;
-  background-color: #dde0ff;
+  background-color: var(--ai-assistant-avatar-bg);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -391,39 +400,38 @@ export default {
 .avatar img {
   width: 100%;
   height: 100%;
-  filter: invert(28%) sepia(60%) saturate(500%) hue-rotate(210deg)
-    brightness(80%);
+  filter: var(--ai-assistant-avatar-icon-filter);
 }
 
 .bubble {
-  background: #eef0ff;
+  background: var(--ai-assistant-bubble-bg);
   border-radius: 0 12px 12px 12px;
   padding: 12px 16px;
   font-size: 14px;
-  color: #222;
+  color: var(--ai-assistant-bubble-text-color);
   line-height: 1.6;
   max-width: 85%;
   white-space: pre-wrap;
 }
 
 .bubble.error {
-  color: #c0392b;
+  color: var(--ai-assistant-error-text-color);
 }
 
 .thinking-bubble {
-  background: #f0f0f0;
-  color: #888;
+  background: var(--ai-assistant-thinking-bg);
+  color: var(--ai-assistant-thinking-text-color);
   font-style: italic;
 }
 
 /* 실행 결과 */
 .result-message {
-  color: #666;
+  color: var(--ai-assistant-muted-text-color);
   font-size: 14px;
 }
 
 .empty-message {
-  color: #666;
+  color: var(--ai-assistant-muted-text-color);
   font-size: 14px;
 }
 </style>

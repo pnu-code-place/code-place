@@ -1,7 +1,7 @@
 <template>
-  <div class="submissionBtnWrapper" @click="submitCode">
+  <button type="button" class="submissionBtnWrapper" @click="submitCode">
     <span>제출</span>
-  </div>
+  </button>
 </template>
 
 <script>
@@ -46,15 +46,16 @@ export default defineComponent({
   padding: 6px 12px;
   cursor: pointer;
   transition: width 0.3s;
-  background-color: #4398ff;
-  color: white;
+  border: none;
+  background-color: var(--submission-primary-btn-bg);
+  color: var(--submission-primary-btn-text-color);
   i {
     font-size: smaller;
   }
 }
 
 .submissionBtnWrapper:hover {
-  background-color: var(--submit-btn-hover-color);
-  color: #4398ff;
+  background-color: var(--submission-primary-btn-hover-bg);
+  color: var(--submission-primary-btn-hover-text-color);
 }
 </style>
