@@ -5,7 +5,12 @@
       <span>코드 작성</span>
     </div>
     <div
-      style="display: flex; justify-content: space-between; align-items: center"
+      style="
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+      "
     >
       <Tooltip :content="'언어 선택'" placement="top">
         <Dropdown @on-click="changeLanguage" trigger="click" class="dropdown">
@@ -26,6 +31,7 @@
           </Dropdown-menu>
         </Dropdown>
       </Tooltip>
+      <AIAssistantBtn @open-ai="$emit('open-ai')" />
       <SubmissionBtn
         :isSubmitting="isSubmitting"
         @create-submission="$emit('create-submission')"
@@ -58,6 +64,7 @@ import FieldCategoryBox from "../../../../components/FieldCategoryBox.vue"
 import CustomIconBtn from "../../../../components/buttons/CustomIconBtn.vue"
 import SubmissionStatus from "./SubmissionStatus.vue"
 import SubmissionBtn from "./SubmissionBtn.vue"
+import AIAssistantBtn from "./AIAssistantBtn.vue"
 
 export default defineComponent({
   props: {
@@ -77,6 +84,7 @@ export default defineComponent({
     SubmissionStatus,
     CustomIconBtn,
     FieldCategoryBox,
+    AIAssistantBtn,
   },
   methods: {
     changeLanguage(newLang) {
@@ -127,6 +135,5 @@ export default defineComponent({
   padding-left: 15px;
   padding-right: 15px;
   border-radius: 7px;
-  margin-right: 10px;
 }
 </style>

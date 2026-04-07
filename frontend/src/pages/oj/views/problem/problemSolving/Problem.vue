@@ -51,27 +51,36 @@
         </div>
       </pane>
       <pane min-size="30" :size="50">
-        <CodeEditorHeader
-          @create-submission="submitCode"
-          @change-language="changeLanguage"
-          :problem="problem"
-          :language.sync="language"
-          :statusVisible="statusVisible"
-          :contestID="contestID"
-          :result="result"
-          :submissionId="submissionId"
-          :isSubmitting="submitting"
-        />
-        <CodeEditor
-          :value.sync="code"
-          :languages="problem.languages"
-          :language="language"
-          :cursorPos.sync="cursorPos"
-          :theme.sync="theme"
-          :allowPaste="allowPaste"
-          ref="myCm"
-        />
-        <StickyLnCol :cursorPos="cursorPos" />
+        <div class="editor-pane-wrapper">
+          <CodeEditorHeader
+            @create-submission="submitCode"
+            @change-language="changeLanguage"
+            @open-ai="$refs.bottomDrag.show()"
+            :problem="problem"
+            :language.sync="language"
+            :statusVisible="statusVisible"
+            :contestID="contestID"
+            :result="result"
+            :submissionId="submissionId"
+            :isSubmitting="submitting"
+          />
+          <CodeEditor
+            :value.sync="code"
+            :languages="problem.languages"
+            :language="language"
+            :cursorPos.sync="cursorPos"
+            :theme.sync="theme"
+            :allowPaste="allowPaste"
+            ref="myCm"
+          />
+          <BottomDrag
+            ref="bottomDrag"
+            :result="result"
+            :problemID="problemID"
+            :contestID="contestID"
+          />
+          <StickyLnCol :cursorPos="cursorPos" />
+        </div>
       </pane>
     </splitpanes>
   </div>
@@ -90,33 +99,27 @@ import {
 import api from "@oj/api"
 import { Pane, Splitpanes } from "splitpanes"
 import "splitpanes/dist/splitpanes.css"
-import FieldCategoryBox from "../../../components/FieldCategoryBox.vue"
-import CustomIconBtn from "../../../components/buttons/CustomIconBtn.vue"
 import { DIFFICULTY_MAP, FIELD_MAP } from "../../../../../utils/constants"
 import CodeEditorHeader from "./problemSolvingComponent/CodeEditorHeader.vue"
-import SubmissionStatus from "./problemSolvingComponent/SubmissionStatus.vue"
 import ProblemDetailFlexibleContainer from "./problemSolvingComponent/ProblemDetailFlexibleContainer.vue"
 import StickyLnCol from "./problemSolvingComponent/StickyLnCol.vue"
 import CodeEditor from "./problemSolvingComponent/CodeEditor.vue"
 import SubmissionList from "./problemSolvingComponent/SubmissionList.vue"
 import ProblemCommunity from "./problemSolvingComponent/ProblemCommunity.vue"
-
-const filtedStatus = ["-1", "-2", "0", "1", "2", "3", "4", "8"]
+import BottomDrag from "./problemSolvingComponent/BottomDrag.vue"
 
 export default {
-  name: "Problem",
+  name: "ProblemPage",
   components: {
     StickyLnCol,
     CodeEditor,
-    SubmissionStatus,
     CodeEditorHeader,
     ProblemDetailFlexibleContainer,
     SubmissionList,
     ProblemCommunity,
-    CustomIconBtn,
-    FieldCategoryBox,
     Splitpanes,
     Pane,
+    BottomDrag,
   },
   mixins: [FormMixin],
   data() {
@@ -332,7 +335,7 @@ export default {
               this.refreshStatus = setTimeout(checkStatus, 2000)
             }
           },
-          (res) => {
+          () => {
             this.submitting = false
             clearTimeout(this.refreshStatus)
           },
@@ -557,6 +560,11 @@ export default {
 }
 
 .left-pain-wrapper {
+  height: 100%;
+}
+
+.editor-pane-wrapper {
+  position: relative;
   height: 100%;
 }
 
