@@ -189,8 +189,10 @@
                   class="dropdown-content"
                   v-if="dropdown.openCategoryDropdown"
                 >
-                  <template v-for="(category, idx) in problem.tags">
-                    <div class="dropdown-badge">#{{ category }}</div>
+                  <template v-for="category in problem.tags">
+                    <div :key="category" class="dropdown-badge">
+                      #{{ category }}
+                    </div>
                   </template>
                 </div>
               </transition>
@@ -235,15 +237,13 @@
 
 <script>
 import { defineComponent } from "vue"
-import FieldCategoryBox from "../../../../components/FieldCategoryBox.vue"
 import { DIFFICULTY_MAP, FIELD_MAP } from "../../../../../../utils/constants"
 
 export default defineComponent({
   props: {
     problem: Object,
-    contestID: Number,
+    contestID: [Number, String],
   },
-  components: { FieldCategoryBox },
   data() {
     return {
       dropdown: {
@@ -268,10 +268,10 @@ export default defineComponent({
       }
       this.dropdown.openCategoryDropdown = !this.dropdown.openCategoryDropdown
     },
-    onCopy(event) {
+    onCopy() {
       this.$success("Code copied")
     },
-    onCopyError(e) {
+    onCopyError() {
       this.$error("Failed to copy code")
     },
   },

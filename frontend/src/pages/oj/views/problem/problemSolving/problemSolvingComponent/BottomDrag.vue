@@ -15,27 +15,39 @@
         </div>
         <div class="tab-right-group">
           <div class="tab-right" v-if="tab === 'ai'">
-            <span class="hint-count">남은 횟수 : [문제: 3/5 · 전체: 23/30]</span>
+            <span class="hint-count"
+              >남은 횟수 : [문제: 3/5 · 전체: 23/30]</span
+            >
             <button class="hint-btn" @click="requestHint" :disabled="isLoading">
-            {{ isLoading ? "생각 중..." : "AI조교 힌트받기" }}
-          </button>
+              {{ isLoading ? "생각 중..." : "AI조교 힌트받기" }}
+            </button>
           </div>
           <span class="close-btn" @click="visible = false">✕</span>
         </div>
       </div>
 
       <!-- 내용 -->
-      <div class="terminal-body">
+      <div ref="terminalBody" class="terminal-body">
         <!-- AI 조교 탭 -->
         <div v-if="tab === 'ai'" class="ai-chat">
+          <div v-if="contestID" class="empty-message">
+            AI 조교는 공개 문제에서만 사용할 수 있습니다.
+          </div>
           <div v-for="(msg, i) in messages" :key="i" class="chat-row">
             <div class="avatar" :class="{ thinking: msg.thinking }">
               <img src="@/assets/images/AIAssistant.svg" alt="AI" />
             </div>
-            <div v-if="msg.thinking" class="bubble thinking-bubble">
-              생각 중...
-            </div>
-            <div v-else class="bubble" v-html="msg.text"></div>
+            <div
+              v-if="msg.thinking"
+              class="bubble thinking-bubble"
+              v-text="'생각 중...'"
+            ></div>
+            <div
+              v-else
+              class="bubble"
+              :class="{ error: msg.error }"
+              v-text="msg.text"
+            ></div>
           </div>
         </div>
 
@@ -47,9 +59,13 @@
 </template>
 
 <script>
+import api from "@oj/api"
+
 export default {
   props: {
     result: Object,
+    problemID: String,
+    contestID: [Number, String],
   },
 
   data() {
@@ -59,25 +75,115 @@ export default {
       isDragging: false,
       isLoading: false,
       messages: [],
+      eventSource: null,
     }
   },
 
   methods: {
     show() {
       this.visible = true
+      this.tab = "ai"
+      this.scrollToBottom()
     },
 
     requestHint() {
-      if (this.isLoading) return
+      if (this.isLoading || !this.problemID) return
+      if (this.contestID) {
+        this.messages.push({
+          text: "AI 조교는 공개 문제에서만 지원됩니다.",
+          error: true,
+        })
+        this.scrollToBottom()
+        return
+      }
 
+      this.closeEventSource()
       this.isLoading = true
       this.messages.push({ text: "", thinking: true })
+      this.scrollToBottom()
+      const thinkingIndex = this.messages.length - 1
 
-      setTimeout(() => {
-        const mockHint = "입력을 <strong>아스키 코드</strong>를 활용하여 숫자 형태로 바꾸는 방법을 활용해보세요. <strong>이중 for문</strong>을 사용하지 않는 것이 핵심입니다."
-        this.messages.splice(this.messages.length - 1, 1, { text: mockHint, thinking: false })
+      const eventSource = new EventSource(
+        api.getProblemLLMHintUrl(this.problemID),
+      )
+      this.eventSource = eventSource
+
+      eventSource.addEventListener("chunk", (event) => {
+        let payload
+        try {
+          payload = JSON.parse(event.data)
+        } catch (error) {
+          return
+        }
+
+        if (
+          this.messages[thinkingIndex] &&
+          this.messages[thinkingIndex].thinking
+        ) {
+          this.messages.splice(thinkingIndex, 1, {
+            text: payload.text || "",
+            error: false,
+          })
+          this.scrollToBottom()
+          return
+        }
+
+        if (this.messages[thinkingIndex]) {
+          this.messages[thinkingIndex].text += payload.text || ""
+          this.scrollToBottom()
+        }
+      })
+
+      eventSource.addEventListener("app-error", (event) => {
+        let payload
+        try {
+          payload = JSON.parse(event.data)
+        } catch (error) {
+          payload = { message: "AI 힌트를 불러오지 못했습니다." }
+        }
+
+        this.messages.splice(thinkingIndex, 1, {
+          text: payload.message || "AI 힌트를 불러오지 못했습니다.",
+          error: true,
+        })
+        this.scrollToBottom()
         this.isLoading = false
-      }, 1500)
+        this.closeEventSource()
+      })
+
+      eventSource.addEventListener("done", () => {
+        this.isLoading = false
+        this.closeEventSource()
+      })
+
+      eventSource.onerror = () => {
+        if (
+          this.messages[thinkingIndex] &&
+          this.messages[thinkingIndex].thinking
+        ) {
+          this.messages.splice(thinkingIndex, 1, {
+            text: "AI 힌트를 불러오지 못했습니다.",
+            error: true,
+          })
+          this.scrollToBottom()
+        }
+        this.isLoading = false
+        this.closeEventSource()
+      }
+    },
+
+    scrollToBottom() {
+      this.$nextTick(() => {
+        const terminalBody = this.$refs.terminalBody
+        if (!terminalBody) return
+        terminalBody.scrollTop = terminalBody.scrollHeight
+      })
+    },
+
+    closeEventSource() {
+      if (!this.eventSource) return
+      this.eventSource.close()
+      this.eventSource = null
     },
 
     startDrag() {
@@ -108,6 +214,14 @@ export default {
   beforeDestroy() {
     window.removeEventListener("mousemove", this.onMouseMove)
     window.removeEventListener("mouseup", this.onMouseUp)
+    this.closeEventSource()
+  },
+  watch: {
+    problemID() {
+      this.closeEventSource()
+      this.isLoading = false
+      this.messages = []
+    },
   },
 }
 </script>
@@ -289,22 +403,26 @@ export default {
   color: #222;
   line-height: 1.6;
   max-width: 85%;
+  white-space: pre-wrap;
 }
 
-.bubble :deep(strong) {
-  color: #3a3fc4;
+.bubble.error {
+  color: #c0392b;
 }
 
 .thinking-bubble {
   background: #f0f0f0;
   color: #888;
   font-style: italic;
-  border-radius: 0 12px 12px 12px;
-  padding: 10px 16px;
 }
 
 /* 실행 결과 */
 .result-message {
+  color: #666;
+  font-size: 14px;
+}
+
+.empty-message {
   color: #666;
   font-size: 14px;
 }

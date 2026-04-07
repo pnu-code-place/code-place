@@ -73,7 +73,12 @@
             :allowPaste="allowPaste"
             ref="myCm"
           />
-          <BottomDrag ref="bottomDrag" :result="result" />
+          <BottomDrag
+            ref="bottomDrag"
+            :result="result"
+            :problemID="problemID"
+            :contestID="contestID"
+          />
           <StickyLnCol :cursorPos="cursorPos" />
         </div>
       </pane>
@@ -94,11 +99,8 @@ import {
 import api from "@oj/api"
 import { Pane, Splitpanes } from "splitpanes"
 import "splitpanes/dist/splitpanes.css"
-import FieldCategoryBox from "../../../components/FieldCategoryBox.vue"
-import CustomIconBtn from "../../../components/buttons/CustomIconBtn.vue"
 import { DIFFICULTY_MAP, FIELD_MAP } from "../../../../../utils/constants"
 import CodeEditorHeader from "./problemSolvingComponent/CodeEditorHeader.vue"
-import SubmissionStatus from "./problemSolvingComponent/SubmissionStatus.vue"
 import ProblemDetailFlexibleContainer from "./problemSolvingComponent/ProblemDetailFlexibleContainer.vue"
 import StickyLnCol from "./problemSolvingComponent/StickyLnCol.vue"
 import CodeEditor from "./problemSolvingComponent/CodeEditor.vue"
@@ -106,20 +108,15 @@ import SubmissionList from "./problemSolvingComponent/SubmissionList.vue"
 import ProblemCommunity from "./problemSolvingComponent/ProblemCommunity.vue"
 import BottomDrag from "./problemSolvingComponent/BottomDrag.vue"
 
-const filtedStatus = ["-1", "-2", "0", "1", "2", "3", "4", "8"]
-
 export default {
-  name: "Problem",
+  name: "ProblemPage",
   components: {
     StickyLnCol,
     CodeEditor,
-    SubmissionStatus,
     CodeEditorHeader,
     ProblemDetailFlexibleContainer,
     SubmissionList,
     ProblemCommunity,
-    CustomIconBtn,
-    FieldCategoryBox,
     Splitpanes,
     Pane,
     BottomDrag,
@@ -338,7 +335,7 @@ export default {
               this.refreshStatus = setTimeout(checkStatus, 2000)
             }
           },
-          (res) => {
+          () => {
             this.submitting = false
             clearTimeout(this.refreshStatus)
           },
