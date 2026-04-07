@@ -9,7 +9,8 @@ from django.utils.html import strip_tags
 LOCAL_VLLM_CHAT_COMPLETIONS_URL = "http://localhost:8000/v1/chat/completions"
 CLUSTER_VLLM_CHAT_COMPLETIONS_URL = "http://vllm:8000/v1/chat/completions"
 VLLM_MODEL = "Qwen/Qwen2.5-Coder-7B-Instruct"
-VLLM_TIMEOUT_SEC = 60
+VLLM_CONNECT_TIMEOUT_SEC = 10
+VLLM_STREAM_READ_TIMEOUT_SEC = 3600
 
 SYSTEM_PROMPT = """당신은 프로그래밍 문제 풀이를 돕는 힌트 생성기다.
 반드시 한국어로만 답하라.
@@ -124,7 +125,7 @@ def stream_problem_hint(problem):
         response = requests.post(
             get_vllm_chat_completions_url(),
             json=build_hint_payload(problem, stream=True),
-            timeout=VLLM_TIMEOUT_SEC,
+            timeout=(VLLM_CONNECT_TIMEOUT_SEC, VLLM_STREAM_READ_TIMEOUT_SEC),
             stream=True,
         )
         response.raise_for_status()

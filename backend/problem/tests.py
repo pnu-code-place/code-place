@@ -20,7 +20,8 @@ from .models import Problem, ProblemRuleType
 from .tasks import update_weekly_stats, update_bonus_problem
 from contest.models import Contest
 from contest.tests import DEFAULT_CONTEST_DATA
-from .llm_hint import (CLUSTER_VLLM_CHAT_COMPLETIONS_URL, LOCAL_VLLM_CHAT_COMPLETIONS_URL, VLLM_MODEL,
+from .llm_hint import (CLUSTER_VLLM_CHAT_COMPLETIONS_URL, LOCAL_VLLM_CHAT_COMPLETIONS_URL,
+                       VLLM_CONNECT_TIMEOUT_SEC, VLLM_MODEL, VLLM_STREAM_READ_TIMEOUT_SEC,
                        get_vllm_chat_completions_url)
 
 from .views.admin import TestCaseAPI
@@ -291,6 +292,10 @@ class ProblemLLMHintAPITest(ProblemCreateTestBase):
         self.assertIn(self.problem._id, mocked_post.call_args.kwargs["json"]["messages"][1]["content"])
         self.assertNotIn("<p>", mocked_post.call_args.kwargs["json"]["messages"][1]["content"])
         self.assertEqual(mocked_post.call_args.kwargs["stream"], True)
+        self.assertEqual(
+            mocked_post.call_args.kwargs["timeout"],
+            (VLLM_CONNECT_TIMEOUT_SEC, VLLM_STREAM_READ_TIMEOUT_SEC),
+        )
 
     def test_stream_llm_hint_requires_login(self):
         self.client.logout()
@@ -308,6 +313,13 @@ class ProblemLLMHintAPITest(ProblemCreateTestBase):
         self.assertIn('event: app-error', body)
         self.assertIn("문제를 찾을 수 없습니다.", body)
 
+    def test_stream_llm_hint_with_missing_problem_id(self):
+        resp = self.client.get(self.url)
+        body = self._streaming_body(resp)
+
+        self.assertIn('event: app-error', body)
+        self.assertIn("문제 번호가 필요합니다.", body)
+
     def test_stream_llm_hint_with_hidden_problem(self):
         resp = self.client.get(f"{self.url}?problem_id={self.hidden_problem._id}")
         body = self._streaming_body(resp)
@@ -315,22 +327,17 @@ class ProblemLLMHintAPITest(ProblemCreateTestBase):
         self.assertIn('event: app-error', body)
         self.assertIn("문제를 찾을 수 없습니다.", body)
 
-    @mock.patch("problem.llm_hint.requests.post")
-    def test_stream_llm_hint_works_in_production(self, mocked_post):
-        mocked_post.return_value = self._mock_streaming_response([
-            'data: {"choices":[{"delta":{"content":"힌트 "}}]}',
-            'data: {"choices":[{"delta":{"content":"스트림"}}]}',
-            "data: [DONE]",
-        ])
+    def test_stream_llm_hint_with_contest_problem(self):
+        contest = Contest.objects.create(created_by=self.admin, **DEFAULT_CONTEST_DATA)
+        contest_problem = self.create_problem_with_custom_field(self.admin, _id="A-212")
+        contest_problem.contest = contest
+        contest_problem.save(update_fields=["contest"])
 
-        with mock.patch.dict(os.environ, {"OJ_ENV": "production"}, clear=False):
-            resp = self.client.get(f"{self.url}?problem_id={self.problem._id}")
+        resp = self.client.get(f"{self.url}?problem_id={contest_problem._id}")
         body = self._streaming_body(resp)
 
-        self.assertIn('event: chunk', body)
-        self.assertIn(json.dumps({"text": "힌트 "}, ensure_ascii=False), body)
-        self.assertIn(json.dumps({"text": "스트림"}, ensure_ascii=False), body)
-        self.assertIn('event: done', body)
+        self.assertIn('event: app-error', body)
+        self.assertIn("문제를 찾을 수 없습니다.", body)
 
     @mock.patch("problem.llm_hint.requests.post", side_effect=requests.Timeout)
     def test_stream_llm_hint_handles_timeout(self, mocked_post):
@@ -340,6 +347,16 @@ class ProblemLLMHintAPITest(ProblemCreateTestBase):
         mocked_post.assert_called_once()
         self.assertIn('event: app-error', body)
         self.assertIn("힌트를 생성하지 못했습니다.", body)
+
+    @mock.patch("problem.views.oj.stream_problem_hint", side_effect=TypeError("boom"))
+    def test_stream_llm_hint_handles_unexpected_error(self, mocked_stream):
+        resp = self.client.get(f"{self.url}?problem_id={self.problem._id}")
+        body = self._streaming_body(resp)
+
+        mocked_stream.assert_called_once()
+        self.assertIn('event: app-error', body)
+        self.assertIn("힌트를 생성하지 못했습니다.", body)
+        self.assertIn('event: done', body)
 
     def test_get_vllm_chat_completions_url_for_local(self):
         with mock.patch.dict(os.environ, {}, clear=True):

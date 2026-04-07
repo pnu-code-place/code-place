@@ -130,12 +130,12 @@ class ProblemLLMHintAPI(APIView):
         response["X-Accel-Buffering"] = "no"
         return response
 
-    def _error_response(self, message, err="llm-hint-unavailable"):
-        def generator():
-            yield self._format_sse_event("app-error", {"error": err, "message": message})
-            yield self._format_sse_event("done", {"done": True})
+    def _error_events(self, message, err="llm-hint-unavailable"):
+        yield self._format_sse_event("app-error", {"error": err, "message": message})
+        yield self._format_sse_event("done", {"done": True})
 
-        return self._streaming_response(generator())
+    def _error_response(self, message, err="llm-hint-unavailable"):
+        return self._streaming_response(self._error_events(message, err=err))
 
     def get(self, request):
         if not request.user.is_authenticated:
@@ -157,11 +157,13 @@ class ProblemLLMHintAPI(APIView):
                 yield self._format_sse_event("done", {"done": True})
             except LLMHintError as exc:
                 logger.warning("Failed to stream LLM hint for problem %s: %s", problem_id, exc)
-                yield self._format_sse_event(
-                    "app-error",
-                    {"error": "llm-hint-unavailable", "message": "힌트를 생성하지 못했습니다."},
-                )
-                yield self._format_sse_event("done", {"done": True})
+                yield from self._error_events("힌트를 생성하지 못했습니다.", err="llm-hint-unavailable")
+            except (GeneratorExit, BrokenPipeError, ConnectionResetError):
+                logger.info("LLM hint stream client disconnected for problem %s", problem_id)
+                return
+            except Exception:
+                logger.exception("Unexpected error while streaming LLM hint for problem %s", problem_id)
+                yield from self._error_events("힌트를 생성하지 못했습니다.", err="llm-hint-unavailable")
 
         return self._streaming_response(generator())
 
