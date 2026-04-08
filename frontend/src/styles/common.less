@@ -1,3 +1,11 @@
+@font-face {
+  font-family: "Pretendard";
+  src: url("../assets/fonts/PretendardVariable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 html {
   background-color: var(--site-background-color);
 }
@@ -5,12 +13,24 @@ html {
 body {
   margin: 0;
   padding: 0;
-  font-family:
-    "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB",
-    "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
+  font-family: "Pretendard", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: 400;
   -webkit-font-smoothing: antialiased;
   background-color: var(--site-background-color);
   min-width: 900px;
+}
+
+html, body,
+input, button, select, textarea,
+.ivu-select-selection, .ivu-input, .ivu-btn,
+.ivu-menu, .ivu-dropdown, .ivu-tooltip,
+.ivu-modal, .ivu-table, .ivu-tabs {
+  font-family: "Pretendard", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+}
+
+.CodeMirror, .CodeMirror * {
+  font-family: Menlo, Monaco, 'Courier New', monospace !important;
+  font-weight: 400 !important;
 }
 
 .flex-container {
