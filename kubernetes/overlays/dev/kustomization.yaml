@@ -2,6 +2,7 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - ../../base
+  - ../../base/vllm
   - ./secrets/pg-credentials.yaml
   - ./secrets/regcred.yaml
   - ./secrets/common-credentials.yaml
@@ -20,13 +21,13 @@ patches:
 images:
   - name: backend
     newName: harbor.code-place-dev.site/code-place-dev/backend
-    newTag: 99ea533d3c60cc21847c3f77bf6110f0a74bc278-dev
+    newTag: 3c1ebd89bd1d667a8cfd7528bbd86ed508afbf6b-dev
   - name: frontend
     newName: harbor.code-place-dev.site/code-place-dev/frontend
-    newTag: 81a4f95b34b6804fc05181e0e059540b48e6fb2e-dev
+    newTag: 3c1ebd89bd1d667a8cfd7528bbd86ed508afbf6b-dev
   - name: judge-server
     newName: harbor.code-place-dev.site/code-place-dev/judge-server
     newTag: 1.0.3
   - name: hub-auth
     newName: harbor.code-place-dev.site/code-place-dev/hub-auth
-    newTag: 1.0.0
+    newTag: e000ffc019bcf819f31b2009a813ab43002187d6-dev

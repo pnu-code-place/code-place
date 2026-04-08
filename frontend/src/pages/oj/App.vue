@@ -24,13 +24,10 @@ import { mapActions, mapGetters, mapState } from "vuex"
 import NavBar from "./components/NavBar.vue"
 import NavBar_Problem from "./views/problem/problemSolving/problemSolvingNavbar/NavBar_Problem.vue"
 import CSEPFooter from "./views/general/CSEPFooter.vue"
-import PopUp from "./components/modal/PopUp.vue"
-import api from "./api"
 
 export default {
   name: "app",
   components: {
-    PopUp,
     CSEPFooter,
     NavBar_Problem,
     NavBar,
@@ -38,11 +35,12 @@ export default {
   created() {
     try {
       document.body.removeChild(document.getElementById("app-loader"))
-    } catch (e) {}
+    } catch (e) {
+      // ignore when loader is already removed
+    }
   },
   mounted() {
     this.getWebsiteConfig()
-    this.init()
   },
   methods: {
     ...mapActions(["getWebsiteConfig", "changeDomTitle"]),
@@ -114,6 +112,37 @@ h1.main-title {
   --submit-btn-hover-color: rgba(221, 240, 250, 0.84);
   --submission-result-btn-color: #f8f8f8;
   --submission-result-btn-text-color: #d1d1d1;
+  --submission-primary-btn-bg: #4398ff;
+  --submission-primary-btn-text-color: #ffffff;
+  --submission-primary-btn-hover-bg: #2b84f0;
+  --submission-primary-btn-hover-text-color: #ffffff;
+  --ai-assistant-btn-bg: #f0f1ff;
+  --ai-assistant-btn-text-color: #000478;
+  --ai-assistant-btn-hover-bg: #000478;
+  --ai-assistant-btn-hover-text-color: #f0f1ff;
+  --ai-assistant-btn-icon-color: #000478;
+  --ai-assistant-btn-hover-icon-color: #f0f1ff;
+  --ai-assistant-panel-bg: #f8f9ff;
+  --ai-assistant-header-bg: #ffffff;
+  --ai-assistant-border-color: #e0e0e0;
+  --ai-assistant-header-border-color: #e8e8e8;
+  --ai-assistant-tab-text-color: #999999;
+  --ai-assistant-tab-active-color: #3a3fc4;
+  --ai-assistant-muted-text-color: #666666;
+  --ai-assistant-subtle-text-color: #555555;
+  --ai-assistant-subtle-bg: #eef0ff;
+  --ai-assistant-subtle-hover-bg: #dde0ff;
+  --ai-assistant-avatar-bg: #dde0ff;
+  --ai-assistant-avatar-icon-filter: invert(18%) sepia(79%) saturate(3438%)
+    hue-rotate(234deg) brightness(68%) contrast(117%);
+  --ai-assistant-bubble-bg: #eef0ff;
+  --ai-assistant-bubble-text-color: #222222;
+  --ai-assistant-thinking-bg: #f0f0f0;
+  --ai-assistant-thinking-text-color: #888888;
+  --ai-assistant-close-text-color: #aaaaaa;
+  --ai-assistant-close-hover-bg: #eeeeee;
+  --ai-assistant-close-hover-text-color: #555555;
+  --ai-assistant-error-text-color: #c0392b;
 
   /* Contest Page */
   --container-border-color: #dedede;
@@ -148,6 +177,37 @@ h1.main-title {
   --submit-btn-hover-color: #364361;
   --submission-result-btn-color: #1b212c;
   --submission-result-btn-text-color: #333842;
+  --submission-primary-btn-bg: #4d8ff5;
+  --submission-primary-btn-text-color: #ffffff;
+  --submission-primary-btn-hover-bg: #679ffc;
+  --submission-primary-btn-hover-text-color: #ffffff;
+  --ai-assistant-btn-bg: #343f5a;
+  --ai-assistant-btn-text-color: #ffffff;
+  --ai-assistant-btn-hover-bg: #465477;
+  --ai-assistant-btn-hover-text-color: #ffffff;
+  --ai-assistant-btn-icon-color: #ffffff;
+  --ai-assistant-btn-hover-icon-color: #ffffff;
+  --ai-assistant-panel-bg: #1f2430;
+  --ai-assistant-header-bg: #1b212c;
+  --ai-assistant-border-color: rgba(140, 140, 140, 0.29);
+  --ai-assistant-header-border-color: rgba(140, 140, 140, 0.29);
+  --ai-assistant-tab-text-color: #b2c0cc;
+  --ai-assistant-tab-active-color: #ffffff;
+  --ai-assistant-muted-text-color: #b2c0cc;
+  --ai-assistant-subtle-text-color: #d0d8e2;
+  --ai-assistant-subtle-bg: #343f5a;
+  --ai-assistant-subtle-hover-bg: #465477;
+  --ai-assistant-avatar-bg: #364361;
+  --ai-assistant-avatar-icon-filter: brightness(0) saturate(100%) invert(99%)
+    sepia(19%) saturate(331%) hue-rotate(176deg) brightness(116%) contrast(87%);
+  --ai-assistant-bubble-bg: #343f5a;
+  --ai-assistant-bubble-text-color: #ffffff;
+  --ai-assistant-thinking-bg: #2a3142;
+  --ai-assistant-thinking-text-color: #c6d1dc;
+  --ai-assistant-close-text-color: #c6d1dc;
+  --ai-assistant-close-hover-bg: #343f5a;
+  --ai-assistant-close-hover-text-color: #ffffff;
+  --ai-assistant-error-text-color: #ff9e9e;
 
   --bg-color: #1f2430;
   --text-color: #ffffff;

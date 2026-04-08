@@ -1,6 +1,7 @@
 import copy
 from datetime import datetime, timedelta
 
+from django.conf import settings
 from django.utils import timezone
 
 from utils.api.tests import APITestCase
@@ -181,3 +182,111 @@ class ContestRankAPITest(APITestCase):
     def get_contest_rank(self):
         resp = self.client.get(self.url + "?contest_id=" + self.acm_contest.id)
         self.assertSuccess(resp)
+
+
+class ContestParticipantsAPITest(APITestCase):
+
+    def setUp(self):
+        from problem.tests import DEFAULT_PROBLEM_DATA, ProblemCreateTestBase
+
+        self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
+        self.admin = self.create_admin()
+        self.user = self.create_user(email="test@test.com", username="test", password="test1234!", login=False)
+        self.contest = Contest.objects.create(created_by=self.admin, **DEFAULT_CONTEST_DATA)
+        self.problem = ProblemCreateTestBase.add_problem(DEFAULT_PROBLEM_DATA, self.admin)
+        self.problem.contest_id = self.contest.id
+        self.problem.save()
+        self.url = self.reverse("contest_participants_api")
+
+    def test_participants_are_grouped_by_user_id(self):
+        from submission.models import JudgeStatus, Submission
+
+        Submission.objects.create(
+            user_id=self.user.id,
+            username="oldname",
+            language="C++",
+            code="test code",
+            problem_id=self.problem.id,
+            ip="127.0.0.1",
+            contest_id=self.contest.id,
+            result=JudgeStatus.PENDING,
+            statistic_info={"time_cost": "100", "memory_cost": "1024"},
+            shared=False,
+            first_failed_tc_idx=None,
+        )
+        Submission.objects.create(
+            user_id=self.user.id,
+            username="newname",
+            language="C++",
+            code="test code",
+            problem_id=self.problem.id,
+            ip="127.0.0.1",
+            contest_id=self.contest.id,
+            result=JudgeStatus.PENDING,
+            statistic_info={"time_cost": "100", "memory_cost": "1024"},
+            shared=False,
+            first_failed_tc_idx=None,
+        )
+
+        resp = self.client.get(f"{self.url}?contest_id={self.contest.id}")
+        self.assertSuccess(resp)
+
+        participants = resp.data["data"]
+        self.assertEqual(len(participants), 1)
+        self.assertEqual(participants[0]["user_id"], self.user.id)
+        self.assertEqual(participants[0]["username"], self.user.username)
+        self.assertEqual(participants[0]["submission_count"], 2)
+
+    def test_participants_requires_contest_id(self):
+        resp = self.client.get(self.url)
+        self.assertFailed(resp, "Invalid parameter, contest_id is required")
+
+    def test_participants_rejects_invalid_contest_id(self):
+        resp = self.client.get(f"{self.url}?contest_id=abc")
+        self.assertFailed(resp, "Invalid parameter, contest_id is required")
+
+    def test_participants_fallback_to_submission_username_when_user_is_missing(self):
+        from submission.models import JudgeStatus, Submission
+
+        older_submission = Submission.objects.create(
+            user_id=self.user.id,
+            username="zzz_user",
+            language="C++",
+            code="test code",
+            problem_id=self.problem.id,
+            ip="9.9.9.9",
+            contest_id=self.contest.id,
+            result=JudgeStatus.PENDING,
+            statistic_info={"time_cost": "100", "memory_cost": "1024"},
+            shared=False,
+            first_failed_tc_idx=None,
+        )
+        latest_submission = Submission.objects.create(
+            user_id=self.user.id,
+            username="aaa_user",
+            language="C++",
+            code="test code",
+            problem_id=self.problem.id,
+            ip="1.1.1.1",
+            contest_id=self.contest.id,
+            result=JudgeStatus.PENDING,
+            statistic_info={"time_cost": "100", "memory_cost": "1024"},
+            shared=False,
+            first_failed_tc_idx=None,
+        )
+        Submission.objects.filter(id=older_submission.id).update(create_time=timezone.now() - timedelta(minutes=1))
+        Submission.objects.filter(id=latest_submission.id).update(create_time=timezone.now())
+
+        self.user.delete()
+
+        resp = self.client.get(f"{self.url}?contest_id={self.contest.id}")
+        self.assertSuccess(resp)
+
+        participants = resp.data["data"]
+        self.assertEqual(len(participants), 1)
+        self.assertEqual(participants[0]["username"], "aaa_user")
+        self.assertEqual(participants[0]["email"], "")
+        self.assertEqual(participants[0]["avatar"], f"{settings.AVATAR_URI_PREFIX}/default.png")
+        self.assertEqual(participants[0]["school"], "")
+        self.assertEqual(participants[0]["major"], "")
+        self.assertEqual(participants[0]["last_submission_ip"], "1.1.1.1")

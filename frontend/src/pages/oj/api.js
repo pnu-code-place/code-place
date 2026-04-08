@@ -209,6 +209,9 @@ export default {
       },
     })
   },
+  getProblemLLMHintUrl(problemID) {
+    return `/api/problem/llm_hint?problem_id=${encodeURIComponent(problemID)}`
+  },
   getContestList(offset, limit, searchParams) {
     let params = {
       offset,

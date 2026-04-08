@@ -48,7 +48,7 @@ export default {
           </p>
           <p>
             <a
-              href="https://swei2024.notion.site/Regular-User-5fbb992225554a69a4a68b87b63356bc"
+              href="https://acei2026.notion.site/user-5fbb992225554a69a4a68b87b63356bc"
             >
               {{ $t("m.UserGuide") }}
             </a>
@@ -83,7 +83,7 @@ export default {
 footer {
   position: absolute;
   bottom: 0;
-  width: 100vw;
+  width: 100%;
   min-width: var(--global-width);
   height: var(--footer-height);
   background-color: var(--box-background-color);

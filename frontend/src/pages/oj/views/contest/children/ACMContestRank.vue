@@ -5,7 +5,13 @@
         <p>{{ $t("m.Rank") }}</p>
       </div>
       <div
-        v-if="!dataRank.length"
+        v-if="!loadingRank && rankLoadError"
+        style="text-align: center; font-size: 16px; padding-top: 50px"
+      >
+        {{ $t("m.Unknown_Error") }}
+      </div>
+      <div
+        v-else-if="!loadingRank && !dataRank.length"
         style="text-align: center; font-size: 16px; padding-top: 50px"
       >
         {{ $t("m.No_Submissions") }}
@@ -17,8 +23,11 @@
           <th>
             {{ $t("m.Solved_Problems") }}
           </th>
-          <th v-for="problem in contestProblems">
-            <CustomTooltip :content="problem._id" placement="top">
+          <th
+            v-for="problem in contestProblems"
+            :key="`acm-rank-header-${problem.id}`"
+          >
+            <CustomTooltip :content="problem.title" placement="top">
               <a
                 style="
                   color: #6ccbff;
@@ -35,8 +44,32 @@
             </CustomTooltip>
           </th>
         </thead>
-        <tbody>
-          <tr v-for="rank in dataRank">
+        <tbody v-if="loadingRank">
+          <tr
+            v-for="row in 5"
+            :key="`acm-rank-skeleton-${row}`"
+          >
+            <td><div class="rank-skeleton-box rank-skeleton-box-sm"><SkeletonBox /></div></td>
+            <td>
+              <div class="rank-skeleton-user">
+                <div class="rank-skeleton-avatar"><SkeletonBox /></div>
+                <div class="rank-skeleton-box rank-skeleton-box-md"><SkeletonBox /></div>
+              </div>
+            </td>
+            <td><div class="rank-skeleton-box rank-skeleton-box-sm"><SkeletonBox /></div></td>
+            <td
+              v-for="problem in skeletonProblemCount"
+              :key="`acm-rank-skeleton-problem-${row}-${problem}`"
+            >
+              <div class="rank-skeleton-box rank-skeleton-box-sm"><SkeletonBox /></div>
+            </td>
+          </tr>
+        </tbody>
+        <tbody v-else>
+          <tr
+            v-for="rank in dataRank"
+            :key="`acm-rank-row-${rank.id || rank.user.id}`"
+          >
             <td>{{ rank.idx }}</td>
             <td>
               <a
@@ -55,28 +88,36 @@
                 {{ rank.user.username }}
               </a>
             </td>
-            <td>{{ rank.accepted_number }}</td>
-            <td v-for="problem in contestProblems">
-              <div
-                v-if="rank[problem.id].isSet"
-                style="
-                  display: flex;
-                  flex-direction: column;
-                  align-items: center;
-                "
+            <td>
+              <span class="accepted-count-value">{{ rank.accepted_number }}</span>
+            </td>
+            <td
+              v-for="problem in contestProblems"
+              :key="`acm-rank-problem-${rank.id || rank.user.id}-${problem.id}`"
+            >
+              <CustomTooltip
+                v-if="rank[problem.id] && rank[problem.id].status === 'ac'"
+                :content="`${rank[problem.id].attempt_count}회 시도`"
+                placement="top"
               >
-                <span
-                  style="
-                    font-size: 12px;
-                    background-color: rgb(128, 128, 128);
-                    padding: 2px 4px;
-                    border-radius: 5px;
-                    color: white;
-                  "
-                >
-                  {{ rank[problem.id].ac_time | localtime("MM/DD") }}</span
-                >
-                {{ rank[problem.id].ac_time | localtime("HH:mm:ss") }}
+                <div class="problem-status ac">
+                  <span class="problem-status-date">
+                    {{ rank[problem.id].ac_time | localtime("MM/DD") }}
+                  </span>
+                  <span class="problem-status-time">
+                    {{ rank[problem.id].ac_time | localtime("HH:mm:ss") }}
+                  </span>
+                </div>
+              </CustomTooltip>
+              <div
+                v-else-if="rank[problem.id] && rank[problem.id].status"
+                class="problem-status"
+                :class="rank[problem.id].status"
+              >
+                <span class="problem-status-label">WA</span>
+                <span class="problem-status-time">
+                  {{ rank[problem.id].error_number || "-" }}
+                </span>
               </div>
             </td>
           </tr>
@@ -100,15 +141,15 @@ import { mapActions } from "vuex"
 import api from "@oj/api"
 import Pagination from "@oj/components/Pagination"
 import ContestRankMixin from "./contestRankMixin"
-import time from "@/utils/time"
-import utils from "@/utils/utils"
 import CustomTooltip from "@oj/components/CustomTooltip"
+import SkeletonBox from "@oj/components/SkeletonBox"
 
 export default {
   name: "acm-contest-rank",
   components: {
     Pagination,
     CustomTooltip,
+    SkeletonBox,
   },
   mixins: [ContestRankMixin],
   data() {
@@ -117,7 +158,14 @@ export default {
       page: 1,
       contestID: "",
       dataRank: [],
+      loadingRank: false,
+      rankLoadError: false,
     }
+  },
+  computed: {
+    skeletonProblemCount() {
+      return this.contestProblems.length || 4
+    },
   },
   mounted() {
     this.contestID = this.$route.params.contestID
@@ -126,6 +174,8 @@ export default {
   methods: {
     ...mapActions(["getContestProblems"]),
     updateContestData() {
+      this.loadingRank = true
+      this.rankLoadError = false
       let params = {
         offset: (this.page - 1) * this.limit,
         limit: this.limit,
@@ -136,26 +186,43 @@ export default {
         const data = res.data.data.results
         let dataRank = JSON.parse(JSON.stringify(data))
 
-        this.getContestProblems().then((res) => {
-          this.addRankData(dataRank, res.data.data)
-        })
         this.total = res.data.data.total
+        return this.getContestProblems().then((problemRes) => {
+          this.addRankData(dataRank, problemRes.data.data)
+        })
+      }).catch(() => {
+        this.dataRank = []
+        this.total = 0
+        this.rankLoadError = true
+      }).finally(() => {
+        this.loadingRank = false
       })
     },
     addRankData(dataRank, problems) {
       problems.forEach((problem) => {
         dataRank.forEach((rank, idx) => {
-          dataRank[idx][problem.id] = { isSet: false, problemId: problem._id }
+          dataRank[idx][problem.id] = {
+            status: "",
+            error_number: 0,
+            problemId: problem._id,
+          }
         })
       })
       dataRank.forEach((rank, i) => {
         let info = rank.submission_info
         Object.keys(info).forEach((problemID) => {
           if (!dataRank[i][problemID]) return
-          dataRank[i][problemID].ac_time = moment(this.contest.start_time)
-            .add(info[problemID].ac_time, "seconds")
-            .format()
-          dataRank[i][problemID].isSet = true
+          dataRank[i][problemID].error_number = info[problemID].error_number || 0
+          if (info[problemID].is_ac) {
+            dataRank[i][problemID].ac_time = moment(this.contest.start_time)
+              .add(info[problemID].ac_time, "seconds")
+              .format()
+            dataRank[i][problemID].attempt_count =
+              dataRank[i][problemID].error_number + 1
+            dataRank[i][problemID].status = "ac"
+          } else {
+            dataRank[i][problemID].status = "wa"
+          }
         })
         dataRank[i].idx = (this.page - 1) * this.limit + i + 1
       })
@@ -198,6 +265,8 @@ export default {
 .ACMRankContent {
   text-align: center;
   display: block;
+  border-collapse: collapse;
+  border-spacing: 0;
   padding-top: 50px;
   max-width: 928px;
   overflow-y: visible;
@@ -210,10 +279,83 @@ export default {
   }
   td {
     border-top: 1px solid rgba(0, 0, 0, 0.1);
-    padding: 10px 0px;
+    padding: 6px 8px;
   }
   tr {
     font-size: 1.05em;
   }
+}
+
+.problem-status {
+  display: inline-flex;
+  min-width: 58px;
+  flex-direction: column;
+  align-items: center;
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.problem-status-date,
+.problem-status-label {
+  font-size: 11px;
+}
+
+.problem-status-time {
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.problem-status.ac {
+  background: #e8f7ee;
+  color: #1f8f52;
+}
+
+.problem-status.wa {
+  background: #f3f4f7;
+  color: #5b6472;
+}
+
+.accepted-count-value {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1;
+  color: #2f3c57;
+}
+
+.rank-skeleton-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+}
+
+.rank-skeleton-avatar {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+}
+
+.rank-skeleton-avatar /deep/ .skeleton {
+  border-radius: 50%;
+}
+
+.rank-skeleton-user-text {
+  width: 120px;
+  height: 18px;
+}
+
+.rank-skeleton-box {
+  height: 18px;
+  margin: 0 auto;
+}
+
+.rank-skeleton-box-sm {
+  width: 42px;
+}
+
+.rank-skeleton-box-md {
+  width: 120px;
 }
 </style>
