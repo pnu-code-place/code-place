@@ -7,8 +7,15 @@ from utils.api import UsernameSerializer, serializers
 from utils.constants import Difficulty
 from utils.serializers import LanguageNameMultiChoiceField, SPJLanguageNameChoiceField, LanguageNameChoiceField
 
-from .models import Problem, ProblemRuleType, ProblemTag, ProblemIOMode, ProblemDifficulty
+from .models import Problem, ProblemRuleType, ProblemTag, ProblemIOMode, ProblemDifficulty, ProblemAIHintLog
 from .utils import parse_problem_template
+
+
+class AIHintLogSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = ProblemAIHintLog
+        fields = ["id", "hint_content", "created_at"]
 
 
 class TestCaseUploadForm(forms.Form):

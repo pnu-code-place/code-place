@@ -16,13 +16,12 @@ from utils.api.tests import APITestCase
 from unittest import mock
 
 from .models import ProblemTag, ProblemIOMode, get_default_week_info
-from .models import Problem, ProblemRuleType
+from .models import Problem, ProblemRuleType, ProblemAIHintLog
 from .tasks import update_weekly_stats, update_bonus_problem
 from contest.models import Contest
 from contest.tests import DEFAULT_CONTEST_DATA
-from .llm_hint import (CLUSTER_VLLM_CHAT_COMPLETIONS_URL, LOCAL_VLLM_CHAT_COMPLETIONS_URL,
-                       VLLM_CONNECT_TIMEOUT_SEC, VLLM_MODEL, VLLM_STREAM_READ_TIMEOUT_SEC,
-                       get_vllm_chat_completions_url)
+from .llm_hint import (CLUSTER_VLLM_CHAT_COMPLETIONS_URL, LOCAL_VLLM_CHAT_COMPLETIONS_URL, VLLM_CONNECT_TIMEOUT_SEC,
+                       VLLM_MODEL, VLLM_STREAM_READ_TIMEOUT_SEC, get_vllm_chat_completions_url)
 
 from .views.admin import TestCaseAPI
 from .utils import parse_problem_template
@@ -248,19 +247,21 @@ class ProblemAPITest(ProblemCreateTestBase):
 class ProblemLLMHintAPITest(ProblemCreateTestBase):
 
     def setUp(self):
+        os.environ["IS_LOCAL_TEST"] = "False"
+
         self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
         self.url = self.reverse("problem_llm_hint_api")
         self.admin = self.create_admin(login=False)
         self.problem = self.add_problem(DEFAULT_PROBLEM_DATA, self.admin)
         self.hidden_problem = self.create_problem_with_custom_field(self.admin, _id="A-211", visible=False)
-        self.create_user(email="test@test.com", username="test", password="test1234!")
+        # self.create_user(email="test@test.com", username="test", password="test1234!")
+        self.user = self.create_user(email="test@test.com", username="test", password="test1234!")
+        self.client.force_login(self.user)
 
     @staticmethod
     def _streaming_body(response):
         return "".join(
-            chunk.decode("utf-8") if isinstance(chunk, bytes) else chunk
-            for chunk in response.streaming_content
-        )
+            chunk.decode("utf-8") if isinstance(chunk, bytes) else chunk for chunk in response.streaming_content)
 
     @staticmethod
     def _mock_streaming_response(lines):
@@ -286,21 +287,80 @@ class ProblemLLMHintAPITest(ProblemCreateTestBase):
         self.assertIn(json.dumps({"text": "힌트 "}, ensure_ascii=False), body)
         self.assertIn(json.dumps({"text": "스트림"}, ensure_ascii=False), body)
         self.assertIn('event: done', body)
+        self.assertEqual(ProblemAIHintLog.objects.filter(user=self.user, problem=self.problem).count(), 1)
+        saved_log = ProblemAIHintLog.objects.filter(user=self.user, problem=self.problem).first()
+        self.assertEqual(saved_log.hint_content, "힌트 스트림")
+
         mocked_post.assert_called_once()
         self.assertEqual(mocked_post.call_args.args[0], get_vllm_chat_completions_url())
         self.assertEqual(mocked_post.call_args.kwargs["json"]["model"], VLLM_MODEL)
-        self.assertIn("힌트는 정확히 1개만 제공하라.", mocked_post.call_args.kwargs["json"]["messages"][0]["content"])
-        self.assertIn("너무 추상적인 조언 대신", mocked_post.call_args.kwargs["json"]["messages"][0]["content"])
+        self.assertIn("힌트는 정확히 1개의 핵심 아이디어만 제공하라.", mocked_post.call_args.kwargs["json"]["messages"][0]["content"])
+        self.assertIn("너무 추상적인 조언은 피하고,", mocked_post.call_args.kwargs["json"]["messages"][0]["content"])
         self.assertIn(self.problem._id, mocked_post.call_args.kwargs["json"]["messages"][1]["content"])
         self.assertNotIn("<p>", mocked_post.call_args.kwargs["json"]["messages"][1]["content"])
         self.assertIn("짧은 힌트 하나만 작성해라.", mocked_post.call_args.kwargs["json"]["messages"][1]["content"])
         self.assertIn("관찰 포인트를 짚어라.", mocked_post.call_args.kwargs["json"]["messages"][1]["content"])
-        self.assertEqual(mocked_post.call_args.kwargs["json"]["temperature"], 0.65)
+        self.assertEqual(mocked_post.call_args.kwargs["json"]["temperature"], 0.55)
         self.assertEqual(mocked_post.call_args.kwargs["stream"], True)
         self.assertEqual(
             mocked_post.call_args.kwargs["timeout"],
             (VLLM_CONNECT_TIMEOUT_SEC, VLLM_STREAM_READ_TIMEOUT_SEC),
         )
+
+    @mock.patch("problem.llm_hint.requests.post")
+    def test_stream_llm_hint_problem_limit(self, mocked_post):
+        """한 문제당 5회 제한에 걸리는지 테스트"""
+        # 해당 문제에 대해 이미 5개의 힌트 로그가 존재하도록 세팅
+        for i in range(5):
+            ProblemAIHintLog.objects.create(user=self.user, problem=self.problem, hint_content=f"더미 {i}")
+
+        resp = self.client.get(f"{self.url}?problem_id={self.problem._id}")
+        body = self._streaming_body(resp)
+
+        self.assertIn('event: app-error', body)
+        self.assertIn("limit-exceeded", body)
+        self.assertIn("소진", body)
+        mocked_post.assert_not_called()    # 제한에 걸리면 LLM 호출이 아예 안 일어나야 함
+
+    @mock.patch("problem.llm_hint.requests.post")
+    def test_stream_llm_hint_daily_limit(self, mocked_post):
+        """하루 전체 30회 제한에 걸리는지 테스트"""
+        # 다른 문제를 생성하여 문제당 5회 제한과 겹치지 않게 세팅
+        other_problem = self.create_problem_with_custom_field(self.admin, _id="B-123")
+
+        # 오늘 날짜로 30개의 힌트 로그 생성
+        for i in range(30):
+            ProblemAIHintLog.objects.create(user=self.user, problem=other_problem, hint_content=f"더미 {i}")
+
+        resp = self.client.get(f"{self.url}?problem_id={self.problem._id}")
+        body = self._streaming_body(resp)
+
+        self.assertIn('event: app-error', body)
+        self.assertIn("limit-exceeded", body)
+        self.assertIn("오늘 하루", body)
+        mocked_post.assert_not_called()
+
+    @mock.patch("problem.llm_hint.requests.post")
+    def test_stream_llm_hint_admin_bypass(self, mocked_post):
+        """관리자는 횟수 제한 없이 무제한으로 사용 가능한지 테스트"""
+        mocked_post.return_value = self._mock_streaming_response([
+            'data: {"choices":[{"delta":{"content":"어드민 패스"}}]}',
+            "data: [DONE]",
+        ])
+
+        # Admin 계정으로 5회 꽉 채움
+        for i in range(5):
+            ProblemAIHintLog.objects.create(user=self.admin, problem=self.problem, hint_content=f"더미 {i}")
+
+        # 일반 유저를 로그아웃시키고 Admin으로 로그인
+        self.client.force_login(self.admin)
+        resp = self.client.get(f"{self.url}?problem_id={self.problem._id}")
+        body = self._streaming_body(resp)
+
+        # 제한에 걸리지 않고 정상 응답이 와야 함
+        self.assertNotIn("limit-exceeded", body)
+        self.assertIn("어드민 패스", body)
+        mocked_post.assert_called_once()
 
     def test_stream_llm_hint_requires_login(self):
         self.client.logout()
@@ -370,6 +430,46 @@ class ProblemLLMHintAPITest(ProblemCreateTestBase):
     def test_get_vllm_chat_completions_url_for_kubernetes(self):
         with mock.patch.dict(os.environ, {"KUBERNETES_SERVICE_HOST": "10.0.0.1"}, clear=False):
             self.assertEqual(get_vllm_chat_completions_url(), CLUSTER_VLLM_CHAT_COMPLETIONS_URL)
+
+
+class AIHintHistoryAPITest(ProblemCreateTestBase):
+
+    def setUp(self):
+        self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
+        self.url = self.reverse("problem_ai_hint_history_api")    # urls/oj.py 에 등록했던 name과 일치해야 함
+        self.admin = self.create_admin(login=False)
+        self.problem = self.add_problem(DEFAULT_PROBLEM_DATA, self.admin)
+        self.user = self.create_user(email="history@test.com", username="history_test", password="test1234!")
+
+    def test_get_history_require_login(self):
+        """로그인하지 않은 유저가 조회 요청 시 에러"""
+        self.client.logout()
+        resp = self.client.get(f"{self.url}?problem_id={self.problem._id}")
+        # 일반 APIView 응답 구조에 맞춰 검증 (에러 메시지 포함 여부)
+        self.assertIsNotNone(resp.data.get("error"))
+
+    def test_get_history_success_and_structure(self):
+        """정상적으로 로그와 횟수 데이터가 넘어오는지 구조 검증"""
+        self.client.force_login(self.user)
+
+        # 더미 데이터 생성
+        ProblemAIHintLog.objects.create(user=self.user, problem=self.problem, hint_content="과거의 힌트 1")
+        ProblemAIHintLog.objects.create(user=self.user, problem=self.problem, hint_content="과거의 힌트 2")
+
+        resp = self.client.get(f"{self.url}?problem_id={self.problem._id}")
+        self.assertEqual(resp.status_code, 200)
+        self.assertIsNone(resp.data.get("error"))
+
+        payload = resp.data.get("data")
+
+        # 응답 구조 검증
+        self.assertIn("logs", payload)
+        self.assertIn("daily_count", payload)
+
+        # 값 검증
+        self.assertEqual(len(payload["logs"]), 2)
+        self.assertEqual(payload["daily_count"], 2)
+        self.assertEqual(payload["logs"][0]["hint_content"], "과거의 힌트 1")
 
 
 class ContestProblemAdminTest(APITestCase):

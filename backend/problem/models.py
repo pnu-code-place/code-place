@@ -6,6 +6,17 @@ from utils.models import RichTextField
 from utils.constants import Choices
 
 
+class ProblemAIHintLog(models.Model):
+    user = models.ForeignKey("account.User", on_delete=models.CASCADE)
+    problem = models.ForeignKey("Problem", on_delete=models.CASCADE)
+    hint_content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "problem_ai_hint_log"
+        ordering = ["-created_at"]
+
+
 class ProblemTag(models.Model):
     name = models.TextField()
 

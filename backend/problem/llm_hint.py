@@ -5,6 +5,7 @@ from html import unescape
 
 import requests
 from django.utils.html import strip_tags
+import time
 
 LOCAL_VLLM_CHAT_COMPLETIONS_URL = "http://localhost:8000/v1/chat/completions"
 CLUSTER_VLLM_CHAT_COMPLETIONS_URL = "http://vllm:8000/v1/chat/completions"
@@ -62,9 +63,7 @@ def _format_samples(samples):
     for index, sample in enumerate(samples, start=1):
         input_text = (sample.get("input") or "").strip() or "(비어 있음)"
         output_text = (sample.get("output") or "").strip() or "(비어 있음)"
-        rendered_samples.append(
-            f"[샘플 입력 {index}]\n{input_text}\n[샘플 출력 {index}]\n{output_text}"
-        )
+        rendered_samples.append(f"[샘플 입력 {index}]\n{input_text}\n[샘플 출력 {index}]\n{output_text}")
     return "\n\n".join(rendered_samples)
 
 
@@ -104,8 +103,14 @@ def build_hint_payload(problem, stream=False):
     return {
         "model": VLLM_MODEL,
         "messages": [
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": build_problem_prompt(problem)},
+            {
+                "role": "system",
+                "content": SYSTEM_PROMPT
+            },
+            {
+                "role": "user",
+                "content": build_problem_prompt(problem)
+            },
         ],
         "temperature": 0.55,
         "max_tokens": 512,
@@ -124,14 +129,18 @@ def _extract_stream_delta(response_json):
         return ""
 
     if isinstance(content, list):
-        return "".join(
-            item.get("text", "") if isinstance(item, dict) else str(item)
-            for item in content
-        )
+        return "".join(item.get("text", "") if isinstance(item, dict) else str(item) for item in content)
     return str(content)
 
 
 def stream_problem_hint(problem):
+    if os.getenv("IS_LOCAL_TEST") == "True":
+        mock_response = "이것은 로컬 테스트용 힌트입니다. 문제의 입력을 다시 확인해보세요."
+        for char in mock_response:
+            yield char
+            time.sleep(0.05)    # 실제 스트리밍 느낌을 위해 딜레이 추가
+        return
+
     response = None
     try:
         response = requests.post(

@@ -14,9 +14,10 @@ from utils.api import APIView
 from utils.constants import Difficulty, ProblemField, Tier
 
 from ..llm_hint import LLMHintError, stream_problem_hint
-from ..models import (Problem, ProblemRuleType, ProblemTag, get_default_week_info)
+from ..models import (Problem, ProblemRuleType, ProblemTag, get_default_week_info, ProblemAIHintLog)
 from ..serializers import (MostDifficultProblemSerializer, ProblemSafeSerializer, ProblemSerializer,
-                           RecommendBonusProblemSerializer, TagSerializer)
+                           RecommendBonusProblemSerializer, TagSerializer, AIHintLogSerializer)
+from django.utils import timezone
 
 logger = logging.getLogger(__name__)
 
@@ -150,10 +151,29 @@ class ProblemLLMHintAPI(APIView):
         except Problem.DoesNotExist:
             return self._error_response("문제를 찾을 수 없습니다.")
 
+        if not (request.user.is_super_admin() or request.user.is_admin()):
+            today = timezone.now().date()
+
+            problem_hint_count = ProblemAIHintLog.objects.filter(user=request.user, problem=problem).count()
+
+            if problem_hint_count >= 5:
+                return self._error_response(
+                    "이 문제에 대한 AI 조교 사용 횟수(5회)를 모두 소진했습니다. 이전 답변을 복습해 보세요.", err="problem-limit-exceeded")
+
+            daily_hint_count = ProblemAIHintLog.objects.filter(user=request.user, created_at__date=today).count()
+
+            if daily_hint_count >= 30:
+                return self._error_response(
+                    "오늘 하루 AI 조교 사용 횟수(30회)를 모두 소진했습니다. 내일 다시 이용해 주세요.", err="daily-limit-exceeded")
+
         def generator():
+            full_text = ""
             try:
                 for chunk in stream_problem_hint(problem):
+                    full_text += chunk
                     yield self._format_sse_event("chunk", {"text": chunk})
+                if full_text.strip():
+                    ProblemAIHintLog.objects.create(user=request.user, problem=problem, hint_content=full_text)
                 yield self._format_sse_event("done", {"done": True})
             except LLMHintError as exc:
                 logger.warning("Failed to stream LLM hint for problem %s: %s", problem_id, exc)
@@ -166,6 +186,21 @@ class ProblemLLMHintAPI(APIView):
                 yield from self._error_events("힌트를 생성하지 못했습니다.", err="llm-hint-unavailable")
 
         return self._streaming_response(generator())
+
+
+class AIHintHistoryAPI(APIView):
+
+    def get(self, request):
+        if not request.user.is_authenticated:
+            return self.error("로그인이 필요합니다.")
+
+        problem_id = request.GET.get("problem_id")
+        logs = ProblemAIHintLog.objects.filter(user=request.user, problem___id=problem_id).order_by("created_at")
+
+        today = timezone.now().date()
+        daily_count = ProblemAIHintLog.objects.filter(user=request.user, created_at__date=today).count()
+
+        return self.success({"logs": AIHintLogSerializer(logs, many=True).data, "daily_count": daily_count})
 
 
 class ContestProblemAPI(APIView):

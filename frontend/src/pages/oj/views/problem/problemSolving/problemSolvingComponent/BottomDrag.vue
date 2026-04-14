@@ -3,7 +3,6 @@
     <div class="divider" @mousedown="startDrag"></div>
 
     <div class="editor-bottom">
-      <!-- 탭 헤더 -->
       <div class="tab-header">
         <div class="tab-left">
           <span :class="{ active: tab === 'result' }" @click="tab = 'result'"
@@ -15,10 +14,15 @@
         </div>
         <div class="tab-right-group">
           <div class="tab-right" v-if="tab === 'ai'">
-            <span class="hint-count">
+            <span class="hint-count" v-if="isAdminRole">
+              남은 횟수 : [무제한 (관리자)]
+            </span>
+
+            <span class="hint-count" v-else>
               남은 횟수 : [문제: {{ problemHintsRemaining }}/5 · 전체:
               {{ dailyHintsRemaining }}/30]
             </span>
+
             <button
               class="hint-btn"
               @click="requestHint"
@@ -44,32 +48,30 @@
         </div>
       </div>
 
-      <!-- 내용 -->
       <div ref="terminalBody" class="terminal-body">
-        <!-- AI 조교 탭 -->
         <div v-if="tab === 'ai'" class="ai-chat">
           <div v-if="contestID" class="empty-message">
             AI 조교는 공개 문제에서만 사용할 수 있습니다.
           </div>
+
           <div v-for="(msg, i) in messages" :key="i" class="chat-row">
             <div class="avatar" :class="{ thinking: msg.thinking }">
               <img src="@/assets/images/AIAssistant.svg" alt="AI" />
             </div>
-            <div
-              v-if="msg.thinking"
-              class="bubble thinking-bubble"
-              v-text="'생각 중...'"
-            ></div>
+
+            <div v-if="msg.thinking" class="bubble thinking-bubble">
+              생각 중...
+            </div>
+
             <div
               v-else
               class="bubble"
               :class="{ error: msg.error }"
-              v-text="msg.text"
+              v-html="renderText(msg.text)"
             ></div>
           </div>
         </div>
 
-        <!-- 실행 결과 탭 -->
         <div v-else class="result-message">실행 결과가 여기에 표시됩니다.</div>
       </div>
     </div>
@@ -78,6 +80,7 @@
 
 <script>
 import api from "@oj/api"
+import { mapGetters } from "vuex" // 스토어에서 관리자 여부를 가져오기 위해 추가
 
 export default {
   props: {
@@ -94,60 +97,68 @@ export default {
       isLoading: false,
       messages: [],
       eventSource: null,
-      hintUsage: {
-        date: "",
-        dailyCount: 0,
-        problems: {},
-      },
+
+      // DB에서 가져온 사용 횟수를 담을 변수
+      problemHintsUsed: 0,
+      dailyHintsUsed: 0,
     }
   },
 
   computed: {
-    problemHintsUsed() {
-      return this.hintUsage.problems[this.problemID] || 0
-    },
+    // Vuex Store에 있는 Admin Role 확인
+    ...mapGetters(["isAdminRole"]),
+
     problemHintsRemaining() {
       return Math.max(0, 5 - this.problemHintsUsed)
     },
     dailyHintsRemaining() {
-      return Math.max(0, 30 - this.hintUsage.dailyCount)
+      return Math.max(0, 30 - this.dailyHintsUsed)
     },
     hintsExhausted() {
+      if (this.isAdminRole) return false // 관리자는 소진 개념이 없음
       return this.problemHintsRemaining <= 0 || this.dailyHintsRemaining <= 0
     },
   },
 
   methods: {
-    loadHintUsage() {
-      const today = new Date().toISOString().slice(0, 10)
-      const saved = JSON.parse(localStorage.getItem("aiHintUsage") || "{}")
-      if (saved.date === today) {
-        this.hintUsage = saved
-      } else {
-        this.hintUsage = { date: today, dailyCount: 0, problems: {} }
-        this.saveHintUsage()
-      }
+    // 줄바꿈 문자를 <br> 태그로 변환하여 깔끔하게 렌더링
+    renderText(text) {
+      if (!text) return ""
+      return text.replace(/\n/g, "<br>")
     },
 
-    saveHintUsage() {
-      localStorage.setItem("aiHintUsage", JSON.stringify(this.hintUsage))
-    },
+    // 백엔드 API에서 이전 대화 내역 및 현재 횟수를 불러오는 핵심 함수
+    fetchHintHistory() {
+      if (!this.problemID || this.contestID) return
 
-    incrementHintCount() {
-      const today = new Date().toISOString().slice(0, 10)
-      if (this.hintUsage.date !== today) {
-        this.hintUsage = { date: today, dailyCount: 0, problems: {} }
-      }
-      this.hintUsage.dailyCount += 1
-      this.hintUsage.problems[this.problemID] =
-        (this.hintUsage.problems[this.problemID] || 0) + 1
-      this.saveHintUsage()
+      api
+        .getAIHintHistory(this.problemID)
+        .then((res) => {
+          const data = res.data.data
+          const logs = data.logs || []
+
+          this.problemHintsUsed = logs.length
+          this.dailyHintsUsed = data.daily_count || 0
+
+          // 이전 로그들을 messages 배열에 세팅
+          this.messages = logs.map((log) => ({
+            text: log.hint_content,
+            error: false,
+            isHistory: true,
+          }))
+
+          this.scrollToBottom()
+        })
+        .catch((err) => {
+          console.error("AI 조교 히스토리를 불러오지 못했습니다.", err)
+        })
     },
 
     show() {
       this.visible = true
       this.tab = "ai"
-      this.scrollToBottom()
+      // 패널이 열릴 때마다 최신 내역 및 카운트 불러오기
+      this.fetchHintHistory()
     },
 
     requestHint() {
@@ -188,14 +199,10 @@ export default {
             text: payload.text || "",
             error: false,
           })
-          this.scrollToBottom()
-          return
-        }
-
-        if (this.messages[thinkingIndex]) {
+        } else if (this.messages[thinkingIndex]) {
           this.messages[thinkingIndex].text += payload.text || ""
-          this.scrollToBottom()
         }
+        this.scrollToBottom()
       })
 
       eventSource.addEventListener("app-error", (event) => {
@@ -216,9 +223,10 @@ export default {
       })
 
       eventSource.addEventListener("done", () => {
-        this.incrementHintCount()
         this.isLoading = false
         this.closeEventSource()
+        // 답변 생성이 끝났으므로 DB에 반영된 최신 횟수 및 내역을 다시 받아옵니다.
+        this.fetchHintHistory()
       })
 
       eventSource.onerror = () => {
@@ -254,18 +262,14 @@ export default {
     startDrag() {
       this.isDragging = true
     },
-
     onMouseMove(e) {
       if (!this.isDragging) return
-
       const parentRect = this.$el.parentElement.getBoundingClientRect()
       const newHeight = parentRect.bottom - e.clientY
-
       if (newHeight > 120 && newHeight < parentRect.height - 60) {
         this.$el.style.height = `${newHeight}px`
       }
     },
-
     onMouseUp() {
       this.isDragging = false
     },
@@ -274,7 +278,8 @@ export default {
   mounted() {
     window.addEventListener("mousemove", this.onMouseMove)
     window.addEventListener("mouseup", this.onMouseUp)
-    this.loadHintUsage()
+    // 페이지 마운트 시에도 내역 불러오기
+    this.fetchHintHistory()
   },
 
   beforeDestroy() {
@@ -282,17 +287,23 @@ export default {
     window.removeEventListener("mouseup", this.onMouseUp)
     this.closeEventSource()
   },
+
   watch: {
+    // 문제 ID가 바뀔 때 상태 초기화 및 새로운 문제 히스토리 조회
     problemID() {
       this.closeEventSource()
       this.isLoading = false
       this.messages = []
+      if (this.visible) {
+        this.fetchHintHistory()
+      }
     },
   },
 }
 </script>
 
 <style scoped>
+/* 기존 스타일 그대로 유지 (생략 없이 사용하세요) */
 .editor-container {
   position: absolute;
   bottom: 0;
@@ -304,7 +315,6 @@ export default {
   z-index: 10;
 }
 
-/* 구분선 */
 .divider {
   height: 6px;
   cursor: row-resize;
@@ -324,7 +334,6 @@ export default {
   border-radius: 2px;
 }
 
-/* 하단 패널 */
 .editor-bottom {
   flex: 1;
   border-top: 1px solid var(--ai-assistant-border-color);
@@ -334,7 +343,6 @@ export default {
   overflow: hidden;
 }
 
-/* 탭 헤더 */
 .tab-header {
   display: flex;
   align-items: center;
@@ -424,14 +432,12 @@ export default {
   color: var(--ai-assistant-close-hover-text-color);
 }
 
-/* 내용 영역 */
 .terminal-body {
   padding: 16px;
   overflow-y: auto;
   flex: 1;
 }
 
-/* AI 채팅 */
 .ai-chat {
   display: flex;
   flex-direction: column;
@@ -483,7 +489,6 @@ export default {
   font-style: italic;
 }
 
-/* 실행 결과 */
 .result-message {
   color: var(--ai-assistant-muted-text-color);
   font-size: 14px;
