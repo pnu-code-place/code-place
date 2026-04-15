@@ -1,6 +1,7 @@
 import logging
 import random
 import json
+import datetime
 
 from django.db import transaction
 from django.db.models import Count, F, Q
@@ -153,6 +154,9 @@ class ProblemLLMHintAPI(APIView):
 
         if not (request.user.is_super_admin() or request.user.is_admin()):
             today = timezone.now().date()
+            now = timezone.now()
+            start_of_today = now.replace(hour=0, minute=0, second=0, microsecond=0)
+            start_of_tomorrow = start_of_today + datetime.timedelta(days=1)
 
             problem_hint_count = ProblemAIHintLog.objects.filter(user=request.user, problem=problem).count()
 
@@ -160,18 +164,20 @@ class ProblemLLMHintAPI(APIView):
                 return self._error_response(
                     "이 문제에 대한 AI 조교 사용 횟수(5회)를 모두 소진했습니다. 이전 답변을 복습해 보세요.", err="problem-limit-exceeded")
 
-            daily_hint_count = ProblemAIHintLog.objects.filter(user=request.user, created_at__date=today).count()
+            daily_hint_count = ProblemAIHintLog.objects.filter(
+                user=request.user, created_at__gte=start_of_today, created_at__lt=start_of_tomorrow).count()
 
             if daily_hint_count >= 30:
                 return self._error_response(
                     "오늘 하루 AI 조교 사용 횟수(30회)를 모두 소진했습니다. 내일 다시 이용해 주세요.", err="daily-limit-exceeded")
 
         def generator():
-            full_text = ""
+            full_text_chunks = []
             try:
                 for chunk in stream_problem_hint(problem):
-                    full_text += chunk
+                    full_text_chunks.append(chunk)
                     yield self._format_sse_event("chunk", {"text": chunk})
+                full_text = "".join(full_text_chunks)
                 if full_text.strip():
                     ProblemAIHintLog.objects.create(user=request.user, problem=problem, hint_content=full_text)
                 yield self._format_sse_event("done", {"done": True})
@@ -198,7 +204,12 @@ class AIHintHistoryAPI(APIView):
         logs = ProblemAIHintLog.objects.filter(user=request.user, problem___id=problem_id).order_by("created_at")
 
         today = timezone.now().date()
-        daily_count = ProblemAIHintLog.objects.filter(user=request.user, created_at__date=today).count()
+        now = timezone.now()
+        start_of_today = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        start_of_tomorrow = start_of_today + datetime.timedelta(days=1)
+
+        daily_count = ProblemAIHintLog.objects.filter(
+            user=request.user, created_at__gte=start_of_today, created_at__lt=start_of_tomorrow).count()
 
         return self.success({"logs": AIHintLogSerializer(logs, many=True).data, "daily_count": daily_count})
 

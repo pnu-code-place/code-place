@@ -15,12 +15,12 @@
         <div class="tab-right-group">
           <div class="tab-right" v-if="tab === 'ai'">
             <span class="hint-count" v-if="isAdminRole">
-              남은 횟수 : [무제한 (관리자)]
+              남은 횟수 : 무제한 (관리자)
             </span>
 
             <span class="hint-count" v-else>
-              남은 횟수 : [문제: {{ problemHintsRemaining }}/5 · 전체:
-              {{ dailyHintsRemaining }}/30]
+              남은 횟수 : 문제: {{ problemHintsRemaining }}/5 · 전체:
+              {{ dailyHintsRemaining }}/30
             </span>
 
             <button
@@ -67,7 +67,7 @@
               v-else
               class="bubble"
               :class="{ error: msg.error }"
-              v-html="renderText(msg.text)"
+              v-text="msg.text"
             ></div>
           </div>
         </div>
@@ -279,7 +279,9 @@ export default {
     window.addEventListener("mousemove", this.onMouseMove)
     window.addEventListener("mouseup", this.onMouseUp)
     // 페이지 마운트 시에도 내역 불러오기
-    this.fetchHintHistory()
+    if (this.visible) {
+      this.fetchHintHistory()
+    }
   },
 
   beforeDestroy() {
