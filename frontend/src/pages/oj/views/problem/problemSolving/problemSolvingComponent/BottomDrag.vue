@@ -121,12 +121,6 @@ export default {
   },
 
   methods: {
-    // 줄바꿈 문자를 <br> 태그로 변환하여 깔끔하게 렌더링
-    renderText(text) {
-      if (!text) return ""
-      return text.replace(/\n/g, "<br>")
-    },
-
     // 백엔드 API에서 이전 대화 내역 및 현재 횟수를 불러오는 핵심 함수
     fetchHintHistory() {
       if (!this.problemID || this.contestID) return
