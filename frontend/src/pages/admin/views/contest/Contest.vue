@@ -228,7 +228,7 @@ export default {
 
 <style scoped lang="less">
 .detailCard {
-  padding: 10px 20px 20px;
+  padding: 10px 0 20px;
 }
 
 .save-wrapper {
@@ -437,6 +437,24 @@ export default {
   &:disabled {
     opacity: 0.4;
     cursor: not-allowed;
+  }
+}
+
+/deep/ .simditor {
+  border-radius: 8px;
+  border: 1px solid #dcdfe6;
+  overflow: hidden;
+
+  .simditor-toolbar {
+    border-radius: 8px 8px 0 0;
+    border-bottom: 1px solid #dcdfe6;
+    background: #f5f7fa;
+  }
+
+  .simditor-body {
+    min-height: 200px;
+    padding: 15px;
+    border-radius: 0 0 8px 8px;
   }
 }
 </style>
