@@ -18,6 +18,7 @@ class ProblemAIHintLog(models.Model):
         indexes = [
             models.Index(fields=['user', 'created_at']),
             models.Index(fields=['problem', 'created_at']),
+            models.Index(fields=['user', 'problem', 'created_at']),
         ]
 
 
