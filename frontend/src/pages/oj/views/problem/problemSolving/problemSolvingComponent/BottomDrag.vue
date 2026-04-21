@@ -19,8 +19,7 @@
             </span>
 
             <span class="hint-count" v-else>
-              남은 횟수 : 문제: {{ problemHintsRemaining }}/5 · 전체:
-              {{ dailyHintsRemaining }}/30
+              남은 횟수 : 이 문제에서 {{ problemHintsRemaining }}/5 회 더 가능
             </span>
 
             <button
@@ -100,7 +99,6 @@ export default {
 
       // DB에서 가져온 사용 횟수를 담을 변수
       problemHintsUsed: 0,
-      dailyHintsUsed: 0,
     }
   },
 
@@ -111,12 +109,10 @@ export default {
     problemHintsRemaining() {
       return Math.max(0, 5 - this.problemHintsUsed)
     },
-    dailyHintsRemaining() {
-      return Math.max(0, 30 - this.dailyHintsUsed)
-    },
+
     hintsExhausted() {
       if (this.isAdminRole) return false // 관리자는 소진 개념이 없음
-      return this.problemHintsRemaining <= 0 || this.dailyHintsRemaining <= 0
+      return this.problemHintsRemaining <= 0
     },
   },
 
@@ -132,7 +128,6 @@ export default {
           const logs = data.logs || []
 
           this.problemHintsUsed = logs.length
-          this.dailyHintsUsed = data.daily_count || 0
 
           // 이전 로그들을 messages 배열에 세팅
           this.messages = logs.map((log) => ({

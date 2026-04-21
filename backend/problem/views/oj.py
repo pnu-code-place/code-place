@@ -152,24 +152,23 @@ class ProblemLLMHintAPI(APIView):
         except Problem.DoesNotExist:
             return self._error_response("문제를 찾을 수 없습니다.")
 
+        hint_log = None
+
         if not (request.user.is_super_admin() or request.user.is_admin()):
-            today = timezone.now().date()
-            now = timezone.now()
-            start_of_today = now.replace(hour=0, minute=0, second=0, microsecond=0)
-            start_of_tomorrow = start_of_today + datetime.timedelta(days=1)
+            # 트랜잭션을 묶어 체크와 생성이 최대한 원자적으로 이루어지도록 처리
+            with transaction.atomic():
+                problem_hint_count = ProblemAIHintLog.objects.filter(user=request.user, problem=problem).count()
 
-            problem_hint_count = ProblemAIHintLog.objects.filter(user=request.user, problem=problem).count()
+                if problem_hint_count >= 5:
+                    return self._error_response(
+                        "이 문제에 대한 AI 조교 사용 횟수(5회)를 모두 소진했습니다. 이전 답변을 복습해 보세요.", err="problem-limit-exceeded")
 
-            if problem_hint_count >= 5:
-                return self._error_response(
-                    "이 문제에 대한 AI 조교 사용 횟수(5회)를 모두 소진했습니다. 이전 답변을 복습해 보세요.", err="problem-limit-exceeded")
+                # 일일 제한(30회) 로직 삭제됨
 
-            daily_hint_count = ProblemAIHintLog.objects.filter(
-                user=request.user, created_at__gte=start_of_today, created_at__lt=start_of_tomorrow).count()
-
-            if daily_hint_count >= 30:
-                return self._error_response(
-                    "오늘 하루 AI 조교 사용 횟수(30회)를 모두 소진했습니다. 내일 다시 이용해 주세요.", err="daily-limit-exceeded")
+                # 제한 통과 시, 스트리밍 시작 전에 빈 내용으로 로그를 선제 생성하여 횟수 차감 처리
+                hint_log = ProblemAIHintLog.objects.create(user=request.user, problem=problem, hint_content="")
+        else:
+            hint_log = ProblemAIHintLog.objects.create(user=request.user, problem=problem, hint_content="")
 
         def generator():
             full_text_chunks = []
@@ -183,12 +182,28 @@ class ProblemLLMHintAPI(APIView):
                 yield self._format_sse_event("done", {"done": True})
             except LLMHintError as exc:
                 logger.warning("Failed to stream LLM hint for problem %s: %s", problem_id, exc)
+                # vLLM 통신 실패: 빈 로그 삭제 (횟수 복구)
+                if hint_log and not full_text_chunks:
+                    hint_log.delete()
                 yield from self._error_events("힌트를 생성하지 못했습니다.", err="llm-hint-unavailable")
+
             except (GeneratorExit, BrokenPipeError, ConnectionResetError):
                 logger.info("LLM hint stream client disconnected for problem %s", problem_id)
+                full_text = "".join(full_text_chunks)
+                # 사용자가 중간에 나갔지만 생성된 내용이 있을 때만 저장
+                if full_text.strip():
+                    hint_log.hint_content = full_text
+                    hint_log.save(update_fields=['hint_content'])
+                # 생성된 내용이 전혀 없이 끊겼다면 빈 로그 삭제 (횟수 복구)
+                elif hint_log:
+                    hint_log.delete()
                 return
+
             except Exception:
                 logger.exception("Unexpected error while streaming LLM hint for problem %s", problem_id)
+                # 기타 알 수 없는 에러 발생 시: 빈 로그 삭제 (횟수 복구)
+                if hint_log and not full_text_chunks:
+                    hint_log.delete()
                 yield from self._error_events("힌트를 생성하지 못했습니다.", err="llm-hint-unavailable")
 
         return self._streaming_response(generator())
@@ -203,15 +218,7 @@ class AIHintHistoryAPI(APIView):
         problem_id = request.GET.get("problem_id")
         logs = ProblemAIHintLog.objects.filter(user=request.user, problem___id=problem_id).order_by("created_at")
 
-        today = timezone.now().date()
-        now = timezone.now()
-        start_of_today = now.replace(hour=0, minute=0, second=0, microsecond=0)
-        start_of_tomorrow = start_of_today + datetime.timedelta(days=1)
-
-        daily_count = ProblemAIHintLog.objects.filter(
-            user=request.user, created_at__gte=start_of_today, created_at__lt=start_of_tomorrow).count()
-
-        return self.success({"logs": AIHintLogSerializer(logs, many=True).data, "daily_count": daily_count})
+        return self.success({"logs": AIHintLogSerializer(logs, many=True).data, "daily_count": 0})
 
 
 class ContestProblemAPI(APIView):

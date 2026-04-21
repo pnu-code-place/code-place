@@ -14,7 +14,11 @@ class ProblemAIHintLog(models.Model):
 
     class Meta:
         db_table = "problem_ai_hint_log"
-        ordering = ["-created_at"]
+
+        indexes = [
+            models.Index(fields=['user', 'created_at']),
+            models.Index(fields=['problem', 'created_at']),
+        ]
 
 
 class ProblemTag(models.Model):
