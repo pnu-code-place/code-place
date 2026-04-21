@@ -162,8 +162,6 @@ class ProblemLLMHintAPI(APIView):
                     return self._error_response(
                         "이 문제에 대한 AI 조교 사용 횟수(5회)를 모두 소진했습니다. 이전 답변을 복습해 보세요.", err="problem-limit-exceeded")
 
-                # 일일 제한(30회) 로직 삭제됨
-
                 # 제한 통과 시, 스트리밍 시작 전에 빈 내용으로 로그를 선제 생성하여 횟수 차감 처리
                 hint_log = ProblemAIHintLog.objects.create(user=request.user, problem=problem, hint_content="")
         else:
@@ -177,32 +175,44 @@ class ProblemLLMHintAPI(APIView):
                     yield self._format_sse_event("chunk", {"text": chunk})
                 full_text = "".join(full_text_chunks)
                 if full_text.strip():
-                    ProblemAIHintLog.objects.create(user=request.user, problem=problem, hint_content=full_text)
+                    hint_log.hint_content = full_text
+                    hint_log.save(update_fields=['hint_content'])
                 yield self._format_sse_event("done", {"done": True})
             except LLMHintError as exc:
                 logger.warning("Failed to stream LLM hint for problem %s: %s", problem_id, exc)
-                # vLLM 통신 실패: 빈 로그 삭제 (횟수 복구)
-                if hint_log and not full_text_chunks:
+
+                full_text = "".join(full_text_chunks)
+                if full_text.strip():
+                    # (1) 일부라도 생성된 텍스트가 있다면 그 시점까지의 내용을 저장
+                    hint_log.hint_content = full_text
+                    hint_log.save(update_fields=['hint_content'])
+                elif hint_log:
+                    # (2) 생성된 텍스트가 아예 없다면 선제 생성한 로그 삭제 및 횟수 복구
                     hint_log.delete()
+
                 yield from self._error_events("힌트를 생성하지 못했습니다.", err="llm-hint-unavailable")
 
             except (GeneratorExit, BrokenPipeError, ConnectionResetError):
                 logger.info("LLM hint stream client disconnected for problem %s", problem_id)
+
                 full_text = "".join(full_text_chunks)
-                # 사용자가 중간에 나갔지만 생성된 내용이 있을 때만 저장
                 if full_text.strip():
                     hint_log.hint_content = full_text
                     hint_log.save(update_fields=['hint_content'])
-                # 생성된 내용이 전혀 없이 끊겼다면 빈 로그 삭제 (횟수 복구)
                 elif hint_log:
                     hint_log.delete()
                 return
 
             except Exception:
                 logger.exception("Unexpected error while streaming LLM hint for problem %s", problem_id)
-                # 기타 알 수 없는 에러 발생 시: 빈 로그 삭제 (횟수 복구)
-                if hint_log and not full_text_chunks:
+
+                full_text = "".join(full_text_chunks)
+                if full_text.strip():
+                    hint_log.hint_content = full_text
+                    hint_log.save(update_fields=['hint_content'])
+                elif hint_log:
                     hint_log.delete()
+
                 yield from self._error_events("힌트를 생성하지 못했습니다.", err="llm-hint-unavailable")
 
         return self._streaming_response(generator())

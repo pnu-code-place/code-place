@@ -446,11 +446,9 @@ class AIHintHistoryAPITest(ProblemCreateTestBase):
 
         # 응답 구조 검증
         self.assertIn("logs", payload)
-        self.assertIn("daily_count", payload)
 
         # 값 검증
         self.assertEqual(len(payload["logs"]), 2)
-        self.assertEqual(payload["daily_count"], 2)
         self.assertEqual(payload["logs"][0]["hint_content"], "과거의 힌트 1")
 
 
