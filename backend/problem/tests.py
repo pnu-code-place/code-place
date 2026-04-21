@@ -323,24 +323,6 @@ class ProblemLLMHintAPITest(ProblemCreateTestBase):
         mocked_post.assert_not_called()    # 제한에 걸리면 LLM 호출이 아예 안 일어나야 함
 
     @mock.patch("problem.llm_hint.requests.post")
-    def test_stream_llm_hint_daily_limit(self, mocked_post):
-        """하루 전체 30회 제한에 걸리는지 테스트"""
-        # 다른 문제를 생성하여 문제당 5회 제한과 겹치지 않게 세팅
-        other_problem = self.create_problem_with_custom_field(self.admin, _id="B-123")
-
-        # 오늘 날짜로 30개의 힌트 로그 생성
-        for i in range(30):
-            ProblemAIHintLog.objects.create(user=self.user, problem=other_problem, hint_content=f"더미 {i}")
-
-        resp = self.client.get(f"{self.url}?problem_id={self.problem._id}")
-        body = self._streaming_body(resp)
-
-        self.assertIn('event: app-error', body)
-        self.assertIn("limit-exceeded", body)
-        self.assertIn("오늘 하루", body)
-        mocked_post.assert_not_called()
-
-    @mock.patch("problem.llm_hint.requests.post")
     def test_stream_llm_hint_admin_bypass(self, mocked_post):
         """관리자는 횟수 제한 없이 무제한으로 사용 가능한지 테스트"""
         mocked_post.return_value = self._mock_streaming_response([

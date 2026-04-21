@@ -1,7 +1,6 @@
 import logging
 import random
 import json
-import datetime
 
 from django.db import transaction
 from django.db.models import Count, F, Q
@@ -18,7 +17,6 @@ from ..llm_hint import LLMHintError, stream_problem_hint
 from ..models import (Problem, ProblemRuleType, ProblemTag, get_default_week_info, ProblemAIHintLog)
 from ..serializers import (MostDifficultProblemSerializer, ProblemSafeSerializer, ProblemSerializer,
                            RecommendBonusProblemSerializer, TagSerializer, AIHintLogSerializer)
-from django.utils import timezone
 
 logger = logging.getLogger(__name__)
 
@@ -157,6 +155,7 @@ class ProblemLLMHintAPI(APIView):
         if not (request.user.is_super_admin() or request.user.is_admin()):
             # 트랜잭션을 묶어 체크와 생성이 최대한 원자적으로 이루어지도록 처리
             with transaction.atomic():
+                type(request.user).objects.select_for_update().get(pk=request.user.pk)
                 problem_hint_count = ProblemAIHintLog.objects.filter(user=request.user, problem=problem).count()
 
                 if problem_hint_count >= 5:
@@ -218,7 +217,7 @@ class AIHintHistoryAPI(APIView):
         problem_id = request.GET.get("problem_id")
         logs = ProblemAIHintLog.objects.filter(user=request.user, problem___id=problem_id).order_by("created_at")
 
-        return self.success({"logs": AIHintLogSerializer(logs, many=True).data, "daily_count": 0})
+        return self.success({"logs": AIHintLogSerializer(logs, many=True).data})
 
 
 class ContestProblemAPI(APIView):
