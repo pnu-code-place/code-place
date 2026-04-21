@@ -285,6 +285,7 @@ export default {
       this.closeEventSource()
       this.isLoading = false
       this.messages = []
+      this.problemHintsUsed = 0
       if (this.visible) {
         this.fetchHintHistory()
       }
