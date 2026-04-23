@@ -214,6 +214,13 @@ export default {
     if (contestID) url += `&contest_id=${encodeURIComponent(contestID)}`
     return url
   },
+  getAIHintHistory(problemID) {
+    return ajax("problem/ai_hint_history", "get", {
+      params: {
+        problem_id: problemID,
+      },
+    })
+  },
   getContestList(offset, limit, searchParams) {
     let params = {
       offset,
