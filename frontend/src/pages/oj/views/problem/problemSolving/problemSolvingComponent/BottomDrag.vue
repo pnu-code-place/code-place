@@ -125,7 +125,9 @@ export default {
         .getAIHintHistory(this.problemID)
         .then((res) => {
           const data = res.data.data
-          const logs = data.logs || []
+          const logs = (data.logs || []).filter(
+            (log) => log.hint_content && log.hint_content.trim() !== "",
+          )
 
           this.problemHintsUsed = logs.length
 

@@ -5,6 +5,7 @@ import json
 from django.db import transaction
 from django.db.models import Count, F, Q
 from django.http import HttpResponseBadRequest, HttpResponseNotFound, StreamingHttpResponse
+from django.contrib.auth import get_user_model
 
 from account.decorators import (check_contest_permission, scheduler_only)
 from account.models import UserProfile, UserScore
@@ -155,7 +156,8 @@ class ProblemLLMHintAPI(APIView):
         if not (request.user.is_super_admin() or request.user.is_admin()):
             # 트랜잭션을 묶어 체크와 생성이 최대한 원자적으로 이루어지도록 처리
             with transaction.atomic():
-                type(request.user).objects.select_for_update().get(pk=request.user.pk)
+                User = get_user_model()
+                User.objects.select_for_update().get(pk=request.user.pk)
                 problem_hint_count = ProblemAIHintLog.objects.filter(user=request.user, problem=problem).count()
 
                 if problem_hint_count >= 5:
@@ -177,6 +179,8 @@ class ProblemLLMHintAPI(APIView):
                 if full_text.strip():
                     hint_log.hint_content = full_text
                     hint_log.save(update_fields=['hint_content'])
+                elif hint_log:
+                    hint_log.delete()
                 yield self._format_sse_event("done", {"done": True})
             except LLMHintError as exc:
                 logger.warning("Failed to stream LLM hint for problem %s: %s", problem_id, exc)
@@ -225,7 +229,17 @@ class AIHintHistoryAPI(APIView):
             return self.error("로그인이 필요합니다.")
 
         problem_id = request.GET.get("problem_id")
-        logs = ProblemAIHintLog.objects.filter(user=request.user, problem___id=problem_id).order_by("created_at")
+        if not problem_id:
+            return self.error("problem_id는 필수입니다.")
+
+        # 1. 문제 조회 및 접근 가능 여부(공개 여부, 대회 여부) 검증
+        try:
+            problem = Problem.objects.get(_id=problem_id, contest_id__isnull=True, visible=True)
+        except Problem.DoesNotExist:
+            return self.error("문제를 찾을 수 없습니다.")
+
+        # 2. JOIN 없이 Foreign Key를 직접 활용하여 로그 조회
+        logs = ProblemAIHintLog.objects.filter(user=request.user, problem=problem).order_by("created_at")
 
         return self.success({"logs": AIHintLogSerializer(logs, many=True).data})
 

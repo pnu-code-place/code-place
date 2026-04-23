@@ -344,6 +344,24 @@ class ProblemLLMHintAPITest(ProblemCreateTestBase):
         self.assertIn("어드민 패스", body)
         mocked_post.assert_called_once()
 
+    @mock.patch("problem.llm_hint.requests.post")
+    def test_stream_llm_hint_empty_response(self, mocked_post):
+        """정상적으로 스트리밍이 종료되었으나 텍스트가 비어있는 경우, 선제 생성된 로그가 삭제되는지 테스트"""
+        # 공백만 리턴하는 모델 응답 Mocking
+        mocked_post.return_value = self._mock_streaming_response([
+            'data: {"choices":[{"delta":{"content":"   "}}]}',
+            "data: [DONE]",
+        ])
+
+        resp = self.client.get(f"{self.url}?problem_id={self.problem._id}")
+        body = self._streaming_body(resp)
+
+        # 1. 정상적으로 done 이벤트가 와야 함
+        self.assertIn('event: done', body)
+
+        # 2. 가장 중요: 빈 텍스트였기 때문에 DB에 로그가 남아있으면 안 됨 (횟수 차감 방어 성공)
+        self.assertEqual(ProblemAIHintLog.objects.filter(user=self.user, problem=self.problem).count(), 0)
+
     def test_stream_llm_hint_requires_login(self):
         self.client.logout()
 
@@ -422,6 +440,7 @@ class AIHintHistoryAPITest(ProblemCreateTestBase):
         self.admin = self.create_admin(login=False)
         self.problem = self.add_problem(DEFAULT_PROBLEM_DATA, self.admin)
         self.user = self.create_user(email="history@test.com", username="history_test", password="test1234!")
+        self.hidden_problem = self.create_problem_with_custom_field(self.admin, _id="A-211", visible=False)
 
     def test_get_history_require_login(self):
         """로그인하지 않은 유저가 조회 요청 시 에러"""
@@ -450,6 +469,41 @@ class AIHintHistoryAPITest(ProblemCreateTestBase):
         # 값 검증
         self.assertEqual(len(payload["logs"]), 2)
         self.assertEqual(payload["logs"][0]["hint_content"], "과거의 힌트 1")
+
+    def test_get_history_with_hidden_problem(self):
+        """비공개 문제의 힌트 히스토리는 조회할 수 없어야 함"""
+        self.client.force_login(self.user)
+
+        # setUp에서 미리 만들어둔 hidden_problem 사용
+        resp = self.client.get(f"{self.url}?problem_id={self.hidden_problem._id}")
+
+        self.assertIsNotNone(resp.data.get("error"))
+        self.assertIn("문제를 찾을 수 없습니다.", resp.data.get("data", ""))
+
+    def test_get_history_with_contest_problem(self):
+        """대회용 문제의 힌트 히스토리는 일반 API로 조회할 수 없어야 함"""
+        self.client.force_login(self.user)
+
+        # 대회 및 대회용 문제 임시 생성
+        from contest.models import Contest
+        from contest.tests import DEFAULT_CONTEST_DATA
+        contest = Contest.objects.create(created_by=self.admin, **DEFAULT_CONTEST_DATA)
+        contest_problem = self.create_problem_with_custom_field(self.admin, _id="C-999")
+        contest_problem.contest = contest
+        contest_problem.save(update_fields=["contest"])
+
+        resp = self.client.get(f"{self.url}?problem_id={contest_problem._id}")
+
+        self.assertIsNotNone(resp.data.get("error"))
+        self.assertIn("문제를 찾을 수 없습니다.", resp.data.get("data", ""))
+
+    def test_get_history_with_invalid_problem_id(self):
+        """존재하지 않는 문제 ID를 넣었을 때 처리"""
+        self.client.force_login(self.user)
+        resp = self.client.get(f"{self.url}?problem_id=INVALID_ID")
+
+        self.assertIsNotNone(resp.data.get("error"))
+        self.assertIn("문제를 찾을 수 없습니다.", resp.data.get("data", ""))
 
 
 class ContestProblemAdminTest(APITestCase):
