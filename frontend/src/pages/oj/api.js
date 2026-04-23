@@ -212,6 +212,13 @@ export default {
   getProblemLLMHintUrl(problemID) {
     return `/api/problem/llm_hint?problem_id=${encodeURIComponent(problemID)}`
   },
+  getAIHintHistory(problemID) {
+    return ajax("problem/ai_hint_history", "get", {
+      params: {
+        problem_id: problemID,
+      },
+    })
+  },
   getContestList(offset, limit, searchParams) {
     let params = {
       offset,
