@@ -48,9 +48,6 @@
       <div ref="terminalBody" class="terminal-body">
         <!-- AI 조교 탭 -->
         <div v-if="tab === 'ai'" class="ai-chat">
-          <div v-if="contestID" class="empty-message">
-            AI 조교는 공개 문제에서만 사용할 수 있습니다.
-          </div>
           <div v-for="(msg, i) in messages" :key="i" class="chat-row">
             <div class="avatar" :class="{ thinking: msg.thinking }">
               <img src="@/assets/images/AIAssistant.svg" alt="AI" />
@@ -152,14 +149,6 @@ export default {
 
     requestHint() {
       if (this.isLoading || !this.problemID || this.hintsExhausted) return
-      if (this.contestID) {
-        this.messages.push({
-          text: "AI 조교는 공개 문제에서만 지원됩니다.",
-          error: true,
-        })
-        this.scrollToBottom()
-        return
-      }
 
       this.closeEventSource()
       this.isLoading = true
@@ -168,7 +157,7 @@ export default {
       const thinkingIndex = this.messages.length - 1
 
       const eventSource = new EventSource(
-        api.getProblemLLMHintUrl(this.problemID),
+        api.getProblemLLMHintUrl(this.problemID, this.contestID),
       )
       this.eventSource = eventSource
 

@@ -8,7 +8,7 @@ from django.http import HttpResponseBadRequest, HttpResponseNotFound, StreamingH
 
 from account.decorators import (check_contest_permission, scheduler_only)
 from account.models import UserProfile, UserScore
-from contest.models import ContestRuleType
+from contest.models import Contest, ContestRuleType
 from submission.models import JudgeStatus, Submission
 from utils.api import APIView
 from utils.constants import Difficulty, ProblemField, Tier
@@ -142,13 +142,26 @@ class ProblemLLMHintAPI(APIView):
             return self._error_response("로그인이 필요합니다.", err="permission-denied")
 
         problem_id = request.GET.get("problem_id")
+        contest_id = request.GET.get("contest_id")
         if not problem_id:
             return self._error_response("문제 번호가 필요합니다.")
 
-        try:
-            problem = Problem.objects.get(_id=problem_id, contest_id__isnull=True, visible=True)
-        except Problem.DoesNotExist:
-            return self._error_response("문제를 찾을 수 없습니다.")
+        if contest_id:
+            try:
+                contest = Contest.objects.get(id=contest_id)
+            except Contest.DoesNotExist:
+                return self._error_response("대회를 찾을 수 없습니다.")
+            if not contest.ai_assistant_enabled:
+                return self._error_response("이 대회에서는 AI 조교를 사용할 수 없습니다.")
+            try:
+                problem = Problem.objects.get(_id=problem_id, contest_id=contest_id)
+            except Problem.DoesNotExist:
+                return self._error_response("문제를 찾을 수 없습니다.")
+        else:
+            try:
+                problem = Problem.objects.get(_id=problem_id, contest_id__isnull=True, visible=True)
+            except Problem.DoesNotExist:
+                return self._error_response("문제를 찾을 수 없습니다.")
 
         def generator():
             try:
