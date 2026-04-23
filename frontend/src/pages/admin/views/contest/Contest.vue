@@ -2,11 +2,10 @@
   <div class="view">
     <Panel :title="$t('m.CreateContent')">
       <div class="detailCard">
-
         <!-- 제목 -->
         <div class="form-group">
           <label class="custom-label">
-            <span class="required-asterisk">*</span>{{ $t('m.ContestTitle') }}
+            <span class="required-asterisk">*</span>{{ $t("m.ContestTitle") }}
           </label>
           <el-input
             v-model="contest.title"
@@ -17,7 +16,8 @@
         <!-- 설명 -->
         <div class="form-group">
           <label class="custom-label">
-            <span class="required-asterisk">*</span>{{ $t('m.ContestDescription') }}
+            <span class="required-asterisk">*</span
+            >{{ $t("m.ContestDescription") }}
           </label>
           <Simditor v-model="contest.description" />
         </div>
@@ -26,7 +26,8 @@
         <div class="form-row">
           <div class="form-group form-col">
             <label class="custom-label">
-              <span class="required-asterisk">*</span>{{ $t('m.Contest_Start_Time') }}
+              <span class="required-asterisk">*</span
+              >{{ $t("m.Contest_Start_Time") }}
             </label>
             <el-date-picker
               v-model="contest.start_time"
@@ -37,7 +38,8 @@
           </div>
           <div class="form-group form-col">
             <label class="custom-label">
-              <span class="required-asterisk">*</span>{{ $t('m.Contest_End_Time') }}
+              <span class="required-asterisk">*</span
+              >{{ $t("m.Contest_End_Time") }}
             </label>
             <el-date-picker
               v-model="contest.end_time"
@@ -50,14 +52,24 @@
 
         <!-- 규칙 유형 -->
         <div class="form-group">
-          <label class="custom-label">{{ $t('m.Contest_Rule_Type') }}</label>
+          <label class="custom-label">{{ $t("m.Contest_Rule_Type") }}</label>
           <div class="segmented-control">
             <label class="custom-radio">
-              <input type="radio" v-model="contest.rule_type" value="ACM" :disabled="disableRuleType" />
+              <input
+                type="radio"
+                v-model="contest.rule_type"
+                value="ACM"
+                :disabled="disableRuleType"
+              />
               <span class="radio-text">ACM</span>
             </label>
             <label class="custom-radio">
-              <input type="radio" v-model="contest.rule_type" value="OI" :disabled="disableRuleType" />
+              <input
+                type="radio"
+                v-model="contest.rule_type"
+                value="OI"
+                :disabled="disableRuleType"
+              />
               <span class="radio-text">OI</span>
             </label>
           </div>
@@ -65,42 +77,73 @@
 
         <!-- 스위치 항목들 -->
         <div class="form-group">
-          <label class="custom-label">설정</label>
+          <label class="custom-label">{{ $t("m.Setting") }}</label>
           <div class="toggle-row">
             <div class="toggle-item">
-              <span class="toggle-label">
-                {{ $t('m.Contest_Status') }}
-                <el-tooltip content="활성화하면 참가자에게 대회가 노출됩니다." placement="top">
+              <span id="contest-status-label" class="toggle-label">
+                {{ $t("m.Contest_Status") }}
+                <el-tooltip
+                  content="활성화하면 참가자에게 대회가 노출됩니다."
+                  placement="top"
+                >
                   <i class="el-icon-question help-icon"></i>
                 </el-tooltip>
               </span>
               <label class="spj-toggle">
-                <input type="checkbox" v-model="contest.visible" />
-                <span class="spj-toggle-track" :class="{ 'is-on': contest.visible }"></span>
+                <input
+                  type="checkbox"
+                  v-model="contest.visible"
+                  aria-labelledby="contest-status-label"
+                />
+                <span
+                  class="spj-toggle-track"
+                  :class="{ 'is-on': contest.visible }"
+                ></span>
+              </label>
+            </div>
+
+            <div class="toggle-item">
+              <span id="real_time_rank_label" class="toggle-label">
+                {{ $t("m.Real_Time_Rank") }}
+                <el-tooltip
+                  content="대회 진행 중 실시간으로 순위를 공개합니다."
+                  placement="top"
+                >
+                  <i class="el-icon-question help-icon"></i>
+                </el-tooltip>
+              </span>
+              <label class="spj-toggle">
+                <input
+                  type="checkbox"
+                  v-model="contest.real_time_rank"
+                  aria-labelledby="real_time_rand_label"
+                />
+                <span
+                  class="spj-toggle-track"
+                  :class="{ 'is-on': contest.real_time_rank }"
+                ></span>
               </label>
             </div>
             <div class="toggle-item">
-              <span class="toggle-label">
-                {{ $t('m.Real_Time_Rank') }}
-                <el-tooltip content="대회 진행 중 실시간으로 순위를 공개합니다." placement="top">
+              <span id="allow_paste_label" class="toggle-label">
+                {{ $t("m.Allow_Paste") }}
+                <el-tooltip
+                  content="에디터에 붙여넣기를 허용합니다."
+                  placement="top"
+                >
                   <i class="el-icon-question help-icon"></i>
                 </el-tooltip>
               </span>
               <label class="spj-toggle">
-                <input type="checkbox" v-model="contest.real_time_rank" />
-                <span class="spj-toggle-track" :class="{ 'is-on': contest.real_time_rank }"></span>
-              </label>
-            </div>
-            <div class="toggle-item">
-              <span class="toggle-label">
-                {{ $t('m.Allow_Paste') }}
-                <el-tooltip content="에디터에 붙여넣기를 허용합니다." placement="top">
-                  <i class="el-icon-question help-icon"></i>
-                </el-tooltip>
-              </span>
-              <label class="spj-toggle">
-                <input type="checkbox" v-model="contest.allow_paste" />
-                <span class="spj-toggle-track" :class="{ 'is-on': contest.allow_paste }"></span>
+                <input
+                  type="checkbox"
+                  v-model="contest.allow_paste"
+                  aria-labelledby="allow_paste_label"
+                />
+                <span
+                  class="spj-toggle-track"
+                  :class="{ 'is-on': contest.allow_paste }"
+                ></span>
               </label>
             </div>
           </div>
@@ -108,7 +151,7 @@
 
         <!-- 비밀번호 -->
         <div class="form-group form-half">
-          <label class="custom-label">{{ $t('m.Contest_Password') }}</label>
+          <label class="custom-label">{{ $t("m.Contest_Password") }}</label>
           <el-input
             v-model="contest.password"
             :placeholder="$t('m.Contest_Password')"
@@ -118,7 +161,7 @@
         <!-- IP 범위 -->
         <div class="form-group">
           <label class="custom-label">
-            {{ $t('m.Allowed_IP_Ranges') }}
+            {{ $t("m.Allowed_IP_Ranges") }}
             <button class="add-btn" @click="addIPRange">
               <i class="el-icon-plus"></i> 추가
             </button>
@@ -142,7 +185,6 @@
             </button>
           </div>
         </div>
-
       </div>
       <div class="save-wrapper">
         <save @click.native="saveContest"></save>
@@ -192,7 +234,10 @@ export default {
       data.allowed_ip_ranges = ranges
       api[funcName](data)
         .then(() => {
-          this.$router.push({ name: "contest-list", query: { refresh: "true" } })
+          this.$router.push({
+            name: "contest-list",
+            query: { refresh: "true" },
+          })
         })
         .catch(() => {})
     },
@@ -306,7 +351,9 @@ export default {
   input[type="radio"]:checked + .radio-text {
     background-color: #ffffff;
     color: #0f172a;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+    box-shadow:
+      0 1px 3px rgba(0, 0, 0, 0.1),
+      0 1px 2px rgba(0, 0, 0, 0.06);
   }
 
   input[type="radio"]:disabled + .radio-text {
