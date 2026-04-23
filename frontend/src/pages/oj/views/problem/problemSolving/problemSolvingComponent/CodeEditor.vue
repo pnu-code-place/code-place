@@ -179,7 +179,7 @@ export default {
   mounted() {
     let customTheme = this.isDarkMode ? "ayu-mirage" : "github-light"
     this.codemirror.setOption("theme", customTheme)
-    this.theme = customTheme
+    this.$emit("update:theme", this.isDarkMode)
 
     this.code = this.value
 
@@ -205,7 +205,7 @@ export default {
     isDarkMode(value) {
       let customTheme = value ? "ayu-mirage" : "github-light"
       this.toggleTheme(customTheme)
-      this.theme = value
+      this.$emit("update:theme", value)
     },
     language(value) {
       this.codemirror.setOption("mode", this.mode[value])

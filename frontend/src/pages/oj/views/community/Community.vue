@@ -44,13 +44,11 @@
                 </span>
                 <Icon type="arrow-down-b"></Icon>
                 <Dropdown-menu slot="list" class="community-dropdown-menu">
-                  <Dropdown-item :name="{ type: 'post_type', value: 'ALL' }"
-                    >전체</Dropdown-item
-                  >
+                  <Dropdown-item name="post_type:ALL">전체</Dropdown-item>
                   <Dropdown-item
                     v-for="(val, k) in POST_TYPE"
                     :key="k"
-                    :name="{ type: 'post_type', value: k }"
+                    :name="`post_type:${k}`"
                   >
                     {{ val.name }}
                   </Dropdown-item>
@@ -78,14 +76,13 @@
                 </span>
                 <Icon type="arrow-down-b"></Icon>
                 <Dropdown-menu slot="list" class="community-dropdown-menu">
-                  <Dropdown-item
-                    :name="{ type: 'question_status', value: 'ALL' }"
+                  <Dropdown-item name="question_status:ALL"
                     >전체</Dropdown-item
                   >
                   <Dropdown-item
                     v-for="(val, k) in QUESTION_STATUS"
                     :key="k"
-                    :name="{ type: 'question_status', value: k }"
+                    :name="`question_status:${k}`"
                   >
                     {{ val.name }}
                   </Dropdown-item>
@@ -111,7 +108,7 @@
                   <Dropdown-item
                     v-for="(val, k) in SORT_TYPE"
                     :key="k"
-                    :name="{ type: 'sort_type', value: k }"
+                    :name="`sort_type:${k}`"
                   >
                     {{ val.name }}
                   </Dropdown-item>
@@ -350,7 +347,9 @@ export default {
     goToPost(postId) {
       this.$router.push({ name: "community-detail", params: { postId } })
     },
-    filter({ type, value }) {
+    filter(name) {
+      if (typeof name !== "string") return
+      const [type, value] = name.split(":")
       const q = this.query
       q.page = 1
 

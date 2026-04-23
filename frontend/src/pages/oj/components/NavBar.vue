@@ -109,6 +109,12 @@ export default {
   mounted() {
     this.getProfile()
   },
+  beforeDestroy() {
+    if (this.communityDropdownTimer) {
+      clearTimeout(this.communityDropdownTimer)
+      this.communityDropdownTimer = null
+    }
+  },
   data() {
     return {
       communityDropdownVisible: false,

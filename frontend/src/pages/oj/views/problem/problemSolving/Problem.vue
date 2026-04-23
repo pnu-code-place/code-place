@@ -1,5 +1,5 @@
 <template>
-  <div class="flex-container">
+  <div class="flex-container problem-solving-root">
     <splitpanes vertical style="height: calc(100vh - 50px)">
       <pane :size="50">
         <div class="left-pain-wrapper">
@@ -196,7 +196,10 @@ export default {
     let psSettings = storage.get("ProblemSolvingSettings")
     if (psSettings) {
       next((vm) => {
-        vm.theme = psSettings.theme
+        vm.theme =
+          typeof psSettings.theme === "boolean"
+            ? psSettings.theme
+            : psSettings.theme === "ayu-mirage"
       })
     } else {
       next()
@@ -257,7 +260,6 @@ export default {
           if (template && template[this.language]) {
             this.code = template[this.language]
           }
-          this.problem.difficulty = problem.difficulty
         },
         () => {
           this.$Loading.error()
@@ -492,7 +494,7 @@ export default {
 @code-font-family: "JetBrains Mono", "Noto Sans KR", "Apple SD Gothic Neo",
   "Menlo", "Monaco", "Consolas", monospace;
 
-.flex-container {
+.problem-solving-root {
   display: flex;
   overflow: hidden;
 

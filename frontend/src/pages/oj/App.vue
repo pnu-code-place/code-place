@@ -80,6 +80,7 @@ h1.main-title {
   --custom-btn-hover-color: #ffffff;
   --border-color: #e7e7e7;
   --header-btn-color: rgba(237, 237, 237, 0.45);
+  --difficulty-color: #e7e7e7;
   --title-font-color: var(--container-font-color);
   --title_font-size: 24px;
   --title_font-weight: 700;
@@ -211,7 +212,7 @@ h1.main-title {
 
   --bg-color: #1f2430;
   --text-color: #ffffff;
-  --difficulty-color: #434e69;
+  --difficulty-color: #5a6885;
   --custom-btn-hover-color: #465477;
   --border-color: rgba(140, 140, 140, 0.29);
   --header-btn-color: rgba(170, 179, 203, 0.37);
