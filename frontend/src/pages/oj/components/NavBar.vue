@@ -1,6 +1,11 @@
 <template>
   <div id="header">
-    <Menu mode="horizontal" @on-select="handleRoute" :active-name="activeMenu">
+    <Menu
+      class="header-menu"
+      mode="horizontal"
+      @on-select="handleRoute"
+      :active-name="activeMenu"
+    >
       <LogoButton />
       <Menu-item class="menuItemText first" name="/">
         {{ $t("m.Home") }}
@@ -10,9 +15,12 @@
       </Menu-item>
       <Dropdown
         class="ivu-menu-item menuItemText"
-        trigger="hover"
+        trigger="custom"
+        :visible="communityDropdownVisible"
         placement="bottom"
         @on-click="handleRoute"
+        @mouseenter.native="showCommunityDropdown"
+        @mouseleave.native="hideCommunityDropdown"
       >
         <span class="menuItemText_community" @click="handleRoute('/community')">
           {{ $t("m.Community") }}
@@ -43,19 +51,11 @@
           placement="bottom"
           trigger="click"
         >
-          <div style="display: flex; align-items: center">
-            <div>
-              <img
-                class="avatar"
-                :src="profile.avatar"
-                alt="avatar of the user"
-              />
-            </div>
-            <div style="margin-left: 10px">
-              <Icon type="arrow-down-b" style="cursor: pointer"></Icon>
-            </div>
+          <div class="user-menu-trigger">
+            <img class="avatar" :src="profile.avatar" alt="avatar of the user" />
+            <Icon class="user-menu-arrow" type="arrow-down-b"></Icon>
           </div>
-          <Dropdown-menu slot="list">
+          <Dropdown-menu class="user-dropdown-menu" slot="list">
             <Dropdown-item :name="`/user-home/dashboard/${user.username}`">{{
               $t("m.MyHome")
             }}</Dropdown-item>
@@ -109,9 +109,29 @@ export default {
   mounted() {
     this.getProfile()
   },
+  data() {
+    return {
+      communityDropdownVisible: false,
+      communityDropdownTimer: null,
+    }
+  },
   methods: {
     ...mapActions(["getProfile", "changeModalStatus"]),
+    showCommunityDropdown() {
+      if (this.communityDropdownTimer) {
+        clearTimeout(this.communityDropdownTimer)
+        this.communityDropdownTimer = null
+      }
+      this.communityDropdownVisible = true
+    },
+    hideCommunityDropdown() {
+      if (this.communityDropdownTimer) clearTimeout(this.communityDropdownTimer)
+      this.communityDropdownTimer = setTimeout(() => {
+        this.communityDropdownVisible = false
+      }, 80)
+    },
     handleRoute(route) {
+      this.communityDropdownVisible = false
       if (route && route.indexOf("admin") < 0) {
         this.$router.push(route)
       } else {
@@ -157,16 +177,69 @@ export default {
   position: fixed;
   top: 0;
   left: 0;
-  height: var(header-height);
+  height: var(--header-height);
   width: 100%;
   background-color: #fff;
   z-index: 999;
-  box-shadow: 0 1px 1.5px 0 rgba(0, 0, 0, 0.1);
+  border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.045);
+
+  .header-menu {
+    width: var(--global-width);
+    margin: 0 auto;
+  }
+
+  .header-menu.ivu-menu-horizontal.ivu-menu-light::after {
+    height: 0;
+    background: transparent;
+  }
+
+  /deep/ .header-menu.ivu-menu-horizontal > .ivu-menu-item,
+  /deep/ .header-menu.ivu-menu-horizontal > .ivu-dropdown {
+    padding-right: 14px;
+    padding-left: 14px;
+  }
+
+  /deep/ .header-menu.ivu-menu-light.ivu-menu-horizontal .ivu-menu-item,
+  /deep/ .header-menu.ivu-menu-light.ivu-menu-horizontal .ivu-dropdown,
+  /deep/ .header-menu.ivu-menu-light.ivu-menu-horizontal .menuItemText_community {
+    color: rgb(15, 19, 23);
+  }
 
   .drop-menu {
     float: right;
-    margin-right: 5%;
+    margin-right: 0;
     z-index: 1000;
+    height: var(--header-height);
+    display: flex;
+    align-items: center;
+  }
+
+  .user-menu-trigger {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 36px;
+    padding: 0 10px 0 6px;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 999px;
+    background-color: #fff;
+    cursor: pointer;
+    transition:
+      border-color 0.2s ease,
+      background-color 0.2s ease;
+  }
+
+  .user-menu-trigger:hover {
+    border-color: rgba(50, 48, 107, 0.28);
+    background-color: rgba(50, 48, 107, 0.04);
+  }
+
+  .user-menu-arrow {
+    color: rgb(15, 19, 23);
+    font-size: 12px;
+    line-height: 1;
+    opacity: 0.72;
   }
 
   .menuItemText_community {
@@ -174,14 +247,82 @@ export default {
   }
 
   /deep/ .community-dropdown-menu .ivu-dropdown-item {
-    padding: 7px 7px;
-    text-align: center;
+    min-width: 132px;
+    padding: 8px 16px;
+    text-align: left;
+    font-family:
+      "Noto Sans KR", "Apple SD Gothic Neo", "Helvetica Neue", Helvetica, Arial,
+      sans-serif;
     font-size: 14px !important;
-    font-weight: 550 !important;
+    font-weight: 400 !important;
+    color: rgb(15, 19, 23) !important;
+  }
+
+  /deep/ .header-menu > .ivu-dropdown.menuItemText > .ivu-select-dropdown {
+    padding: 4px 0;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+  }
+
+  /deep/ .drop-menu > .ivu-select-dropdown {
+    min-width: 156px;
+    padding: 6px;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 8px;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.09);
+  }
+
+  /deep/ .user-dropdown-menu .ivu-dropdown-item {
+    padding: 9px 12px;
+    border-radius: 6px;
+    font-family:
+      "Noto Sans KR", "Apple SD Gothic Neo", "Helvetica Neue", Helvetica, Arial,
+      sans-serif;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 20px;
+    color: rgb(15, 19, 23) !important;
+  }
+
+  /deep/ .user-dropdown-menu .ivu-dropdown-item:hover {
+    color: #32306b !important;
+    background-color: rgba(15, 19, 23, 0.04) !important;
+  }
+
+  /deep/ .user-dropdown-menu .ivu-dropdown-item-divided {
+    margin-top: 6px;
+    border-top: 1px solid rgba(15, 23, 42, 0.08);
+  }
+
+  /deep/ .user-dropdown-menu .ivu-dropdown-item-divided::before {
+    height: 6px;
+    margin: 0 -12px;
+    background-color: #fff;
+    top: -9px;
+  }
+
+  /deep/ .community-dropdown-menu .ivu-dropdown-item:first-child {
+    border-radius: 5px 5px 0 0;
+  }
+
+  /deep/ .community-dropdown-menu .ivu-dropdown-item:last-child {
+    border-radius: 0 0 5px 5px;
   }
 
   /deep/ .community-dropdown-menu .ivu-dropdown-item:hover {
-    color: #3c5977 !important;
+    color: #32306b !important;
+    background-color: rgba(15, 19, 23, 0.04) !important;
+  }
+
+  /deep/ .community-dropdown-menu .ivu-dropdown-item:first-child:hover {
+    margin-top: -4px;
+    padding-top: 12px;
+  }
+
+  /deep/ .community-dropdown-menu .ivu-dropdown-item:last-child:hover {
+    margin-bottom: -4px;
+    padding-bottom: 12px;
   }
 }
 
@@ -196,11 +337,12 @@ export default {
   font-size: 18px;
   font-weight: 600;
   line-height: 70px;
-  margin-right: 30px;
+  margin-right: 12px;
+  color: rgb(15, 19, 23);
 }
 
 .first {
-  margin-left: 100px;
+  margin-left: 48px;
 }
 
 .menuItemText:hover {
@@ -210,23 +352,21 @@ export default {
 @avatar-radius: 50%;
 
 .avatar {
-  cursor: pointer;
-  width: 35px;
-  height: auto;
-  max-width: 100%;
+  width: 27px;
+  height: 27px;
   display: block;
   border-radius: @avatar-radius;
-  border: 1px solid #7a7a7a;
-  box-shadow: 0 0 1px 0;
+  border: none;
+  object-fit: cover;
 }
 
 .ivu-menu-item-active {
-  color: #3c5977 !important;
-  border-bottom: 2px solid #3c5977 !important;
+  color: #32306b !important;
+  border-bottom: 3px solid #32306b !important;
 }
 
 .ivu-menu-light.ivu-menu-horizontal .ivu-menu-item:hover {
-  color: #3c5977 !important;
-  border-bottom: 2px solid #3c5977 !important;
+  color: #32306b !important;
+  border-bottom: 3px solid #32306b !important;
 }
 </style>

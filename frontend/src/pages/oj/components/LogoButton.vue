@@ -3,7 +3,7 @@
     <div>
       <img
         src="@/assets/code-place-logo.svg"
-        width="30"
+        width="32"
         style="vertical-align: middle; margin-right: 10px"
       />
     </div>
@@ -33,7 +33,7 @@ export default {
 .logo {
   cursor: pointer;
   float: left;
-  margin-left: 4%;
+  margin: 0 12px;
   height: 60px;
   display: flex;
   justify-content: space-between;
@@ -44,11 +44,11 @@ export default {
     width: auto;
     text-align: left;
     .pnuName {
-      font-size: 14px;
+      font-size: 14.5px;
       font-weight: normal;
     }
     .systemTitle {
-      font-size: 18px;
+      font-size: 19px;
       font-weight: bold;
       color: #32306b;
     }
