@@ -69,7 +69,6 @@
             :languages="problem.languages"
             :language="language"
             :cursorPos.sync="cursorPos"
-            :theme.sync="theme"
             :allowPaste="allowPaste"
             ref="myCm"
           />
@@ -146,7 +145,6 @@ export default {
           return ["C", "C++", "Java", "Python3"]
         },
       },
-      theme: false,
       submissionId: "",
       submitted: false,
       result: {
@@ -193,17 +191,6 @@ export default {
     let problemCode = storage.get(
       buildProblemCodeKey(to.params.problemID, to.params.contestID),
     )
-    let psSettings = storage.get("ProblemSolvingSettings")
-    if (psSettings) {
-      next((vm) => {
-        vm.theme =
-          typeof psSettings.theme === "boolean"
-            ? psSettings.theme
-            : psSettings.theme === "ayu-mirage"
-      })
-    } else {
-      next()
-    }
     if (problemCode) {
       next((vm) => {
         vm.language = problemCode.language
@@ -274,10 +261,6 @@ export default {
         language: this.language,
       })
 
-      storage.set("ProblemSolvingSettings", {
-        theme: this.theme,
-      })
-
       event.preventDefault()
       event.returnValue = ""
     },
@@ -309,9 +292,6 @@ export default {
     },
     check() {
       alert(this.code)
-    },
-    onChangeTheme(newTheme) {
-      this.theme = newTheme
     },
     checkSubmissionStatus() {
       // 使用setTimeout避免一些问题
@@ -472,19 +452,11 @@ export default {
       code: this.code,
       language: this.language,
     })
-    storage.set("ProblemSolvingSettings", {
-      theme: this.theme,
-    })
     next()
   },
   watch: {
     $route() {
       this.init()
-    },
-    isDarkMode(value) {
-      let customTheme = value ? "ayu-mirage" : "github-light"
-      this.$refs.myCm.toggleTheme(customTheme)
-      this.theme = value
     },
   },
 }

@@ -32,8 +32,8 @@
       </template>
       <template v-if="recommendation && recommendation.recommend_problems">
         <RecommendProblem
-          v-for="(recommend_problem, index) in recommendation.recommend_problems"
-          :key="recommend_problem.id || index"
+          v-for="recommend_problem in recommendation.recommend_problems"
+          :key="recommend_problem._id"
           :recommend_problem="recommend_problem"
         />
       </template>

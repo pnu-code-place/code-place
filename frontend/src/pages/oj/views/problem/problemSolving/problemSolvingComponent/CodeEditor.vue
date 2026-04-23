@@ -67,9 +67,6 @@ export default {
     cursorPos: {
       type: Object,
     },
-    theme: {
-      type: Boolean,
-    },
     allowPaste: {
       type: Boolean,
       default: true,
@@ -108,9 +105,7 @@ export default {
     }
   },
   methods: {
-    onCmReady(cm) {
-      console.log(this.theme)
-    },
+    onCmReady() {},
     onCmCodeChange(newCode) {
       this.value = newCode
       this.$emit("update:value", newCode)
@@ -166,9 +161,6 @@ export default {
       this.codemirror.setOption("mode", this.mode[newVal])
       this.$emit("changeLang", newVal)
     },
-    toggleTheme(value) {
-      this.codemirror.setOption("theme", value)
-    },
   },
   computed: {
     ...mapGetters(["isDarkMode"]),
@@ -179,7 +171,6 @@ export default {
   mounted() {
     let customTheme = this.isDarkMode ? "ayu-mirage" : "github-light"
     this.codemirror.setOption("theme", customTheme)
-    this.$emit("update:theme", this.isDarkMode)
 
     this.code = this.value
 
@@ -204,8 +195,7 @@ export default {
   watch: {
     isDarkMode(value) {
       let customTheme = value ? "ayu-mirage" : "github-light"
-      this.toggleTheme(customTheme)
-      this.$emit("update:theme", value)
+      this.codemirror.setOption("theme", customTheme)
     },
     language(value) {
       this.codemirror.setOption("mode", this.mode[value])
