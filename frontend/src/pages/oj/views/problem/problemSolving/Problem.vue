@@ -489,6 +489,9 @@ export default {
 </script>
 
 <style lang="less">
+@code-font-family: "JetBrains Mono", "Noto Sans KR", "Apple SD Gothic Neo",
+  "Menlo", "Monaco", "Consolas", monospace;
+
 .flex-container {
   display: flex;
   overflow: hidden;
@@ -501,6 +504,17 @@ export default {
   #right-column {
     flex: none;
     width: 220px;
+  }
+
+  .CodeMirror,
+  .CodeMirror pre,
+  .CodeMirror-linenumber,
+  pre,
+  code,
+  .hljs,
+  .code-highlight-wrapper {
+    font-family: @code-font-family !important;
+    font-variant-ligatures: contextual;
   }
 }
 

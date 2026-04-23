@@ -135,7 +135,8 @@ export default {
   border-radius: 8px;
   font-size: 14px;
   font-family:
-    "Fira Code", "JetBrains Mono", "Menlo", "Monaco", "Consolas", monospace;
+    "JetBrains Mono", "Noto Sans KR", "Apple SD Gothic Neo", "Menlo", "Monaco",
+    "Consolas", monospace;
   white-space: pre;
   background-color: var(--dropdown-bg);
   color: var(--dropdown-text);
