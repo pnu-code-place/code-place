@@ -44,24 +44,24 @@
       </div>
       <div id="problem-content" class="markdown-body">
         <p class="title firstTitle">{{ $t("m.Description") }}</p>
-        <p
+        <div
           class="content"
           v-html="problem.description"
           v-katex
           :id="`problem-description-${problem._id}`"
-        ></p>
+        ></div>
         <p class="title">
           {{ $t("m.Input") }}
           <span v-if="problem.io_mode.io_mode == 'File IO'"
             >({{ $t("m.FromFile") }}: {{ problem.io_mode.input }})</span
           >
         </p>
-        <p
+        <div
           class="content"
           v-html="problem.input_description"
           v-katex
           :id="`problem-input-desc-${problem._id}`"
-        ></p>
+        ></div>
 
         <p class="title">
           {{ $t("m.Output") }}
@@ -69,12 +69,12 @@
             >({{ $t("m.ToFile") }}: {{ problem.io_mode.output }})</span
           >
         </p>
-        <p
+        <div
           class="content"
           v-html="problem.output_description"
           v-katex
           :id="`problem-output-desc-${problem._id}`"
-        ></p>
+        ></div>
 
         <div v-for="(sample, index) of problem.samples" :key="index">
           <div class="sample">
@@ -416,7 +416,7 @@ export default defineComponent({
       }
     }
 
-    p.content {
+    .content {
       font-size: 15px;
       font-weight: 450;
       color: var(--ps-content-text-color) !important;
