@@ -107,7 +107,6 @@ export default {
   methods: {
     onCmReady() {},
     onCmCodeChange(newCode) {
-      this.value = newCode
       this.$emit("update:value", newCode)
       this.$emit("update:cursorPos", {
         ln: this.codemirror.doc.getCursor().line,
@@ -155,7 +154,7 @@ export default {
       })
     },
     resetCM() {
-      this.value = ""
+      this.$emit("update:value", "")
     },
     onLangChange(newVal) {
       this.codemirror.setOption("mode", this.mode[newVal])

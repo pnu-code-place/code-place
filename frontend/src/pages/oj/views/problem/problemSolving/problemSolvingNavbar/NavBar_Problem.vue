@@ -72,7 +72,10 @@ export default {
     ]),
     handleRoute(route) {
       if (route && route.indexOf("admin") < 0) {
-        this.$router.push(route)
+        if (this.$route.fullPath === route) return
+        this.$router.push(route).catch((err) => {
+          if (err && err.name !== "NavigationDuplicated") throw err
+        })
       } else {
         window.open("/admin/")
       }

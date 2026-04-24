@@ -161,7 +161,7 @@
             <div class="detailInfoBox">
               <div class="detailInfoBoxHeader" @click="toggleDropdown('field')">
                 <p
-                  class="title"
+                  class="title detailInfoLabel"
                   style="text-decoration: none; margin-top: 0px"
                   ref="field"
                 >
@@ -193,7 +193,7 @@
                 @click="toggleDropdown('category')"
               >
                 <p
-                  class="title"
+                  class="title detailInfoLabel"
                   style="text-decoration: none; margin-top: 0px"
                   ref="category"
                 >
@@ -226,7 +226,10 @@
 
             <div class="detailInfoBox">
               <div class="detailInfoBoxHeader">
-                <p class="title" style="text-decoration: none; margin-top: 0px">
+                <p
+                  class="title detailInfoLabel"
+                  style="text-decoration: none; margin-top: 0px"
+                >
                   <Icon
                     type="ios-contact"
                     color="#90B8E7"
@@ -234,7 +237,10 @@
                   />
                   문제를 등록한 사람
                 </p>
-                <p class="title" style="text-decoration: none; margin-top: 0px">
+                <p
+                  class="title detailInfoValue"
+                  style="text-decoration: none; margin-top: 0px"
+                >
                   {{ problem.created_by.username + "님" }}
                 </p>
               </div>
@@ -242,14 +248,21 @@
 
             <div class="detailInfoBox" v-if="problem.source">
               <div class="detailInfoBoxHeader">
-                <p class="title" style="text-decoration: none; margin-top: 0px">
+                <p
+                  class="title detailInfoLabel"
+                  style="text-decoration: none; margin-top: 0px"
+                >
                   <i
                     class="fas fa-paperclip"
                     style="margin-right: 5px; color: #424f66"
                   ></i>
                   출처
                 </p>
-                <p class="title" style="text-decoration: none; margin-top: 0px">
+                <p
+                  class="title detailInfoValue"
+                  style="text-decoration: none; margin-top: 0px"
+                  :title="problem.source"
+                >
                   {{ problem.source }}
                 </p>
               </div>
@@ -563,6 +576,24 @@ export default defineComponent({
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 16px;
+    min-width: 0;
+  }
+
+  #problem-content & .detailInfoLabel {
+    flex: 0 0 auto;
+    font-weight: 650;
+    opacity: 1;
+    white-space: nowrap;
+  }
+
+  #problem-content & .detailInfoValue {
+    min-width: 0;
+    text-align: right;
+    font-weight: 500;
+    opacity: 0.78;
+    overflow-wrap: anywhere;
+    word-break: keep-all;
   }
 
   .dropdown-content {
@@ -574,7 +605,7 @@ export default defineComponent({
   .dropdown-badge {
     background-color: var(--header-btn-color);
     padding: 3px 8px;
-    font-weight: 500;
+    font-weight: 400;
     margin-right: 10px;
     border-radius: 8px;
   }
