@@ -195,21 +195,28 @@ export default {
       next((vm) => {
         vm.language = problemCode.language
         vm.code = problemCode.code
+        vm.registerBeforeUnload()
       })
     } else {
-      next()
+      next((vm) => {
+        vm.registerBeforeUnload()
+      })
     }
   },
   mounted() {
     this.$store.commit(types.CHANGE_CONTEST_ITEM_VISIBLE, { menu: false })
     this.init()
-    window.addEventListener("beforeunload", this.unLoadEvent)
+    this.registerBeforeUnload()
     this.isInitialized = true
   },
-  beforeUnmount() {
-    window.removeEventListener("beforeunload", this.unLoadEvent)
+  activated() {
+    this.registerBeforeUnload()
+  },
+  deactivated() {
+    this.removeBeforeUnload()
   },
   destroyed() {
+    this.removeBeforeUnload()
     this.changeProblemSolvingState(false)
   },
   methods: {
@@ -252,6 +259,16 @@ export default {
           this.$Loading.error()
         },
       )
+    },
+    registerBeforeUnload() {
+      if (this._beforeUnloadRegistered) return
+      window.addEventListener("beforeunload", this.unLoadEvent)
+      this._beforeUnloadRegistered = true
+    },
+    removeBeforeUnload() {
+      if (!this._beforeUnloadRegistered) return
+      window.removeEventListener("beforeunload", this.unLoadEvent)
+      this._beforeUnloadRegistered = false
     },
     unLoadEvent: function (event) {
       if (this.isLeaveSite) return
@@ -447,6 +464,7 @@ export default {
   },
   beforeRouteLeave(to, from, next) {
     clearInterval(this.refreshStatus)
+    this.removeBeforeUnload()
     this.$store.commit(types.CHANGE_CONTEST_ITEM_VISIBLE, { menu: true })
     storage.set(buildProblemCodeKey(this.problem._id, from.params.contestID), {
       code: this.code,

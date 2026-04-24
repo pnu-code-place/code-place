@@ -34,15 +34,18 @@ export default {
   cursor: pointer;
   float: left;
   margin: 0 12px;
-  height: 60px;
+  height: var(--header-height);
   display: flex;
   justify-content: space-between;
   align-items: center;
 
   .headerIcon {
-    line-height: normal;
+    line-height: 1.15;
     width: auto;
     text-align: left;
+    p {
+      margin: 0;
+    }
     .pnuName {
       font-size: 14.5px;
       font-weight: normal;

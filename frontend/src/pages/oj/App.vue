@@ -153,8 +153,11 @@ h1.main-title {
   --container-comment-color: #7e7e7e;
 
   /* header */
-  --header-height: 60px;
+  --header-height: 64px;
   --header-margin: 20px;
+  --header-glass-bg: rgba(255, 255, 255, 0.78);
+  --header-glass-border-color: rgba(15, 23, 42, 0.08);
+  --header-glass-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
   /* footer */
   --footer-height: 200px;
   --footer-margin: 80px;
@@ -216,6 +219,9 @@ h1.main-title {
   --custom-btn-hover-color: #465477;
   --border-color: rgba(140, 140, 140, 0.29);
   --header-btn-color: rgba(170, 179, 203, 0.37);
+  --header-glass-bg: rgba(27, 33, 44, 0.86);
+  --header-glass-border-color: rgba(140, 140, 140, 0.22);
+  --header-glass-shadow: 0 8px 24px rgba(0, 0, 0, 0.24);
   --markdown--code--color: rgb(6, 6, 196);
 }
 

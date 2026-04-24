@@ -17,17 +17,12 @@
         </template>
       </div>
       <div
-        style="
-          display: flex;
-          align-items: center;
-          width: 200px;
-          justify-content: right;
-        "
+        class="header-actions"
       >
         <Tooltip
           :content="this.themeTooltipContent"
           placement="bottom"
-          style="margin-right: 15px"
+          class="theme-toggle"
         >
           <CustomIconBtn
             @click="toggleProblemTheme"
@@ -35,7 +30,7 @@
           />
         </Tooltip>
         <template v-if="isAuthenticated">
-          <div class="userAvatarWrapper" @click="handleRoute('/user-home')">
+          <div class="userAvatarWrapper" @click="goUserHome">
             <img class="avatar" :src="profile.avatar" />
           </div>
         </template>
@@ -95,13 +90,26 @@ export default {
         this.themeTooltipContent = "다크 테마"
       }
     },
+    goUserHome() {
+      if (!this.user.username) return
+      this.$router.push({
+        name: "user-dashboard",
+        params: { username: this.user.username },
+      })
+    },
     goHeadPage() {
       if (this.$route.name === "problem-details") this.handleRoute("/problem")
       else this.handleRoute(`/contest/${this.$route.params.contestID}/problems`)
     },
   },
   computed: {
-    ...mapGetters(["website", "modalStatus", "isAdminRole", "isAuthenticated"]),
+    ...mapGetters([
+      "website",
+      "modalStatus",
+      "isAdminRole",
+      "isAuthenticated",
+      "user",
+    ]),
     ...mapGetters(["profile"]),
     activeMenu() {
       return "/" + this.$route.path.split("/")[1]
@@ -139,6 +147,16 @@ export default {
     color: var(--text-color);
   }
 
+  /deep/ .oj-problem-menu.ivu-menu-primary {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+  }
+
+  /deep/ .oj-problem-menu.ivu-menu-horizontal::after {
+    height: 0;
+    background: transparent;
+  }
+
   .logo {
     cursor: pointer;
     display: flex;
@@ -149,6 +167,52 @@ export default {
       font-weight: bold;
     }
   }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    width: 200px;
+  }
+
+  .theme-toggle {
+    display: flex;
+  }
+
+  .userAvatarWrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: 3px;
+    border: 1px solid var(--header-glass-border-color);
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.72);
+    cursor: pointer;
+    transition:
+      border-color 0.2s ease,
+      background-color 0.2s ease;
+  }
+
+  .userAvatarWrapper:hover {
+    border-color: rgba(50, 48, 107, 0.28);
+    background-color: rgba(255, 255, 255, 0.9);
+  }
+
+}
+
+:root.dark.problem #header {
+  .userAvatarWrapper {
+    background-color: rgba(170, 179, 203, 0.14);
+  }
+
+  .userAvatarWrapper:hover {
+    border-color: rgba(170, 179, 203, 0.34);
+    background-color: rgba(170, 179, 203, 0.22);
+  }
+
 }
 
 .solvingLogo {
@@ -159,10 +223,12 @@ export default {
 @avatar-radius: 50%;
 .avatar {
   cursor: pointer;
-  width: 35px;
+  width: 100%;
+  height: 100%;
   max-width: 100%;
   display: block;
   border-radius: @avatar-radius;
-  border: 1px solid #7a7a7a;
+  border: 0;
+  object-fit: cover;
 }
 </style>

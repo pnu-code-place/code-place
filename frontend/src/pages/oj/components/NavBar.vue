@@ -1,20 +1,22 @@
 <template>
   <div id="header">
     <Menu
+      ref="menuRef"
       class="header-menu"
       mode="horizontal"
       @on-select="handleRoute"
       :active-name="activeMenu"
     >
       <LogoButton />
-      <Menu-item class="menuItemText first" name="/">
+      <Menu-item class="menuItemText first" name="/" data-menu-key="/">
         {{ $t("m.Home") }}
       </Menu-item>
-      <Menu-item class="menuItemText" name="/problem">
+      <Menu-item class="menuItemText" name="/problem" data-menu-key="/problem">
         {{ $t("m.NavProblems") }}
       </Menu-item>
       <Dropdown
         class="ivu-menu-item menuItemText"
+        data-menu-key="/community"
         trigger="custom"
         :visible="communityDropdownVisible"
         placement="bottom"
@@ -34,13 +36,17 @@
           }}</Dropdown-item>
         </Dropdown-menu>
       </Dropdown>
-      <Menu-item class="menuItemText" name="/contest">
+      <Menu-item class="menuItemText" name="/contest" data-menu-key="/contest">
         {{ $t("m.Contests") }}
       </Menu-item>
-      <Menu-item class="menuItemText" name="/acm-rank">
+      <Menu-item
+        class="menuItemText"
+        name="/acm-rank"
+        data-menu-key="/acm-rank"
+      >
         {{ $t("m.Rank") }}
       </Menu-item>
-      <Menu-item class="menuItemText" name="/status">
+      <Menu-item class="menuItemText" name="/status" data-menu-key="/status">
         {{ $t("m.NavStatus") }}
       </Menu-item>
 
@@ -75,6 +81,14 @@
         </Dropdown>
       </template>
     </Menu>
+    <span
+      class="menu-hover-indicator"
+      :class="{
+        'is-visible': indicator.visible,
+        'is-ready': indicatorReady,
+      }"
+      :style="indicatorStyle"
+    ></span>
     <Modal
       v-model="modalVisible"
       :maskClosable="false"
@@ -108,17 +122,25 @@ export default {
   },
   mounted() {
     this.getProfile()
+    this.$nextTick(this.initIndicator)
   },
   beforeDestroy() {
     if (this.communityDropdownTimer) {
       clearTimeout(this.communityDropdownTimer)
       this.communityDropdownTimer = null
     }
+    this.teardownIndicator()
   },
   data() {
     return {
       communityDropdownVisible: false,
       communityDropdownTimer: null,
+      indicator: {
+        left: 0,
+        width: 0,
+        visible: false,
+      },
+      indicatorReady: false,
     }
   },
   methods: {
@@ -151,6 +173,66 @@ export default {
         mode: mode,
       })
     },
+    initIndicator() {
+      const menuEl = this.$refs.menuRef && this.$refs.menuRef.$el
+      if (!menuEl) return
+      this._menuEl = menuEl
+      this._onMenuOver = this.handleMenuMouseOver.bind(this)
+      this._onMenuLeave = this.handleMenuMouseLeave.bind(this)
+      this._onWindowResize = () => this.moveIndicatorToActive()
+      menuEl.addEventListener("mouseover", this._onMenuOver)
+      menuEl.addEventListener("mouseleave", this._onMenuLeave)
+      window.addEventListener("resize", this._onWindowResize)
+      this.moveIndicatorToActive()
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          this.indicatorReady = true
+        })
+      })
+    },
+    teardownIndicator() {
+      if (this._menuEl) {
+        this._menuEl.removeEventListener("mouseover", this._onMenuOver)
+        this._menuEl.removeEventListener("mouseleave", this._onMenuLeave)
+      }
+      if (this._onWindowResize) {
+        window.removeEventListener("resize", this._onWindowResize)
+      }
+      this._menuEl = null
+      this._onMenuOver = null
+      this._onMenuLeave = null
+      this._onWindowResize = null
+    },
+    handleMenuMouseOver(e) {
+      if (!this._menuEl) return
+      const target = e.target.closest("[data-menu-key]")
+      if (!target || !this._menuEl.contains(target)) return
+      this.updateIndicator(target, true)
+    },
+    handleMenuMouseLeave() {
+      this.moveIndicatorToActive()
+    },
+    updateIndicator(el, visible) {
+      if (!el || !this.$el) return
+      const headerRect = this.$el.getBoundingClientRect()
+      const rect = el.getBoundingClientRect()
+      this.indicator = {
+        left: rect.left - headerRect.left,
+        width: rect.width,
+        visible,
+      }
+    },
+    moveIndicatorToActive() {
+      if (!this._menuEl) return
+      const active = this._menuEl.querySelector(
+        `[data-menu-key="${this.activeMenu}"]`,
+      )
+      if (active) {
+        this.updateIndicator(active, true)
+      } else {
+        this.indicator = { ...this.indicator, visible: false }
+      }
+    },
   },
   computed: {
     ...mapGetters([
@@ -165,6 +247,12 @@ export default {
     activeMenu() {
       return "/" + this.$route.path.split("/")[1]
     },
+    indicatorStyle() {
+      return {
+        left: this.indicator.left + "px",
+        width: this.indicator.width + "px",
+      }
+    },
     modalVisible: {
       get() {
         return this.modalStatus.visible
@@ -172,6 +260,11 @@ export default {
       set(value) {
         this.changeModalStatus({ visible: value })
       },
+    },
+  },
+  watch: {
+    activeMenu() {
+      this.$nextTick(() => this.moveIndicatorToActive())
     },
   },
 }
@@ -185,14 +278,24 @@ export default {
   left: 0;
   height: var(--header-height);
   width: 100%;
-  background-color: #fff;
+  background-color: var(--header-glass-bg);
+  -webkit-backdrop-filter: saturate(160%) blur(14px);
+  backdrop-filter: saturate(160%) blur(14px);
   z-index: 999;
-  border-bottom: 1px solid rgba(15, 23, 42, 0.06);
-  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.045);
+  border-bottom: 1px solid var(--header-glass-border-color);
+  box-shadow: var(--header-glass-shadow);
 
   .header-menu {
     width: var(--global-width);
     margin: 0 auto;
+    background: transparent;
+  }
+
+  /deep/ .header-menu.ivu-menu-horizontal,
+  /deep/ .header-menu.ivu-menu-horizontal > .ivu-menu-item,
+  /deep/ .header-menu.ivu-menu-horizontal > .ivu-dropdown {
+    height: var(--header-height);
+    line-height: var(--header-height);
   }
 
   .header-menu.ivu-menu-horizontal.ivu-menu-light::after {
@@ -204,6 +307,39 @@ export default {
   /deep/ .header-menu.ivu-menu-horizontal > .ivu-dropdown {
     padding-right: 14px;
     padding-left: 14px;
+  }
+
+  /* iView 기본 active/hover border-bottom 을 숨기고 슬라이딩 indicator 로 대체 */
+  /deep/ .header-menu.ivu-menu-horizontal > .ivu-menu-item,
+  /deep/ .header-menu.ivu-menu-horizontal > .ivu-menu-item-active,
+  /deep/ .header-menu.ivu-menu-horizontal > .ivu-menu-item-selected,
+  /deep/ .header-menu.ivu-menu-horizontal > .ivu-menu-item:hover,
+  /deep/ .header-menu.ivu-menu-horizontal > .ivu-dropdown:hover {
+    border-bottom-color: transparent !important;
+  }
+
+  .menu-hover-indicator {
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 0;
+    height: 3px;
+    background-color: #32306b;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 1001;
+    transform: translateZ(0);
+    transition: none;
+    will-change: left, width;
+  }
+  .menu-hover-indicator.is-ready {
+    transition:
+      left 0.28s cubic-bezier(0.22, 0.61, 0.36, 1),
+      width 0.28s cubic-bezier(0.22, 0.61, 0.36, 1),
+      opacity 0.18s ease;
+  }
+  .menu-hover-indicator.is-visible {
+    opacity: 1;
   }
 
   /deep/ .header-menu.ivu-menu-light.ivu-menu-horizontal .ivu-menu-item,
