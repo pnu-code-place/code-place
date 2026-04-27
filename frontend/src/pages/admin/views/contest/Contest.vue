@@ -149,7 +149,7 @@
             </div>
 
             <div class="toggle-item">
-              <span id="allow_ai_label" class="toggle_label">
+              <span id="allow_ai_label" class="toggle-label">
                 {{ $t("m.AIAssistant_allow") }}
                 <el-tooltip
                   content="대회 진행 중 AI힌트 기능을 허용합니다."

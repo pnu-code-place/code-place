@@ -7,9 +7,10 @@ from django.db.models import Count, F, Q
 from django.http import HttpResponseBadRequest, HttpResponseNotFound, StreamingHttpResponse
 from django.contrib.auth import get_user_model
 
-from account.decorators import (check_contest_permission, scheduler_only)
+from account.decorators import (check_contest_permission, check_contest_password, scheduler_only)
+from utils.constants import CONTEST_PASSWORD_SESSION_KEY
 from account.models import UserProfile, UserScore
-from contest.models import Contest, ContestRuleType
+from contest.models import Contest, ContestRuleType, ContestStatus, ContestType
 from submission.models import JudgeStatus, Submission
 from utils.api import APIView
 from utils.constants import Difficulty, ProblemField, Tier
@@ -149,13 +150,25 @@ class ProblemLLMHintAPI(APIView):
 
         if contest_id:
             try:
-                contest = Contest.objects.get(id=contest_id)
+                contest = Contest.objects.select_related("created_by").get(id=contest_id, visible=True)
             except Contest.DoesNotExist:
-                return self._error_response("대회를 찾을 수 없습니다.")
+                return self._error_response("대회를 찾을 수 없습니다.", err="permission-denied")
+
+            if not request.user.is_contest_admin(contest):
+                if contest.contest_type == ContestType.PASSWORD_PROTECTED_CONTEST:
+                    if not check_contest_password(
+                        request.session.get(CONTEST_PASSWORD_SESSION_KEY, {}).get(contest.id),
+                        contest.password,
+                    ):
+                        return self._error_response("비밀번호가 올바르지 않거나 만료되었습니다.", err="permission-denied")
+
+                if contest.status == ContestStatus.CONTEST_NOT_START:
+                    return self._error_response("아직 시작하지 않은 대회입니다.", err="permission-denied")
+
             if not contest.ai_assistant_enabled:
                 return self._error_response("이 대회에서는 AI 조교를 사용할 수 없습니다.")
             try:
-                problem = Problem.objects.get(_id=problem_id, contest_id=contest_id)
+                problem = Problem.objects.get(_id=problem_id, contest_id=contest_id, visible=True)
             except Problem.DoesNotExist:
                 return self._error_response("문제를 찾을 수 없습니다.")
         else:
