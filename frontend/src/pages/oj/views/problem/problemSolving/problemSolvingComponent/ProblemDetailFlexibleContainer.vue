@@ -403,7 +403,7 @@ export default defineComponent({
 
     .title {
       font-size: 19px;
-      font-weight: 700;
+      font-weight: 600;
       margin: 25px 0 8px 0;
       color: var(--ps-content-title-color) !important;
 
@@ -418,8 +418,10 @@ export default defineComponent({
 
     .content {
       font-size: 15px;
-      font-weight: 450;
-      color: var(--ps-content-text-color) !important;
+      font-weight: 400;
+      line-height: 1.6;
+      letter-spacing: 0.01em;
+      color: #111111 !important;
     }
 
     .sample {
