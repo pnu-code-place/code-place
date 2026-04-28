@@ -162,7 +162,7 @@
           <Input
             v-model="newPost.title"
             :placeholder="$t('m.Problem_Community_Modal_Title_Placeholder')"
-            maxlength="100"
+            :maxlength="100"
             show-word-limit
             size="large"
           />
