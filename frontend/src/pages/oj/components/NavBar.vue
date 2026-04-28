@@ -1,18 +1,28 @@
 <template>
   <div id="header">
-    <Menu mode="horizontal" @on-select="handleRoute" :active-name="activeMenu">
+    <Menu
+      ref="menuRef"
+      class="header-menu"
+      mode="horizontal"
+      @on-select="handleRoute"
+      :active-name="activeMenu"
+    >
       <LogoButton />
-      <Menu-item class="menuItemText first" name="/">
+      <Menu-item class="menuItemText first" name="/" data-menu-key="/">
         {{ $t("m.Home") }}
       </Menu-item>
-      <Menu-item class="menuItemText" name="/problem">
+      <Menu-item class="menuItemText" name="/problem" data-menu-key="/problem">
         {{ $t("m.NavProblems") }}
       </Menu-item>
       <Dropdown
         class="ivu-menu-item menuItemText"
-        trigger="hover"
+        data-menu-key="/community"
+        trigger="custom"
+        :visible="communityDropdownVisible"
         placement="bottom"
         @on-click="handleRoute"
+        @mouseenter.native="showCommunityDropdown"
+        @mouseleave.native="hideCommunityDropdown"
       >
         <span class="menuItemText_community" @click="handleRoute('/community')">
           {{ $t("m.Community") }}
@@ -26,13 +36,17 @@
           }}</Dropdown-item>
         </Dropdown-menu>
       </Dropdown>
-      <Menu-item class="menuItemText" name="/contest">
+      <Menu-item class="menuItemText" name="/contest" data-menu-key="/contest">
         {{ $t("m.Contests") }}
       </Menu-item>
-      <Menu-item class="menuItemText" name="/acm-rank">
+      <Menu-item
+        class="menuItemText"
+        name="/acm-rank"
+        data-menu-key="/acm-rank"
+      >
         {{ $t("m.Rank") }}
       </Menu-item>
-      <Menu-item class="menuItemText" name="/status">
+      <Menu-item class="menuItemText" name="/status" data-menu-key="/status">
         {{ $t("m.NavStatus") }}
       </Menu-item>
 
@@ -43,19 +57,11 @@
           placement="bottom"
           trigger="click"
         >
-          <div style="display: flex; align-items: center">
-            <div>
-              <img
-                class="avatar"
-                :src="profile.avatar"
-                alt="avatar of the user"
-              />
-            </div>
-            <div style="margin-left: 10px">
-              <Icon type="arrow-down-b" style="cursor: pointer"></Icon>
-            </div>
+          <div class="user-menu-trigger">
+            <img class="avatar" :src="profile.avatar" alt="avatar of the user" />
+            <Icon class="user-menu-arrow" type="arrow-down-b"></Icon>
           </div>
-          <Dropdown-menu slot="list">
+          <Dropdown-menu class="user-dropdown-menu" slot="list">
             <Dropdown-item :name="`/user-home/dashboard/${user.username}`">{{
               $t("m.MyHome")
             }}</Dropdown-item>
@@ -75,6 +81,14 @@
         </Dropdown>
       </template>
     </Menu>
+    <span
+      class="menu-hover-indicator"
+      :class="{
+        'is-visible': indicator.visible,
+        'is-ready': indicatorReady,
+      }"
+      :style="indicatorStyle"
+    ></span>
     <Modal
       v-model="modalVisible"
       :maskClosable="false"
@@ -108,12 +122,49 @@ export default {
   },
   mounted() {
     this.getProfile()
+    this.$nextTick(this.initIndicator)
+  },
+  beforeDestroy() {
+    if (this.communityDropdownTimer) {
+      clearTimeout(this.communityDropdownTimer)
+      this.communityDropdownTimer = null
+    }
+    this.teardownIndicator()
+  },
+  data() {
+    return {
+      communityDropdownVisible: false,
+      communityDropdownTimer: null,
+      indicator: {
+        left: 0,
+        width: 0,
+        visible: false,
+      },
+      indicatorReady: false,
+    }
   },
   methods: {
     ...mapActions(["getProfile", "changeModalStatus"]),
+    showCommunityDropdown() {
+      if (this.communityDropdownTimer) {
+        clearTimeout(this.communityDropdownTimer)
+        this.communityDropdownTimer = null
+      }
+      this.communityDropdownVisible = true
+    },
+    hideCommunityDropdown() {
+      if (this.communityDropdownTimer) clearTimeout(this.communityDropdownTimer)
+      this.communityDropdownTimer = setTimeout(() => {
+        this.communityDropdownVisible = false
+      }, 80)
+    },
     handleRoute(route) {
+      this.communityDropdownVisible = false
       if (route && route.indexOf("admin") < 0) {
-        this.$router.push(route)
+        if (this.$route.fullPath === route) return
+        this.$router.push(route).catch((err) => {
+          if (err && err.name !== "NavigationDuplicated") throw err
+        })
       } else {
         window.open("/admin/")
       }
@@ -124,6 +175,66 @@ export default {
         visible: true,
         mode: mode,
       })
+    },
+    initIndicator() {
+      const menuEl = this.$refs.menuRef && this.$refs.menuRef.$el
+      if (!menuEl) return
+      this._menuEl = menuEl
+      this._onMenuOver = this.handleMenuMouseOver.bind(this)
+      this._onMenuLeave = this.handleMenuMouseLeave.bind(this)
+      this._onWindowResize = () => this.moveIndicatorToActive()
+      menuEl.addEventListener("mouseover", this._onMenuOver)
+      menuEl.addEventListener("mouseleave", this._onMenuLeave)
+      window.addEventListener("resize", this._onWindowResize)
+      this.moveIndicatorToActive()
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          this.indicatorReady = true
+        })
+      })
+    },
+    teardownIndicator() {
+      if (this._menuEl) {
+        this._menuEl.removeEventListener("mouseover", this._onMenuOver)
+        this._menuEl.removeEventListener("mouseleave", this._onMenuLeave)
+      }
+      if (this._onWindowResize) {
+        window.removeEventListener("resize", this._onWindowResize)
+      }
+      this._menuEl = null
+      this._onMenuOver = null
+      this._onMenuLeave = null
+      this._onWindowResize = null
+    },
+    handleMenuMouseOver(e) {
+      if (!this._menuEl) return
+      const target = e.target.closest("[data-menu-key]")
+      if (!target || !this._menuEl.contains(target)) return
+      this.updateIndicator(target, true)
+    },
+    handleMenuMouseLeave() {
+      this.moveIndicatorToActive()
+    },
+    updateIndicator(el, visible) {
+      if (!el || !this.$el) return
+      const headerRect = this.$el.getBoundingClientRect()
+      const rect = el.getBoundingClientRect()
+      this.indicator = {
+        left: rect.left - headerRect.left,
+        width: rect.width,
+        visible,
+      }
+    },
+    moveIndicatorToActive() {
+      if (!this._menuEl) return
+      const active = this._menuEl.querySelector(
+        `[data-menu-key="${this.activeMenu}"]`,
+      )
+      if (active) {
+        this.updateIndicator(active, true)
+      } else {
+        this.indicator = { ...this.indicator, visible: false }
+      }
     },
   },
   computed: {
@@ -139,6 +250,12 @@ export default {
     activeMenu() {
       return "/" + this.$route.path.split("/")[1]
     },
+    indicatorStyle() {
+      return {
+        left: this.indicator.left + "px",
+        width: this.indicator.width + "px",
+      }
+    },
     modalVisible: {
       get() {
         return this.modalStatus.visible
@@ -146,6 +263,11 @@ export default {
       set(value) {
         this.changeModalStatus({ visible: value })
       },
+    },
+  },
+  watch: {
+    activeMenu() {
+      this.$nextTick(() => this.moveIndicatorToActive())
     },
   },
 }
@@ -157,16 +279,112 @@ export default {
   position: fixed;
   top: 0;
   left: 0;
-  height: var(header-height);
+  height: var(--header-height);
   width: 100%;
-  background-color: #fff;
+  background-color: var(--header-glass-bg);
+  -webkit-backdrop-filter: saturate(160%) blur(14px);
+  backdrop-filter: saturate(160%) blur(14px);
   z-index: 999;
-  box-shadow: 0 1px 1.5px 0 rgba(0, 0, 0, 0.1);
+  border-bottom: 1px solid var(--header-glass-border-color);
+  box-shadow: var(--header-glass-shadow);
+
+  .header-menu {
+    width: var(--global-width);
+    margin: 0 auto;
+    background: transparent;
+  }
+
+  /deep/ .header-menu.ivu-menu-horizontal,
+  /deep/ .header-menu.ivu-menu-horizontal > .ivu-menu-item,
+  /deep/ .header-menu.ivu-menu-horizontal > .ivu-dropdown {
+    height: var(--header-height);
+    line-height: var(--header-height);
+  }
+
+  .header-menu.ivu-menu-horizontal.ivu-menu-light::after {
+    height: 0;
+    background: transparent;
+  }
+
+  /deep/ .header-menu.ivu-menu-horizontal > .ivu-menu-item,
+  /deep/ .header-menu.ivu-menu-horizontal > .ivu-dropdown {
+    padding-right: 14px;
+    padding-left: 14px;
+  }
+
+  /* iView 기본 active/hover border-bottom 을 숨기고 슬라이딩 indicator 로 대체 */
+  /deep/ .header-menu.ivu-menu-horizontal > .ivu-menu-item,
+  /deep/ .header-menu.ivu-menu-horizontal > .ivu-menu-item-active,
+  /deep/ .header-menu.ivu-menu-horizontal > .ivu-menu-item-selected,
+  /deep/ .header-menu.ivu-menu-horizontal > .ivu-menu-item:hover,
+  /deep/ .header-menu.ivu-menu-horizontal > .ivu-dropdown:hover {
+    border-bottom-color: transparent !important;
+  }
+
+  .menu-hover-indicator {
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 0;
+    height: 3px;
+    background-color: #32306b;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 1001;
+    transform: translateZ(0);
+    transition: none;
+    will-change: left, width;
+  }
+  .menu-hover-indicator.is-ready {
+    transition:
+      left 0.28s cubic-bezier(0.22, 0.61, 0.36, 1),
+      width 0.28s cubic-bezier(0.22, 0.61, 0.36, 1),
+      opacity 0.18s ease;
+  }
+  .menu-hover-indicator.is-visible {
+    opacity: 1;
+  }
+
+  /deep/ .header-menu.ivu-menu-light.ivu-menu-horizontal .ivu-menu-item,
+  /deep/ .header-menu.ivu-menu-light.ivu-menu-horizontal .ivu-dropdown,
+  /deep/ .header-menu.ivu-menu-light.ivu-menu-horizontal .menuItemText_community {
+    color: rgb(15, 19, 23);
+  }
 
   .drop-menu {
     float: right;
-    margin-right: 5%;
+    margin-right: 0;
     z-index: 1000;
+    height: var(--header-height);
+    display: flex;
+    align-items: center;
+  }
+
+  .user-menu-trigger {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 36px;
+    padding: 0 10px 0 6px;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 999px;
+    background-color: #fff;
+    cursor: pointer;
+    transition:
+      border-color 0.2s ease,
+      background-color 0.2s ease;
+  }
+
+  .user-menu-trigger:hover {
+    border-color: rgba(50, 48, 107, 0.28);
+    background-color: rgba(50, 48, 107, 0.04);
+  }
+
+  .user-menu-arrow {
+    color: rgb(15, 19, 23);
+    font-size: 12px;
+    line-height: 1;
+    opacity: 0.72;
   }
 
   .menuItemText_community {
@@ -174,14 +392,82 @@ export default {
   }
 
   /deep/ .community-dropdown-menu .ivu-dropdown-item {
-    padding: 7px 7px;
-    text-align: center;
+    min-width: 132px;
+    padding: 8px 16px;
+    text-align: left;
+    font-family:
+      "Noto Sans KR", "Apple SD Gothic Neo", "Helvetica Neue", Helvetica, Arial,
+      sans-serif;
     font-size: 14px !important;
-    font-weight: 550 !important;
+    font-weight: 400 !important;
+    color: rgb(15, 19, 23) !important;
+  }
+
+  /deep/ .header-menu > .ivu-dropdown.menuItemText > .ivu-select-dropdown {
+    padding: 4px 0;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+  }
+
+  /deep/ .drop-menu > .ivu-select-dropdown {
+    min-width: 156px;
+    padding: 6px;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 8px;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.09);
+  }
+
+  /deep/ .user-dropdown-menu .ivu-dropdown-item {
+    padding: 9px 12px;
+    border-radius: 6px;
+    font-family:
+      "Noto Sans KR", "Apple SD Gothic Neo", "Helvetica Neue", Helvetica, Arial,
+      sans-serif;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    line-height: 20px;
+    color: rgb(15, 19, 23) !important;
+  }
+
+  /deep/ .user-dropdown-menu .ivu-dropdown-item:hover {
+    color: #32306b !important;
+    background-color: rgba(15, 19, 23, 0.04) !important;
+  }
+
+  /deep/ .user-dropdown-menu .ivu-dropdown-item-divided {
+    margin-top: 6px;
+    border-top: 1px solid rgba(15, 23, 42, 0.08);
+  }
+
+  /deep/ .user-dropdown-menu .ivu-dropdown-item-divided::before {
+    height: 6px;
+    margin: 0 -12px;
+    background-color: #fff;
+    top: -9px;
+  }
+
+  /deep/ .community-dropdown-menu .ivu-dropdown-item:first-child {
+    border-radius: 5px 5px 0 0;
+  }
+
+  /deep/ .community-dropdown-menu .ivu-dropdown-item:last-child {
+    border-radius: 0 0 5px 5px;
   }
 
   /deep/ .community-dropdown-menu .ivu-dropdown-item:hover {
-    color: #3c5977 !important;
+    color: #32306b !important;
+    background-color: rgba(15, 19, 23, 0.04) !important;
+  }
+
+  /deep/ .community-dropdown-menu .ivu-dropdown-item:first-child:hover {
+    margin-top: -4px;
+    padding-top: 12px;
+  }
+
+  /deep/ .community-dropdown-menu .ivu-dropdown-item:last-child:hover {
+    margin-bottom: -4px;
+    padding-bottom: 12px;
   }
 }
 
@@ -196,11 +482,12 @@ export default {
   font-size: 18px;
   font-weight: 600;
   line-height: 70px;
-  margin-right: 30px;
+  margin-right: 12px;
+  color: rgb(15, 19, 23);
 }
 
 .first {
-  margin-left: 100px;
+  margin-left: 48px;
 }
 
 .menuItemText:hover {
@@ -210,23 +497,21 @@ export default {
 @avatar-radius: 50%;
 
 .avatar {
-  cursor: pointer;
-  width: 35px;
-  height: auto;
-  max-width: 100%;
+  width: 27px;
+  height: 27px;
   display: block;
   border-radius: @avatar-radius;
-  border: 1px solid #7a7a7a;
-  box-shadow: 0 0 1px 0;
+  border: none;
+  object-fit: cover;
 }
 
 .ivu-menu-item-active {
-  color: #3c5977 !important;
-  border-bottom: 2px solid #3c5977 !important;
+  color: #32306b !important;
+  border-bottom: 3px solid #32306b !important;
 }
 
 .ivu-menu-light.ivu-menu-horizontal .ivu-menu-item:hover {
-  color: #3c5977 !important;
-  border-bottom: 2px solid #3c5977 !important;
+  color: #32306b !important;
+  border-bottom: 3px solid #32306b !important;
 }
 </style>

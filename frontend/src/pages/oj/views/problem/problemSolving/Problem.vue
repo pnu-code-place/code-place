@@ -1,5 +1,5 @@
 <template>
-  <div class="flex-container">
+  <div class="flex-container problem-solving-root">
     <splitpanes vertical style="height: calc(100vh - 50px)">
       <pane :size="50">
         <div class="left-pain-wrapper">
@@ -69,7 +69,6 @@
             :languages="problem.languages"
             :language="language"
             :cursorPos.sync="cursorPos"
-            :theme.sync="theme"
             :allowPaste="allowPaste"
             ref="myCm"
           />
@@ -146,7 +145,6 @@ export default {
           return ["C", "C++", "Java", "Python3"]
         },
       },
-      theme: false,
       submissionId: "",
       submitted: false,
       result: {
@@ -193,33 +191,32 @@ export default {
     let problemCode = storage.get(
       buildProblemCodeKey(to.params.problemID, to.params.contestID),
     )
-    let psSettings = storage.get("ProblemSolvingSettings")
-    if (psSettings) {
-      next((vm) => {
-        vm.theme = psSettings.theme
-      })
-    } else {
-      next()
-    }
     if (problemCode) {
       next((vm) => {
         vm.language = problemCode.language
         vm.code = problemCode.code
+        vm.registerBeforeUnload()
       })
     } else {
-      next()
+      next((vm) => {
+        vm.registerBeforeUnload()
+      })
     }
   },
   mounted() {
     this.$store.commit(types.CHANGE_CONTEST_ITEM_VISIBLE, { menu: false })
     this.init()
-    window.addEventListener("beforeunload", this.unLoadEvent)
+    this.registerBeforeUnload()
     this.isInitialized = true
   },
-  beforeUnmount() {
-    window.removeEventListener("beforeunload", this.unLoadEvent)
+  activated() {
+    this.registerBeforeUnload()
+  },
+  deactivated() {
+    this.removeBeforeUnload()
   },
   destroyed() {
+    this.removeBeforeUnload()
     this.changeProblemSolvingState(false)
   },
   methods: {
@@ -257,12 +254,21 @@ export default {
           if (template && template[this.language]) {
             this.code = template[this.language]
           }
-          this.problem.difficulty = problem.difficulty
         },
         () => {
           this.$Loading.error()
         },
       )
+    },
+    registerBeforeUnload() {
+      if (this._beforeUnloadRegistered) return
+      window.addEventListener("beforeunload", this.unLoadEvent)
+      this._beforeUnloadRegistered = true
+    },
+    removeBeforeUnload() {
+      if (!this._beforeUnloadRegistered) return
+      window.removeEventListener("beforeunload", this.unLoadEvent)
+      this._beforeUnloadRegistered = false
     },
     unLoadEvent: function (event) {
       if (this.isLeaveSite) return
@@ -270,10 +276,6 @@ export default {
       storage.set(buildProblemCodeKey(this.problem._id, this.contestID), {
         code: this.code,
         language: this.language,
-      })
-
-      storage.set("ProblemSolvingSettings", {
-        theme: this.theme,
       })
 
       event.preventDefault()
@@ -307,9 +309,6 @@ export default {
     },
     check() {
       alert(this.code)
-    },
-    onChangeTheme(newTheme) {
-      this.theme = newTheme
     },
     checkSubmissionStatus() {
       // 使用setTimeout避免一些问题
@@ -465,13 +464,11 @@ export default {
   },
   beforeRouteLeave(to, from, next) {
     clearInterval(this.refreshStatus)
+    this.removeBeforeUnload()
     this.$store.commit(types.CHANGE_CONTEST_ITEM_VISIBLE, { menu: true })
     storage.set(buildProblemCodeKey(this.problem._id, from.params.contestID), {
       code: this.code,
       language: this.language,
-    })
-    storage.set("ProblemSolvingSettings", {
-      theme: this.theme,
     })
     next()
   },
@@ -479,17 +476,15 @@ export default {
     $route() {
       this.init()
     },
-    isDarkMode(value) {
-      let customTheme = value ? "ayu-mirage" : "github-light"
-      this.$refs.myCm.toggleTheme(customTheme)
-      this.theme = value
-    },
   },
 }
 </script>
 
 <style lang="less">
-.flex-container {
+@code-font-family: "JetBrains Mono", "Noto Sans KR", "Apple SD Gothic Neo",
+  "Menlo", "Monaco", "Consolas", monospace;
+
+.problem-solving-root {
   display: flex;
   overflow: hidden;
 
@@ -501,6 +496,17 @@ export default {
   #right-column {
     flex: none;
     width: 220px;
+  }
+
+  .CodeMirror,
+  .CodeMirror pre,
+  .CodeMirror-linenumber,
+  pre,
+  code,
+  .hljs,
+  .code-highlight-wrapper {
+    font-family: @code-font-family !important;
+    font-variant-ligatures: none;
   }
 }
 
