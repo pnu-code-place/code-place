@@ -506,7 +506,7 @@ export default {
   .hljs,
   .code-highlight-wrapper {
     font-family: @code-font-family !important;
-    font-variant-ligatures: contextual;
+    font-variant-ligatures: none;
   }
 }
 

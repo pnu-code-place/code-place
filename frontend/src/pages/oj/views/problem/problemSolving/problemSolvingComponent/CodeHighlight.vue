@@ -137,6 +137,7 @@ export default {
   font-family:
     "JetBrains Mono", "Noto Sans KR", "Apple SD Gothic Neo", "Menlo", "Monaco",
     "Consolas", monospace;
+  font-variant-ligatures: none;
   white-space: pre;
   background-color: var(--dropdown-bg);
   color: var(--dropdown-text);
