@@ -55,6 +55,7 @@ jobs:
           file: ./backend/Dockerfile
           push: true
           tags: ${{ secrets.HARBOR_REGISTRY }}/code-place-dev/backend:${{ github.sha }}-dev
+          provenance: false
 
   ci-frontend-dev:
     needs: [detect-changes-by-component]
@@ -81,6 +82,7 @@ jobs:
           file: ./frontend/Dockerfile
           push: true
           tags: ${{ secrets.HARBOR_REGISTRY }}/code-place-dev/frontend:${{ github.sha }}-dev
+          provenance: false
           build-args: |
             SERVER_NAME=${{ secrets.DEV_SERVER_NAME }}
             APP_VERSION=${{ github.sha }}-dev
@@ -110,6 +112,7 @@ jobs:
           file: ./hub/auth_server/Dockerfile
           push: true
           tags: ${{ secrets.HARBOR_REGISTRY }}/code-place-dev/hub-auth:${{ github.sha }}-dev
+          provenance: false
 
   update-dev-manifest:
     needs: [ci-backend-dev, ci-frontend-dev, ci-hub-auth-dev]
