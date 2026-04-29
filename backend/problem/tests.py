@@ -291,25 +291,15 @@ class ProblemLLMHintAPITest(ProblemCreateTestBase):
         saved_log = ProblemAIHintLog.objects.filter(user=self.user, problem=self.problem).first()
         self.assertEqual(saved_log.hint_content, "힌트 스트림")
 
-        msgs = mocked_post.call_args.kwargs["json"]["messages"]
         mocked_post.assert_called_once()
         self.assertEqual(mocked_post.call_args.args[0], get_vllm_chat_completions_url())
         self.assertEqual(mocked_post.call_args.kwargs["json"]["model"], VLLM_MODEL)
-
-        # messages[0]: 시스템 프롬프트
-        self.assertIn("이전 힌트와 똑같은 내용을 반복하지 마세요.", msgs[0]["content"])
-        self.assertIn("너무 추상적인 조언은 피하고 문제의 특정 조건이나 구조에서 출발하세요.", msgs[0]["content"])
-        self.assertIn("[단계 규칙]", msgs[0]["content"])
-        self.assertIn("현재 N단계 힌트를 제공해야 합니다", msgs[0]["content"])
-
-        # messages[1]: 문제 데이터 (HTML 태그 미포함, problem._id 포함)
-        self.assertIn(self.problem._id, msgs[1]["content"])
-        self.assertNotIn("<p>", msgs[1]["content"])
-
-        # messages[2]: 트리거 — 첫 요청이므로 1단계를 명시해야 함
-        self.assertEqual(msgs[2]["role"], "user")
-        self.assertIn("현재 1단계 힌트를 제공해야 합니다", msgs[2]["content"])
-
+        self.assertIn("힌트는 정확히 1개의 핵심 아이디어만 제공하라.", mocked_post.call_args.kwargs["json"]["messages"][0]["content"])
+        self.assertIn("너무 추상적인 조언은 피하고,", mocked_post.call_args.kwargs["json"]["messages"][0]["content"])
+        self.assertIn(self.problem._id, mocked_post.call_args.kwargs["json"]["messages"][1]["content"])
+        self.assertNotIn("<p>", mocked_post.call_args.kwargs["json"]["messages"][1]["content"])
+        self.assertIn("짧은 힌트 하나만 작성해라.", mocked_post.call_args.kwargs["json"]["messages"][1]["content"])
+        self.assertIn("관찰 포인트를 짚어라.", mocked_post.call_args.kwargs["json"]["messages"][1]["content"])
         self.assertEqual(mocked_post.call_args.kwargs["json"]["temperature"], 0.55)
         self.assertEqual(mocked_post.call_args.kwargs["stream"], True)
         self.assertEqual(
