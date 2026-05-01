@@ -9,7 +9,7 @@ import time
 
 LOCAL_VLLM_CHAT_COMPLETIONS_URL = "http://localhost:8000/v1/chat/completions"
 CLUSTER_VLLM_CHAT_COMPLETIONS_URL = "http://vllm:8000/v1/chat/completions"
-VLLM_MODEL = "Qwen/Qwen2.5-Coder-7B-Instruct"
+VLLM_MODEL = "Qwen/Qwen3.5-9B"
 VLLM_CONNECT_TIMEOUT_SEC = 10
 VLLM_STREAM_READ_TIMEOUT_SEC = 3600
 
