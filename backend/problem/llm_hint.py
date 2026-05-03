@@ -163,6 +163,7 @@ def build_hint_payload(problem, previous_hints=None, stream=False):
         "temperature": 0.2,
         "max_tokens": 512,
         "stream": stream,
+        "chat_template_kwargs": {"enable_thinking": False},
     }
 
 def build_previous_hints_prompt(previous_hints, current_stage):
