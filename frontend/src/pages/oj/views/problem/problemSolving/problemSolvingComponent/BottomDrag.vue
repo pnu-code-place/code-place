@@ -86,6 +86,10 @@ export default {
     result: Object,
     problemID: String,
     contestID: [Number, String],
+    code: {
+      type: String,
+      default: "",
+    },
   },
 
   data() {
@@ -170,7 +174,7 @@ export default {
       const thinkingIndex = this.messages.length - 1
 
       const eventSource = new EventSource(
-        api.getProblemLLMHintUrl(this.problemID),
+        api.getProblemLLMHintUrl(this.problemID, this.code),
       )
       this.eventSource = eventSource
 

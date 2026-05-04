@@ -209,8 +209,14 @@ export default {
       },
     })
   },
-  getProblemLLMHintUrl(problemID) {
-    return `/api/problem/llm_hint?problem_id=${encodeURIComponent(problemID)}`
+  getProblemLLMHintUrl(problemID, userCode) {
+    let url = `/api/problem/llm_hint?problem_id=${encodeURIComponent(problemID)}`
+    if (userCode) {
+      // encodeURIComponent 후 최악 3배 팽창: 4000자 × 3 = ~12KB → nginx 기본 한도(8KB) 이내
+      const truncated = userCode.slice(0, 4000)
+      url += `&user_code=${encodeURIComponent(truncated)}`
+    }
+    return url
   },
   getAIHintHistory(problemID) {
     return ajax("problem/ai_hint_history", "get", {

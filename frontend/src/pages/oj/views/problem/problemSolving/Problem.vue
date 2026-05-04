@@ -77,6 +77,7 @@
             :result="result"
             :problemID="problemID"
             :contestID="contestID"
+            :code="code"
           />
           <StickyLnCol :cursorPos="cursorPos" />
         </div>
