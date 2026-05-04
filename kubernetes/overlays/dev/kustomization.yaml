@@ -21,7 +21,7 @@ patches:
 images:
   - name: backend
     newName: harbor.code-place-dev.site/code-place-dev/backend
-    newTag: 1392635fbac9fab10a56226e8aff460fbe6c6d96-dev
+    newTag: 4ff15ccd111ca99202f2094802ec665bcf237e7f-dev
   - name: frontend
     newName: harbor.code-place-dev.site/code-place-dev/frontend
     newTag: 1392635fbac9fab10a56226e8aff460fbe6c6d96-dev
