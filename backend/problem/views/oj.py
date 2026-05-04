@@ -14,7 +14,7 @@ from submission.models import JudgeStatus, Submission
 from utils.api import APIView
 from utils.constants import Difficulty, ProblemField, Tier
 
-from ..llm_hint import LLMHintError, stream_problem_hint
+from ..llm_hint import LLMHintError, MAX_USER_CODE_LENGTH, stream_problem_hint
 from ..models import (Problem, ProblemRuleType, ProblemTag, get_default_week_info, ProblemAIHintLog)
 from ..serializers import (MostDifficultProblemSerializer, ProblemSafeSerializer, ProblemSerializer,
                            RecommendBonusProblemSerializer, TagSerializer, AIHintLogSerializer)
@@ -146,6 +146,11 @@ class ProblemLLMHintAPI(APIView):
         if not problem_id:
             return self._error_response("문제 번호가 필요합니다.")
 
+        # 사용자가 현재 작성 중인 코드 (없으면 None)
+        # 서버에서 한 번 더 길이를 제한해 과도하게 큰 요청을 차단
+        raw_user_code = request.GET.get("user_code") or ""
+        user_code = raw_user_code[:MAX_USER_CODE_LENGTH] if raw_user_code else None
+
         try:
             problem = Problem.objects.get(_id=problem_id, contest_id__isnull=True, visible=True)
         except Problem.DoesNotExist:
@@ -182,7 +187,7 @@ class ProblemLLMHintAPI(APIView):
         def generator():
             full_text_chunks = []
             try:
-                for chunk in stream_problem_hint(problem, previous_hints=previous_hints):
+                for chunk in stream_problem_hint(problem, previous_hints=previous_hints, user_code=user_code):
                     full_text_chunks.append(chunk)
                     yield self._format_sse_event("chunk", {"text": chunk})
                 full_text = "".join(full_text_chunks)
