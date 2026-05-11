@@ -216,7 +216,6 @@ export default {
     this.init()
     window.addEventListener("beforeunload", this.unLoadEvent)
     this.isInitialized = true
-    console.log("contest:", this.contest)
   },
   beforeUnmount() {
     window.removeEventListener("beforeunload", this.unLoadEvent)
@@ -238,10 +237,6 @@ export default {
 
       this.$store.dispatch("getContest", this.contestID)
 
-      api.getContest(this.contestID).then((res) => {
-        this.contestData = res.data.data
-        console.log("contestData: ", this.contestData)
-      })
       let func =
         this.$route.name === "problem-details"
           ? "getProblem"

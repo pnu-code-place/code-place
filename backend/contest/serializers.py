@@ -42,7 +42,7 @@ class EditConetestSeriaizer(serializers.Serializer):
     real_time_rank = serializers.BooleanField()
     allow_paste = serializers.BooleanField()
     allowed_ip_ranges = serializers.ListField(child=serializers.CharField(max_length=32))
-    ai_assistant_enabled = serializers.BooleanField()
+    ai_assistant_enabled = serializers.BooleanField(required=False)
 
 
 class ContestAdminSerializer(serializers.ModelSerializer):
