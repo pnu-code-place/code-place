@@ -187,7 +187,6 @@ export default {
       rightPainActiveTab: "editor",
       lastSubmissionId: null,
       isInitialized: false,
-      contestData: null,
     }
   },
   beforeRouteEnter(to, from, next) {
@@ -235,7 +234,9 @@ export default {
       this.contestID = this.$route.params.contestID
       this.problemID = this.$route.params.problemID
 
-      this.$store.dispatch("getContest", this.contestID)
+      if (this.contestID) {
+        this.$store.dispatch("getContest", this.contestID)
+      }
 
       let func =
         this.$route.name === "problem-details"
