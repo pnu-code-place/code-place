@@ -79,11 +79,12 @@
         <Icon type="arrow-down-b"></Icon>
         <Dropdown-menu slot="list" class="problem-dropdown-menu">
           <Dropdown-item name="">{{ $t("m.All") }}</Dropdown-item>
-          <template v-for="(problem, idx) in this.problemList">
-            <template v-for="(problemTag, idx) in problem.tags">
-              <Dropdown-item :name="problemTag">{{ problemTag }}</Dropdown-item>
-            </template>
-          </template>
+          <Dropdown-item
+            v-for="tag in uniqueTags"
+            :key="tag"
+            :name="tag"
+            >{{ tag }}</Dropdown-item
+          >
         </Dropdown-menu>
       </Dropdown>
       <Tooltip
@@ -111,7 +112,8 @@ export default {
       type: Object,
     },
     problemList: {
-      type: Object,
+      type: Array,
+      default: () => [],
     },
   },
   methods: {
@@ -145,6 +147,16 @@ export default {
     },
     FIELD_MAP() {
       return FIELD_MAP
+    },
+    uniqueTags() {
+      const tags = new Set()
+      for (const problem of this.problemList) {
+        if (!problem || !Array.isArray(problem.tags)) continue
+        for (const tag of problem.tags) {
+          tags.add(tag)
+        }
+      }
+      return Array.from(tags)
     },
   },
 }

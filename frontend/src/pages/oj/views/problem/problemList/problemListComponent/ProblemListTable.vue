@@ -75,7 +75,8 @@ export default {
   components: { Pagination, FieldCategoryBox },
   props: {
     problemList: {
-      type: Object,
+      type: Array,
+      default: () => [],
     },
   },
   methods: {

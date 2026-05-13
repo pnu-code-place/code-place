@@ -39,9 +39,14 @@ export default {
 pre {
   padding: 0;
   display: block;
+  font-family:
+    "JetBrains Mono", "Noto Sans KR", "Apple SD Gothic Neo", "Menlo", "Monaco",
+    "Consolas", monospace;
+  font-variant-ligatures: none;
   code {
     padding: 20px;
     font-size: 1.1em;
+    font-family: inherit;
   }
 }
 </style>

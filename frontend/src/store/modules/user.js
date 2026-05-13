@@ -40,6 +40,12 @@ const mutations = {
     }
     storage.set(STORAGE_KEY.AUTHED, !!profile.user)
   },
+  [types.CHANGE_PROBLEM_SOLVING_STATE](state, payload) {
+    state.isProblemSolving = payload
+  },
+  [types.CHANGE_PROBLEM_SOLVING_THEME](state, payload) {
+    state.isDarkMode = payload
+  },
 }
 
 const actions = {
@@ -56,11 +62,11 @@ const actions = {
     })
     storage.clear()
   },
-  changeProblemSolvingState({ commit, state }, payload) {
-    state.isProblemSolving = payload
+  changeProblemSolvingState({ commit }, payload) {
+    commit(types.CHANGE_PROBLEM_SOLVING_STATE, payload)
   },
-  changeProblemSolvingTheme({ commit, state }, payload) {
-    state.isDarkMode = payload
+  changeProblemSolvingTheme({ commit }, payload) {
+    commit(types.CHANGE_PROBLEM_SOLVING_THEME, payload)
   },
 }
 
