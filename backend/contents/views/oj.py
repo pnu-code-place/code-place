@@ -64,11 +64,16 @@ class GetHomeRSSNoticeAPI(APIView):
             root = ET.fromstring(response.content)
 
             # 필요한 정보 추출
+            BASE_URL = "https://swedu.pusan.ac.kr"
             items = []
             for item in root.findall('.//item')[:5]:
+                link = item.find('link').text or ''
+                # RSS가 상대 경로(/bbs/...)로 반환할 경우 base URL을 붙여줌
+                if link and not link.startswith('http'):
+                    link = BASE_URL + link
                 item_dict = {
                     'title': item.find('title').text,
-                    'link': item.find('link').text,
+                    'link': link,
                     'pubDate': item.find('pubDate').text
                 }
                 items.append(item_dict)
