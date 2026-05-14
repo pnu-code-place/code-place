@@ -231,6 +231,11 @@ export default {
       this.$Loading.start()
       this.contestID = this.$route.params.contestID
       this.problemID = this.$route.params.problemID
+
+      if (this.contestID) {
+        this.$store.dispatch("getContest", this.contestID)
+      }
+
       let func =
         this.$route.name === "problem-details"
           ? "getProblem"

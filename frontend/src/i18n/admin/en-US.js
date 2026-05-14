@@ -275,7 +275,7 @@ export const m = {
   Allowed_IP_Ranges: "허용된 IP 범위",
   CIDR_Network: "CIDR 네트워크",
   Allow_Paste: "붙여넣기 허용",
-  Contest_Visible: "활성화하면 참가자에게 대회가 노출됩니다.",
+  AIAssistant_allow: "AI힌트 기능 허용",
 
   // ContestList.vue
   Contest_List_Page_Title: "대회 목록",

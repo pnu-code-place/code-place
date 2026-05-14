@@ -124,6 +124,7 @@
                 ></span>
               </label>
             </div>
+
             <div class="toggle-item">
               <span id="allow_paste_label" class="toggle-label">
                 {{ $t("m.Allow_Paste") }}
@@ -143,6 +144,30 @@
                 <span
                   class="spj-toggle-track"
                   :class="{ 'is-on': contest.allow_paste }"
+                ></span>
+              </label>
+            </div>
+
+            <div class="toggle-item">
+              <span id="allow_ai_label" class="toggle-label">
+                {{ $t("m.AIAssistant_allow") }}
+                <el-tooltip
+                  content="대회 진행 중 AI힌트 기능을 허용합니다."
+                  placement="top"
+                >
+                  <i class="el-icon-question help-icon"></i>
+                </el-tooltip>
+              </span>
+
+              <label class="spj-toggle">
+                <input
+                  type="checkbox"
+                  v-model="contest.ai_assistant_enabled"
+                  aria-labelledby="allow_ai_label"
+                />
+                <span
+                  class="spj-toggle-track"
+                  :class="{ 'is-on': contest.ai_assistant_enabled }"
                 ></span>
               </label>
             </div>
@@ -216,6 +241,7 @@ export default {
         real_time_rank: true,
         visible: true,
         allow_paste: true,
+        ai_assistant_enabled: true,
         allowed_ip_ranges: [{ value: "" }],
       },
     }
