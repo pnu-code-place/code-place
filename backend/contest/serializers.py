@@ -28,7 +28,7 @@ class CreateConetestSeriaizer(serializers.Serializer):
     real_time_rank = serializers.BooleanField()
     allow_paste = serializers.BooleanField()
     allowed_ip_ranges = serializers.ListField(child=serializers.CharField(max_length=32), allow_empty=True)
-    ai_assistant_enabled = serializers.BooleanField(default=True)
+    ai_assistant_enabled = serializers.BooleanField(default=False)
 
 
 class EditConetestSeriaizer(serializers.Serializer):

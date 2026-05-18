@@ -26,7 +26,7 @@ class Contest(models.Model):
     visible = models.BooleanField(default=True)
     allowed_ip_ranges = JSONField(default=list)
     #AI assistant
-    ai_assistant_enabled = models.BooleanField(default=True)
+    ai_assistant_enabled = models.BooleanField(default=False)
 
     @property
     def status(self):

@@ -241,7 +241,7 @@ export default {
         real_time_rank: true,
         visible: true,
         allow_paste: true,
-        ai_assistant_enabled: true,
+        ai_assistant_enabled: false,
         allowed_ip_ranges: [{ value: "" }],
       },
     }
