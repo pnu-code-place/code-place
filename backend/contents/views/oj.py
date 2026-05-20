@@ -72,7 +72,7 @@ class GetHomeRSSNoticeAPI(APIView):
                 if link and not link.startswith('http'):
                     link = BASE_URL + link
                 item_dict = {
-                    'title': item.find('title').text,
+                    'title': item.find('title').text.rstrip("}"),
                     'link': link,
                     'pubDate': item.find('pubDate').text
                 }
