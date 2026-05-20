@@ -599,6 +599,63 @@ class ProblemLLMHintAPITest(ProblemCreateTestBase):
         with mock.patch.dict(os.environ, {"KUBERNETES_SERVICE_HOST": "10.0.0.1"}, clear=False):
             self.assertEqual(get_vllm_chat_completions_url(), CLUSTER_VLLM_CHAT_COMPLETIONS_URL)
 
+    # ------------------------------------------------------------------
+    # 레거시 대회 (ai_assistant_enabled 필드 도입 이전 생성) 테스트
+    # ------------------------------------------------------------------
+
+    def _make_public_contest_no_ai(self, problem_id):
+        """비밀번호 없는 공개 대회(ai_assistant_enabled=False)와 문제를 반환한다."""
+        contest = Contest.objects.create(
+            created_by=self.admin,
+            title="legacy contest",
+            description="desc",
+            start_time=timezone.localtime(timezone.now()) - timedelta(hours=1),
+            end_time=timezone.localtime(timezone.now()) + timedelta(days=1),
+            rule_type=ContestRuleType.ACM,
+            password="",
+            allowed_ip_ranges=[],
+            visible=True,
+            real_time_rank=True,
+            allow_paste=True,
+            # ai_assistant_enabled 생략 → 모델 기본값(False) 적용
+        )
+        problem = self.create_problem_with_custom_field(self.admin, _id=problem_id)
+        problem.contest = contest
+        problem.save(update_fields=["contest"])
+        return contest, problem
+
+    def test_legacy_contest_no_ai_field_blocks_hint(self):
+        """ai_assistant_enabled 없이 생성된 레거시 대회는 모델 기본값(False)이 적용되어 AI 힌트가 차단된다."""
+        contest, problem = self._make_public_contest_no_ai("L-001")
+
+        self.assertFalse(contest.ai_assistant_enabled)
+
+        resp = self.client.get(f"{self.url}?problem_id={problem._id}&contest_id={contest.id}")
+        body = self._streaming_body(resp)
+
+        self.assertIn("event: app-error", body)
+        self.assertIn("AI 조교를 사용할 수 없습니다", body)
+
+    def test_legacy_contest_after_bulk_disable_blocks_hint(self):
+        """데이터 마이그레이션으로 ai_assistant_enabled=True → False로 일괄 전환된 대회도 AI 힌트가 차단된다."""
+        contest, problem = self._make_public_contest_no_ai("L-002")
+
+        # 마이그레이션 전 상태 재현: 구 기본값(True)으로 강제 설정
+        Contest.objects.filter(pk=contest.pk).update(ai_assistant_enabled=True)
+        contest.refresh_from_db()
+        self.assertTrue(contest.ai_assistant_enabled)
+
+        # 데이터 마이그레이션 로직 실행 (ai_assistant_enabled=True인 대회를 전부 False로)
+        Contest.objects.filter(ai_assistant_enabled=True).update(ai_assistant_enabled=False)
+        contest.refresh_from_db()
+        self.assertFalse(contest.ai_assistant_enabled)
+
+        resp = self.client.get(f"{self.url}?problem_id={problem._id}&contest_id={contest.id}")
+        body = self._streaming_body(resp)
+
+        self.assertIn("event: app-error", body)
+        self.assertIn("AI 조교를 사용할 수 없습니다", body)
+
 
 class AIHintHistoryAPITest(ProblemCreateTestBase):
 
