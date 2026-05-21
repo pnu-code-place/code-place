@@ -421,7 +421,7 @@ export default defineComponent({
       font-weight: 400;
       line-height: 1.6;
       letter-spacing: 0.01em;
-      color: #111111 !important;
+      color: var(--ps-content-text-color) !important;
     }
 
     .sample {
