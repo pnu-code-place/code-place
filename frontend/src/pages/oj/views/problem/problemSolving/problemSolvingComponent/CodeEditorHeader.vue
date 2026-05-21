@@ -12,7 +12,7 @@
         gap: 10px;
       "
     >
-      <Tooltip :content="'언어 선택'" placement="top">
+      <Tooltip :content="'언어 선택'" placement="top" :transfer="true">
         <Dropdown @on-click="changeLanguage" trigger="click" class="dropdown">
           <span
             style="font-size: 13px; padding-right: 3px; font-weight: 450"
