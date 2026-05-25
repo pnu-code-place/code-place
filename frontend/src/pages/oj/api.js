@@ -209,7 +209,7 @@ export default {
       },
     })
   },
-  getProblemLLMHintUrl(problemID, contestID) {
+  getProblemLLMHintUrl(problemID, userCode, contestID) {
     let url = `/api/problem/llm_hint?problem_id=${encodeURIComponent(problemID)}`
     if (contestID) url += `&contest_id=${encodeURIComponent(contestID)}`
     if (userCode) {

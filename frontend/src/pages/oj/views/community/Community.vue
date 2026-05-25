@@ -76,9 +76,7 @@
                 </span>
                 <Icon type="arrow-down-b"></Icon>
                 <Dropdown-menu slot="list" class="community-dropdown-menu">
-                  <Dropdown-item name="question_status:ALL"
-                    >전체</Dropdown-item
-                  >
+                  <Dropdown-item name="question_status:ALL">전체</Dropdown-item>
                   <Dropdown-item
                     v-for="(val, k) in QUESTION_STATUS"
                     :key="k"
@@ -400,7 +398,7 @@ export default {
         this.query.post_type = "ARTICLE"
       } else if (this.$route.path === "/community/question") {
         this.query.post_type = "QUESTION"
-        this.query.question_status = "OPEN"
+        this.query.question_status = "ALL"
       }
       this.query.page = 1
       this.fetchPosts()
