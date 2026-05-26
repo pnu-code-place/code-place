@@ -181,8 +181,27 @@ export default {
 
     .hardProblemFieldCategory {
       display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
       align-items: center;
       justify-content: left;
+
+      /deep/ .fieldCategoryBox {
+        min-width: 0;
+      }
+
+      /deep/ .box {
+        max-width: 140px;
+        margin-top: 0;
+        margin-right: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      /deep/ .box span {
+        white-space: nowrap;
+      }
     }
   }
 }

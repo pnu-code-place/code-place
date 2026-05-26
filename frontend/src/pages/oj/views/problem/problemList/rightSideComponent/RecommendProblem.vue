@@ -98,8 +98,27 @@ export default defineComponent({
 
   .problem-extra {
     display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
     justify-content: left;
-    overflow-x: hidden;
+    overflow: hidden;
+
+    /deep/ .fieldCategoryBox {
+      min-width: 0;
+    }
+
+    /deep/ .box {
+      max-width: 140px;
+      margin-top: 0;
+      margin-right: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /deep/ .box span {
+      white-space: nowrap;
+    }
   }
 }
 
