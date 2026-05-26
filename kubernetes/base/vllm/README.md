@@ -1,9 +1,9 @@
 # vLLM 배포 가이드
 
-현재 `vLLM`은 `dev` 오버레이에서만 배포됩니다.
+현재 `vLLM`은 `prod` 오버레이에서만 배포됩니다.
 
-- `dev`: 포함됨
-- `prod`: 포함되지 않음
+- `dev`: 포함되지 않음
+- `prod`: 포함됨
 
 ## 전제 조건
 
@@ -14,29 +14,29 @@
 kubectl label node <gpu-node-name> workload.code-place.ai/vllm=true
 ```
 
-- `dev` 오버레이에는 `vllm-hf-cache` PVC 가 포함되어 있습니다.
+- `prod` 오버레이에는 `vllm-hf-cache` PVC 가 포함되어 있습니다.
 - Longhorn 이 정상 동작하면 PVC 는 자동 생성됩니다.
 
 ## 배포
 
 ```bash
-kustomize build kubernetes/overlays/dev | kubectl apply -f -
+kustomize build kubernetes/overlays/prod | kubectl apply -f -
 ```
 
 ## 확인
 
 ```bash
-kubectl get pod -n code-place-dev -o wide | grep vllm
-kubectl get svc -n code-place-dev vllm
-kubectl describe pod -n code-place-dev -l app=vllm
+kubectl get pod -n code-place-prod -o wide | grep vllm
+kubectl get svc -n code-place-prod vllm
+kubectl describe pod -n code-place-prod -l app=vllm
 ```
 
-정상 배포되면 클러스터 내부에서는 `http://vllm.code-place-dev.svc.cluster.local:8000` 또는 같은 네임스페이스 안에서 `http://vllm:8000` 으로 접근할 수 있습니다.
+정상 배포되면 클러스터 내부에서는 `http://vllm.code-place-prod:8000` 또는 같은 네임스페이스 안에서 `http://vllm:8000` 으로 접근할 수 있습니다.
 
 ## 현재 설정
 
-- 이미지: `vllm/vllm-openai:v0.18.1-cu130`
-- 모델: `Qwen/Qwen2.5-Coder-7B-Instruct`
+- 이미지: `vllm/vllm-openai:v0.20.0`
+- 모델: `Qwen/Qwen3.5-9B`
 - 포트: `8000`
 - 주요 옵션: `--dtype auto`, `--gpu-memory-utilization 0.9`, `--max-model-len 4096`, `--kv-cache-dtype fp8`, `--calculate-kv-scales`, `--enable-prefix-caching`, `--enable-chunked-prefill`, `--max-num-seqs 60`
 - 리소스: `cpu: 16`, `memory: 64Gi`, `nvidia.com/gpu: 1`

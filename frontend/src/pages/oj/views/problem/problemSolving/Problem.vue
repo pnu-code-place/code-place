@@ -351,9 +351,18 @@ export default {
       if (resetState) {
         this.resetProblemState()
       }
+
       const hasStoredCode = restoreCode && this.restoreCurrentCode()
       this.loadContestProblemNavigation(forceLoadNavigation).catch(() => {})
       const requestSeq = ++this.problemRequestSeq
+
+      this.contestID = this.$route.params.contestID
+      this.problemID = this.$route.params.problemID
+
+      if (this.contestID) {
+        this.$store.dispatch("getContest", this.contestID)
+      }
+
       let func =
         this.$route.name === "problem-details"
           ? "getProblem"

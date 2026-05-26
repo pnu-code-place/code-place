@@ -209,8 +209,9 @@ export default {
       },
     })
   },
-  getProblemLLMHintUrl(problemID, userCode) {
+  getProblemLLMHintUrl(problemID, userCode, contestID) {
     let url = `/api/problem/llm_hint?problem_id=${encodeURIComponent(problemID)}`
+    if (contestID) url += `&contest_id=${encodeURIComponent(contestID)}`
     if (userCode) {
       // encodeURIComponent 후 최악 3배 팽창: 4000자 × 3 = ~12KB → nginx 기본 한도(8KB) 이내
       const truncated = userCode.slice(0, 4000)

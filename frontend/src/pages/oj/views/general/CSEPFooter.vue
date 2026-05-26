@@ -8,7 +8,7 @@ export default {
         "https://github.com/pnu-code-place/code-place?tab=readme-ov-file#-%EA%B5%AC%EC%84%B1%EC%9B%90",
       report_icon: require("@/assets/icon_bug.png"),
       report_url:
-        "https://evening-mirror-c09.notion.site/a7568fd7e0334a509c081567223cd454?pvs=4",
+        "https://docs.google.com/forms/d/e/1FAIpQLScRPH-PimZwJ-syYTR01UhTvFIV-V-ByVcSbO1FTfv2lYwR-Q/viewform?usp=publish-editor",
     }
   },
 }

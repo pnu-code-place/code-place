@@ -423,14 +423,14 @@ export default defineComponent({
       line-height: 1.6;
       letter-spacing: 0.01em;
       color: var(--ps-content-text-color) !important;
+    }
 
-      /deep/ p,
-      /deep/ ul,
-      /deep/ ol,
-      /deep/ li,
-      /deep/ span {
-        color: var(--ps-content-text-color) !important;
-      }
+    /deep/ p,
+    /deep/ ul,
+    /deep/ ol,
+    /deep/ li,
+    /deep/ span {
+      color: var(--ps-content-text-color) !important;
     }
 
     /deep/ img {
@@ -439,6 +439,11 @@ export default defineComponent({
       max-width: ~"min(100%, 640px)";
       height: auto;
       margin: 12px auto;
+    }
+
+    /deep/ .content img {
+      max-width: 100%;
+      height: auto;
       object-fit: contain;
     }
 

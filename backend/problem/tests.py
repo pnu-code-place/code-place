@@ -18,10 +18,12 @@ from unittest import mock
 from .models import ProblemTag, ProblemIOMode, get_default_week_info
 from .models import Problem, ProblemRuleType, ProblemAIHintLog
 from .tasks import update_weekly_stats, update_bonus_problem
-from contest.models import Contest
+from contest.models import Contest, ContestRuleType
 from contest.tests import DEFAULT_CONTEST_DATA
-from .llm_hint import (CLUSTER_VLLM_CHAT_COMPLETIONS_URL, LOCAL_VLLM_CHAT_COMPLETIONS_URL, VLLM_CONNECT_TIMEOUT_SEC,
-                       VLLM_MODEL, VLLM_STREAM_READ_TIMEOUT_SEC, get_vllm_chat_completions_url)
+from utils.constants import CONTEST_PASSWORD_SESSION_KEY
+from .llm_hint import (CLUSTER_VLLM_CHAT_COMPLETIONS_URL, LOCAL_VLLM_CHAT_COMPLETIONS_URL,
+                       VLLM_CONNECT_TIMEOUT_SEC, VLLM_MODEL, VLLM_STREAM_READ_TIMEOUT_SEC,
+                       get_vllm_chat_completions_url)
 
 from .views.admin import TestCaseAPI
 from .utils import parse_problem_template
@@ -415,6 +417,161 @@ class ProblemLLMHintAPITest(ProblemCreateTestBase):
         self.assertIn('event: app-error', body)
         self.assertIn("문제를 찾을 수 없습니다.", body)
 
+    # ------------------------------------------------------------------
+    # contest_id path tests
+    # ------------------------------------------------------------------
+
+    def _make_contest(self, problem_id, **contest_kwargs):
+        """Return (contest, problem) — underway, public, ai_enabled by default."""
+        defaults = {
+            "title": "contest test",
+            "description": "desc",
+            "start_time": timezone.localtime(timezone.now()) - timedelta(hours=1),
+            "end_time": timezone.localtime(timezone.now()) + timedelta(days=1),
+            "rule_type": ContestRuleType.ACM,
+            "password": "",
+            "allowed_ip_ranges": [],
+            "visible": True,
+            "real_time_rank": True,
+            "allow_paste": True,
+            "ai_assistant_enabled": True,
+        }
+        defaults.update(contest_kwargs)
+        contest = Contest.objects.create(created_by=self.admin, **defaults)
+        problem = self.create_problem_with_custom_field(self.admin, _id=problem_id)
+        problem.contest = contest
+        problem.save(update_fields=["contest"])
+        return contest, problem
+
+    @mock.patch("problem.llm_hint.requests.post")
+    def test_contest_stream_llm_hint(self, mocked_post):
+        """SSE stream works for an accessible contest problem."""
+        mocked_post.return_value = self._mock_streaming_response([
+            'data: {"choices":[{"delta":{"content":"힌트"}}]}',
+            "data: [DONE]",
+        ])
+        contest, problem = self._make_contest("C-301")
+
+        resp = self.client.get(f"{self.url}?problem_id={problem._id}&contest_id={contest.id}")
+        body = self._streaming_body(resp)
+
+        self.assertEqual(resp["Content-Type"], "text/event-stream")
+        self.assertIn('event: chunk', body)
+        self.assertIn('event: done', body)
+        self.assertNotIn('event: app-error', body)
+        mocked_post.assert_called_once()
+
+    def test_contest_stream_llm_hint_ai_disabled(self):
+        """app-error when ai_assistant_enabled=False."""
+        contest, problem = self._make_contest("C-302", ai_assistant_enabled=False)
+
+        resp = self.client.get(f"{self.url}?problem_id={problem._id}&contest_id={contest.id}")
+        body = self._streaming_body(resp)
+
+        self.assertIn('event: app-error', body)
+        self.assertIn("AI 조교를 사용할 수 없습니다", body)
+
+    def test_contest_stream_llm_hint_invisible_contest(self):
+        """app-error (permission-denied) when contest has visible=False."""
+        contest, problem = self._make_contest("C-303", visible=False)
+
+        resp = self.client.get(f"{self.url}?problem_id={problem._id}&contest_id={contest.id}")
+        body = self._streaming_body(resp)
+
+        self.assertIn('event: app-error', body)
+        self.assertIn("permission-denied", body)
+
+    def test_contest_stream_llm_hint_password_no_session(self):
+        """app-error when contest is password-protected and no password is in session."""
+        contest, problem = self._make_contest("C-304", password="secret")
+
+        resp = self.client.get(f"{self.url}?problem_id={problem._id}&contest_id={contest.id}")
+        body = self._streaming_body(resp)
+
+        self.assertIn('event: app-error', body)
+        self.assertIn("permission-denied", body)
+
+    def test_contest_stream_llm_hint_password_wrong(self):
+        """app-error when session contains a wrong password."""
+        contest, problem = self._make_contest("C-305", password="secret")
+
+        session = self.client.session
+        session[CONTEST_PASSWORD_SESSION_KEY] = {contest.id: "wrong"}
+        session.save()
+
+        resp = self.client.get(f"{self.url}?problem_id={problem._id}&contest_id={contest.id}")
+        body = self._streaming_body(resp)
+
+        self.assertIn('event: app-error', body)
+        self.assertIn("permission-denied", body)
+
+    @mock.patch("problem.llm_hint.requests.post")
+    def test_contest_stream_llm_hint_password_correct(self, mocked_post):
+        """SSE stream works when the correct password is stored in session."""
+        mocked_post.return_value = self._mock_streaming_response([
+            'data: {"choices":[{"delta":{"content":"힌트"}}]}',
+            "data: [DONE]",
+        ])
+        contest, problem = self._make_contest("C-306", password="secret")
+
+        session = self.client.session
+        session[CONTEST_PASSWORD_SESSION_KEY] = {contest.id: "secret"}
+        session.save()
+
+        resp = self.client.get(f"{self.url}?problem_id={problem._id}&contest_id={contest.id}")
+        body = self._streaming_body(resp)
+
+        self.assertIn('event: chunk', body)
+        self.assertIn('event: done', body)
+        self.assertNotIn('event: app-error', body)
+
+    def test_contest_stream_llm_hint_not_started(self):
+        """app-error (permission-denied) when the contest has not started yet."""
+        contest, problem = self._make_contest(
+            "C-307",
+            start_time=timezone.localtime(timezone.now()) + timedelta(hours=1),
+        )
+
+        resp = self.client.get(f"{self.url}?problem_id={problem._id}&contest_id={contest.id}")
+        body = self._streaming_body(resp)
+
+        self.assertIn('event: app-error', body)
+        self.assertIn("permission-denied", body)
+
+    @mock.patch("problem.llm_hint.requests.post")
+    def test_contest_stream_llm_hint_admin_bypasses_restrictions(self, mocked_post):
+        """Contest creator gets SSE stream even for not-started password-protected contests."""
+        mocked_post.return_value = self._mock_streaming_response([
+            'data: {"choices":[{"delta":{"content":"힌트"}}]}',
+            "data: [DONE]",
+        ])
+        contest, problem = self._make_contest(
+            "C-308",
+            password="secret",
+            start_time=timezone.localtime(timezone.now()) + timedelta(hours=1),
+        )
+
+        self.client.login(username="admin@admin.com", password="admin1234!")
+
+        resp = self.client.get(f"{self.url}?problem_id={problem._id}&contest_id={contest.id}")
+        body = self._streaming_body(resp)
+
+        self.assertIn('event: chunk', body)
+        self.assertIn('event: done', body)
+        self.assertNotIn('event: app-error', body)
+
+    def test_contest_stream_llm_hint_hidden_problem(self):
+        """app-error when the problem itself has visible=False within an accessible contest."""
+        contest, problem = self._make_contest("C-309")
+        problem.visible = False
+        problem.save(update_fields=["visible"])
+
+        resp = self.client.get(f"{self.url}?problem_id={problem._id}&contest_id={contest.id}")
+        body = self._streaming_body(resp)
+
+        self.assertIn('event: app-error', body)
+        self.assertIn("문제를 찾을 수 없습니다.", body)
+
     @mock.patch("problem.llm_hint.requests.post", side_effect=requests.Timeout)
     def test_stream_llm_hint_handles_timeout(self, mocked_post):
         resp = self.client.get(f"{self.url}?problem_id={self.problem._id}")
@@ -441,6 +598,63 @@ class ProblemLLMHintAPITest(ProblemCreateTestBase):
     def test_get_vllm_chat_completions_url_for_kubernetes(self):
         with mock.patch.dict(os.environ, {"KUBERNETES_SERVICE_HOST": "10.0.0.1"}, clear=False):
             self.assertEqual(get_vllm_chat_completions_url(), CLUSTER_VLLM_CHAT_COMPLETIONS_URL)
+
+    # ------------------------------------------------------------------
+    # 레거시 대회 (ai_assistant_enabled 필드 도입 이전 생성) 테스트
+    # ------------------------------------------------------------------
+
+    def _make_public_contest_no_ai(self, problem_id):
+        """비밀번호 없는 공개 대회(ai_assistant_enabled=False)와 문제를 반환한다."""
+        contest = Contest.objects.create(
+            created_by=self.admin,
+            title="legacy contest",
+            description="desc",
+            start_time=timezone.localtime(timezone.now()) - timedelta(hours=1),
+            end_time=timezone.localtime(timezone.now()) + timedelta(days=1),
+            rule_type=ContestRuleType.ACM,
+            password="",
+            allowed_ip_ranges=[],
+            visible=True,
+            real_time_rank=True,
+            allow_paste=True,
+            # ai_assistant_enabled 생략 → 모델 기본값(False) 적용
+        )
+        problem = self.create_problem_with_custom_field(self.admin, _id=problem_id)
+        problem.contest = contest
+        problem.save(update_fields=["contest"])
+        return contest, problem
+
+    def test_legacy_contest_no_ai_field_blocks_hint(self):
+        """ai_assistant_enabled 없이 생성된 레거시 대회는 모델 기본값(False)이 적용되어 AI 힌트가 차단된다."""
+        contest, problem = self._make_public_contest_no_ai("L-001")
+
+        self.assertFalse(contest.ai_assistant_enabled)
+
+        resp = self.client.get(f"{self.url}?problem_id={problem._id}&contest_id={contest.id}")
+        body = self._streaming_body(resp)
+
+        self.assertIn("event: app-error", body)
+        self.assertIn("AI 조교를 사용할 수 없습니다", body)
+
+    def test_legacy_contest_after_bulk_disable_blocks_hint(self):
+        """데이터 마이그레이션으로 ai_assistant_enabled=True → False로 일괄 전환된 대회도 AI 힌트가 차단된다."""
+        contest, problem = self._make_public_contest_no_ai("L-002")
+
+        # 마이그레이션 전 상태 재현: 구 기본값(True)으로 강제 설정
+        Contest.objects.filter(pk=contest.pk).update(ai_assistant_enabled=True)
+        contest.refresh_from_db()
+        self.assertTrue(contest.ai_assistant_enabled)
+
+        # 데이터 마이그레이션 로직 실행 (ai_assistant_enabled=True인 대회를 전부 False로)
+        Contest.objects.filter(ai_assistant_enabled=True).update(ai_assistant_enabled=False)
+        contest.refresh_from_db()
+        self.assertFalse(contest.ai_assistant_enabled)
+
+        resp = self.client.get(f"{self.url}?problem_id={problem._id}&contest_id={contest.id}")
+        body = self._streaming_body(resp)
+
+        self.assertIn("event: app-error", body)
+        self.assertIn("AI 조교를 사용할 수 없습니다", body)
 
 
 class AIHintHistoryAPITest(ProblemCreateTestBase):
