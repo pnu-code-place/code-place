@@ -3,9 +3,15 @@
     <div class="contestTitle">
       <p>{{ contest.title }}</p>
       <div slot="extra" style="flex-shrink: 0">
-        <Tag type="dot" :color="countdownColor">
-          <span id="countdown">{{ countdown }}</span>
-        </Tag>
+        <div class="contest-timer" :class="'contest-timer--' + (countdownParts ? countdownParts.status : 'ended')" v-if="countdown">
+          <template v-if="countdownParts && countdownParts.status !== 'ended'">
+            <span class="contest-timer__label">{{ countdownParts.status === 'running' ? '남은 시간' : '시작까지' }}</span>
+            <span class="contest-timer__text">{{ formattedTime }}</span>
+          </template>
+          <template v-else>
+            <span class="contest-timer__label">대회 종료</span>
+          </template>
+        </div>
       </div>
     </div>
     <div class="contestContent">
@@ -80,11 +86,24 @@ export default {
     ...mapState({
       contest: (state) => state.contest.contest,
     }),
-    ...mapGetters(["contestStatus", "countdown", "passwordFormVisible"]),
+    ...mapGetters(["contestStatus", "countdown", "countdownParts", "passwordFormVisible"]),
     countdownColor() {
       if (this.contestStatus) {
         return CONTEST_STATUS_REVERSE[this.contestStatus].color
       }
+    },
+    formattedTime() {
+      if (!this.countdownParts || this.countdownParts.status === 'ended') {
+        return ''
+      }
+      const pad = (num) => String(num).padStart(2, '0')
+      const { days, hours, minutes, seconds } = this.countdownParts
+      
+      let timeStr = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`
+      if (days > 0) {
+        timeStr = `${days}일 ${timeStr}`
+      }
+      return timeStr
     },
   },
 }
@@ -135,5 +154,29 @@ export default {
     margin-left: 4px;
     padding: 2px 7px;
   }
+}
+
+/* ── Contest Timer ── */
+.contest-timer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 16px;
+  color: var(--text-color);
+}
+
+.contest-timer__label {
+  font-weight: 500;
+  color: #64748b;
+}
+
+.contest-timer__text {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-color);
+}
+
+:root.dark .contest-timer__label {
+  color: #94a3b8;
 }
 </style>

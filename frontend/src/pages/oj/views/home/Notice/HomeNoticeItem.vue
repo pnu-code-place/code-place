@@ -147,7 +147,7 @@ li {
         text-align: left;
         text-decoration: none;
         font-size: 14px;
-        font-weight: 600;
+        font-weight: 700;
         color: var(--ps-content-text-color);
         overflow: hidden;
         white-space: nowrap;

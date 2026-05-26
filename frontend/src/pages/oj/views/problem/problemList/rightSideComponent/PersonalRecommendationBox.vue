@@ -30,11 +30,12 @@
           <InSufficientData :type="true" />
         </template>
       </template>
-      <template
-        v-for="(recommend_problem, index) of this.recommendation
-          .recommend_problems"
-      >
-        <RecommendProblem :recommend_problem="recommend_problem" />
+      <template v-if="recommendation && recommendation.recommend_problems">
+        <RecommendProblem
+          v-for="recommend_problem in recommendation.recommend_problems"
+          :key="recommend_problem._id"
+          :recommend_problem="recommend_problem"
+        />
       </template>
     </template>
   </main>

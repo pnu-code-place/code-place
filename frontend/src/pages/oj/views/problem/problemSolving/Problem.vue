@@ -1,84 +1,111 @@
 <template>
-  <div class="flex-container">
+  <div class="flex-container problem-solving-root">
     <splitpanes vertical style="height: calc(100vh - 50px)">
-      <pane :size="50">
-        <div class="left-pain-wrapper">
-          <div class="tab-headers">
-            <div
-              class="tab-header"
-              :class="{ active: leftPainActiveTab === 'problem' }"
-              @click="leftPainActiveTab = 'problem'"
-            >
-              문제 설명
+      <pane
+        :size="50"
+        :class="{ 'problem-pane-with-navigator': isContestProblem }"
+      >
+        <div
+          class="left-pain-wrapper"
+          :class="{ 'has-contest-navigator': isContestProblem }"
+        >
+          <ContestProblemNavigator
+            v-if="isContestProblem"
+            :contestID="contestID"
+            :problemID="problemID"
+            :problems="contestProblems"
+            :loading="contestProblemsLoading"
+            @navigate="goContestProblem"
+          />
+          <div class="problem-content-wrapper">
+            <div class="tab-headers">
+              <div
+                class="tab-header"
+                :class="{ active: leftPainActiveTab === 'problem' }"
+                @click="leftPainActiveTab = 'problem'"
+              >
+                문제 설명
+              </div>
+              <div
+                class="tab-header"
+                :class="{ active: leftPainActiveTab === 'submission' }"
+                @click="leftPainActiveTab = 'submission'"
+              >
+                제출 현황
+              </div>
+              <div
+                class="tab-header"
+                :class="{ active: leftPainActiveTab === 'community' }"
+                @click="leftPainActiveTab = 'community'"
+              >
+                질문하기
+              </div>
             </div>
-            <div
-              class="tab-header"
-              :class="{ active: leftPainActiveTab === 'submission' }"
-              @click="leftPainActiveTab = 'submission'"
-            >
-              제출 현황
+            <div class="tab-content">
+              <ProblemDetailFlexibleContainer
+                v-show="leftPainActiveTab === 'problem'"
+                :problem="problem"
+                :contestID="contestID"
+              />
+              <SubmissionList
+                v-if="isInitialized"
+                :key="`submission-${contestID || 'public'}-${problemID}`"
+                v-show="leftPainActiveTab === 'submission'"
+                :problemID="problemID"
+                :contestID="contestID"
+                :lastSubmissionId="lastSubmissionId"
+                :isDarkMode="isDarkMode"
+              />
+              <ProblemCommunity
+                v-if="isInitialized"
+                :key="`community-${contestID || 'public'}-${problemID}`"
+                v-show="leftPainActiveTab === 'community'"
+                :problemID="problemID"
+                :problem="problem"
+                :isDarkMode="isDarkMode"
+              />
             </div>
-            <div
-              class="tab-header"
-              :class="{ active: leftPainActiveTab === 'community' }"
-              @click="leftPainActiveTab = 'community'"
-            >
-              질문하기
-            </div>
-          </div>
-          <div class="tab-content">
-            <ProblemDetailFlexibleContainer
-              v-show="leftPainActiveTab === 'problem'"
-              :problem="problem"
-              :contestID="contestID"
-            />
-            <SubmissionList
-              v-if="isInitialized"
-              v-show="leftPainActiveTab === 'submission'"
-              :problemID="problemID"
-              :contestID="contestID"
-              :lastSubmissionId="lastSubmissionId"
-              :isDarkMode="isDarkMode"
-            />
-            <ProblemCommunity
-              v-if="isInitialized"
-              v-show="leftPainActiveTab === 'community'"
-              :problemID="problemID"
-              :problem="problem"
-              :isDarkMode="isDarkMode"
-            />
           </div>
         </div>
       </pane>
       <pane min-size="30" :size="50">
-        <CodeEditorHeader
-          @create-submission="submitCode"
-          @change-language="changeLanguage"
-          :problem="problem"
-          :language.sync="language"
-          :statusVisible="statusVisible"
-          :contestID="contestID"
-          :result="result"
-          :submissionId="submissionId"
-          :isSubmitting="submitting"
-        />
-        <CodeEditor
-          :value.sync="code"
-          :languages="problem.languages"
-          :language="language"
-          :cursorPos.sync="cursorPos"
-          :theme.sync="theme"
-          :allowPaste="allowPaste"
-          ref="myCm"
-        />
-        <StickyLnCol :cursorPos="cursorPos" />
+        <div class="editor-pane-wrapper">
+          <CodeEditorHeader
+            @create-submission="submitCode"
+            @change-language="changeLanguage"
+            @open-ai="$refs.bottomDrag.show()"
+            :problem="problem"
+            :language.sync="language"
+            :statusVisible="statusVisible"
+            :contestID="contestID"
+            :result="result"
+            :submissionId="submissionId"
+            :isSubmitting="submitting"
+          />
+          <CodeEditor
+            :value.sync="code"
+            :languages="problem.languages"
+            :language="language"
+            :cursorPos.sync="cursorPos"
+            :allowPaste="allowPaste"
+            ref="myCm"
+          />
+          <BottomDrag
+            ref="bottomDrag"
+            :result="result"
+            :problemID="problemID"
+            :contestID="contestID"
+            :code="code"
+          />
+          <StickyLnCol :cursorPos="cursorPos" />
+        </div>
       </pane>
     </splitpanes>
   </div>
 </template>
 
 <script>
-import { mapGetters, mapActions } from "vuex"
+import { mapGetters, mapActions, mapState } from "vuex"
 import { types } from "../../../../../store"
 import storage from "@/utils/storage"
 import { FormMixin } from "@oj/components/mixins"
@@ -90,33 +117,29 @@ import {
 import api from "@oj/api"
 import { Pane, Splitpanes } from "splitpanes"
 import "splitpanes/dist/splitpanes.css"
-import FieldCategoryBox from "../../../components/FieldCategoryBox.vue"
-import CustomIconBtn from "../../../components/buttons/CustomIconBtn.vue"
 import { DIFFICULTY_MAP, FIELD_MAP } from "../../../../../utils/constants"
 import CodeEditorHeader from "./problemSolvingComponent/CodeEditorHeader.vue"
-import SubmissionStatus from "./problemSolvingComponent/SubmissionStatus.vue"
 import ProblemDetailFlexibleContainer from "./problemSolvingComponent/ProblemDetailFlexibleContainer.vue"
 import StickyLnCol from "./problemSolvingComponent/StickyLnCol.vue"
 import CodeEditor from "./problemSolvingComponent/CodeEditor.vue"
 import SubmissionList from "./problemSolvingComponent/SubmissionList.vue"
 import ProblemCommunity from "./problemSolvingComponent/ProblemCommunity.vue"
-
-const filtedStatus = ["-1", "-2", "0", "1", "2", "3", "4", "8"]
+import BottomDrag from "./problemSolvingComponent/BottomDrag.vue"
+import ContestProblemNavigator from "./problemSolvingComponent/ContestProblemNavigator.vue"
 
 export default {
-  name: "Problem",
+  name: "ProblemPage",
   components: {
     StickyLnCol,
     CodeEditor,
-    SubmissionStatus,
     CodeEditorHeader,
     ProblemDetailFlexibleContainer,
     SubmissionList,
     ProblemCommunity,
-    CustomIconBtn,
-    FieldCategoryBox,
+    ContestProblemNavigator,
     Splitpanes,
     Pane,
+    BottomDrag,
   },
   mixins: [FormMixin],
   data() {
@@ -143,7 +166,6 @@ export default {
           return ["C", "C++", "Java", "Python3"]
         },
       },
-      theme: false,
       submissionId: "",
       submitted: false,
       result: {
@@ -184,39 +206,30 @@ export default {
       rightPainActiveTab: "editor",
       lastSubmissionId: null,
       isInitialized: false,
+      contestProblemsLoading: false,
+      loadedContestProblemNavigationFor: "",
+      problemRequestSeq: 0,
     }
   },
   beforeRouteEnter(to, from, next) {
-    let problemCode = storage.get(
-      buildProblemCodeKey(to.params.problemID, to.params.contestID),
-    )
-    let psSettings = storage.get("ProblemSolvingSettings")
-    if (psSettings) {
-      next((vm) => {
-        vm.theme = psSettings.theme
-      })
-    } else {
-      next()
-    }
-    if (problemCode) {
-      next((vm) => {
-        vm.language = problemCode.language
-        vm.code = problemCode.code
-      })
-    } else {
-      next()
-    }
+    next((vm) => {
+      vm.registerBeforeUnload()
+    })
   },
   mounted() {
     this.$store.commit(types.CHANGE_CONTEST_ITEM_VISIBLE, { menu: false })
     this.init()
-    window.addEventListener("beforeunload", this.unLoadEvent)
+    this.registerBeforeUnload()
     this.isInitialized = true
   },
-  beforeUnmount() {
-    window.removeEventListener("beforeunload", this.unLoadEvent)
+  activated() {
+    this.registerBeforeUnload()
+  },
+  deactivated() {
+    this.removeBeforeUnload()
   },
   destroyed() {
+    this.removeBeforeUnload()
     this.changeProblemSolvingState(false)
   },
   methods: {
@@ -224,54 +237,176 @@ export default {
       "changeDomTitle",
       "changeProblemSolvingState",
       "changeProblemSolvingTheme",
+      "getContestProblems",
     ]),
-    init() {
+    setRouteParams(route = this.$route) {
+      this.contestID = route.params.contestID
+      this.problemID = route.params.problemID
+    },
+    getEmptyProblem() {
+      return {
+        title: "",
+        description: "",
+        hint: "",
+        my_status: "",
+        template: {},
+        languages: [],
+        created_by: {
+          username: "",
+        },
+        difficulty: "",
+        tags: [],
+        io_mode: { io_mode: "Standard IO" },
+        allow_paste: true,
+      }
+    },
+    resetProblemState() {
+      this.clearSubmissionRefresh()
+      this.statusVisible = false
+      this.captchaRequired = false
+      this.graphVisible = false
+      this.submissionExists = false
+      this.captchaCode = ""
+      this.captchaSrc = ""
+      this.submitting = false
+      this.code = ""
+      this.language = "C++"
+      this.codePerLanguage = {}
+      this.submissionId = ""
+      this.submitted = false
+      this.result = { result: 9 }
+      this.lastSubmissionId = null
+      this.leftPainActiveTab = "problem"
+      this.modalCheck = false
+      this.problem = this.getEmptyProblem()
+    },
+    clearSubmissionRefresh() {
+      if (this.refreshStatus) {
+        clearTimeout(this.refreshStatus)
+        this.refreshStatus = null
+      }
+    },
+    saveCurrentCode(problemID = this.problemID, contestID = this.contestID) {
+      if (!problemID) {
+        return
+      }
+      storage.set(buildProblemCodeKey(problemID, contestID), {
+        code: this.code,
+        language: this.language,
+      })
+    },
+    restoreCurrentCode() {
+      const problemCode = storage.get(
+        buildProblemCodeKey(this.problemID, this.contestID),
+      )
+      if (!problemCode) {
+        return false
+      }
+      this.language = problemCode.language
+      this.code = problemCode.code
+      return true
+    },
+    applyProblemTemplate() {
+      this.language = this.problem.languages[0] || "C++"
+      let template = this.problem.template
+      if (template && template[this.language]) {
+        this.code = template[this.language]
+      } else {
+        this.code = ""
+      }
+    },
+    loadContestProblemNavigation(force = false) {
+      if (!this.isContestProblem) {
+        return Promise.resolve()
+      }
+      if (
+        !force &&
+        this.loadedContestProblemNavigationFor === String(this.contestID) &&
+        this.contestProblems.length > 0
+      ) {
+        return Promise.resolve()
+      }
+      this.contestProblemsLoading = true
+      return this.getContestProblems().then(
+        (res) => {
+          this.contestProblemsLoading = false
+          this.loadedContestProblemNavigationFor = String(this.contestID)
+          return res
+        },
+        (err) => {
+          this.contestProblemsLoading = false
+          throw err
+        },
+      )
+    },
+    init(options = {}) {
+      const {
+        resetState = false,
+        forceLoadNavigation = false,
+        restoreCode = true,
+      } = options
       this.changeProblemSolvingState(true)
       this.$Loading.start()
+      this.setRouteParams()
+      if (resetState) {
+        this.resetProblemState()
+      }
+
+      const hasStoredCode = restoreCode && this.restoreCurrentCode()
+      this.loadContestProblemNavigation(forceLoadNavigation).catch(() => {})
+      const requestSeq = ++this.problemRequestSeq
+
       this.contestID = this.$route.params.contestID
       this.problemID = this.$route.params.problemID
+
+      if (this.contestID) {
+        this.$store.dispatch("getContest", this.contestID)
+      }
+
       let func =
         this.$route.name === "problem-details"
           ? "getProblem"
           : "getContestProblem"
       api[func](this.problemID, this.contestID).then(
         (res) => {
+          if (requestSeq !== this.problemRequestSeq) {
+            return
+          }
           this.$Loading.finish()
           let problem = res.data.data
           this.changeDomTitle({ title: problem.title })
           api.submissionExists(problem.id).then((res) => {
+            if (requestSeq !== this.problemRequestSeq) {
+              return
+            }
             this.submissionExists = res.data.data
           })
           problem.languages = problem.languages.sort()
           this.problem = problem
 
-          if (this.code !== "") {
-            return
+          if (restoreCode && !hasStoredCode) {
+            this.applyProblemTemplate()
           }
-          // try to load problem template
-          this.language = this.problem.languages[0]
-          let template = this.problem.template
-          if (template && template[this.language]) {
-            this.code = template[this.language]
-          }
-          this.problem.difficulty = problem.difficulty
         },
         () => {
           this.$Loading.error()
         },
       )
     },
+    registerBeforeUnload() {
+      if (this._beforeUnloadRegistered) return
+      window.addEventListener("beforeunload", this.unLoadEvent)
+      this._beforeUnloadRegistered = true
+    },
+    removeBeforeUnload() {
+      if (!this._beforeUnloadRegistered) return
+      window.removeEventListener("beforeunload", this.unLoadEvent)
+      this._beforeUnloadRegistered = false
+    },
     unLoadEvent: function (event) {
       if (this.isLeaveSite) return
 
-      storage.set(buildProblemCodeKey(this.problem._id, this.contestID), {
-        code: this.code,
-        language: this.language,
-      })
-
-      storage.set("ProblemSolvingSettings", {
-        theme: this.theme,
-      })
+      this.saveCurrentCode(this.problemID || this.problem._id, this.contestID)
 
       event.preventDefault()
       event.returnValue = ""
@@ -302,11 +437,31 @@ export default {
     handleRoute(route) {
       this.$router.push(route)
     },
+    goContestProblem(problemID) {
+      if (!this.contestID || String(problemID) === String(this.problemID)) {
+        return
+      }
+      this.$router.push({
+        name: "contest-problem-details",
+        params: {
+          contestID: this.contestID,
+          problemID,
+        },
+      })
+    },
+    goContestProblemList() {
+      if (!this.contestID) {
+        return
+      }
+      this.$router.push({
+        name: "contest-problem-list",
+        params: {
+          contestID: this.contestID,
+        },
+      })
+    },
     check() {
       alert(this.code)
-    },
-    onChangeTheme(newTheme) {
-      this.theme = newTheme
     },
     checkSubmissionStatus() {
       // 使用setTimeout避免一些问题
@@ -327,12 +482,15 @@ export default {
               this.lastSubmissionId = id
 
               clearTimeout(this.refreshStatus)
-              this.init()
+              this.init({
+                restoreCode: false,
+                forceLoadNavigation: this.isContestProblem,
+              })
             } else {
               this.refreshStatus = setTimeout(checkStatus, 2000)
             }
           },
-          (res) => {
+          () => {
             this.submitting = false
             clearTimeout(this.refreshStatus)
           },
@@ -415,6 +573,9 @@ export default {
     },
   },
   computed: {
+    ...mapState({
+      contestProblems: (state) => state.contest.contestProblems,
+    }),
     FIELD_MAP() {
       return FIELD_MAP
     },
@@ -430,6 +591,9 @@ export default {
     ]),
     contest() {
       return this.$store.state.contest.contest
+    },
+    isContestProblem() {
+      return this.$route.name === "contest-problem-details" && !!this.contestID
     },
     contestEnded() {
       return this.contestStatus === CONTEST_STATUS.ENDED
@@ -461,32 +625,31 @@ export default {
     },
   },
   beforeRouteLeave(to, from, next) {
-    clearInterval(this.refreshStatus)
+    this.clearSubmissionRefresh()
+    this.removeBeforeUnload()
     this.$store.commit(types.CHANGE_CONTEST_ITEM_VISIBLE, { menu: true })
-    storage.set(buildProblemCodeKey(this.problem._id, from.params.contestID), {
-      code: this.code,
-      language: this.language,
-    })
-    storage.set("ProblemSolvingSettings", {
-      theme: this.theme,
-    })
+    this.saveCurrentCode(from.params.problemID, from.params.contestID)
     next()
   },
   watch: {
-    $route() {
-      this.init()
-    },
-    isDarkMode(value) {
-      let customTheme = value ? "ayu-mirage" : "github-light"
-      this.$refs.myCm.toggleTheme(customTheme)
-      this.theme = value
+    $route(to, from) {
+      if (from && from.params && from.params.problemID) {
+        this.saveCurrentCode(from.params.problemID, from.params.contestID)
+      }
+      this.init({
+        resetState: true,
+        forceLoadNavigation: to.params.contestID !== from.params.contestID,
+      })
     },
   },
 }
 </script>
 
 <style lang="less">
-.flex-container {
+@code-font-family: "JetBrains Mono", "Noto Sans KR", "Apple SD Gothic Neo",
+  "Menlo", "Monaco", "Consolas", monospace;
+
+.problem-solving-root {
   display: flex;
   overflow: hidden;
 
@@ -498,6 +661,17 @@ export default {
   #right-column {
     flex: none;
     width: 220px;
+  }
+
+  .CodeMirror,
+  .CodeMirror pre,
+  .CodeMirror-linenumber,
+  pre,
+  code,
+  .hljs,
+  .code-highlight-wrapper {
+    font-family: @code-font-family !important;
+    font-variant-ligatures: none;
   }
 }
 
@@ -531,6 +705,13 @@ export default {
   color: var(--text-color);
 }
 
+.splitpanes__pane.problem-pane-with-navigator {
+  padding-left: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  border-radius: 0;
+}
+
 .splitpanes--vertical > .splitpanes__splitter {
   min-width: 4px !important;
   margin-top: 350px;
@@ -557,6 +738,30 @@ export default {
 }
 
 .left-pain-wrapper {
+  min-height: 0;
+  height: 100%;
+}
+
+.left-pain-wrapper.has-contest-navigator {
+  display: grid;
+  grid-template-columns: 60px minmax(0, 1fr);
+  gap: 10px;
+  position: relative;
+}
+
+.problem-content-wrapper {
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+}
+
+.left-pain-wrapper.has-contest-navigator .problem-content-wrapper {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.editor-pane-wrapper {
+  position: relative;
   height: 100%;
 }
 
@@ -586,6 +791,7 @@ export default {
 
 .tab-content {
   height: calc(100% - 40px);
+  min-height: 0;
   overflow-y: auto;
   border: 1px solid var(--border-color);
   border-radius: 0 7px 7px 7px;

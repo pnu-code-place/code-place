@@ -8,7 +8,7 @@ export default {
         "https://github.com/pnu-code-place/code-place?tab=readme-ov-file#-%EA%B5%AC%EC%84%B1%EC%9B%90",
       report_icon: require("@/assets/icon_bug.png"),
       report_url:
-        "https://evening-mirror-c09.notion.site/a7568fd7e0334a509c081567223cd454?pvs=4",
+        "https://docs.google.com/forms/d/e/1FAIpQLScRPH-PimZwJ-syYTR01UhTvFIV-V-ByVcSbO1FTfv2lYwR-Q/viewform?usp=publish-editor",
     }
   },
 }
@@ -48,7 +48,7 @@ export default {
           </p>
           <p>
             <a
-              href="https://swei2024.notion.site/Regular-User-5fbb992225554a69a4a68b87b63356bc"
+              href="https://acei2026.notion.site/user-5fbb992225554a69a4a68b87b63356bc"
             >
               {{ $t("m.UserGuide") }}
             </a>
@@ -83,7 +83,7 @@ export default {
 footer {
   position: absolute;
   bottom: 0;
-  width: 100vw;
+  width: 100%;
   min-width: var(--global-width);
   height: var(--footer-height);
   background-color: var(--box-background-color);

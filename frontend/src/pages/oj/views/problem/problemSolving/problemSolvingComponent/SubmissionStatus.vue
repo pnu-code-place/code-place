@@ -49,7 +49,7 @@ import { JUDGE_STATUS } from "../../../../../../utils/constants"
 export default defineComponent({
   props: {
     statusVisible: Boolean,
-    contestID: String,
+    contestID: [String, Number],
     result: Object,
     submissionId: String,
   },
@@ -76,19 +76,16 @@ export default defineComponent({
 
 <style scoped lang="less">
 .submissionStatusWrapper {
-  font-weight: 700;
-  font-size: medium;
+  font-weight: 600;
+  font-size: 14px;
   bottom: 70px;
   display: flex;
   align-items: center;
   justify-content: space-evenly;
   border-radius: 10px;
-  padding-right: 10px;
-  padding-left: 10px;
-  height: 32px;
+  padding: 6px 12px;
   cursor: pointer;
   transition: width 0.3s;
-  margin-left: 10px;
   box-shadow: inset 0 0 1px;
   color: var(--submission-result-btn-text-color);
   background-color: var(--submission-result-btn-color);
@@ -101,7 +98,7 @@ export default defineComponent({
 
   display: flex;
   align-items: center;
-  font-size: small;
+  font-size: 14px;
   justify-content: space-evenly;
   color: var(--ps-content-text-color);
 }

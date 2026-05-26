@@ -1,10 +1,12 @@
 import copy
 import hashlib
+import json
 import os
 import shutil
 from datetime import timedelta
 from zipfile import ZipFile
 
+import requests
 from django.conf import settings
 from django.db import DatabaseError
 from django.utils import timezone
@@ -14,10 +16,14 @@ from utils.api.tests import APITestCase
 from unittest import mock
 
 from .models import ProblemTag, ProblemIOMode, get_default_week_info
-from .models import Problem, ProblemRuleType
+from .models import Problem, ProblemRuleType, ProblemAIHintLog
 from .tasks import update_weekly_stats, update_bonus_problem
-from contest.models import Contest
+from contest.models import Contest, ContestRuleType
 from contest.tests import DEFAULT_CONTEST_DATA
+from utils.constants import CONTEST_PASSWORD_SESSION_KEY
+from .llm_hint import (CLUSTER_VLLM_CHAT_COMPLETIONS_URL, LOCAL_VLLM_CHAT_COMPLETIONS_URL,
+                       VLLM_CONNECT_TIMEOUT_SEC, VLLM_MODEL, VLLM_STREAM_READ_TIMEOUT_SEC,
+                       get_vllm_chat_completions_url)
 
 from .views.admin import TestCaseAPI
 from .utils import parse_problem_template
@@ -238,6 +244,491 @@ class ProblemAPITest(ProblemCreateTestBase):
     def test_get_one_problem(self):
         resp = self.client.get(self.url + "?problem_id=" + self.problem._id)
         self.assertSuccess(resp)
+
+
+class ProblemLLMHintAPITest(ProblemCreateTestBase):
+
+    def setUp(self):
+        os.environ["IS_LOCAL_TEST"] = "False"
+
+        self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
+        self.url = self.reverse("problem_llm_hint_api")
+        self.admin = self.create_admin(login=False)
+        self.problem = self.add_problem(DEFAULT_PROBLEM_DATA, self.admin)
+        self.hidden_problem = self.create_problem_with_custom_field(self.admin, _id="A-211", visible=False)
+        # self.create_user(email="test@test.com", username="test", password="test1234!")
+        self.user = self.create_user(email="test@test.com", username="test", password="test1234!")
+        self.client.force_login(self.user)
+
+    @staticmethod
+    def _streaming_body(response):
+        return "".join(
+            chunk.decode("utf-8") if isinstance(chunk, bytes) else chunk for chunk in response.streaming_content)
+
+    @staticmethod
+    def _mock_streaming_response(lines):
+        response = mock.Mock()
+        response.raise_for_status.return_value = None
+        response.iter_lines.return_value = lines
+        response.close.return_value = None
+        return response
+
+    @mock.patch("problem.llm_hint.requests.post")
+    def test_stream_llm_hint(self, mocked_post):
+        mocked_post.return_value = self._mock_streaming_response([
+            'data: {"choices":[{"delta":{"content":"힌트 "}}]}',
+            'data: {"choices":[{"delta":{"content":"스트림"}}]}',
+            "data: [DONE]",
+        ])
+
+        resp = self.client.get(f"{self.url}?problem_id={self.problem._id}")
+        body = self._streaming_body(resp)
+
+        self.assertEqual(resp["Content-Type"], "text/event-stream")
+        self.assertIn('event: chunk', body)
+        self.assertIn(json.dumps({"text": "힌트 "}, ensure_ascii=False), body)
+        self.assertIn(json.dumps({"text": "스트림"}, ensure_ascii=False), body)
+        self.assertIn('event: done', body)
+        self.assertEqual(ProblemAIHintLog.objects.filter(user=self.user, problem=self.problem).count(), 1)
+        saved_log = ProblemAIHintLog.objects.filter(user=self.user, problem=self.problem).first()
+        self.assertEqual(saved_log.hint_content, "힌트 스트림")
+
+        msgs = mocked_post.call_args.kwargs["json"]["messages"]
+        mocked_post.assert_called_once()
+        self.assertEqual(mocked_post.call_args.args[0], get_vllm_chat_completions_url())
+        self.assertEqual(mocked_post.call_args.kwargs["json"]["model"], VLLM_MODEL)
+
+        # messages[0]: 시스템 프롬프트
+        self.assertIn("Do not repeat the same hint.", msgs[0]["content"])
+        self.assertIn("Start from a specific condition, constraint, structure, or example from the problem.",
+                      msgs[0]["content"])
+        self.assertIn("Hint levels:", msgs[0]["content"])
+        self.assertIn("현재 N단계 힌트를 제공해야 합니다", msgs[0]["content"])
+
+        # messages[1]: 문제 데이터 (HTML 태그 미포함, problem._id 포함)
+        self.assertIn(self.problem._id, msgs[1]["content"])
+        self.assertNotIn("<p>", msgs[1]["content"])
+
+        # messages[2]: 트리거 — 첫 요청이므로 1단계를 명시해야 함
+        self.assertEqual(msgs[2]["role"], "user")
+        self.assertIn("You must provide the Level 1 hint now.", msgs[2]["content"])
+
+        self.assertEqual(mocked_post.call_args.kwargs["json"]["temperature"], 0.3)
+        self.assertEqual(mocked_post.call_args.kwargs["stream"], True)
+        self.assertEqual(
+            mocked_post.call_args.kwargs["timeout"],
+            (VLLM_CONNECT_TIMEOUT_SEC, VLLM_STREAM_READ_TIMEOUT_SEC),
+        )
+
+    @mock.patch("problem.llm_hint.requests.post")
+    def test_stream_llm_hint_problem_limit(self, mocked_post):
+        """한 문제당 5회 제한에 걸리는지 테스트"""
+        # 해당 문제에 대해 이미 5개의 힌트 로그가 존재하도록 세팅
+        for i in range(5):
+            ProblemAIHintLog.objects.create(user=self.user, problem=self.problem, hint_content=f"더미 {i}")
+
+        resp = self.client.get(f"{self.url}?problem_id={self.problem._id}")
+        body = self._streaming_body(resp)
+
+        self.assertIn('event: app-error', body)
+        self.assertIn("limit-exceeded", body)
+        self.assertIn("소진", body)
+        mocked_post.assert_not_called()    # 제한에 걸리면 LLM 호출이 아예 안 일어나야 함
+
+    @mock.patch("problem.llm_hint.requests.post")
+    def test_stream_llm_hint_admin_bypass(self, mocked_post):
+        """관리자는 횟수 제한 없이 무제한으로 사용 가능한지 테스트"""
+        mocked_post.return_value = self._mock_streaming_response([
+            'data: {"choices":[{"delta":{"content":"어드민 패스"}}]}',
+            "data: [DONE]",
+        ])
+
+        # Admin 계정으로 5회 꽉 채움
+        for i in range(5):
+            ProblemAIHintLog.objects.create(user=self.admin, problem=self.problem, hint_content=f"더미 {i}")
+
+        # 일반 유저를 로그아웃시키고 Admin으로 로그인
+        self.client.force_login(self.admin)
+        resp = self.client.get(f"{self.url}?problem_id={self.problem._id}")
+        body = self._streaming_body(resp)
+
+        # 제한에 걸리지 않고 정상 응답이 와야 함
+        self.assertNotIn("limit-exceeded", body)
+        self.assertIn("어드민 패스", body)
+        mocked_post.assert_called_once()
+
+    @mock.patch("problem.llm_hint.requests.post")
+    def test_stream_llm_hint_empty_response(self, mocked_post):
+        """정상적으로 스트리밍이 종료되었으나 텍스트가 비어있는 경우, 선제 생성된 로그가 삭제되는지 테스트"""
+        # 공백만 리턴하는 모델 응답 Mocking
+        mocked_post.return_value = self._mock_streaming_response([
+            'data: {"choices":[{"delta":{"content":"   "}}]}',
+            "data: [DONE]",
+        ])
+
+        resp = self.client.get(f"{self.url}?problem_id={self.problem._id}")
+        body = self._streaming_body(resp)
+
+        # 1. 정상적으로 done 이벤트가 와야 함
+        self.assertIn('event: done', body)
+
+        # 2. 가장 중요: 빈 텍스트였기 때문에 DB에 로그가 남아있으면 안 됨 (횟수 차감 방어 성공)
+        self.assertEqual(ProblemAIHintLog.objects.filter(user=self.user, problem=self.problem).count(), 0)
+
+    def test_stream_llm_hint_requires_login(self):
+        self.client.logout()
+
+        resp = self.client.get(f"{self.url}?problem_id={self.problem._id}")
+        body = self._streaming_body(resp)
+
+        self.assertIn('event: app-error', body)
+        self.assertIn("로그인이 필요합니다.", body)
+
+    def test_stream_llm_hint_with_missing_problem(self):
+        resp = self.client.get(f"{self.url}?problem_id=NOT-EXIST")
+        body = self._streaming_body(resp)
+
+        self.assertIn('event: app-error', body)
+        self.assertIn("문제를 찾을 수 없습니다.", body)
+
+    def test_stream_llm_hint_with_missing_problem_id(self):
+        resp = self.client.get(self.url)
+        body = self._streaming_body(resp)
+
+        self.assertIn('event: app-error', body)
+        self.assertIn("문제 번호가 필요합니다.", body)
+
+    def test_stream_llm_hint_with_hidden_problem(self):
+        resp = self.client.get(f"{self.url}?problem_id={self.hidden_problem._id}")
+        body = self._streaming_body(resp)
+
+        self.assertIn('event: app-error', body)
+        self.assertIn("문제를 찾을 수 없습니다.", body)
+
+    def test_stream_llm_hint_with_contest_problem(self):
+        contest = Contest.objects.create(created_by=self.admin, **DEFAULT_CONTEST_DATA)
+        contest_problem = self.create_problem_with_custom_field(self.admin, _id="A-212")
+        contest_problem.contest = contest
+        contest_problem.save(update_fields=["contest"])
+
+        resp = self.client.get(f"{self.url}?problem_id={contest_problem._id}")
+        body = self._streaming_body(resp)
+
+        self.assertIn('event: app-error', body)
+        self.assertIn("문제를 찾을 수 없습니다.", body)
+
+    # ------------------------------------------------------------------
+    # contest_id path tests
+    # ------------------------------------------------------------------
+
+    def _make_contest(self, problem_id, **contest_kwargs):
+        """Return (contest, problem) — underway, public, ai_enabled by default."""
+        defaults = {
+            "title": "contest test",
+            "description": "desc",
+            "start_time": timezone.localtime(timezone.now()) - timedelta(hours=1),
+            "end_time": timezone.localtime(timezone.now()) + timedelta(days=1),
+            "rule_type": ContestRuleType.ACM,
+            "password": "",
+            "allowed_ip_ranges": [],
+            "visible": True,
+            "real_time_rank": True,
+            "allow_paste": True,
+            "ai_assistant_enabled": True,
+        }
+        defaults.update(contest_kwargs)
+        contest = Contest.objects.create(created_by=self.admin, **defaults)
+        problem = self.create_problem_with_custom_field(self.admin, _id=problem_id)
+        problem.contest = contest
+        problem.save(update_fields=["contest"])
+        return contest, problem
+
+    @mock.patch("problem.llm_hint.requests.post")
+    def test_contest_stream_llm_hint(self, mocked_post):
+        """SSE stream works for an accessible contest problem."""
+        mocked_post.return_value = self._mock_streaming_response([
+            'data: {"choices":[{"delta":{"content":"힌트"}}]}',
+            "data: [DONE]",
+        ])
+        contest, problem = self._make_contest("C-301")
+
+        resp = self.client.get(f"{self.url}?problem_id={problem._id}&contest_id={contest.id}")
+        body = self._streaming_body(resp)
+
+        self.assertEqual(resp["Content-Type"], "text/event-stream")
+        self.assertIn('event: chunk', body)
+        self.assertIn('event: done', body)
+        self.assertNotIn('event: app-error', body)
+        mocked_post.assert_called_once()
+
+    def test_contest_stream_llm_hint_ai_disabled(self):
+        """app-error when ai_assistant_enabled=False."""
+        contest, problem = self._make_contest("C-302", ai_assistant_enabled=False)
+
+        resp = self.client.get(f"{self.url}?problem_id={problem._id}&contest_id={contest.id}")
+        body = self._streaming_body(resp)
+
+        self.assertIn('event: app-error', body)
+        self.assertIn("AI 조교를 사용할 수 없습니다", body)
+
+    def test_contest_stream_llm_hint_invisible_contest(self):
+        """app-error (permission-denied) when contest has visible=False."""
+        contest, problem = self._make_contest("C-303", visible=False)
+
+        resp = self.client.get(f"{self.url}?problem_id={problem._id}&contest_id={contest.id}")
+        body = self._streaming_body(resp)
+
+        self.assertIn('event: app-error', body)
+        self.assertIn("permission-denied", body)
+
+    def test_contest_stream_llm_hint_password_no_session(self):
+        """app-error when contest is password-protected and no password is in session."""
+        contest, problem = self._make_contest("C-304", password="secret")
+
+        resp = self.client.get(f"{self.url}?problem_id={problem._id}&contest_id={contest.id}")
+        body = self._streaming_body(resp)
+
+        self.assertIn('event: app-error', body)
+        self.assertIn("permission-denied", body)
+
+    def test_contest_stream_llm_hint_password_wrong(self):
+        """app-error when session contains a wrong password."""
+        contest, problem = self._make_contest("C-305", password="secret")
+
+        session = self.client.session
+        session[CONTEST_PASSWORD_SESSION_KEY] = {contest.id: "wrong"}
+        session.save()
+
+        resp = self.client.get(f"{self.url}?problem_id={problem._id}&contest_id={contest.id}")
+        body = self._streaming_body(resp)
+
+        self.assertIn('event: app-error', body)
+        self.assertIn("permission-denied", body)
+
+    @mock.patch("problem.llm_hint.requests.post")
+    def test_contest_stream_llm_hint_password_correct(self, mocked_post):
+        """SSE stream works when the correct password is stored in session."""
+        mocked_post.return_value = self._mock_streaming_response([
+            'data: {"choices":[{"delta":{"content":"힌트"}}]}',
+            "data: [DONE]",
+        ])
+        contest, problem = self._make_contest("C-306", password="secret")
+
+        session = self.client.session
+        session[CONTEST_PASSWORD_SESSION_KEY] = {contest.id: "secret"}
+        session.save()
+
+        resp = self.client.get(f"{self.url}?problem_id={problem._id}&contest_id={contest.id}")
+        body = self._streaming_body(resp)
+
+        self.assertIn('event: chunk', body)
+        self.assertIn('event: done', body)
+        self.assertNotIn('event: app-error', body)
+
+    def test_contest_stream_llm_hint_not_started(self):
+        """app-error (permission-denied) when the contest has not started yet."""
+        contest, problem = self._make_contest(
+            "C-307",
+            start_time=timezone.localtime(timezone.now()) + timedelta(hours=1),
+        )
+
+        resp = self.client.get(f"{self.url}?problem_id={problem._id}&contest_id={contest.id}")
+        body = self._streaming_body(resp)
+
+        self.assertIn('event: app-error', body)
+        self.assertIn("permission-denied", body)
+
+    @mock.patch("problem.llm_hint.requests.post")
+    def test_contest_stream_llm_hint_admin_bypasses_restrictions(self, mocked_post):
+        """Contest creator gets SSE stream even for not-started password-protected contests."""
+        mocked_post.return_value = self._mock_streaming_response([
+            'data: {"choices":[{"delta":{"content":"힌트"}}]}',
+            "data: [DONE]",
+        ])
+        contest, problem = self._make_contest(
+            "C-308",
+            password="secret",
+            start_time=timezone.localtime(timezone.now()) + timedelta(hours=1),
+        )
+
+        self.client.login(username="admin@admin.com", password="admin1234!")
+
+        resp = self.client.get(f"{self.url}?problem_id={problem._id}&contest_id={contest.id}")
+        body = self._streaming_body(resp)
+
+        self.assertIn('event: chunk', body)
+        self.assertIn('event: done', body)
+        self.assertNotIn('event: app-error', body)
+
+    def test_contest_stream_llm_hint_hidden_problem(self):
+        """app-error when the problem itself has visible=False within an accessible contest."""
+        contest, problem = self._make_contest("C-309")
+        problem.visible = False
+        problem.save(update_fields=["visible"])
+
+        resp = self.client.get(f"{self.url}?problem_id={problem._id}&contest_id={contest.id}")
+        body = self._streaming_body(resp)
+
+        self.assertIn('event: app-error', body)
+        self.assertIn("문제를 찾을 수 없습니다.", body)
+
+    @mock.patch("problem.llm_hint.requests.post", side_effect=requests.Timeout)
+    def test_stream_llm_hint_handles_timeout(self, mocked_post):
+        resp = self.client.get(f"{self.url}?problem_id={self.problem._id}")
+        body = self._streaming_body(resp)
+
+        mocked_post.assert_called_once()
+        self.assertIn('event: app-error', body)
+        self.assertIn("힌트를 생성하지 못했습니다.", body)
+
+    @mock.patch("problem.views.oj.stream_problem_hint", side_effect=TypeError("boom"))
+    def test_stream_llm_hint_handles_unexpected_error(self, mocked_stream):
+        resp = self.client.get(f"{self.url}?problem_id={self.problem._id}")
+        body = self._streaming_body(resp)
+
+        mocked_stream.assert_called_once()
+        self.assertIn('event: app-error', body)
+        self.assertIn("힌트를 생성하지 못했습니다.", body)
+        self.assertIn('event: done', body)
+
+    def test_get_vllm_chat_completions_url_for_local(self):
+        with mock.patch.dict(os.environ, {}, clear=True):
+            self.assertEqual(get_vllm_chat_completions_url(), LOCAL_VLLM_CHAT_COMPLETIONS_URL)
+
+    def test_get_vllm_chat_completions_url_for_kubernetes(self):
+        with mock.patch.dict(os.environ, {"KUBERNETES_SERVICE_HOST": "10.0.0.1"}, clear=False):
+            self.assertEqual(get_vllm_chat_completions_url(), CLUSTER_VLLM_CHAT_COMPLETIONS_URL)
+
+    # ------------------------------------------------------------------
+    # 레거시 대회 (ai_assistant_enabled 필드 도입 이전 생성) 테스트
+    # ------------------------------------------------------------------
+
+    def _make_public_contest_no_ai(self, problem_id):
+        """비밀번호 없는 공개 대회(ai_assistant_enabled=False)와 문제를 반환한다."""
+        contest = Contest.objects.create(
+            created_by=self.admin,
+            title="legacy contest",
+            description="desc",
+            start_time=timezone.localtime(timezone.now()) - timedelta(hours=1),
+            end_time=timezone.localtime(timezone.now()) + timedelta(days=1),
+            rule_type=ContestRuleType.ACM,
+            password="",
+            allowed_ip_ranges=[],
+            visible=True,
+            real_time_rank=True,
+            allow_paste=True,
+            # ai_assistant_enabled 생략 → 모델 기본값(False) 적용
+        )
+        problem = self.create_problem_with_custom_field(self.admin, _id=problem_id)
+        problem.contest = contest
+        problem.save(update_fields=["contest"])
+        return contest, problem
+
+    def test_legacy_contest_no_ai_field_blocks_hint(self):
+        """ai_assistant_enabled 없이 생성된 레거시 대회는 모델 기본값(False)이 적용되어 AI 힌트가 차단된다."""
+        contest, problem = self._make_public_contest_no_ai("L-001")
+
+        self.assertFalse(contest.ai_assistant_enabled)
+
+        resp = self.client.get(f"{self.url}?problem_id={problem._id}&contest_id={contest.id}")
+        body = self._streaming_body(resp)
+
+        self.assertIn("event: app-error", body)
+        self.assertIn("AI 조교를 사용할 수 없습니다", body)
+
+    def test_legacy_contest_after_bulk_disable_blocks_hint(self):
+        """데이터 마이그레이션으로 ai_assistant_enabled=True → False로 일괄 전환된 대회도 AI 힌트가 차단된다."""
+        contest, problem = self._make_public_contest_no_ai("L-002")
+
+        # 마이그레이션 전 상태 재현: 구 기본값(True)으로 강제 설정
+        Contest.objects.filter(pk=contest.pk).update(ai_assistant_enabled=True)
+        contest.refresh_from_db()
+        self.assertTrue(contest.ai_assistant_enabled)
+
+        # 데이터 마이그레이션 로직 실행 (ai_assistant_enabled=True인 대회를 전부 False로)
+        Contest.objects.filter(ai_assistant_enabled=True).update(ai_assistant_enabled=False)
+        contest.refresh_from_db()
+        self.assertFalse(contest.ai_assistant_enabled)
+
+        resp = self.client.get(f"{self.url}?problem_id={problem._id}&contest_id={contest.id}")
+        body = self._streaming_body(resp)
+
+        self.assertIn("event: app-error", body)
+        self.assertIn("AI 조교를 사용할 수 없습니다", body)
+
+
+class AIHintHistoryAPITest(ProblemCreateTestBase):
+
+    def setUp(self):
+        self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
+        self.url = self.reverse("problem_ai_hint_history_api")    # urls/oj.py 에 등록했던 name과 일치해야 함
+        self.admin = self.create_admin(login=False)
+        self.problem = self.add_problem(DEFAULT_PROBLEM_DATA, self.admin)
+        self.user = self.create_user(email="history@test.com", username="history_test", password="test1234!")
+        self.hidden_problem = self.create_problem_with_custom_field(self.admin, _id="A-211", visible=False)
+
+    def test_get_history_require_login(self):
+        """로그인하지 않은 유저가 조회 요청 시 에러"""
+        self.client.logout()
+        resp = self.client.get(f"{self.url}?problem_id={self.problem._id}")
+        # 일반 APIView 응답 구조에 맞춰 검증 (에러 메시지 포함 여부)
+        self.assertIsNotNone(resp.data.get("error"))
+
+    def test_get_history_success_and_structure(self):
+        """정상적으로 로그와 횟수 데이터가 넘어오는지 구조 검증"""
+        self.client.force_login(self.user)
+
+        # 더미 데이터 생성
+        ProblemAIHintLog.objects.create(user=self.user, problem=self.problem, hint_content="과거의 힌트 1")
+        ProblemAIHintLog.objects.create(user=self.user, problem=self.problem, hint_content="과거의 힌트 2")
+
+        resp = self.client.get(f"{self.url}?problem_id={self.problem._id}")
+        self.assertEqual(resp.status_code, 200)
+        self.assertIsNone(resp.data.get("error"))
+
+        payload = resp.data.get("data")
+
+        # 응답 구조 검증
+        self.assertIn("logs", payload)
+
+        # 값 검증
+        self.assertEqual(len(payload["logs"]), 2)
+        self.assertEqual(payload["logs"][0]["hint_content"], "과거의 힌트 1")
+
+    def test_get_history_with_hidden_problem(self):
+        """비공개 문제의 힌트 히스토리는 조회할 수 없어야 함"""
+        self.client.force_login(self.user)
+
+        # setUp에서 미리 만들어둔 hidden_problem 사용
+        resp = self.client.get(f"{self.url}?problem_id={self.hidden_problem._id}")
+
+        self.assertIsNotNone(resp.data.get("error"))
+        self.assertIn("문제를 찾을 수 없습니다.", resp.data.get("data", ""))
+
+    def test_get_history_with_contest_problem(self):
+        """대회용 문제의 힌트 히스토리는 일반 API로 조회할 수 없어야 함"""
+        self.client.force_login(self.user)
+
+        # 대회 및 대회용 문제 임시 생성
+        from contest.models import Contest
+        from contest.tests import DEFAULT_CONTEST_DATA
+        contest = Contest.objects.create(created_by=self.admin, **DEFAULT_CONTEST_DATA)
+        contest_problem = self.create_problem_with_custom_field(self.admin, _id="C-999")
+        contest_problem.contest = contest
+        contest_problem.save(update_fields=["contest"])
+
+        resp = self.client.get(f"{self.url}?problem_id={contest_problem._id}")
+
+        self.assertIsNotNone(resp.data.get("error"))
+        self.assertIn("문제를 찾을 수 없습니다.", resp.data.get("data", ""))
+
+    def test_get_history_with_invalid_problem_id(self):
+        """존재하지 않는 문제 ID를 넣었을 때 처리"""
+        self.client.force_login(self.user)
+        resp = self.client.get(f"{self.url}?problem_id=INVALID_ID")
+
+        self.assertIsNotNone(resp.data.get("error"))
+        self.assertIn("문제를 찾을 수 없습니다.", resp.data.get("data", ""))
 
 
 class ContestProblemAdminTest(APITestCase):

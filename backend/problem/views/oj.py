@@ -1,20 +1,24 @@
 import logging
 import random
+import json
 
 from django.db import transaction
 from django.db.models import Count, F, Q
-from django.http import HttpResponseBadRequest, HttpResponseNotFound
+from django.http import HttpResponseBadRequest, HttpResponseNotFound, StreamingHttpResponse
+from django.contrib.auth import get_user_model
 
-from account.decorators import (check_contest_permission, login_required, scheduler_only)
+from account.decorators import (check_contest_permission, check_contest_password, scheduler_only)
+from utils.constants import CONTEST_PASSWORD_SESSION_KEY
 from account.models import UserProfile, UserScore
-from contest.models import ContestRuleType
+from contest.models import Contest, ContestRuleType, ContestStatus, ContestType
 from submission.models import JudgeStatus, Submission
 from utils.api import APIView
 from utils.constants import Difficulty, ProblemField, Tier
 
-from ..models import (Problem, ProblemRuleType, ProblemTag, get_default_week_info)
+from ..llm_hint import LLMHintError, MAX_USER_CODE_LENGTH, stream_problem_hint
+from ..models import (Problem, ProblemRuleType, ProblemTag, get_default_week_info, ProblemAIHintLog)
 from ..serializers import (MostDifficultProblemSerializer, ProblemSafeSerializer, ProblemSerializer,
-                           RecommendBonusProblemSerializer, TagSerializer)
+                           RecommendBonusProblemSerializer, TagSerializer, AIHintLogSerializer)
 
 logger = logging.getLogger(__name__)
 
@@ -114,6 +118,171 @@ class ProblemAPI(APIView):
         data = self.paginate_data(request, problems, ProblemSerializer)
         self._add_problem_status(request, data)
         return self.success(data)
+
+
+class ProblemLLMHintAPI(APIView):
+
+    @staticmethod
+    def _format_sse_event(event, data):
+        return f"event: {event}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
+
+    def _streaming_response(self, generator):
+        response = StreamingHttpResponse(generator, content_type="text/event-stream")
+        response["Cache-Control"] = "no-cache"
+        response["X-Accel-Buffering"] = "no"
+        return response
+
+    def _error_events(self, message, err="llm-hint-unavailable"):
+        yield self._format_sse_event("app-error", {"error": err, "message": message})
+        yield self._format_sse_event("done", {"done": True})
+
+    def _error_response(self, message, err="llm-hint-unavailable"):
+        return self._streaming_response(self._error_events(message, err=err))
+
+    def get(self, request):
+        if not request.user.is_authenticated:
+            return self._error_response("로그인이 필요합니다.", err="permission-denied")
+
+        problem_id = request.GET.get("problem_id")
+        contest_id = request.GET.get("contest_id")
+        if not problem_id:
+            return self._error_response("문제 번호가 필요합니다.")
+
+        # 사용자가 현재 작성 중인 코드 (없으면 None)
+        # 서버에서 한 번 더 길이를 제한해 과도하게 큰 요청을 차단
+        raw_user_code = request.GET.get("user_code") or ""
+        user_code = raw_user_code[:MAX_USER_CODE_LENGTH] if raw_user_code else None
+      
+        if contest_id:
+            try:
+                contest = Contest.objects.select_related("created_by").get(id=contest_id, visible=True)
+            except Contest.DoesNotExist:
+                return self._error_response("대회를 찾을 수 없습니다.", err="permission-denied")
+
+            if not request.user.is_contest_admin(contest):
+                if contest.contest_type == ContestType.PASSWORD_PROTECTED_CONTEST:
+                    if not check_contest_password(
+                        request.session.get(CONTEST_PASSWORD_SESSION_KEY, {}).get(contest.id),
+                        contest.password,
+                    ):
+                        return self._error_response("비밀번호가 올바르지 않거나 만료되었습니다.", err="permission-denied")
+
+                if contest.status == ContestStatus.CONTEST_NOT_START:
+                    return self._error_response("아직 시작하지 않은 대회입니다.", err="permission-denied")
+
+            if not contest.ai_assistant_enabled:
+                return self._error_response("이 대회에서는 AI 조교를 사용할 수 없습니다.")
+            try:
+                problem = Problem.objects.get(_id=problem_id, contest_id=contest_id, visible=True)
+            except Problem.DoesNotExist:
+                return self._error_response("문제를 찾을 수 없습니다.")
+        else:
+            try:
+                problem = Problem.objects.get(_id=problem_id, contest_id__isnull=True, visible=True)
+            except Problem.DoesNotExist:
+                return self._error_response("문제를 찾을 수 없습니다.")
+
+        hint_log = None
+        previous_hints = []
+
+        if not (request.user.is_super_admin() or request.user.is_admin()):
+            # 트랜잭션을 묶어 체크와 생성이 최대한 원자적으로 이루어지도록 처리
+            with transaction.atomic():
+                User = get_user_model()
+                User.objects.select_for_update().get(pk=request.user.pk)
+
+                # 이전 힌트 로그들 조회 및 시간순 정렬
+                previous_logs = ProblemAIHintLog.objects.filter(user=request.user, problem=problem).order_by("created_at")
+                problem_hint_count = previous_logs.count()
+
+                if problem_hint_count >= 5:
+                    return self._error_response(
+                        "이 문제에 대한 AI 조교 사용 횟수(5회)를 모두 소진했습니다. 이전 답변을 복습해 보세요.", err="problem-limit-exceeded")
+
+                # 이전 힌트 문자열 추출
+                previous_hints = [log.hint_content for log in previous_logs if log.hint_content.strip()]
+
+                # 제한 통과 시, 스트리밍 시작 전에 빈 내용으로 로그를 선제 생성하여 횟수 차감 처리
+                hint_log = ProblemAIHintLog.objects.create(user=request.user, problem=problem, hint_content="")
+        else:
+            # 어드민인 경우에도 이전 힌트 컨텍스트는 유지하도록 조회
+            previous_logs = ProblemAIHintLog.objects.filter(user=request.user, problem=problem).order_by("created_at")
+            previous_hints = [log.hint_content for log in previous_logs if log.hint_content.strip()]
+            hint_log = ProblemAIHintLog.objects.create(user=request.user, problem=problem, hint_content="")
+
+        def generator():
+            full_text_chunks = []
+            try:
+                for chunk in stream_problem_hint(problem, previous_hints=previous_hints, user_code=user_code):
+                    full_text_chunks.append(chunk)
+                    yield self._format_sse_event("chunk", {"text": chunk})
+                full_text = "".join(full_text_chunks)
+                if full_text.strip():
+                    hint_log.hint_content = full_text
+                    hint_log.save(update_fields=['hint_content'])
+                elif hint_log:
+                    hint_log.delete()
+                yield self._format_sse_event("done", {"done": True})
+            except LLMHintError as exc:
+                logger.warning("Failed to stream LLM hint for problem %s: %s", problem_id, exc)
+
+                full_text = "".join(full_text_chunks)
+                if full_text.strip():
+                    # (1) 일부라도 생성된 텍스트가 있다면 그 시점까지의 내용을 저장
+                    hint_log.hint_content = full_text
+                    hint_log.save(update_fields=['hint_content'])
+                elif hint_log:
+                    # (2) 생성된 텍스트가 아예 없다면 선제 생성한 로그 삭제 및 횟수 복구
+                    hint_log.delete()
+
+                yield from self._error_events("힌트를 생성하지 못했습니다.", err="llm-hint-unavailable")
+
+            except (GeneratorExit, BrokenPipeError, ConnectionResetError):
+                logger.info("LLM hint stream client disconnected for problem %s", problem_id)
+
+                full_text = "".join(full_text_chunks)
+                if full_text.strip():
+                    hint_log.hint_content = full_text
+                    hint_log.save(update_fields=['hint_content'])
+                elif hint_log:
+                    hint_log.delete()
+                return
+
+            except Exception:
+                logger.exception("Unexpected error while streaming LLM hint for problem %s", problem_id)
+
+                full_text = "".join(full_text_chunks)
+                if full_text.strip():
+                    hint_log.hint_content = full_text
+                    hint_log.save(update_fields=['hint_content'])
+                elif hint_log:
+                    hint_log.delete()
+
+                yield from self._error_events("힌트를 생성하지 못했습니다.", err="llm-hint-unavailable")
+
+        return self._streaming_response(generator())
+
+
+class AIHintHistoryAPI(APIView):
+
+    def get(self, request):
+        if not request.user.is_authenticated:
+            return self.error("로그인이 필요합니다.")
+
+        problem_id = request.GET.get("problem_id")
+        if not problem_id:
+            return self.error("problem_id는 필수입니다.")
+
+        # 1. 문제 조회 및 접근 가능 여부(공개 여부, 대회 여부) 검증
+        try:
+            problem = Problem.objects.get(_id=problem_id, contest_id__isnull=True, visible=True)
+        except Problem.DoesNotExist:
+            return self.error("문제를 찾을 수 없습니다.")
+
+        # 2. JOIN 없이 Foreign Key를 직접 활용하여 로그 조회
+        logs = ProblemAIHintLog.objects.filter(user=request.user, problem=problem).order_by("created_at")
+
+        return self.success({"logs": AIHintLogSerializer(logs, many=True).data})
 
 
 class ContestProblemAPI(APIView):
