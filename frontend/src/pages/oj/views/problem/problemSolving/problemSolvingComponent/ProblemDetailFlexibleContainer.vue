@@ -434,11 +434,11 @@ export default defineComponent({
     }
 
     /deep/ img {
-      display: inline-block;
+      display: block;
       width: auto;
       max-width: ~"min(100%, 640px)";
       height: auto;
-      vertical-align: middle;
+      margin: 12px auto;
     }
 
     /deep/ .content img {
