@@ -74,7 +74,7 @@ export default defineComponent({
       default: "C++",
     },
     statusVisible: Boolean,
-    contestID: String,
+    contestID: [String, Number],
     result: Object,
     submissionId: String,
     isSubmitting: Boolean,

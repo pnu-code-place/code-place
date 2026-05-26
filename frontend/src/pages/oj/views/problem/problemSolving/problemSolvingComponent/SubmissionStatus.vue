@@ -49,7 +49,7 @@ import { JUDGE_STATUS } from "../../../../../../utils/constants"
 export default defineComponent({
   props: {
     statusVisible: Boolean,
-    contestID: String,
+    contestID: [String, Number],
     result: Object,
     submissionId: String,
   },
