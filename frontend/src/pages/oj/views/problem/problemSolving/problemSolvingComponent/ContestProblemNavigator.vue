@@ -232,7 +232,7 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 5px;
-  overflow-x: visible;
+  overflow-x: hidden;
   overflow-y: auto;
   padding: 2px 0;
 }
