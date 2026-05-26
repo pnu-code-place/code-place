@@ -3,8 +3,17 @@ import types from "../types"
 import api from "@oj/api"
 import { CONTEST_STATUS, USER_TYPE, CONTEST_TYPE } from "@/utils/constants"
 
+function getClientTick() {
+  if (typeof window !== "undefined" && window.performance) {
+    return window.performance.now()
+  }
+  return Date.now()
+}
+
 const state = {
   now: moment(),
+  nowBase: moment(),
+  clientNowBase: getClientTick(),
   access: false,
   rankLimit: 30,
   forceUpdate: false,
@@ -18,6 +27,29 @@ const state = {
     chart: true,
     realName: false,
   },
+}
+
+function formatDuration(seconds) {
+  let duration = Math.max(parseInt(seconds, 10), 0)
+  const sec = duration % 60
+  duration = parseInt(duration / 60, 10)
+  const min = duration % 60
+  duration = parseInt(duration / 60, 10)
+  const hours = duration % 24
+  duration = parseInt(duration / 24, 10)
+  const days = duration
+
+  let result = ""
+  if (days > 0) result += days + "일 "
+  if (hours > 0) result += hours + "시간 "
+  if (min > 0) result += min + "분 "
+  if (sec > 0) result += sec + "초"
+
+  return result || "0초"
+}
+
+function getElapsedServerNow(state) {
+  return moment(state.nowBase).add(getClientTick() - state.clientNowBase, "ms")
 }
 
 const getters = {
@@ -81,61 +113,60 @@ const getters = {
     )
   },
   contestStartTime: (state) => {
-    const date = new Date(state.contest.start_time)
-
-    return new Date(date.getTime() - date.getTimezoneOffset() * 60 * 1000)
+    return moment(state.contest.start_time)
   },
   contestEndTime: (state) => {
-    const date = new Date(state.contest.end_time)
-
-    return new Date(date.getTime() - date.getTimezoneOffset() * 60 * 1000)
+    return moment(state.contest.end_time)
   },
   countdown: (state, getters) => {
     if (getters.contestStatus === CONTEST_STATUS.NOT_START) {
-      const offset = getters.contestStartTime.getTimezoneOffset() * 60 * 1000
-      let duration = getters.contestStartTime - new Date() + offset
-
-      duration = parseInt(duration / 1000)
-      const sec = duration % 60
-      duration = parseInt(duration / 60)
-      const min = duration % 60
-      duration = parseInt(duration / 60)
-      const hours = duration % 24
-      duration = parseInt(duration / 24)
-      const days = duration
-
-      let result = ""
-      if (days > 0) result += days + "일 "
-      if (hours > 0) result += hours + "시간 "
-      if (min > 0) result += min + "분 "
-      if (sec > 0) result += sec + "초"
-
-      return "시작까지 " + result + " 전"
+      return (
+        "시작까지 " +
+        formatDuration(getters.contestStartTime.diff(state.now, "seconds")) +
+        " 전"
+      )
     } else if (getters.contestStatus === CONTEST_STATUS.UNDERWAY) {
-      const offset = getters.contestEndTime.getTimezoneOffset() * 60 * 1000
-      let duration = getters.contestEndTime - new Date() + offset
-
-      duration = parseInt(duration / 1000)
-      const sec = duration % 60
-      duration = parseInt(duration / 60)
-      const min = duration % 60
-      duration = parseInt(duration / 60)
-      const hours = duration % 24
-      duration = parseInt(duration / 24)
-      const days = duration
-
-      let result = ""
-      if (days > 0) result += days + "일 "
-      if (hours > 0) result += hours + "시간 "
-      if (min > 0) result += min + "분 "
-      if (sec > 0) result += sec + "초"
-
-      console.log(days, hours, min, sec)
-
-      return "종료까지 " + result + " 전"
+      return (
+        "종료까지 " +
+        formatDuration(getters.contestEndTime.diff(state.now, "seconds")) +
+        " 전"
+      )
     } else {
       return "종료"
     }
+  },
+  countdownParts: (state, getters) => {
+    let totalSeconds = 0
+    let label = ""
+    let status = ""
+
+    if (getters.contestStatus === CONTEST_STATUS.NOT_START) {
+      totalSeconds = Math.max(
+        getters.contestStartTime.diff(state.now, "seconds"),
+        0,
+      )
+      label = "시작까지"
+      status = "waiting"
+    } else if (getters.contestStatus === CONTEST_STATUS.UNDERWAY) {
+      totalSeconds = Math.max(
+        getters.contestEndTime.diff(state.now, "seconds"),
+        0,
+      )
+      label = "종료까지"
+      status = "running"
+    } else {
+      return { days: 0, hours: 0, minutes: 0, seconds: 0, label: "종료", status: "ended", totalSeconds: 0 }
+    }
+
+    let rem = totalSeconds
+    const days = Math.floor(rem / 86400)
+    rem %= 86400
+    const hours = Math.floor(rem / 3600)
+    rem %= 3600
+    const minutes = Math.floor(rem / 60)
+    const seconds = rem % 60
+
+    return { days, hours, minutes, seconds, label, status, totalSeconds }
   },
 }
 
@@ -170,10 +201,12 @@ const mutations = {
     state.forceUpdate = false
   },
   [types.NOW](state, payload) {
-    state.now = payload.now
+    state.nowBase = moment(payload.now)
+    state.clientNowBase = getClientTick()
+    state.now = moment(state.nowBase)
   },
   [types.NOW_ADD_1S](state) {
-    state.now = moment(state.now.add(1, "s"))
+    state.now = getElapsedServerNow(state)
   },
 }
 

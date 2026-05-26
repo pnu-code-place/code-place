@@ -182,15 +182,58 @@ export default {
       this._menuEl = menuEl
       this._onMenuOver = this.handleMenuMouseOver.bind(this)
       this._onMenuLeave = this.handleMenuMouseLeave.bind(this)
-      this._onWindowResize = () => this.moveIndicatorToActive()
+      this._onWindowResize = () => this.scheduleIndicatorUpdate()
+      this._onWindowLoad = () => this.scheduleIndicatorUpdate()
       menuEl.addEventListener("mouseover", this._onMenuOver)
       menuEl.addEventListener("mouseleave", this._onMenuLeave)
       window.addEventListener("resize", this._onWindowResize)
-      this.moveIndicatorToActive()
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          this.indicatorReady = true
+      window.addEventListener("load", this._onWindowLoad)
+      this.observeIndicatorLayout(menuEl)
+      this.scheduleIndicatorUpdate()
+      this.showIndicatorWhenLayoutReady()
+    },
+    observeIndicatorLayout(menuEl) {
+      if (window.ResizeObserver) {
+        this._indicatorResizeObserver = new ResizeObserver(() => {
+          this.scheduleIndicatorUpdate()
         })
+        this._indicatorResizeObserver.observe(menuEl)
+        this._indicatorResizeObserver.observe(this.$el)
+      }
+
+      this._indicatorImages = Array.prototype.slice.call(
+        menuEl.querySelectorAll("img"),
+      )
+      this._onIndicatorAssetLoad = () => this.scheduleIndicatorUpdate()
+      this._indicatorImages.forEach((img) => {
+        if (img.complete) return
+        img.addEventListener("load", this._onIndicatorAssetLoad)
+        img.addEventListener("error", this._onIndicatorAssetLoad)
+      })
+    },
+    showIndicatorWhenLayoutReady() {
+      const showIndicator = () => {
+        this.scheduleIndicatorUpdate()
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            if (this._menuEl) this.indicatorReady = true
+          })
+        })
+      }
+
+      if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(showIndicator)
+      } else {
+        showIndicator()
+      }
+    },
+    scheduleIndicatorUpdate() {
+      if (this._indicatorFrame) {
+        cancelAnimationFrame(this._indicatorFrame)
+      }
+      this._indicatorFrame = requestAnimationFrame(() => {
+        this._indicatorFrame = null
+        this.moveIndicatorToActive()
       })
     },
     teardownIndicator() {
@@ -201,10 +244,30 @@ export default {
       if (this._onWindowResize) {
         window.removeEventListener("resize", this._onWindowResize)
       }
+      if (this._onWindowLoad) {
+        window.removeEventListener("load", this._onWindowLoad)
+      }
+      if (this._indicatorResizeObserver) {
+        this._indicatorResizeObserver.disconnect()
+      }
+      if (this._indicatorImages && this._onIndicatorAssetLoad) {
+        this._indicatorImages.forEach((img) => {
+          img.removeEventListener("load", this._onIndicatorAssetLoad)
+          img.removeEventListener("error", this._onIndicatorAssetLoad)
+        })
+      }
+      if (this._indicatorFrame) {
+        cancelAnimationFrame(this._indicatorFrame)
+      }
       this._menuEl = null
       this._onMenuOver = null
       this._onMenuLeave = null
       this._onWindowResize = null
+      this._onWindowLoad = null
+      this._indicatorResizeObserver = null
+      this._indicatorImages = null
+      this._onIndicatorAssetLoad = null
+      this._indicatorFrame = null
     },
     handleMenuMouseOver(e) {
       if (!this._menuEl) return
@@ -267,7 +330,7 @@ export default {
   },
   watch: {
     activeMenu() {
-      this.$nextTick(() => this.moveIndicatorToActive())
+      this.$nextTick(() => this.scheduleIndicatorUpdate())
     },
   },
 }

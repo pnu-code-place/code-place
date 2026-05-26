@@ -339,6 +339,7 @@ export default defineComponent({
 
 <style scoped lang="less">
 .problemDetailFlexibleContainer {
+  min-height: 0;
   height: 100%;
   overflow-y: scroll;
   display: flex;
@@ -421,7 +422,24 @@ export default defineComponent({
       font-weight: 400;
       line-height: 1.6;
       letter-spacing: 0.01em;
-      color: #111111 !important;
+      color: var(--ps-content-text-color) !important;
+
+      /deep/ p,
+      /deep/ ul,
+      /deep/ ol,
+      /deep/ li,
+      /deep/ span {
+        color: var(--ps-content-text-color) !important;
+      }
+    }
+
+    /deep/ img {
+      display: block;
+      width: auto;
+      max-width: ~"min(100%, 640px)";
+      height: auto;
+      margin: 12px auto;
+      object-fit: contain;
     }
 
     .sample {

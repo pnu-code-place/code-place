@@ -64,7 +64,7 @@ export default {
       required: true,
     },
     contestID: {
-      type: String,
+      type: [String, Number],
       default: null,
     },
     isDarkMode: {
