@@ -424,6 +424,12 @@ export default defineComponent({
       color: var(--ps-content-text-color) !important;
     }
 
+    /deep/ .content img {
+      max-width: 100%;
+      height: auto;
+      object-fit: contain;
+    }
+
     .sample {
       display: flex;
       justify-content: space-around;
