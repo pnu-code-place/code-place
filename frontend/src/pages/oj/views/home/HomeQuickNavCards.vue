@@ -2,12 +2,24 @@
   <div class="quick-nav-padding">
     <p class="section-title">바로가기</p>
     <div class="quick-nav-cards">
-      <div class="nav-card" v-for="card in cards" :key="card.title" @click="goRoute(card.route)">
-        <div class="card-icon" :style="{ backgroundColor: card.iconBg }">
-          <span class="card-icon-emoji">{{ card.icon }}</span>
+      <div
+        class="nav-card"
+        v-for="card in cards"
+        :key="card.title"
+        :style="{ backgroundColor: card.cardBg }"
+        @click="goRoute(card.route)"
+      >
+        <div class="card-top">
+          <div class="card-icon" :style="{ backgroundColor: card.iconBg }">
+            <span v-if="card.iconText" class="card-icon-text">{{
+              card.iconText
+            }}</span>
+            <Icon v-else :type="card.icon" size="22" color="#ffffff" />
+          </div>
+          <p class="card-title">{{ card.title }}</p>
+          <p class="card-desc">{{ card.desc }}</p>
         </div>
-        <p class="card-title">{{ card.title }}</p>
-        <p class="card-desc">{{ card.desc }}</p>
+        <div class="card-arrow">→</div>
       </div>
     </div>
   </div>
@@ -20,31 +32,35 @@ export default {
     return {
       cards: [
         {
-          title: "문제 풀이",
-          desc: "다양한 알고리즘 문제를 풀어보세요.",
-          icon: "💻",
-          iconBg: "#ede9ff",
+          title: "문제 풀기",
+          desc: "다양한 알고리즘 문제를\n풀어보세요.",
+          iconText: "</>",
+          iconBg: "#7b6ef5",
+          cardBg: "#eeeaff",
           route: "problem-list",
         },
         {
           title: "콘테스트",
-          desc: "정기 콘테스트에 참여하고 실력을 확인하세요.",
-          icon: "🏆",
-          iconBg: "#fff3de",
+          desc: "대회에 참여하고\n실력을 확인하세요.",
+          icon: "trophy",
+          iconBg: "#f5a230",
+          cardBg: "#fff5e8",
           route: "contest-list",
         },
         {
           title: "랭킹",
-          desc: "실력 상위 개발자들과 경쟁해보세요.",
-          icon: "📊",
-          iconBg: "#fde8e8",
+          desc: "실력 순위와 상위 유저를\n확인해보세요.",
+          icon: "stats-bars",
+          iconBg: "#34c175",
+          cardBg: "#edf8f2",
           route: "acm-rank",
         },
         {
           title: "커뮤니티",
-          desc: "질문하고, 답변하며 함께 성장하세요.",
-          icon: "💬",
-          iconBg: "#e5f9f2",
+          desc: "질문하고, 답변하며\n함께 성장하세요.",
+          icon: "chatbubbles",
+          iconBg: "#8b90f0",
+          cardBg: "#eef0fb",
           route: "community",
         },
       ],
@@ -61,14 +77,13 @@ export default {
 <style scoped lang="less">
 .quick-nav-padding {
   width: 100%;
-  padding: 24px 0 0;
+  padding: 8px 0 0;
   display: flex;
   flex-direction: column;
-  gap: 16px;
 }
 
 .section-title {
-  font-size: 16px;
+  font-size: 20px;
   font-weight: 700;
   color: #14141f;
   margin: 0;
@@ -80,51 +95,80 @@ export default {
 }
 
 .nav-card {
-  background-color: #ffffff;
-  border: 1px solid #e5e5ed;
-  border-radius: 16px;
-  padding: 20px;
-  width: 220px;
-  height: 160px;
+  flex: 1;
+  border-radius: 20px;
+  padding: 24px;
+  min-height: 220px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  justify-content: space-between;
   cursor: pointer;
-  transition: box-shadow 0.2s, transform 0.2s;
-  flex: 1;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.75),
+    0 2px 8px rgba(0, 0, 0, 0.05);
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
 
   &:hover {
-    box-shadow: 0 4px 16px rgba(91, 100, 237, 0.1);
-    transform: translateY(-2px);
+    transform: translateY(-3px);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.75),
+      0 10px 28px rgba(0, 0, 0, 0.1);
   }
 }
 
+.card-top {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.card-icon-text {
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: monospace;
+  letter-spacing: -0.5px;
+}
+
 .card-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
+  width: 54px;
+  height: 54px;
+  border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-bottom: 16px;
   flex-shrink: 0;
 }
 
-.card-icon-emoji {
-  font-size: 22px;
-  line-height: 1;
-}
-
 .card-title {
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 18px;
+  font-weight: 700;
   color: #14141f;
-  margin: 0;
+  margin: 0 0 8px;
 }
 
 .card-desc {
-  font-size: 12px;
-  color: #8c8c9e;
+  font-size: 13px;
+  color: #6b6b7e;
   margin: 0;
-  line-height: 1.6;
+  line-height: 1.65;
+  white-space: pre-line;
+}
+
+.card-arrow {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  color: #14141f;
+  margin-top: 20px;
+  flex-shrink: 0;
 }
 </style>

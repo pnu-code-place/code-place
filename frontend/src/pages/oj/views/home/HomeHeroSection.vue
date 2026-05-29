@@ -58,9 +58,15 @@ export default {
 }
 
 .hero-section {
-  background: linear-gradient(135deg, #3a3fa8 0%, #5b64ed 45%, #7f87f5 75%, #b8bcff 100%);
+  background: linear-gradient(
+    135deg,
+    #3a3fa8 0%,
+    #5b64ed 45%,
+    #7f87f5 75%,
+    #b8bcff 100%
+  );
   border-radius: 20px;
-  height: 480px;
+  height: 440px;
   display: flex;
   align-items: center;
   padding: 40px 64px;

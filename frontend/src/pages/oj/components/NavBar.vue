@@ -8,14 +8,15 @@
       :active-name="activeMenu"
     >
       <LogoButton />
-      <Menu-item class="menuItemText first" name="/" data-menu-key="/">
+      <Menu-item class="menuItemText first" :class="{ 'nav-active': activeMenu === '/' }" name="/" data-menu-key="/">
         {{ $t("m.Home") }}
       </Menu-item>
-      <Menu-item class="menuItemText" name="/problem" data-menu-key="/problem">
+      <Menu-item class="menuItemText" :class="{ 'nav-active': activeMenu === '/problem' }" name="/problem" data-menu-key="/problem">
         {{ $t("m.NavProblems") }}
       </Menu-item>
       <Dropdown
         class="ivu-menu-item menuItemText"
+        :class="{ 'nav-active': activeMenu === '/community' }"
         data-menu-key="/community"
         trigger="custom"
         :visible="communityDropdownVisible"
@@ -36,17 +37,18 @@
           }}</Dropdown-item>
         </Dropdown-menu>
       </Dropdown>
-      <Menu-item class="menuItemText" name="/contest" data-menu-key="/contest">
+      <Menu-item class="menuItemText" :class="{ 'nav-active': activeMenu === '/contest' }" name="/contest" data-menu-key="/contest">
         {{ $t("m.Contests") }}
       </Menu-item>
       <Menu-item
         class="menuItemText"
+        :class="{ 'nav-active': activeMenu === '/acm-rank' }"
         name="/acm-rank"
         data-menu-key="/acm-rank"
       >
         {{ $t("m.Rank") }}
       </Menu-item>
-      <Menu-item class="menuItemText" name="/status" data-menu-key="/status">
+      <Menu-item class="menuItemText" :class="{ 'nav-active': activeMenu === '/status' }" name="/status" data-menu-key="/status">
         {{ $t("m.NavStatus") }}
       </Menu-item>
 
@@ -367,6 +369,21 @@ export default {
     color: rgb(15, 19, 23);
   }
 
+  /deep/ .header-menu.ivu-menu-light.ivu-menu-horizontal .ivu-menu-item.ivu-menu-item-active,
+  /deep/ .header-menu.ivu-menu-light.ivu-menu-horizontal .ivu-menu-item.ivu-menu-item-selected {
+    color: rgb(15, 19, 23);
+  }
+
+  /deep/ .header-menu.ivu-menu-light.ivu-menu-horizontal .ivu-menu-item:hover,
+  /deep/ .header-menu.ivu-menu-light.ivu-menu-horizontal .ivu-menu-item.nav-active {
+    color: #5b64ed;
+  }
+
+  /deep/ .header-menu.ivu-menu-light.ivu-menu-horizontal .ivu-dropdown:hover .menuItemText_community,
+  /deep/ .header-menu.ivu-menu-light.ivu-menu-horizontal .ivu-dropdown.nav-active .menuItemText_community {
+    color: #5b64ed;
+  }
+
   .drop-menu {
     float: right;
     margin-right: 0;
@@ -553,7 +570,8 @@ export default {
   margin-left: 48px;
 }
 
-.menuItemText:hover {
+.menuItemText:hover,
+.menuItemText.nav-active {
   color: #5b64ed;
 }
 
@@ -566,15 +584,5 @@ export default {
   border-radius: @avatar-radius;
   border: none;
   object-fit: cover;
-}
-
-.ivu-menu-item-active {
-  color: #5b64ed !important;
-  border-bottom: 3px solid #5b64ed !important;
-}
-
-.ivu-menu-light.ivu-menu-horizontal .ivu-menu-item:hover {
-  color: #5b64ed !important;
-  border-bottom: 3px solid #5b64ed !important;
 }
 </style>
