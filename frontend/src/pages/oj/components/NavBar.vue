@@ -58,7 +58,11 @@
           trigger="click"
         >
           <div class="user-menu-trigger">
-            <img class="avatar" :src="profile.avatar" alt="avatar of the user" />
+            <img
+              class="avatar"
+              :src="profile.avatar"
+              alt="avatar of the user"
+            />
             <Icon class="user-menu-arrow" type="arrow-down-b"></Icon>
           </div>
           <Dropdown-menu class="user-dropdown-menu" slot="list">
@@ -79,6 +83,16 @@
             }}</Dropdown-item>
           </Dropdown-menu>
         </Dropdown>
+      </template>
+      <template v-else>
+        <div class="auth-buttons">
+          <button class="btn-login" @click="handleBtnClick('login')">
+            {{ $t("m.Login") }}
+          </button>
+          <button class="btn-register" @click="handleBtnClick('register')">
+            {{ $t("m.Register") }}
+          </button>
+        </div>
       </template>
     </Menu>
     <span
@@ -327,7 +341,7 @@ export default {
     left: 0;
     width: 0;
     height: 3px;
-    background-color: #32306b;
+    background-color: #5b64ed;
     opacity: 0;
     pointer-events: none;
     z-index: 1001;
@@ -347,7 +361,9 @@ export default {
 
   /deep/ .header-menu.ivu-menu-light.ivu-menu-horizontal .ivu-menu-item,
   /deep/ .header-menu.ivu-menu-light.ivu-menu-horizontal .ivu-dropdown,
-  /deep/ .header-menu.ivu-menu-light.ivu-menu-horizontal .menuItemText_community {
+  /deep/
+    .header-menu.ivu-menu-light.ivu-menu-horizontal
+    .menuItemText_community {
     color: rgb(15, 19, 23);
   }
 
@@ -358,6 +374,53 @@ export default {
     height: var(--header-height);
     display: flex;
     align-items: center;
+  }
+
+  .auth-buttons {
+    float: right;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: var(--header-height);
+  }
+
+  .btn-login {
+    height: 34px;
+    line-height: 34px;
+    padding: 0 18px;
+    border-radius: 999px;
+    border: 1px solid rgba(91, 100, 237, 0.4);
+    background-color: transparent;
+    color: #59596b;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition:
+      border-color 0.2s,
+      color 0.2s;
+
+    &:hover {
+      border-color: #5b64ed;
+      color: #5b64ed;
+    }
+  }
+
+  .btn-register {
+    height: 34px;
+    line-height: 34px;
+    padding: 0 18px;
+    border-radius: 999px;
+    border: none;
+    background-color: #5b64ed;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+
+    &:hover {
+      background-color: #4a53d4;
+    }
   }
 
   .user-menu-trigger {
@@ -431,7 +494,7 @@ export default {
   }
 
   /deep/ .user-dropdown-menu .ivu-dropdown-item:hover {
-    color: #32306b !important;
+    color: #5b64ed !important;
     background-color: rgba(15, 19, 23, 0.04) !important;
   }
 
@@ -456,7 +519,7 @@ export default {
   }
 
   /deep/ .community-dropdown-menu .ivu-dropdown-item:hover {
-    color: #32306b !important;
+    color: #5b64ed !important;
     background-color: rgba(15, 19, 23, 0.04) !important;
   }
 
@@ -491,7 +554,7 @@ export default {
 }
 
 .menuItemText:hover {
-  color: #32306b;
+  color: #5b64ed;
 }
 
 @avatar-radius: 50%;
@@ -506,12 +569,12 @@ export default {
 }
 
 .ivu-menu-item-active {
-  color: #32306b !important;
-  border-bottom: 3px solid #32306b !important;
+  color: #5b64ed !important;
+  border-bottom: 3px solid #5b64ed !important;
 }
 
 .ivu-menu-light.ivu-menu-horizontal .ivu-menu-item:hover {
-  color: #32306b !important;
-  border-bottom: 3px solid #32306b !important;
+  color: #5b64ed !important;
+  border-bottom: 3px solid #5b64ed !important;
 }
 </style>

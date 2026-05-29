@@ -153,7 +153,7 @@ export default {
 .btn {
   height: 45px;
   border: none;
-  background-color: #32306b;
+  background-color: #5b64ed;
   font-weight: 600;
   font-size: 14px;
   border-radius: 8px;

@@ -53,7 +53,7 @@ export default {
     .systemTitle {
       font-size: 19px;
       font-weight: bold;
-      color: #32306b;
+      color: #5b64ed;
     }
   }
 }
