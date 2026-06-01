@@ -9,6 +9,7 @@
         :style="{ backgroundColor: card.cardBg }"
         @click="goRoute(card.route)"
       >
+        <div class="card-arrow">→</div>
         <div class="card-top">
           <div class="card-icon" :style="{ backgroundColor: card.iconBg }">
             <span v-if="card.iconText" class="card-icon-text">{{
@@ -19,7 +20,6 @@
           <p class="card-title">{{ card.title }}</p>
           <p class="card-desc">{{ card.desc }}</p>
         </div>
-        <div class="card-arrow">→</div>
       </div>
     </div>
   </div>
@@ -100,7 +100,8 @@ export default {
   padding: 20px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-end;
+  position: relative;
   cursor: pointer;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.75),
@@ -125,28 +126,28 @@ export default {
 
 .card-icon-text {
   color: #ffffff;
-  font-size: 15px;
+  font-size: 10px;
   font-weight: 700;
   font-family: monospace;
   letter-spacing: -0.5px;
 }
 
 .card-icon {
-  width: 54px;
-  height: 54px;
+  width: 40px;
+  height: 40px;
   border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 16px;
+  margin-bottom: 8px;
   flex-shrink: 0;
 }
 
 .card-title {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 700;
   color: #14141f;
-  margin: 0 0 8px;
+  margin: 0 0 4px;
 }
 
 .card-desc {
@@ -158,16 +159,18 @@ export default {
 }
 
 .card-arrow {
-  width: 36px;
-  height: 36px;
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   background-color: rgba(255, 255, 255, 0.75);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 15px;
+  font-size: 13px;
   color: #14141f;
-  margin-top: 20px;
   flex-shrink: 0;
 }
 </style>

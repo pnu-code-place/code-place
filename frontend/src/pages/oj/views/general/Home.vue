@@ -24,9 +24,15 @@
 
     <HomeHeroSection />
     <HomeQuickNavCards />
-    <HomeNoticeProblemRow />
+    <div class="notice-rank-row">
+      <HomeNoticeProblemRow />
+      <div class="sidebar-col">
+        <HomeRankingSidebar />
+        <HomeActivitySidebar />
+      </div>
+    </div>
+    <HomeOngoingContests />
     <HomeWeeklyServices />
-    <HomeRankingActivityRow />
     <HomeCTABanner />
   </div>
 </template>
@@ -41,8 +47,10 @@ import storage from "../../../../utils/storage"
 import HomeHeroSection from "../home/HomeHeroSection.vue"
 import HomeQuickNavCards from "../home/HomeQuickNavCards.vue"
 import HomeNoticeProblemRow from "../home/HomeNoticeProblemRow.vue"
+import HomeRankingSidebar from "../home/HomeRankingSidebar.vue"
+import HomeActivitySidebar from "../home/HomeActivitySidebar.vue"
+import HomeOngoingContests from "../home/HomeOngoingContests.vue"
 import HomeWeeklyServices from "../home/HomeWeeklyServices.vue"
-import HomeRankingActivityRow from "../home/HomeRankingActivityRow.vue"
 import HomeCTABanner from "../home/HomeCTABanner.vue"
 
 export default {
@@ -52,8 +60,10 @@ export default {
     HomeHeroSection,
     HomeQuickNavCards,
     HomeNoticeProblemRow,
+    HomeRankingSidebar,
+    HomeActivitySidebar,
+    HomeOngoingContests,
     HomeWeeklyServices,
-    HomeRankingActivityRow,
     HomeCTABanner,
   },
   data() {
@@ -95,5 +105,23 @@ export default {
   background-color: #f8f8fc;
   min-height: 100vh;
   padding: 0 30px;
+}
+
+.notice-rank-row {
+  display: flex;
+  align-items: stretch;
+  gap: 20px;
+
+  & > *:first-child {
+    flex: 2;
+    min-width: 0;
+  }
+}
+
+.sidebar-col {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
 </style>
