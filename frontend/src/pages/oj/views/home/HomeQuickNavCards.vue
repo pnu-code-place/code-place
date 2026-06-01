@@ -97,8 +97,7 @@ export default {
 .nav-card {
   flex: 1;
   border-radius: 20px;
-  padding: 24px;
-  min-height: 220px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;

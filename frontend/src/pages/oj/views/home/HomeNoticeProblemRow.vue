@@ -1,59 +1,75 @@
 <template>
-  <div class="row-padding">
-    <!-- 공지사항 -->
-    <div class="card notice-card">
-      <div class="card-header">
-        <span class="card-header-title">공지사항</span>
-        <span class="card-header-more" @click="goNotice">더보기 &gt;</span>
-      </div>
-      <div class="notice-list">
-        <div v-if="loading" class="skeleton-list">
-          <div class="skeleton-item" v-for="i in 5" :key="i" />
-        </div>
-        <template v-else-if="announcements.length > 0">
-          <div
-            class="notice-row"
-            v-for="(item, idx) in announcements.slice(0, 5)"
-            :key="idx"
-            @click="goNotice"
+  <div class="notice-section">
+    <div class="notice-card">
+      <!-- 헤더 -->
+      <div class="notice-header">
+        <span class="header-title">공지사항</span>
+        <div class="tabs">
+          <button
+            v-for="tab in tabs"
+            :key="tab.value"
+            class="tab-btn"
+            :class="{ active: activeTab === tab.value }"
+            @click="activeTab = tab.value"
           >
-            <span class="notice-dot" />
-            <span class="notice-title">{{ item.title }}</span>
-            <span class="notice-date">{{ formatDate(item.create_time) }}</span>
-          </div>
-        </template>
-        <div v-else class="empty-text">공지사항이 없습니다.</div>
+            {{ tab.label }}
+          </button>
+        </div>
+        <span class="more-link" @click="goNotice">더보기 →</span>
       </div>
-    </div>
 
-    <!-- 추천 문제 -->
-    <div class="card problem-card">
-      <div class="card-header">
-        <span class="card-header-title">추천 문제</span>
-        <span class="card-header-more" @click="goProblemList">더보기 &gt;</span>
-      </div>
-      <div class="problem-list">
-        <div v-if="problemLoading" class="skeleton-list">
-          <div class="skeleton-item" v-for="i in 5" :key="i" />
-        </div>
-        <template v-else-if="problems.length > 0">
-          <div
-            class="problem-row"
-            v-for="(problem, idx) in problems.slice(0, 5)"
-            :key="idx"
-            @click="goProblem(problem._id)"
-          >
-            <span class="problem-title">{{ problem.title }}</span>
-            <span
-              class="difficulty-badge"
-              :class="getDifficultyClass(problem.difficulty)"
-            >{{ getDifficultyLabel(problem.difficulty) }}</span>
-            <span class="success-rate" v-if="problem.submission_number > 0">
-              성공률 {{ getSuccessRate(problem) }}%
-            </span>
+      <!-- 바디 -->
+      <div class="notice-body">
+        <!-- Code Place 공지 -->
+        <div class="notice-col" v-show="activeTab === 'all' || activeTab === 'codeplace'">
+          <div class="col-label" style="color: #5b64ed">Code Place 공지</div>
+          <div v-if="loading" class="skeleton-list">
+            <div class="skeleton-item" v-for="i in 3" :key="i" />
           </div>
-        </template>
-        <div v-else class="empty-text">추천 문제가 없습니다.</div>
+          <template v-else>
+            <div
+              v-for="(item, idx) in cpAnnouncements"
+              :key="idx"
+              class="notice-item"
+              @click="goNotice"
+            >
+              <span class="badge-new" v-if="isNew(item.create_time)">NEW</span>
+              <span class="badge-num" v-else>{{ idx + 1 }}</span>
+              <span class="item-title">{{ item.title }}</span>
+            </div>
+            <div v-if="cpAnnouncements.length === 0" class="empty-text">공지사항이 없습니다.</div>
+          </template>
+        </div>
+
+        <div class="col-divider" v-show="activeTab === 'all'" />
+
+        <!-- AI 공지 -->
+        <div class="notice-col" v-show="activeTab === 'all' || activeTab === 'ai'">
+          <div class="col-label" style="color: #5b64ed">
+            AI융합교육원 공지 <span class="col-label-sub">(외부 링크)</span>
+          </div>
+          <div v-if="aiLoading" class="skeleton-list">
+            <div class="skeleton-item" v-for="i in 3" :key="i" />
+          </div>
+          <template v-else>
+            <div
+              v-for="(item, idx) in aiAnnouncements"
+              :key="idx"
+              class="notice-item"
+              @click="goNotice"
+            >
+              <Icon type="ios-share-outline" size="15" color="#5b64ed" class="ext-icon" />
+              <span class="item-title">{{ item.title }}</span>
+              <span class="item-date">{{ formatDate(item.create_time) }}</span>
+            </div>
+            <div v-if="aiAnnouncements.length === 0" class="empty-text">공지사항이 없습니다.</div>
+          </template>
+        </div>
+      </div>
+
+      <!-- 푸터 -->
+      <div class="notice-footer" @click="goNotice">
+        🔔&nbsp; 더 많은 공지사항 확인하기 →
       </div>
     </div>
   </div>
@@ -61,160 +77,208 @@
 
 <script>
 import api from "@oj/api"
-import { mapActions } from "vuex"
 
 export default {
   name: "HomeNoticeProblemRow",
   data() {
     return {
+      activeTab: "all",
+      tabs: [
+        { label: "전체", value: "all" },
+        { label: "Code Place 공지", value: "codeplace" },
+        { label: "AI융합교육원 공지", value: "ai" },
+      ],
       loading: false,
-      problemLoading: false,
-      announcements: [],
-      problems: [],
+      aiLoading: false,
+      cpAnnouncements: [],
+      aiAnnouncements: [],
     }
   },
   mounted() {
     this.loadAnnouncements()
-    this.loadProblems()
   },
   methods: {
-    ...mapActions(["changeProblemSolvingState"]),
     loadAnnouncements() {
       this.loading = true
-      api.getAnnouncementList(0, 5).then(
+      this.aiLoading = true
+      api.getAnnouncementList(0, 10).then(
         (res) => {
+          const all = res.data.data.results || []
+          this.cpAnnouncements = all.slice(0, 5)
+          this.aiAnnouncements = all.slice(5, 10)
           this.loading = false
-          this.announcements = res.data.data.results || []
+          this.aiLoading = false
         },
         () => {
           this.loading = false
+          this.aiLoading = false
         },
       )
     },
-    loadProblems() {
-      this.problemLoading = true
-      api.getHomeBonusProblem().then(
-        (res) => {
-          this.problemLoading = false
-          this.problems = res.data.data || []
-        },
-        () => {
-          this.problemLoading = false
-        },
-      )
+    isNew(dateStr) {
+      if (!dateStr) return false
+      const diff = Date.now() - new Date(dateStr).getTime()
+      return diff < 7 * 24 * 60 * 60 * 1000
     },
     formatDate(dateStr) {
       if (!dateStr) return ""
       const d = new Date(dateStr)
       return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`
     },
-    getDifficultyLabel(difficulty) {
-      const map = {
-        VeryLow: "쉬움",
-        Low: "쉬움",
-        Mid: "중간",
-        High: "어려움",
-        VeryHigh: "어려움",
-      }
-      return map[difficulty] || difficulty
-    },
-    getDifficultyClass(difficulty) {
-      if (difficulty === "VeryLow" || difficulty === "Low") return "easy"
-      if (difficulty === "High" || difficulty === "VeryHigh") return "hard"
-      return "mid"
-    },
-    getSuccessRate(problem) {
-      if (!problem.submission_number) return 0
-      return ((problem.accepted_number / problem.submission_number) * 100).toFixed(1)
-    },
     goNotice() {
       this.$router.push({ name: "notice" })
-    },
-    goProblemList() {
-      this.$router.push({ name: "problem-list" })
-    },
-    goProblem(id) {
-      this.changeProblemSolvingState(true)
-      this.$router.push({ name: "problem-details", params: { problemID: id } })
     },
   },
 }
 </script>
 
 <style scoped lang="less">
-.row-padding {
+.notice-section {
   width: 100%;
   padding: 20px 0 0;
-  display: flex;
-  gap: 20px;
 }
 
-.card {
+.notice-card {
   background-color: #ffffff;
   border: 1px solid #e5e5ed;
-  border-radius: 16px;
-  padding: 20px 24px;
-  height: 260px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  flex: 1;
+  border-radius: 20px;
   overflow: hidden;
 }
 
-.card-header {
+.notice-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 14px;
+  padding: 20px 28px 16px;
+  border-bottom: 1px solid #f0f0f6;
+}
+
+.header-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #14141f;
   flex-shrink: 0;
 }
 
-.card-header-title {
-  font-size: 14px;
-  font-weight: 700;
-  color: #14141f;
+.tabs {
+  display: flex;
+  gap: 6px;
 }
 
-.card-header-more {
-  font-size: 12px;
+.tab-btn {
+  height: 32px;
+  padding: 0 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid #e5e5ed;
+  background-color: #ffffff;
+  color: #59596b;
+  transition: all 0.15s;
+
+  &.active {
+    background-color: #5b64ed;
+    border-color: #5b64ed;
+    color: #ffffff;
+  }
+
+  &:hover:not(.active) {
+    border-color: #b8baed;
+    color: #5b64ed;
+  }
+}
+
+.more-link {
+  margin-left: auto;
+  font-size: 13px;
+  font-weight: 500;
   color: #5b64ed;
   cursor: pointer;
+  flex-shrink: 0;
 
   &:hover {
     text-decoration: underline;
   }
 }
 
-.notice-list,
-.problem-list {
+.notice-body {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
-  overflow: hidden;
-  flex: 1;
+  padding: 20px 28px;
+  gap: 0;
+  min-height: 160px;
 }
 
-.notice-row {
+.notice-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  overflow: hidden;
+}
+
+.col-divider {
+  width: 1px;
+  background-color: #f0f0f6;
+  margin: 0 28px;
+  flex-shrink: 0;
+}
+
+.col-label {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 14px;
+}
+
+.col-label-sub {
+  font-size: 11px;
+  font-weight: 400;
+  color: #9999a6;
+  margin-left: 4px;
+}
+
+.notice-item {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  padding: 9px 0;
   cursor: pointer;
-  overflow: hidden;
+  border-top: 1px solid #f4f4f8;
 
-  &:hover .notice-title {
+  &:hover .item-title {
     color: #5b64ed;
   }
 }
 
-.notice-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background-color: #5b64ed;
+.badge-new {
+  font-size: 10px;
+  font-weight: 700;
+  color: #5b64ed;
+  background-color: #eeeaff;
+  border-radius: 6px;
+  padding: 2px 7px;
   flex-shrink: 0;
 }
 
-.notice-title {
+.badge-num {
+  width: 22px;
+  height: 22px;
+  border: 1px solid #d0d0e0;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b6b8a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ext-icon {
+  flex-shrink: 0;
+}
+
+.item-title {
   font-size: 13px;
   color: #333345;
   flex: 1;
@@ -224,68 +288,34 @@ export default {
   transition: color 0.15s;
 }
 
-.notice-date {
+.item-date {
   font-size: 11px;
   color: #9999a6;
   flex-shrink: 0;
 }
 
-.problem-row {
+.notice-footer {
   display: flex;
   align-items: center;
-  gap: 10px;
-  cursor: pointer;
-  overflow: hidden;
-
-  &:hover .problem-title {
-    color: #5b64ed;
-  }
-}
-
-.problem-title {
+  justify-content: center;
+  gap: 6px;
+  height: 52px;
+  background-color: #f5f4ff;
   font-size: 13px;
-  color: #333345;
-  flex: 1;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  transition: color 0.15s;
-}
+  font-weight: 600;
+  color: #5b5b7a;
+  cursor: pointer;
+  transition: background-color 0.15s;
 
-.difficulty-badge {
-  font-size: 11px;
-  font-weight: 500;
-  padding: 3px 8px;
-  border-radius: 99px;
-  flex-shrink: 0;
-
-  &.easy {
-    background-color: #e0faeb;
-    color: #1aa666;
+  &:hover {
+    background-color: #ebe9ff;
   }
-
-  &.mid {
-    background-color: #fff7de;
-    color: #cc8c0d;
-  }
-
-  &.hard {
-    background-color: #ffebeb;
-    color: #d93333;
-  }
-}
-
-.success-rate {
-  font-size: 12px;
-  color: #8c8c9e;
-  flex-shrink: 0;
 }
 
 .skeleton-list {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  flex: 1;
 }
 
 .skeleton-item {
@@ -299,8 +329,7 @@ export default {
 .empty-text {
   font-size: 13px;
   color: #9999a6;
-  text-align: center;
-  margin-top: 20px;
+  padding: 20px 0;
 }
 
 @keyframes shimmer {
