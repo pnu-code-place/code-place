@@ -18,9 +18,10 @@ jobs:
     steps:
       - name: Check if merged from release branch
         id: check_branch
+        env:
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
-          commit_message="${{ github.event.head_commit.message }}"
-          if [[ "$commit_message" =~ ^Merge\ pull\ request.*from.*release- ]]; then
+          if [[ "$COMMIT_MESSAGE" =~ ^Merge\ pull\ request.*from.*release- ]]; then
             echo "is_release=true" >> $GITHUB_OUTPUT
           else
             echo "is_release=false" >> $GITHUB_OUTPUT
@@ -30,8 +31,10 @@ jobs:
       - name: Extract version from merge commit message
         if: steps.check_branch.outputs.is_release == 'true'
         id: extract_version
+        env:
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
-          VERSION=$(echo "${{ github.event.head_commit.message }}" | grep -oP 'release-\K[0-9]+\.[0-9]+\.[0-9]+')
+          VERSION=$(printf '%s' "$COMMIT_MESSAGE" | grep -oP 'release-\K[0-9]+\.[0-9]+\.[0-9]+')
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
   detect-changes-by-component:
@@ -211,8 +214,31 @@ jobs:
           echo "CI Backend: ${{ needs.ci-backend.result }}"
           echo "CI Frontend: ${{ needs.ci-frontend.result }}"
 
-      - name: Create Release
+      - name: Check existing release tag
+        id: check_release
         if: needs.check-release-branch.outputs.version != ''
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.ACTION_TOKEN }}
+          script: |
+            const tag = '${{ needs.check-release-branch.outputs.version }}';
+            try {
+              await github.rest.repos.getReleaseByTag({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                tag
+              });
+              core.setOutput('exists', 'true');
+            } catch (error) {
+              if (error.status === 404) {
+                core.setOutput('exists', 'false');
+              } else {
+                throw error;
+              }
+            }
+
+      - name: Create Release
+        if: needs.check-release-branch.outputs.version != '' && steps.check_release.outputs.exists != 'true'
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.ACTION_TOKEN }}
