@@ -1,4 +1,4 @@
-fastapi==0.115.12
-pydantic-settings==2.8.1
+fastapi==0.136.3
+pydantic-settings==2.14.1
 httpx==0.28.1
-uvicorn==0.34.0
+uvicorn==0.48.0
