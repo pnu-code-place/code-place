@@ -86,6 +86,14 @@ spec:
                   name: common-credentials
                   key: AWS_SECRET_ACCESS_KEY
           # TODO: Security Context 설정을 추가해야 합니다. 현재 entrypoint.sh 에서 권한을 변경하고 있지만, 보안 강화를 위해 컨테이너 레벨에서 설정하는 것이 좋습니다. (Junwoo)
+          startupProbe:
+            exec:
+              command:
+                - python3
+                - /app/deploy/health_check.py
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 60
           readinessProbe:
             httpGet:
               path: /api/health
