@@ -83,9 +83,3 @@ spec:
                 secretKeyRef:
                   name: common-credentials
                   key: AWS_SECRET_ACCESS_KEY
-          volumeMounts:
-            - name: vol-log
-              mountPath: /data/log
-      volumes:
-        - name: vol-log
-          emptyDir: {}

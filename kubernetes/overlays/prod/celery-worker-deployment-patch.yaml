@@ -5,7 +5,7 @@ metadata:
   labels:
     app: celery-worker
 spec:
-  replicas: 4
+  replicas: 10
   strategy:
     type: RollingUpdate
     rollingUpdate:

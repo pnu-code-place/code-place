@@ -3,7 +3,6 @@ ARG TARGETARCH
 ARG TARGETVARIANT
 
 ENV OJ_ENV production
-ENV MODE server
 WORKDIR /app
 
 COPY ./deploy/requirements.txt /app/deploy/
@@ -13,7 +12,7 @@ RUN --mount=type=cache,target=/etc/apk/cache,id=apk-cahce-$TARGETARCH$TARGETVARI
     --mount=type=cache,target=/root/.cache/pip,id=pip-cahce-$TARGETARCH$TARGETVARIANT-final \
     <<EOS
 set -ex
-apk add gcc libc-dev python3-dev libpq libpq-dev libjpeg-turbo libjpeg-turbo-dev zlib zlib-dev freetype freetype-dev supervisor curl unzip
+apk add gcc libc-dev python3-dev libpq libpq-dev libjpeg-turbo libjpeg-turbo-dev zlib zlib-dev freetype freetype-dev curl unzip
 pip install -r /app/deploy/requirements.txt
 apk del gcc libc-dev python3-dev libpq-dev libjpeg-turbo-dev zlib-dev freetype-dev
 EOS
@@ -21,5 +20,5 @@ EOS
 COPY ./ /app/
 RUN chmod -R u=rwX,go=rX ./ && chmod +x ./deploy/entrypoint.sh ./deploy/entrypoint_beat.sh ./deploy/entrypoint_worker.sh
 
-HEALTHCHECK --interval=5s CMD [ "/usr/local/bin/python3", "/app/deploy/health_check.py" ]
+HEALTHCHECK --interval=5s CMD [ "curl", "-fsS", "http://localhost:8080/api/health" ]
 EXPOSE 8080
