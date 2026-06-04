@@ -20,9 +20,11 @@
             v-for="(item, idx) in cpAnnouncements"
             :key="idx"
             class="notice-item"
+            :class="{ 'notice-item--pinned': item.is_pinned }"
             @click="goNoticeDetail(item)"
           >
             <span class="bullet cp-bullet" />
+            <span class="pin-icon" v-if="item.is_pinned">📌</span>
             <span class="badge-new" v-if="isNew(item.create_time)">NEW</span>
             <span class="item-title">{{ item.title }}</span>
             <span class="item-date">{{ formatDate(item.create_time) }}</span>
@@ -239,7 +241,7 @@ export default {
   transition: background-color 0.15s;
 
   &:hover {
-    background-color: #f8f8fc;
+    background-color: #f0eeff;
 
     .item-title {
       color: #5b64ed;
@@ -252,6 +254,18 @@ export default {
 
   & + & {
     border-top: 1px solid #f4f4f8;
+  }
+
+  &--pinned {
+    background-color: #f4f3ff;
+
+    &:hover {
+      background-color: #eceaff;
+    }
+
+    .bullet.cp-bullet {
+      background-color: #5b64ed;
+    }
   }
 }
 
@@ -268,6 +282,12 @@ export default {
   &.ai-bullet {
     background-color: #16a34a;
   }
+}
+
+.pin-icon {
+  font-size: 12px;
+  flex-shrink: 0;
+  line-height: 1;
 }
 
 .badge-new {

@@ -7,12 +7,11 @@
       </div>
       <div v-if="!loading && contests.length === 0" class="empty-state">
         <div class="empty-card" @click="goContestHistory">
-          <div class="empty-illust">📅<span class="illust-badge">🏆</span></div>
+          <img class="empty-illust" src="@/assets/images/contest-empty-calendar.svg" alt="" />
           <div class="empty-text">
             <p class="empty-title">현재 진행 중인 콘테스트가 없어요 🐯</p>
             <p class="empty-desc">
-              다음 콘테스트를 기대해주세요!<br />이전 콘테스트에 참여해보는 것도
-              좋아요.
+              다음 콘테스트를 기대해주세요!<br />이전 콘테스트에 참여해보는 것도 좋아요.
             </p>
             <span class="empty-btn">이전 콘테스트 보기 →</span>
           </div>
@@ -26,7 +25,7 @@
             </p>
             <span class="empty-btn">추천 문제 풀러가기 →</span>
           </div>
-          <div class="empty-illust">📋<span class="illust-badge">✏️</span></div>
+          <img class="empty-illust" src="@/assets/images/contest-empty-clipboard.svg" alt="" />
         </div>
       </div>
       <div class="contest-cards" v-else>
@@ -173,13 +172,13 @@ export default {
   border: 1px solid #e5e5ed;
   border-radius: 20px;
   padding: 12px 28px;
+  padding-bottom: 20px;
 }
 
 .section-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
 }
 
 .section-title {
@@ -304,31 +303,35 @@ export default {
   flex: 1;
   background-color: #eeeaff;
   border-radius: 20px;
-  padding: 28px 28px;
+  padding: 28px 32px;
   display: flex;
   align-items: center;
-  gap: 20px;
+  justify-content: center;
+  gap: 24px;
   cursor: pointer;
   transition: background-color 0.15s;
 
   &:hover {
     background-color: #e5e0ff;
   }
+
+  &:first-child {
+    flex: 1.4;
+    background-color: #ffffff;
+    border: 1.5px solid #e5e5ed;
+
+    &:hover {
+      background-color: #f8f7ff;
+    }
+  }
 }
 
 .empty-illust {
-  font-size: 52px;
-  position: relative;
+  width: 110px;
+  height: 110px;
   flex-shrink: 0;
-  line-height: 1;
-  filter: drop-shadow(0 4px 8px rgba(91, 100, 237, 0.15));
-}
-
-.illust-badge {
-  position: absolute;
-  bottom: -4px;
-  right: -12px;
-  font-size: 28px;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 14px rgba(91, 100, 237, 0.22));
 }
 
 .empty-text {

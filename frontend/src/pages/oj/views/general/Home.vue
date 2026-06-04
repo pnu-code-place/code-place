@@ -34,6 +34,7 @@
     <HomeOngoingContests />
     <HomeWeeklyServices />
     <HomeCTABanner />
+    <HomeFamilySite />
   </div>
 </template>
 
@@ -52,6 +53,7 @@ import HomeActivitySidebar from "../home/HomeActivitySidebar.vue"
 import HomeOngoingContests from "../home/HomeOngoingContests.vue"
 import HomeWeeklyServices from "../home/HomeWeeklyServices.vue"
 import HomeCTABanner from "../home/HomeCTABanner.vue"
+import HomeFamilySite from "../home/HomeFamilySite.vue"
 
 export default {
   name: "home",
@@ -65,6 +67,7 @@ export default {
     HomeOngoingContests,
     HomeWeeklyServices,
     HomeCTABanner,
+    HomeFamilySite,
   },
   data() {
     return {
