@@ -1,151 +1,265 @@
 <template>
-  <div class="weekly-padding">
-    <p class="section-title">이주의 서비스</p>
-    <div class="services-row">
-      <div class="service-card ai-review" @click="goAIReview">
-        <div class="service-text">
-          <p class="service-name" style="color: #3840bf">AI 코드 리뷰</p>
-          <p class="service-desc" style="color: #5961b8">
-            AI가 여러분의 코드를 분석하고<br />개선점을 제안드려요.
-          </p>
-          <span class="service-link" style="color: #3840bf">사용해보기 →</span>
+  <div class="weekly-wrap">
+    <div class="section-header">
+      <span class="section-title">이주의 추천 문제</span>
+      <div class="section-line"></div>
+    </div>
+
+    <div class="cards">
+      <div
+        v-for="(problem, index) in problems"
+        :key="problem._id"
+        class="card"
+        :class="CARD_COLORS[index % 3].cardClass"
+        @click="enterProblem(problem._id)"
+      >
+        <div class="card-meta">
+          <span class="badge b-cat">{{ FIELD_MAP[problem.field].value }}</span>
+          <span class="badge" :class="difficultyBadgeClass(problem.difficulty)">
+            {{ DIFFICULTY_MAP[problem.difficulty].value }}
+          </span>
         </div>
-        <div class="service-icon" style="background-color: #c7c7ff">
-          🤖
+        <div class="card-row">
+          <p class="card-title">{{ problem.title }}</p>
+          <span class="num">{{ String(index + 1).padStart(2, "0") }}</span>
         </div>
+        <div class="card-tags">
+          <span v-for="tag in problem.tags.slice(0, 2)" :key="tag" class="tag"
+            >#{{ tag }}</span
+          >
+        </div>
+        <div class="go-link">풀러가기 <span class="arrow">→</span></div>
       </div>
 
-      <div class="service-card roadmap" @click="goRoadmap">
-        <div class="service-text">
-          <p class="service-name" style="color: #1a8059">학습 로드맵</p>
-          <p class="service-desc" style="color: #268c66">
-            단계별 학습 로드맵으로<br />꾸준히 실력을 높여보세요.
-          </p>
-          <span class="service-link" style="color: #1a8059">확인하기 →</span>
-        </div>
-        <div class="service-icon" style="background-color: #b8edd1">
-          🗺️
-        </div>
-      </div>
-
-      <div class="service-card recommend" @click="goRecommend">
-        <div class="service-text">
-          <p class="service-name" style="color: #99610d">맞춤 문제 추천</p>
-          <p class="service-desc" style="color: #a66b14">
-            여러분의 실력에 맞는 문제를<br />추천해드려요.
-          </p>
-          <span class="service-link" style="color: #99610d">추천받기 →</span>
-        </div>
-        <div class="service-icon" style="background-color: #ffe0a6">
-          🎯
-        </div>
+      <div v-if="problems.length === 0" class="empty-state">
+        이번 주 추천 문제가 아직 없어요.
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import api from "@oj/api"
+import { mapActions } from "vuex"
+import { FIELD_MAP, DIFFICULTY_MAP } from "../../../../utils/constants"
+
+const CARD_COLORS = [
+  { cardClass: "c1" },
+  { cardClass: "c2" },
+  { cardClass: "c3" },
+]
+
 export default {
   name: "HomeWeeklyServices",
+  computed: {
+    FIELD_MAP() {
+      return FIELD_MAP
+    },
+    DIFFICULTY_MAP() {
+      return DIFFICULTY_MAP
+    },
+    CARD_COLORS() {
+      return CARD_COLORS
+    },
+  },
+  data() {
+    return {
+      problems: [],
+    }
+  },
+  mounted() {
+    api.getHomeBonusProblem().then((res) => {
+      this.problems = res.data.data.slice(0, 3)
+    })
+  },
   methods: {
-    goAIReview() {
-      this.$router.push({ name: "problem-list" })
+    ...mapActions(["changeProblemSolvingState"]),
+    enterProblem(problemId) {
+      this.changeProblemSolvingState(true)
+      this.$router.push({
+        name: "problem-details",
+        params: { problemID: problemId },
+      })
     },
-    goRoadmap() {
-      this.$router.push({ name: "problem-list" })
-    },
-    goRecommend() {
-      this.$router.push({ name: "problem-list" })
+    difficultyBadgeClass(difficulty) {
+      const map = {
+        VeryLow: "b-easy",
+        Low: "b-easy",
+        Mid: "b-normal",
+        High: "b-hard",
+        VeryHigh: "b-hard",
+      }
+      return map[difficulty] || "b-normal"
     },
   },
 }
 </script>
 
 <style scoped lang="less">
-.weekly-padding {
+.weekly-wrap {
   width: 100%;
-  padding: 24px 0 0;
+  padding: 24px 0 36px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 1.1rem;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .section-title {
-  font-size: 16px;
+  font-size: 20px;
   font-weight: 700;
   color: #14141f;
-  margin: 0;
+  white-space: nowrap;
 }
 
-.services-row {
-  display: flex;
-  gap: 20px;
-}
-
-.service-card {
+.section-line {
   flex: 1;
-  height: 160px;
-  border-radius: 20px;
-  padding: 24px 24px 24px 28px;
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-  }
-
-  &.ai-review {
-    background-color: #ecebff;
-  }
-
-  &.roadmap {
-    background-color: #e5f9f2;
-  }
-
-  &.recommend {
-    background-color: #fff9e5;
-  }
+  height: 0.5px;
+  background: #e0e0e0;
 }
 
-.service-text {
-  flex: 1;
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.card {
+  border-radius: 14px;
+  padding: 1.1rem 1.1rem 1rem;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  overflow: hidden;
+  gap: 9px;
+  cursor: pointer;
+  background: #ffffff;
+  border: 0.5px solid #e0e0e0;
+  border-top-width: 3px;
+  transition:
+    transform 0.16s,
+    border-color 0.16s;
+
+  &:hover {
+    transform: translateY(-3px);
+  }
+
+  &.c1 {
+    border-top-color: #7f77dd;
+    &:hover {
+      border-color: #7f77dd;
+    }
+  }
+  &.c2 {
+    border-top-color: #e24b4a;
+    &:hover {
+      border-color: #e24b4a;
+    }
+  }
+  &.c3 {
+    border-top-color: #1d9e75;
+    &:hover {
+      border-color: #1d9e75;
+    }
+  }
 }
 
-.service-name {
-  font-size: 15px;
-  font-weight: 700;
-  margin: 0;
-  white-space: nowrap;
-}
-
-.service-desc {
-  font-size: 12px;
-  margin: 0;
-  line-height: 1.6;
-}
-
-.service-link {
-  font-size: 12px;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-.service-icon {
-  flex-shrink: 0;
-  width: 64px;
-  height: 64px;
-  border-radius: 18px;
+.card-meta {
   display: flex;
   align-items: center;
-  justify-content: center;
-  font-size: 28px;
-  margin-left: auto;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.badge {
+  font-size: 10.5px;
+  font-weight: 500;
+  padding: 3px 9px;
+  border-radius: 20px;
+
+  &.b-cat {
+    background: #eeedfe;
+    color: #3c3489;
+  }
+  &.b-hard {
+    background: #fcebeb;
+    color: #a32d2d;
+  }
+  &.b-normal {
+    background: #faeeda;
+    color: #854f0b;
+  }
+  &.b-easy {
+    background: #eaf3de;
+    color: #3b6d11;
+  }
+}
+
+.card-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.card-title {
+  font-size: 15px;
+  font-weight: 500;
+  color: #14141f;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.num {
+  font-size: 26px;
+  font-weight: 500;
+  line-height: 1;
+  opacity: 0.07;
+  color: #14141f;
+  flex-shrink: 0;
+}
+
+.card-tags {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.tag {
+  font-size: 11px;
+  color: #888;
+  background: #f4f4f8;
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.go-link {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #888;
+  margin-top: 2px;
+
+  .arrow {
+    transition: transform 0.14s;
+  }
+}
+
+.card:hover .go-link .arrow {
+  transform: translateX(3px);
+}
+
+.empty-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: #aaa;
+  font-size: 14px;
+  padding: 40px 0;
 }
 </style>
