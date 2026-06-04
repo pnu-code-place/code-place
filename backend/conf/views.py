@@ -10,7 +10,9 @@ from datetime import datetime
 import pytz
 import requests
 from django.conf import settings
+from django.http import HttpResponse
 from django.utils import timezone
+from django.views.generic import View
 from requests.exceptions import RequestException
 
 from account.decorators import super_admin_required
@@ -87,6 +89,12 @@ class SMTPTestAPI(APIView):
             msg = str(e)
             return self.error(msg)
         return self.success()
+
+
+class HealthCheckAPI(View):
+
+    def get(self, request):
+        return HttpResponse(status=204)
 
 
 class WebsiteConfigAPI(APIView):
