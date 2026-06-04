@@ -3,32 +3,33 @@ from contents.serializers import HomeStatistics, RSSItemSerializer, HomeAnnounce
 from contest.models import Contest
 from problem.models import Problem
 from utils.api import APIView
+from django.core.cache import cache
 from django.utils.timezone import now
 import requests
 import xml.etree.ElementTree as ET
 
 from utils.constants import RSS_FEED_URL
 
+HOME_STATS_CACHE_KEY = "home_statistics"
+HOME_STATS_CACHE_TTL = 60 * 10  # 10분
+
+RSS_CACHE_KEY = "home_rss_feed"
+RSS_CACHE_TTL = 60 * 30  # 30분
+
 
 class GetHomeStatisticsAPI(APIView):
 
     def get(self, request):
-        """
-        총 문제 수, 채점이 완료된 문제 수, 마감된 대회 수를 반환하는 API
-        """
-        problems = Problem.objects.all().filter(visible=True)
+        cached = cache.get(HOME_STATS_CACHE_KEY)
+        if cached:
+            return self.success(cached)
 
-        # 총 문제 수
+        problems = Problem.objects.filter(visible=True)
         total_problem_length = problems.count()
-
-        # 한번이라도 accept가 된 문제 수
         accepted_problem_length = problems.filter(accepted_number__gt=0).count()
 
-        # 마감된 대회 수
-        contests = Contest.objects.select_related("created_by").filter(visible=True)
         cur = now()
-        contests = contests.filter(end_time__gt=cur)
-        ended_contest_length = contests.count()
+        ended_contest_length = Contest.objects.filter(visible=True, end_time__gt=cur).count()
 
         home_statistics = {
             "total_problem_length": total_problem_length,
@@ -36,7 +37,9 @@ class GetHomeStatisticsAPI(APIView):
             "ended_contest_length": ended_contest_length,
         }
 
-        return self.success(HomeStatistics(home_statistics).data)
+        data = HomeStatistics(home_statistics).data
+        cache.set(HOME_STATS_CACHE_KEY, data, HOME_STATS_CACHE_TTL)
+        return self.success(data)
 
 
 class GetHomeAnnouncementAPI(APIView):
@@ -55,33 +58,32 @@ class GetHomeRSSNoticeAPI(APIView):
         """
         RSS 공지사항을 JSON으로 파싱하여 반환하는 API
         """
+        cached = cache.get(RSS_CACHE_KEY)
+        if cached:
+            return self.success(cached)
 
-        # RSS 피드 가져오기
-        response = requests.get(RSS_FEED_URL)
+        try:
+            response = requests.get(RSS_FEED_URL, timeout=5)
+        except requests.RequestException:
+            return self.error("Failed to fetch RSS feed")
 
-        if response.status_code == 200:
-            # XML 파싱
-            root = ET.fromstring(response.content)
+        if response.status_code != 200:
+            return self.error("Failed to fetch RSS feed")
 
-            # 필요한 정보 추출
-            BASE_URL = "https://swedu.pusan.ac.kr"
-            items = []
-            for item in root.findall('.//item')[:5]:
-                link = item.find('link').text or ''
-                # RSS가 상대 경로(/bbs/...)로 반환할 경우 base URL을 붙여줌
-                if link and not link.startswith('http'):
-                    link = BASE_URL + link
-                item_dict = {
-                    'title': item.find('title').text.rstrip("}"),
-                    'link': link,
-                    'pubDate': item.find('pubDate').text
-                }
-                items.append(item_dict)
+        root = ET.fromstring(response.content)
+        BASE_URL = "https://swedu.pusan.ac.kr"
+        items = []
+        for item in root.findall('.//item')[:5]:
+            link = item.find('link').text or ''
+            if link and not link.startswith('http'):
+                link = BASE_URL + link
+            item_dict = {
+                'title': item.find('title').text.rstrip("}"),
+                'link': link,
+                'pubDate': item.find('pubDate').text
+            }
+            items.append(item_dict)
 
-            # Serializer를 사용하여 데이터 직렬화
-            serializer = RSSItemSerializer(items, many=True)
-
-            # JsonResponse로 반환
-            return self.success(serializer.data)
-        else:
-            self.error("Failed to fetch RSS feed")
+        data = RSSItemSerializer(items, many=True).data
+        cache.set(RSS_CACHE_KEY, data, RSS_CACHE_TTL)
+        return self.success(data)

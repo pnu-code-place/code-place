@@ -104,7 +104,9 @@ export default {
   methods: {
     ...mapActions(["changeModalStatus"]),
     loadData() {
-      api.getSubmissionList(0, 200, { myself: "1" }).then((res) => {
+      const since = new Date()
+      since.setDate(since.getDate() - 14)
+      api.getSubmissionList(0, 50, { myself: "1", since: since.toISOString() }).then((res) => {
         const results = (res.data.data && res.data.data.results) || []
         const counts = {}
         results.forEach((s) => {

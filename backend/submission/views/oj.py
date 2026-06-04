@@ -191,6 +191,16 @@ class SubmissionListAPI(APIView):
         if result:
             submissions = submissions.filter(result=result)
 
+        since = request.GET.get("since")
+        if since:
+            try:
+                from django.utils.dateparse import parse_datetime
+                since_dt = parse_datetime(since)
+                if since_dt:
+                    submissions = submissions.filter(create_time__gte=since_dt)
+            except Exception:
+                pass
+
         data = self.paginate_data(request, submissions)
         data["results"] = SubmissionListSerializer(data["results"], many=True, user=request.user).data
         return self.success(data)
