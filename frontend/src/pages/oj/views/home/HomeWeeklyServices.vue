@@ -98,7 +98,7 @@ export default {
 <style scoped lang="less">
 .weekly-wrap {
   width: 100%;
-  padding: 24px 0 36px;
+  padding: 40px 0 40px;
   display: flex;
   flex-direction: column;
   gap: 1.1rem;

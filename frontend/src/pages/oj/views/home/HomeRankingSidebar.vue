@@ -70,7 +70,7 @@ export default {
 
 <style scoped lang="less">
 .sidebar-section {
-  padding: 40px 0 0;
+  padding: 56px 0 0;
   flex-shrink: 0;
 }
 

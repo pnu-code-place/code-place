@@ -77,7 +77,7 @@ export default {
 <style scoped lang="less">
 .quick-nav-padding {
   width: 100%;
-  padding: 8px 0 0;
+  padding: 28px 0 0;
   display: flex;
   flex-direction: column;
 }

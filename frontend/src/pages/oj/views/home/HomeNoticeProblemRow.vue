@@ -160,7 +160,7 @@ export default {
 <style scoped lang="less">
 .notice-section {
   width: 100%;
-  padding: 40px 0 0;
+  padding: 56px 0 0;
   height: 100%;
   box-sizing: border-box;
 }

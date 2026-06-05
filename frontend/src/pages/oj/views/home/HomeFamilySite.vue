@@ -55,7 +55,7 @@ export default {
 
 <style scoped lang="less">
 .fs-root {
-  padding: 24px 0 0;
+  padding: 40px 0 0;
 }
 
 .fs-header {

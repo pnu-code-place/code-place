@@ -1,54 +1,58 @@
 <template>
   <div class="hero-padding">
-    <div class="hero-wrap">
-      <div class="blob blob1" />
-      <div class="blob blob2" />
-      <div class="blob blob3" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Fira+Code:wght@400;500&display=swap" />
+    <div class="banner">
+      <div class="noise" />
+      <div class="grid-lines" />
 
-      <div class="inner">
-        <!-- 좌측 -->
-        <div class="left">
-          <p class="greeting">
-            <template v-if="isAuthenticated">안녕하세요, {{ user.username }}님!</template>
-            <template v-else>코드로 성장하는 공간</template>
-          </p>
-          <h1 class="title">
-            문제를 해결하고<br /><span class="title-em">성장하는</span> 개발자 공간
-          </h1>
-          <p class="desc">
-            다양한 문제를 풀고, 실력을 키우고,<br />AI와 함께 더 빠르게 성장하세요.
-          </p>
-          <button class="btn-go" @click="goProblemList">
-            문제 풀러 가기 →
-          </button>
+      <!-- 왼쪽 -->
+      <div class="banner-left">
+        <div class="eyebrow">
+          <span class="eyebrow-dot" />
+          부산대학교 공식 코딩 플랫폼
         </div>
+        <h1 class="banner-title">
+          코드를 배우고,<br />
+          문제를 해결하며,<br />
+          <span class="accent">함께 성장하는 공간</span>
+        </h1>
+        <p class="banner-desc">
+          알고리즘 문제 풀이부터 실전 코딩테스트, 대회 운영,
+          AI 조교 기반 학습 지원까지 제공하는 통합 프로그래밍 교육 플랫폼입니다.
+        </p>
+        <button class="banner-cta" @click="goProblemList">
+          코드플레이스 알아보기 <span class="arrow">→</span>
+        </button>
+      </div>
 
-        <!-- 우측 -->
-        <div class="right">
-          <div class="badge-float bf1">
-            <span class="bf-icon green">✓</span>
-            정답률 {{ acceptRateLabel }}
-          </div>
+      <div class="vline" />
 
-          <div class="editor">
-            <div class="editor-bar">
-              <span class="ed-dot ed1" /><span class="ed-dot ed2" /><span class="ed-dot ed3" />
+      <!-- 오른쪽 스탯 -->
+      <div class="banner-right">
+        <div class="stat-cards">
+          <div class="stat-card">
+            <div class="stat-card-left">
+              <div class="stat-card-num">{{ totalProblems }}</div>
+              <div class="stat-card-label">// 알고리즘 문제</div>
             </div>
-            <div class="editor-body">
-              <div class="cl"><span class="ln">1</span><span class="cm"># 투 포인터</span></div>
-              <div class="cl"><span class="ln">2</span><span class="kw">def </span><span class="fn">solve</span><span class="nt">(arr):</span></div>
-              <div class="cl"><span class="ln">3</span><span class="nt">&nbsp;&nbsp;l, r = </span><span class="st">0</span><span class="nt">, len(arr)-</span><span class="st">1</span></div>
-              <div class="cl"><span class="ln">4</span><span class="kw">&nbsp;&nbsp;while </span><span class="nt">l &lt; r:</span></div>
-              <div class="cl"><span class="ln">5</span><span class="kw">&nbsp;&nbsp;&nbsp;&nbsp;if </span><span class="fn">check</span><span class="nt">(l, r):</span></div>
-              <div class="cl"><span class="ln">6</span><span class="kw">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return </span><span class="st">True</span></div>
-            </div>
+            <div class="stat-card-icon">📋</div>
           </div>
-
-          <div class="badge-float bf2">
-            <span class="bf-icon amber">🏆</span>
-            {{ solvedBadgeLabel }}
+          <div class="stat-card">
+            <div class="stat-card-left">
+              <div class="stat-card-num">6 TIER</div>
+              <div class="stat-card-label">// 새싹 → 다이아몬드</div>
+            </div>
+            <div class="stat-card-icon">🏆</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-left">
+              <div class="stat-card-num">24 / 7</div>
+              <div class="stat-card-label">// 실시간 채점 서버</div>
+            </div>
+            <div class="stat-card-icon">⚡</div>
           </div>
         </div>
+        <div class="pnu-tag">PUSAN NATIONAL UNIVERSITY — CODEPLACE</div>
       </div>
     </div>
   </div>
@@ -62,29 +66,17 @@ export default {
   name: "HomeHeroSection",
   data() {
     return {
-      totalProblems: null,
+      totalProblems: "—",
     }
   },
   computed: {
     ...mapGetters(["isAuthenticated", "user", "profile"]),
-    acceptRateLabel() {
-      const sub = (this.profile && this.profile.submission_number) || 0
-      const acc = (this.profile && this.profile.accepted_number) || 0
-      if (!sub) return "—"
-      return Math.round((acc / sub) * 100) + "%"
-    },
-    solvedBadgeLabel() {
-      if (this.isAuthenticated) {
-        const acc = (this.profile && this.profile.accepted_number) || 0
-        return "해결한 문제 " + acc + "개"
-      }
-      return this.totalProblems ? "문제 " + this.totalProblems + "개" : "문제 풀기"
-    },
   },
   mounted() {
     api.getHomeStatistics().then((res) => {
       const d = res.data.data
-      this.totalProblems = d.total_problem_length || d.total_problem_number || null
+      const n = d.total_problem_length || 0
+      this.totalProblems = n.toLocaleString() + "+"
     }).catch(() => {})
   },
   methods: {
@@ -96,200 +88,253 @@ export default {
 </script>
 
 <style scoped lang="less">
+
 .hero-padding {
   width: 100%;
   padding: 20px 0 0;
 }
 
-.hero-wrap {
+.banner {
+  width: 100%;
+  min-height: 300px;
+  border-radius: 20px;
   position: relative;
-  background: #d4d8ff;
-  border-radius: 18px;
   overflow: hidden;
-  min-height: 260px;
-}
-
-.blob {
-  position: absolute;
-  border-radius: 50%;
-  pointer-events: none;
-}
-.blob1 {
-  width: 400px; height: 400px;
-  background: radial-gradient(circle, #b8beff 0%, transparent 65%);
-  top: -150px; right: -60px;
-  opacity: 0.65;
-}
-.blob2 {
-  width: 280px; height: 280px;
-  background: radial-gradient(circle, #c4b8ff 0%, transparent 65%);
-  bottom: -110px; left: 20%;
-  opacity: 0.5;
-}
-.blob3 {
-  width: 200px; height: 200px;
-  background: radial-gradient(circle, #aac4ff 0%, transparent 65%);
-  top: 0; left: -40px;
-  opacity: 0.45;
-}
-
-.inner {
-  position: relative;
-  z-index: 2;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 44px 52px;
-  gap: 32px;
-}
+  flex-direction: row;
+  align-items: stretch;
+  background:
+    radial-gradient(ellipse 80% 120% at 10% 50%, #1a0a4e 0%, transparent 60%),
+    radial-gradient(ellipse 60% 100% at 90% 20%, #1e3a8a 0%, transparent 55%),
+    radial-gradient(ellipse 70% 80% at 60% 90%, #312e81 0%, transparent 60%),
+    linear-gradient(135deg, #0f0728 0%, #1a1060 40%, #1e2fa0 100%);
 
-/* 좌측 */
-.left {
-  flex: 1;
-  min-width: 0;
-}
-
-.greeting {
-  font-size: 13px;
-  font-weight: 500;
-  color: #4a58a8;
-  letter-spacing: 0.02em;
-  margin-bottom: 10px;
-}
-
-.title {
-  font-size: 34px;
-  font-weight: 900;
-  color: #1a1f5e;
-  line-height: 1.22;
-  margin-bottom: 14px;
-  letter-spacing: -0.025em;
-}
-
-.title-em {
-  color: #4a58a8;
-}
-
-.desc {
-  font-size: 14px;
-  color: #4a5290;
-  line-height: 1.75;
-  margin-bottom: 28px;
-}
-
-.btn-go {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: #4a58a8;
-  color: #fff;
-  border: none;
-  border-radius: 10px;
-  padding: 12px 24px;
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background 0.18s, transform 0.15s;
-
-  &:hover {
-    background: #3a4890;
-    transform: translateY(-2px);
+  &::before {
+    content: '';
+    position: absolute;
+    top: -60px; left: -60px;
+    width: 340px; height: 340px;
+    background: radial-gradient(circle, rgba(139,92,246,0.35) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 1;
+  }
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -80px; right: 220px;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(59,130,246,0.25) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 1;
   }
 }
 
-/* 우측 */
-.right {
+.noise {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-size: 180px;
+  pointer-events: none;
+}
+
+.grid-lines {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+  background-size: 48px 48px;
+  pointer-events: none;
+}
+
+/* 왼쪽 */
+.banner-left {
+  flex: 1;
+  padding: 52px 56px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  z-index: 5;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Fira Code', monospace;
+  font-size: 11px;
+  color: rgba(167,139,250,0.9);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin-bottom: 18px;
+  animation: fadeUp 0.6s ease 0.2s both;
+}
+
+.eyebrow-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #a78bfa;
+  box-shadow: 0 0 8px #a78bfa;
+  flex-shrink: 0;
+}
+
+.banner-title {
+  font-weight: 900;
+  font-size: 42px;
+  line-height: 1.2;
+  color: #ffffff;
+  letter-spacing: -0.03em;
+  margin-bottom: 16px;
+  animation: fadeUp 0.6s ease 0.35s both;
+
+  .accent {
+    background: linear-gradient(90deg, #818cf8, #60a5fa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
+
+.banner-desc {
+  font-size: 13.5px;
+  color: rgba(255,255,255,0.45);
+  line-height: 1.85;
+  font-weight: 300;
+  max-width: 400px;
+  margin-bottom: 32px;
+  animation: fadeUp 0.6s ease 0.48s both;
+}
+
+.banner-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'Fira Code', monospace;
+  font-size: 13px;
+  font-weight: 500;
+  color: #fff;
+  background: rgba(99,102,241,0.9);
+  border: 1px solid rgba(129,140,248,0.5);
+  padding: 13px 24px;
+  border-radius: 8px;
+  letter-spacing: 0.04em;
+  width: fit-content;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 24px rgba(99,102,241,0.4);
+  animation: fadeUp 0.6s ease 0.6s both;
+
+  &:hover {
+    background: rgba(99,102,241,1);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(99,102,241,0.55);
+
+    .arrow { transform: translateX(4px); }
+  }
+}
+
+.arrow {
+  transition: transform 0.2s;
+  display: inline-block;
+}
+
+/* 구분선 */
+.vline {
+  width: 1px;
+  align-self: stretch;
+  background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.1) 30%, rgba(255,255,255,0.1) 70%, transparent);
+  margin: 40px 0;
   flex-shrink: 0;
   position: relative;
-  width: 250px;
+  z-index: 5;
 }
 
-.editor {
-  background: #1a1f5e;
-  border-radius: 14px;
-  overflow: hidden;
-  width: 100%;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-}
-
-.editor-bar {
-  background: #111448;
-  padding: 10px 14px;
+/* 오른쪽 */
+.banner-right {
+  width: 380px;
+  flex-shrink: 0;
   display: flex;
-  align-items: center;
-  gap: 6px;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-end;
+  padding: 52px 52px 52px 0;
+  position: relative;
+  z-index: 5;
 }
 
-.ed-dot {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-}
-.ed1 { background: #ff5f57; }
-.ed2 { background: #febc2e; }
-.ed3 { background: #28c840; }
-
-.editor-body {
-  padding: 14px 16px;
-}
-
-.cl {
-  font-family: 'JetBrains Mono', 'Fira Mono', 'Courier New', monospace;
-  font-size: 12px;
-  line-height: 1.9;
+.stat-cards {
   display: flex;
+  flex-direction: column;
   gap: 10px;
+  width: 100%;
+  animation: fadeLeft 0.7s ease 0.5s both;
 }
 
-.ln  { color: rgba(255, 255, 255, 0.15); width: 16px; text-align: right; flex-shrink: 0; }
-.kw  { color: #9da8ff; }
-.fn  { color: #b8aaff; }
-.st  { color: #aac8ff; }
-.cm  { color: rgba(255, 255, 255, 0.2); }
-.nt  { color: rgba(255, 255, 255, 0.8); }
-
-.badge-float {
-  position: absolute;
-  background: rgba(255, 255, 255, 0.75);
-  border-radius: 10px;
-  padding: 8px 12px;
+.stat-card {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  padding: 16px 20px;
   display: flex;
   align-items: center;
-  gap: 7px;
-  font-size: 12px;
-  font-weight: 500;
-  color: #1a1f5e;
-  border: 1px solid rgba(255, 255, 255, 0.95);
-  white-space: nowrap;
+  justify-content: space-between;
+  backdrop-filter: blur(10px);
+  transition: background 0.2s, border-color 0.2s;
+
+  &:hover {
+    background: rgba(255,255,255,0.1);
+    border-color: rgba(129,140,248,0.3);
+  }
 }
 
-.bf1 {
-  top: -14px;
-  right: -12px;
-  animation: float1 3s ease-in-out infinite;
+.stat-card-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
-.bf2 {
-  bottom: -14px;
-  left: -12px;
-  animation: float2 3.5s ease-in-out infinite;
+.stat-card-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 32px;
+  line-height: 1;
+  color: #fff;
+  letter-spacing: 0.01em;
 }
 
-.bf-icon {
-  font-size: 15px;
-  font-style: normal;
-
-  &.green { color: #16a34a; }
-  &.amber { color: #d97706; }
+.stat-card-label {
+  font-family: 'Fira Code', monospace;
+  font-size: 10px;
+  color: rgba(255,255,255,0.35);
+  letter-spacing: 0.08em;
 }
 
-@keyframes float1 {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-5px); }
+.stat-card-icon {
+  font-size: 22px;
+  opacity: 0.7;
 }
 
-@keyframes float2 {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(4px); }
+.pnu-tag {
+  margin-top: 16px;
+  align-self: flex-end;
+  font-family: 'Fira Code', monospace;
+  font-size: 10px;
+  color: rgba(255,255,255,0.2);
+  letter-spacing: 0.1em;
+  animation: fadeLeft 0.6s ease 0.75s both;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeLeft {
+  from { opacity: 0; transform: translateX(16px); }
+  to   { opacity: 1; transform: translateX(0); }
 }
 </style>
