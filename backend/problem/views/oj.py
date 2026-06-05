@@ -50,18 +50,24 @@ class WeeklyTopProblemsAPI(APIView):
         problems = Problem.objects.filter(
             contest_id__isnull=True,
             visible=True,
-        ).order_by('-curr_week_info__accepted')[:3]
+        ).values("_id", "title", "difficulty", "field", "curr_week_info")
+
+        sorted_problems = sorted(
+            problems,
+            key=lambda p: p["curr_week_info"].get("accepted", 0),
+            reverse=True,
+        )[:3]
 
         data = [
             {
-                "_id": p._id,
-                "title": p.title,
-                "difficulty": p.difficulty,
-                "field": p.field,
-                "accepted": p.curr_week_info.get("accepted", 0),
-                "submission": p.curr_week_info.get("submission", 0),
+                "_id": p["_id"],
+                "title": p["title"],
+                "difficulty": p["difficulty"],
+                "field": p["field"],
+                "accepted": p["curr_week_info"].get("accepted", 0),
+                "submission": p["curr_week_info"].get("submission", 0),
             }
-            for p in problems
+            for p in sorted_problems
         ]
         return self.success(data)
 
