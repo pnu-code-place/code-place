@@ -32,8 +32,8 @@ export default {
           url: "https://swedu.pusan.ac.kr",
         },
         {
-          title: "부산대학교<br>학생지식관리시스템",
-          url: "https://lms.pusan.ac.kr",
+          title: "부산대학교<br>학생지원시스템",
+          url: "https://onestop.pusan.ac.kr/",
         },
         {
           title: "스마트교육플랫폼<br>PLATO",
@@ -44,8 +44,8 @@ export default {
           url: "https://www.inflearn.com",
         },
         {
-          title: "부산대학교<br>SW역량지식관리시스템",
-          url: "https://sw.pusan.ac.kr",
+          title: "부산대학교<br>SW역량지원시스템",
+          url: "https://swcss.pusan.ac.kr/",
         },
       ],
     }
