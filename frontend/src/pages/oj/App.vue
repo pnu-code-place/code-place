@@ -85,7 +85,7 @@ h1.main-title {
   --title_font-size: 24px;
   --title_font-weight: 700;
 
-  --point-color: #32306b;
+  --point-color: #5b64ed;
   --pale-point-color: #f8f9ff;
   // hex #024D97; to rgb 2, 77, 151
   --pnu-green: rgb(6, 186, 110);

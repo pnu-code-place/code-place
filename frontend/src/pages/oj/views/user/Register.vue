@@ -399,7 +399,7 @@ export default {
 
 .btn {
   height: 45px;
-  background-color: #32306b;
+  background-color: #5b64ed;
   border: none;
   font-weight: 600;
   font-size: 14px;
@@ -419,7 +419,7 @@ export default {
 
 .emailAuthBtn {
   height: 36px;
-  background-color: #32306b;
+  background-color: #5b64ed;
   border: none;
   font-weight: 600;
   font-size: 14px;
@@ -458,7 +458,7 @@ button:disabled {
 
 .nicknameAuthBtn {
   height: 36px;
-  background-color: #32306b;
+  background-color: #5b64ed;
   border: none;
   font-weight: 600;
   font-size: 14px;
@@ -499,7 +499,7 @@ button:disabled {
   text-decoration: none;
 
   &:hover {
-    color: lighten(#32306b, 10%);
+    color: lighten(#5b64ed, 10%);
   }
 }
 
