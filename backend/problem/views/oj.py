@@ -44,6 +44,28 @@ class PickOneAPI(APIView):
         return self.success(problems[random.randint(0, count - 1)]._id)
 
 
+class WeeklyTopProblemsAPI(APIView):
+
+    def get(self, request):
+        problems = Problem.objects.filter(
+            contest_id__isnull=True,
+            visible=True,
+        ).order_by('-curr_week_info__accepted')[:3]
+
+        data = [
+            {
+                "_id": p._id,
+                "title": p.title,
+                "difficulty": p.difficulty,
+                "field": p.field,
+                "accepted": p.curr_week_info.get("accepted", 0),
+                "submission": p.curr_week_info.get("submission", 0),
+            }
+            for p in problems
+        ]
+        return self.success(data)
+
+
 class BonusProblemAPI(APIView):
 
     def get(self, request):

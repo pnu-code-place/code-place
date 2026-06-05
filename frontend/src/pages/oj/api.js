@@ -126,6 +126,9 @@ export default {
   getHomeBonusProblem() {
     return ajax("problem/bonus", "get")
   },
+  getWeeklyTopProblems() {
+    return ajax("problem/weekly_top", "get")
+  },
   getMostDifficultProblem() {
     return ajax("problem/most_difficult_problem", "get")
   },

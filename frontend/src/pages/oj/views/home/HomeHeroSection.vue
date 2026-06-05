@@ -32,24 +32,24 @@
         <div class="stat-cards">
           <div class="stat-card">
             <div class="stat-card-left">
-              <div class="stat-card-num">{{ totalProblems }}</div>
-              <div class="stat-card-label">// 알고리즘 문제</div>
+              <div class="stat-card-num">{{ stats.totalProblems }}</div>
+              <div class="stat-card-label">// 전체 문제</div>
             </div>
             <div class="stat-card-icon">📋</div>
           </div>
           <div class="stat-card">
             <div class="stat-card-left">
-              <div class="stat-card-num">6 TIER</div>
-              <div class="stat-card-label">// 새싹 → 다이아몬드</div>
+              <div class="stat-card-num">{{ stats.acceptedProblems }}</div>
+              <div class="stat-card-label">// 해결된 문제</div>
             </div>
-            <div class="stat-card-icon">🏆</div>
+            <div class="stat-card-icon">✅</div>
           </div>
           <div class="stat-card">
             <div class="stat-card-left">
-              <div class="stat-card-num">24 / 7</div>
-              <div class="stat-card-label">// 실시간 채점 서버</div>
+              <div class="stat-card-num">{{ stats.totalContests }}</div>
+              <div class="stat-card-label">// 개최된 대회</div>
             </div>
-            <div class="stat-card-icon">⚡</div>
+            <div class="stat-card-icon">🏆</div>
           </div>
         </div>
         <div class="pnu-tag">PUSAN NATIONAL UNIVERSITY — CODEPLACE</div>
@@ -66,17 +66,24 @@ export default {
   name: "HomeHeroSection",
   data() {
     return {
-      totalProblems: "—",
+      stats: {
+        totalProblems: "—",
+        acceptedProblems: "—",
+        totalContests: "—",
+      },
     }
   },
   computed: {
     ...mapGetters(["isAuthenticated", "user", "profile"]),
   },
   mounted() {
-    api.getHomeStatistics().then((res) => {
+    api.getStatistics().then((res) => {
       const d = res.data.data
-      const n = d.total_problem_length || 0
-      this.totalProblems = n.toLocaleString() + "+"
+      this.stats = {
+        totalProblems: (d.total_problem_length || 0).toLocaleString(),
+        acceptedProblems: (d.accepted_problem_length || 0).toLocaleString(),
+        totalContests: (d.ended_contest_length || 0).toLocaleString(),
+      }
     }).catch(() => {})
   },
   methods: {

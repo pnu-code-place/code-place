@@ -10,7 +10,7 @@ import xml.etree.ElementTree as ET
 
 from utils.constants import RSS_FEED_URL
 
-HOME_STATS_CACHE_KEY = "home_statistics"
+HOME_STATS_CACHE_KEY = "home_statistics_v2"
 HOME_STATS_CACHE_TTL = 60 * 10  # 10분
 
 RSS_CACHE_KEY = "home_rss_feed"
@@ -28,8 +28,7 @@ class GetHomeStatisticsAPI(APIView):
         total_problem_length = problems.count()
         accepted_problem_length = problems.filter(accepted_number__gt=0).count()
 
-        cur = now()
-        ended_contest_length = Contest.objects.filter(visible=True, end_time__gt=cur).count()
+        ended_contest_length = Contest.objects.filter(visible=True).count()
 
         home_statistics = {
             "total_problem_length": total_problem_length,
