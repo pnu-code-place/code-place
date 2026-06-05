@@ -1,6 +1,9 @@
 <template>
   <div class="hero-padding">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Fira+Code:wght@400;500&display=swap" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Fira+Code:wght@400;500&display=swap"
+    />
     <div class="banner">
       <div class="noise" />
       <div class="grid-lines" />
@@ -17,12 +20,17 @@
           <span class="accent">함께 성장하는 공간</span>
         </h1>
         <p class="banner-desc">
-          알고리즘 문제 풀이부터 실전 코딩테스트, 대회 운영,
-          AI 조교 기반 학습 지원까지 제공하는 통합 프로그래밍 교육 플랫폼입니다.
+          알고리즘 문제 풀이부터 실전 코딩테스트, 대회 운영, AI 조교 기반 학습
+          지원까지 제공하는 통합 프로그래밍 교육 플랫폼입니다.
         </p>
-        <button class="banner-cta" @click="goProblemList">
+        <a
+          class="banner-cta"
+          href="https://acei2026.notion.site/Code-Place-304da425d9f780da848ac3def46aac78"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           코드플레이스 알아보기 <span class="arrow">→</span>
-        </button>
+        </a>
       </div>
 
       <div class="vline" />
@@ -77,14 +85,17 @@ export default {
     ...mapGetters(["isAuthenticated", "user", "profile"]),
   },
   mounted() {
-    api.getStatistics().then((res) => {
-      const d = res.data.data
-      this.stats = {
-        totalProblems: (d.total_problem_length || 0).toLocaleString(),
-        acceptedProblems: (d.accepted_problem_length || 0).toLocaleString(),
-        totalContests: (d.ended_contest_length || 0).toLocaleString(),
-      }
-    }).catch(() => {})
+    api
+      .getStatistics()
+      .then((res) => {
+        const d = res.data.data
+        this.stats = {
+          totalProblems: (d.total_problem_length || 0).toLocaleString(),
+          acceptedProblems: (d.accepted_problem_length || 0).toLocaleString(),
+          totalContests: (d.ended_contest_length || 0).toLocaleString(),
+        }
+      })
+      .catch(() => {})
   },
   methods: {
     goProblemList() {
@@ -95,7 +106,6 @@ export default {
 </script>
 
 <style scoped lang="less">
-
 .hero-padding {
   width: 100%;
   padding: 20px 0 0;
@@ -117,20 +127,32 @@ export default {
     linear-gradient(135deg, #0f0728 0%, #1a1060 40%, #1e2fa0 100%);
 
   &::before {
-    content: '';
+    content: "";
     position: absolute;
-    top: -60px; left: -60px;
-    width: 340px; height: 340px;
-    background: radial-gradient(circle, rgba(139,92,246,0.35) 0%, transparent 70%);
+    top: -60px;
+    left: -60px;
+    width: 340px;
+    height: 340px;
+    background: radial-gradient(
+      circle,
+      rgba(139, 92, 246, 0.35) 0%,
+      transparent 70%
+    );
     pointer-events: none;
     z-index: 1;
   }
   &::after {
-    content: '';
+    content: "";
     position: absolute;
-    bottom: -80px; right: 220px;
-    width: 400px; height: 400px;
-    background: radial-gradient(circle, rgba(59,130,246,0.25) 0%, transparent 70%);
+    bottom: -80px;
+    right: 220px;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(
+      circle,
+      rgba(59, 130, 246, 0.25) 0%,
+      transparent 70%
+    );
     pointer-events: none;
     z-index: 1;
   }
@@ -151,8 +173,8 @@ export default {
   inset: 0;
   z-index: 2;
   background-image:
-    linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
   background-size: 48px 48px;
   pointer-events: none;
 }
@@ -172,9 +194,9 @@ export default {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-family: 'Fira Code', monospace;
+  font-family: "Fira Code", monospace;
   font-size: 11px;
-  color: rgba(167,139,250,0.9);
+  color: rgba(167, 139, 250, 0.9);
   letter-spacing: 0.14em;
   text-transform: uppercase;
   margin-bottom: 18px;
@@ -209,7 +231,7 @@ export default {
 
 .banner-desc {
   font-size: 13.5px;
-  color: rgba(255,255,255,0.45);
+  color: rgba(255, 255, 255, 0.45);
   line-height: 1.85;
   font-weight: 300;
   max-width: 400px;
@@ -221,27 +243,32 @@ export default {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  font-family: 'Fira Code', monospace;
+  font-family: "Fira Code", monospace;
   font-size: 13px;
   font-weight: 500;
   color: #fff;
-  background: rgba(99,102,241,0.9);
-  border: 1px solid rgba(129,140,248,0.5);
+  background: rgba(99, 102, 241, 0.9);
+  border: 1px solid rgba(129, 140, 248, 0.5);
   padding: 13px 24px;
   border-radius: 8px;
   letter-spacing: 0.04em;
   width: fit-content;
   cursor: pointer;
-  transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
-  box-shadow: 0 4px 24px rgba(99,102,241,0.4);
+  transition:
+    background 0.2s,
+    transform 0.2s,
+    box-shadow 0.2s;
+  box-shadow: 0 4px 24px rgba(99, 102, 241, 0.4);
   animation: fadeUp 0.6s ease 0.6s both;
 
   &:hover {
-    background: rgba(99,102,241,1);
+    background: rgba(99, 102, 241, 1);
     transform: translateY(-2px);
-    box-shadow: 0 8px 32px rgba(99,102,241,0.55);
+    box-shadow: 0 8px 32px rgba(99, 102, 241, 0.55);
 
-    .arrow { transform: translateX(4px); }
+    .arrow {
+      transform: translateX(4px);
+    }
   }
 }
 
@@ -254,7 +281,13 @@ export default {
 .vline {
   width: 1px;
   align-self: stretch;
-  background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.1) 30%, rgba(255,255,255,0.1) 70%, transparent);
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(255, 255, 255, 0.1) 30%,
+    rgba(255, 255, 255, 0.1) 70%,
+    transparent
+  );
   margin: 40px 0;
   flex-shrink: 0;
   position: relative;
@@ -283,19 +316,21 @@ export default {
 }
 
 .stat-card {
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   padding: 16px 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   backdrop-filter: blur(10px);
-  transition: background 0.2s, border-color 0.2s;
+  transition:
+    background 0.2s,
+    border-color 0.2s;
 
   &:hover {
-    background: rgba(255,255,255,0.1);
-    border-color: rgba(129,140,248,0.3);
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(129, 140, 248, 0.3);
   }
 }
 
@@ -306,7 +341,7 @@ export default {
 }
 
 .stat-card-num {
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: "Bebas Neue", sans-serif;
   font-size: 32px;
   line-height: 1;
   color: #fff;
@@ -314,9 +349,9 @@ export default {
 }
 
 .stat-card-label {
-  font-family: 'Fira Code', monospace;
+  font-family: "Fira Code", monospace;
   font-size: 10px;
-  color: rgba(255,255,255,0.35);
+  color: rgba(255, 255, 255, 0.35);
   letter-spacing: 0.08em;
 }
 
@@ -328,20 +363,32 @@ export default {
 .pnu-tag {
   margin-top: 16px;
   align-self: flex-end;
-  font-family: 'Fira Code', monospace;
+  font-family: "Fira Code", monospace;
   font-size: 10px;
-  color: rgba(255,255,255,0.2);
+  color: rgba(255, 255, 255, 0.2);
   letter-spacing: 0.1em;
   animation: fadeLeft 0.6s ease 0.75s both;
 }
 
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes fadeLeft {
-  from { opacity: 0; transform: translateX(16px); }
-  to   { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 </style>
