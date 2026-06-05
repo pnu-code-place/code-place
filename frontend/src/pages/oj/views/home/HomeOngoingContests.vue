@@ -153,7 +153,7 @@ export default {
     },
     goContest(contest) {
       this.$router.push({
-        name: "contest-details",
+        name: "contest-overview",
         params: { contestID: contest.id },
       })
     },
