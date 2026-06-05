@@ -153,7 +153,7 @@
       <a href="https://github.com/Neibce">
       <img src="https://github.com/Neibce.png" width="80" alt="Neibce"/>
       <br />
-      <sub><b>taekoong</b></sub>
+      <sub><b>Neibce</b></sub>
       </a>
       <br />
     </td>
