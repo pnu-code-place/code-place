@@ -2,7 +2,7 @@
   <div class="logo" @click="handleRoute('/')">
     <div>
       <img
-        src="@/assets/code-place-logo.svg"
+        src="@/assets/code-place-logo.png"
         width="32"
         style="vertical-align: middle; margin-right: 10px"
       />
@@ -49,11 +49,12 @@ export default {
     .pnuName {
       font-size: 14.5px;
       font-weight: normal;
+      color: #555560;
     }
     .systemTitle {
       font-size: 19px;
       font-weight: bold;
-      color: #32306b;
+      color: #5b64ed;
     }
   }
 }

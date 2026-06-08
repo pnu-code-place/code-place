@@ -1,6 +1,7 @@
 import ipaddress
 
 from django.db.models import Q, Count
+from django.utils.dateparse import parse_datetime
 
 from account.decorators import login_required, check_contest_permission
 from utils.testcase_cache import TestCaseCacheManager
@@ -190,6 +191,12 @@ class SubmissionListAPI(APIView):
 
         if result:
             submissions = submissions.filter(result=result)
+
+        since = request.GET.get("since")
+        if since:
+            since_dt = parse_datetime(since)
+            if since_dt:
+                submissions = submissions.filter(create_time__gte=since_dt)
 
         data = self.paginate_data(request, submissions)
         data["results"] = SubmissionListSerializer(data["results"], many=True, user=request.user).data

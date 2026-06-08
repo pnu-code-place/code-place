@@ -119,7 +119,7 @@ td {
 }
 
 .link {
-  color: #32306b;
+  color: #5b64ed;
   cursor: pointer;
   .user-wrapper {
     display: flex;
@@ -132,7 +132,7 @@ td {
 }
 
 .link:hover {
-  color: #32306b;
+  color: #5b64ed;
   text-decoration: underline;
 }
 

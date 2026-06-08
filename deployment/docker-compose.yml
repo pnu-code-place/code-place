@@ -26,9 +26,9 @@ services:
       - oj-postgres
     env_file:
       - .env
-    volumes:
-      - ../backend/data/celery/log:/data/log
     entrypoint: /app/deploy/entrypoint_beat.sh
+    healthcheck:
+      disable: true
 
   celery-worker:
     restart: always
@@ -38,9 +38,9 @@ services:
       - backend
     env_file:
       - .env
-    volumes:
-      - ../backend/data/celery/log:/data/log
     entrypoint: /app/deploy/entrypoint_worker.sh
+    healthcheck:
+      disable: true
 
   oj-judge:
     restart: always

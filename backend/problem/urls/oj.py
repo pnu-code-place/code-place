@@ -2,7 +2,7 @@ from django.conf.urls import url
 
 from ..views.oj import (BonusProblemAPI, ContestProblemAPI, MostDifficultProblemAPI, PickOneAPI, ProblemAPI,
                         ProblemLLMHintAPI, ProblemTagAPI, RecommendProblemAPI, UpdateBonusProblemAPI,
-                        UpdateWeeklyStatsAPI, AIHintHistoryAPI)
+                        UpdateWeeklyStatsAPI, AIHintHistoryAPI, WeeklyTopProblemsAPI)
 
 urlpatterns = [
     url(r"^problem/tags/?$", ProblemTagAPI.as_view(), name="problem_tag_list_api"),
@@ -10,6 +10,7 @@ urlpatterns = [
     url(r"^problem/llm_hint/?$", ProblemLLMHintAPI.as_view(), name="problem_llm_hint_api"),
     url(r"^problem/ai_hint_history/?$", AIHintHistoryAPI.as_view(), name="problem_ai_hint_history_api"),
     url(r"^problem/bonus/?$", BonusProblemAPI.as_view(), name="bonus_problem_api"),
+    url(r"^problem/weekly_top/?$", WeeklyTopProblemsAPI.as_view(), name="weekly_top_problems_api"),
     url(r"^pickone/?$", PickOneAPI.as_view(), name="pick_one_api"),
     url(r"^contest/problem/?$", ContestProblemAPI.as_view(), name="contest_problem_api"),
     url(r"^recommend_problem/?$", RecommendProblemAPI.as_view(), name="recommend_problem_api"),

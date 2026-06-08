@@ -3,15 +3,18 @@
 </div>
 
 ## 프로젝트 소개
+
 본 프로젝트는 부산대학교 학생들의 프로그래밍 역량 향상을 위해 개발되었으며,
 
 부산대학교의 학생들이 전공과 관계 없이 프로그래밍에 쉽게 접근하고 성장할 수 있는 학습 환경을 조성하는 것이 목표입니다.
 
 현재 부산대학교의 교양필수 과목인 ‘**기초컴퓨터프로그래밍**’ 수업에서 학생들에게 코딩 실습 환경을 제공하기 위해 활용되고 있습니다.
+
 > 위 프로젝트는 QingdaoU OJ 오픈소스 기반으로 개발되었습니다.
-<br/>
+> <br/>
 
 ## 프로젝트 주요 기능
+
 - **코딩테스트 및 대회**: 실력 향상을 위한 실전 환경 제공
 - **수준별 알고리즘 문제**: 다양한 난이도의 문제로 단계별 학습 제공
 - **온라인 코드 에디터**: 웹에서 바로 코딩과 실행이 가능한 통합 개발 환경 제공
@@ -20,8 +23,9 @@
 <br/>
 
 ## 배포 주소
+
 > 운영 서버 주소 : https://code.pusan.ac.kr/
-> 
+>
 > 개발(베타) 서버 주소 : [https://code-place-dev.site/](https://k3s.code-place-dev.site/)
 
 <br/>
@@ -29,11 +33,13 @@
 ## 프로젝트 아키텍처
 
 ### 서비스 아키텍처
+
 <div align="center">
   <img alt="code-place-arch" src="https://github.com/user-attachments/assets/d1fa97f1-109e-4389-8a4f-b1705a44dac9" />
 </div>
 
 ### 인프라 아키텍처
+
 <div align="center">
   <img width="1672" height="995" alt="code-place-arch2" src="https://github.com/user-attachments/assets/c2bb781b-05c8-40cd-9558-9a573700af93" />
 </div>
@@ -69,28 +75,34 @@
 ## 세부 기능 소개
 
 **문제 추천 기능**
+
 - 보너스 점수 문제와 지난 주에 가장 어려웠던 문제를 선별 후 주 마다 제공
 - 사용자가 푼 문제의 난이도, 부족한 영역을 반영한 개인 맞춤 문제 추천
 
 **랭킹 및 티어 시스템**
+
 - 총 점수 기준 사용자 랭킹 제공
 - 오늘의 급상승 랭킹(당일 점수가 가장 많이 상승한 사용자 기준) 제공
 - 학과별 점수 랭킹 및 상위 5명의 기여자 표기
 - 새싹 ~ 다이아몬드 등급의 티어 제공
 
 **문제 풀이 기능**
+
 - 다크모드 및 코드 하이라이팅 지원
 - 오픈소스 채점서버를 통한 채점 기능 제공
 
 **어드민(CMS) 기능**
-- 홈 배너 관리 기능 
+
+- 홈 배너 관리 기능
 - 사용자 관리 및 통계 대시보드
 - 대회 관리 및 모니터링 시스템
 
 <br/>
 
 ## 👨‍💻 구성원
+
 ### 개발 인원
+
 <table>
   <tr>
     <td align="center">
@@ -149,12 +161,21 @@
       </a>
       <br />
     </td>
+    <td align="center">
+      <a href="https://github.com/Neibce">
+      <img src="https://github.com/Neibce.png" width="80" alt="Neibce"/>
+      <br />
+      <sub><b>Neibce</b></sub>
+      </a>
+      <br />
+    </td>
   </tr>
 </table>
 
 <br />
 
 ## 💎 라이센스
+
 해당 프로젝트는 [MIT LICENSE](https://opensource.org/license/MIT) 를 따릅니다.
 The MIT License (MIT)
 

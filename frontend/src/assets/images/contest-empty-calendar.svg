@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill="none">
+  <!-- Calendar body shadow -->
+  <rect x="14" y="22" width="78" height="72" rx="14" fill="#c4b8f5" opacity="0.4"/>
+  <!-- Calendar body -->
+  <rect x="10" y="18" width="78" height="72" rx="14" fill="url(#calGrad)"/>
+  <!-- Calendar header strip -->
+  <rect x="10" y="18" width="78" height="26" rx="14" fill="url(#headerGrad)"/>
+  <rect x="10" y="30" width="78" height="14" fill="url(#headerGrad)"/>
+  <!-- Header text dots (calendar week) -->
+  <text x="24" y="35" font-size="7" fill="white" opacity="0.85" font-family="sans-serif" font-weight="600">S</text>
+  <text x="35" y="35" font-size="7" fill="white" opacity="0.85" font-family="sans-serif" font-weight="600">M</text>
+  <text x="47" y="35" font-size="7" fill="white" opacity="0.85" font-family="sans-serif" font-weight="600">T</text>
+  <text x="59" y="35" font-size="7" fill="white" opacity="0.85" font-family="sans-serif" font-weight="600">W</text>
+  <text x="71" y="35" font-size="7" fill="white" opacity="0.85" font-family="sans-serif" font-weight="600">T</text>
+  <!-- Calendar ring left -->
+  <rect x="28" y="11" width="8" height="16" rx="4" fill="url(#ringGrad)"/>
+  <!-- Calendar ring right -->
+  <rect x="60" y="11" width="8" height="16" rx="4" fill="url(#ringGrad)"/>
+  <!-- Calendar grid dots -->
+  <!-- Row 1 -->
+  <rect x="22" y="48" width="8" height="7" rx="3" fill="#ece8ff"/>
+  <rect x="34" y="48" width="8" height="7" rx="3" fill="#ece8ff"/>
+  <rect x="46" y="48" width="8" height="7" rx="3" fill="#ece8ff"/>
+  <rect x="58" y="48" width="8" height="7" rx="3" fill="#ece8ff"/>
+  <rect x="70" y="48" width="8" height="7" rx="3" fill="#ece8ff"/>
+  <!-- Row 2 -->
+  <rect x="22" y="59" width="8" height="7" rx="3" fill="#ece8ff"/>
+  <rect x="34" y="59" width="8" height="7" rx="3" fill="#ece8ff"/>
+  <rect x="46" y="59" width="8" height="7" rx="3" fill="#7b6ef5" opacity="0.7"/>
+  <rect x="58" y="59" width="8" height="7" rx="3" fill="#ece8ff"/>
+  <rect x="70" y="59" width="8" height="7" rx="3" fill="#ece8ff"/>
+  <!-- Row 3 -->
+  <rect x="22" y="70" width="8" height="7" rx="3" fill="#ece8ff"/>
+  <rect x="34" y="70" width="8" height="7" rx="3" fill="#ece8ff"/>
+  <rect x="46" y="70" width="8" height="7" rx="3" fill="#ece8ff"/>
+  <rect x="58" y="70" width="8" height="7" rx="3" fill="#ece8ff"/>
+
+  <!-- Trophy badge circle (bottom-right) -->
+  <circle cx="88" cy="88" r="22" fill="#7b6ef5" filter="url(#shadow)"/>
+  <circle cx="88" cy="88" r="19" fill="url(#trophyBg)"/>
+  <!-- Trophy icon -->
+  <!-- Cup body -->
+  <path d="M82 80 Q82 90 88 92 Q94 90 94 80 Z" fill="white" opacity="0.95"/>
+  <!-- Cup handles -->
+  <path d="M82 82 Q78 82 79 87 Q80 90 83 89" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <path d="M94 82 Q98 82 97 87 Q96 90 93 89" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <!-- Trophy stem -->
+  <rect x="86" y="92" width="4" height="5" rx="1" fill="white" opacity="0.95"/>
+  <!-- Trophy base -->
+  <rect x="83" y="96" width="10" height="3" rx="1.5" fill="white" opacity="0.95"/>
+  <!-- Trophy star -->
+  <text x="85.5" y="89" font-size="7" fill="#f5c842">★</text>
+
+  <defs>
+    <linearGradient id="calGrad" x1="10" y1="18" x2="88" y2="90" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#a89af7"/>
+      <stop offset="100%" stop-color="#7b6ef5"/>
+    </linearGradient>
+    <linearGradient id="headerGrad" x1="10" y1="18" x2="88" y2="44" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#6b5ce7"/>
+      <stop offset="100%" stop-color="#5b4bd8"/>
+    </linearGradient>
+    <linearGradient id="ringGrad" x1="0" y1="0" x2="0" y2="1" gradientUnits="objectBoundingBox">
+      <stop offset="0%" stop-color="#9d8ff7"/>
+      <stop offset="100%" stop-color="#6b5ce7"/>
+    </linearGradient>
+    <linearGradient id="trophyBg" x1="70" y1="70" x2="106" y2="106" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#9b8af5"/>
+      <stop offset="100%" stop-color="#6b5ce7"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#5b4bd8" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+</svg>

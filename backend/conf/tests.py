@@ -103,6 +103,14 @@ class WebsiteConfigAPITest(APITestCase):
         self.assertSuccess(resp)
 
 
+class HealthCheckAPITest(APITestCase):
+
+    def test_health_check_without_auth(self):
+        resp = self.client.get(self.reverse("health_check_api"))
+        self.assertEqual(resp.status_code, 204)
+        self.assertEqual(resp.content, b"")
+
+
 class JudgeServerHeartbeatTest(APITestCase):
 
     def setUp(self):

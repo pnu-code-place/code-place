@@ -125,7 +125,7 @@ export default {
     border-radius: 5px;
     height: 60px;
     line-height: 60px;
-    background-color: #32306b;
+    background-color: #5b64ed;
     margin: 23px 0;
 
     span {
