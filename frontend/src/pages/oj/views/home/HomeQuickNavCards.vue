@@ -40,7 +40,7 @@ export default {
           route: "problem-list",
         },
         {
-          title: "콘테스트",
+          title: "대회",
           desc: "대회에 참여하고\n실력을 확인하세요.",
           icon: "trophy",
           iconBg: "#f5a230",
