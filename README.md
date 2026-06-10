@@ -30,7 +30,8 @@
 
 ### 서비스 아키텍처
 <div align="center">
-  <img alt="code-place-arch" src="https://github.com/user-attachments/assets/d1fa97f1-109e-4389-8a4f-b1705a44dac9" />
+  <img width="1131" height="571" alt="코드플레이스 서비스 아키텍쳐 drawio" src="https://github.com/user-attachments/assets/1752d050-e49f-4c78-a623-88d358b65e9e" />
+
 </div>
 
 ### 인프라 아키텍처
