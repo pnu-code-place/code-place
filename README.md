@@ -65,6 +65,10 @@
 <img src="https://img.shields.io/badge/iView_2.8.0-2d8cf0?style=flat-square" />
 <img src="https://img.shields.io/badge/Element_2.0.9-409eff?style=flat-square" />
 
+**AI** &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<img src="https://img.shields.io/badge/vLLM-30A2FF?style=flat-square&logo=vLLM&logoColor=white"/>
+<img src="https://img.shields.io/badge/qwen-3.5_9B-6950EF?style=flat-square&logo=qwen&logoColor=white"/>
+
 <br/>
 
 ## 세부 기능 소개
@@ -82,6 +86,7 @@
 **문제 풀이 기능**
 - 다크모드 및 코드 하이라이팅 지원
 - 오픈소스 채점서버를 통한 채점 기능 제공
+- AI조교 호출로 문제 풀이 능력 향상 
 
 **어드민(CMS) 기능**
 - 홈 배너 관리 기능 
