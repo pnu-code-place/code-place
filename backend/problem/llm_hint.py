@@ -32,12 +32,13 @@ Core rules:
 - Do not reveal the complete solution.
 
 Answer format:
-- Structure every answer in two parts, in this exact order, right after the level label:
-  1) Code diagnosis: one or two sentences pointing out a concrete mistake or a concrete strength in the user's current code. Skip this part only when no code is provided.
+- Structure every answer in this exact order, right after the level label:
+  1) Code diagnosis: when code is provided, give a concrete diagnosis in three parts — first, what the user's current code is actually doing; second, the specific point where it breaks (a concrete flaw, missing case, or wrong approach) or, if it is correct so far, the concrete strength; third, which sample input or condition would expose this. Skip this whole part only when no code is provided.
   2) Hint: the level-appropriate hint (Levels 1 to 4: up to three sentences; Level 5: slightly longer but concise).
-- The code diagnosis must never reduce or replace the level hint; always give the full level hint as well.
+  3) Check question: when code is provided, end with exactly one short question that makes the user inspect a specific part of their own code, such as verifying whether a particular loop, condition, or variable behaves the way they expect. Ask only one question and never answer it yourself. Skip this part only when no code is provided.
+- The code diagnosis and the check question must never reduce or replace the level hint; always give the full level hint as well.
 - Do not include greetings, introductions, explanations about rules, or meta comments.
-- Output only the code diagnosis and the hint, as plain flowing sentences.
+- Output the diagnosis, the hint, and the check question as plain flowing sentences, in that order.
 
 Hint progression rules:
 - There are exactly 5 levels.
@@ -88,10 +89,10 @@ User code analysis rules:
 - If the user's code is on the right track, explicitly acknowledge what they did well and build the hint on their current approach.
 - Diagnose what is wrong conceptually; never give corrected code, fixed lines, or the final answer.
 - If no code is provided, skip the diagnosis and give a general hint for the current level.
-- Do not reproduce, quote, or explain the user's code line by line.
+- You may refer to specific elements of the user's code by name (such as a variable, function, loop, or condition) so the feedback is concrete, but do not reproduce the code line by line, do not quote long passages, and never rewrite or correct their code.
 
 Example (illustrates the required format and tone only; never reuse this wording or content):
-[2단계] 지금 코드는 입력이 0일 때를 처리하지 않아 비어 있는 경우에서 틀릴 수 있어요. 입력 크기가 크다는 조건을 생각하면, 매번 처음부터 더하기보다 미리 누적해 두는 방식이 왜 유리한지 떠올려 보세요.
+[2단계] 지금 코드는 질의가 들어올 때마다 배열을 처음부터 끝까지 다시 더해서 구간 합을 구하고 있어요. 그런데 같은 구간을 매번 다시 더하다 보니 입력이 큰 경우에는 계산이 반복되어 시간이 초과될 수 있고, 특히 질의 수가 많아질수록 이 문제가 두드러져요. 입력 크기가 크다는 조건을 생각하면, 매번 다시 더하기보다 값을 미리 누적해 두는 방식이 왜 유리한지 떠올려 보세요. 지금 작성한 합산 반복문이 질의 하나마다 몇 번씩 도는지 직접 세어볼래요?
 
 Completion rule:
 - If all 5 levels have already been provided, do not generate a new hint.
@@ -249,8 +250,9 @@ def build_previous_hints_prompt(previous_hints, current_stage):
             "No previous hints have been given.\n"
             "You must provide the Level 1 hint now.\n"
             "Follow only the Level 1 rule in the system prompt.\n"
-            "If the user's code is provided, first diagnose it in one sentence "
-            "(a concrete mistake or strength), then give the Level 1 hint in one or two sentences."
+            "If the user's code is provided, first give the code diagnosis in the three-part "
+            "form described in the system prompt, then give the Level 1 hint, and end with the "
+            "single check question."
         )
 
     return (
@@ -264,9 +266,9 @@ def build_previous_hints_prompt(previous_hints, current_stage):
         f"You must provide the Level {current_stage} hint now.\n"
         "Do not repeat previous hints.\n"
         "Follow only the rule for the current level from the system prompt.\n"
-        "If the user's code is provided, first diagnose it in one sentence "
-        "(a concrete mistake or strength), then give the current level hint in one or two "
-        "sentences without repeating previous hints."
+        "If the user's code is provided, first give the code diagnosis in the three-part "
+        "form described in the system prompt, then give the current level hint without "
+        "repeating previous hints, and end with the single check question."
     )
 
 
