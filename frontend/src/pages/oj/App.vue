@@ -167,15 +167,15 @@ h1.main-title {
 
 :root.dark.problem {
   /* Problem Solving Page */
-  --ps-background-color: #181c25;
+  --ps-background-color: #263238;
   /* Problem Solving Page - Inner Content */
-  --ps-content-color: #1f2430;
-  --ps-content-text-color: #b2c0cc;
+  --ps-content-color: #2e3c43;
+  --ps-content-text-color: #ececec;
   --ps-content-title-color: #ffffff;
-  --ps-content-pre-background-color: #1a1f29;
-  --ps-content-pre-border-color: rgba(140, 140, 140, 0.29);
-  --ps-content-code-background-color: #1b212c;
-  --ps-content-code-text-color: #ffffff;
+  --ps-content-pre-background-color: #233038;
+  --ps-content-pre-border-color: rgba(160, 160, 160, 0.2);
+  --ps-content-code-background-color: #1e2a30;
+  --ps-content-code-text-color: #ececec;
   /* Code Submission */
   --submit-btn-color: #343f5a;
   --submit-btn-hover-color: #364361;
@@ -213,7 +213,7 @@ h1.main-title {
   --ai-assistant-close-hover-text-color: #ffffff;
   --ai-assistant-error-text-color: #ff9e9e;
 
-  --bg-color: #1f2430;
+  --bg-color: #263238;
   --text-color: #ffffff;
   --difficulty-color: #5a6885;
   --custom-btn-hover-color: #465477;

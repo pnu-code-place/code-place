@@ -210,6 +210,16 @@ export default {
   border: 1px solid var(--border-color);
 }
 
+.cm-s-ayu-mirage.CodeMirror,
+.cm-s-ayu-mirage .CodeMirror-scroll {
+  background-color: #2e3c43 !important;
+}
+
+.cm-s-ayu-mirage .CodeMirror-gutters {
+  background-color: #263238 !important;
+  border-right: 1px solid rgba(160, 160, 160, 0.15) !important;
+}
+
 .cm-s-ayu-mirage .CodeMirror-matchingbracket {
   text-decoration: none !important;
   color: white !important;
