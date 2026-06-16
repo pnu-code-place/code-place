@@ -3,19 +3,25 @@ from utils.api.tests import APITestCase
 
 class HomeRankingAPITest(APITestCase):
     """
-    홈 화면에 최대 3위까지 랭킹을 보여주는 API 테스트
+    홈 화면에 최대 5위까지 랭킹을 보여주는 API 테스트
     """
 
     def setUp(self):
         self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
-        self.create_user(email="test1@test.com", username="test1", password="test1234!", login=False)
-        self.create_user(email="test2@test.com", username="test2", password="test1234!", login=False)
-        self.create_user(email="test3@test.com", username="test3", password="test1234!", login=False)
+        # 상한(5명) 검증을 위해 6명 생성
+        for i in range(1, 7):
+            self.create_user(email="test{}@test.com".format(i), username="test{}".format(i),
+                             password="test1234!", login=False)
         self.url = self.reverse("home_ranking_api")
 
     def test_get_home_ranking_with_sufficient_data(self):
         resp = self.client.get(self.url)
         self.assertSuccess(resp)
+
+    def test_home_ranking_returns_at_most_5(self):
+        resp = self.client.get(self.url)
+        self.assertSuccess(resp)
+        self.assertEqual(len(resp.data["data"]), 5)
 
 
 class UserRankAPITest(APITestCase):
