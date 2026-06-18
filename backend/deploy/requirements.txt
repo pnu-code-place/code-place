@@ -17,6 +17,7 @@ pillow==12.2.0
 psycopg2==2.9.9
 python-dateutil==2.9.0.post0
 qrcode==8.2
+sentry-sdk==2.63.0
 XlsxWriter==3.2.9
 yapf==0.43.0
 celery==5.6.3

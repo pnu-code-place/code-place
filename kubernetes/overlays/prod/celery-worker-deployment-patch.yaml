@@ -11,3 +11,10 @@ spec:
     rollingUpdate:
       maxUnavailable: 1
       maxSurge: 1
+  template:
+    spec:
+      containers:
+        - name: celery-worker
+          env:
+            - name: SENTRY_ENVIRONMENT
+              value: "prod"
