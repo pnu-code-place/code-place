@@ -4,7 +4,7 @@
     <div style="display: flex; align-items: center; justify-content: center">
       <li style="list-style-type: none; margin-left: 3px">
         <Input
-          v-model="query.keyword"
+          v-model="keyword"
           @on-enter="filterByKeyword"
           @on-click="filterByKeyword"
           :placeholder="$t('m.Search_Problem')"
@@ -73,14 +73,14 @@
           >{{
             query.tag === ""
               ? this.$i18n.t("m.Category")
-              : this.$i18n.t(query.tag)
+              : query.tag
           }}
         </span>
         <Icon type="arrow-down-b"></Icon>
         <Dropdown-menu slot="list" class="problem-dropdown-menu">
           <Dropdown-item name="">{{ $t("m.All") }}</Dropdown-item>
           <Dropdown-item
-            v-for="tag in uniqueTags"
+            v-for="tag in tagOptions"
             :key="tag"
             :name="tag"
             >{{ tag }}</Dropdown-item
@@ -99,43 +99,38 @@
 </template>
 
 <script>
-import FieldCategoryBox from "../../../../components/FieldCategoryBox.vue"
 import { DIFFICULTY_MAP, FIELD_MAP } from "../../../../../../utils/constants"
-import Pagination from "../../../../components/Pagination.vue"
 import CustomIconBtn from "../../../../components/buttons/CustomIconBtn.vue"
 
 export default {
   name: "ProblemListTableHeader",
-  components: { CustomIconBtn, Pagination, FieldCategoryBox },
+  components: { CustomIconBtn },
+  data() {
+    return {
+      keyword: this.query.keyword || "",
+    }
+  },
   props: {
     query: {
       type: Object,
     },
-    problemList: {
+    tagList: {
       type: Array,
       default: () => [],
     },
   },
   methods: {
     filterByCategory(categoryName) {
-      this.query.tag = categoryName
-      this.query.page = 1
-      this.$emit("on-change-header")
+      this.$emit("on-change-header", { tag: categoryName, page: 1 })
     },
     filterByDifficulty(difficulty) {
-      this.query.difficulty = difficulty
-      this.query.page = 1
-      this.$emit("on-change-header")
+      this.$emit("on-change-header", { difficulty, page: 1 })
     },
     filterByField(field) {
-      this.query.field = field
-      this.query.page = 1
-      this.$emit("on-change-header")
+      this.$emit("on-change-header", { field, page: 1 })
     },
     filterByKeyword(keyword) {
-      // this.query.keyword = keyword
-      this.query.page = 1
-      this.$emit("on-change-header")
+      this.$emit("on-change-header", { keyword: this.keyword, page: 1 })
     },
     pickOne() {
       this.$emit("pick-one")
@@ -148,15 +143,17 @@ export default {
     FIELD_MAP() {
       return FIELD_MAP
     },
-    uniqueTags() {
-      const tags = new Set()
-      for (const problem of this.problemList) {
-        if (!problem || !Array.isArray(problem.tags)) continue
-        for (const tag of problem.tags) {
-          tags.add(tag)
-        }
-      }
-      return Array.from(tags)
+    tagOptions() {
+      const tagList = Array.isArray(this.tagList) ? this.tagList : []
+      const tags = tagList
+        .map((tag) => (typeof tag === "string" ? tag : tag.name))
+        .filter(Boolean)
+      return Array.from(new Set(tags)).sort((a, b) => a.localeCompare(b))
+    },
+  },
+  watch: {
+    "query.keyword"(keyword) {
+      this.keyword = keyword || ""
     },
   },
 }
@@ -203,6 +200,19 @@ export default {
 
   /deep/ .ivu-select-dropdown {
     margin-top: 12px;
+  }
+
+  .categoryDropdown /deep/ .ivu-select-dropdown {
+    max-height: 320px;
+    max-width: 260px;
+    overflow-y: auto;
+  }
+
+  .categoryDropdown /deep/ .problem-dropdown-menu .ivu-dropdown-item {
+    max-width: 260px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }
 </style>

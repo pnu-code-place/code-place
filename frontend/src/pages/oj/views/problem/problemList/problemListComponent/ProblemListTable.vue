@@ -11,7 +11,7 @@
     </thead>
     <template v-if="this.problemList.length !== 0">
       <tbody>
-        <tr v-for="problem in this.problemList">
+        <tr v-for="problem in this.problemList" :key="problem._id">
           <td class="td-first">{{ problem._id }}</td>
           <td
             class="td-second"
@@ -21,19 +21,25 @@
               {{ problem.title }}
             </span>
             <br />
-            <div style="display: flex">
+            <div class="problem-meta-row">
               <FieldCategoryBox
                 :boxType="true"
                 :value="FIELD_MAP[problem.field].value"
                 :boxColor="FIELD_MAP[problem.field].boxColor"
               />
-              <template v-for="(category, idx) in problem.tags">
+              <button
+                v-for="category in getProblemTags(problem)"
+                :key="problem._id + '-' + category"
+                type="button"
+                class="tag-filter-button"
+                @click.stop="selectTag(category)"
+              >
                 <FieldCategoryBox
                   :boxType="false"
                   :value="'#' + category"
                   :boxColor="'#ffffff'"
                 />
-              </template>
+              </button>
             </div>
           </td>
           <td class="td-third" style="font-weight: bold; font-size: 14px">
@@ -68,11 +74,10 @@
 import { mapActions } from "vuex"
 import FieldCategoryBox from "../../../../components/FieldCategoryBox.vue"
 import { DIFFICULTY_MAP, FIELD_MAP } from "../../../../../../utils/constants"
-import Pagination from "../../../../components/Pagination.vue"
 
 export default {
   name: "ProblemListTable",
-  components: { Pagination, FieldCategoryBox },
+  components: { FieldCategoryBox },
   props: {
     problemList: {
       type: Array,
@@ -87,6 +92,12 @@ export default {
         name: "problem-details",
         params: { problemID: problemId, problemTitle: problemTitle },
       })
+    },
+    selectTag(category) {
+      this.$emit("select-tag", category)
+    },
+    getProblemTags(problem) {
+      return Array.isArray(problem.tags) ? problem.tags : []
     },
   },
   computed: {
@@ -180,6 +191,26 @@ tbody {
 
     .problemTitle:hover {
       color: #4a86c0;
+    }
+
+    .problem-meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px 3px;
+      align-items: center;
+    }
+
+    .problem-meta-row /deep/ .box {
+      margin: 0;
+    }
+
+    .tag-filter-button {
+      border: 0;
+      padding: 0;
+      margin: 0;
+      background: transparent;
+      cursor: pointer;
+      font: inherit;
     }
   }
 }

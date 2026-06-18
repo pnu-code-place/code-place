@@ -4,11 +4,11 @@
       <div class="left-container">
         <ProblemListTableHeader
           :query="query"
-          :problemList="problemList"
+          :tagList="tagList"
           @on-change-header="pushRouter"
           @pick-one="pickOne"
         />
-        <ProblemListTable :problemList="problemList" />
+        <ProblemListTable :problemList="problemList" @select-tag="filterByTag" />
         <Pagination
           :total="total"
           :page-size.sync="query.limit"
@@ -110,7 +110,10 @@ export default {
       }
       await this.getProblemList()
     },
-    pushRouter() {
+    pushRouter(queryPatch) {
+      if (queryPatch && typeof queryPatch === "object") {
+        Object.assign(this.query, queryPatch)
+      }
       this.$router.push({
         name: "problem-list",
         query: utils.filterEmptyValue(this.query),
@@ -121,7 +124,7 @@ export default {
       this.loadings.table = true
       await api.getProblemList(offset, this.limit, this.query).then(
         (res) => {
-          this.loadings.table = true
+          this.loadings.table = false
           this.total = res.data.data.total
           this.problemList = res.data.data.results
         },
@@ -133,7 +136,7 @@ export default {
     getTagList() {
       api.getProblemTagList().then(
         (res) => {
-          this.tagList = res.data.data
+          this.tagList = Array.isArray(res.data.data) ? res.data.data : []
           this.loadings.tag = false
         },
         (res) => {
@@ -151,6 +154,11 @@ export default {
           params: { problemID: res.data.data },
         })
       })
+    },
+    filterByTag(tag) {
+      this.query.tag = tag
+      this.query.page = 1
+      this.pushRouter()
     },
   },
   computed: {
