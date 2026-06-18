@@ -84,9 +84,12 @@ export default {
     ...mapActions(["getProfile"]),
     init() {
       api.getPopup().then((res) => {
-        this.popupData = res.data.data
+        this.popupData = Array.isArray(res.data.data) ? res.data.data : []
       })
-      this.removedPopups = storage.get("removedPopup").map((popup) => popup.id)
+      const removedPopup = storage.get("removedPopup")
+      this.removedPopups = Array.isArray(removedPopup)
+        ? removedPopup.map((popup) => popup.id)
+        : []
     },
     popupSelect(value) {
       this.topPopupId = value
