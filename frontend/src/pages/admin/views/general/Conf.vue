@@ -134,7 +134,7 @@
 import api from "../../api.js"
 
 export default {
-  name: "Conf",
+  name: "AdminConfPage",
   data() {
     return {
       init: false,

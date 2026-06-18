@@ -5,7 +5,7 @@ const config = require("../config")
 const merge = require("webpack-merge")
 const baseWebpackConfig = require("./webpack.base.conf")
 const HtmlWebpackPlugin = require("html-webpack-plugin")
-const FriendlyErrorsPlugin = require("friendly-errors-webpack-plugin")
+const FriendlyErrorsPlugin = require("@soda/friendly-errors-webpack-plugin")
 
 // add hot-reload related code to entry chunks
 Object.keys(baseWebpackConfig.entry).forEach(function (name) {
@@ -15,11 +15,11 @@ Object.keys(baseWebpackConfig.entry).forEach(function (name) {
 })
 
 module.exports = merge(baseWebpackConfig, {
+  mode: "development",
   module: {
     rules: utils.styleLoaders({ sourceMap: config.dev.cssSourceMap }),
   },
-  // cheap-module-eval-source-map is faster for development
-  devtool: "#cheap-module-eval-source-map",
+  devtool: "eval-cheap-module-source-map",
   plugins: [
     new webpack.DefinePlugin({
       "process.env": config.dev.env,

@@ -129,6 +129,7 @@ export default {
       if (this.contestStatus) {
         return CONTEST_STATUS_REVERSE[this.contestStatus].color
       }
+      return ""
     },
     showAdminHelper() {
       return this.isContestAdmin && this.contestRuleType === "ACM"

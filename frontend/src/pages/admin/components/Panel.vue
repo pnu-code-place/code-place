@@ -23,7 +23,7 @@
 
 <script>
 export default {
-  name: "Panel",
+  name: "AdminPanel",
   props: {
     title: {
       type: String,

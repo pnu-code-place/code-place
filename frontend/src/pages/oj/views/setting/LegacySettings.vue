@@ -46,7 +46,7 @@
 import { mapGetters } from "vuex"
 
 export default {
-  name: "profile",
+  name: "LegacyProfileSettings",
   methods: {
     goRoute(routePath) {
       this.$router.push(routePath)

@@ -4,7 +4,7 @@
     <div style="display: flex; align-items: center; justify-content: center">
       <li style="list-style-type: none; margin-left: 3px">
         <Input
-          v-model="keyword"
+          v-model="localKeyword"
           @on-enter="filterByKeyword"
           @on-click="filterByKeyword"
           :placeholder="$t('m.Search_Problem')"
@@ -105,11 +105,6 @@ import CustomIconBtn from "../../../../components/buttons/CustomIconBtn.vue"
 export default {
   name: "ProblemListTableHeader",
   components: { CustomIconBtn },
-  data() {
-    return {
-      keyword: this.query.keyword || "",
-    }
-  },
   props: {
     query: {
       type: Object,
@@ -119,18 +114,28 @@ export default {
       default: () => [],
     },
   },
+  data() {
+    return {
+      localKeyword: this.query.keyword || "",
+    }
+  },
+  watch: {
+    "query.keyword"(keyword) {
+      this.localKeyword = keyword || ""
+    },
+  },
   methods: {
     filterByCategory(categoryName) {
-      this.$emit("on-change-header", { tag: categoryName, page: 1 })
+      this.$emit("update-query", { tag: categoryName, page: 1 })
     },
     filterByDifficulty(difficulty) {
-      this.$emit("on-change-header", { difficulty, page: 1 })
+      this.$emit("update-query", { difficulty, page: 1 })
     },
     filterByField(field) {
-      this.$emit("on-change-header", { field, page: 1 })
+      this.$emit("update-query", { field, page: 1 })
     },
-    filterByKeyword(keyword) {
-      this.$emit("on-change-header", { keyword: this.keyword, page: 1 })
+    filterByKeyword() {
+      this.$emit("update-query", { keyword: this.localKeyword, page: 1 })
     },
     pickOne() {
       this.$emit("pick-one")
@@ -149,11 +154,6 @@ export default {
         .map((tag) => (typeof tag === "string" ? tag : tag.name))
         .filter(Boolean)
       return Array.from(new Set(tags)).sort((a, b) => a.localeCompare(b))
-    },
-  },
-  watch: {
-    "query.keyword"(keyword) {
-      this.keyword = keyword || ""
     },
   },
 }

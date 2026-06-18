@@ -25,7 +25,7 @@
         <th>{{ $t("m.Contest_Type") }}</th>
       </thead>
       <tbody>
-        <tr v-for="contest in underway_contests">
+        <tr v-for="contest in underway_contests" :key="contest.id">
           <td>{{ contest.id }}</td>
           <td class="td-title" @click.stop="goContest(contest)">
             <p class="contest-title">{{ contest.title }}</p>
@@ -78,7 +78,7 @@
         <th>{{ $t("m.Contest_Type") }}</th>
       </thead>
       <tbody>
-        <tr v-for="contest in ended_contests">
+        <tr v-for="contest in ended_contests" :key="contest.id">
           <td>{{ contest.id }}</td>
           <td class="td-title" @click.stop="goContest(contest)">
             {{ contest.title }}
@@ -117,7 +117,7 @@
         <th>{{ $t("m.Contest_Type") }}</th>
       </thead>
       <tbody>
-        <tr v-for="contest in not_start_contests">
+        <tr v-for="contest in not_start_contests" :key="contest.id">
           <td>{{ contest.id }}</td>
           <td class="td-title" @click.stop="goContest(contest)">
             <p class="contest-title">{{ contest.title }}</p>
@@ -194,7 +194,7 @@ export default {
   methods: {
     formatDescription(oldDescription) {
       let s = oldDescription.indexOf("<img"),
-        e = 0
+        e
       while (s !== -1) {
         e = oldDescription.indexOf("/>", s)
         oldDescription =
@@ -244,7 +244,7 @@ export default {
       const min = date.getMinutes()
       const sec = date.getSeconds()
 
-      let result = ""
+      let result
       if (hour > 12) result = "오후 " + (hour - 12) + "시 "
       else result = "오전 " + hour + "시 "
 

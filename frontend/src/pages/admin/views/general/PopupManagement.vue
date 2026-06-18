@@ -48,11 +48,7 @@
           v-bind="dragOptions"
           @end="handleBannerOrderChange"
         >
-          <li
-            v-for="(banner, idx) in banners"
-            :key="banner.id"
-            class="drag-item"
-          >
+          <li v-for="banner in banners" :key="banner.id" class="drag-item">
             <i class="el-icon-fa-bars handle" style="color: #868991"></i>
             <span class="drag-item-text" style="font-size: 18px">
               {{ banner.id }}

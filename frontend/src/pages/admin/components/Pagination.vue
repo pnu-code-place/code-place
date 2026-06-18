@@ -14,7 +14,7 @@
 
 <script>
 export default {
-  name: "pagination",
+  name: "AdminPagination",
   props: {
     total: {
       required: true,

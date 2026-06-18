@@ -1,4 +1,5 @@
-import "babel-polyfill"
+import "core-js/stable"
+import "regenerator-runtime/runtime"
 import Vue from "vue"
 import App from "./App.vue"
 import store from "@/store"
@@ -21,18 +22,12 @@ import Save from "./components/btn/Save.vue"
 import Cancel from "./components/btn/Cancel.vue"
 import "./style.less"
 
-import ECharts from "vue-echarts/components/ECharts.vue"
-import "echarts/lib/chart/bar"
-import "echarts/lib/chart/line"
-import "echarts/lib/chart/pie"
-import "echarts/lib/chart/radar"
-import "echarts/lib/component/title"
-import "echarts/lib/component/grid"
-import "echarts/lib/component/dataZoom"
-import "echarts/lib/component/legend"
-import "echarts/lib/component/tooltip"
-import "echarts/lib/component/toolbox"
-import "echarts/lib/component/markPoint"
+import ECharts from "vue-echarts"
+import "@/utils/echarts"
+
+const legacyPanelTag = "Panel"
+const legacySaveTag = "Save"
+const legacyCancelTag = "Cancel"
 
 // register global utility filters.
 Object.keys(filters).forEach((key) => {
@@ -46,9 +41,10 @@ Vue.use(VueAnalytics, {
 Vue.use(iView)
 Vue.use(katex)
 Vue.component(IconBtn.name, IconBtn)
-Vue.component(Panel.name, Panel)
-Vue.component(Save.name, Save)
-Vue.component(Cancel.name, Cancel)
+Vue.component(legacyPanelTag, Panel)
+Vue.component(legacySaveTag, Save)
+Vue.component(legacyCancelTag, Cancel)
+Vue.component("ECharts", ECharts)
 
 Vue.use(Element, {
   i18n: (key, value) => i18n.t(key, value),

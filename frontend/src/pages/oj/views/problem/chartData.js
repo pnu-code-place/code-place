@@ -1,5 +1,3 @@
-import echarts from "echarts/lib/export"
-
 const pieColorMap = {
   AC: { color: "#19be6b" },
   WA: { color: "#ed3f14" },

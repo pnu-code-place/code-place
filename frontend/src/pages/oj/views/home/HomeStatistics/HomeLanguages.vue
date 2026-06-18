@@ -1,13 +1,10 @@
 <script>
 import LanguageIcon from "./LanguageIcon.vue"
 import { LANGUAGE_INFO } from "../../../../../utils/constants"
-import SolvedProblems from "./SolvedProblems.vue"
-import TotalProblems from "./TotalProblems.vue"
-import HeldContests from "./HeldContests.vue"
 
 export default {
   name: "HomeStatusBox",
-  components: { LanguageIcon, SolvedProblems, TotalProblems, HeldContests },
+  components: { LanguageIcon },
   data() {
     return {
       languages: LANGUAGE_INFO,
@@ -68,7 +65,7 @@ export default {
           {{ $t("m.Lecture") }}
         </h3>
         <div class="lectures">
-          <div class="lecture-item" v-for="lecture in this.lectures">
+          <div class="lecture-item" v-for="lecture in this.lectures" :key="lecture">
             {{ lecture }}
           </div>
         </div>

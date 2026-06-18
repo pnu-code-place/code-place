@@ -40,7 +40,7 @@
           <th>{{ $t("m.Contest_Type") }}</th>
         </thead>
         <tbody>
-          <tr v-for="contest in contests">
+          <tr v-for="contest in contests" :key="contest.id">
             <td>{{ contest.id }}</td>
             <td class="td-title" @click="goContest(contest)">
               {{ contest.title }}

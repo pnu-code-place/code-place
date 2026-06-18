@@ -17,7 +17,7 @@
 <script>
 import katex from "katex"
 export default {
-  name: "",
+  name: "AdminKatexEditor",
   data() {
     return {
       input: "c = \\pm\\sqrt{a^2 + b^2}",

@@ -35,6 +35,7 @@ export default {
       } else if (this.ranking === 3) {
         return "third"
       }
+      return ""
     },
     majorRankClass() {
       return `major-info ${this.rankingClass}`

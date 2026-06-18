@@ -19,7 +19,7 @@
 
 <script>
 export default {
-  name: "Panel",
+  name: "OjPanel",
   props: {
     shadow: {
       required: false,

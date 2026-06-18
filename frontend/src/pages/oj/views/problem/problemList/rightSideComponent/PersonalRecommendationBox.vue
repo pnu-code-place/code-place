@@ -1,6 +1,6 @@
 <template>
-  <main>
-    <header>
+  <main class="personal-recommendation-box">
+    <header class="personal-recommendation-header">
       <span class="personal-recommendation-span-title">{{
         $t("m.PersonalRecommendation")
       }}</span>
@@ -17,7 +17,7 @@
       <template v-else>
         <template v-if="!isScoreDataInSufficient">
           <div style="height: 200px; text-align: center">
-            <ECharts :options="chartOption" style="width: 100%; height: 100%" />
+            <ECharts :option="chartOption" style="width: 100%; height: 100%" />
           </div>
           <div style="justify-content: center; padding: 10px">
             <span style="font-weight: 500"
@@ -43,7 +43,6 @@
 
 <script>
 import { mapActions, mapGetters } from "vuex"
-import FieldCategoryBox from "../../../../components/FieldCategoryBox.vue"
 import api from "../../../../api"
 import { FIELD_MAP } from "../../../../../../utils/constants"
 import RecommendProblem from "./RecommendProblem.vue"
@@ -51,7 +50,7 @@ import InSufficientData from "./InSufficientData.vue"
 
 export default {
   name: "PersonalRecommendationBox",
-  components: { InSufficientData, RecommendProblem, FieldCategoryBox },
+  components: { InSufficientData, RecommendProblem },
   data() {
     return {
       recommendation: null,
@@ -168,7 +167,7 @@ export default {
 </script>
 
 <style scoped lang="less">
-header {
+.personal-recommendation-header {
   padding-top: 8px;
   padding-bottom: 15px;
   display: flex;
@@ -177,11 +176,12 @@ header {
   background-color: var(--box-background-color);
 }
 
-main {
+.personal-recommendation-box {
   border-radius: 7px;
   border: 1px solid #dedede;
   background-color: var(--box-background-color);
   width: 100%;
+  box-sizing: border-box;
   text-align: center;
   padding: 13px 20px;
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
@@ -200,6 +200,7 @@ main {
     background-clip: text;
     -webkit-text-fill-color: transparent;
     text-fill-color: transparent;
+    color: transparent;
     background-size: 500% auto;
 
     animation: text-shine 5s ease-in-out infinite alternate;
@@ -215,7 +216,7 @@ main {
   }
 }
 
-main:hover {
+.personal-recommendation-box:hover {
   border: 1px solid #cccccc;
 }
 

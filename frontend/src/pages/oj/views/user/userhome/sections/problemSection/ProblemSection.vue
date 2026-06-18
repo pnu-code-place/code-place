@@ -3,20 +3,12 @@
 </template>
 
 <script>
-import ProblemBadge from "./ProblemBadge.vue"
-import ProblemSkeleton from "./ProblemSkeleton.vue"
-import PrimitiveDropdown from "../../../../../components/dropdown/CustomDropdown.vue"
-import ErrorSign from "../../../../general/ErrorSign.vue"
 import ProblemSectionList from "./ProblemSectionList.vue"
 
 export default {
   name: "problem-section",
   components: {
     ProblemSectionList,
-    ErrorSign,
-    PrimitiveDropdown,
-    ProblemSkeleton,
-    ProblemBadge,
   },
   computed: {
     username() {

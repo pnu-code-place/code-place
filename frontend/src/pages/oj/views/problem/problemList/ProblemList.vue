@@ -5,7 +5,7 @@
         <ProblemListTableHeader
           :query="query"
           :tagList="tagList"
-          @on-change-header="pushRouter"
+          @update-query="updateQuery"
           @pick-one="pickOne"
         />
         <ProblemListTable :problemList="problemList" @select-tag="filterByTag" />
@@ -119,6 +119,10 @@ export default {
         query: utils.filterEmptyValue(this.query),
       })
     },
+    updateQuery(patch) {
+      this.query = Object.assign({}, this.query, patch)
+      this.pushRouter()
+    },
     async getProblemList() {
       let offset = (this.query.page - 1) * this.query.limit
       this.loadings.table = true
@@ -156,9 +160,7 @@ export default {
       })
     },
     filterByTag(tag) {
-      this.query.tag = tag
-      this.query.page = 1
-      this.pushRouter()
+      this.updateQuery({ tag, page: 1 })
     },
   },
   computed: {

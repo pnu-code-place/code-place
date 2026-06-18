@@ -18,13 +18,13 @@
           :value="FIELD_MAP[recommend_problem.field].value"
           :boxColor="FIELD_MAP[recommend_problem.field].boxColor"
         />
-        <template v-for="(category, idx) in recommend_problem.tags">
-          <FieldCategoryBox
-            :boxType="false"
-            :value="'#' + category"
-            :boxColor="'#ffffff'"
-          />
-        </template>
+        <FieldCategoryBox
+          v-for="category in recommend_problem.tags"
+          :key="category"
+          :boxType="false"
+          :value="'#' + category"
+          :boxColor="'#ffffff'"
+        />
       </div>
     </div>
   </div>
@@ -103,11 +103,11 @@ export default defineComponent({
     justify-content: left;
     overflow: hidden;
 
-    /deep/ .fieldCategoryBox {
+    ::v-deep .fieldCategoryBox {
       min-width: 0;
     }
 
-    /deep/ .box {
+    ::v-deep .box {
       max-width: 140px;
       margin-top: 0;
       margin-right: 0;
@@ -116,7 +116,7 @@ export default defineComponent({
       white-space: nowrap;
     }
 
-    /deep/ .box span {
+    ::v-deep .box span {
       white-space: nowrap;
     }
   }

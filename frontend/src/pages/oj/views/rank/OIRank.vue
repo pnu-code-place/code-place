@@ -4,7 +4,7 @@
       <Panel :padding="10">
         <div slot="title">{{ $t("m.OI_Ranklist") }}</div>
         <div class="echarts">
-          <ECharts :options="options" ref="chart" auto-resize></ECharts>
+          <ECharts :option="options" ref="chart" autoresize></ECharts>
         </div>
       </Panel>
       <Table :data="dataRank" :columns="columns" size="large"></Table>

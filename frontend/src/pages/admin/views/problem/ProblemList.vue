@@ -306,7 +306,7 @@ export default {
     },
     updateProblem(row) {
       let data = Object.assign({}, row)
-      let funcName = ""
+      let funcName
       if (this.contestId) {
         data.contest_id = this.contestId
         funcName = "editContestProblem"

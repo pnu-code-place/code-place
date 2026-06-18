@@ -2,7 +2,6 @@
 import api from "../../../api"
 import utils, { comma } from "../../../../../utils/utils"
 import Pagination from "../../../components/Pagination.vue"
-import { push } from "echarts/lib/component/dataZoom/history"
 import MajorRankItem from "./MajorRankItem.vue"
 import ErrorSign from "../../general/ErrorSign.vue"
 
@@ -24,7 +23,6 @@ export default {
     }
   },
   methods: {
-    push,
     init() {
       let query = this.$route.query
       this.query = Object.assign(this.query, query)
@@ -87,7 +85,7 @@ export default {
           <div class="people">{{ $t("m.Num_People") }}</div>
         </div>
         <div class="table-body" v-if="isLoading">
-          <div v-for="i in Array(7)" class="skeleton-row">
+          <div v-for="i in 7" :key="i" class="skeleton-row">
             <div class="skeleton"></div>
           </div>
         </div>
@@ -95,7 +93,7 @@ export default {
           <major-rank-item
             v-for="(major, index) in this.majorRankList"
             :major="major"
-            :key="index"
+            :key="major.major || major.name || index"
             :ranking="index + 1"
           />
         </div>

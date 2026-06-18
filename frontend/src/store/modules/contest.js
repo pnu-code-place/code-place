@@ -136,9 +136,9 @@ const getters = {
     }
   },
   countdownParts: (state, getters) => {
-    let totalSeconds = 0
-    let label = ""
-    let status = ""
+    let totalSeconds
+    let label
+    let status
 
     if (getters.contestStatus === CONTEST_STATUS.NOT_START) {
       totalSeconds = Math.max(

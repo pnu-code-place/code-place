@@ -181,6 +181,7 @@ import { FormMixin } from "@oj/components/mixins"
 import CustomDropDown from "../../components/dropdown/CustomDropdown.vue"
 
 export default {
+  name: "OjRegisterPage",
   mixins: [FormMixin],
   components: {
     CustomDropDown,
