@@ -31,5 +31,7 @@ resources:
   - ./frontend/ingress.yaml
   - ./hub-auth/ingress.yaml
 
-commonLabels:
-  app.kubernetes.io/managed-by: kustomize
+labels:
+  - pairs:
+      app.kubernetes.io/managed-by: kustomize
+    includeSelectors: true

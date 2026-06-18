@@ -82,8 +82,8 @@ OpenTelemetry는 앱 초기화 코드에 내장되어 있지만 기본값은 `OT
 - `backend-service-monitor.yaml`: backend `/metrics` scrape, interval 15s.
 - `prometheus-rules.yaml`: P0/P1 fast alert rules.
 - `alertmanager-config.yaml`: P0/P1 Discord alert routing.
-- `grafana-dashboard-codeplace.yaml`: CodePlace overview dashboard.
-- `kube-prometheus-stack-values.yaml`: selector와 evaluation interval 기본값.
+- `grafana-dashboard-codeplace.yaml`: CodePlace overview dashboard. `namespace` 변수로 `code-place-dev`와 `code-place-prod`를 분리해서 조회합니다.
+- `kube-prometheus-stack-values.yaml`: Prometheus/Alertmanager selector, evaluation interval, shared Grafana ingress와 dashboard sidecar 설정.
 - `kustomization.yaml`: 기존 `monitoring` namespace의 kube-prometheus-stack/Grafana/Alertmanager에 붙일 CodePlace monitoring 리소스 묶음.
 
 `alertmanager-contact-points` Secret은 repo에 저장하지 않습니다. backend의 `/data/config/secret.key`와 같은 비밀값이지만, 자동으로 파일이 생기는 구조는 아닙니다. 운영자가 `kubectl create secret`으로 만들거나 ExternalSecrets/SealedSecrets 같은 Secret 주입 도구로 생성해야 합니다. AlertmanagerConfig는 generic webhook이 아니라 Prometheus Operator의 native `discordConfigs`를 사용합니다.
@@ -115,7 +115,7 @@ P1은 `group_wait=30s`, `repeat_interval=1h`로 전달합니다.
 
 ## 5. 운영 확인 절차
 
-1. kube-prometheus-stack을 monitoring namespace에 설치할 때 `kubernetes/monitoring/kube-prometheus-stack-values.yaml`을 함께 적용합니다. Prometheus Operator CRD가 `AlertmanagerConfig.discordConfigs`를 지원하는 버전인지 확인합니다.
+1. kube-prometheus-stack을 `monitoring` namespace에 설치하거나 업그레이드할 때 `kubernetes/monitoring/kube-prometheus-stack-values.yaml`을 함께 적용합니다. 이 값 파일이 `monitoring.code-place-dev.site` Grafana ingress와 dashboard sidecar 설정까지 관리합니다. Prometheus Operator CRD가 `AlertmanagerConfig.discordConfigs`를 지원하는 버전인지 확인합니다.
 2. `alertmanager-contact-points` Secret을 운영 클러스터의 `monitoring` namespace에 생성합니다. 이 값은 Kubernetes Secret으로 참조되며, Pod 파일로 mount하지 않습니다.
 3. 애플리케이션은 환경별 overlay로 적용합니다.
    - dev: `kubectl apply -k kubernetes/overlays/dev`

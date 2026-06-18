@@ -15,6 +15,16 @@ alertmanager:
         kubernetes.io/metadata.name: monitoring
 
 grafana:
+  ingress:
+    enabled: true
+    ingressClassName: traefik
+    annotations:
+      traefik.ingress.kubernetes.io/router.tls.certresolver: default
+    hosts:
+      - monitoring.code-place-dev.site
+    tls:
+      - hosts:
+          - monitoring.code-place-dev.site
   sidecar:
     dashboards:
       enabled: true

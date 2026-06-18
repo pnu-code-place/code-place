@@ -17,13 +17,31 @@ data:
         "from": "now-1h",
         "to": "now"
       },
+      "templating": {
+        "list": [
+          {
+            "name": "namespace",
+            "type": "query",
+            "datasource": "Prometheus",
+            "query": "label_values(up{job=\"backend\", namespace=~\"code-place-(dev|prod)\"}, namespace)",
+            "refresh": 1,
+            "includeAll": true,
+            "allValue": ".*",
+            "multi": true,
+            "current": {
+              "text": "All",
+              "value": ".*"
+            }
+          }
+        ]
+      },
       "panels": [
         {
           "type": "timeseries",
           "title": "Backend Request Rate",
           "gridPos": {"x": 0, "y": 0, "w": 8, "h": 8},
           "targets": [
-            {"expr": "sum(rate(codeplace_http_requests_total[5m]))", "legendFormat": "requests/s"}
+            {"expr": "sum by (namespace) (rate(codeplace_http_requests_total{namespace=~\"$namespace\"}[5m]))", "legendFormat": "{{namespace}} requests/s"}
           ]
         },
         {
@@ -31,7 +49,7 @@ data:
           "title": "Backend 5xx Rate",
           "gridPos": {"x": 8, "y": 0, "w": 8, "h": 8},
           "targets": [
-            {"expr": "sum(rate(codeplace_http_requests_total{status_code=~\"5..\"}[5m]))", "legendFormat": "5xx/s"}
+            {"expr": "sum by (namespace) (rate(codeplace_http_requests_total{namespace=~\"$namespace\", status_code=~\"5..\"}[5m]))", "legendFormat": "{{namespace}} 5xx/s"}
           ]
         },
         {
@@ -39,7 +57,7 @@ data:
           "title": "Backend p95 Latency",
           "gridPos": {"x": 16, "y": 0, "w": 8, "h": 8},
           "targets": [
-            {"expr": "histogram_quantile(0.95, sum(rate(codeplace_http_request_duration_seconds_bucket[5m])) by (le))", "legendFormat": "p95"}
+            {"expr": "histogram_quantile(0.95, sum by (namespace, le) (rate(codeplace_http_request_duration_seconds_bucket{namespace=~\"$namespace\"}[5m])))", "legendFormat": "{{namespace}} p95"}
           ]
         },
         {
@@ -47,7 +65,7 @@ data:
           "title": "Submission Status",
           "gridPos": {"x": 0, "y": 8, "w": 8, "h": 8},
           "targets": [
-            {"expr": "codeplace_submission_status_count", "legendFormat": "{{status}}"}
+            {"expr": "codeplace_submission_status_count{namespace=~\"$namespace\"}", "legendFormat": "{{namespace}} {{status}}"}
           ]
         },
         {
@@ -55,7 +73,7 @@ data:
           "title": "Judge Waiting Queue",
           "gridPos": {"x": 8, "y": 8, "w": 8, "h": 8},
           "targets": [
-            {"expr": "codeplace_waiting_queue_length", "legendFormat": "waiting"}
+            {"expr": "codeplace_waiting_queue_length{namespace=~\"$namespace\"}", "legendFormat": "{{namespace}} waiting"}
           ]
         },
         {
@@ -63,7 +81,7 @@ data:
           "title": "Judge Heartbeat Age",
           "gridPos": {"x": 16, "y": 8, "w": 8, "h": 8},
           "targets": [
-            {"expr": "codeplace_judge_server_last_heartbeat_age_seconds", "legendFormat": "{{hostname}}"}
+            {"expr": "codeplace_judge_server_last_heartbeat_age_seconds{namespace=~\"$namespace\"}", "legendFormat": "{{namespace}} {{hostname}}"}
           ]
         }
       ]
