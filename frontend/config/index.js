@@ -3,6 +3,7 @@
 // see http://vuejs-templates.github.io/webpack for documentation.
 
 const path = require("path")
+const sentry = require("./sentry")
 const commonProxy = {
   onProxyReq: (proxyReq, req, res) => {
     proxyReq.setHeader("Referer", process.env.TARGET)
@@ -21,7 +22,7 @@ module.exports = {
     assetsRoot: path.resolve(__dirname, "../dist"),
     assetsSubDirectory: "static",
     assetsPublicPath: "/__STATIC_CDN_HOST__/",
-    productionSourceMap: process.env.USE_SENTRY === "1",
+    productionSourceMap: sentry.isSentryEnabled("production"),
     // Gzip off by default as many popular static hosts such as
     // Surge or Netlify already gzip all static assets for you.
     // Before setting to `true`, make sure to:

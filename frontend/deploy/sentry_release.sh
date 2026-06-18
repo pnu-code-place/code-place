@@ -3,10 +3,11 @@
 DATE=`date +%Y%m%d`
 COMMIT=`git rev-parse HEAD`
 VERSION="$DATE-${COMMIT:0:5}"
+USE_SENTRY="${USE_SENTRY:-1}"
 
 echo "Current version is $VERSION"
 
-if [ ! -z $USE_SENTRY ] && [ $USE_SENTRY == '1' ]; then
+if [ "$USE_SENTRY" == '1' ]; then
 
 # create new release according to `VERSION`
 docker run --rm -it -v $(pwd):/work getsentry/sentry-cli \

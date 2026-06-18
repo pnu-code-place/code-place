@@ -6,7 +6,7 @@ const SENTRY_DSN =
 const options = {
   release: process.env.VERSION,
   environment: process.env.NODE_ENV,
-  ignoreUrls: [
+  denyUrls: [
     // Chrome extensions
     /extensions\//i,
     /^chrome:\/\//i,
