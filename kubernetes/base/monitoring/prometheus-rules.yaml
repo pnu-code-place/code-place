@@ -1,0 +1,130 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: codeplace-fast-alerts
+  namespace: monitoring
+  labels:
+    release: kube-prometheus-stack
+spec:
+  groups:
+    - name: codeplace.p0
+      interval: 15s
+      rules:
+        - alert: BackendTargetDown
+          expr: up{job="backend"} == 0
+          for: 1m
+          labels:
+            severity: critical
+            priority: P0
+          annotations:
+            summary: "Backend metrics target is down"
+            description: "Prometheus cannot scrape the backend /metrics endpoint for 1 minute."
+        - alert: Api5xxSpike
+          expr: sum(rate(codeplace_http_requests_total{status_code=~"5.."}[2m])) / clamp_min(sum(rate(codeplace_http_requests_total[2m])), 1) > 0.05
+          for: 2m
+          labels:
+            severity: critical
+            priority: P0
+          annotations:
+            summary: "Backend API 5xx rate is high"
+            description: "Backend API 5xx responses are above 5% for 2 minutes."
+        - alert: Ingress5xxSpike
+          expr: sum(rate(traefik_service_requests_total{code=~"5.."}[2m])) / clamp_min(sum(rate(traefik_service_requests_total[2m])), 1) > 0.05
+          for: 2m
+          labels:
+            severity: critical
+            priority: P0
+          annotations:
+            summary: "Ingress 5xx rate is high"
+            description: "Traefik 5xx responses are above 5% for 2 minutes."
+        - alert: JudgeAllUnavailable
+          expr: absent(codeplace_judge_server_available) or sum(codeplace_judge_server_available) == 0
+          for: 1m
+          labels:
+            severity: critical
+            priority: P0
+          annotations:
+            summary: "No judge-server is available"
+            description: "No enabled judge-server has a fresh heartbeat."
+        - alert: JudgeHeartbeatCritical
+          expr: max(codeplace_judge_server_last_heartbeat_age_seconds) > 180
+          labels:
+            severity: critical
+            priority: P0
+          annotations:
+            summary: "Judge-server heartbeat is stale"
+            description: "A judge-server heartbeat is older than 180 seconds."
+        - alert: PostgresUnavailable
+          expr: min(kube_pod_status_ready{condition="true", pod=~"postgres-[0-9]+"}) == 0
+          for: 1m
+          labels:
+            severity: critical
+            priority: P0
+          annotations:
+            summary: "PostgreSQL pod is not ready"
+            description: "At least one PostgreSQL pod has not been ready for 1 minute."
+        - alert: RedisUnavailable
+          expr: min(kube_pod_status_ready{condition="true", pod=~"redis-.*|redis-replication-.*"}) == 0
+          for: 1m
+          labels:
+            severity: critical
+            priority: P0
+          annotations:
+            summary: "Redis pod is not ready"
+            description: "At least one Redis pod has not been ready for 1 minute."
+    - name: codeplace.p1
+      interval: 30s
+      rules:
+        - alert: ApiLatencyHigh
+          expr: histogram_quantile(0.95, sum(rate(codeplace_http_request_duration_seconds_bucket[5m])) by (le)) > 2
+          for: 5m
+          labels:
+            severity: warning
+            priority: P1
+          annotations:
+            summary: "Backend API p95 latency is high"
+            description: "Backend API p95 latency is above 2 seconds for 5 minutes."
+        - alert: JudgeWaitingQueueBacklog
+          expr: codeplace_waiting_queue_length > 5
+          for: 3m
+          labels:
+            severity: warning
+            priority: P1
+          annotations:
+            summary: "Judge waiting queue is backing up"
+            description: "More than 5 submissions are waiting because no judge-server was available."
+        - alert: CeleryWorkerRestarting
+          expr: sum(increase(kube_pod_container_status_restarts_total{pod=~"celery-worker-.*"}[15m])) > 3
+          labels:
+            severity: warning
+            priority: P1
+          annotations:
+            summary: "Celery worker is restarting repeatedly"
+            description: "Celery worker pods restarted more than 3 times in 15 minutes."
+        - alert: CeleryBeatDown
+          expr: min(kube_pod_status_ready{condition="true", pod=~"celery-beat-.*"}) == 0
+          for: 2m
+          labels:
+            severity: warning
+            priority: P1
+          annotations:
+            summary: "Celery beat is not ready"
+            description: "The celery-beat pod has not been ready for 2 minutes."
+        - alert: PodCrashLooping
+          expr: sum by (pod) (increase(kube_pod_container_status_restarts_total{pod=~"backend-.*|frontend-.*|celery-.*|judge-server-.*"}[5m])) > 0
+          for: 5m
+          labels:
+            severity: warning
+            priority: P1
+          annotations:
+            summary: "CodePlace pod is restarting"
+            description: "A CodePlace application pod has restarted within the last 5 minutes."
+        - alert: PVCAlmostFull
+          expr: kubelet_volume_stats_used_bytes / kubelet_volume_stats_capacity_bytes > 0.85
+          for: 10m
+          labels:
+            severity: warning
+            priority: P1
+          annotations:
+            summary: "PVC usage is above 85%"
+            description: "A persistent volume claim has been above 85% usage for 10 minutes."

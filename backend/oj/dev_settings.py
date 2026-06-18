@@ -6,7 +6,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'ENGINE': 'django_prometheus.db.backends.postgresql',
         'HOST': get_env('POSTGRES_HOST', '127.0.0.1'),
         'PORT': get_env('POSTGRES_PORT', '5435'),
         'NAME': get_env('POSTGRES_DB', 'onlinejudge'),

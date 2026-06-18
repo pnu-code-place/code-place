@@ -43,13 +43,9 @@ spec:
             - name: SERVER_NAME
               value: "localhost"
           volumeMounts:
-            - name: vol-log
-              mountPath: /data/log
             - name: vol-public
               mountPath: /data/public
       volumes:
-        - name: vol-log
-          emptyDir: {}
         - name: vol-public
           persistentVolumeClaim:
             claimName: pvc-public

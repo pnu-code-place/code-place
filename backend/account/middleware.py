@@ -1,3 +1,7 @@
+import logging
+import time
+import uuid
+
 from django.conf import settings
 from django.contrib.auth import user_logged_in
 from django.db import connection
@@ -6,7 +10,83 @@ from django.utils.timezone import now
 from django.utils.deprecation import MiddlewareMixin
 
 from utils.api import JSONResponse
+from utils.observability_context import reset_request_id, set_request_id
+from utils.observability_metrics import HTTP_REQUEST_DURATION_SECONDS, HTTP_REQUESTS_TOTAL
 from account.models import User
+
+request_logger = logging.getLogger("codeplace.request")
+MAX_REQUEST_ID_LENGTH = 128
+
+
+class RequestIDMiddleware:
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        request_id = self._request_id(request)
+        request.request_id = request_id
+        token = set_request_id(request_id)
+        try:
+            response = self.get_response(request)
+            response["X-Request-ID"] = request_id
+            return response
+        finally:
+            reset_request_id(token)
+
+    @staticmethod
+    def _request_id(request):
+        request_id = request.META.get("HTTP_X_REQUEST_ID")
+        if not request_id:
+            return uuid.uuid4().hex
+        return request_id[:MAX_REQUEST_ID_LENGTH]
+
+
+class RequestLogMiddleware:
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        started_at = time.monotonic()
+        response = None
+        try:
+            response = self.get_response(request)
+            return response
+        finally:
+            duration_seconds = time.monotonic() - started_at
+            status_code = getattr(response, "status_code", 500)
+            if request.path not in ("/metrics", "/api/health"):
+                endpoint = self._endpoint(request)
+                HTTP_REQUESTS_TOTAL.labels(request.method, endpoint, str(status_code)).inc()
+                HTTP_REQUEST_DURATION_SECONDS.labels(request.method, endpoint).observe(duration_seconds)
+                request_logger.info(
+                    "request completed",
+                    extra={
+                        "request_id": getattr(request, "request_id", None),
+                        "method": request.method,
+                        "path": request.path,
+                        "status_code": status_code,
+                        "duration_ms": round(duration_seconds * 1000, 2),
+                        "user_id": self._user_id(request),
+                        "remote_addr": getattr(request, "ip", request.META.get(settings.IP_HEADER,
+                                                                               request.META.get("REMOTE_ADDR"))),
+                    },
+                )
+
+    @staticmethod
+    def _endpoint(request):
+        resolver_match = getattr(request, "resolver_match", None)
+        if not resolver_match:
+            return "unknown"
+        return resolver_match.view_name or getattr(resolver_match, "route", None) or "unknown"
+
+    @staticmethod
+    def _user_id(request):
+        user = getattr(request, "user", None)
+        if user is not None and getattr(user, "is_authenticated", False):
+            return getattr(user, "id", None)
+        return None
 
 
 class APITokenAuthMiddleware(MiddlewareMixin):

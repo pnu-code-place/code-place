@@ -1,6 +1,11 @@
 from django.urls import include, re_path
 
+from utils.observability_metrics import register_codeplace_metrics
+
+register_codeplace_metrics()
+
 urlpatterns = [
+    re_path(r"^", include("django_prometheus.urls")),
     re_path(r"^api/", include("account.urls.oj")),
     re_path(r"^api/admin/", include("account.urls.admin")),
     re_path(r"^api/", include("announcement.urls.oj")),
