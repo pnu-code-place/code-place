@@ -75,6 +75,16 @@ OpenTelemetry는 앱 초기화 코드에 내장되어 있지만 기본값은 `OT
 
 기본 sampling 값은 `OTEL_TRACES_SAMPLER_ARG=0.05`입니다.
 
+현재 Kubernetes manifest에는 backend/celery의 `OTEL_EXPORTER_OTLP_ENDPOINT`가 `http://otel-collector.monitoring.svc.cluster.local:4317`로 잡혀 있습니다. 다만 `otel-collector`와 Tempo는 아직 배포 리소스로 포함하지 않습니다. 다음 조건이 정해지기 전에는 `OTEL_ENABLED=1`을 켜지 않습니다.
+
+- trace 저장 backend: Tempo 단일 binary, Tempo distributed, 외부 managed backend 중 선택.
+- retention: dev/prod별 trace 보관 기간과 저장 용량.
+- storage: filesystem, S3 호환 object storage, Longhorn PVC 중 선택.
+- sampling: dev/prod sampling ratio와 error trace 우선 보존 정책.
+- Grafana datasource: Tempo datasource 이름과 dashboard trace link 규칙.
+
+이 조건이 정해진 뒤 `otel-collector`와 Tempo를 `kubernetes/monitoring` 하위 Helm values 또는 별도 kustomize 리소스로 추가합니다.
+
 ## 3. Kubernetes Monitoring
 
 신규 monitoring 리소스는 `kubernetes/monitoring` 아래에 두고, 애플리케이션 `dev/prod` overlay에 포함하지 않습니다.
@@ -139,6 +149,7 @@ P1은 `group_wait=30s`, `repeat_interval=1h`로 전달합니다.
 - P0/P1 알림 라우팅은 AlertmanagerConfig로 관리하며 Grafana UI 수동 설정에 의존하지 않습니다.
 - PostgreSQL/Redis 세부 지표는 별도 exporter 없이 kube-state-metrics/kubelet 기반 readiness, restart, PVC 관측부터 제공합니다. connection, lock, Redis memory/client 같은 상세 지표는 exporter 도입 이후 확장합니다.
 - Sentry backend SDK는 기본 PII 자동 전송을 비활성화합니다. 사용자 영향 분석은 Sentry event와 request_id 기반 backend JSON log를 함께 사용합니다.
+- Loki/Alloy 로그 수집과 Tempo tracing은 저장소/retention 결정을 먼저 요구하므로 현재 PR에서는 켜지 않습니다.
 
 ## 6. 검증
 
