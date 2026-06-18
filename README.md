@@ -35,7 +35,8 @@
 ### 서비스 아키텍처
 
 <div align="center">
-  <img alt="code-place-arch" src="https://github.com/user-attachments/assets/d1fa97f1-109e-4389-8a4f-b1705a44dac9" />
+  <img width="1131" height="571" alt="코드플레이스 서비스 아키텍쳐 drawio" src="https://github.com/user-attachments/assets/1752d050-e49f-4c78-a623-88d358b65e9e" />
+
 </div>
 
 ### 인프라 아키텍처
@@ -70,6 +71,10 @@
 <img src="https://img.shields.io/badge/iView_2.8.0-2d8cf0?style=flat-square" />
 <img src="https://img.shields.io/badge/Element_2.0.9-409eff?style=flat-square" />
 
+**AI** &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<img src="https://img.shields.io/badge/vLLM-30A2FF?style=flat-square&logo=vLLM&logoColor=white"/>
+<img src="https://img.shields.io/badge/qwen-3.5_9B-6950EF?style=flat-square&logo=qwen&logoColor=white"/>
+
 <br/>
 
 ## 세부 기능 소개
@@ -90,6 +95,7 @@
 
 - 다크모드 및 코드 하이라이팅 지원
 - 오픈소스 채점서버를 통한 채점 기능 제공
+- AI조교 호출로 문제 풀이 능력 향상 
 
 **어드민(CMS) 기능**
 

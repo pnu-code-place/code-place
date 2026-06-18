@@ -23,7 +23,8 @@
     </PopUp>
 
     <HomeHeroSection />
-    <HomeQuickNavCards />
+    <!-- 바로가기 카드: 상단 네비바와 메뉴가 중복되어 숨김 처리 (교수님 피드백). 컴포넌트 파일은 보존, 복구 시 아래 주석 해제. -->
+    <!-- <HomeQuickNavCards /> -->
     <div class="notice-rank-row">
       <HomeNoticeProblemRow />
       <div class="sidebar-col">
