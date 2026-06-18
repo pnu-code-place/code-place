@@ -4,16 +4,19 @@
       "@babel/preset-env",
       {
         "modules": false,
-        "corejs": 3,
         "targets": {
           "browsers": ["> 1%", "last 2 versions", "not ie <= 9"]
-        },
-        "useBuiltIns": "entry"
+        }
       }
     ]
   ],
   "plugins": [
-    "@babel/plugin-syntax-dynamic-import",
+    [
+      "polyfill-corejs3",
+      {
+        "method": "entry-global"
+      }
+    ],
     "@babel/plugin-transform-object-rest-spread",
     "@babel/plugin-transform-runtime"
   ]

@@ -246,7 +246,7 @@ export default {
     // 提交编辑
     // 默认传入MouseEvent
     submitAnnouncement(data = undefined) {
-      let funcName = ""
+      let funcName
       if (!data.title) {
         data = {
           id: this.currentAnnouncementId,

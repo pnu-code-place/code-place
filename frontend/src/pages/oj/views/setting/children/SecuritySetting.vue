@@ -76,7 +76,7 @@ import browserDetector from "browser-detect"
 
 const browsers = {}
 const loadBrowser = (userAgent) => {
-  let browser = {}
+  let browser
   if (userAgent in Object.keys(browsers)) {
     browser = browsers[userAgent]
   } else {

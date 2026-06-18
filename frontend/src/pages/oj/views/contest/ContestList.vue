@@ -194,7 +194,7 @@ export default {
   methods: {
     formatDescription(oldDescription) {
       let s = oldDescription.indexOf("<img"),
-        e = 0
+        e
       while (s !== -1) {
         e = oldDescription.indexOf("/>", s)
         oldDescription =
@@ -244,7 +244,7 @@ export default {
       const min = date.getMinutes()
       const sec = date.getSeconds()
 
-      let result = ""
+      let result
       if (hour > 12) result = "오후 " + (hour - 12) + "시 "
       else result = "오전 " + hour + "시 "
 
