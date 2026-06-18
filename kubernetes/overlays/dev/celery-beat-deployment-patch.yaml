@@ -18,6 +18,5 @@ spec:
                 secretKeyRef:
                   name: sentry-secret
                   key: SENTRY_DSN
-                  optional: true
             - name: SENTRY_ENVIRONMENT
               value: "dev"
