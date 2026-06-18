@@ -28,7 +28,7 @@ spec:
             summary: "Backend API 5xx rate is high"
             description: "Backend API 5xx responses are above 5% for 2 minutes."
         - alert: Ingress5xxSpike
-          expr: sum(rate(traefik_service_requests_total{service=~"code-place-dev-.*", code=~"5.."}[2m])) / clamp_min(sum(rate(traefik_service_requests_total{service=~"code-place-dev-.*"}[2m])), 1) > 0.05
+          expr: sum(rate(traefik_service_requests_total{exported_service=~"code-place-dev-.*", code=~"5.."}[2m])) / clamp_min(sum(rate(traefik_service_requests_total{exported_service=~"code-place-dev-.*"}[2m])), 1) > 0.05
           for: 2m
           labels:
             namespace: code-place-dev
@@ -38,7 +38,7 @@ spec:
             summary: "Ingress 5xx rate is high in dev"
             description: "Traefik 5xx responses for code-place-dev are above 5% for 2 minutes."
         - alert: Ingress5xxSpike
-          expr: sum(rate(traefik_service_requests_total{service=~"code-place-prod-.*", code=~"5.."}[2m])) / clamp_min(sum(rate(traefik_service_requests_total{service=~"code-place-prod-.*"}[2m])), 1) > 0.05
+          expr: sum(rate(traefik_service_requests_total{exported_service=~"code-place-prod-.*", code=~"5.."}[2m])) / clamp_min(sum(rate(traefik_service_requests_total{exported_service=~"code-place-prod-.*"}[2m])), 1) > 0.05
           for: 2m
           labels:
             namespace: code-place-prod
