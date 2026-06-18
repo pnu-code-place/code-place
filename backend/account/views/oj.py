@@ -11,7 +11,7 @@ from django.template.loader import render_to_string
 from django.utils.decorators import method_decorator
 from django.utils.timezone import now
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
-from otpauth import OtpAuth
+from otpauth import TOTP
 from django.core.cache import cache
 from django.http import HttpResponseBadRequest, HttpResponseNotFound, HttpResponseForbidden, HttpResponseServerError, \
     JsonResponse
@@ -35,6 +35,17 @@ from ..serializers import TwoFactorAuthCodeSerializer
 from ..tasks import send_email_async
 
 
+def get_totp_auth(token):
+    return TOTP(token.encode("utf-8"))
+
+
+def valid_totp(token, code):
+    code = str(code)
+    if not code.isdigit() or len(code) > 6:
+        return False
+    return get_totp_auth(token).verify(int(code))
+
+
 class TwoFactorAuthAPI(APIView):
 
     @login_required
@@ -50,7 +61,7 @@ class TwoFactorAuthAPI(APIView):
         user.save()
 
         label = f"{SysOptions.website_name_shortcut}:{user.username}"
-        image = qrcode.make(OtpAuth(token).to_uri("totp", label, SysOptions.website_name.replace(" ", "")))
+        image = qrcode.make(get_totp_auth(token).to_uri(label, SysOptions.website_name.replace(" ", "")))
         return self.success(img2base64(image))
 
     @login_required
@@ -61,7 +72,7 @@ class TwoFactorAuthAPI(APIView):
         """
         code = request.data["code"]
         user = request.user
-        if OtpAuth(user.tfa_token).valid_totp(code):
+        if valid_totp(user.tfa_token, code):
             user.two_factor_auth = True
             user.save()
             return self.success("Succeeded")
@@ -75,7 +86,7 @@ class TwoFactorAuthAPI(APIView):
         user = request.user
         if not user.two_factor_auth:
             return self.error("2FA is already turned off")
-        if OtpAuth(user.tfa_token).valid_totp(code):
+        if valid_totp(user.tfa_token, code):
             user.two_factor_auth = False
             user.save()
             return self.success("Succeeded")
@@ -122,7 +133,7 @@ class UserLoginAPI(APIView):
             if user.two_factor_auth and "tfa_code" not in data:
                 return self.error("tfa_required")
 
-            if OtpAuth(user.tfa_token).valid_totp(data["tfa_code"]):
+            if valid_totp(user.tfa_token, data["tfa_code"]):
                 auth.login(request, user)
                 return self.success("Succeeded")
             else:

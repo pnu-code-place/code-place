@@ -11,8 +11,6 @@ from django.http.response import JsonResponse
 from django.test import RequestFactory, TestCase
 from django.utils import decorators
 from django.utils.timezone import now
-from otpauth import OtpAuth
-
 from utils.api.tests import APIClient, APITestCase
 from utils.api import APIView
 from utils.shortcuts import rand_str
