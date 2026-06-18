@@ -13,6 +13,7 @@ data:
       "version": 1,
       "refresh": "30s",
       "tags": ["codeplace"],
+      "editable": true,
       "time": {
         "from": "now-1h",
         "to": "now"
@@ -37,51 +38,189 @@ data:
       },
       "panels": [
         {
-          "type": "timeseries",
-          "title": "Backend Request Rate",
-          "gridPos": {"x": 0, "y": 0, "w": 8, "h": 8},
+          "type": "stat",
+          "title": "Backend Up",
+          "gridPos": {"x": 0, "y": 0, "w": 4, "h": 4},
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "red", "value": null},
+                  {"color": "green", "value": 1}
+                ]
+              }
+            }
+          },
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
           "targets": [
-            {"expr": "sum by (namespace) (rate(codeplace_http_requests_total{namespace=~\"$namespace\"}[5m]))", "legendFormat": "{{namespace}} requests/s"}
+            {"expr": "min by (namespace) (up{job=\"backend\", namespace=~\"$namespace\"})", "legendFormat": "{{namespace}}"}
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "Request Rate",
+          "gridPos": {"x": 4, "y": 0, "w": 4, "h": 4},
+          "fieldConfig": {"defaults": {"unit": "reqps"}},
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "sum by (namespace) (rate(codeplace_http_requests_total{namespace=~\"$namespace\"}[5m]))", "legendFormat": "{{namespace}}"}
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "5xx Ratio",
+          "gridPos": {"x": 8, "y": 0, "w": 4, "h": 4},
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percentunit",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "orange", "value": 0.01},
+                  {"color": "red", "value": 0.05}
+                ]
+              }
+            }
+          },
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "((sum by (namespace) (rate(codeplace_http_requests_total{namespace=~\"$namespace\", status_code=~\"5..\"}[5m])) or (sum by (namespace) (rate(codeplace_http_requests_total{namespace=~\"$namespace\"}[5m])) * 0)) / clamp_min(sum by (namespace) (rate(codeplace_http_requests_total{namespace=~\"$namespace\"}[5m])), 0.001)", "legendFormat": "{{namespace}}"}
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "p95 Latency",
+          "gridPos": {"x": 12, "y": 0, "w": 4, "h": 4},
+          "fieldConfig": {
+            "defaults": {
+              "unit": "s",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "orange", "value": 1},
+                  {"color": "red", "value": 2}
+                ]
+              }
+            }
+          },
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "histogram_quantile(0.95, sum by (namespace, le) (rate(codeplace_http_request_duration_seconds_bucket{namespace=~\"$namespace\"}[5m])))", "legendFormat": "{{namespace}}"}
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "Judge Waiting Queue",
+          "gridPos": {"x": 16, "y": 0, "w": 4, "h": 4},
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "orange", "value": 3},
+                  {"color": "red", "value": 5}
+                ]
+              }
+            }
+          },
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "codeplace_waiting_queue_length{namespace=~\"$namespace\"}", "legendFormat": "{{namespace}}"}
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "Judge Available",
+          "gridPos": {"x": 20, "y": 0, "w": 4, "h": 4},
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "red", "value": null},
+                  {"color": "green", "value": 1}
+                ]
+              }
+            }
+          },
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "sum by (namespace) (codeplace_judge_server_available{namespace=~\"$namespace\"})", "legendFormat": "{{namespace}}"}
           ]
         },
         {
           "type": "timeseries",
-          "title": "Backend 5xx Rate",
-          "gridPos": {"x": 8, "y": 0, "w": 8, "h": 8},
+          "title": "Backend Requests by Status",
+          "gridPos": {"x": 0, "y": 4, "w": 8, "h": 8},
+          "fieldConfig": {"defaults": {"unit": "reqps"}},
           "targets": [
-            {"expr": "sum by (namespace) (rate(codeplace_http_requests_total{namespace=~\"$namespace\", status_code=~\"5..\"}[5m]))", "legendFormat": "{{namespace}} 5xx/s"}
+            {"expr": "sum by (namespace, status_code) (rate(codeplace_http_requests_total{namespace=~\"$namespace\"}[5m]))", "legendFormat": "{{namespace}} {{status_code}}"}
           ]
         },
         {
           "type": "timeseries",
-          "title": "Backend p95 Latency",
-          "gridPos": {"x": 16, "y": 0, "w": 8, "h": 8},
+          "title": "Backend Latency",
+          "gridPos": {"x": 8, "y": 4, "w": 8, "h": 8},
+          "fieldConfig": {"defaults": {"unit": "s"}},
           "targets": [
-            {"expr": "histogram_quantile(0.95, sum by (namespace, le) (rate(codeplace_http_request_duration_seconds_bucket{namespace=~\"$namespace\"}[5m])))", "legendFormat": "{{namespace}} p95"}
+            {"expr": "histogram_quantile(0.95, sum by (namespace, le) (rate(codeplace_http_request_duration_seconds_bucket{namespace=~\"$namespace\"}[5m])))", "legendFormat": "{{namespace}} p95"},
+            {"expr": "histogram_quantile(0.99, sum by (namespace, le) (rate(codeplace_http_request_duration_seconds_bucket{namespace=~\"$namespace\"}[5m])))", "legendFormat": "{{namespace}} p99"}
           ]
         },
         {
-          "type": "timeseries",
+          "type": "bargauge",
           "title": "Submission Status",
-          "gridPos": {"x": 0, "y": 8, "w": 8, "h": 8},
+          "gridPos": {"x": 16, "y": 4, "w": 8, "h": 8},
+          "fieldConfig": {"defaults": {"unit": "short"}},
+          "options": {"displayMode": "gradient", "orientation": "horizontal", "reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
           "targets": [
             {"expr": "codeplace_submission_status_count{namespace=~\"$namespace\"}", "legendFormat": "{{namespace}} {{status}}"}
           ]
         },
         {
           "type": "timeseries",
-          "title": "Judge Waiting Queue",
-          "gridPos": {"x": 8, "y": 8, "w": 8, "h": 8},
+          "title": "Judge Duration p95",
+          "gridPos": {"x": 0, "y": 12, "w": 8, "h": 8},
+          "fieldConfig": {"defaults": {"unit": "s"}},
           "targets": [
-            {"expr": "codeplace_waiting_queue_length{namespace=~\"$namespace\"}", "legendFormat": "{{namespace}} waiting"}
+            {"expr": "histogram_quantile(0.95, sum by (namespace, le) (rate(codeplace_submission_judge_duration_seconds_bucket{namespace=~\"$namespace\"}[10m])))", "legendFormat": "{{namespace}} judge p95"}
           ]
         },
         {
           "type": "timeseries",
-          "title": "Judge Heartbeat Age",
-          "gridPos": {"x": 16, "y": 8, "w": 8, "h": 8},
+          "title": "Judge Heartbeat Max Age",
+          "gridPos": {"x": 8, "y": 12, "w": 8, "h": 8},
+          "fieldConfig": {
+            "defaults": {
+              "unit": "s",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "orange", "value": 120},
+                  {"color": "red", "value": 180}
+                ]
+              }
+            }
+          },
           "targets": [
-            {"expr": "codeplace_judge_server_last_heartbeat_age_seconds{namespace=~\"$namespace\"}", "legendFormat": "{{namespace}} {{hostname}}"}
+            {"expr": "max by (namespace) (codeplace_judge_server_last_heartbeat_age_seconds{namespace=~\"$namespace\"})", "legendFormat": "{{namespace}} max age"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Judge Server Load",
+          "gridPos": {"x": 16, "y": 12, "w": 8, "h": 8},
+          "fieldConfig": {"defaults": {"unit": "short"}},
+          "targets": [
+            {"expr": "topk(10, codeplace_judge_server_task_number{namespace=~\"$namespace\"})", "legendFormat": "{{namespace}} {{hostname}} tasks"}
           ]
         }
       ]
