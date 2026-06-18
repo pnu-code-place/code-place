@@ -28,6 +28,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Applications
 VENDOR_APPS = [
+    'django_prometheus',
     'django.contrib.auth',
     'django.contrib.sessions',
     'django.contrib.contenttypes',
@@ -60,6 +61,8 @@ LOCAL_APPS = [
 INSTALLED_APPS = VENDOR_APPS + LOCAL_APPS
 
 MIDDLEWARE = (
+    'django_prometheus.middleware.PrometheusBeforeMiddleware',
+    'account.middleware.RequestIDMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -69,6 +72,8 @@ MIDDLEWARE = (
     'django.middleware.security.SecurityMiddleware',
     'account.middleware.AdminRoleRequiredMiddleware',
     'account.middleware.SessionRecordMiddleware',
+    'account.middleware.RequestLogMiddleware',
+    'django_prometheus.middleware.PrometheusAfterMiddleware',
     # 'account.middleware.LogSqlMiddleware',
 )
 
@@ -146,6 +151,12 @@ POPUP_DIR = f"{DATA_DIR}{POPUP_URI_PREFIX}"
 
 STATICFILES_DIRS = [os.path.join(DATA_DIR, "public")]
 
+
+def env_to_bool(name, default=False):
+    value = get_env(name, str(default)).lower()
+    return value in ("1", "true", "yes", "on")
+
+
 LOGGING_HANDLERS = ['console']
 LOGGING = {
     'version': 1,
@@ -154,13 +165,16 @@ LOGGING = {
         'standard': {
             'format': '[%(asctime)s] - [%(levelname)s] - [%(name)s:%(lineno)d]  - %(message)s',
             'datefmt': '%Y-%m-%d %H:%M:%S'
+        },
+        'json': {
+            '()': 'utils.json_logging.CodePlaceJsonFormatter',
         }
     },
     'handlers': {
         'console': {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
-            'formatter': 'standard'
+            'formatter': 'json' if env_to_bool("JSON_LOGGING", production_env) else 'standard'
         }
     },
     'loggers': {
@@ -174,6 +188,11 @@ LOGGING = {
             'level': 'ERROR',
             'propagate': True,
         },
+        'codeplace.request': {
+            'handlers': LOGGING_HANDLERS,
+            'level': 'INFO',
+            'propagate': False,
+        },
         '': {
             'handlers': LOGGING_HANDLERS,
             'level': 'WARNING',
@@ -186,11 +205,6 @@ REST_FRAMEWORK = {
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
     'DEFAULT_RENDERER_CLASSES': ('rest_framework.renderers.JSONRenderer',)
 }
-
-def env_to_bool(name, default=False):
-    value = get_env(name, str(default)).lower()
-    return value in ("1", "true", "yes", "on")
-
 
 def parse_host_port_list(value, default_port):
     hosts = []

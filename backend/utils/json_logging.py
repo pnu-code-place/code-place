@@ -1,0 +1,59 @@
+import json
+import logging
+from datetime import datetime, timezone
+
+from utils.observability_context import get_request_id
+
+
+SENSITIVE_FIELDS = {
+    "authorization",
+    "cookie",
+    "password",
+    "token",
+    "secret",
+    "code",
+    "src",
+}
+
+
+class CodePlaceJsonFormatter(logging.Formatter):
+
+    def format(self, record):
+        payload = {
+            "timestamp": datetime.fromtimestamp(record.created, tz=timezone.utc).isoformat(),
+            "level": record.levelname,
+            "logger": record.name,
+            "message": record.getMessage(),
+            "request_id": getattr(record, "request_id", None) or get_request_id(),
+        }
+        for key in (
+                "method",
+                "path",
+                "status_code",
+                "duration_ms",
+                "user_id",
+                "remote_addr",
+                "task_id",
+                "submission_id",
+        ):
+            value = getattr(record, key, None)
+            if value is not None:
+                payload[key] = value
+        if record.exc_info:
+            payload["exception"] = self.formatException(record.exc_info)
+        return json.dumps(self._redact(payload), ensure_ascii=False, default=str)
+
+    def _redact(self, value):
+        if isinstance(value, dict):
+            return {
+                key: "[REDACTED]" if self._is_sensitive_key(key) else self._redact(item)
+                for key, item in value.items()
+            }
+        if isinstance(value, list):
+            return [self._redact(item) for item in value]
+        return value
+
+    @staticmethod
+    def _is_sensitive_key(key):
+        normalized = str(key).lower()
+        return any(field in normalized for field in SENSITIVE_FIELDS)
