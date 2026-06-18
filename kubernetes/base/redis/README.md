@@ -6,6 +6,7 @@
 
 - `RedisReplication`: Redis 3개 Pod로 master/replica 구성을 만듭니다.
 - `RedisSentinel`: Sentinel 3개 Pod로 master 감시와 failover를 수행합니다.
+- `redisExporter`: Redis/Sentinel Pod에 exporter sidecar를 붙여 Prometheus metric을 노출합니다.
 - 애플리케이션은 `redis-sentinel:26379`로 접속하고, master group 이름은 `mymaster`를 사용합니다.
 - `RedisSentinel` CR 이름은 `redis`입니다. Opstree Operator가 `<CR 이름>-sentinel` Service를 생성하므로 실제 Sentinel Service 이름은 `redis-sentinel`입니다.
 
@@ -57,3 +58,5 @@ REDIS_SENTINEL_HOSTS=redis-sentinel:26379
 Redis와 Sentinel Pod는 `kubernetes.io/hostname` 기준으로 서로 다른 노드에 분산되도록 설정되어 있습니다. 이 구성은 최소 3개 이상의 스케줄 가능한 Kubernetes 노드를 전제로 합니다. 노드가 3개 미만이면 HA를 만족할 수 없으므로 Pod가 pending 상태로 남을 수 있습니다.
 
 Sentinel failover는 Redis master 장애 시 자동 승격을 수행하지만, failover 중에는 짧은 연결 재시도 구간이 생길 수 있습니다. 완전한 무중단에 가깝게 운영하려면 Longhorn replica와 Kubernetes 노드 장애 조건이 맞는지, 애플리케이션 retry 정책이 충분한지 함께 점검해야 합니다.
+
+Redis exporter는 `kubernetes/monitoring/datastore-pod-monitors.yaml`의 PodMonitor가 scrape합니다. kube-prometheus-stack 설치 후 Prometheus Targets에서 `redis` target이 healthy인지 확인합니다.

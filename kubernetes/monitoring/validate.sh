@@ -36,6 +36,7 @@ yaml_paths = [
     root / "prometheus-rules.yaml",
     root / "alertmanager-config.yaml",
     root / "backend-service-monitor.yaml",
+    root / "datastore-pod-monitors.yaml",
     root / "logs" / "loki-values.yaml",
     root / "logs" / "alloy-values.yaml",
     root / "grafana-dashboard-codeplace.yaml",
@@ -51,9 +52,10 @@ for path in yaml_paths:
         print(f"SKIP YAML parse {path}: Python module yaml not found")
         continue
 
-    data = yaml.safe_load(text)
+    documents = list(yaml.safe_load_all(text))
     print(f"YAML OK {path}")
     if path.name.startswith("grafana-dashboard-"):
+        data = documents[0]
         for key, value in data.get("data", {}).items():
             json.loads(value)
             print(f"JSON OK {path}:{key}")

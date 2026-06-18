@@ -27,6 +27,8 @@ Prometheus target 확인:
 
 ```text
 Status -> Targets -> backend
+Status -> Targets -> postgres
+Status -> Targets -> redis
 ```
 
 Alertmanager 확인:
@@ -202,6 +204,29 @@ kubectl -n <namespace> logs -l app=redis-sentinel --tail=100
 - Redis replication Pod 문제면 app cache/queue 영향이 큽니다.
 - Sentinel 문제면 failover와 master discovery 영향이 큽니다.
 
+### PostgresExporterDown / RedisExporterDown
+
+증상: DB/Redis Pod 자체가 ready여도 exporter metric scrape가 실패합니다.
+
+확인:
+
+```sh
+kubectl -n monitoring get podmonitor postgres redis -o yaml
+kubectl -n <namespace> get pod -l cnpg.io/cluster=postgres
+kubectl -n <namespace> get pod | grep redis
+```
+
+```promql
+cnpg_collector_up{namespace="<namespace>", cluster="postgres"}
+redis_up{namespace="<namespace>"}
+```
+
+판단:
+
+- PostgreSQL readiness는 정상인데 `cnpg_collector_up`이 0이면 CNPG instance exporter 또는 metrics query 문제입니다.
+- Redis Pod는 정상인데 `redis_up`이 0이면 exporter sidecar, Redis auth, Redis process 응답 문제입니다.
+- PodMonitor target 자체가 없으면 Prometheus Operator selector 또는 Pod label/port 설정을 확인합니다.
+
 ### LokiUnavailable
 
 증상: Loki single-binary Pod가 1분 이상 ready가 아닙니다.
@@ -290,6 +315,23 @@ topk(10, container_memory_working_set_bytes{namespace="<namespace>", container!=
 ```
 
 CPU/memory가 지속적으로 높으면 replica 조정, limit 조정, 최근 배포 변경을 확인합니다.
+
+### PostgresCollectorError / PostgresHADegraded / RedisMemoryHigh
+
+확인:
+
+```promql
+cnpg_collector_last_collection_error{namespace="<namespace>", cluster="postgres"}
+cnpg_collector_nodes_used{namespace="<namespace>", cluster="postgres"}
+redis_memory_used_bytes{namespace="<namespace>"}
+redis_memory_max_bytes{namespace="<namespace>"}
+```
+
+판단:
+
+- `PostgresCollectorError`는 metrics query 실패이므로 CNPG exporter 로그와 PostgreSQL 권한/상태를 확인합니다.
+- `PostgresHADegraded`는 3개 instance가 서로 다른 node에 분산되지 않은 상태입니다. node 수, taint, Longhorn volume attach 상태를 확인합니다.
+- `RedisMemoryHigh`는 Redis maxmemory 대비 사용량이 높은 상태입니다. eviction 정책, queue/backlog, cache key 증가를 확인합니다.
 
 ### PVCAlmostFull
 

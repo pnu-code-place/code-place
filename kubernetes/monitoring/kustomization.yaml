@@ -5,6 +5,7 @@ namespace: monitoring
 resources:
   - ./alertmanager-config.yaml
   - ./backend-service-monitor.yaml
+  - ./datastore-pod-monitors.yaml
   - ./grafana-dashboard-codeplace.yaml
   - ./grafana-dashboard-logs.yaml
   - ./prometheus-rules.yaml

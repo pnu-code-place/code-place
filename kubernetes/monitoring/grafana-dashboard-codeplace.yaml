@@ -358,9 +358,51 @@ data:
           ]
         },
         {
+          "type": "stat",
+          "title": "PostgreSQL Exporter Up",
+          "gridPos": {"x": 12, "y": 33, "w": 6, "h": 5},
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "red", "value": null},
+                  {"color": "green", "value": 1}
+                ]
+              }
+            }
+          },
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "min by (namespace) (cnpg_collector_up{namespace=~\"$namespace\", cluster=\"postgres\"})", "legendFormat": "{{namespace}}"}
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "Redis Exporter Up",
+          "gridPos": {"x": 18, "y": 33, "w": 6, "h": 5},
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "red", "value": null},
+                  {"color": "green", "value": 1}
+                ]
+              }
+            }
+          },
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "min by (namespace) (redis_up{namespace=~\"$namespace\"})", "legendFormat": "{{namespace}}"}
+          ]
+        },
+        {
           "type": "timeseries",
           "title": "PostgreSQL Restarts",
-          "gridPos": {"x": 12, "y": 33, "w": 6, "h": 5},
+          "gridPos": {"x": 0, "y": 38, "w": 6, "h": 5},
           "fieldConfig": {"defaults": {"unit": "short"}},
           "targets": [
             {"expr": "sum by (namespace, pod) (increase(kube_pod_container_status_restarts_total{namespace=~\"$namespace\", pod=~\"postgres-.*\"}[1h]))", "legendFormat": "{{namespace}} {{pod}}"}
@@ -369,10 +411,28 @@ data:
         {
           "type": "timeseries",
           "title": "Redis Restarts",
-          "gridPos": {"x": 18, "y": 33, "w": 6, "h": 5},
+          "gridPos": {"x": 6, "y": 38, "w": 6, "h": 5},
           "fieldConfig": {"defaults": {"unit": "short"}},
           "targets": [
             {"expr": "sum by (namespace, pod) (increase(kube_pod_container_status_restarts_total{namespace=~\"$namespace\", pod=~\"redis-.*|redis-replication-.*\"}[1h]))", "legendFormat": "{{namespace}} {{pod}}"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "PostgreSQL WAL Bytes",
+          "gridPos": {"x": 12, "y": 38, "w": 6, "h": 5},
+          "fieldConfig": {"defaults": {"unit": "Bps"}},
+          "targets": [
+            {"expr": "sum by (namespace) (rate(cnpg_collector_wal_bytes{namespace=~\"$namespace\", cluster=\"postgres\"}[5m]))", "legendFormat": "{{namespace}}"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Redis Memory Usage",
+          "gridPos": {"x": 18, "y": 38, "w": 6, "h": 5},
+          "fieldConfig": {"defaults": {"unit": "bytes"}},
+          "targets": [
+            {"expr": "max by (namespace, pod) (redis_memory_used_bytes{namespace=~\"$namespace\"})", "legendFormat": "{{namespace}} {{pod}}"}
           ]
         }
       ]

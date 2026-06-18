@@ -3,6 +3,7 @@ prometheus:
     evaluationInterval: 15s
     scrapeInterval: 15s
     serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
     ruleSelectorNilUsesHelmValues: false
 
 alertmanager:
