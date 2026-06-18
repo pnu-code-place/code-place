@@ -91,6 +91,7 @@ export default {
       if (this.contestStatus) {
         return CONTEST_STATUS_REVERSE[this.contestStatus].color
       }
+      return ""
     },
     formattedTime() {
       if (!this.countdownParts || this.countdownParts.status === 'ended') {

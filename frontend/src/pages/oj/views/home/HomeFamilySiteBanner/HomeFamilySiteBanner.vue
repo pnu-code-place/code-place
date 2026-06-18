@@ -4,9 +4,11 @@
       {{ $t("m.FamilySites") }}
     </h3>
     <div class="home-family-site-banner-content-wrapper">
-      <template v-for="item in FamilySiteContentSrc">
-        <FamilySiteContent :content="item" />
-      </template>
+      <FamilySiteContent
+        v-for="item in FamilySiteContentSrc"
+        :key="item.title || item.name || item.link"
+        :content="item"
+      />
     </div>
   </div>
 </template>

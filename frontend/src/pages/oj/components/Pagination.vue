@@ -14,7 +14,7 @@
 
 <script>
 export default {
-  name: "pagination",
+  name: "OjPagination",
   props: {
     total: {
       required: true,

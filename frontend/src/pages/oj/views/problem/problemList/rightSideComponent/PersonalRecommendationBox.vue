@@ -43,7 +43,6 @@
 
 <script>
 import { mapActions, mapGetters } from "vuex"
-import FieldCategoryBox from "../../../../components/FieldCategoryBox.vue"
 import api from "../../../../api"
 import { FIELD_MAP } from "../../../../../../utils/constants"
 import RecommendProblem from "./RecommendProblem.vue"
@@ -51,7 +50,7 @@ import InSufficientData from "./InSufficientData.vue"
 
 export default {
   name: "PersonalRecommendationBox",
-  components: { InSufficientData, RecommendProblem, FieldCategoryBox },
+  components: { InSufficientData, RecommendProblem },
   data() {
     return {
       recommendation: null,

@@ -2,10 +2,8 @@
 import OjSummary from "../../OJSummary.vue"
 import FieldSummary from "./FieldSummary.vue"
 import DifficultySummary from "./DifficultySummary.vue"
-import ChallengeSummary from "./AchievementSummary.vue"
 import api from "@oj/api"
 import DashboardSkeleton from "./DashboardSkeleton.vue"
-import AchievementsSkeleton from "../AchievementsSkeleton.vue"
 import ErrorSign from "../../../../general/ErrorSign.vue"
 
 export default {
@@ -20,11 +18,8 @@ export default {
   },
   components: {
     ErrorSign,
-    AchievementsSkeleton,
     DashboardSkeleton,
-    ChallengeSummary,
     DifficultySummary,
-    OjSummary,
     FieldSummary,
   },
   methods: {

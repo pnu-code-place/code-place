@@ -14,13 +14,13 @@
             :value="FIELD_MAP[problem.field].value"
             :boxColor="FIELD_MAP[problem.field].boxColor"
           />
-          <template v-for="(category, idx) in problem.tags">
-            <FieldCategoryBox
-              :boxType="false"
-              :value="'#' + category"
-              :boxColor="'#ffffff'"
-            />
-          </template>
+          <FieldCategoryBox
+            v-for="category in problem.tags"
+            :key="category"
+            :boxType="false"
+            :value="'#' + category"
+            :boxColor="'#ffffff'"
+          />
         </div>
         <div
           class="hardProblemFieldCategory"

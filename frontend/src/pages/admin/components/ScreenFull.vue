@@ -22,7 +22,7 @@
 <script>
 import screenfull from "screenfull"
 export default {
-  name: "hamburger",
+  name: "ScreenFullButton",
   props: {
     width: {
       type: Number,

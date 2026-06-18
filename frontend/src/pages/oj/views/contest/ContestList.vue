@@ -25,7 +25,7 @@
         <th>{{ $t("m.Contest_Type") }}</th>
       </thead>
       <tbody>
-        <tr v-for="contest in underway_contests">
+        <tr v-for="contest in underway_contests" :key="contest.id">
           <td>{{ contest.id }}</td>
           <td class="td-title" @click.stop="goContest(contest)">
             <p class="contest-title">{{ contest.title }}</p>
@@ -78,7 +78,7 @@
         <th>{{ $t("m.Contest_Type") }}</th>
       </thead>
       <tbody>
-        <tr v-for="contest in ended_contests">
+        <tr v-for="contest in ended_contests" :key="contest.id">
           <td>{{ contest.id }}</td>
           <td class="td-title" @click.stop="goContest(contest)">
             {{ contest.title }}
@@ -117,7 +117,7 @@
         <th>{{ $t("m.Contest_Type") }}</th>
       </thead>
       <tbody>
-        <tr v-for="contest in not_start_contests">
+        <tr v-for="contest in not_start_contests" :key="contest.id">
           <td>{{ contest.id }}</td>
           <td class="td-title" @click.stop="goContest(contest)">
             <p class="contest-title">{{ contest.title }}</p>

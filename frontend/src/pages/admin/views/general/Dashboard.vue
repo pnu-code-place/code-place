@@ -137,7 +137,7 @@ import InfoCard from "@admin/components/infoCard.vue"
 import api from "@admin/api"
 
 export default {
-  name: "dashboard",
+  name: "AdminDashboardPage",
   components: {
     InfoCard,
   },

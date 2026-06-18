@@ -60,6 +60,7 @@ import api from "@oj/api"
 import { FormMixin } from "@oj/components/mixins"
 
 export default {
+  name: "OjLoginPage",
   mixins: [FormMixin],
   data() {
     const CheckRequiredTFA = (rule, value, callback) => {

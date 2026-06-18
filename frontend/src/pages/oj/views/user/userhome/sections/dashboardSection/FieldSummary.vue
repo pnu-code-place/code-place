@@ -187,6 +187,7 @@ export default {
           <tr
             class="part-row"
             v-for="(category, category_name) in fieldInfo"
+            :key="category_name"
             @click="goField(category_name)"
           >
             <td class="part-name-wrapper">

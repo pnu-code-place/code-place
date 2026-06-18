@@ -31,7 +31,7 @@
 
 <script>
 export default {
-  name: "Error404",
+  name: "Error404Page",
   methods: {
     backPage() {
       this.$router.go(-1)

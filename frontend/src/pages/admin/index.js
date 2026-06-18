@@ -25,6 +25,10 @@ import "./style.less"
 import ECharts from "vue-echarts"
 import "@/utils/echarts"
 
+const legacyPanelTag = "Panel"
+const legacySaveTag = "Save"
+const legacyCancelTag = "Cancel"
+
 // register global utility filters.
 Object.keys(filters).forEach((key) => {
   Vue.filter(key, filters[key])
@@ -37,9 +41,9 @@ Vue.use(VueAnalytics, {
 Vue.use(iView)
 Vue.use(katex)
 Vue.component(IconBtn.name, IconBtn)
-Vue.component(Panel.name, Panel)
-Vue.component(Save.name, Save)
-Vue.component(Cancel.name, Cancel)
+Vue.component(legacyPanelTag, Panel)
+Vue.component(legacySaveTag, Save)
+Vue.component(legacyCancelTag, Cancel)
 Vue.component("ECharts", ECharts)
 
 Vue.use(Element, {

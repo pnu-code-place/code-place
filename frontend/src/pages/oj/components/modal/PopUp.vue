@@ -7,17 +7,29 @@ export default {
     window.addEventListener("mouseup", this.stopDrag)
   },
   props: {
-    width: 0,
+    width: {
+      type: Number,
+      default: 0,
+    },
     p_position: {
       type: Object,
-      default: {
+      default: () => ({
         x: 100,
         y: 100,
-      },
+      }),
     },
-    link: "",
-    id: 0,
-    isTopPopup: false,
+    link: {
+      type: String,
+      default: "",
+    },
+    id: {
+      type: [Number, String],
+      default: 0,
+    },
+    isTopPopup: {
+      type: Boolean,
+      default: false,
+    },
   },
   data() {
     return {

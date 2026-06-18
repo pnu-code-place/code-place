@@ -24,6 +24,8 @@ import filters from "@/utils/filters.js"
 import ECharts from "vue-echarts"
 import "@/utils/echarts"
 
+const legacyPanelTag = "Panel"
+
 // register global utility filters.
 Object.keys(filters).forEach((key) => {
   Vue.filter(key, filters[key])
@@ -45,7 +47,7 @@ Vue.use(VueAnalytics, {
 Vue.component("ECharts", ECharts)
 Vue.component(VerticalMenu.name, VerticalMenu)
 Vue.component(VerticalMenuItem.name, VerticalMenuItem)
-Vue.component(Panel.name, Panel)
+Vue.component(legacyPanelTag, Panel)
 
 // 注册全局消息提示
 Vue.prototype.$Message.config({

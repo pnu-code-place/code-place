@@ -110,12 +110,12 @@
               v-model="query.college"
               :placeholder="$t('m.User_Placeholder_College')"
             >
-              <template v-for="(item, index) in collegeList">
-                <el-option
-                  :label="item.college_name"
-                  :value="item.id"
-                ></el-option>
-              </template>
+              <el-option
+                v-for="item in collegeList"
+                :key="item.id"
+                :label="item.college_name"
+                :value="item.id"
+              ></el-option>
             </el-select>
           </el-col>
           <el-col style="margin-right: 15px">
@@ -123,12 +123,12 @@
               v-model="query.department"
               :placeholder="$t('m.User_Placeholder_Department')"
             >
-              <template v-for="(item, index) in filteredDepartmentListForQuery">
-                <el-option
-                  :label="item.department_name"
-                  :value="item.id"
-                ></el-option>
-              </template>
+              <el-option
+                v-for="item in filteredDepartmentListForQuery"
+                :key="item.id"
+                :label="item.department_name"
+                :value="item.id"
+              ></el-option>
             </el-select>
           </el-col>
           <el-col :span="selectedUsers.length ? 16 : 24">
@@ -312,12 +312,12 @@
                 v-model="formGenerateUser.college"
                 :placeholder="$t('m.User_Placeholder_College')"
               >
-                <template v-for="(item, index) in collegeList">
-                  <el-option
-                    :label="item.college_name"
-                    :value="item.id"
-                  ></el-option>
-                </template>
+                <el-option
+                  v-for="item in collegeList"
+                  :key="item.id"
+                  :label="item.college_name"
+                  :value="item.id"
+                ></el-option>
               </el-select>
             </el-form-item>
           </el-col>
@@ -327,14 +327,12 @@
                 v-model="formGenerateUser.department"
                 :placeholder="$t('m.User_Placeholder_Department')"
               >
-                <template
-                  v-for="(item, index) in filteredDepartmentListForDummy"
-                >
-                  <el-option
-                    :label="item.department_name"
-                    :value="item.id"
-                  ></el-option>
-                </template>
+                <el-option
+                  v-for="item in filteredDepartmentListForDummy"
+                  :key="item.id"
+                  :label="item.department_name"
+                  :value="item.id"
+                ></el-option>
               </el-select>
             </el-form-item>
           </el-col>
@@ -449,12 +447,12 @@
                 v-model="user.college"
                 :placeholder="$t('m.User_Placeholder_College')"
               >
-                <template v-for="(item, index) in collegeList">
-                  <el-option
-                    :label="item.college_name"
-                    :value="item.id"
-                  ></el-option>
-                </template>
+                <el-option
+                  v-for="item in collegeList"
+                  :key="item.id"
+                  :label="item.college_name"
+                  :value="item.id"
+                ></el-option>
               </el-select>
             </el-form-item>
           </el-col>
@@ -464,14 +462,12 @@
                 v-model="user.department"
                 :placeholder="$t('m.User_Placeholder_Department')"
               >
-                <template
-                  v-for="(item, index) in filteredDepartmentListForEdit"
-                >
-                  <el-option
-                    :label="item.department_name"
-                    :value="item.id"
-                  ></el-option>
-                </template>
+                <el-option
+                  v-for="item in filteredDepartmentListForEdit"
+                  :key="item.id"
+                  :label="item.department_name"
+                  :value="item.id"
+                ></el-option>
               </el-select>
             </el-form-item>
           </el-col>
@@ -526,7 +522,7 @@ import utils from "@/utils/utils"
 import ECharts from "vue-echarts"
 
 export default {
-  name: "User",
+  name: "AdminUserPage",
   components: {
     ECharts,
   },

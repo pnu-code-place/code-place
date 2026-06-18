@@ -60,8 +60,6 @@
 
 <script>
 import { defineComponent } from "vue"
-import FieldCategoryBox from "../../../../components/FieldCategoryBox.vue"
-import CustomIconBtn from "../../../../components/buttons/CustomIconBtn.vue"
 import SubmissionStatus from "./SubmissionStatus.vue"
 import SubmissionBtn from "./SubmissionBtn.vue"
 import AIAssistantBtn from "./AIAssistantBtn.vue"
@@ -82,8 +80,6 @@ export default defineComponent({
   components: {
     SubmissionBtn,
     SubmissionStatus,
-    CustomIconBtn,
-    FieldCategoryBox,
     AIAssistantBtn,
   },
   methods: {

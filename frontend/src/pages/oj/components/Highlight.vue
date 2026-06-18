@@ -6,7 +6,7 @@
 
 <script>
 export default {
-  name: "highlight",
+  name: "OjHighlight",
   data() {
     return {
       styleObject: {

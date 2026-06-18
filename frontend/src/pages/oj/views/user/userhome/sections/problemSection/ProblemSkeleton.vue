@@ -15,6 +15,13 @@ export default {
       }
     }, 200)
   },
+  computed: {
+    skeletonItems() {
+      return Array.from({ length: 100 }, (_, index) => index + 1).filter(
+        (item) => item < this.amount,
+      )
+    },
+  },
 }
 </script>
 
@@ -22,9 +29,8 @@ export default {
   <div class="problem-skeleton">
     <transition-group name="fade" tag="ul" class="problem-tab__content">
       <li
-        v-for="i in 100"
+        v-for="i in skeletonItems"
         :key="i"
-        v-if="i < amount"
         class="problem-tab__content__item"
       ></li>
     </transition-group>

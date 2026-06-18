@@ -224,7 +224,7 @@ import {
 import QuestionList from "./communityComponent/QuestionList.vue"
 
 export default {
-  name: "Community",
+  name: "CommunityPage",
   components: {
     CreatePost,
     QuestionList,

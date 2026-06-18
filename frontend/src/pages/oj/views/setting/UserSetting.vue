@@ -2,7 +2,6 @@
 import CustomDropDown from "../../components/dropdown/CustomDropdown.vue"
 import api from "../../api"
 import PasswordReset from "./ChangePassword.vue"
-import ResetPassword from "../user/ResetPassword.vue"
 import ChangeAvatar from "./ChangeAvatar.vue"
 import ErrorSign from "../general/ErrorSign.vue"
 import { types } from "../../../../store"
@@ -11,7 +10,6 @@ export default {
   components: {
     ErrorSign,
     ChangeAvatar,
-    ResetPassword,
     PasswordReset,
     CustomDropDown,
   },

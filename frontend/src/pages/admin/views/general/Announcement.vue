@@ -163,7 +163,7 @@ import Simditor from "../../components/Simditor.vue"
 import api from "../../api.js"
 
 export default {
-  name: "Announcement",
+  name: "AdminAnnouncementPage",
   components: {
     Simditor,
   },
