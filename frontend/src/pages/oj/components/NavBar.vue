@@ -1,5 +1,5 @@
 <template>
-  <div id="header">
+  <div id="header" :style="headerStyle">
     <Menu
       ref="menuRef"
       class="header-menu"
@@ -111,12 +111,14 @@
       :width="400"
       :styles="{ top: modalStatus.mode === 'login' ? '10%' : '2%' }"
     >
-      <div slot="header" class="modal-title" style="text-align: center">
-        {{
-          modalStatus.mode === "login"
-            ? $t("m.LoginModalHeader")
-            : $t("m.RegisterModalHeader")
-        }}
+      <div slot="header" class="modal-title">
+        <div class="modal-heading">
+          {{
+            modalStatus.mode === "login"
+              ? $t("m.LoginModalHeader")
+              : $t("m.RegisterModalHeader")
+          }}
+        </div>
       </div>
       <component :is="modalStatus.mode" v-if="modalVisible"></component>
       <div slot="footer" style="display: none"></div>
@@ -139,11 +141,17 @@ export default {
   mounted() {
     this.getProfile()
     this.$nextTick(this.initIndicator)
+    this.syncHeaderScroll()
+    window.addEventListener("scroll", this.handleWindowScroll, { passive: true })
   },
   beforeDestroy() {
     if (this.communityDropdownTimer) {
       clearTimeout(this.communityDropdownTimer)
       this.communityDropdownTimer = null
+    }
+    window.removeEventListener("scroll", this.handleWindowScroll)
+    if (this._headerScrollFrame) {
+      cancelAnimationFrame(this._headerScrollFrame)
     }
     this.teardownIndicator()
   },
@@ -157,6 +165,7 @@ export default {
         visible: false,
       },
       indicatorReady: false,
+      headerOffsetX: 0,
     }
   },
   methods: {
@@ -191,6 +200,17 @@ export default {
         visible: true,
         mode: mode,
       })
+    },
+    handleWindowScroll() {
+      if (this._headerScrollFrame) return
+      this._headerScrollFrame = requestAnimationFrame(() => {
+        this._headerScrollFrame = null
+        this.syncHeaderScroll()
+      })
+    },
+    syncHeaderScroll() {
+      this.headerOffsetX = window.pageXOffset || window.scrollX || 0
+      this.scheduleIndicatorUpdate()
     },
     initIndicator() {
       const menuEl = this.$refs.menuRef && this.$refs.menuRef.$el
@@ -333,6 +353,11 @@ export default {
       return {
         left: this.indicator.left + "px",
         width: this.indicator.width + "px",
+      }
+    },
+    headerStyle() {
+      return {
+        transform: `translateX(${-this.headerOffsetX}px)`,
       }
     },
     modalVisible: {
@@ -618,6 +643,22 @@ export default {
   &-title {
     font-size: 18px;
     font-weight: 1000;
+    text-align: center;
+  }
+
+  &-heading {
+    color: #17193d;
+    font-size: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+  }
+
+  &-subtitle {
+    margin-top: 6px;
+    color: #7b8191;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.4;
   }
 }
 
