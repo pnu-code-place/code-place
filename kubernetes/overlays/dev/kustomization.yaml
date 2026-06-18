@@ -5,6 +5,7 @@ resources:
   - ./secrets/pg-credentials.yaml
   - ./secrets/regcred.yaml
   - ./secrets/common-credentials.yaml
+  - ./secrets/sentry-secret.yaml
 namespace: code-place-dev
 patches:
   - path: backend-deployment-patch.yaml
