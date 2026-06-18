@@ -138,6 +138,7 @@ P1은 `group_wait=30s`, `repeat_interval=1h`로 전달합니다.
 - OpenTelemetry는 `OTEL_ENABLED=0` 기본값을 유지하고 dev/staging에서 먼저 활성화합니다.
 - P0/P1 알림 라우팅은 AlertmanagerConfig로 관리하며 Grafana UI 수동 설정에 의존하지 않습니다.
 - PostgreSQL/Redis 세부 지표는 별도 exporter 없이 kube-state-metrics/kubelet 기반 readiness, restart, PVC 관측부터 제공합니다. connection, lock, Redis memory/client 같은 상세 지표는 exporter 도입 이후 확장합니다.
+- Sentry backend SDK는 기본 PII 자동 전송을 비활성화합니다. 사용자 영향 분석은 Sentry event와 request_id 기반 backend JSON log를 함께 사용합니다.
 
 ## 6. 검증
 

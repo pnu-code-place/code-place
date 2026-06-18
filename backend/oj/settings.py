@@ -29,7 +29,7 @@ SENTRY_DSN = get_env(
 if SENTRY_DSN:
     sentry_sdk.init(
         dsn=SENTRY_DSN,
-        send_default_pii=True,
+        send_default_pii=False,
         environment=get_env("SENTRY_ENVIRONMENT", get_env("OJ_ENV", "dev")),
     )
 
