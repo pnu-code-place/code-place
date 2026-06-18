@@ -8,11 +8,13 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument("--username", type=str)
+        parser.add_argument("--email", type=str)
         parser.add_argument("--password", type=str)
         parser.add_argument("--action", type=str)
 
     def handle(self, *args, **options):
         username = options["username"]
+        email = options.get("email") or username
         password = options["password"]
         action = options["action"]
 
@@ -27,7 +29,7 @@ class Command(BaseCommand):
 
             user = User.objects.create(
                 username=username,
-                email=username,
+                email=email,
                 admin_type=AdminType.SUPER_ADMIN,
                 problem_permission=ProblemPermission.ALL)
             user.set_password(password)
@@ -39,7 +41,7 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS("User created"))
         elif action == "create_admin":
             user = User.objects.create(
-                username=username, email=username, admin_type=AdminType.ADMIN, problem_permission=ProblemPermission.OWN)
+                username=username, email=email, admin_type=AdminType.ADMIN, problem_permission=ProblemPermission.OWN)
             user.set_password(password)
             user.save()
             UserProfile.objects.create(user=user)
