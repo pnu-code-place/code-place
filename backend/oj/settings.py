@@ -14,12 +14,24 @@ from copy import deepcopy
 from utils.shortcuts import get_env
 
 import celery.schedules
+import sentry_sdk
 
 production_env = get_env("OJ_ENV", "dev") == "production"
 if production_env:
     from .production_settings import *
 else:
     from .dev_settings import *
+
+SENTRY_DSN = get_env(
+    "SENTRY_DSN",
+    "",
+)
+if SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        send_default_pii=True,
+        environment=get_env("SENTRY_ENVIRONMENT", get_env("OJ_ENV", "dev")),
+    )
 
 with open(os.path.join(DATA_DIR, "config", "secret.key"), "r") as f:
     SECRET_KEY = f.read()

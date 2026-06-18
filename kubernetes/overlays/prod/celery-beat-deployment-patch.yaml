@@ -8,3 +8,10 @@ spec:
   replicas: 1
   strategy:
     type: Recreate
+  template:
+    spec:
+      containers:
+        - name: celery-beat
+          env:
+            - name: SENTRY_ENVIRONMENT
+              value: "prod"
