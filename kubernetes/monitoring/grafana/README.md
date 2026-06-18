@@ -1,9 +1,10 @@
 # Grafana (Helm) 배포 가이드
 
-이 디렉토리는 `monitoring` namespace에 배포되는 shared Grafana Helm Chart 설정을 관리합니다.
+이 디렉토리는 `monitoring` namespace에 배포되는 기존 shared Grafana Helm release 설정을 관리합니다.
+`kubernetes/monitoring/kustomization.yaml`에 포함되는 Kubernetes 리소스는 아니며, Grafana를 Helm으로 설치하거나 업그레이드할 때만 사용합니다.
 
--   `monitoring/grafana/values.yaml`: 공통 설정 파일입니다.
--   `monitoring/grafana/values-ingress.yaml`: `monitoring.code-place-dev.site` reverse proxy 설정 파일입니다.
+-   `kubernetes/monitoring/grafana/values.yaml`: 공통 설정 파일입니다.
+-   `kubernetes/monitoring/grafana/values-ingress.yaml`: `monitoring.code-place-dev.site` reverse proxy 설정 파일입니다.
 
 ## 사전 조건
 
@@ -33,3 +34,5 @@ helm upgrade --install grafana grafana/grafana \
 ```
 
 현재 Grafana 외부 도메인은 `monitoring.code-place-dev.site` 하나입니다. subdomain reverse proxy 방식이라 별도 `root_url`/subpath 설정은 사용하지 않습니다.
+
+대시보드 ConfigMap은 `kubernetes/monitoring/grafana-dashboard-codeplace.yaml`에 있으며, kube-prometheus-stack Grafana sidecar가 `grafana_dashboard` label로 자동 로드합니다.
