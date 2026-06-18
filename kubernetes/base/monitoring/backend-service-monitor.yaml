@@ -1,0 +1,19 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: backend
+  namespace: monitoring
+  labels:
+    release: kube-prometheus-stack
+spec:
+  namespaceSelector:
+    any: true
+  selector:
+    matchLabels:
+      app: backend
+  jobLabel: app
+  endpoints:
+    - port: api
+      path: /metrics
+      interval: 15s
+      scrapeTimeout: 10s

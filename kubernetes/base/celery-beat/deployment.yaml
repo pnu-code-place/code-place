@@ -86,3 +86,11 @@ spec:
                 secretKeyRef:
                   name: common-credentials
                   key: AWS_SECRET_ACCESS_KEY
+            - name: JSON_LOGGING
+              value: "1"
+            - name: OTEL_ENABLED
+              value: "0"
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "http://otel-collector.monitoring.svc.cluster.local:4317"
+            - name: OTEL_TRACES_SAMPLER_ARG
+              value: "0.05"

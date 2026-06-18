@@ -1,0 +1,52 @@
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: codeplace-alert-routing
+  namespace: monitoring
+  labels:
+    alertmanagerConfig: codeplace
+spec:
+  route:
+    groupBy:
+      - alertname
+      - priority
+    groupWait: 30s
+    groupInterval: 5m
+    repeatInterval: 1h
+    receiver: p1-discord
+    routes:
+      - matchers:
+          - name: priority
+            value: P0
+        groupWait: 10s
+        groupInterval: 1m
+        repeatInterval: 15m
+        receiver: p0-discord
+      - matchers:
+          - name: priority
+            value: P1
+        groupWait: 30s
+        groupInterval: 5m
+        repeatInterval: 1h
+        receiver: p1-discord
+  receivers:
+    - name: p0-discord
+      discordConfigs:
+        - sendResolved: true
+          apiURL:
+            name: alertmanager-contact-points
+            key: webhook-url
+          title: '[{{ .Status }}][P0] {{ .CommonLabels.alertname }}'
+          content: '{{ .CommonAnnotations.summary }}'
+          message: '{{ .CommonAnnotations.description }}'
+          username: CodePlace Alertmanager
+    - name: p1-discord
+      discordConfigs:
+        - sendResolved: true
+          apiURL:
+            name: alertmanager-contact-points
+            key: webhook-url
+          title: '[{{ .Status }}][P1] {{ .CommonLabels.alertname }}'
+          content: '{{ .CommonAnnotations.summary }}'
+          message: '{{ .CommonAnnotations.description }}'
+          username: CodePlace Alertmanager

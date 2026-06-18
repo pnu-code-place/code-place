@@ -1,0 +1,71 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-codeplace
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+data:
+  codeplace-overview.json: |
+    {
+      "uid": "codeplace-overview",
+      "title": "CodePlace Overview",
+      "schemaVersion": 39,
+      "version": 1,
+      "refresh": "30s",
+      "tags": ["codeplace"],
+      "time": {
+        "from": "now-1h",
+        "to": "now"
+      },
+      "panels": [
+        {
+          "type": "timeseries",
+          "title": "Backend Request Rate",
+          "gridPos": {"x": 0, "y": 0, "w": 8, "h": 8},
+          "targets": [
+            {"expr": "sum(rate(codeplace_http_requests_total[5m]))", "legendFormat": "requests/s"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Backend 5xx Rate",
+          "gridPos": {"x": 8, "y": 0, "w": 8, "h": 8},
+          "targets": [
+            {"expr": "sum(rate(codeplace_http_requests_total{status_code=~\"5..\"}[5m]))", "legendFormat": "5xx/s"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Backend p95 Latency",
+          "gridPos": {"x": 16, "y": 0, "w": 8, "h": 8},
+          "targets": [
+            {"expr": "histogram_quantile(0.95, sum(rate(codeplace_http_request_duration_seconds_bucket[5m])) by (le))", "legendFormat": "p95"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Submission Status",
+          "gridPos": {"x": 0, "y": 8, "w": 8, "h": 8},
+          "targets": [
+            {"expr": "codeplace_submission_status_count", "legendFormat": "{{status}}"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Judge Waiting Queue",
+          "gridPos": {"x": 8, "y": 8, "w": 8, "h": 8},
+          "targets": [
+            {"expr": "codeplace_waiting_queue_length", "legendFormat": "waiting"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Judge Heartbeat Age",
+          "gridPos": {"x": 16, "y": 8, "w": 8, "h": 8},
+          "targets": [
+            {"expr": "codeplace_judge_server_last_heartbeat_age_seconds", "legendFormat": "{{hostname}}"}
+          ]
+        }
+      ]
+    }

@@ -5,6 +5,10 @@ kind: Kustomization
 resources:
   # Monitoring
   - ./monitoring/namespace.yaml
+  - ./monitoring/alertmanager-config.yaml
+  - ./monitoring/backend-service-monitor.yaml
+  - ./monitoring/grafana-dashboard-codeplace.yaml
+  - ./monitoring/prometheus-rules.yaml
 
   # Persistent Volume Claims
   - ./backend/pvc.yaml

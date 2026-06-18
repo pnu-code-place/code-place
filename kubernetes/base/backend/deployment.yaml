@@ -91,6 +91,14 @@ spec:
                 secretKeyRef:
                   name: common-credentials
                   key: AWS_SECRET_ACCESS_KEY
+            - name: JSON_LOGGING
+              value: "1"
+            - name: OTEL_ENABLED
+              value: "0"
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "http://otel-collector.monitoring.svc.cluster.local:4317"
+            - name: OTEL_TRACES_SAMPLER_ARG
+              value: "0.05"
           # TODO: Security Context 설정을 추가해야 합니다. 현재 entrypoint.sh 에서 권한을 변경하고 있지만, 보안 강화를 위해 컨테이너 레벨에서 설정하는 것이 좋습니다. (Junwoo)
           startupProbe:
             httpGet:
