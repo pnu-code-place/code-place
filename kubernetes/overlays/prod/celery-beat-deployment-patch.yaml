@@ -13,5 +13,11 @@ spec:
       containers:
         - name: celery-beat
           env:
+            - name: SENTRY_DSN
+              valueFrom:
+                secretKeyRef:
+                  name: sentry-secret
+                  key: SENTRY_DSN
+                  optional: true
             - name: SENTRY_ENVIRONMENT
               value: "prod"
