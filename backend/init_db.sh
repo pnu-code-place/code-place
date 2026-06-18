@@ -23,5 +23,5 @@ if [ "$1" = "--migrate" ]; then
     sleep 3
     echo `cat /dev/urandom | head -1 | md5sum | head -c 32` > data/config/secret.key
     python3 manage.py migrate
-    python3 manage.py inituser --username root --password rootroot --action create_super_admin
+    python3 manage.py inituser --username root --email root@pusan.ac.kr --password rootroot --action create_super_admin
 fi
