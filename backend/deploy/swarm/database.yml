@@ -1,6 +1,6 @@
 services:
   oj-redis:
-    image: redis:4.0-alpine
+    image: redis:7.0-alpine
     restart: always
     volumes:
       - ../../data/redis:/data
@@ -8,7 +8,7 @@ services:
       - prod-network
 
   oj-postgres:
-    image: postgres:10-alpine
+    image: postgres:14-alpine
     restart: always
     volumes:
       - ../../data/postgres:/var/lib/postgresql/data
