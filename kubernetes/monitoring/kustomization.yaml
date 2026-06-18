@@ -6,4 +6,5 @@ resources:
   - ./alertmanager-config.yaml
   - ./backend-service-monitor.yaml
   - ./grafana-dashboard-codeplace.yaml
+  - ./grafana-dashboard-logs.yaml
   - ./prometheus-rules.yaml

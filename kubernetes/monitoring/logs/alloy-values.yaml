@@ -111,7 +111,8 @@ alloy:
     limits:
       memory: 512Mi
 
-service:
-  serviceMonitor:
-    enabled: true
-    interval: 30s
+serviceMonitor:
+  enabled: true
+  additionalLabels:
+    release: kube-prometheus-stack
+  interval: 30s

@@ -20,6 +20,7 @@ kubectl -n monitoring get pod | grep -E 'prometheus|alertmanager|grafana|loki|al
 ```
 
 Grafana에서는 `CodePlace Overview` dashboard에서 `namespace`를 알림의 namespace로 맞춥니다.
+로그 수집이나 로그 기반 확인이 필요하면 `CodePlace Logs` dashboard를 함께 봅니다.
 
 Prometheus target 확인:
 
@@ -200,6 +201,25 @@ kubectl -n <namespace> logs -l app=redis-sentinel --tail=100
 - Redis replication Pod 문제면 app cache/queue 영향이 큽니다.
 - Sentinel 문제면 failover와 master discovery 영향이 큽니다.
 
+### LokiUnavailable
+
+증상: Loki single-binary Pod가 1분 이상 ready가 아닙니다.
+
+확인:
+
+```sh
+kubectl -n monitoring get pod,pvc | grep loki
+kubectl -n monitoring describe pod loki-0
+kubectl -n monitoring logs loki-0 --tail=200
+kubectl -n monitoring describe pvc -l app.kubernetes.io/name=loki
+```
+
+판단:
+
+- PVC attach/mount 실패면 Longhorn volume 상태를 먼저 봅니다.
+- readiness만 실패하면 Loki config, retention, disk full, compactor error를 확인합니다.
+- Loki가 내려가도 앱 요청 처리는 계속되지만 로그 수집/조회가 끊기므로 빠르게 복구합니다.
+
 ## P1
 
 ### ApiLatencyHigh
@@ -283,6 +303,43 @@ max by (namespace, persistentvolumeclaim) (kubelet_volume_stats_capacity_bytes{n
 kubectl -n <namespace> get pvc
 kubectl -n <namespace> describe pvc <pvc>
 ```
+
+### LokiPVCAlmostFull
+
+확인:
+
+```promql
+max by (namespace, persistentvolumeclaim) (kubelet_volume_stats_used_bytes{namespace="monitoring", persistentvolumeclaim=~".*loki.*"}) /
+max by (namespace, persistentvolumeclaim) (kubelet_volume_stats_capacity_bytes{namespace="monitoring", persistentvolumeclaim=~".*loki.*"})
+```
+
+```sh
+kubectl -n monitoring get pvc | grep loki
+kubectl -n monitoring describe pvc <loki-pvc>
+```
+
+조치:
+
+- dev/prod retention이 실제 기대대로 적용되는지 확인합니다.
+- 당장 여유가 없으면 Longhorn PVC size를 증설합니다.
+- 반복되면 retention 기간을 줄이거나 prod 로그 저장 방식을 내부 S3 호환 object storage로 분리합니다.
+
+### AlloyDaemonSetUnavailable / LokiGatewayUnavailable
+
+확인:
+
+```sh
+kubectl -n monitoring get daemonset alloy
+kubectl -n monitoring describe daemonset alloy
+kubectl -n monitoring logs daemonset/alloy --tail=200
+kubectl -n monitoring get pod -l app.kubernetes.io/component=gateway
+kubectl -n monitoring logs deploy/loki-gateway --tail=200
+```
+
+판단:
+
+- Alloy가 특정 node에서만 비면 해당 node의 scheduling, taint, resource pressure를 봅니다.
+- Loki gateway가 비면 Alloy write와 Grafana query가 실패할 수 있습니다.
 
 ### CodePlaceNodePressure
 

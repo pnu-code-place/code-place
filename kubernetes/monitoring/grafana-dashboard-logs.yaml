@@ -1,0 +1,175 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-codeplace-logs
+  labels:
+    grafana_dashboard: "1"
+data:
+  codeplace-logs.json: |
+    {
+      "uid": "codeplace-logs",
+      "title": "CodePlace Logs",
+      "schemaVersion": 39,
+      "version": 1,
+      "refresh": "30s",
+      "tags": ["codeplace", "logs"],
+      "editable": true,
+      "time": {
+        "from": "now-1h",
+        "to": "now"
+      },
+      "templating": {
+        "list": [
+          {
+            "name": "namespace",
+            "type": "custom",
+            "query": "code-place-dev,code-place-prod,monitoring",
+            "multi": true,
+            "includeAll": true,
+            "allValue": "code-place-dev|code-place-prod",
+            "current": {
+              "text": "code-place-dev",
+              "value": "code-place-dev"
+            }
+          }
+        ]
+      },
+      "panels": [
+        {
+          "type": "stat",
+          "title": "Loki Ready",
+          "gridPos": {"x": 0, "y": 0, "w": 4, "h": 4},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "red", "value": null},
+                  {"color": "green", "value": 1}
+                ]
+              }
+            }
+          },
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "min(kube_pod_status_ready{namespace=\"monitoring\", condition=\"true\", pod=~\"loki-[0-9]+\"})", "legendFormat": "loki"}
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "Alloy Nodes",
+          "gridPos": {"x": 4, "y": 0, "w": 4, "h": 4},
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "short"}},
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "kube_daemonset_status_number_available{namespace=\"monitoring\", daemonset=\"alloy\"}", "legendFormat": "available"},
+            {"expr": "kube_daemonset_status_desired_number_scheduled{namespace=\"monitoring\", daemonset=\"alloy\"}", "legendFormat": "desired"}
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "Loki PVC Usage",
+          "gridPos": {"x": 8, "y": 0, "w": 4, "h": 4},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percentunit",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "orange", "value": 0.75},
+                  {"color": "red", "value": 0.85}
+                ]
+              }
+            }
+          },
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "max(kubelet_volume_stats_used_bytes{namespace=\"monitoring\", persistentvolumeclaim=~\".*loki.*\"}) / clamp_min(max(kubelet_volume_stats_capacity_bytes{namespace=\"monitoring\", persistentvolumeclaim=~\".*loki.*\"}), 1)", "legendFormat": "usage"}
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "Log Lines",
+          "gridPos": {"x": 12, "y": 0, "w": 4, "h": 4},
+          "datasource": "Loki",
+          "fieldConfig": {"defaults": {"unit": "short"}},
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "sum(count_over_time({namespace=~\"$namespace\"}[5m]))", "legendFormat": "lines"}
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "Backend Errors",
+          "gridPos": {"x": 16, "y": 0, "w": 4, "h": 4},
+          "datasource": "Loki",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "orange", "value": 1},
+                  {"color": "red", "value": 5}
+                ]
+              }
+            }
+          },
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "sum(count_over_time({namespace=~\"$namespace\", app=\"backend\"} | json | level=\"ERROR\" [5m]))", "legendFormat": "errors"}
+          ]
+        },
+        {
+          "type": "logs",
+          "title": "Recent Backend Errors",
+          "gridPos": {"x": 0, "y": 4, "w": 12, "h": 10},
+          "datasource": "Loki",
+          "options": {
+            "showLabels": false,
+            "showTime": true,
+            "wrapLogMessage": true,
+            "dedupStrategy": "none"
+          },
+          "targets": [
+            {"expr": "{namespace=~\"$namespace\", app=\"backend\"} | json | level=\"ERROR\""}
+          ]
+        },
+        {
+          "type": "logs",
+          "title": "Judge and Celery Logs",
+          "gridPos": {"x": 12, "y": 4, "w": 12, "h": 10},
+          "datasource": "Loki",
+          "options": {
+            "showLabels": false,
+            "showTime": true,
+            "wrapLogMessage": true,
+            "dedupStrategy": "none"
+          },
+          "targets": [
+            {"expr": "{namespace=~\"$namespace\", container=~\"celery-worker|celery-beat|judge-server\"}"}
+          ]
+        },
+        {
+          "type": "logs",
+          "title": "Request ID Lookup",
+          "gridPos": {"x": 0, "y": 14, "w": 24, "h": 9},
+          "datasource": "Loki",
+          "options": {
+            "showLabels": false,
+            "showTime": true,
+            "wrapLogMessage": true,
+            "dedupStrategy": "none"
+          },
+          "targets": [
+            {"expr": "{namespace=~\"$namespace\"} |= \"request_id\""}
+          ]
+        }
+      ]
+    }

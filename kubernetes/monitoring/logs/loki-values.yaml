@@ -69,6 +69,14 @@ gateway:
 lokiCanary:
   enabled: true
 
+monitoring:
+  serviceMonitor:
+    enabled: true
+    labels:
+      release: kube-prometheus-stack
+    interval: 15s
+    scrapeTimeout: 10s
+
 test:
   enabled: true
 

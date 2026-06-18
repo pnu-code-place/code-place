@@ -5,6 +5,7 @@ This directory contains Helm values for the Kubernetes logs stack.
 - Loki: monolithic mode, filesystem storage, Longhorn PVC.
 - Alloy: DaemonSet log collector for `code-place-dev`, `code-place-prod`, and `monitoring`.
 - Retention: `code-place-dev` 3 days, `code-place-prod` 7 days.
+- Monitoring: Loki and Alloy ServiceMonitors are enabled for kube-prometheus-stack.
 
 ## Install or Upgrade
 
@@ -43,6 +44,11 @@ Grafana should show a `Loki` datasource. Useful Explore queries:
 {namespace="code-place-prod", app="backend"} | json
 {namespace="code-place-dev", container=~"backend|celery-worker|judge-server"}
 ```
+
+Grafana should also show:
+
+- `CodePlace Overview`
+- `CodePlace Logs`
 
 ## Notes
 
