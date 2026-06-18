@@ -331,7 +331,8 @@ redis_memory_max_bytes{namespace="<namespace>"}
 
 - `PostgresCollectorError`는 metrics query 실패이므로 CNPG exporter 로그와 PostgreSQL 권한/상태를 확인합니다.
 - `PostgresHADegraded`는 3개 instance가 서로 다른 node에 분산되지 않은 상태입니다. node 수, taint, Longhorn volume attach 상태를 확인합니다.
-- `RedisMemoryHigh`는 Redis maxmemory 대비 사용량이 높은 상태입니다. eviction 정책, queue/backlog, cache key 증가를 확인합니다.
+- `RedisMemoryHigh`는 Redis `maxmemory`가 0보다 클 때만 동작합니다. `maxmemory=0`이면 Redis 자체 제한이 없으므로 container memory alert를 기준으로 보고, 제한을 둘지 별도로 결정합니다.
+- Redis memory가 높으면 eviction 정책, queue/backlog, cache key 증가를 확인합니다.
 
 ### PVCAlmostFull
 

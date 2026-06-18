@@ -432,7 +432,8 @@ data:
           "gridPos": {"x": 18, "y": 38, "w": 6, "h": 5},
           "fieldConfig": {"defaults": {"unit": "bytes"}},
           "targets": [
-            {"expr": "max by (namespace, pod) (redis_memory_used_bytes{namespace=~\"$namespace\"})", "legendFormat": "{{namespace}} {{pod}}"}
+            {"expr": "max by (namespace, pod) (redis_memory_used_bytes{namespace=~\"$namespace\"})", "legendFormat": "{{namespace}} {{pod}} used"},
+            {"expr": "max by (namespace, pod) (redis_memory_max_bytes{namespace=~\"$namespace\"})", "legendFormat": "{{namespace}} {{pod}} maxmemory"}
           ]
         }
       ]
