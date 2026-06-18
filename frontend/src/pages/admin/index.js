@@ -24,6 +24,7 @@ import "./style.less"
 
 import ECharts from "vue-echarts"
 import "@/utils/echarts"
+import { initSentry } from "@/utils/sentry"
 
 const legacyPanelTag = "Panel"
 const legacySaveTag = "Save"
@@ -65,5 +66,7 @@ Vue.prototype.$success = (msg) => {
     Vue.prototype.$message({ message: msg, type: "success" })
   }
 }
+
+initSentry(Vue)
 
 new Vue(Vue.util.extend({ router, store, i18n }, App)).$mount("#app")
