@@ -130,9 +130,11 @@ class CodePlaceCollector:
             logger.warning("Failed to collect judge-server metrics: %s", e)
             servers = []
         for server in servers:
+            if server.is_disabled:
+                continue
             hostname = server.hostname or "unknown"
             heartbeat_age = max((now - server.last_heartbeat).total_seconds(), 0)
-            available = 1 if not server.is_disabled and server.status == "normal" else 0
+            available = 1 if server.status == "normal" else 0
             available_metric.add_metric([hostname], available)
             heartbeat_metric.add_metric([hostname], heartbeat_age)
             task_metric.add_metric([hostname], server.task_number)

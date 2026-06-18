@@ -5,13 +5,24 @@ from datetime import datetime, timezone
 from utils.observability_context import get_request_id
 
 
-SENSITIVE_FIELDS = {
+SENSITIVE_EXACT_FIELDS = {
     "authorization",
     "cookie",
     "password",
     "token",
     "secret",
     "code",
+    "src",
+}
+SENSITIVE_SUBSTRINGS = {
+    "authorization",
+    "cookie",
+    "password",
+    "token",
+    "secret",
+    "source_code",
+    "sourcecode",
+    "spj_code",
     "src",
 }
 
@@ -56,4 +67,4 @@ class CodePlaceJsonFormatter(logging.Formatter):
     @staticmethod
     def _is_sensitive_key(key):
         normalized = str(key).lower()
-        return any(field in normalized for field in SENSITIVE_FIELDS)
+        return normalized in SENSITIVE_EXACT_FIELDS or any(field in normalized for field in SENSITIVE_SUBSTRINGS)
