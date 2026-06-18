@@ -54,7 +54,7 @@
             "
           >
             <ECharts
-              :options="chartOption"
+              :option="chartOption"
               ref="line"
               style="width: 100%; height: 100%"
             />
@@ -69,7 +69,7 @@
           >
           <div style="height: 200px; padding-top: 20px">
             <ECharts
-              :options="options"
+              :option="options"
               ref="line"
               style="width: 100%; height: 100%"
             />
@@ -84,7 +84,7 @@
           >
           <div style="height: 200px; padding-top: 20px">
             <ECharts
-              :options="weekOptions"
+              :option="weekOptions"
               ref="line"
               style="width: 100%; height: 100%"
             />
@@ -523,7 +523,7 @@
 import papa from "papaparse"
 import api from "../../api.js"
 import utils from "@/utils/utils"
-import ECharts from "vue-echarts/components/ECharts.vue"
+import ECharts from "vue-echarts"
 
 export default {
   name: "User",

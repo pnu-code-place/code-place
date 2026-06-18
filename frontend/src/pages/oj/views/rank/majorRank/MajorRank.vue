@@ -2,7 +2,6 @@
 import api from "../../../api"
 import utils, { comma } from "../../../../../utils/utils"
 import Pagination from "../../../components/Pagination.vue"
-import { push } from "echarts/lib/component/dataZoom/history"
 import MajorRankItem from "./MajorRankItem.vue"
 import ErrorSign from "../../general/ErrorSign.vue"
 
@@ -24,7 +23,6 @@ export default {
     }
   },
   methods: {
-    push,
     init() {
       let query = this.$route.query
       this.query = Object.assign(this.query, query)

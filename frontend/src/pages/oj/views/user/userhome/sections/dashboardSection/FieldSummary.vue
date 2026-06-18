@@ -165,7 +165,7 @@ export default {
 <template>
   <div class="category-summary">
     <div class="graph-column">
-      <ECharts :options="chartOption" style="width: 100%; height: 100%" />
+      <ECharts :option="chartOption" style="width: 100%; height: 100%" />
     </div>
 
     <div class="table-wrapper">
