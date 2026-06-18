@@ -1,51 +1,51 @@
-# Redis (Standalone) 배포 가이드
+# Redis HA 배포 가이드
 
-이 문서는 Redis Operator를 사용하여 Standalone 모드의 Redis 인스턴스를 쿠버네티스 클러스터에 배포하는 방법을 안내합니다.
+이 디렉터리는 Opstree Redis Operator를 사용해 Redis를 HA 구성으로 배포합니다.
 
-### 핵심 파일
+## 구성
 
-- `redis.yaml`: Redis Operator를 통해 Redis Standalone 인스턴스를 생성하기 위한 Custom Resource(CR) 정의 파일입니다.
+- `RedisReplication`: Redis 3개 Pod로 master/replica 구성을 만듭니다.
+- `RedisSentinel`: Sentinel 3개 Pod로 master 감시와 failover를 수행합니다.
+- 애플리케이션은 `redis-sentinel:26379`로 접속하고, master group 이름은 `myMaster`를 사용합니다.
 
----
+## 사전 조건
 
-## 1. 사전 조건 (Prerequisites)
-
-이 설정을 적용하기 전에, 클러스터에 **Redis Operator**가 반드시 설치되어 있어야 합니다.
-
-#### 1-1. Helm 리포지토리 추가
-
-Opstree Redis Operator의 공식 Helm 차트 리포지토리를 추가합니다.
+클러스터에 Redis Operator가 설치되어 있어야 합니다.
 
 ```sh
 helm repo add ot-helm https://ot-container-kit.github.io/helm-charts/
 helm repo update
-```
-
-#### 1-2. Redis Operator 설치
-
-다음 명령어를 사용하여 클러스터에 Redis Operator를 설치합니다.
-
-```sh
 helm install redis-operator ot-helm/redis-operator
 ```
 
-설치가 완료되면, Redis Custom Resource를 관리할 준비가 된 것입니다.
+## 배포
 
----
-
-## 2. 배포 (Deployment)
-
-사전 조건이 충족되었다면, `redis.yaml` 파일을 클러스터에 적용하여 Redis 인스턴스를 배포할 수 있습니다. `redis.yaml` 파일은 현재 `kubernetes/base/redis/` 디렉토리에 있습니다.
+Kustomize base 또는 overlay를 적용하면 `redis.yaml`이 함께 배포됩니다.
 
 ```sh
-kubectl apply -f ../backend/redis.yaml
+kubectl apply -k kubernetes/overlays/prod
 ```
 
-> **관련 문서:** 더 자세한 정보는 [Redis Operator 공식 문서](https://redis-operator.opstree.dev/docs/getting-started/standalone/)를 참고하세요.
+Redis만 직접 적용할 수도 있습니다.
 
----
+```sh
+kubectl apply -f kubernetes/base/redis/redis.yaml
+```
 
-## 3. 향후 개선 사항 (TODO)
+## 애플리케이션 설정
 
-- 현재 구성은 단일 파드로 운영되는 **Standalone 모드**입니다.
-- 향후 서비스 트래픽이 증가하거나 더 높은 수준의 가용성이 요구될 경우, **Sentinel 또는 Cluster 모드**로 전환하는 것을 검토해야 합니다. (Junwoo)
+backend, celery worker, celery beat는 다음 환경변수로 Sentinel을 사용합니다.
+
+```sh
+REDIS_HOST=redis-sentinel
+REDIS_PORT=26379
+REDIS_USE_SENTINEL=1
+REDIS_SENTINEL_MASTER_NAME=myMaster
+REDIS_SENTINEL_HOSTS=redis-sentinel:26379
+```
+
+## 운영 메모
+
+Redis와 Sentinel Pod는 `kubernetes.io/hostname` 기준으로 서로 다른 노드에 분산되도록 설정되어 있습니다. 이 구성은 최소 3개 이상의 스케줄 가능한 Kubernetes 노드를 전제로 합니다. 노드가 3개 미만이면 HA를 만족할 수 없으므로 Pod가 pending 상태로 남을 수 있습니다.
+
+Sentinel failover는 Redis master 장애 시 자동 승격을 수행하지만, failover 중에는 짧은 연결 재시도 구간이 생길 수 있습니다. 완전한 무중단에 가깝게 운영하려면 Longhorn replica와 Kubernetes 노드 장애 조건이 맞는지, 애플리케이션 retry 정책이 충분한지 함께 점검해야 합니다.
