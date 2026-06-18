@@ -47,7 +47,7 @@ spec:
     minAvailable: 2
   redisSentinelConfig:
     redisReplicationName: redis-replication
-    masterGroupName: myMaster
+    masterGroupName: mymaster
     quorum: "2"
     downAfterMilliseconds: "5000"
     parallelSyncs: "1"

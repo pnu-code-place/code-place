@@ -218,7 +218,7 @@ def parse_host_port_list(value, default_port):
 
 
 REDIS_USE_SENTINEL = env_to_bool("REDIS_USE_SENTINEL")
-REDIS_SENTINEL_MASTER_NAME = get_env("REDIS_SENTINEL_MASTER_NAME", "myMaster")
+REDIS_SENTINEL_MASTER_NAME = get_env("REDIS_SENTINEL_MASTER_NAME", "mymaster")
 REDIS_SENTINEL_HOSTS = parse_host_port_list(
     get_env("REDIS_SENTINEL_HOSTS", "%s:%s" % (REDIS_CONF["host"], REDIS_CONF["port"])),
     REDIS_CONF["port"])

@@ -48,7 +48,7 @@ spec:
             - name: REDIS_USE_SENTINEL
               value: "1"
             - name: REDIS_SENTINEL_MASTER_NAME
-              value: "myMaster"
+              value: "mymaster"
             - name: REDIS_SENTINEL_HOSTS
               value: "redis-sentinel:26379"
             - name: POSTGRES_USER
