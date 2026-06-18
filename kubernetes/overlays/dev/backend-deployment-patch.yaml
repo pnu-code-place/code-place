@@ -17,3 +17,5 @@ spec:
                   key: SENTRY_DSN
             - name: SENTRY_ENVIRONMENT
               value: "dev"
+            - name: SENTRY_RELEASE
+              value: "82d1bcd221199cd9ad9beb930239a58b38340cba-dev"
