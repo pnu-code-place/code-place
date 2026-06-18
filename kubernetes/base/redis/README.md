@@ -7,6 +7,7 @@
 - `RedisReplication`: Redis 3개 Pod로 master/replica 구성을 만듭니다.
 - `RedisSentinel`: Sentinel 3개 Pod로 master 감시와 failover를 수행합니다.
 - 애플리케이션은 `redis-sentinel:26379`로 접속하고, master group 이름은 `myMaster`를 사용합니다.
+- `RedisSentinel` CR 이름은 `redis`입니다. Opstree Operator가 `<CR 이름>-sentinel` Service를 생성하므로 실제 Sentinel Service 이름은 `redis-sentinel`입니다.
 
 ## 사전 조건
 
