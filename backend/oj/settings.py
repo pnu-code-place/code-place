@@ -24,7 +24,7 @@ else:
 
 SENTRY_DSN = get_env(
     "SENTRY_DSN",
-    "https://d3a5abd2562994de8fae7fca4988680a@o4511586463776768.ingest.us.sentry.io/4511586479308800",
+    "",
 )
 if SENTRY_DSN:
     sentry_sdk.init(
