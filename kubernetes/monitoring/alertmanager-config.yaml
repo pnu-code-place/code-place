@@ -9,6 +9,7 @@ spec:
     groupBy:
       - alertname
       - priority
+      - namespace
     groupWait: 30s
     groupInterval: 5m
     repeatInterval: 1h

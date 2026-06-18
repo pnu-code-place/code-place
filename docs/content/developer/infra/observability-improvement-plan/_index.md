@@ -82,7 +82,7 @@ OpenTelemetry는 앱 초기화 코드에 내장되어 있지만 기본값은 `OT
 - `backend-service-monitor.yaml`: backend `/metrics` scrape, interval 15s.
 - `prometheus-rules.yaml`: P0/P1 fast alert rules.
 - `alertmanager-config.yaml`: P0/P1 Discord alert routing.
-- `grafana-dashboard-codeplace.yaml`: CodePlace overview dashboard.
+- `grafana-dashboard-codeplace.yaml`: CodePlace overview dashboard. `namespace` 변수로 `code-place-dev`와 `code-place-prod`를 분리해 봅니다.
 - `kube-prometheus-stack-values.yaml`: selector와 evaluation interval 기본값.
 - `kustomization.yaml`: 기존 `monitoring` namespace의 kube-prometheus-stack/Grafana/Alertmanager에 붙일 CodePlace monitoring 리소스 묶음.
 
