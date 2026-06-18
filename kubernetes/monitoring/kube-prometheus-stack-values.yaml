@@ -15,6 +15,14 @@ alertmanager:
         kubernetes.io/metadata.name: monitoring
 
 grafana:
+  additionalDataSources:
+    - name: Loki
+      type: loki
+      access: proxy
+      url: http://loki-gateway.monitoring.svc.cluster.local
+      isDefault: false
+      jsonData:
+        timeout: 60
   ingress:
     enabled: true
     ingressClassName: traefik

@@ -16,7 +16,7 @@ weight: 6
 ```sh
 kubectl get ns
 kubectl -n monitoring get prometheusrule,alertmanagerconfig,servicemonitor
-kubectl -n monitoring get pod | grep -E 'prometheus|alertmanager|grafana'
+kubectl -n monitoring get pod | grep -E 'prometheus|alertmanager|grafana|loki|alloy'
 ```
 
 Grafana에서는 `CodePlace Overview` dashboard에서 `namespace`를 알림의 namespace로 맞춥니다.
@@ -32,6 +32,22 @@ Alertmanager 확인:
 ```text
 Alerts -> alertname / namespace / priority
 Status -> Configuration -> p0-discord / p1-discord
+```
+
+Loki 로그 확인:
+
+```logql
+{namespace="<namespace>"}
+{namespace="<namespace>", app="backend"} | json
+{namespace="<namespace>", container=~"backend|celery-worker|judge-server"}
+```
+
+Loki/Alloy 상태 확인:
+
+```sh
+kubectl -n monitoring get pod,pvc | grep -E 'loki|alloy'
+kubectl -n monitoring logs deploy/loki-gateway --tail=100
+kubectl -n monitoring logs daemonset/alloy --tail=100
 ```
 
 ## P0
@@ -70,6 +86,13 @@ histogram_quantile(0.95, sum by (le) (rate(codeplace_http_request_duration_secon
 kubectl -n <namespace> logs deploy/backend --tail=200
 kubectl -n <namespace> get pod -l app=backend
 kubectl -n <namespace> describe pod -l app=backend
+```
+
+Grafana Explore:
+
+```logql
+{namespace="<namespace>", app="backend"} | json | status_code >= 500
+{namespace="<namespace>", app="backend"} |= "<request_id>"
 ```
 
 판단:
@@ -212,6 +235,12 @@ kubectl -n <namespace> logs deploy/celery-worker --tail=200
 kubectl -n <namespace> logs deploy/celery-beat --tail=200
 ```
 
+Grafana Explore:
+
+```logql
+{namespace="<namespace>", container=~"celery-worker|celery-beat"}
+```
+
 ### PodCrashLooping / CodePlacePodNotReady
 
 확인:
@@ -220,6 +249,12 @@ kubectl -n <namespace> logs deploy/celery-beat --tail=200
 kubectl -n <namespace> get pod
 kubectl -n <namespace> describe pod <pod>
 kubectl -n <namespace> logs <pod> --previous --tail=200
+```
+
+Grafana Explore:
+
+```logql
+{namespace="<namespace>", pod="<pod>"}
 ```
 
 이미지 pull, secret mount, readiness, resource limit, node scheduling을 확인합니다.
