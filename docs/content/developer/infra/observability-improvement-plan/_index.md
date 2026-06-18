@@ -111,7 +111,11 @@ P1은 `group_wait=30s`, `repeat_interval=1h`로 전달합니다.
 - `CeleryWorkerRestarting`: worker restart 3회 이상/15분.
 - `CeleryBeatDown`: beat Pod not ready 2분 지속.
 - `PodCrashLooping`: 주요 Pod restart 증가 5분 지속.
+- `CodePlacePodNotReady`: 주요 앱/DB/Redis Pod not ready 5분 지속.
+- `CodePlaceContainerCPUHigh`: 주요 컨테이너 CPU limit 사용률 80% 초과 10분 지속.
+- `CodePlaceContainerMemoryHigh`: 주요 컨테이너 memory limit 사용률 85% 초과 10분 지속.
 - `PVCAlmostFull`: PVC 사용률 85% 초과 10분 지속.
+- `CodePlaceNodePressure`: node memory/disk/PID pressure 5분 지속.
 
 ## 5. 운영 확인 절차
 
@@ -123,7 +127,7 @@ P1은 `group_wait=30s`, `repeat_interval=1h`로 전달합니다.
 4. CodePlace monitoring 리소스는 기존 kube-prometheus-stack이 있는 클러스터에 별도로 적용합니다.
    - `kubectl apply -k kubernetes/monitoring`
 5. Prometheus target에서 `backend` ServiceMonitor가 healthy인지 확인합니다.
-6. Grafana의 `CodePlace Overview` dashboard에서 request rate, 5xx, latency, submission status, waiting queue, judge heartbeat panel을 확인합니다.
+6. Grafana의 `CodePlace Overview` dashboard에서 request rate, 5xx, latency, submission status, waiting queue, judge heartbeat, Pod readiness/restart, CPU/memory, PVC, PostgreSQL/Redis readiness panel을 확인합니다.
 7. test alert 또는 임시 rule로 P0 webhook 수신 시간이 1분 이내인지 확인합니다.
 
 운영 적용 전제는 다음과 같습니다.
@@ -133,6 +137,7 @@ P1은 `group_wait=30s`, `repeat_interval=1h`로 전달합니다.
 - Docker Swarm monitoring 구성은 레거시로 유지하고 신규 관측성 리소스와 분리합니다.
 - OpenTelemetry는 `OTEL_ENABLED=0` 기본값을 유지하고 dev/staging에서 먼저 활성화합니다.
 - P0/P1 알림 라우팅은 AlertmanagerConfig로 관리하며 Grafana UI 수동 설정에 의존하지 않습니다.
+- PostgreSQL/Redis 세부 지표는 별도 exporter 없이 kube-state-metrics/kubelet 기반 readiness, restart, PVC 관측부터 제공합니다. connection, lock, Redis memory/client 같은 상세 지표는 exporter 도입 이후 확장합니다.
 
 ## 6. 검증
 
