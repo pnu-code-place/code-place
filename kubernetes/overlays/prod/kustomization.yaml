@@ -6,6 +6,7 @@ resources:
   - ./secrets/pg-credentials.yaml
   - ./secrets/regcred.yaml
   - ./secrets/common-credentials.yaml
+  - ./secrets/sentry-secret.yaml
 
 namespace: code-place-prod
 

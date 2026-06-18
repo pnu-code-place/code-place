@@ -10,5 +10,10 @@ spec:
           env:
             - name: CSRF_TRUSTED_ORIGINS
               value: "https://k3s.code-place-dev.site"
+            - name: SENTRY_DSN
+              valueFrom:
+                secretKeyRef:
+                  name: sentry-secret
+                  key: SENTRY_DSN
             - name: SENTRY_ENVIRONMENT
               value: "dev"
