@@ -23,7 +23,7 @@ images:
     newTag: 82d1bcd221199cd9ad9beb930239a58b38340cba-dev
   - name: frontend
     newName: harbor.code-place-dev.site/code-place-dev/frontend
-    newTag: 82d1bcd221199cd9ad9beb930239a58b38340cba-dev
+    newTag: f7331ecfeae944ef3db5577dff00bc04ce16a9ca-dev
   - name: judge-server
     newName: harbor.code-place-dev.site/code-place-dev/judge-server
     newTag: 1.0.3
