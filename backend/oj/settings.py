@@ -245,6 +245,12 @@ SESSION_CACHE_ALIAS = "default"
 
 IP_HEADER = "HTTP_X_REAL_IP"
 
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip()
+    for origin in get_env("CSRF_TRUSTED_ORIGINS", "").split(",")
+    if origin.strip()
+]
+
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 
