@@ -1,11 +1,10 @@
 # ========================================================================
-# NOTE: Grafana Helm Chart 공통 설정 (base)
+# NOTE: Grafana Helm Chart 공통 설정
 # https://github.com/grafana-community/helm-charts/blob/main/charts/grafana/values.yaml
 # ========================================================================
 
 # 환경과 관계없이 공통으로 적용되는 설정을 정의합니다.
-# 환경별로 달라져야 하는 값(예: ingress.hosts)은 여기서 정의하지 않거나,
-# overlays의 values 파일에서 덮어쓸 수 있도록 기본값만 정의합니다.
+# 외부 도메인처럼 클러스터별로 달라져야 하는 값은 values-*.yaml에서 덮어씁니다.
 
 # 데이터 영속성 설정
 persistence:
@@ -16,19 +15,14 @@ persistence:
     - ReadWriteOnce
   size: 1Gi
 
-# Ingress 설정 (기본적으로 비활성화, 각 overlay에서 활성화 및 host 설정)
+# Ingress 설정은 기본 비활성화합니다. 공개 도메인은 values-*.yaml에서 설정합니다.
 ingress:
-  enabled: true
+  enabled: false
   ingressClassName: traefik
   annotations:
     traefik.ingress.kubernetes.io/router.tls.certresolver: default
-  # hosts, tls 설정은 각 overlay의 values.yaml 파일에서 정의합니다.
   hosts: []
-  # - grafana.example.com
   tls: []
-  # - secretName: grafana-tls
-  #   hosts:
-  #     - grafana.example.com
 # 기본 데이터소스 및 대시보드 설정
 # datasources:
 #   datasources.yaml:

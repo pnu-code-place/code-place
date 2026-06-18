@@ -1,5 +1,5 @@
-# kubernetes/overlays/dev/grafana-values.yaml
-# dev 환경용 Grafana values
+# kubernetes/monitoring/grafana/values-ingress.yaml
+# shared Grafana reverse proxy values
 
 ingress:
   enabled: true
