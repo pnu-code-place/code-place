@@ -2,7 +2,6 @@ apiVersion: monitoring.coreos.com/v1alpha1
 kind: AlertmanagerConfig
 metadata:
   name: codeplace-alert-routing
-  namespace: monitoring
   labels:
     alertmanagerConfig: codeplace
 spec:

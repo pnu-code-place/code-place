@@ -1,0 +1,9 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: monitoring
+
+resources:
+  - ./alertmanager-config.yaml
+  - ./backend-service-monitor.yaml
+  - ./grafana-dashboard-codeplace.yaml
+  - ./prometheus-rules.yaml
