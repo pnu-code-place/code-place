@@ -67,4 +67,4 @@ test.vue
 # build
 vendor-manifest.json
 vendor.dll*.js
-
+vendor.dll*.js.LICENSE.txt
