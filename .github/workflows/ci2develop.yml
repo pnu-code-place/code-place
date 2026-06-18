@@ -86,6 +86,7 @@ jobs:
           build-args: |
             SERVER_NAME=${{ secrets.DEV_SERVER_NAME }}
             APP_VERSION=${{ github.sha }}-dev
+            SENTRY_ENVIRONMENT=development
 
   ci-hub-auth-dev:
     needs: [detect-changes-by-component]

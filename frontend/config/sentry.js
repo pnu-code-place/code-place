@@ -11,7 +11,12 @@ function getSentryDsn() {
   )
 }
 
+function getSentryEnvironment(nodeEnv = process.env.NODE_ENV) {
+  return process.env.SENTRY_ENVIRONMENT || nodeEnv || "development"
+}
+
 module.exports = {
+  getSentryEnvironment,
   getSentryDsn,
   isSentryEnabled,
 }
