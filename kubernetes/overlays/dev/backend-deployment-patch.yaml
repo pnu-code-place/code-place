@@ -2,3 +2,11 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: backend
+spec:
+  template:
+    spec:
+      containers:
+        - name: backend
+          env:
+            - name: CSRF_TRUSTED_ORIGINS
+              value: "https://k3s.code-place-dev.site"
