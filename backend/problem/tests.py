@@ -299,11 +299,11 @@ class ProblemLLMHintAPITest(ProblemCreateTestBase):
         self.assertEqual(mocked_post.call_args.kwargs["json"]["model"], VLLM_MODEL)
 
         # messages[0]: 시스템 프롬프트
-        self.assertIn("Do not repeat the same hint.", msgs[0]["content"])
-        self.assertIn("Start from a specific condition, constraint, structure, or example from the problem.",
+        self.assertIn("Do not repeat or rephrase previous hints.", msgs[0]["content"])
+        self.assertIn("Start from a concrete condition, structure, or property of the problem.",
                       msgs[0]["content"])
-        self.assertIn("Hint levels:", msgs[0]["content"])
-        self.assertIn("현재 N단계 힌트를 제공해야 합니다", msgs[0]["content"])
+        self.assertIn("Level definitions:", msgs[0]["content"])
+        self.assertIn("There are exactly 5 levels.", msgs[0]["content"])
 
         # messages[1]: 문제 데이터 (HTML 태그 미포함, problem._id 포함)
         self.assertIn(self.problem._id, msgs[1]["content"])
@@ -313,7 +313,7 @@ class ProblemLLMHintAPITest(ProblemCreateTestBase):
         self.assertEqual(msgs[2]["role"], "user")
         self.assertIn("You must provide the Level 1 hint now.", msgs[2]["content"])
 
-        self.assertEqual(mocked_post.call_args.kwargs["json"]["temperature"], 0.3)
+        self.assertEqual(mocked_post.call_args.kwargs["json"]["temperature"], 0.2)
         self.assertEqual(mocked_post.call_args.kwargs["stream"], True)
         self.assertEqual(
             mocked_post.call_args.kwargs["timeout"],

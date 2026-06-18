@@ -264,7 +264,7 @@ class SessionManagementAPITest(APITestCase):
 #         self.assertEqual(data["language"], "en-US")
 
 
-@mock.patch("account.views.oj.send_email_async.send")
+@mock.patch("account.views.oj.send_email_async.apply_async")
 class ApplyResetPasswordAPITest(CaptchaTest):
     """
     비밀번호 재설정 (로그인 전) 이메일 발송 API 테스트
@@ -282,20 +282,20 @@ class ApplyResetPasswordAPITest(CaptchaTest):
     def _refresh_captcha(self):
         self.data["captcha"] = self._set_captcha(self.client.session)
 
-    def test_apply_reset_password(self, send_email_send):
+    def test_apply_reset_password(self, send_email_apply_async):
         resp = self.client.post(self.url, data=self.data)
         self.assertSuccess(resp)
-        send_email_send.assert_called()
+        send_email_apply_async.assert_called()
 
-    def test_apply_reset_password_twice_in_20_mins(self, send_email_send):
+    def test_apply_reset_password_twice_in_20_mins(self, send_email_apply_async):
         self.test_apply_reset_password()
-        send_email_send.reset_mock()
+        send_email_apply_async.reset_mock()
         self._refresh_captcha()
         resp = self.client.post(self.url, data=self.data)
         self.assertDictEqual(resp.data, {"error": "error", "data": "You can only reset password once per 20 minutes"})
-        send_email_send.assert_not_called()
+        send_email_apply_async.assert_not_called()
 
-    def test_apply_reset_password_again_after_20_mins(self, send_email_send):
+    def test_apply_reset_password_again_after_20_mins(self, send_email_apply_async):
         self.test_apply_reset_password()
         user = User.objects.first()
         user.reset_password_token_expire_time = now() - timedelta(minutes=21)
