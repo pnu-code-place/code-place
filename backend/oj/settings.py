@@ -22,16 +22,71 @@ if production_env:
 else:
     from .dev_settings import *
 
+SENTRY_SENSITIVE_EXACT_FIELDS = {
+    "authorization",
+    "cookie",
+    "password",
+    "token",
+    "secret",
+    "code",
+    "src",
+}
+SENTRY_SENSITIVE_SUBSTRINGS = {
+    "authorization",
+    "cookie",
+    "password",
+    "token",
+    "secret",
+    "source_code",
+    "sourcecode",
+    "spj_code",
+    "src",
+}
+
+
+def _is_sentry_sensitive_key(key):
+    normalized = str(key).lower()
+    return (
+        normalized in SENTRY_SENSITIVE_EXACT_FIELDS
+        or any(field in normalized for field in SENTRY_SENSITIVE_SUBSTRINGS)
+    )
+
+
+def _redact_sentry_value(value):
+    if isinstance(value, dict):
+        return {
+            key: "[REDACTED]" if _is_sentry_sensitive_key(key) else _redact_sentry_value(item)
+            for key, item in value.items()
+        }
+    if isinstance(value, list):
+        return [_redact_sentry_value(item) for item in value]
+    return value
+
+
+def _before_send_sentry(event, hint):
+    event = _redact_sentry_value(event)
+    request = event.get("request") or {}
+    request_id = (request.get("headers") or {}).get("X-Request-ID")
+    if request_id:
+        event.setdefault("tags", {})["request_id"] = request_id
+    return event
+
+
 SENTRY_DSN = get_env(
     "SENTRY_DSN",
     "",
 )
 if SENTRY_DSN:
-    sentry_sdk.init(
-        dsn=SENTRY_DSN,
-        send_default_pii=False,
-        environment=get_env("SENTRY_ENVIRONMENT", get_env("OJ_ENV", "dev")),
-    )
+    SENTRY_OPTIONS = {
+        "dsn": SENTRY_DSN,
+        "send_default_pii": False,
+        "environment": get_env("SENTRY_ENVIRONMENT", get_env("OJ_ENV", "dev")),
+        "before_send": _before_send_sentry,
+    }
+    SENTRY_RELEASE = get_env("SENTRY_RELEASE", "")
+    if SENTRY_RELEASE:
+        SENTRY_OPTIONS["release"] = SENTRY_RELEASE
+    sentry_sdk.init(**SENTRY_OPTIONS)
 
 with open(os.path.join(DATA_DIR, "config", "secret.key"), "r") as f:
     SECRET_KEY = f.read()

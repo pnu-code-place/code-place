@@ -178,7 +178,9 @@ P1은 `group_wait=30s`, `repeat_interval=1h`로 전달합니다.
 - P0/P1 알림 라우팅은 AlertmanagerConfig로 관리하며 Grafana UI 수동 설정에 의존하지 않습니다.
 - 로그 수집은 Grafana Alloy와 Loki로 관리하며 Promtail은 신규 도입하지 않습니다.
 - PostgreSQL은 CNPG instance exporter와 PodMonitor로 `cnpg_collector_*` 지표를 수집합니다. Redis는 Opstree Redis exporter sidecar와 PodMonitor로 `redis_*` 지표를 수집합니다.
-- Sentry backend SDK는 기본 PII 자동 전송을 비활성화합니다. 사용자 영향 분석은 Sentry event와 request_id 기반 backend JSON log를 함께 사용합니다.
+- Sentry backend SDK는 기본 PII 자동 전송을 비활성화하고 전송 직전 `authorization`, `cookie`, `password`, `token`, `secret`, 제출 source code 계열 필드를 redaction합니다. 사용자 영향 분석은 Sentry event와 request_id 기반 backend JSON log를 함께 사용합니다.
+- Frontend Sentry 설정은 빌드 시점 값입니다. `APP_VERSION`, `SENTRY_ENVIRONMENT`, `SENTRY_DSN`, `USE_SENTRY`는 frontend image build-arg로 주입하며, Kubernetes Deployment의 런타임 env만 변경해도 이미 빌드된 JS bundle에는 반영되지 않습니다.
+- Backend/Celery Sentry release는 `SENTRY_RELEASE` env가 있으면 사용합니다. 이미지 태그와 동일한 commit SHA를 넣어 Grafana/Loki/Sentry 간 배포 기준을 맞추는 것을 권장합니다.
 - Tempo tracing은 저장소/retention 결정을 먼저 요구하므로 현재 PR에서는 켜지 않습니다.
 
 ## 6. 검증

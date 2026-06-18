@@ -3,9 +3,57 @@ import { init, setContext } from "@sentry/vue"
 const SENTRY_DSN =
   "https://143814aaa2d6e0b4550b2e5effefe90d@o4511586463776768.ingest.us.sentry.io/4511586483634176"
 
+const SENSITIVE_EXACT_FIELDS = [
+  "authorization",
+  "cookie",
+  "password",
+  "token",
+  "secret",
+  "code",
+  "src",
+]
+
+const SENSITIVE_SUBSTRINGS = [
+  "authorization",
+  "cookie",
+  "password",
+  "token",
+  "secret",
+  "source_code",
+  "sourcecode",
+  "spj_code",
+  "src",
+]
+
+function isSensitiveKey(key) {
+  const normalized = String(key).toLowerCase()
+  return (
+    SENSITIVE_EXACT_FIELDS.indexOf(normalized) !== -1 ||
+    SENSITIVE_SUBSTRINGS.some((field) => normalized.indexOf(field) !== -1)
+  )
+}
+
+function redact(value) {
+  if (Array.isArray(value)) {
+    return value.map((item) => redact(item))
+  }
+
+  if (value && typeof value === "object") {
+    return Object.keys(value).reduce((result, key) => {
+      result[key] = isSensitiveKey(key) ? "[REDACTED]" : redact(value[key])
+      return result
+    }, {})
+  }
+
+  return value
+}
+
 const options = {
   release: process.env.VERSION,
   environment: process.env.SENTRY_ENVIRONMENT,
+  beforeSend(event) {
+    return redact(event)
+  },
   denyUrls: [
     // Chrome extensions
     /extensions\//i,
