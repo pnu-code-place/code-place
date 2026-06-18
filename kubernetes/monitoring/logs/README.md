@@ -32,6 +32,14 @@ helm upgrade --install alloy grafana/alloy \
 
 ## Verify
 
+Run the repository validation first:
+
+```sh
+bash kubernetes/monitoring/validate.sh
+```
+
+If `helm` is installed and the chart repos are already added, the script also renders kube-prometheus-stack, Loki, and Alloy. Without `helm`, it still validates YAML, Grafana dashboard JSON, and kustomize output.
+
 ```sh
 kubectl -n monitoring get pod | grep -E 'loki|alloy|grafana'
 kubectl -n monitoring get pvc | grep loki

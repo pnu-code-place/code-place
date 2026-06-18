@@ -14,6 +14,7 @@ weight: 6
 알림을 받으면 먼저 scope를 확인합니다.
 
 ```sh
+bash kubernetes/monitoring/validate.sh
 kubectl get ns
 kubectl -n monitoring get prometheusrule,alertmanagerconfig,servicemonitor
 kubectl -n monitoring get pod | grep -E 'prometheus|alertmanager|grafana|loki|alloy'

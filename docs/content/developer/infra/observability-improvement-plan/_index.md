@@ -108,6 +108,7 @@ OpenTelemetry는 앱 초기화 코드에 내장되어 있지만 기본값은 `OT
 - `logs/loki-values.yaml`: Loki Monolithic, Longhorn PVC, dev/prod retention 설정.
 - `logs/alloy-values.yaml`: Alloy DaemonSet 기반 Kubernetes Pod log collection 설정.
 - `grafana-dashboard-logs.yaml`: Loki/Alloy health, Loki PVC, 최근 backend error, judge/celery log 조회 dashboard.
+- `validate.sh`: monitoring YAML, Grafana dashboard JSON, kustomize render, 선택적 promtool/Helm render 검증 스크립트.
 - `kustomization.yaml`: 기존 `monitoring` namespace의 kube-prometheus-stack/Grafana/Alertmanager에 붙일 CodePlace monitoring 리소스 묶음.
 
 `alertmanager-contact-points` Secret은 repo에 저장하지 않습니다. backend의 `/data/config/secret.key`와 같은 비밀값이지만, 자동으로 파일이 생기는 구조는 아닙니다. 운영자가 `kubectl create secret`으로 만들거나 ExternalSecrets/SealedSecrets 같은 Secret 주입 도구로 생성해야 합니다. AlertmanagerConfig는 generic webhook이 아니라 Prometheus Operator의 native `discordConfigs`를 사용합니다.
@@ -186,6 +187,7 @@ P1은 `group_wait=30s`, `repeat_interval=1h`로 전달합니다.
 - Kubernetes monitoring render: `kubectl kustomize kubernetes/monitoring`
 - Logs values YAML parse: `kubernetes/monitoring/logs/loki-values.yaml`, `kubernetes/monitoring/logs/alloy-values.yaml`
 - Grafana dashboard JSON parse: `grafana-dashboard-codeplace.yaml`, `grafana-dashboard-logs.yaml`
+- Monitoring bundle validation: `bash kubernetes/monitoring/validate.sh`
 
 `promtool`이 있는 환경에서는 `promtool check rules kubernetes/monitoring/prometheus-rules.yaml`도 실행합니다.
 `helm`이 있는 환경에서는 Loki/Alloy values를 `helm template`로 렌더링 검증합니다.
