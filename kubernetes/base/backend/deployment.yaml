@@ -47,9 +47,15 @@ spec:
                   name: pg-credentials
                   key: database
             - name: REDIS_HOST
-              value: "redis-standalone"
+              value: "redis-sentinel"
             - name: REDIS_PORT
-              value: "6379"
+              value: "26379"
+            - name: REDIS_USE_SENTINEL
+              value: "1"
+            - name: REDIS_SENTINEL_MASTER_NAME
+              value: "myMaster"
+            - name: REDIS_SENTINEL_HOSTS
+              value: "redis-sentinel:26379"
             - name: POSTGRES_USER
               valueFrom:
                 secretKeyRef:

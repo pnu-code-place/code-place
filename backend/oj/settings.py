@@ -198,7 +198,32 @@ REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': ('rest_framework.renderers.JSONRenderer',)
 }
 
+def env_to_bool(name, default=False):
+    value = get_env(name, str(default)).lower()
+    return value in ("1", "true", "yes", "on")
+
+
+def parse_host_port_list(value, default_port):
+    hosts = []
+    for item in value.split(","):
+        item = item.strip()
+        if not item:
+            continue
+        if ":" in item:
+            host, port = item.rsplit(":", 1)
+        else:
+            host, port = item, default_port
+        hosts.append((host, int(port)))
+    return hosts
+
+
+REDIS_USE_SENTINEL = env_to_bool("REDIS_USE_SENTINEL")
+REDIS_SENTINEL_MASTER_NAME = get_env("REDIS_SENTINEL_MASTER_NAME", "myMaster")
+REDIS_SENTINEL_HOSTS = parse_host_port_list(
+    get_env("REDIS_SENTINEL_HOSTS", "%s:%s" % (REDIS_CONF["host"], REDIS_CONF["port"])),
+    REDIS_CONF["port"])
 REDIS_URL = "redis://%s:%s" % (REDIS_CONF["host"], REDIS_CONF["port"])
+REDIS_SENTINEL_URLS = ";".join("sentinel://%s:%s/4" % (host, port) for host, port in REDIS_SENTINEL_HOSTS)
 
 
 def redis_config():
@@ -206,13 +231,22 @@ def redis_config():
     def make_key(key, key_prefix, version):
         return key
 
-    return {
+    config = {
         "BACKEND": "utils.cache.MyRedisCache",
         "LOCATION": f"{REDIS_URL}",
         "TIMEOUT": None,
         "KEY_PREFIX": "",
         "KEY_FUNCTION": make_key
     }
+    if REDIS_USE_SENTINEL:
+        config["LOCATION"] = "redis://%s/0" % REDIS_SENTINEL_MASTER_NAME
+        config["OPTIONS"] = {
+            "CLIENT_CLASS": "django_redis.client.SentinelClient",
+            "SENTINELS": REDIS_SENTINEL_HOSTS,
+            "CONNECTION_POOL_CLASS": "redis.sentinel.SentinelConnectionPool",
+            "CONNECTION_FACTORY": "django_redis.pool.SentinelConnectionFactory",
+        }
+    return config
 
 
 CACHES = {"default": redis_config()}
@@ -227,8 +261,15 @@ IP_HEADER = "HTTP_X_REAL_IP"
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 
-CELERY_BROKER_URL = f"{REDIS_URL}/4"
-CELERY_RESULT_BACKEND = f"{REDIS_URL}/4"
+if REDIS_USE_SENTINEL:
+    DJANGO_REDIS_CONNECTION_FACTORY = "django_redis.pool.SentinelConnectionFactory"
+    CELERY_BROKER_URL = REDIS_SENTINEL_URLS
+    CELERY_RESULT_BACKEND = REDIS_SENTINEL_URLS
+    CELERY_BROKER_TRANSPORT_OPTIONS = {"master_name": REDIS_SENTINEL_MASTER_NAME}
+    CELERY_RESULT_BACKEND_TRANSPORT_OPTIONS = {"master_name": REDIS_SENTINEL_MASTER_NAME}
+else:
+    CELERY_BROKER_URL = f"{REDIS_URL}/4"
+    CELERY_RESULT_BACKEND = f"{REDIS_URL}/4"
 
 CELERY_TIMEZONE = TIME_ZONE
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
