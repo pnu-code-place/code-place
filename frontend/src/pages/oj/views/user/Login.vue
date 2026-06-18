@@ -1,17 +1,22 @@
 <template>
-  <div>
-    <Form ref="formLogin" :model="formLogin" :rules="ruleLogin">
+  <div class="login-panel">
+    <Form ref="formLogin" class="login-form" :model="formLogin" :rules="ruleLogin">
       <FormItem prop="username">
-        <Input
-          type="text"
-          class="customLoginInput"
-          v-model="formLogin.username"
-          :placeholder="$t('m.LoginUsername')"
-          size="large"
-          :autofocus="true"
-          @on-enter="handleLogin"
-        >
-        </Input>
+        <div class="login-id-input">
+          <Input
+            type="text"
+            class="customLoginInput"
+            v-model="formLogin.username"
+            placeholder="아이디"
+            size="large"
+            :autofocus="true"
+            @on-enter="handleLogin"
+          >
+          </Input>
+          <span v-if="showEmailSuffix" class="login-domain-suffix"
+            >@pusan.ac.kr</span
+          >
+        </div>
       </FormItem>
       <FormItem prop="password">
         <Input
@@ -40,15 +45,18 @@
       >
         {{ $t("m.UserLogin") }}
       </Button>
-      <a class="redirect" @click.stop="goResetPassword" style="">{{
-        $t("m.Forget_Password")
-      }}</a>
-      <a
-        class="redirect"
-        v-if="website.allow_register"
-        @click.stop="handleBtnClick('register')"
-        >{{ $t("m.No_Account") }}</a
-      >
+      <div class="login-links">
+        <a
+          class="redirect"
+          v-if="website.allow_register"
+          @click.stop="handleBtnClick('register')"
+          >{{ $t("m.No_Account") }}</a
+        >
+        <span v-if="website.allow_register" class="login-link-divider"></span>
+        <a class="redirect" @click.stop="goResetPassword">{{
+          $t("m.Forget_Password")
+        }}</a>
+      </div>
     </div>
   </div>
 </template>
@@ -64,9 +72,8 @@ export default {
   mixins: [FormMixin],
   data() {
     const CheckRequiredTFA = (rule, value, callback) => {
-      console.log(value)
       if (value !== "") {
-        api.tfaRequiredCheck(value).then((res) => {
+        api.tfaRequiredCheck(this.normalizeLoginUsername(value)).then((res) => {
           this.tfaRequired = res.data.data.result
         })
       }
@@ -83,10 +90,18 @@ export default {
       },
       ruleLogin: {
         username: [
-          { required: true, trigger: "blur" },
+          { required: true, message: "아이디를 입력해주세요.", trigger: "blur" },
           { validator: CheckRequiredTFA, trigger: "blur" },
         ],
-        password: [{ required: true, trigger: "change", min: 6, max: 20 }],
+        password: [
+          {
+            required: true,
+            message: "비밀번호를 입력해주세요.",
+            trigger: "change",
+            min: 6,
+            max: 20,
+          },
+        ],
       },
     }
   },
@@ -99,10 +114,14 @@ export default {
       })
     },
     handleLogin() {
-      this.validateForm("formLogin").then((valid) => {
+      this.$refs.formLogin.validate((valid) => {
+        if (!valid) {
+          this.$error("입력값을 확인해주세요.")
+          return
+        }
         this.btnLoginLoading = true
         let formData = Object.assign({}, this.formLogin)
-        console.log(formData)
+        formData.username = this.normalizeLoginUsername(formData.username)
         if (!this.tfaRequired) {
           delete formData["tfa_code"]
         }
@@ -123,9 +142,20 @@ export default {
       this.changeModalStatus({ visible: false })
       this.$router.push({ name: "apply-reset-password" })
     },
+    normalizeLoginUsername(username) {
+      const value = (username || "").trim()
+      if (!value || value.indexOf("@") !== -1) {
+        return value
+      }
+      return `${value}@pusan.ac.kr`
+    },
   },
   computed: {
     ...mapGetters(["website", "modalStatus"]),
+    showEmailSuffix() {
+      const username = (this.formLogin.username || "").trim()
+      return username.indexOf("@") === -1
+    },
     visible: {
       get() {
         return this.modalStatus.visible
@@ -139,13 +169,17 @@ export default {
 </script>
 
 <style scoped lang="less">
+.login-panel {
+  width: 100%;
+}
+
 .footer-modal {
-  overflow: auto;
+  overflow: visible;
   margin-top: 20px;
   margin-bottom: -15px;
-  text-align: left;
+  text-align: center;
   .btn {
-    margin: 0 0 15px 0;
+    margin: 0;
     &:last-child {
       margin: 0;
     }
@@ -155,16 +189,150 @@ export default {
   height: 45px;
   border: none;
   background-color: #5b64ed;
-  font-weight: 600;
+  font-weight: 700;
   font-size: 14px;
   border-radius: 8px;
+  box-shadow: 0 8px 18px rgba(74, 83, 212, 0.14);
 }
 .customLoginInput {
   //outline: 2px solid #255aa4 !important;
 }
+.login-form {
+  /deep/ .ivu-form-item {
+    margin-bottom: 16px;
+  }
+
+  /deep/ .ivu-form-item-error {
+    margin-bottom: 26px;
+  }
+
+  /deep/ .ivu-form-item-error-tip {
+    padding-top: 4px;
+    color: #e23b2e;
+    font-size: 12px;
+    line-height: 16px;
+  }
+
+  /deep/ .ivu-input {
+    height: 42px;
+    border-color: #d8dbe4;
+    border-radius: 8px;
+    color: #31364a;
+    font-size: 14px;
+    font-weight: 500;
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  /deep/ .ivu-input::placeholder {
+    color: #9aa0ad;
+    font-weight: 500;
+  }
+
+  /deep/ .ivu-input:focus {
+    border-color: #6b72ee;
+    box-shadow: 0 0 0 2px rgba(91, 100, 237, 0.1);
+  }
+}
+.login-id-input {
+  position: relative;
+
+  /deep/ .ivu-input {
+    padding-right: 118px;
+  }
+}
+.login-domain-suffix {
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  bottom: 1px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #5b64ed;
+  background: #f8f9ff;
+  border-left: 1px solid #d8dbe4;
+  border-radius: 0 7px 7px 0;
+  padding: 0 10px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  pointer-events: none;
+}
+.login-links {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.login-link-divider {
+  display: inline-block;
+  width: 1px;
+  height: 18px;
+  background-color: #d7dbe5;
+}
+
 .redirect {
-  color: #7a7a7a;
-  float: right;
-  margin-right: 10px;
+  color: #565d70;
+  float: none;
+  margin-right: 0;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1;
+  cursor: pointer;
+
+  &:hover {
+    color: #5b64ed;
+  }
+}
+
+@media screen and (max-width: 640px) {
+  .footer-modal {
+    margin-top: 20px;
+  }
+
+  .btn {
+    height: 45px;
+    font-size: 14px;
+  }
+
+  .login-form {
+    /deep/ .ivu-form-item {
+      margin-bottom: 16px;
+    }
+
+    /deep/ .ivu-form-item-error {
+      margin-bottom: 26px;
+    }
+
+    /deep/ .ivu-input {
+      height: 42px;
+      font-size: 14px;
+    }
+  }
+
+  .login-id-input {
+    /deep/ .ivu-input {
+      padding-right: 112px;
+    }
+  }
+
+  .login-domain-suffix {
+    padding: 0 8px;
+    font-size: 13px;
+  }
+
+  .login-links {
+    gap: 16px;
+    margin-top: 22px;
+  }
+
+  .redirect {
+    font-size: 13px;
+  }
+
 }
 </style>
