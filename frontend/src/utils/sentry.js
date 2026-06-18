@@ -1,10 +1,12 @@
-import Vue from "vue"
-import Raven from "raven-js"
-import RavenVue from "raven-js/plugins/vue"
+import { init, setContext } from "@sentry/vue"
+
+const SENTRY_DSN =
+  "https://143814aaa2d6e0b4550b2e5effefe90d@o4511586463776768.ingest.us.sentry.io/4511586483634176"
 
 const options = {
   release: process.env.VERSION,
-  ignoreUrls: [
+  environment: process.env.NODE_ENV,
+  denyUrls: [
     // Chrome extensions
     /extensions\//i,
     /^chrome:\/\//i,
@@ -13,16 +15,25 @@ const options = {
     // Ignore Google flakiness
     /\/(gtm|ga|analytics)\.js/i,
   ],
+  dataCollection: {
+    userInfo: false,
+    httpBodies: [],
+  },
 }
 
-Raven.config(
-  "https://6234a51e61a743b089ed64c51d2f6ea9@sentry.io/258234",
-  options,
-)
-  .addPlugin(RavenVue, Vue)
-  .install()
+export function initSentry(Vue) {
+  if (process.env.USE_SENTRY !== "1") {
+    return
+  }
 
-Raven.setUserContext({
-  version: process.env.VERSION,
-  location: window.location,
-})
+  init({
+    Vue,
+    dsn: process.env.SENTRY_DSN || SENTRY_DSN,
+    ...options,
+  })
+
+  setContext("app", {
+    version: process.env.VERSION,
+    location: window.location.href,
+  })
+}

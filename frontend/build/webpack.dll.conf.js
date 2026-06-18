@@ -17,7 +17,6 @@ const vendors = [
   "vuex",
   "axios",
   "moment",
-  "raven-js",
   "browser-detect",
 ]
 

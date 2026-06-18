@@ -23,6 +23,7 @@ import filters from "@/utils/filters.js"
 
 import ECharts from "vue-echarts"
 import "@/utils/echarts"
+import { initSentry } from "@/utils/sentry"
 
 const legacyPanelTag = "Panel"
 
@@ -56,5 +57,7 @@ Vue.prototype.$Message.config({
 Vue.prototype.$error = (s) => Vue.prototype.$Message.error(s)
 Vue.prototype.$info = (s) => Vue.prototype.$Message.info(s)
 Vue.prototype.$success = (s) => Vue.prototype.$Message.success(s)
+
+initSentry(Vue)
 
 new Vue(Vue.util.extend({ router, store, i18n }, App)).$mount("#app")
