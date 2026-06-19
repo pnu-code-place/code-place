@@ -279,7 +279,7 @@ P1은 `group_wait=30s`, `repeat_interval=1h`로 전달합니다. `code-place-dev
 - `PendingSubmissionsStuck`: oldest pending submission age 300초 초과 3분 지속.
 - `JudgingSubmissionsStuck`: oldest judging submission age 900초 초과 5분 지속.
 - `CeleryWorkerRestarting`: worker restart 3회 이상/15분.
-- `CeleryBeatDown`: beat Pod not ready 2분 지속.
+- `CeleryBeatDown`: beat Deployment available replica 0개 또는 availability metric 누락 2분 지속.
 - `CeleryTaskFailures`: task failure 발생 2분 지속.
 - `CeleryTaskRetries`: task retry 3회 초과/10분, 5분 지속.
 - `CeleryTaskRuntimeHigh`: task p95 runtime 120초 초과 10분 지속.
@@ -294,8 +294,8 @@ P1은 `group_wait=30s`, `repeat_interval=1h`로 전달합니다. `code-place-dev
 - `KubernetesPodUnschedulable`: Pending 또는 Unschedulable 상태 10분 지속.
 - `CodePlaceDeploymentUnavailable`: 주요 Deployment unavailable replica 5분 지속.
 - `CodePlaceDeploymentRolloutStuck`: Deployment observed generation 미반영 10분 지속.
-- `CodePlaceServiceNoReadyEndpoints`: 주요 Service ready endpoint 0개 2분 지속.
-- `VLLMServiceNoReadyEndpoints`: prod vLLM Service ready endpoint 0개 2분 지속.
+- `CodePlaceServiceNoReadyEndpoints`: 주요 Service ready endpoint 0개 또는 endpoint availability metric 누락 2분 지속.
+- `VLLMServiceNoReadyEndpoints`: prod vLLM Service ready endpoint 0개 또는 endpoint availability metric 누락 2분 지속.
 - `CodePlaceContainerCPUHigh`: 주요 컨테이너 CPU limit 사용률 80% 초과 10분 지속.
 - `CodePlaceContainerMemoryHigh`: 주요 컨테이너 memory limit 사용률 85% 초과 10분 지속.
 - `PostgresCollectorError`: CNPG PostgreSQL metrics collection error 5분 지속.
