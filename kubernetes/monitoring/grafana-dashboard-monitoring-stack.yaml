@@ -219,6 +219,27 @@ data:
         },
         {
           "type": "timeseries",
+          "title": "Monitoring Service Target Up",
+          "gridPos": {"x": 8, "y": 36, "w": 8, "h": 6},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "red", "value": null},
+                  {"color": "green", "value": 1}
+                ]
+              }
+            }
+          },
+          "targets": [
+            {"expr": "max by (service) (up{namespace=\"monitoring\", service=~\"blackbox-exporter|kubernetes-event-exporter|otel-collector|tempo|kube-prometheus-stack-grafana|loki.*|alloy.*\"})", "legendFormat": "{{service}}"}
+          ]
+        },
+        {
+          "type": "timeseries",
           "title": "Prometheus TSDB Head Series",
           "gridPos": {"x": 16, "y": 4, "w": 8, "h": 8},
           "datasource": "Prometheus",

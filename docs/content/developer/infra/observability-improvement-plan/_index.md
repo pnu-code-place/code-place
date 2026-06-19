@@ -267,6 +267,7 @@ P1은 `group_wait=30s`, `repeat_interval=1h`로 전달합니다. `code-place-dev
 - `KubernetesEventExporterUnavailable`: Kubernetes event exporter Pod not ready 2분 지속.
 - `GrafanaUnavailable`: Grafana Pod not ready 2분 지속.
 - `GrafanaMetricsTargetDown`: Grafana `/metrics` scrape 실패 또는 target series missing 2분 지속.
+- `MonitoringServiceMetricsTargetDown`: monitoring namespace 주요 Service metrics target scrape 실패 또는 target series missing 2분 지속.
 - `PrometheusOperatorUnavailable`: Prometheus Operator Pod not ready 2분 지속.
 - `PrometheusRuleEvaluationFailures`: Prometheus rule evaluation failure 5분 지속.
 - `PrometheusConfigReloadFailed`: Prometheus generated config reload 실패 또는 reload metric 누락 2분 지속.

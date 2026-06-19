@@ -584,7 +584,7 @@ kube_pod_status_ready{namespace="monitoring", pod=~"blackbox-exporter-.*", condi
 - latency가 synthetic probe에서만 높으면 public route/TLS/frontend nginx를 먼저 보고, backend latency도 높으면 API/DB/Redis 병목을 같이 봅니다.
 - `BlackboxExporterUnavailable`이면 probe 자체가 죽은 것이므로 공개 URL 상태를 판단할 수 없습니다.
 
-### GrafanaUnavailable / GrafanaMetricsTargetDown / PrometheusOperatorUnavailable / PrometheusRuleEvaluationFailures / PrometheusAlertmanagerDiscoveryFailed / AlertmanagerNotificationFailures
+### GrafanaUnavailable / GrafanaMetricsTargetDown / MonitoringServiceMetricsTargetDown / PrometheusOperatorUnavailable / PrometheusRuleEvaluationFailures / PrometheusAlertmanagerDiscoveryFailed / AlertmanagerNotificationFailures
 
 확인:
 
@@ -602,6 +602,7 @@ PromQL:
 ```promql
 kube_pod_status_ready{namespace="monitoring", pod=~"kube-prometheus-stack-grafana-.*|grafana-.*|kube-prometheus-stack-operator-.*", condition="true"}
 up{namespace="monitoring", service="kube-prometheus-stack-grafana"}
+up{namespace="monitoring", service=~"blackbox-exporter|kubernetes-event-exporter|otel-collector|tempo|kube-prometheus-stack-grafana|loki.*|alloy.*"}
 sum by (rule_group) (increase(prometheus_rule_evaluation_failures_total[5m]))
 sum(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"prometheus-kube-prometheus-stack-prometheus-.*"})
 prometheus_notifications_alertmanagers_discovered
@@ -613,6 +614,7 @@ sum by (job, namespace) (up == 0)
 
 - Grafana만 down이면 알림은 계속 갈 수 있지만 dashboard/Explore 기반 원인 분석이 막힙니다.
 - Grafana UI는 살아 있는데 metrics target만 down이면 Grafana 내부 health와 provisioning 상태를 Prometheus에서 못 봅니다. Grafana ServiceMonitor, Service port, `/metrics` 응답, Grafana 로그를 확인합니다.
+- monitoring service metrics target이 down이면 Pod readiness가 정상이어도 ServiceMonitor selector, Service port name, generated Prometheus config, network path를 확인합니다.
 - Operator가 down이면 새 ServiceMonitor/PodMonitor/PrometheusRule/AlertmanagerConfig 변경이 Prometheus/Alertmanager에 반영되지 않을 수 있습니다.
 - rule evaluation failure가 있으면 최근 추가한 PromQL expression과 label cardinality, metric 존재 여부를 먼저 봅니다.
 - Alertmanager discovery가 0이면 AlertmanagerConfig가 맞아도 Prometheus가 알림을 보낼 대상이 없습니다. Prometheus generated config와 Alertmanager Service/endpoints를 확인합니다.
