@@ -1,4 +1,45 @@
 apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: otel-collector
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: otel-collector
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - namespaces
+      - pods
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - apps
+    resources:
+      - replicasets
+    verbs:
+      - get
+      - list
+      - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: otel-collector
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: otel-collector
+subjects:
+  - kind: ServiceAccount
+    name: otel-collector
+    namespace: monitoring
+---
+apiVersion: v1
 kind: ConfigMap
 metadata:
   name: otel-collector-config
@@ -17,6 +58,14 @@ data:
         check_interval: 5s
         limit_mib: 384
         spike_limit_mib: 128
+      k8sattributes:
+        auth_type: serviceAccount
+        extract:
+          metadata:
+            - k8s.namespace.name
+            - k8s.pod.name
+            - k8s.deployment.name
+            - k8s.node.name
       batch:
         timeout: 5s
         send_batch_size: 512
@@ -40,6 +89,7 @@ data:
             - otlp
           processors:
             - memory_limiter
+            - k8sattributes
             - batch
           exporters:
             - otlp/tempo
@@ -60,6 +110,7 @@ spec:
       labels:
         app: otel-collector
     spec:
+      serviceAccountName: otel-collector
       containers:
         - name: otel-collector
           image: otel/opentelemetry-collector-contrib:0.128.0

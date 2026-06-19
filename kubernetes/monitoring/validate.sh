@@ -250,6 +250,49 @@ if "regex = \"(code-place-dev|code-place-prod|monitoring)/.*|kube-system/.*/trae
     raise SystemExit("Alloy keep rule must collect CodePlace/monitoring namespaces and kube-system Traefik logs")
 print("ALLOY LOG COLLECTION SHAPE OK")
 
+otel_documents = list(yaml.safe_load_all((root / "otel-collector.yaml").read_text()))
+otel_by_kind_name = {
+    (document.get("kind"), document.get("metadata", {}).get("name")): document
+    for document in otel_documents
+    if document
+}
+if ("ServiceAccount", "otel-collector") not in otel_by_kind_name:
+    raise SystemExit("otel-collector must run with a dedicated ServiceAccount")
+cluster_role = otel_by_kind_name.get(("ClusterRole", "otel-collector"), {})
+rules_by_group = {
+    tuple(rule.get("apiGroups", [])): set(rule.get("resources", []))
+    for rule in cluster_role.get("rules", [])
+}
+if not {"pods", "namespaces"}.issubset(rules_by_group.get(("",), set())):
+    raise SystemExit("otel-collector ClusterRole must read pods and namespaces for k8s trace attributes")
+if "replicasets" not in rules_by_group.get(("apps",), set()):
+    raise SystemExit("otel-collector ClusterRole must read replicasets for deployment trace attributes")
+cluster_role_binding = otel_by_kind_name.get(("ClusterRoleBinding", "otel-collector"), {})
+subjects = cluster_role_binding.get("subjects", [])
+if not any(subject.get("kind") == "ServiceAccount" and subject.get("name") == "otel-collector" for subject in subjects):
+    raise SystemExit("otel-collector ClusterRoleBinding must bind the otel-collector ServiceAccount")
+otel_deployment = otel_by_kind_name.get(("Deployment", "otel-collector"), {})
+if otel_deployment.get("spec", {}).get("template", {}).get("spec", {}).get("serviceAccountName") != "otel-collector":
+    raise SystemExit("otel-collector Deployment must use the otel-collector ServiceAccount")
+otel_config = otel_by_kind_name.get(("ConfigMap", "otel-collector-config"), {}).get("data", {}).get("config.yaml", "")
+otel_config_yaml = yaml.safe_load(otel_config)
+processors = otel_config_yaml.get("processors", {})
+if "k8sattributes" not in processors:
+    raise SystemExit("otel-collector must enrich traces with k8sattributes")
+k8s_metadata = set(processors["k8sattributes"].get("extract", {}).get("metadata", []))
+required_k8s_metadata = {"k8s.namespace.name", "k8s.pod.name", "k8s.deployment.name", "k8s.node.name"}
+if not required_k8s_metadata.issubset(k8s_metadata):
+    raise SystemExit("otel-collector k8sattributes must extract namespace, pod, deployment, and node")
+trace_processors = (
+    otel_config_yaml.get("service", {})
+    .get("pipelines", {})
+    .get("traces", {})
+    .get("processors", [])
+)
+if "k8sattributes" not in trace_processors:
+    raise SystemExit("otel-collector traces pipeline must include k8sattributes")
+print("OTEL TRACE ENRICHMENT SHAPE OK")
+
 frontend_nginx = Path("frontend/deploy/kube_nginx/nginx.conf").read_text()
 frontend_proxy = Path("frontend/deploy/kube_nginx/api_proxy.conf").read_text()
 frontend_entrypoint = Path("frontend/deploy/entrypoint.sh").read_text()

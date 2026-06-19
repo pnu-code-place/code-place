@@ -119,6 +119,9 @@ for resource in \
   "configmap/kubernetes-event-exporter-config" \
   "configmap/otel-collector-config" \
   "configmap/tempo-config" \
+  "serviceaccount/otel-collector" \
+  "clusterrole/otel-collector" \
+  "clusterrolebinding/otel-collector" \
   "deployment/blackbox-exporter" \
   "deployment/kubernetes-event-exporter" \
   "deployment/otel-collector" \
@@ -158,6 +161,11 @@ require_configmap_data_contains "$NAMESPACE" kube-prometheus-stack-grafana-datas
 require_configmap_data_contains "$NAMESPACE" kube-prometheus-stack-grafana-datasource datasource.yaml 'uid: Tempo'
 require_jsonpath_value "$NAMESPACE" alertmanager kube-prometheus-stack-alertmanager \
   '{.spec.alertmanagerConfigMatcherStrategy.type}' None
+require_jsonpath_value "$NAMESPACE" deployment otel-collector \
+  '{.spec.template.spec.serviceAccountName}' otel-collector
+require_configmap_data_contains "$NAMESPACE" otel-collector-config config.yaml 'k8sattributes:'
+require_configmap_data_contains "$NAMESPACE" otel-collector-config config.yaml 'k8s.namespace.name'
+require_configmap_data_contains "$NAMESPACE" otel-collector-config config.yaml 'k8s.deployment.name'
 require_jsonpath_value "$NAMESPACE" persistentvolumeclaim tempo-data \
   '{.spec.storageClassName}' longhorn
 require_jsonpath_value "$NAMESPACE" persistentvolumeclaim tempo-data \
