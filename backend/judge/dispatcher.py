@@ -44,15 +44,20 @@ class ChooseJudgeServer:
         self.server = None
 
     def __enter__(self) -> [JudgeServer, None]:
-        with transaction.atomic():
-            servers = JudgeServer.objects.select_for_update().filter(is_disabled=False).order_by("task_number")
-            servers = [s for s in servers if s.status == "normal"]
-            for server in servers:
-                if server.task_number <= server.cpu_core * 2:
-                    server.task_number = F("task_number") + 1
-                    server.save(update_fields=["task_number"])
-                    self.server = server
-                    return server
+        with tracer.start_as_current_span("judge_server.select") as span:
+            with transaction.atomic():
+                servers = JudgeServer.objects.select_for_update().filter(is_disabled=False).order_by("task_number")
+                servers = [s for s in servers if s.status == "normal"]
+                span.set_attribute("codeplace.judge_server.candidates", len(servers))
+                for server in servers:
+                    if server.task_number <= server.cpu_core * 2:
+                        server.task_number = F("task_number") + 1
+                        server.save(update_fields=["task_number"])
+                        self.server = server
+                        span.set_attribute("codeplace.judge_server.selected", True)
+                        span.set_attribute("codeplace.judge_server.hostname", server.hostname)
+                        return server
+            span.set_attribute("codeplace.judge_server.selected", False)
         return None
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -211,7 +216,11 @@ class JudgeDispatcher(DispatcherBase):
                     self.submission.result = error_test_case[0]["result"]
                 else:
                     self.submission.result = JudgeStatus.PARTIALLY_ACCEPTED
-        self.submission.save()
+        with tracer.start_as_current_span("submission.result_save") as save_span:
+            save_span.set_attribute("codeplace.submission_id", self.submission.id)
+            save_span.set_attribute("codeplace.problem_id", self.problem.id)
+            save_span.set_attribute("codeplace.judge.result", self.submission.result)
+            self.submission.save()
         span.set_attribute("codeplace.judge.result", self.submission.result)
 
         if self.contest_id:

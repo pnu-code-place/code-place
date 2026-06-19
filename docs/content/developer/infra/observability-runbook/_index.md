@@ -533,6 +533,7 @@ sum(rate(otelcol_exporter_send_failed_spans_total{namespace="monitoring"}[5m]))
 - export failure가 증가하면 Tempo readiness, `tempo.monitoring.svc.cluster.local:4317` 경로, Collector exporter queue/retry 로그를 봅니다.
 - Tempo가 down이면 Collector가 span export 실패를 기록합니다.
 - Tempo PVC가 85%를 넘으면 retention 단축, noisy trace sampling 조정, PVC 증설 중 하나를 먼저 결정합니다.
+- 채점 병목은 Tempo에서 `judge_task`, `submission.judge`, `judge_server.select`, `judge_server.request`, `submission.result_save` span duration을 순서대로 봅니다. 선택 span이 길면 DB row lock/available judge 부족, request span이 길면 judge-server 실행/네트워크, result save span이 길면 DB lock/write 병목을 의심합니다.
 - prod는 기본 `OTEL_ENABLED=0`입니다. prod trace가 없다고 해서 장애는 아니며, dev에서 Collector/Tempo를 먼저 확인한 뒤 prod 승격 여부를 결정합니다.
 
 ### ApiLatencyHigh
