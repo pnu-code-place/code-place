@@ -1,11 +1,13 @@
 from django.urls import include, re_path
 
 from utils.observability_metrics import register_codeplace_metrics
+from utils.views import ClientErrorReportAPIView
 
 register_codeplace_metrics()
 
 urlpatterns = [
     re_path(r"^", include("django_prometheus.urls")),
+    re_path(r"^api/client_error/?$", ClientErrorReportAPIView.as_view(), name="client_error_report_api"),
     re_path(r"^api/", include("account.urls.oj")),
     re_path(r"^api/admin/", include("account.urls.admin")),
     re_path(r"^api/", include("announcement.urls.oj")),

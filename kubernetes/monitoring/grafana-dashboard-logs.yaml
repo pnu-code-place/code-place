@@ -241,6 +241,21 @@ data:
           "targets": [
             {"expr": "{namespace=~\"$namespace\"} | json | request_id=~\"$request_id\""}
           ]
+        },
+        {
+          "type": "logs",
+          "title": "Frontend Runtime Error Reports",
+          "gridPos": {"x": 0, "y": 31, "w": 24, "h": 8},
+          "datasource": "Loki",
+          "options": {
+            "showLabels": false,
+            "showTime": true,
+            "wrapLogMessage": true,
+            "dedupStrategy": "none"
+          },
+          "targets": [
+            {"expr": "{namespace=~\"$namespace\", app=\"backend\"} | json | logger=\"frontend.error\""}
+          ]
         }
       ]
     }

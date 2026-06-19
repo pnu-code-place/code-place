@@ -1,8 +1,5 @@
 import { init, setContext } from "@sentry/vue"
 
-const SENTRY_DSN =
-  "https://143814aaa2d6e0b4550b2e5effefe90d@o4511586463776768.ingest.us.sentry.io/4511586483634176"
-
 const SENSITIVE_EXACT_FIELDS = [
   "authorization",
   "cookie",
@@ -70,13 +67,13 @@ const options = {
 }
 
 export function initSentry(Vue) {
-  if (process.env.USE_SENTRY !== "1") {
+  if (process.env.USE_SENTRY !== "1" || !process.env.SENTRY_DSN) {
     return
   }
 
   init({
     Vue,
-    dsn: process.env.SENTRY_DSN || SENTRY_DSN,
+    dsn: process.env.SENTRY_DSN,
     ...options,
   })
 

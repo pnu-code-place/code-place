@@ -470,6 +470,27 @@ data:
             {"expr": "max by (namespace, pod) (redis_memory_used_bytes{namespace=~\"$namespace\"})", "legendFormat": "{{namespace}} {{pod}} used"},
             {"expr": "max by (namespace, pod) (redis_memory_max_bytes{namespace=~\"$namespace\"})", "legendFormat": "{{namespace}} {{pod}} maxmemory"}
           ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Frontend Runtime Errors",
+          "gridPos": {"x": 0, "y": 51, "w": 12, "h": 6},
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ops",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "orange", "value": 0.02},
+                  {"color": "red", "value": 0.1}
+                ]
+              }
+            }
+          },
+          "targets": [
+            {"expr": "sum by (namespace, surface, error_type) (rate(codeplace_frontend_error_total{namespace=~\"$namespace\"}[5m]))", "legendFormat": "{{namespace}} {{surface}} {{error_type}}"}
+          ]
         }
       ]
     }

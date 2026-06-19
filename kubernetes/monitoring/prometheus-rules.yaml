@@ -242,6 +242,15 @@ spec:
           annotations:
             summary: "Public endpoint TLS certificate expires within 14 days"
             description: "A CodePlace public HTTPS certificate expires within 14 days."
+        - alert: FrontendRuntimeErrorsSpike
+          expr: sum by (namespace, surface) (increase(codeplace_frontend_error_total{namespace=~"code-place-(dev|prod)"}[5m])) > 10
+          for: 5m
+          labels:
+            severity: warning
+            priority: P1
+          annotations:
+            summary: "Frontend runtime errors increased"
+            description: "Browser clients reported more than 10 frontend runtime errors in 5 minutes. Check recent deploys, Sentry events, and frontend.error logs."
         - alert: BlackboxExporterUnavailable
           expr: (max(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"blackbox-exporter-.*"}) == 0) or absent(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"blackbox-exporter-.*"})
           for: 2m

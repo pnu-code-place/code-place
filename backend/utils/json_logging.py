@@ -51,6 +51,13 @@ class CodePlaceJsonFormatter(logging.Formatter):
                 "task_status",
                 "submission_id",
                 "retry_reason",
+                "frontend_surface",
+                "frontend_error_type",
+                "frontend_message",
+                "frontend_route",
+                "frontend_release",
+                "frontend_component",
+                "frontend_info",
         ):
             value = getattr(record, key, None)
             if value is not None:

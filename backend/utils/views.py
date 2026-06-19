@@ -1,12 +1,47 @@
 import os
+import re
 from django.conf import settings
 from account.serializers import FileUploadForm
 from profile.serializers import ImageUploadForm
 from utils.shortcuts import rand_str
 from utils.api import CSRFExemptAPIView
+from utils.observability_metrics import FRONTEND_ERROR_TOTAL
 import logging
 
 logger = logging.getLogger(__name__)
+frontend_error_logger = logging.getLogger("frontend.error")
+
+FRONTEND_ERROR_TYPES = {
+    "vue",
+    "window_error",
+    "unhandled_rejection",
+}
+FRONTEND_SURFACES = {
+    "oj",
+    "admin",
+    "unknown",
+}
+MAX_FRONTEND_FIELD_LENGTH = 300
+FRONTEND_SECRET_PATTERNS = (
+    re.compile(r"(?i)(authorization|cookie)\s*[:=]\s*[^,\s]+"),
+    re.compile(r"(?i)(password|token|secret|code)=([^&\s]+)"),
+)
+
+
+def _clean_frontend_field(value, default=""):
+    if value is None:
+        return default
+    value = str(value).replace("\r", " ").replace("\n", " ").strip()
+    if not value:
+        return default
+    for pattern in FRONTEND_SECRET_PATTERNS:
+        value = pattern.sub(lambda match: f"{match.group(1)}=[REDACTED]", value)
+    return value[:MAX_FRONTEND_FIELD_LENGTH]
+
+
+def _clean_choice(value, allowed, default):
+    value = _clean_frontend_field(value, default)
+    return value if value in allowed else default
 
 
 class SimditorImageUploadAPIView(CSRFExemptAPIView):
@@ -58,3 +93,36 @@ class SimditorFileUploadAPIView(CSRFExemptAPIView):
             "file_path": f"{settings.UPLOAD_PREFIX}/{file_name}",
             "file_name": file.name
         })
+
+
+class ClientErrorReportAPIView(CSRFExemptAPIView):
+
+    def post(self, request):
+        surface = _clean_choice(request.data.get("surface"), FRONTEND_SURFACES, "unknown")
+        error_type = _clean_choice(request.data.get("error_type"), FRONTEND_ERROR_TYPES, "unknown")
+        frontend_message = _clean_frontend_field(request.data.get("message"), "unknown")
+        frontend_route = _clean_frontend_field(request.data.get("route"), "")
+        frontend_release = _clean_frontend_field(request.data.get("release"), "")
+        frontend_component = _clean_frontend_field(request.data.get("component"), "")
+        frontend_info = _clean_frontend_field(request.data.get("info"), "")
+        request_id = _clean_frontend_field(
+            request.META.get("HTTP_X_REQUEST_ID") or request.data.get("request_id"),
+            "",
+        )
+
+        FRONTEND_ERROR_TOTAL.labels(surface=surface, error_type=error_type).inc()
+        frontend_error_logger.warning(
+            "Frontend runtime error reported",
+            extra={
+                "request_id": request_id or None,
+                "frontend_surface": surface,
+                "frontend_error_type": error_type,
+                "frontend_message": frontend_message,
+                "frontend_route": frontend_route,
+                "frontend_release": frontend_release,
+                "frontend_component": frontend_component,
+                "frontend_info": frontend_info,
+                "remote_addr": request.META.get("REMOTE_ADDR"),
+            },
+        )
+        return self.success({"reported": True})

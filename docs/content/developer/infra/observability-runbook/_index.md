@@ -55,6 +55,7 @@ Loki 로그 확인:
 {namespace="kube-system", app_kubernetes_io_name="traefik"} | json
 {namespace="<namespace>", app="frontend"} | json
 {namespace="<namespace>", app="backend"} | json
+{namespace="<namespace>", app="backend"} | json | logger="frontend.error"
 {namespace="<namespace>", container=~"backend|hub-auth|celery-worker|judge-server|vllm"}
 ```
 
@@ -194,8 +195,9 @@ Grafana Explore:
 - 5xx와 latency가 같이 오르면 backend/DB/Redis 병목 가능성이 큽니다.
 - 5xx만 증가하면 최근 배포, exception, 외부 dependency를 우선 확인합니다.
 - Sentry event가 있으면 `environment`, `release`, `request_id` tag를 기준으로 같은 시간대 Loki 로그와 대조합니다.
+- Sentry event가 없더라도 `codeplace_frontend_error_total`과 `frontend.error` backend JSON log를 확인합니다.
 - 사용자 브라우저에서 재현 중이면 `window.__CODEPLACE_LAST_REQUEST_ID__` 값을 확인해 같은 request ID로 Loki/backend JSON log를 조회합니다.
-- Frontend Sentry 설정은 image build 시점에 결정됩니다. `SENTRY_DSN`, `USE_SENTRY`, `SENTRY_ENVIRONMENT`, `APP_VERSION` 변경 후에는 frontend image rebuild가 필요합니다.
+- Frontend Sentry 설정은 image build 시점에 결정됩니다. `SENTRY_DSN`, `USE_SENTRY`, `SENTRY_ENVIRONMENT`, `APP_VERSION` 변경 후에는 frontend image rebuild가 필요합니다. DSN이 빠져 있으면 Sentry는 꺼지지만 `/api/client_error` metric/log 수집은 계속 동작해야 합니다.
 
 ### Ingress5xxSpike
 
@@ -510,6 +512,29 @@ kube_pod_status_ready{namespace="monitoring", pod=~"blackbox-exporter-.*", condi
 - dev endpoint down은 배포 테스트 영향으로 P1입니다. prod endpoint down은 P0입니다.
 - latency가 synthetic probe에서만 높으면 public route/TLS/frontend nginx를 먼저 보고, backend latency도 높으면 API/DB/Redis 병목을 같이 봅니다.
 - `BlackboxExporterUnavailable`이면 probe 자체가 죽은 것이므로 공개 URL 상태를 판단할 수 없습니다.
+
+### FrontendRuntimeErrorsSpike
+
+확인:
+
+```promql
+sum by (namespace, surface, error_type) (increase(codeplace_frontend_error_total{namespace="<namespace>"}[10m]))
+sum by (namespace, surface, error_type) (rate(codeplace_frontend_error_total{namespace="<namespace>"}[5m]))
+```
+
+Grafana Explore:
+
+```logql
+{namespace="<namespace>", app="backend"} | json | logger="frontend.error"
+{namespace="<namespace>", app="backend"} | json | logger="frontend.error" | request_id="<request_id>"
+```
+
+판단:
+
+- API 5xx/latency는 정상인데 frontend error만 증가하면 최근 frontend image, JS bundle, browser compatibility, feature flag를 먼저 봅니다.
+- `surface="admin"`만 증가하면 admin bundle 또는 관리자 화면 배포 영향으로 좁힙니다.
+- `error_type="unhandled_rejection"`이 많으면 API response handling, auth/session 만료 처리, network rejection을 봅니다.
+- Sentry가 켜진 환경이면 같은 `release`, `environment`, `request_id`로 Sentry event와 Loki `frontend.error` 로그를 대조합니다.
 
 ### JudgeWaitingQueueBacklog
 

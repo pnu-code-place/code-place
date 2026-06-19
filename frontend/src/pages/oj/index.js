@@ -24,6 +24,7 @@ import filters from "@/utils/filters.js"
 import ECharts from "vue-echarts"
 import "@/utils/echarts"
 import { initSentry } from "@/utils/sentry"
+import { initClientErrorReporter } from "@/utils/client_error_reporter"
 
 const legacyPanelTag = "Panel"
 
@@ -59,5 +60,6 @@ Vue.prototype.$info = (s) => Vue.prototype.$Message.info(s)
 Vue.prototype.$success = (s) => Vue.prototype.$Message.success(s)
 
 initSentry(Vue)
+initClientErrorReporter(Vue, { surface: "oj", router })
 
 new Vue(Vue.util.extend({ router, store, i18n }, App)).$mount("#app")

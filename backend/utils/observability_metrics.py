@@ -46,6 +46,11 @@ HTTP_REQUEST_DURATION_SECONDS = Histogram(
     ["method", "endpoint"],
     buckets=(0.05, 0.1, 0.25, 0.5, 1, 2, 5, 10),
 )
+FRONTEND_ERROR_TOTAL = Counter(
+    "codeplace_frontend_error_total",
+    "Total frontend runtime errors reported by browser clients.",
+    ["surface", "error_type"],
+)
 
 
 class CodePlaceCollector:
