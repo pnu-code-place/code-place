@@ -1,4 +1,5 @@
 import time
+import pickle
 
 
 class TokenBucket:
@@ -22,6 +23,15 @@ class TokenBucket:
         self._last_capacity_key = "last_capacity"
         self._last_timestamp_key = "last_timestamp"
 
+    @staticmethod
+    def _as_float(value):
+        if isinstance(value, bytes):
+            try:
+                value = value.decode()
+            except UnicodeDecodeError:
+                value = pickle.loads(value)
+        return float(value)
+
     def _init_key(self):
         self._last_capacity = self._default_capacity
         now = time.time()
@@ -34,7 +44,7 @@ class TokenBucket:
         if last_capacity is None:
             return self._init_key()[0]
         else:
-            return float(last_capacity)
+            return self._as_float(last_capacity)
 
     @_last_capacity.setter
     def _last_capacity(self, value):
@@ -42,7 +52,7 @@ class TokenBucket:
 
     @property
     def _last_timestamp(self):
-        return float(self._redis_conn.hget(self._key, self._last_timestamp_key))
+        return self._as_float(self._redis_conn.hget(self._key, self._last_timestamp_key))
 
     @_last_timestamp.setter
     def _last_timestamp(self, value):

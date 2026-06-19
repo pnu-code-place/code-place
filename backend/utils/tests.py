@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import pickle
 from unittest.mock import patch, mock_open, MagicMock
 from django.test import SimpleTestCase, TestCase, override_settings
 from django.core.cache import cache
@@ -10,6 +11,26 @@ from utils.json_logging import CodePlaceJsonFormatter
 from utils.observability_metrics import CodePlaceCollector
 from utils import observability_tracing
 from utils.testcase_cache import TestCaseCacheManager
+from utils.throttling import TokenBucket
+
+
+class TokenBucketTest(SimpleTestCase):
+
+    def test_reads_raw_byte_values(self):
+        redis_conn = MagicMock()
+        redis_conn.hget.side_effect = [b"7.0"]
+
+        bucket = TokenBucket("1", capacity=10, fill_rate=1, default_capacity=10, redis_conn=redis_conn)
+
+        self.assertEqual(bucket._last_capacity, 7.0)
+
+    def test_reads_pickled_byte_values_from_django_redis_hash(self):
+        redis_conn = MagicMock()
+        redis_conn.hget.side_effect = [pickle.dumps(7.0)]
+
+        bucket = TokenBucket("1", capacity=10, fill_rate=1, default_capacity=10, redis_conn=redis_conn)
+
+        self.assertEqual(bucket._last_capacity, 7.0)
 
 
 class CodePlaceCollectorTest(SimpleTestCase):
