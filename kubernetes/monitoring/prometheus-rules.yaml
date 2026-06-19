@@ -17,6 +17,22 @@ spec:
           expr: codeplace:api_5xx_rate5m / clamp_min(codeplace:api_request_rate5m, 0.001)
         - record: codeplace:api_p95_latency_seconds5m
           expr: histogram_quantile(0.95, sum by (namespace, le) (rate(codeplace_http_request_duration_seconds_bucket{namespace=~"code-place-(dev|prod)"}[5m])))
+        - record: codeplace:ingress_request_rate2m
+          expr: sum(rate(traefik_service_requests_total{exported_service=~"code-place-dev-.*"}[2m])) or sum(rate(traefik_service_requests_total{service=~"code-place-dev-.*"}[2m]))
+          labels:
+            namespace: code-place-dev
+        - record: codeplace:ingress_5xx_rate2m
+          expr: sum(rate(traefik_service_requests_total{exported_service=~"code-place-dev-.*", code=~"5.."}[2m])) or sum(rate(traefik_service_requests_total{service=~"code-place-dev-.*", code=~"5.."}[2m]))
+          labels:
+            namespace: code-place-dev
+        - record: codeplace:ingress_request_rate2m
+          expr: sum(rate(traefik_service_requests_total{exported_service=~"code-place-prod-.*"}[2m])) or sum(rate(traefik_service_requests_total{service=~"code-place-prod-.*"}[2m]))
+          labels:
+            namespace: code-place-prod
+        - record: codeplace:ingress_5xx_rate2m
+          expr: sum(rate(traefik_service_requests_total{exported_service=~"code-place-prod-.*", code=~"5.."}[2m])) or sum(rate(traefik_service_requests_total{service=~"code-place-prod-.*", code=~"5.."}[2m]))
+          labels:
+            namespace: code-place-prod
         - record: codeplace:public_endpoint_availability5m
           expr: avg by (environment, namespace, service, instance) (avg_over_time(probe_success{probe_type="public-http"}[5m]))
         - record: codeplace:judge_available_total
@@ -56,7 +72,7 @@ spec:
             summary: "Backend API 5xx rate is high"
             description: "Backend API 5xx responses are above 5% for 2 minutes."
         - alert: Ingress5xxSpike
-          expr: sum(rate(traefik_service_requests_total{exported_service=~"code-place-dev-.*", code=~"5.."}[2m])) / clamp_min(sum(rate(traefik_service_requests_total{exported_service=~"code-place-dev-.*"}[2m])), 1) > 0.05
+          expr: codeplace:ingress_5xx_rate2m{namespace="code-place-dev"} / clamp_min(codeplace:ingress_request_rate2m{namespace="code-place-dev"}, 1) > 0.05
           for: 2m
           labels:
             namespace: code-place-dev
@@ -66,7 +82,7 @@ spec:
             summary: "Ingress 5xx rate is high in dev"
             description: "Traefik 5xx responses for code-place-dev are above 5% for 2 minutes."
         - alert: Ingress5xxSpike
-          expr: sum(rate(traefik_service_requests_total{exported_service=~"code-place-prod-.*", code=~"5.."}[2m])) / clamp_min(sum(rate(traefik_service_requests_total{exported_service=~"code-place-prod-.*"}[2m])), 1) > 0.05
+          expr: codeplace:ingress_5xx_rate2m{namespace="code-place-prod"} / clamp_min(codeplace:ingress_request_rate2m{namespace="code-place-prod"}, 1) > 0.05
           for: 2m
           labels:
             namespace: code-place-prod

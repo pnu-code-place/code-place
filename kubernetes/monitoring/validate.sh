@@ -124,6 +124,19 @@ required_alerts = {
 missing_alerts = required_alerts - set(alert_instances)
 if missing_alerts:
     raise SystemExit(f"missing required observability alerts: {sorted(missing_alerts)}")
+records = {
+    rule.get("record")
+    for group in rules["spec"]["groups"]
+    for rule in group.get("rules", [])
+    if rule.get("record")
+}
+required_records = {
+    "codeplace:ingress_request_rate2m",
+    "codeplace:ingress_5xx_rate2m",
+}
+missing_records = required_records - records
+if missing_records:
+    raise SystemExit(f"missing required observability recording rules: {sorted(missing_records)}")
 print("PROMETHEUS RULE SHAPE OK")
 
 alertmanager = list(yaml.safe_load_all((root / "alertmanager-config.yaml").read_text()))[0]

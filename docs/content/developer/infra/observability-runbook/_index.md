@@ -227,7 +227,10 @@ Grafana Explore:
 확인:
 
 ```promql
+codeplace:ingress_5xx_rate2m{namespace="<namespace>"}
+codeplace:ingress_request_rate2m{namespace="<namespace>"}
 sum by (exported_service, code) (rate(traefik_service_requests_total{exported_service=~"<namespace>-.*"}[5m]))
+sum by (service, code) (rate(traefik_service_requests_total{service=~"<namespace>-.*"}[5m]))
 ```
 
 ```sh
