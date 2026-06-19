@@ -268,8 +268,10 @@ P1은 `group_wait=30s`, `repeat_interval=1h`로 전달합니다.
 - `GrafanaUnavailable`: Grafana Pod not ready 2분 지속.
 - `PrometheusOperatorUnavailable`: Prometheus Operator Pod not ready 2분 지속.
 - `PrometheusRuleEvaluationFailures`: Prometheus rule evaluation failure 5분 지속.
+- `PrometheusConfigReloadFailed`: Prometheus generated config reload 실패 또는 reload metric 누락 2분 지속.
 - `PrometheusAlertmanagerDiscoveryFailed`: Prometheus가 Alertmanager target을 0개 discovery 2분 지속.
 - `AlertmanagerReplicaUnavailable`: Alertmanager ready replica 2개 미만 5분 지속.
+- `AlertmanagerConfigReloadFailed`: Alertmanager generated config reload 실패 또는 reload metric 누락 2분 지속.
 - `AlertmanagerNotificationFailures`: Alertmanager notification delivery failure 2분 지속.
 - `JudgeWaitingQueueBacklog`: `waiting_queue` 5 초과 3분 지속.
 - `SubmissionCreateSystemFailures`: 제출 생성 API에서 DB 또는 judge enqueue 실패 발생 2분 지속.

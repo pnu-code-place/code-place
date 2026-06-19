@@ -417,6 +417,16 @@ spec:
           annotations:
             summary: "Prometheus rule evaluation is failing"
             description: "Prometheus has reported rule evaluation failures for 5 minutes. Alert and recording rule expressions should be checked."
+        - alert: PrometheusConfigReloadFailed
+          expr: (max(prometheus_config_last_reload_successful{namespace="monitoring"}) == 0) or absent(prometheus_config_last_reload_successful{namespace="monitoring"})
+          for: 2m
+          labels:
+            severity: warning
+            priority: P1
+            namespace: monitoring
+          annotations:
+            summary: "Prometheus config reload is failing"
+            description: "Prometheus has not successfully reloaded its generated configuration for 2 minutes, or the reload metric is missing. ServiceMonitor, Probe, and rule changes may not be active."
         - alert: PrometheusAlertmanagerDiscoveryFailed
           expr: (max(prometheus_notifications_alertmanagers_discovered) < 1) or absent(prometheus_notifications_alertmanagers_discovered)
           for: 2m
@@ -437,6 +447,16 @@ spec:
           annotations:
             summary: "Alertmanager replica count is degraded"
             description: "Fewer than 2 Alertmanager replicas have been ready for 5 minutes. Alert delivery still works, but the notification path has lost HA."
+        - alert: AlertmanagerConfigReloadFailed
+          expr: (max(alertmanager_config_last_reload_successful{namespace="monitoring"}) == 0) or absent(alertmanager_config_last_reload_successful{namespace="monitoring"})
+          for: 2m
+          labels:
+            severity: warning
+            priority: P1
+            namespace: monitoring
+          annotations:
+            summary: "Alertmanager config reload is failing"
+            description: "Alertmanager has not successfully reloaded its generated configuration for 2 minutes, or the reload metric is missing. Check AlertmanagerConfig, webhook Secret references, and operator reconciliation."
         - alert: AlertmanagerNotificationFailures
           expr: sum(increase(alertmanager_notifications_failed_total[5m])) > 0
           for: 2m

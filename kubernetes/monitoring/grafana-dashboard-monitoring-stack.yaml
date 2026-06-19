@@ -206,23 +206,25 @@ data:
         },
         {
           "type": "timeseries",
-          "title": "Rule Evaluation Failures",
+          "title": "Prometheus Rule and Config Health",
           "gridPos": {"x": 0, "y": 12, "w": 12, "h": 8},
           "datasource": "Prometheus",
           "fieldConfig": {"defaults": {"unit": "short"}},
           "targets": [
-            {"expr": "sum by (rule_group) (increase(prometheus_rule_evaluation_failures_total[5m])) or vector(0)", "legendFormat": "{{rule_group}}"}
+            {"expr": "sum by (rule_group) (increase(prometheus_rule_evaluation_failures_total[5m])) or vector(0)", "legendFormat": "{{rule_group}} failures"},
+            {"expr": "max(prometheus_config_last_reload_successful{namespace=\"monitoring\"}) or vector(0)", "legendFormat": "config reload successful"}
           ]
         },
         {
           "type": "timeseries",
-          "title": "Alertmanager Notifications",
+          "title": "Alertmanager Notifications and Config",
           "gridPos": {"x": 12, "y": 12, "w": 12, "h": 8},
           "datasource": "Prometheus",
           "fieldConfig": {"defaults": {"unit": "ops"}},
           "targets": [
             {"expr": "sum by (integration) (rate(alertmanager_notifications_total[5m]))", "legendFormat": "{{integration}} sent"},
-            {"expr": "sum by (integration) (rate(alertmanager_notifications_failed_total[5m])) or vector(0)", "legendFormat": "{{integration}} failed"}
+            {"expr": "sum by (integration) (rate(alertmanager_notifications_failed_total[5m])) or vector(0)", "legendFormat": "{{integration}} failed"},
+            {"expr": "max(alertmanager_config_last_reload_successful{namespace=\"monitoring\"}) or vector(0)", "legendFormat": "config reload successful"}
           ]
         },
         {
