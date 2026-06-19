@@ -65,7 +65,7 @@ data:
           "fieldConfig": {"defaults": {"unit": "reqps"}},
           "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
           "targets": [
-            {"expr": "sum by (namespace) (rate(codeplace_http_requests_total{namespace=~\"$namespace\"}[5m]))", "legendFormat": "{{namespace}}"}
+            {"expr": "codeplace:api_request_rate5m{namespace=~\"$namespace\"}", "legendFormat": "{{namespace}}"}
           ]
         },
         {
@@ -87,7 +87,7 @@ data:
           },
           "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
           "targets": [
-            {"expr": "((sum by (namespace) (rate(codeplace_http_requests_total{namespace=~\"$namespace\", status_code=~\"5..\"}[5m])) or (sum by (namespace) (rate(codeplace_http_requests_total{namespace=~\"$namespace\"}[5m])) * 0)) / clamp_min(sum by (namespace) (rate(codeplace_http_requests_total{namespace=~\"$namespace\"}[5m])), 0.001)", "legendFormat": "{{namespace}}"}
+            {"expr": "codeplace:api_5xx_ratio5m{namespace=~\"$namespace\"}", "legendFormat": "{{namespace}}"}
           ]
         },
         {
@@ -109,7 +109,7 @@ data:
           },
           "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
           "targets": [
-            {"expr": "histogram_quantile(0.95, sum by (namespace, le) (rate(codeplace_http_request_duration_seconds_bucket{namespace=~\"$namespace\"}[5m])))", "legendFormat": "{{namespace}}"}
+            {"expr": "codeplace:api_p95_latency_seconds5m{namespace=~\"$namespace\"}", "legendFormat": "{{namespace}}"}
           ]
         },
         {
@@ -131,7 +131,7 @@ data:
           },
           "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
           "targets": [
-            {"expr": "codeplace_waiting_queue_length{namespace=~\"$namespace\"}", "legendFormat": "{{namespace}}"}
+            {"expr": "codeplace:judge_waiting_queue_length{namespace=~\"$namespace\"}", "legendFormat": "{{namespace}}"}
           ]
         },
         {
@@ -152,7 +152,7 @@ data:
           },
           "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
           "targets": [
-            {"expr": "sum by (namespace) (codeplace_judge_server_available{namespace=~\"$namespace\"})", "legendFormat": "{{namespace}}"}
+            {"expr": "codeplace:judge_available_total{namespace=~\"$namespace\"}", "legendFormat": "{{namespace}}"}
           ]
         },
         {

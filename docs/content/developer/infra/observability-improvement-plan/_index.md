@@ -58,6 +58,18 @@ backend는 `django-prometheus` 기반 `/metrics` 엔드포인트를 제공합니
 - `codeplace_redis_rejected_connections_total`
 - `codeplace_frontend_error_total{surface,error_type}`
 
+운영 대시보드와 빠른 판단에는 다음 recording rule을 사용합니다.
+
+- `codeplace:api_request_rate5m`
+- `codeplace:api_5xx_rate5m`
+- `codeplace:api_5xx_ratio5m`
+- `codeplace:api_p95_latency_seconds5m`
+- `codeplace:public_endpoint_availability5m`
+- `codeplace:judge_available_total`
+- `codeplace:judge_waiting_queue_length`
+
+이 recording rule은 원본 metric을 대체하지 않습니다. 알림과 대시보드에서 반복되는 PromQL을 줄이고, user path와 judge path의 최근 상태를 한 화면에서 빠르게 읽기 위한 요약 계층입니다.
+
 prod AI 힌트용 vLLM은 OpenAI-compatible server의 `/metrics`를 ServiceMonitor로 scrape합니다. vLLM production metrics 기준으로 다음 항목을 봅니다.
 
 - `vllm:num_requests_running`
@@ -182,7 +194,7 @@ prod tracing은 dev에서 trace ingest, query, traces-to-logs 동작과 Collecto
 - `backend-service-monitor.yaml`: backend `/metrics` scrape, interval 15s.
 - `blackbox-exporter.yaml`: public endpoint synthetic probe용 Blackbox exporter.
 - `public-endpoint-probes.yaml`: dev/prod frontend, hub-auth, Grafana 공개 HTTPS URL Probe, interval 30s.
-- `prometheus-rules.yaml`: P0/P1 fast alert rules.
+- `prometheus-rules.yaml`: P0/P1 fast alert rules와 운영 요약 recording rules.
 - `alertmanager-config.yaml`: P0/P1 Discord alert routing.
 - `grafana-dashboard-codeplace.yaml`: CodePlace overview dashboard. `namespace` 변수로 `code-place-dev`와 `code-place-prod`를 분리해서 조회합니다.
 - `grafana-dashboard-ai-inference.yaml`: prod vLLM readiness, queue/cache/latency/token throughput, HF cache PVC dashboard.
@@ -320,7 +332,7 @@ P1은 `group_wait=30s`, `repeat_interval=1h`로 전달합니다.
    - `kubectl apply -k kubernetes/monitoring`
 6. Prometheus target에서 `backend`, `longhorn`, `vllm`, `blackbox-exporter`, `kubernetes-event-exporter`, `codeplace-public-http-dev`, `codeplace-public-http-prod`, `codeplace-grafana-http`가 healthy인지 확인합니다.
 7. Grafana의 `CodePlace Public Endpoints` dashboard에서 prod/dev/Grafana availability, HTTP status, latency, TLS expiry panel이 비어 있지 않은지 확인합니다.
-8. Grafana의 `CodePlace Overview` dashboard에서 request rate, 5xx, latency, frontend runtime error, submission status, oldest in-flight submission age, waiting queue, judge heartbeat, Celery task throughput/runtime, Pod readiness/restart, CPU/memory, PVC, Deployment unavailable/rollout, PostgreSQL/Redis readiness/connection/lock/client panel을 확인합니다.
+8. Grafana의 `CodePlace Overview` dashboard에서 recording rule 기반 request rate, 5xx ratio, p95 latency, judge availability, waiting queue와 frontend runtime error, submission status, oldest in-flight submission age, judge heartbeat, Celery task throughput/runtime, Pod readiness/restart, CPU/memory, PVC, Deployment unavailable/rollout, PostgreSQL/Redis readiness/connection/lock/client panel을 확인합니다.
 9. Grafana의 `CodePlace Logs` dashboard에서 Loki ready, Alloy node coverage, Loki PVC usage, ingress/frontend 4xx/5xx, 최근 backend error, frontend runtime error, judge/celery log panel을 확인합니다.
 10. Grafana의 `CodePlace Logs` dashboard에서 `request_id` 변수에 실제 응답 header 또는 JSON log의 request ID를 넣고 해당 요청 로그가 좁혀지는지 확인합니다.
 11. Grafana의 `CodePlace Kubernetes Events` dashboard에서 event exporter ready, image pull, CrashLoopBackOff, OOMKilled, Pending/Unschedulable, Kubernetes Warning event panel을 확인합니다.

@@ -38,7 +38,7 @@ data:
           },
           "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
           "targets": [
-            {"expr": "probe_success{environment=\"prod\", probe_type=\"public-http\"}", "legendFormat": "{{service}} {{instance}}"}
+            {"expr": "codeplace:public_endpoint_availability5m{environment=\"prod\"}", "legendFormat": "{{service}} {{instance}}"}
           ]
         },
         {
@@ -60,7 +60,7 @@ data:
           },
           "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
           "targets": [
-            {"expr": "probe_success{environment=\"dev\", probe_type=\"public-http\"}", "legendFormat": "{{service}} {{instance}}"}
+            {"expr": "codeplace:public_endpoint_availability5m{environment=\"dev\"}", "legendFormat": "{{service}} {{instance}}"}
           ]
         },
         {
@@ -160,7 +160,7 @@ data:
           "datasource": "Prometheus",
           "fieldConfig": {"defaults": {"unit": "short", "decimals": 0}},
           "targets": [
-            {"expr": "probe_success{probe_type=\"public-http\"}", "legendFormat": "{{environment}} {{instance}}"}
+            {"expr": "codeplace:public_endpoint_availability5m", "legendFormat": "{{environment}} {{service}} {{instance}}"}
           ]
         },
         {

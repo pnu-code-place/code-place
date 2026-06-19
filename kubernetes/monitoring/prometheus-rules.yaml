@@ -6,6 +6,23 @@ metadata:
     release: kube-prometheus-stack
 spec:
   groups:
+    - name: codeplace.recording
+      interval: 15s
+      rules:
+        - record: codeplace:api_request_rate5m
+          expr: sum by (namespace) (rate(codeplace_http_requests_total{namespace=~"code-place-(dev|prod)"}[5m]))
+        - record: codeplace:api_5xx_rate5m
+          expr: sum by (namespace) (rate(codeplace_http_requests_total{namespace=~"code-place-(dev|prod)", status_code=~"5.."}[5m]))
+        - record: codeplace:api_5xx_ratio5m
+          expr: codeplace:api_5xx_rate5m / clamp_min(codeplace:api_request_rate5m, 0.001)
+        - record: codeplace:api_p95_latency_seconds5m
+          expr: histogram_quantile(0.95, sum by (namespace, le) (rate(codeplace_http_request_duration_seconds_bucket{namespace=~"code-place-(dev|prod)"}[5m])))
+        - record: codeplace:public_endpoint_availability5m
+          expr: avg by (environment, namespace, service, instance) (avg_over_time(probe_success{probe_type="public-http"}[5m]))
+        - record: codeplace:judge_available_total
+          expr: sum by (namespace) (codeplace_judge_server_available{namespace=~"code-place-(dev|prod)"})
+        - record: codeplace:judge_waiting_queue_length
+          expr: max by (namespace) (codeplace_waiting_queue_length{namespace=~"code-place-(dev|prod)"})
     - name: codeplace.p0
       interval: 15s
       rules:

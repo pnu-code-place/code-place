@@ -79,6 +79,10 @@ alert_instances = {}
 for group in rules["spec"]["groups"]:
     expected_priority = "P0" if group["name"].endswith(".p0") else "P1" if group["name"].endswith(".p1") else None
     for rule in group.get("rules", []):
+        if rule.get("record"):
+            if not rule.get("expr"):
+                raise SystemExit(f"{rule['record']} is missing expr")
+            continue
         alert_name = rule.get("alert")
         if not alert_name:
             raise SystemExit(f"rule in {group['name']} is missing alert name")
