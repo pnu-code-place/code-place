@@ -25,6 +25,20 @@ resource_count() {
   kubectl -n "$1" get "$2" -l "$3" -o jsonpath='{.items[*].metadata.name}' 2>/dev/null | wc -w | tr -d ' '
 }
 
+require_service_endpoints() {
+  local namespace="$1"
+  local service="$2"
+  local addresses
+  addresses="$(kubectl -n "$namespace" get endpoints "$service" -o jsonpath='{.subsets[*].addresses[*].ip}' 2>/dev/null || true)"
+  if [ -z "$addresses" ]; then
+    addresses="$(kubectl -n "$namespace" get endpointslice \
+      -l "kubernetes.io/service-name=$service" \
+      -o jsonpath='{.items[*].endpoints[*].addresses[*]}' 2>/dev/null || true)"
+  fi
+  [ -n "$addresses" ] || fail "$namespace service/$service has no ready endpoints"
+  ok "$namespace service/$service endpoints"
+}
+
 require_label() {
   local namespace="$1"
   local resource="$2"
@@ -139,17 +153,29 @@ for selector in \
   ok "pods ready for $selector"
 done
 
+for service in \
+  blackbox-exporter \
+  kubernetes-event-exporter \
+  otel-collector \
+  tempo; do
+  require_service_endpoints "$NAMESPACE" "$service"
+done
+
 if kubectl -n "$NAMESPACE" get daemonset dcgm-exporter >/dev/null 2>&1; then
   desired="$(kubectl -n "$NAMESPACE" get daemonset dcgm-exporter -o jsonpath='{.status.desiredNumberScheduled}')"
   available="$(kubectl -n "$NAMESPACE" get daemonset dcgm-exporter -o jsonpath='{.status.numberAvailable}')"
   [ "$desired" = "$available" ] || fail "daemonset/dcgm-exporter available=$available desired=$desired"
   ok "daemonset/dcgm-exporter available=$available desired=$desired"
+  require_service_endpoints "$NAMESPACE" dcgm-exporter
 fi
 
 echo "==> checking optional logs stack"
 if [ "$(resource_count "$NAMESPACE" pod app.kubernetes.io/name=loki)" -gt 0 ]; then
   kubectl -n "$NAMESPACE" wait --for=condition=Ready pod -l app.kubernetes.io/name=loki --timeout=30s
   ok "loki pods ready"
+  if resource_exists "$NAMESPACE" service loki-gateway; then
+    require_service_endpoints "$NAMESPACE" loki-gateway
+  fi
 else
   echo "SKIP loki pods: app.kubernetes.io/name=loki not found"
 fi
@@ -174,6 +200,7 @@ for app_namespace in $APP_NAMESPACES; do
   ok "$app_namespace service/backend api port"
   kubectl -n "$app_namespace" wait --for=condition=Ready pod -l app=backend --timeout=30s
   ok "$app_namespace backend pods ready"
+  require_service_endpoints "$app_namespace" backend
 done
 
 echo "observability smoke check completed"

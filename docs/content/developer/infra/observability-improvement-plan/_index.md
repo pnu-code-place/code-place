@@ -221,7 +221,7 @@ prod tracing은 dev에서 trace ingest, query, traces-to-logs 동작과 Collecto
 - `vllm-service-monitor.yaml`: prod vLLM `/metrics` scrape, interval 30s.
 - `dcgm-exporter.yaml`: vLLM GPU node용 NVIDIA DCGM exporter DaemonSet/Service/ServiceMonitor.
 - `validate.sh`: monitoring YAML, Grafana dashboard JSON, monitoring/app kustomize render, app observability env/Service wiring, 선택적 promtool/Helm render 검증 스크립트.
-- `smoke-check.sh`: 운영 클러스터 적용 후 CRD, 핵심 monitoring 리소스, dashboard ConfigMap, Probe, OTel/Tempo/Event exporter, optional Loki/Alloy/DCGM 상태를 확인하는 smoke 검증 스크립트.
+- `smoke-check.sh`: 운영 클러스터 적용 후 CRD, 핵심 monitoring 리소스, dashboard ConfigMap, Probe, OTel/Tempo/Event exporter, Service endpoint, optional Loki/Alloy/DCGM 상태를 확인하는 smoke 검증 스크립트.
 - `kustomization.yaml`: 기존 `monitoring` namespace의 kube-prometheus-stack/Grafana/Alertmanager에 붙일 CodePlace monitoring 리소스 묶음.
 
 `alertmanager-contact-points` Secret은 repo에 저장하지 않습니다. backend의 `/data/config/secret.key`와 같은 비밀값이지만, 자동으로 파일이 생기는 구조는 아닙니다. 운영자가 `kubectl create secret`으로 만들거나 ExternalSecrets/SealedSecrets 같은 Secret 주입 도구로 생성해야 합니다. AlertmanagerConfig는 generic webhook이 아니라 Prometheus Operator의 native `discordConfigs`를 사용합니다.
