@@ -220,7 +220,7 @@ prod tracing은 dev에서 trace ingest, query, traces-to-logs 동작과 Collecto
 - `grafana-dashboard-storage.yaml`: Longhorn volume/node/disk 상태와 storage capacity dashboard.
 - `vllm-service-monitor.yaml`: prod vLLM `/metrics` scrape, interval 30s.
 - `dcgm-exporter.yaml`: vLLM GPU node용 NVIDIA DCGM exporter DaemonSet/Service/ServiceMonitor.
-- `validate.sh`: monitoring YAML, Grafana dashboard JSON, kustomize render, 선택적 promtool/Helm render 검증 스크립트.
+- `validate.sh`: monitoring YAML, Grafana dashboard JSON, monitoring/app kustomize render, app observability env/Service wiring, 선택적 promtool/Helm render 검증 스크립트.
 - `smoke-check.sh`: 운영 클러스터 적용 후 CRD, 핵심 monitoring 리소스, dashboard ConfigMap, Probe, OTel/Tempo/Event exporter, optional Loki/Alloy/DCGM 상태를 확인하는 smoke 검증 스크립트.
 - `kustomization.yaml`: 기존 `monitoring` namespace의 kube-prometheus-stack/Grafana/Alertmanager에 붙일 CodePlace monitoring 리소스 묶음.
 

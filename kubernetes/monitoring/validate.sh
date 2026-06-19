@@ -283,6 +283,77 @@ echo "==> rendering kustomize monitoring manifests"
 kubectl kustomize "${MONITORING_DIR}" >/tmp/codeplace-monitoring-render.yaml
 echo "KUSTOMIZE OK kubernetes/monitoring"
 
+echo "==> rendering application overlays for observability wiring"
+for overlay in dev prod; do
+  kubectl kustomize "${ROOT_DIR}/kubernetes/overlays/${overlay}" >"/tmp/codeplace-${overlay}-render.yaml"
+  echo "KUSTOMIZE OK kubernetes/overlays/${overlay}"
+done
+
+python3 - <<'PY'
+from pathlib import Path
+import sys
+
+try:
+    import yaml
+except ImportError:
+    print("missing Python module yaml; cannot validate rendered application overlays", file=sys.stderr)
+    sys.exit(1)
+
+
+def docs_for(path):
+    return [
+        doc for doc in yaml.safe_load_all(Path(path).read_text())
+        if isinstance(doc, dict) and doc.get("kind")
+    ]
+
+
+def find_one(docs, kind, name, source):
+    matches = [
+        doc for doc in docs
+        if doc.get("kind") == kind and doc.get("metadata", {}).get("name") == name
+    ]
+    if len(matches) != 1:
+        raise SystemExit(f"{source} expected one {kind}/{name}, got {len(matches)}")
+    return matches[0]
+
+
+def env_map(deployment, container_name):
+    containers = deployment["spec"]["template"]["spec"].get("containers", [])
+    for container in containers:
+        if container.get("name") == container_name:
+            return {
+                env.get("name"): env.get("value")
+                for env in container.get("env", [])
+                if env.get("name")
+            }
+    raise SystemExit(f"{deployment['metadata']['name']} missing container {container_name}")
+
+
+for overlay in ("dev", "prod"):
+    path = f"/tmp/codeplace-{overlay}-render.yaml"
+    docs = docs_for(path)
+    backend_service = find_one(docs, "Service", "backend", path)
+    port_names = {port.get("name") for port in backend_service.get("spec", {}).get("ports", [])}
+    if "api" not in port_names:
+        raise SystemExit(f"{overlay} backend Service must expose port name api for ServiceMonitor")
+
+    for deployment_name, container_name in (
+        ("backend", "backend"),
+        ("celery-worker", "celery-worker"),
+        ("celery-beat", "celery-beat"),
+    ):
+        deployment = find_one(docs, "Deployment", deployment_name, path)
+        env = env_map(deployment, container_name)
+        if env.get("JSON_LOGGING") != "1":
+            raise SystemExit(f"{overlay} {deployment_name} must keep JSON_LOGGING=1")
+        if env.get("OTEL_ENABLED") is None:
+            raise SystemExit(f"{overlay} {deployment_name} must define OTEL_ENABLED")
+        if env.get("OTEL_EXPORTER_OTLP_ENDPOINT") != "http://otel-collector.monitoring.svc.cluster.local:4317":
+            raise SystemExit(f"{overlay} {deployment_name} must send OTLP to monitoring otel-collector")
+
+print("APPLICATION OBSERVABILITY WIRING OK")
+PY
+
 if optional_cmd promtool; then
   echo "==> checking Prometheus rules with promtool"
   promtool check rules "${MONITORING_DIR}/prometheus-rules.yaml"
