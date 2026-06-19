@@ -210,7 +210,7 @@ prod tracing은 dev에서 trace ingest, query, traces-to-logs 동작과 Collecto
 - `grafana-dashboard-monitoring-stack.yaml`: Prometheus, Alertmanager, Grafana, Prometheus Operator readiness와 rule/notification 상태 dashboard.
 - `grafana-dashboard-public-endpoints.yaml`: 공개 URL availability, HTTP status, latency, TLS expiry dashboard.
 - `kubernetes-event-exporter.yaml`: Kubernetes Warning event를 stdout JSON으로 export해서 Alloy/Loki가 수집하도록 하는 exporter, ServiceMonitor, 최소 event read RBAC.
-- `kube-prometheus-stack-values.yaml`: Prometheus/Alertmanager selector, Prometheus 2 replicas, Prometheus replica external label 제거, Alertmanager 2 replicas, evaluation interval, shared Grafana ingress와 dashboard sidecar 설정.
+- `kube-prometheus-stack-values.yaml`: Prometheus/Alertmanager selector, Prometheus 2 replicas, Prometheus replica external label 제거, Alertmanager 2 replicas, Grafana metrics, evaluation interval, shared Grafana ingress와 dashboard sidecar 설정.
 - `logs/loki-values.yaml`: Loki SingleBinary, Longhorn PVC, dev/prod retention, Loki gateway 2 replicas 설정.
 - `logs/alloy-values.yaml`: Alloy DaemonSet 기반 Kubernetes Pod log collection 설정.
 - `grafana-dashboard-logs.yaml`: Loki/Alloy health, Loki PVC, Loki ingest/error/canary, Alloy write backpressure, 최근 backend error, judge/celery log 조회 dashboard.
@@ -266,6 +266,7 @@ P1은 `group_wait=30s`, `repeat_interval=1h`로 전달합니다. `code-place-dev
 - `GrafanaPublicEndpointDown`: Grafana 공개 HTTPS endpoint probe 실패 2분 지속.
 - `KubernetesEventExporterUnavailable`: Kubernetes event exporter Pod not ready 2분 지속.
 - `GrafanaUnavailable`: Grafana Pod not ready 2분 지속.
+- `GrafanaMetricsTargetDown`: Grafana `/metrics` scrape 실패 또는 target series missing 2분 지속.
 - `PrometheusOperatorUnavailable`: Prometheus Operator Pod not ready 2분 지속.
 - `PrometheusRuleEvaluationFailures`: Prometheus rule evaluation failure 5분 지속.
 - `PrometheusConfigReloadFailed`: Prometheus generated config reload 실패 또는 reload metric 누락 2분 지속.

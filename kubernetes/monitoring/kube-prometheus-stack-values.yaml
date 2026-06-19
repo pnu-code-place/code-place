@@ -46,6 +46,9 @@ alertmanager:
               storage: 5Gi
 
 grafana:
+  grafana.ini:
+    metrics:
+      enabled: true
   persistence:
     enabled: true
     type: pvc

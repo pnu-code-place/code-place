@@ -397,6 +397,16 @@ spec:
           annotations:
             summary: "Grafana is not ready"
             description: "No Grafana pod in the monitoring namespace has been ready for 2 minutes. Dashboards and Explore may be unavailable."
+        - alert: GrafanaMetricsTargetDown
+          expr: (up{namespace="monitoring", service="kube-prometheus-stack-grafana"} == 0) or absent(up{namespace="monitoring", service="kube-prometheus-stack-grafana"})
+          for: 2m
+          labels:
+            severity: warning
+            priority: P1
+            namespace: monitoring
+          annotations:
+            summary: "Grafana metrics target is down"
+            description: "Prometheus cannot scrape Grafana /metrics for 2 minutes. Grafana may still serve UI, but dashboard/datasource/provisioning health visibility is degraded."
         - alert: PrometheusOperatorUnavailable
           expr: (max(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"kube-prometheus-stack-operator-.*"}) == 0) or absent(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"kube-prometheus-stack-operator-.*"})
           for: 2m

@@ -155,6 +155,28 @@ data:
         },
         {
           "type": "stat",
+          "title": "Grafana Metrics",
+          "gridPos": {"x": 0, "y": 36, "w": 4, "h": 4},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "red", "value": null},
+                  {"color": "green", "value": 1}
+                ]
+              }
+            }
+          },
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "max(up{namespace=\"monitoring\", service=\"kube-prometheus-stack-grafana\"}) or vector(0)", "legendFormat": "up"}
+          ]
+        },
+        {
+          "type": "stat",
           "title": "Notify Fail",
           "gridPos": {"x": 22, "y": 0, "w": 2, "h": 4},
           "datasource": "Prometheus",
