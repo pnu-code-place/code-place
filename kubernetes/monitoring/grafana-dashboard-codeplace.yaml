@@ -376,6 +376,26 @@ data:
           ]
         },
         {
+          "type": "timeseries",
+          "title": "Service Ready Endpoints",
+          "gridPos": {"x": 0, "y": 40, "w": 24, "h": 6},
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "red", "value": null},
+                  {"color": "green", "value": 1}
+                ]
+              }
+            }
+          },
+          "targets": [
+            {"expr": "max by (namespace, endpoint) (kube_endpoint_address_available{namespace=~\"$namespace\", endpoint=~\"backend|frontend|hub-auth|judge-server|vllm\"})", "legendFormat": "{{namespace}} {{endpoint}} ready"}
+          ]
+        },
+        {
           "type": "row",
           "title": "Data Stores",
           "gridPos": {"x": 0, "y": 46, "w": 24, "h": 1},

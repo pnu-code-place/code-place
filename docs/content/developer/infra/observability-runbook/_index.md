@@ -788,6 +788,33 @@ kube_pod_container_status_waiting_reason{namespace="<namespace>"}
 - observed generation이 metadata generation을 따라가지 못하면 Deployment controller reconcile, ReplicaSet 생성 실패, admission/image pull/secret 문제를 확인합니다.
 - 배포 직후 API 5xx/latency와 같이 발생하면 사용자 영향이 있는 rollout 장애로 봅니다.
 
+### CodePlaceServiceNoReadyEndpoints / VLLMServiceNoReadyEndpoints
+
+확인:
+
+```sh
+kubectl -n <namespace> get svc,endpoints,endpointslice
+kubectl -n <namespace> describe svc <service>
+kubectl -n <namespace> get pod --show-labels
+kubectl -n <namespace> get event --sort-by=.lastTimestamp | tail -50
+```
+
+PromQL:
+
+```promql
+kube_endpoint_address_available{namespace="<namespace>"}
+kube_endpoint_address_not_ready{namespace="<namespace>"}
+kube_pod_status_ready{namespace="<namespace>", condition="true"}
+kube_deployment_status_replicas_unavailable{namespace="<namespace>"}
+```
+
+판단:
+
+- Pod는 ready인데 endpoint가 0이면 Service selector label과 Pod label 불일치를 먼저 봅니다.
+- Pod readiness가 같이 0이면 rollout/readiness/image pull/crash loop 문제로 봅니다.
+- ingress 5xx와 같이 발생하면 Traefik route 자체보다 Service endpoint 부재가 직접 원인일 가능성이 큽니다.
+- vLLM endpoint가 0이면 AI hint path만 영향받을 수 있으므로 `CodePlace AI Inference` dashboard와 GPU node scheduling 상태를 같이 봅니다.
+
 ### CodePlaceContainerCPUHigh / CodePlaceContainerMemoryHigh
 
 확인:

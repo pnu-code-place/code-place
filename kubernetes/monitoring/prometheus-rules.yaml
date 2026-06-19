@@ -544,6 +544,25 @@ spec:
           annotations:
             summary: "CodePlace deployment rollout is stuck"
             description: "A CodePlace deployment observed generation has not caught up with metadata generation for 10 minutes. Check deployment events, ReplicaSet state, and rollout history."
+        - alert: CodePlaceServiceNoReadyEndpoints
+          expr: max by (namespace, endpoint) (kube_endpoint_address_available{namespace=~"code-place-(dev|prod)", endpoint=~"backend|frontend|hub-auth|judge-server"}) < 1
+          for: 2m
+          labels:
+            severity: warning
+            priority: P1
+          annotations:
+            summary: "CodePlace service has no ready endpoints"
+            description: "A CodePlace Service has had zero ready endpoints for 2 minutes. Check Service selector labels, Pod readiness, EndpointSlice state, and rollout events."
+        - alert: VLLMServiceNoReadyEndpoints
+          expr: max by (namespace, endpoint) (kube_endpoint_address_available{namespace="code-place-prod", endpoint="vllm"}) < 1
+          for: 2m
+          labels:
+            severity: warning
+            priority: P1
+            namespace: code-place-prod
+          annotations:
+            summary: "vLLM service has no ready endpoints"
+            description: "The prod vLLM Service has had zero ready endpoints for 2 minutes. AI hint routing may fail even if the Service object exists."
         - alert: CodePlaceContainerCPUHigh
           expr: sum by (namespace, pod, container) (rate(container_cpu_usage_seconds_total{namespace=~"code-place-(dev|prod)", container!="", pod=~"backend-.*|frontend-.*|hub-auth-.*|celery-.*|judge-server-.*|postgres-.*|redis-.*|vllm-.*"}[5m])) / clamp_min(sum by (namespace, pod, container) (kube_pod_container_resource_limits{namespace=~"code-place-(dev|prod)", resource="cpu", unit="core", pod=~"backend-.*|frontend-.*|hub-auth-.*|celery-.*|judge-server-.*|postgres-.*|redis-.*|vllm-.*"}), 0.001) > 0.8
           for: 10m
