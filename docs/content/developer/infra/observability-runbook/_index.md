@@ -24,6 +24,7 @@ kubectl -n longhorn-system get pod,svc
 Grafana에서는 `CodePlace Overview` dashboard에서 `namespace`를 알림의 namespace로 맞춥니다.
 공개 URL 장애는 `CodePlace Public Endpoints` dashboard에서 먼저 봅니다.
 로그 수집이나 로그 기반 확인이 필요하면 `CodePlace Logs` dashboard를 함께 봅니다.
+Prometheus, Alertmanager, Grafana 자체 이상은 `CodePlace Monitoring Stack` dashboard에서 봅니다.
 PVC/volume 문제가 의심되면 `CodePlace Storage` dashboard에서 Longhorn 상태를 먼저 확인합니다.
 
 Prometheus target 확인:
@@ -47,6 +48,21 @@ Status -> Configuration -> p0-discord / p1-discord
 ```
 
 Email fallback을 켠 환경에서는 `Status -> Configuration`에서 `p0-email` / `p1-email` receiver도 확인합니다.
+
+Monitoring stack 확인:
+
+```sh
+kubectl -n monitoring get pod | grep -E 'prometheus|alertmanager|grafana|operator'
+kubectl -n monitoring get prometheusrule codeplace-fast-alerts -o yaml
+kubectl -n monitoring get alertmanagerconfig codeplace-alert-routing -o yaml
+```
+
+```promql
+kube_pod_status_ready{namespace="monitoring", pod=~"prometheus-kube-prometheus-stack-prometheus-.*|alertmanager-kube-prometheus-stack-alertmanager-.*|kube-prometheus-stack-grafana-.*|grafana-.*|kube-prometheus-stack-operator-.*", condition="true"}
+prometheus_notifications_alertmanagers_discovered
+increase(prometheus_rule_evaluation_failures_total[5m])
+sum by (job, namespace) (up == 0)
+```
 
 Loki 로그 확인:
 
@@ -377,6 +393,32 @@ kubectl -n monitoring describe pvc -l app.kubernetes.io/name=loki
 - readiness만 실패하면 Loki config, retention, disk full, compactor error를 확인합니다.
 - Loki가 내려가도 앱 요청 처리는 계속되지만 로그 수집/조회가 끊기므로 빠르게 복구합니다.
 
+### PrometheusUnavailable / AlertmanagerUnavailable
+
+증상: Prometheus 또는 Alertmanager Pod가 1분 이상 ready가 아닙니다.
+
+확인:
+
+```sh
+kubectl -n monitoring get pod,svc | grep -E 'prometheus|alertmanager'
+kubectl -n monitoring describe pod prometheus-kube-prometheus-stack-prometheus-0
+kubectl -n monitoring describe pod alertmanager-kube-prometheus-stack-alertmanager-0
+kubectl -n monitoring logs prometheus-kube-prometheus-stack-prometheus-0 -c prometheus --tail=200
+kubectl -n monitoring logs alertmanager-kube-prometheus-stack-alertmanager-0 -c alertmanager --tail=200
+```
+
+```promql
+kube_pod_status_ready{namespace="monitoring", pod=~"prometheus-kube-prometheus-stack-prometheus-.*|alertmanager-kube-prometheus-stack-alertmanager-.*", condition="true"}
+prometheus_notifications_alertmanagers_discovered
+prometheus_rule_evaluation_failures_total
+```
+
+판단:
+
+- Prometheus가 down이면 metric 수집과 rule evaluation이 멈춥니다. Alertmanager가 살아 있어도 새 알림은 생성되지 않습니다.
+- Alertmanager가 down이면 firing alert가 있어도 Discord/email 전달이 실패합니다. P0 수신 지연 원인으로 먼저 봅니다.
+- PVC, config reload, rule syntax, resource pressure, operator reconciliation event를 함께 확인합니다.
+
 ### LonghornManagerDown / LonghornVolumeFaulted / LonghornVolumeReadOnly
 
 증상: Longhorn manager가 전부 ready가 아니거나, volume이 faulted/read-only 상태입니다.
@@ -512,6 +554,34 @@ kube_pod_status_ready{namespace="monitoring", pod=~"blackbox-exporter-.*", condi
 - dev endpoint down은 배포 테스트 영향으로 P1입니다. prod endpoint down은 P0입니다.
 - latency가 synthetic probe에서만 높으면 public route/TLS/frontend nginx를 먼저 보고, backend latency도 높으면 API/DB/Redis 병목을 같이 봅니다.
 - `BlackboxExporterUnavailable`이면 probe 자체가 죽은 것이므로 공개 URL 상태를 판단할 수 없습니다.
+
+### GrafanaUnavailable / PrometheusOperatorUnavailable / PrometheusRuleEvaluationFailures / PrometheusAlertmanagerDiscoveryFailed
+
+확인:
+
+```sh
+kubectl -n monitoring get pod | grep -E 'grafana|operator|prometheus|alertmanager'
+kubectl -n monitoring describe pod -l app.kubernetes.io/name=grafana
+kubectl -n monitoring describe pod -l app.kubernetes.io/name=prometheus-operator
+kubectl -n monitoring logs deploy/kube-prometheus-stack-operator --tail=200
+kubectl -n monitoring get prometheusrule,servicemonitor,podmonitor,alertmanagerconfig
+```
+
+PromQL:
+
+```promql
+kube_pod_status_ready{namespace="monitoring", pod=~"kube-prometheus-stack-grafana-.*|grafana-.*|kube-prometheus-stack-operator-.*", condition="true"}
+sum by (rule_group) (increase(prometheus_rule_evaluation_failures_total[5m]))
+prometheus_notifications_alertmanagers_discovered
+sum by (job, namespace) (up == 0)
+```
+
+판단:
+
+- Grafana만 down이면 알림은 계속 갈 수 있지만 dashboard/Explore 기반 원인 분석이 막힙니다.
+- Operator가 down이면 새 ServiceMonitor/PodMonitor/PrometheusRule/AlertmanagerConfig 변경이 Prometheus/Alertmanager에 반영되지 않을 수 있습니다.
+- rule evaluation failure가 있으면 최근 추가한 PromQL expression과 label cardinality, metric 존재 여부를 먼저 봅니다.
+- Alertmanager discovery가 0이면 AlertmanagerConfig가 맞아도 Prometheus가 알림을 보낼 대상이 없습니다. Prometheus generated config와 Alertmanager Service/endpoints를 확인합니다.
 
 ### FrontendRuntimeErrorsSpike
 

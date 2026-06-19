@@ -1,0 +1,228 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-codeplace-monitoring-stack
+  labels:
+    grafana_dashboard: "1"
+data:
+  codeplace-monitoring-stack.json: |
+    {
+      "uid": "codeplace-monitoring-stack",
+      "title": "CodePlace Monitoring Stack",
+      "schemaVersion": 39,
+      "version": 1,
+      "refresh": "30s",
+      "tags": ["codeplace", "monitoring"],
+      "editable": true,
+      "time": {
+        "from": "now-1h",
+        "to": "now"
+      },
+      "panels": [
+        {
+          "type": "stat",
+          "title": "Prometheus Ready",
+          "gridPos": {"x": 0, "y": 0, "w": 4, "h": 4},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "red", "value": null},
+                  {"color": "green", "value": 1}
+                ]
+              }
+            }
+          },
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "max(kube_pod_status_ready{namespace=\"monitoring\", condition=\"true\", pod=~\"prometheus-kube-prometheus-stack-prometheus-.*\"}) or vector(0)", "legendFormat": "prometheus"}
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "Alertmanager Ready",
+          "gridPos": {"x": 4, "y": 0, "w": 4, "h": 4},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "red", "value": null},
+                  {"color": "green", "value": 1}
+                ]
+              }
+            }
+          },
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "max(kube_pod_status_ready{namespace=\"monitoring\", condition=\"true\", pod=~\"alertmanager-kube-prometheus-stack-alertmanager-.*\"}) or vector(0)", "legendFormat": "alertmanager"}
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "Grafana Ready",
+          "gridPos": {"x": 8, "y": 0, "w": 4, "h": 4},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "red", "value": null},
+                  {"color": "green", "value": 1}
+                ]
+              }
+            }
+          },
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "max(kube_pod_status_ready{namespace=\"monitoring\", condition=\"true\", pod=~\"kube-prometheus-stack-grafana-.*|grafana-.*\"}) or vector(0)", "legendFormat": "grafana"}
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "Prometheus Operator Ready",
+          "gridPos": {"x": 12, "y": 0, "w": 4, "h": 4},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "red", "value": null},
+                  {"color": "green", "value": 1}
+                ]
+              }
+            }
+          },
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "max(kube_pod_status_ready{namespace=\"monitoring\", condition=\"true\", pod=~\"kube-prometheus-stack-operator-.*\"}) or vector(0)", "legendFormat": "operator"}
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "Alertmanager Discovered",
+          "gridPos": {"x": 16, "y": 0, "w": 4, "h": 4},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "red", "value": null},
+                  {"color": "green", "value": 1}
+                ]
+              }
+            }
+          },
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "max(prometheus_notifications_alertmanagers_discovered) or vector(0)", "legendFormat": "targets"}
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "Rule Eval Failures",
+          "gridPos": {"x": 20, "y": 0, "w": 4, "h": 4},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "red", "value": 1}
+                ]
+              }
+            }
+          },
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "sum(increase(prometheus_rule_evaluation_failures_total[5m])) or vector(0)", "legendFormat": "failures"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Monitoring Pod Restarts",
+          "gridPos": {"x": 0, "y": 4, "w": 8, "h": 8},
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "short"}},
+          "targets": [
+            {"expr": "sum by (pod) (increase(kube_pod_container_status_restarts_total{namespace=\"monitoring\", pod=~\"prometheus-.*|alertmanager-.*|kube-prometheus-stack-grafana-.*|grafana-.*|kube-prometheus-stack-operator-.*\"}[1h]))", "legendFormat": "{{pod}}"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Prometheus Target Scrape Failures",
+          "gridPos": {"x": 8, "y": 4, "w": 8, "h": 8},
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "short"}},
+          "targets": [
+            {"expr": "sum by (job, namespace) (up == 0) or vector(0)", "legendFormat": "{{namespace}} {{job}}"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Prometheus TSDB Head Series",
+          "gridPos": {"x": 16, "y": 4, "w": 8, "h": 8},
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "short"}},
+          "targets": [
+            {"expr": "prometheus_tsdb_head_series", "legendFormat": "{{pod}}"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Rule Evaluation Failures",
+          "gridPos": {"x": 0, "y": 12, "w": 12, "h": 8},
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "short"}},
+          "targets": [
+            {"expr": "sum by (rule_group) (increase(prometheus_rule_evaluation_failures_total[5m])) or vector(0)", "legendFormat": "{{rule_group}}"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Alertmanager Notifications",
+          "gridPos": {"x": 12, "y": 12, "w": 12, "h": 8},
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "ops"}},
+          "targets": [
+            {"expr": "sum by (integration) (rate(alertmanager_notifications_total[5m]))", "legendFormat": "{{integration}} sent"},
+            {"expr": "sum by (integration) (rate(alertmanager_notifications_failed_total[5m])) or vector(0)", "legendFormat": "{{integration}} failed"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Prometheus Resource Usage",
+          "gridPos": {"x": 0, "y": 20, "w": 12, "h": 8},
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "short"}},
+          "targets": [
+            {"expr": "sum by (pod) (rate(container_cpu_usage_seconds_total{namespace=\"monitoring\", pod=~\"prometheus-kube-prometheus-stack-prometheus-.*\", container=\"prometheus\"}[5m]))", "legendFormat": "{{pod}} cpu cores"},
+            {"expr": "max by (pod) (container_memory_working_set_bytes{namespace=\"monitoring\", pod=~\"prometheus-kube-prometheus-stack-prometheus-.*\", container=\"prometheus\"})", "legendFormat": "{{pod}} memory bytes"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Grafana Resource Usage",
+          "gridPos": {"x": 12, "y": 20, "w": 12, "h": 8},
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "short"}},
+          "targets": [
+            {"expr": "sum by (pod) (rate(container_cpu_usage_seconds_total{namespace=\"monitoring\", pod=~\"kube-prometheus-stack-grafana-.*|grafana-.*\", container!=\"\"}[5m]))", "legendFormat": "{{pod}} cpu cores"},
+            {"expr": "max by (pod) (container_memory_working_set_bytes{namespace=\"monitoring\", pod=~\"kube-prometheus-stack-grafana-.*|grafana-.*\", container!=\"\"})", "legendFormat": "{{pod}} memory bytes"}
+          ]
+        }
+      ]
+    }

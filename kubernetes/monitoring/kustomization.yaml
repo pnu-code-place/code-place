@@ -11,6 +11,7 @@ resources:
   - ./grafana-dashboard-codeplace.yaml
   - ./grafana-dashboard-ai-inference.yaml
   - ./grafana-dashboard-logs.yaml
+  - ./grafana-dashboard-monitoring-stack.yaml
   - ./grafana-dashboard-public-endpoints.yaml
   - ./grafana-dashboard-storage.yaml
   - ./grafana-dashboard-traces.yaml
