@@ -121,7 +121,7 @@ class CodePlaceCollector:
         )
         yield GaugeMetricFamily(
             "codeplace_redis_max_clients",
-            "Configured Redis maxclients from CONFIG GET maxclients.",
+            "Configured Redis maxclients from INFO clients or CONFIG GET maxclients.",
         )
         yield CounterMetricFamily(
             "codeplace_redis_rejected_connections_total",
@@ -330,7 +330,7 @@ class CodePlaceCollector:
         )
         max_clients_metric = GaugeMetricFamily(
             "codeplace_redis_max_clients",
-            "Configured Redis maxclients from CONFIG GET maxclients.",
+            "Configured Redis maxclients from INFO clients or CONFIG GET maxclients.",
         )
         rejected_connections_metric = CounterMetricFamily(
             "codeplace_redis_rejected_connections_total",
@@ -341,20 +341,24 @@ class CodePlaceCollector:
             info = client.info()
             connected_clients = float(info.get("connected_clients") or 0)
             rejected_connections = float(info.get("rejected_connections") or 0)
-            max_clients = 0
-            try:
-                raw_max_clients = client.config_get("maxclients")
-                max_clients = float(raw_max_clients.get("maxclients") or 0)
-            except Exception as e:
-                logger.warning("Failed to collect Redis maxclients metric: %s", e)
-                self._mark_collector_success("redis", False)
+            max_clients = self._float_or_zero(info.get("maxclients"))
+            if max_clients == 0:
+                try:
+                    raw_max_clients = client.config_get("maxclients")
+                    max_clients = self._float_or_zero(raw_max_clients.get("maxclients"))
+                except Exception as e:
+                    logger.warning("Failed to collect Redis maxclients metric: %s", e)
+                    redis_success = False
+                else:
+                    redis_success = True
+            else:
+                redis_success = True
         except Exception as e:
             logger.warning("Failed to collect Redis health metrics: %s", e)
             connected_clients = max_clients = rejected_connections = 0
             self._mark_collector_success("redis", False)
         else:
-            if not getattr(self, "_collector_success", {}).get("redis", False):
-                self._mark_collector_success("redis", True)
+            self._mark_collector_success("redis", redis_success)
 
         connected_clients_metric.add_metric([], connected_clients)
         max_clients_metric.add_metric([], max_clients)

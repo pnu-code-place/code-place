@@ -197,6 +197,41 @@ class CodePlaceCollectorTest(SimpleTestCase):
         self.assertEqual(rejected_sample.name, "codeplace_redis_rejected_connections_total")
         self.assertEqual(rejected_sample.value, 3)
 
+    def test_redis_health_metrics_prefer_info_maxclients(self):
+        redis_client = MagicMock()
+        redis_client.info.return_value = {
+            "connected_clients": 25,
+            "rejected_connections": 3,
+            "maxclients": 2000,
+        }
+
+        with patch("utils.observability_metrics.cache.client.get_client", return_value=redis_client):
+            samples = self._samples_by_metric(list(CodePlaceCollector()._redis_health_metrics()))
+
+        redis_client.config_get.assert_not_called()
+        self.assertEqual(samples["codeplace_redis_max_clients"][0].value, 2000)
+
+    def test_redis_collector_failure_is_reported_when_maxclients_is_unavailable(self):
+        redis_client = MagicMock()
+        redis_client.info.return_value = {
+            "connected_clients": 25,
+            "rejected_connections": 3,
+        }
+        redis_client.config_get.side_effect = RuntimeError("CONFIG disabled")
+        collector = CodePlaceCollector()
+        collector._collector_success = {}
+
+        with patch("utils.observability_metrics.cache.client.get_client", return_value=redis_client), \
+                patch("utils.observability_metrics.logger"):
+            list(collector._redis_health_metrics())
+            samples = self._samples_by_metric([collector._collector_success_metric()])
+
+        redis_success = [
+            sample for sample in samples["codeplace_observability_collector_success"]
+            if sample.labels["collector"] == "redis"
+        ][0]
+        self.assertEqual(redis_success.value, 0)
+
 
 class CeleryObservabilityTest(SimpleTestCase):
 
