@@ -1,0 +1,36 @@
+name: Observability Validation
+
+on:
+  pull_request:
+    branches:
+      - develop
+      - main
+    paths:
+      - ".github/workflows/observability-validation.yml"
+      - "backend/**"
+      - "frontend/**"
+      - "kubernetes/**"
+      - "docs/content/developer/infra/observability-*/**"
+  workflow_dispatch:
+
+jobs:
+  validate-observability:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v4
+
+      - name: Set up Python YAML support
+        run: python3 -m pip install --user PyYAML
+
+      - name: Validate monitoring bundle
+        run: bash kubernetes/monitoring/validate.sh
+
+      - name: Render dev application manifests
+        run: kubectl kustomize kubernetes/overlays/dev >/tmp/codeplace-dev-render.yaml
+
+      - name: Render prod application manifests
+        run: kubectl kustomize kubernetes/overlays/prod >/tmp/codeplace-prod-render.yaml

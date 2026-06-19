@@ -218,6 +218,8 @@ P1은 `group_wait=30s`, `repeat_interval=1h`로 전달합니다.
   - Loki storage shape check: Monolithic mode, filesystem storage, Longhorn PVC, 50Gi size, dev/prod retention, MinIO disabled.
   - scrape resource shape check: ServiceMonitor/PodMonitor selector label, scrape path/port/interval.
   - Monitoring kustomization shape check: email fallback example이 기본 적용에 섞이지 않는지 확인.
+- GitHub Actions observability validation: `.github/workflows/observability-validation.yml`
+  - PR에서 `kubernetes/**`, 관측성 관련 backend/frontend/docs 변경 시 monitoring bundle validation과 dev/prod kustomize render를 실행합니다.
 - Live cluster smoke check: `bash kubernetes/monitoring/smoke-check.sh`
   - Prometheus Operator CRD, monitoring namespace resource, selector label, webhook Secret, kube-prometheus-stack Pod readiness, optional Loki/Alloy, app namespace backend service/port/readiness를 읽기 전용으로 확인합니다.
 
