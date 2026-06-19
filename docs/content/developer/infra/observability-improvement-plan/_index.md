@@ -72,7 +72,17 @@ Kubernetes Pod 로그 수집은 Grafana Alloy와 Loki로 처리합니다. 클라
 - 수집 namespace: `code-place-dev`, `code-place-prod`, `monitoring`.
 - Grafana datasource: 기존 kube-prometheus-stack Grafana에 `Loki` datasource를 추가합니다.
 
-이 구성은 클라우드 없는 단기 retention 기준선입니다. prod 로그량이 커지거나 로그 저장소 장애 도메인을 더 분리해야 하면, Loki는 내부에서 별도 운영하는 S3 호환 object storage, 예를 들어 독립 MinIO cluster, 로 이전합니다. Grafana Loki chart의 내장 MinIO subchart는 신규 운영 의존성으로 사용하지 않습니다.
+이 구성은 클라우드 없는 단기 retention 기준선입니다. Longhorn PVC는 hostPath/emptyDir보다 낫습니다. Kubernetes에서 lifecycle을 관리할 수 있고, PVC 사용률과 Longhorn volume health를 운영자가 볼 수 있기 때문입니다. 다만 durable log archive는 아니므로 장애 분석용 단기 저장소로만 취급합니다.
+
+현재 유지해야 하는 로그 저장소 불변 조건은 다음과 같습니다.
+
+- Loki deployment mode는 `Monolithic`입니다.
+- Loki storage type은 `filesystem`입니다.
+- Loki PVC storageClass는 `longhorn`, size는 `50Gi`입니다.
+- Loki retention은 dev 72h, prod 168h입니다.
+- Grafana Loki chart의 내장 MinIO subchart는 사용하지 않습니다.
+
+prod 로그량이 커지면 먼저 noisy log를 줄이거나 retention을 줄입니다. 그래도 부족하면 Longhorn replica 상태와 node 여유 disk를 확인한 뒤 PVC를 증설합니다. 로그 저장소 장애 도메인을 더 분리해야 하면, Loki는 내부에서 별도 운영하는 S3 호환 object storage, 예를 들어 독립 MinIO cluster, 로 이전합니다.
 
 ### Tracing
 
@@ -169,8 +179,9 @@ P1은 `group_wait=30s`, `repeat_interval=1h`로 전달합니다.
 6. Prometheus target에서 `backend` ServiceMonitor가 healthy인지 확인합니다.
 7. Grafana의 `CodePlace Overview` dashboard에서 request rate, 5xx, latency, submission status, waiting queue, judge heartbeat, Pod readiness/restart, CPU/memory, PVC, PostgreSQL/Redis readiness panel을 확인합니다.
 8. Grafana의 `CodePlace Logs` dashboard에서 Loki ready, Alloy node coverage, Loki PVC usage, 최근 backend error, judge/celery log panel을 확인합니다.
-9. Grafana Explore에서 `Loki` datasource를 선택하고 `{namespace="code-place-dev"}` 쿼리가 로그를 반환하는지 확인합니다.
-10. test alert 또는 임시 rule로 P0 webhook 수신 시간이 1분 이내인지 확인합니다.
+9. Grafana의 `CodePlace Logs` dashboard에서 `request_id` 변수에 실제 응답 header 또는 JSON log의 request ID를 넣고 해당 요청 로그가 좁혀지는지 확인합니다.
+10. Grafana Explore에서 `Loki` datasource를 선택하고 `{namespace="code-place-dev"}` 쿼리가 로그를 반환하는지 확인합니다.
+11. test alert 또는 임시 rule로 P0 webhook 수신 시간이 1분 이내인지 확인합니다.
 
 운영 적용 전제는 다음과 같습니다.
 
@@ -204,6 +215,7 @@ P1은 `group_wait=30s`, `repeat_interval=1h`로 전달합니다.
   - PrometheusRule shape check: P0/P1 interval, alert priority/severity, summary/description, duplicate alert namespace label.
   - AlertmanagerConfig shape check: groupBy, P0/P1 Discord receivers, webhook Secret reference.
   - kube-prometheus-stack values shape check: Prometheus selector policy, AlertmanagerConfig selector, Loki datasource, dashboard sidecar label.
+  - Loki storage shape check: Monolithic mode, filesystem storage, Longhorn PVC, 50Gi size, dev/prod retention, MinIO disabled.
   - scrape resource shape check: ServiceMonitor/PodMonitor selector label, scrape path/port/interval.
   - Monitoring kustomization shape check: email fallback example이 기본 적용에 섞이지 않는지 확인.
 - Live cluster smoke check: `bash kubernetes/monitoring/smoke-check.sh`

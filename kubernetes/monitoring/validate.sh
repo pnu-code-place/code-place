@@ -145,6 +145,36 @@ if dashboard_sidecar.get("label") != "grafana_dashboard":
     raise SystemExit("Grafana dashboard sidecar must select grafana_dashboard label")
 print("KUBE-PROMETHEUS-STACK VALUES SHAPE OK")
 
+loki_values = yaml.safe_load((root / "logs" / "loki-values.yaml").read_text())
+loki_config = loki_values.get("loki", {})
+if loki_values.get("deploymentMode") != "Monolithic":
+    raise SystemExit("Loki must stay in Monolithic mode for the on-prem baseline")
+if loki_config.get("storage", {}).get("type") != "filesystem":
+    raise SystemExit("Loki must use filesystem storage while cloud object storage is unavailable")
+if loki_config.get("commonConfig", {}).get("replication_factor") != 1:
+    raise SystemExit("Loki single-binary filesystem storage must keep replication_factor=1")
+persistence = loki_values.get("singleBinary", {}).get("persistence", {})
+if not persistence.get("enabled"):
+    raise SystemExit("Loki singleBinary persistence must be enabled")
+if persistence.get("storageClass") != "longhorn":
+    raise SystemExit("Loki persistence must use Longhorn storageClass")
+if persistence.get("size") != "50Gi":
+    raise SystemExit("Loki PVC size must stay explicit at 50Gi")
+limits = loki_config.get("limits_config", {})
+if limits.get("retention_period") != "168h":
+    raise SystemExit("Loki default retention must be 168h")
+retention_by_selector = {
+    stream.get("selector"): stream.get("period")
+    for stream in limits.get("retention_stream", [])
+}
+if retention_by_selector.get('{namespace="code-place-dev"}') != "72h":
+    raise SystemExit("Loki dev retention must be 72h")
+if retention_by_selector.get('{namespace="code-place-prod"}') != "168h":
+    raise SystemExit("Loki prod retention must be 168h")
+if loki_values.get("minio", {}).get("enabled") is not False:
+    raise SystemExit("Loki chart MinIO subchart must stay disabled")
+print("LOKI ON-PREM STORAGE SHAPE OK")
+
 backend_sm = yaml.safe_load((root / "backend-service-monitor.yaml").read_text())
 if backend_sm.get("metadata", {}).get("labels", {}).get("release") != "kube-prometheus-stack":
     raise SystemExit("backend ServiceMonitor must keep release=kube-prometheus-stack label")

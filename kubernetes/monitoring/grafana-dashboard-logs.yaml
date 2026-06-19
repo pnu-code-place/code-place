@@ -31,6 +31,15 @@ data:
               "text": "code-place-dev",
               "value": "code-place-dev"
             }
+          },
+          {
+            "name": "request_id",
+            "type": "textbox",
+            "query": ".*",
+            "current": {
+              "text": ".*",
+              "value": ".*"
+            }
           }
         ]
       },
@@ -168,7 +177,7 @@ data:
             "dedupStrategy": "none"
           },
           "targets": [
-            {"expr": "{namespace=~\"$namespace\"} |= \"request_id\""}
+            {"expr": "{namespace=~\"$namespace\"} | json | request_id=~\"$request_id\""}
           ]
         }
       ]
