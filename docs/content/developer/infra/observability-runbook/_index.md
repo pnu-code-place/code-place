@@ -44,6 +44,7 @@ Loki 로그 확인:
 
 ```logql
 {namespace="<namespace>"}
+{namespace="kube-system", app_kubernetes_io_name="traefik"} | json
 {namespace="<namespace>", app="frontend"} | json
 {namespace="<namespace>", app="backend"} | json
 {namespace="<namespace>", container=~"backend|celery-worker|judge-server"}
@@ -141,6 +142,14 @@ sum by (exported_service, code) (rate(traefik_service_requests_total{exported_se
 ```sh
 kubectl -n <namespace> get ingress,svc,endpoints
 kubectl -n kube-system logs deploy/traefik --tail=200
+kubectl -n kube-system get helmchartconfig traefik -o yaml
+```
+
+Grafana Explore:
+
+```logql
+{namespace="kube-system", app_kubernetes_io_name="traefik"} | json | DownstreamStatus >= 500
+{namespace="kube-system", app_kubernetes_io_name="traefik"} |= "<request_id>"
 ```
 
 판단:

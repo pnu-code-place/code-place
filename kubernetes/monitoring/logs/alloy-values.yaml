@@ -1,5 +1,5 @@
 # Helm values for grafana/alloy.
-# Alloy runs as a DaemonSet and collects logs from CodePlace and monitoring pods.
+# Alloy runs as a DaemonSet and collects CodePlace, monitoring, and Traefik logs.
 
 controller:
   type: daemonset
@@ -26,8 +26,9 @@ alloy:
         targets = discovery.kubernetes.pod.targets
 
         rule {
-          source_labels = ["__meta_kubernetes_namespace"]
-          regex = "code-place-dev|code-place-prod|monitoring"
+          source_labels = ["__meta_kubernetes_namespace", "__meta_kubernetes_pod_label_app_kubernetes_io_name"]
+          separator = "/"
+          regex = "(code-place-dev|code-place-prod|monitoring)/.*|kube-system/traefik"
           action = "keep"
         }
 

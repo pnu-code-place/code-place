@@ -159,9 +159,32 @@ data:
           ]
         },
         {
+          "type": "stat",
+          "title": "Ingress 5xx",
+          "gridPos": {"x": 0, "y": 4, "w": 4, "h": 4},
+          "datasource": "Loki",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "orange", "value": 1},
+                  {"color": "red", "value": 5}
+                ]
+              }
+            }
+          },
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "sum(count_over_time({namespace=\"kube-system\", app_kubernetes_io_name=\"traefik\"} | json | DownstreamStatus >= 500 [5m]))", "legendFormat": "5xx"}
+          ]
+        },
+        {
           "type": "logs",
           "title": "Recent Backend Errors",
-          "gridPos": {"x": 0, "y": 4, "w": 12, "h": 10},
+          "gridPos": {"x": 4, "y": 4, "w": 10, "h": 10},
           "datasource": "Loki",
           "options": {
             "showLabels": false,
@@ -176,7 +199,7 @@ data:
         {
           "type": "logs",
           "title": "Judge and Celery Logs",
-          "gridPos": {"x": 12, "y": 4, "w": 12, "h": 10},
+          "gridPos": {"x": 14, "y": 4, "w": 10, "h": 10},
           "datasource": "Loki",
           "options": {
             "showLabels": false,
@@ -190,7 +213,7 @@ data:
         },
         {
           "type": "logs",
-          "title": "Frontend 4xx/5xx Logs",
+          "title": "Ingress and Frontend 4xx/5xx Logs",
           "gridPos": {"x": 0, "y": 14, "w": 24, "h": 8},
           "datasource": "Loki",
           "options": {
@@ -200,7 +223,8 @@ data:
             "dedupStrategy": "none"
           },
           "targets": [
-            {"expr": "{namespace=~\"$namespace\", app=\"frontend\"} | json | status_code >= 400"}
+            {"expr": "{namespace=\"kube-system\", app_kubernetes_io_name=\"traefik\"} | json | DownstreamStatus >= 400", "legendFormat": "traefik"},
+            {"expr": "{namespace=~\"$namespace\", app=\"frontend\"} | json | status_code >= 400", "legendFormat": "frontend"}
           ]
         },
         {
