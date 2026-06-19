@@ -265,6 +265,8 @@ required_frontend_nginx_parts = [
 for text in required_frontend_nginx_parts:
     if text not in frontend_nginx:
         raise SystemExit(f"frontend Kubernetes nginx config missing {text}")
+if "$http_referer" in frontend_nginx:
+    raise SystemExit("frontend Kubernetes nginx access log must not include Referer because it can contain tokens")
 if "proxy_set_header X-Request-ID $codeplace_request_id;" not in frontend_proxy:
     raise SystemExit("frontend Kubernetes nginx proxy must propagate X-Request-ID")
 if "exec nginx -c /app/deploy/kube_nginx/nginx.conf" not in frontend_entrypoint:
