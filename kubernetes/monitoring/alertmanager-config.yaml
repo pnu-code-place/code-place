@@ -13,7 +13,7 @@ spec:
     groupWait: 30s
     groupInterval: 5m
     repeatInterval: 1h
-    receiver: p1-discord
+    receiver: unmatched-muted
     routes:
       - matchers:
           - name: priority
@@ -39,6 +39,7 @@ spec:
         repeatInterval: 1h
         receiver: p1-discord
   receivers:
+    - name: unmatched-muted
     - name: p0-discord
       discordConfigs:
         - sendResolved: true

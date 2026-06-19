@@ -371,7 +371,7 @@ P1은 `group_wait=30s`, `repeat_interval=1h`로 전달합니다. `code-place-dev
 - Discord webhook URL은 Git에 평문으로 저장하지 않습니다. 운영 Secret은 SealedSecret으로 관리합니다.
 - Docker Swarm monitoring 구성은 레거시로 유지하고 신규 관측성 리소스와 분리합니다.
 - OpenTelemetry는 base/prod `OTEL_ENABLED=0` 기본값을 유지하고 dev overlay에서 먼저 활성화합니다.
-- P0/P1 알림 라우팅은 AlertmanagerConfig로 관리하며 Grafana UI 수동 설정에 의존하지 않습니다. dev P1은 `dev-p1-muted` receiver로 보내 외부 전송을 막고, prod/monitoring P1은 Discord receiver로 보냅니다.
+- P0/P1 알림 라우팅은 AlertmanagerConfig로 관리하며 Grafana UI 수동 설정에 의존하지 않습니다. root fallback은 `unmatched-muted`로 두어 CodePlace priority label이 없는 기본/외부 alert가 Discord로 새지 않게 합니다. dev P1은 `dev-p1-muted` receiver로 보내 외부 전송을 막고, prod/monitoring P1은 Discord receiver로 보냅니다.
 - Metrics backend는 kube-prometheus-stack의 Prometheus입니다. Mimir는 현재 온프렘 단기 운영 기준선에 포함하지 않습니다.
 - 로그 수집은 Grafana Alloy와 Loki로 관리하며 Promtail은 신규 도입하지 않습니다.
 - Kubernetes event는 Kubernetes Event Exporter가 Warning event만 stdout JSON으로 내보내고, Alloy가 일반 Pod log와 같은 경로로 Loki에 적재합니다.

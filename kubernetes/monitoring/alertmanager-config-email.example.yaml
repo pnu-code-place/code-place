@@ -23,7 +23,7 @@ spec:
     groupWait: 30s
     groupInterval: 5m
     repeatInterval: 1h
-    receiver: p1-email
+    receiver: unmatched-muted
     routes:
       - matchers:
           - name: priority
@@ -40,6 +40,7 @@ spec:
         repeatInterval: 1h
         receiver: p1-email
   receivers:
+    - name: unmatched-muted
     - name: p0-email
       emailConfigs:
         - sendResolved: true

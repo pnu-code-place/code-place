@@ -49,6 +49,7 @@ Status -> Configuration -> p0-discord / p1-discord
 ```
 
 Discord webhook은 SealedSecret으로 관리합니다. AlertmanagerConfig는 최종적으로 `monitoring` namespace의 `alertmanager-contact-points` Secret key `webhook-url`을 참조하므로, 알림이 오지 않으면 SealedSecret controller와 복호화된 Secret을 함께 확인합니다.
+CodePlace AlertmanagerConfig의 root fallback receiver는 `unmatched-muted`입니다. `priority=P0` 또는 `priority=P1` label이 없는 기본/외부 alert는 이 route에서 Discord로 보내지 않습니다.
 
 ```sh
 kubectl get crd sealedsecrets.bitnami.com
