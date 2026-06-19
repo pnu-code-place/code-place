@@ -2,6 +2,9 @@ import logging
 
 from prometheus_client import Counter, Histogram, REGISTRY
 from prometheus_client.core import GaugeMetricFamily
+from django.conf import settings
+from redis import Redis
+from redis.sentinel import Sentinel
 
 from utils.cache import cache
 from utils.constants import CacheKey
@@ -83,11 +86,25 @@ class CodePlaceCollector:
             "Number of Celery tasks waiting in the Redis broker default queue.",
         )
         try:
-            metric.add_metric([], cache.llen(CELERY_BROKER_QUEUE_KEY) or 0)
+            metric.add_metric([], self._celery_broker_client().llen(CELERY_BROKER_QUEUE_KEY) or 0)
         except Exception as e:
             logger.warning("Failed to collect Celery broker queue length: %s", e)
             metric.add_metric([], 0)
         return metric
+
+    @staticmethod
+    def _celery_broker_client():
+        if getattr(settings, "REDIS_USE_SENTINEL", False):
+            sentinel = Sentinel(
+                getattr(settings, "REDIS_SENTINEL_HOSTS"),
+                socket_timeout=1,
+            )
+            return sentinel.master_for(
+                getattr(settings, "REDIS_SENTINEL_MASTER_NAME", "mymaster"),
+                db=4,
+                socket_timeout=1,
+            )
+        return Redis.from_url(getattr(settings, "CELERY_BROKER_URL"))
 
 
 def register_codeplace_metrics():
