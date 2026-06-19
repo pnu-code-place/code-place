@@ -20,3 +20,5 @@ spec:
                   key: SENTRY_DSN
             - name: SENTRY_ENVIRONMENT
               value: "dev"
+            - name: OTEL_ENABLED
+              value: "1"

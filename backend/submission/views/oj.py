@@ -1,4 +1,5 @@
 import ipaddress
+import logging
 
 from django.db.models import Q, Count
 from django.utils.dateparse import parse_datetime
@@ -12,13 +13,20 @@ from problem.models import Problem, ProblemRuleType
 from utils.api import APIView, validate_serializer
 from utils.cache import cache
 from utils.captcha import Captcha
+from utils.observability_metrics import SUBMISSION_CREATE_OUTCOME_TOTAL
 from utils.throttling import TokenBucket
 from ..models import JudgeStatus, Submission
 from ..serializers import (CreateSubmissionSerializer, SubmissionModelSerializer, ShareSubmissionSerializer)
 from ..serializers import SubmissionSafeModelSerializer, SubmissionListSerializer
 
+logger = logging.getLogger(__name__)
+
 
 class SubmissionAPI(APIView):
+
+    @staticmethod
+    def _record_create_outcome(status, scope):
+        SUBMISSION_CREATE_OUTCOME_TOTAL.labels(status=status, scope=scope).inc()
 
     def throttling(self, request):
         # 使用 open_api 的请求暂不做限制
@@ -53,9 +61,11 @@ class SubmissionAPI(APIView):
     def post(self, request):
         data = request.data
         hide_id = False
+        scope = "contest" if data.get("contest_id") else "practice"
         if data.get("contest_id"):
             error = self.check_contest_permission(request)
             if error:
+                self._record_create_outcome("contest_permission_denied", scope)
                 return error
             contest = self.contest
             if not contest.problem_details_permission(request.user):
@@ -63,30 +73,45 @@ class SubmissionAPI(APIView):
 
         if data.get("captcha"):
             if not Captcha(request).check(data["captcha"]):
+                self._record_create_outcome("invalid_captcha", scope)
                 return self.error("Invalid captcha")
         error = self.throttling(request)
         if error:
+            self._record_create_outcome("throttled", scope)
             return self.error(error)
 
         try:
             problem = Problem.objects.get(id=data["problem_id"], contest_id=data.get("contest_id"), visible=True)
         except Problem.DoesNotExist:
+            self._record_create_outcome("problem_not_found", scope)
             return self.error("Problem not exist")
         if data["language"] not in problem.languages:
+            self._record_create_outcome("language_not_allowed", scope)
             return self.error(f"{data['language']} is now allowed in the problem")
-        submission = Submission.objects.create(
-            user_id=request.user.id,
-            username=request.user.username,
-            language=data["language"],
-            code=data["code"],
-            problem_id=problem.id,
-            ip=request.session["ip"],
-            contest_id=data.get("contest_id"))
+        try:
+            submission = Submission.objects.create(
+                user_id=request.user.id,
+                username=request.user.username,
+                language=data["language"],
+                code=data["code"],
+                problem_id=problem.id,
+                ip=request.session["ip"],
+                contest_id=data.get("contest_id"))
+        except Exception:
+            self._record_create_outcome("db_error", scope)
+            logger.exception("Failed to create submission for problem %s", data["problem_id"])
+            raise
         # use this for debug
         # JudgeDispatcher(submission.id, problem.id).judge()
 
-        judge_task.apply_async(args=(submission.id, problem.id))
+        try:
+            judge_task.apply_async(args=(submission.id, problem.id))
+        except Exception:
+            self._record_create_outcome("enqueue_error", scope)
+            logger.exception("Failed to enqueue judge task for submission %s", submission.id)
+            raise
 
+        self._record_create_outcome("success", scope)
         if hide_id:
             return self.success()
         else:

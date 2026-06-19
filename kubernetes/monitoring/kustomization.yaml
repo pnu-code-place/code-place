@@ -5,5 +5,22 @@ namespace: monitoring
 resources:
   - ./alertmanager-config.yaml
   - ./backend-service-monitor.yaml
+  - ./blackbox-exporter.yaml
+  - ./dcgm-exporter.yaml
+  - ./datastore-pod-monitors.yaml
   - ./grafana-dashboard-codeplace.yaml
+  - ./grafana-dashboard-ai-inference.yaml
+  - ./grafana-dashboard-logs.yaml
+  - ./grafana-dashboard-kubernetes-events.yaml
+  - ./grafana-dashboard-monitoring-stack.yaml
+  - ./grafana-dashboard-public-endpoints.yaml
+  - ./grafana-dashboard-storage.yaml
+  - ./grafana-dashboard-traces.yaml
+  - ./kubernetes-event-exporter.yaml
+  - ./longhorn-service-monitor.yaml
+  - ./otel-collector.yaml
   - ./prometheus-rules.yaml
+  - ./public-endpoint-probes.yaml
+  - ./tempo.yaml
+  - ./traefik-service-monitor.yaml
+  - ./vllm-service-monitor.yaml

@@ -6,7 +6,9 @@ metadata:
     release: kube-prometheus-stack
 spec:
   namespaceSelector:
-    any: true
+    matchNames:
+      - code-place-dev
+      - code-place-prod
   selector:
     matchLabels:
       app: backend

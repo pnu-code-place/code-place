@@ -7,6 +7,8 @@ import requests
 from django.utils.html import escape, strip_tags
 import time
 
+from utils.observability_metrics import AI_HINT_DURATION_SECONDS, AI_HINT_REQUESTS_TOTAL
+
 LOCAL_VLLM_CHAT_COMPLETIONS_URL = "http://localhost:8000/v1/chat/completions"
 CLUSTER_VLLM_CHAT_COMPLETIONS_URL = "http://vllm.code-place-prod:8000/v1/chat/completions"
 VLLM_MODEL = "Qwen/Qwen3.5-9B"
@@ -316,6 +318,8 @@ def stream_problem_hint(problem, previous_hints=None, user_code=None):
         return
 
     response = None
+    started_at = time.monotonic()
+    status = "success"
     try:
         response = requests.post(
             get_vllm_chat_completions_url(),
@@ -338,13 +342,24 @@ def stream_problem_hint(problem, previous_hints=None, user_code=None):
             try:
                 chunk = json.loads(payload)
             except ValueError as exc:
+                status = "stream_parse_error"
                 raise LLMHintError("Failed to parse vLLM stream") from exc
 
             text = _extract_stream_delta(chunk)
             if text:
                 yield text
     except requests.RequestException as exc:
+        status = "request_error"
         raise LLMHintError("Failed to call vLLM") from exc
+    except GeneratorExit:
+        status = "client_closed"
+        raise
+    except Exception:
+        if status == "success":
+            status = "error"
+        raise
     finally:
+        AI_HINT_REQUESTS_TOTAL.labels(status=status).inc()
+        AI_HINT_DURATION_SECONDS.labels(status=status).observe(max(time.monotonic() - started_at, 0))
         if response is not None:
             response.close()

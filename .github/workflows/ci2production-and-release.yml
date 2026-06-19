@@ -84,6 +84,8 @@ jobs:
           push: true
           tags: ${{ secrets.HARBOR_REGISTRY }}/code-place-prod/backend:${{ github.sha }}-prod
           provenance: false
+          build-args: |
+            APP_VERSION=${{ github.sha }}-prod
 
   ci-frontend:
     needs: [detect-changes-by-component]
@@ -113,8 +115,10 @@ jobs:
           provenance: false
           build-args: |
             SERVER_NAME=${{ secrets.PROD_SERVER_NAME }}
-            APP_VERSION=${{ github.sha }}
+            APP_VERSION=${{ github.sha }}-prod
             SENTRY_ENVIRONMENT=production
+            SENTRY_DSN=${{ secrets.SENTRY_DSN }}
+            USE_SENTRY=1
 
   ci-hub-auth:
     needs: [detect-changes-by-component]

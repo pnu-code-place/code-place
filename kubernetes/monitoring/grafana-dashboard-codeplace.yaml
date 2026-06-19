@@ -13,6 +13,7 @@ data:
       "version": 1,
       "refresh": "30s",
       "tags": ["codeplace"],
+      "editable": true,
       "time": {
         "from": "now-1h",
         "to": "now"
@@ -37,51 +38,450 @@ data:
       },
       "panels": [
         {
-          "type": "timeseries",
-          "title": "Backend Request Rate",
-          "gridPos": {"x": 0, "y": 0, "w": 8, "h": 8},
+          "type": "stat",
+          "title": "Backend Up",
+          "gridPos": {"x": 0, "y": 0, "w": 4, "h": 4},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "red", "value": null},
+                  {"color": "green", "value": 1}
+                ]
+              }
+            }
+          },
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
           "targets": [
-            {"expr": "sum by (namespace) (rate(codeplace_http_requests_total{namespace=~\"$namespace\"}[5m]))", "legendFormat": "{{namespace}} requests/s"}
+            {"expr": "min by (namespace) (up{job=\"backend\", namespace=~\"$namespace\"})", "legendFormat": "{{namespace}}"}
           ]
         },
         {
-          "type": "timeseries",
-          "title": "Backend 5xx Rate",
-          "gridPos": {"x": 8, "y": 0, "w": 8, "h": 8},
+          "type": "stat",
+          "title": "API / Ingress Request Rate",
+          "gridPos": {"x": 4, "y": 0, "w": 4, "h": 4},
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "reqps"}},
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
           "targets": [
-            {"expr": "sum by (namespace) (rate(codeplace_http_requests_total{namespace=~\"$namespace\", status_code=~\"5..\"}[5m]))", "legendFormat": "{{namespace}} 5xx/s"}
+            {"expr": "codeplace:api_request_rate5m{namespace=~\"$namespace\"}", "legendFormat": "{{namespace}} api"},
+            {"expr": "codeplace:ingress_request_rate2m{namespace=~\"$namespace\"}", "legendFormat": "{{namespace}} ingress"}
           ]
         },
         {
-          "type": "timeseries",
-          "title": "Backend p95 Latency",
-          "gridPos": {"x": 16, "y": 0, "w": 8, "h": 8},
+          "type": "stat",
+          "title": "API / Ingress 5xx Ratio",
+          "gridPos": {"x": 8, "y": 0, "w": 4, "h": 4},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percentunit",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "orange", "value": 0.01},
+                  {"color": "red", "value": 0.05}
+                ]
+              }
+            }
+          },
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
           "targets": [
-            {"expr": "histogram_quantile(0.95, sum by (namespace, le) (rate(codeplace_http_request_duration_seconds_bucket{namespace=~\"$namespace\"}[5m])))", "legendFormat": "{{namespace}} p95"}
+            {"expr": "codeplace:api_5xx_ratio5m{namespace=~\"$namespace\"}", "legendFormat": "{{namespace}} api"},
+            {"expr": "codeplace:ingress_5xx_rate2m{namespace=~\"$namespace\"} / clamp_min(codeplace:ingress_request_rate2m{namespace=~\"$namespace\"}, 1)", "legendFormat": "{{namespace}} ingress"}
           ]
         },
         {
-          "type": "timeseries",
-          "title": "Submission Status",
-          "gridPos": {"x": 0, "y": 8, "w": 8, "h": 8},
+          "type": "stat",
+          "title": "p95 Latency",
+          "gridPos": {"x": 12, "y": 0, "w": 4, "h": 4},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "s",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "orange", "value": 1},
+                  {"color": "red", "value": 2}
+                ]
+              }
+            }
+          },
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
           "targets": [
-            {"expr": "codeplace_submission_status_count{namespace=~\"$namespace\"}", "legendFormat": "{{namespace}} {{status}}"}
+            {"expr": "codeplace:api_p95_latency_seconds5m{namespace=~\"$namespace\"}", "legendFormat": "{{namespace}}"}
           ]
         },
         {
-          "type": "timeseries",
+          "type": "stat",
           "title": "Judge Waiting Queue",
-          "gridPos": {"x": 8, "y": 8, "w": 8, "h": 8},
+          "gridPos": {"x": 16, "y": 0, "w": 4, "h": 4},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "orange", "value": 3},
+                  {"color": "red", "value": 5}
+                ]
+              }
+            }
+          },
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
           "targets": [
-            {"expr": "codeplace_waiting_queue_length{namespace=~\"$namespace\"}", "legendFormat": "{{namespace}} waiting"}
+            {"expr": "codeplace:judge_waiting_queue_length{namespace=~\"$namespace\"}", "legendFormat": "{{namespace}}"}
           ]
         },
         {
           "type": "timeseries",
-          "title": "Judge Heartbeat Age",
-          "gridPos": {"x": 16, "y": 8, "w": 8, "h": 8},
+          "title": "Backend Requests by Status",
+          "gridPos": {"x": 0, "y": 4, "w": 8, "h": 8},
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "reqps"}},
           "targets": [
-            {"expr": "codeplace_judge_server_last_heartbeat_age_seconds{namespace=~\"$namespace\"}", "legendFormat": "{{namespace}} {{hostname}}"}
+            {"expr": "sum by (namespace, status_code) (rate(codeplace_http_requests_total{namespace=~\"$namespace\"}[5m]))", "legendFormat": "{{namespace}} {{status_code}}"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Backend Latency",
+          "gridPos": {"x": 8, "y": 4, "w": 8, "h": 8},
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "s"}},
+          "targets": [
+            {"expr": "histogram_quantile(0.95, sum by (namespace, le) (rate(codeplace_http_request_duration_seconds_bucket{namespace=~\"$namespace\"}[5m])))", "legendFormat": "{{namespace}} p95"},
+            {"expr": "histogram_quantile(0.99, sum by (namespace, le) (rate(codeplace_http_request_duration_seconds_bucket{namespace=~\"$namespace\"}[5m])))", "legendFormat": "{{namespace}} p99"}
+          ]
+        },
+        {
+          "type": "bargauge",
+          "title": "Judge Queue Length",
+          "gridPos": {"x": 16, "y": 4, "w": 8, "h": 8},
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "short"}},
+          "options": {"displayMode": "gradient", "orientation": "horizontal", "reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "codeplace_waiting_queue_length{namespace=~\"$namespace\"}", "legendFormat": "{{namespace}} waiting_queue"},
+            {"expr": "codeplace_celery_broker_queue_length{namespace=~\"$namespace\"}", "legendFormat": "{{namespace}} celery"}
+          ]
+        },
+        {
+          "type": "row",
+          "title": "Judge / Async Outcomes",
+          "gridPos": {"x": 0, "y": 12, "w": 24, "h": 1},
+          "collapsed": false,
+          "panels": []
+        },
+        {
+          "type": "timeseries",
+          "title": "Submission / Judge Outcomes",
+          "gridPos": {"x": 0, "y": 20, "w": 24, "h": 8},
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "ops"}},
+          "targets": [
+            {"expr": "sum by (namespace, scope, status) (rate(codeplace_submission_create_outcome_total{namespace=~\"$namespace\"}[5m]))", "legendFormat": "{{namespace}} create {{scope}} {{status}}/s"},
+            {"expr": "sum by (namespace, scope, status) (rate(codeplace_judge_task_outcome_total{namespace=~\"$namespace\"}[5m]))", "legendFormat": "{{namespace}} judge {{scope}} {{status}}/s"}
+          ]
+        },
+        {
+          "type": "row",
+          "title": "Platform",
+          "gridPos": {"x": 0, "y": 36, "w": 24, "h": 1},
+          "collapsed": false,
+          "panels": []
+        },
+        {
+          "type": "stat",
+          "title": "Pod Ready",
+          "gridPos": {"x": 0, "y": 37, "w": 6, "h": 5},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "red", "value": null},
+                  {"color": "green", "value": 1}
+                ]
+              }
+            }
+          },
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "min by (namespace, pod) (kube_pod_status_ready{namespace=~\"$namespace\", condition=\"true\", pod=~\"backend-.*|frontend-.*|hub-auth-.*|celery-.*|judge-server-.*|postgres-.*|redis-.*|vllm-.*\"})", "legendFormat": "{{namespace}} {{pod}}"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Pod Restarts",
+          "gridPos": {"x": 6, "y": 37, "w": 6, "h": 5},
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "short"}},
+          "targets": [
+            {"expr": "sum by (namespace, pod) (increase(kube_pod_container_status_restarts_total{namespace=~\"$namespace\", pod=~\"backend-.*|frontend-.*|hub-auth-.*|celery-.*|judge-server-.*|postgres-.*|redis-.*|vllm-.*\"}[1h]))", "legendFormat": "{{namespace}} {{pod}}"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Container CPU Usage",
+          "gridPos": {"x": 12, "y": 37, "w": 6, "h": 5},
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "cores"}},
+          "targets": [
+            {"expr": "topk(10, sum by (namespace, pod, container) (rate(container_cpu_usage_seconds_total{namespace=~\"$namespace\", container!=\"\", pod=~\"backend-.*|frontend-.*|hub-auth-.*|celery-.*|judge-server-.*|postgres-.*|redis-.*|vllm-.*\"}[5m])))", "legendFormat": "{{namespace}} {{pod}} {{container}}"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Container Memory Usage",
+          "gridPos": {"x": 18, "y": 37, "w": 6, "h": 5},
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "bytes"}},
+          "targets": [
+            {"expr": "topk(10, container_memory_working_set_bytes{namespace=~\"$namespace\", container!=\"\", pod=~\"backend-.*|frontend-.*|hub-auth-.*|celery-.*|judge-server-.*|postgres-.*|redis-.*|vllm-.*\"})", "legendFormat": "{{namespace}} {{pod}} {{container}}"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "PVC Usage",
+          "gridPos": {"x": 0, "y": 42, "w": 8, "h": 6},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percentunit",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "orange", "value": 0.75},
+                  {"color": "red", "value": 0.85}
+                ]
+              }
+            }
+          },
+          "targets": [
+            {"expr": "max by (namespace, persistentvolumeclaim) (kubelet_volume_stats_used_bytes{namespace=~\"$namespace\"}) / clamp_min(max by (namespace, persistentvolumeclaim) (kubelet_volume_stats_capacity_bytes{namespace=~\"$namespace\"}), 1)", "legendFormat": "{{namespace}} {{persistentvolumeclaim}}"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Node Pressure",
+          "gridPos": {"x": 8, "y": 42, "w": 8, "h": 6},
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "short"}},
+          "targets": [
+            {"expr": "kube_node_status_condition{condition=~\"MemoryPressure|DiskPressure|PIDPressure\", status=\"true\"}", "legendFormat": "{{node}} {{condition}}"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Deployment Unavailable Replicas",
+          "gridPos": {"x": 16, "y": 42, "w": 8, "h": 6},
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "short"}},
+          "targets": [
+            {"expr": "max by (namespace, deployment) (kube_deployment_status_replicas_unavailable{namespace=~\"$namespace\", deployment=~\"backend|frontend|hub-auth|celery-worker|celery-beat|judge-server|vllm\"})", "legendFormat": "{{namespace}} {{deployment}} unavailable"},
+            {"expr": "max by (namespace, deployment) (kube_deployment_status_observed_generation{namespace=~\"$namespace\", deployment=~\"backend|frontend|hub-auth|celery-worker|celery-beat|judge-server|vllm\"} != on (namespace, deployment) kube_deployment_metadata_generation{namespace=~\"$namespace\", deployment=~\"backend|frontend|hub-auth|celery-worker|celery-beat|judge-server|vllm\"})", "legendFormat": "{{namespace}} {{deployment}} generation mismatch"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Service Ready Endpoints",
+          "gridPos": {"x": 0, "y": 48, "w": 12, "h": 6},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "red", "value": null},
+                  {"color": "green", "value": 1}
+                ]
+              }
+            }
+          },
+          "targets": [
+            {"expr": "sum by (namespace, endpoint) (kube_endpoint_address{namespace=~\"$namespace\", endpoint=~\"backend|frontend|hub-auth|judge-server|vllm\", ready=\"true\"})", "legendFormat": "{{namespace}} {{endpoint}} ready endpoints"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "PDB Healthy Pods",
+          "gridPos": {"x": 12, "y": 48, "w": 12, "h": 6},
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "short"}},
+          "targets": [
+            {"expr": "kube_poddisruptionbudget_status_current_healthy{namespace=~\"$namespace\", poddisruptionbudget=~\"backend|frontend\"}", "legendFormat": "{{namespace}} {{poddisruptionbudget}} current"},
+            {"expr": "kube_poddisruptionbudget_status_desired_healthy{namespace=~\"$namespace\", poddisruptionbudget=~\"backend|frontend\"}", "legendFormat": "{{namespace}} {{poddisruptionbudget}} desired"}
+          ]
+        },
+        {
+          "type": "row",
+          "title": "Data Stores",
+          "gridPos": {"x": 0, "y": 54, "w": 24, "h": 1},
+          "collapsed": false,
+          "panels": []
+        },
+        {
+          "type": "stat",
+          "title": "PostgreSQL Ready Replicas",
+          "gridPos": {"x": 0, "y": 55, "w": 6, "h": 5},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "red", "value": null},
+                  {"color": "orange", "value": 1},
+                  {"color": "green", "value": 3}
+                ]
+              }
+            }
+          },
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "sum by (namespace) (kube_pod_status_ready{namespace=~\"$namespace\", condition=\"true\", pod=~\"postgres-[0-9]+\"}) or vector(0)", "legendFormat": "{{namespace}} ready"}
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "Redis/Sentinel Ready Replicas",
+          "gridPos": {"x": 6, "y": 55, "w": 6, "h": 5},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "red", "value": null},
+                  {"color": "orange", "value": 3},
+                  {"color": "green", "value": 6}
+                ]
+              }
+            }
+          },
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "sum by (namespace) (kube_pod_status_ready{namespace=~\"$namespace\", condition=\"true\", pod=~\"redis-.*|redis-replication-.*\"}) or vector(0)", "legendFormat": "{{namespace}} ready"}
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "PostgreSQL Exporter Up",
+          "gridPos": {"x": 12, "y": 55, "w": 6, "h": 5},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "red", "value": null},
+                  {"color": "green", "value": 1}
+                ]
+              }
+            }
+          },
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "min by (namespace) (cnpg_collector_up{namespace=~\"$namespace\", cluster=\"postgres\"})", "legendFormat": "{{namespace}}"}
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "Redis Exporter Up",
+          "gridPos": {"x": 18, "y": 55, "w": 6, "h": 5},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "red", "value": null},
+                  {"color": "green", "value": 1}
+                ]
+              }
+            }
+          },
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "min by (namespace) (redis_up{namespace=~\"$namespace\"})", "legendFormat": "{{namespace}}"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "PostgreSQL Restarts",
+          "gridPos": {"x": 0, "y": 60, "w": 6, "h": 5},
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "short"}},
+          "targets": [
+            {"expr": "sum by (namespace, pod) (increase(kube_pod_container_status_restarts_total{namespace=~\"$namespace\", pod=~\"postgres-.*\"}[1h]))", "legendFormat": "{{namespace}} {{pod}}"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Redis Restarts",
+          "gridPos": {"x": 6, "y": 60, "w": 6, "h": 5},
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "short"}},
+          "targets": [
+            {"expr": "sum by (namespace, pod) (increase(kube_pod_container_status_restarts_total{namespace=~\"$namespace\", pod=~\"redis-.*|redis-replication-.*\"}[1h]))", "legendFormat": "{{namespace}} {{pod}}"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "PostgreSQL WAL Bytes",
+          "gridPos": {"x": 12, "y": 60, "w": 6, "h": 5},
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "Bps"}},
+          "targets": [
+            {"expr": "sum by (namespace) (rate(cnpg_collector_wal_bytes{namespace=~\"$namespace\", cluster=\"postgres\"}[5m]))", "legendFormat": "{{namespace}}"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Redis Memory Usage",
+          "gridPos": {"x": 18, "y": 60, "w": 6, "h": 5},
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "bytes"}},
+          "targets": [
+            {"expr": "max by (namespace, pod) (redis_memory_used_bytes{namespace=~\"$namespace\"})", "legendFormat": "{{namespace}} {{pod}} used"},
+            {"expr": "max by (namespace, pod) (redis_memory_max_bytes{namespace=~\"$namespace\"})", "legendFormat": "{{namespace}} {{pod}} maxmemory"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "PostgreSQL Collector Errors",
+          "gridPos": {"x": 0, "y": 65, "w": 8, "h": 6},
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "short"}},
+          "targets": [
+            {"expr": "max by (namespace, pod) (cnpg_collector_last_collection_error{namespace=~\"$namespace\", cluster=\"postgres\"})", "legendFormat": "{{namespace}} {{pod}}"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "PostgreSQL Nodes Used",
+          "gridPos": {"x": 8, "y": 65, "w": 16, "h": 6},
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "short"}},
+          "targets": [
+            {"expr": "min by (namespace) (cnpg_collector_nodes_used{namespace=~\"$namespace\", cluster=\"postgres\"})", "legendFormat": "{{namespace}} nodes"}
           ]
         }
       ]

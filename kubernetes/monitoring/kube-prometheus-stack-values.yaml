@@ -1,20 +1,85 @@
 prometheus:
   prometheusSpec:
+    replicas: 2
+    podAntiAffinity: soft
+    podAntiAffinityTopologyKey: kubernetes.io/hostname
+    replicaExternalLabelNameClear: true
     evaluationInterval: 15s
     scrapeInterval: 15s
+    retention: 15d
+    retentionSize: 45GB
     serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
+    probeSelectorNilUsesHelmValues: false
     ruleSelectorNilUsesHelmValues: false
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: longhorn
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 50Gi
 
 alertmanager:
   alertmanagerSpec:
+    replicas: 2
+    podAntiAffinity: soft
+    podAntiAffinityTopologyKey: kubernetes.io/hostname
+    alertmanagerConfigMatcherStrategy:
+      type: None
     alertmanagerConfigSelector:
       matchLabels:
         alertmanagerConfig: codeplace
     alertmanagerConfigNamespaceSelector:
       matchLabels:
         kubernetes.io/metadata.name: monitoring
+    storage:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: longhorn
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 5Gi
 
 grafana:
+  grafana.ini:
+    metrics:
+      enabled: true
+  persistence:
+    enabled: true
+    type: pvc
+    storageClassName: longhorn
+    accessModes:
+      - ReadWriteOnce
+    size: 10Gi
+  additionalDataSources:
+    - name: Loki
+      uid: Loki
+      type: loki
+      access: proxy
+      url: http://loki-gateway.monitoring.svc.cluster.local
+      isDefault: false
+      jsonData:
+        timeout: 60
+    - name: Tempo
+      uid: Tempo
+      type: tempo
+      access: proxy
+      url: http://tempo.monitoring.svc.cluster.local:3200
+      isDefault: false
+      jsonData:
+        tracesToLogsV2:
+          datasourceUid: Loki
+          spanStartTimeShift: "-5m"
+          spanEndTimeShift: "5m"
+          filterByTraceID: false
+          filterBySpanID: false
+          customQuery: true
+          query: "{namespace=~\"code-place-dev|code-place-prod\"} |= \"${__span.traceId}\""
   ingress:
     enabled: true
     ingressClassName: traefik

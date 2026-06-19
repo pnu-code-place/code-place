@@ -52,3 +52,27 @@ kubectl describe pod -n code-place-prod -l app=vllm
 - Longhorn replica 수는 YAML 에서 고정하지 않고, 필요하면 Longhorn UI 에서 직접 조정하는 전제를 둡니다.
 - `max-num-seqs=60` 은 처리량 위주 값이라, 메모리 압박이나 OOM 이 보이면 가장 먼저 낮춰야 합니다.
 - 더 보수적으로 운영하려면 이미지 tag 대신 digest 로 pin 하는 것이 가장 안전합니다.
+
+## Monitoring
+
+vLLM OpenAI-compatible server는 `/metrics`에서 Prometheus metrics를 제공합니다.
+CodePlace monitoring kustomization은 prod vLLM Service를 `vllm-service-monitor.yaml`로 scrape합니다.
+같은 monitoring kustomization은 `dcgm-exporter.yaml`도 배포해 `workload.code-place.ai/vllm=true` node의 NVIDIA GPU metric을 수집합니다.
+
+```bash
+kubectl apply -k kubernetes/monitoring
+kubectl -n monitoring get servicemonitor vllm
+kubectl -n monitoring get daemonset,servicemonitor dcgm-exporter
+```
+
+Grafana에서는 `CodePlace AI Inference` dashboard에서 다음 상태를 확인합니다.
+
+- vLLM scrape up / Pod ready.
+- running/waiting request count.
+- KV cache usage.
+- p95 e2e latency, queue latency, time-to-first-token.
+- prompt/generation token throughput.
+- `vllm-hf-cache` PVC usage.
+- GPU utilization, framebuffer memory usage, temperature, XID error.
+
+알림은 vLLM scrape 실패와 GPU XID error를 P0로 처리합니다. waiting queue 증가, KV cache 90% 초과, p95 latency 60초 초과, DCGM exporter unavailable, GPU utilization 95% 초과, GPU framebuffer memory 90% 초과, GPU temperature 85C 초과는 P1로 처리합니다.

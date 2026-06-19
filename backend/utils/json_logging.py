@@ -3,6 +3,7 @@ import logging
 from datetime import datetime, timezone
 
 from utils.observability_context import get_request_id
+from utils.observability_tracing import get_current_trace_context
 
 
 SENSITIVE_EXACT_FIELDS = {
@@ -37,6 +38,7 @@ class CodePlaceJsonFormatter(logging.Formatter):
             "message": record.getMessage(),
             "request_id": getattr(record, "request_id", None) or get_request_id(),
         }
+        payload.update(get_current_trace_context())
         for key in (
                 "method",
                 "path",
@@ -45,7 +47,10 @@ class CodePlaceJsonFormatter(logging.Formatter):
                 "user_id",
                 "remote_addr",
                 "task_id",
+                "task_name",
+                "task_status",
                 "submission_id",
+                "retry_reason",
         ):
             value = getattr(record, key, None)
             if value is not None:

@@ -1,14 +1,12 @@
 "use strict"
 
 function isSentryEnabled(nodeEnv = process.env.NODE_ENV) {
-  return (process.env.USE_SENTRY || (nodeEnv === "production" ? "1" : "0")) === "1"
+  const enabled = (process.env.USE_SENTRY || (nodeEnv === "production" ? "1" : "0")) === "1"
+  return enabled && Boolean(getSentryDsn())
 }
 
 function getSentryDsn() {
-  return (
-    process.env.SENTRY_DSN ||
-    "https://143814aaa2d6e0b4550b2e5effefe90d@o4511586463776768.ingest.us.sentry.io/4511586483634176"
-  )
+  return process.env.SENTRY_DSN || ""
 }
 
 function getSentryEnvironment(nodeEnv = process.env.NODE_ENV) {

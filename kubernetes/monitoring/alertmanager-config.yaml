@@ -13,7 +13,7 @@ spec:
     groupWait: 30s
     groupInterval: 5m
     repeatInterval: 1h
-    receiver: p1-discord
+    receiver: unmatched-muted
     routes:
       - matchers:
           - name: priority
@@ -25,11 +25,21 @@ spec:
       - matchers:
           - name: priority
             value: P1
+          - name: namespace
+            value: code-place-dev
+        groupWait: 30s
+        groupInterval: 5m
+        repeatInterval: 1h
+        receiver: dev-p1-muted
+      - matchers:
+          - name: priority
+            value: P1
         groupWait: 30s
         groupInterval: 5m
         repeatInterval: 1h
         receiver: p1-discord
   receivers:
+    - name: unmatched-muted
     - name: p0-discord
       discordConfigs:
         - sendResolved: true
@@ -38,8 +48,17 @@ spec:
             key: webhook-url
           title: '[{{ .Status }}][P0] {{ .CommonLabels.alertname }}'
           content: '{{ .CommonAnnotations.summary }}'
-          message: '{{ .CommonAnnotations.description }}'
+          message: |-
+            {{ .CommonAnnotations.description }}
+
+            Priority: {{ .CommonLabels.priority }}
+            Namespace: {{ .CommonLabels.namespace }}
+            Overview: https://monitoring.code-place-dev.site/d/codeplace-overview/codeplace-overview?orgId=1&var-namespace={{ .CommonLabels.namespace }}
+            Logs: https://monitoring.code-place-dev.site/d/codeplace-logs/codeplace-logs?orgId=1&var-namespace={{ .CommonLabels.namespace }}
+            Monitoring: https://monitoring.code-place-dev.site/d/codeplace-monitoring-stack/codeplace-monitoring-stack?orgId=1
+            Source: {{ range .Alerts }}{{ .GeneratorURL }}{{ end }}
           username: CodePlace Alertmanager
+    - name: dev-p1-muted
     - name: p1-discord
       discordConfigs:
         - sendResolved: true
@@ -48,5 +67,13 @@ spec:
             key: webhook-url
           title: '[{{ .Status }}][P1] {{ .CommonLabels.alertname }}'
           content: '{{ .CommonAnnotations.summary }}'
-          message: '{{ .CommonAnnotations.description }}'
+          message: |-
+            {{ .CommonAnnotations.description }}
+
+            Priority: {{ .CommonLabels.priority }}
+            Namespace: {{ .CommonLabels.namespace }}
+            Overview: https://monitoring.code-place-dev.site/d/codeplace-overview/codeplace-overview?orgId=1&var-namespace={{ .CommonLabels.namespace }}
+            Logs: https://monitoring.code-place-dev.site/d/codeplace-logs/codeplace-logs?orgId=1&var-namespace={{ .CommonLabels.namespace }}
+            Monitoring: https://monitoring.code-place-dev.site/d/codeplace-monitoring-stack/codeplace-monitoring-stack?orgId=1
+            Source: {{ range .Alerts }}{{ .GeneratorURL }}{{ end }}
           username: CodePlace Alertmanager

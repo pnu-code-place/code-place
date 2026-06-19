@@ -57,12 +57,39 @@ class SubmissionAPITest(SubmissionCreateTestBase):
             self.assertSuccess(resp)
             self.assertIn("submission_id", resp.data["data"])
 
+    @mock.patch("submission.views.oj.SUBMISSION_CREATE_OUTCOME_TOTAL")
+    def test_create_submission_records_success_outcome(self, outcome_total):
+        data = copy.deepcopy(DEFAULT_SUBMISSION_DATA)
+        data["problem_id"] = self.problem.id
+        labels = mock.Mock()
+        outcome_total.labels.return_value = labels
+
+        with mock.patch('judge.tasks.judge_task.apply_async'):
+            resp = self.client.post(self.url, data=data)
+
+        self.assertSuccess(resp)
+        outcome_total.labels.assert_called_once_with(status="success", scope="practice")
+        labels.inc.assert_called_once()
+
     def test_create_submission_nonexistent_problem(self):
         data = copy.deepcopy(DEFAULT_SUBMISSION_DATA)
         data["problem_id"] = 99999
 
         resp = self.client.post(self.url, data=data)
         self.assertFailed(resp, "Problem not exist")
+
+    @mock.patch("submission.views.oj.SUBMISSION_CREATE_OUTCOME_TOTAL")
+    def test_create_submission_records_problem_not_found_outcome(self, outcome_total):
+        data = copy.deepcopy(DEFAULT_SUBMISSION_DATA)
+        data["problem_id"] = 99999
+        labels = mock.Mock()
+        outcome_total.labels.return_value = labels
+
+        resp = self.client.post(self.url, data=data)
+
+        self.assertFailed(resp, "Problem not exist")
+        outcome_total.labels.assert_called_once_with(status="problem_not_found", scope="practice")
+        labels.inc.assert_called_once()
 
     def test_create_submission_invalid_language(self):
         data = copy.deepcopy(DEFAULT_SUBMISSION_DATA)

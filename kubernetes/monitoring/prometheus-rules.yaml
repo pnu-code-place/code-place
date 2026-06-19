@@ -6,18 +6,60 @@ metadata:
     release: kube-prometheus-stack
 spec:
   groups:
+    - name: codeplace.recording
+      interval: 15s
+      rules:
+        - record: codeplace:api_request_rate5m
+          expr: sum by (namespace) (rate(codeplace_http_requests_total{namespace=~"code-place-(dev|prod)"}[5m]))
+        - record: codeplace:api_5xx_rate5m
+          expr: sum by (namespace) (rate(codeplace_http_requests_total{namespace=~"code-place-(dev|prod)", status_code=~"5.."}[5m]))
+        - record: codeplace:api_5xx_ratio5m
+          expr: codeplace:api_5xx_rate5m / clamp_min(codeplace:api_request_rate5m, 0.001)
+        - record: codeplace:api_p95_latency_seconds5m
+          expr: histogram_quantile(0.95, sum by (namespace, le) (rate(codeplace_http_request_duration_seconds_bucket{namespace=~"code-place-(dev|prod)"}[5m])))
+        - record: codeplace:ingress_request_rate2m
+          expr: sum(rate(traefik_service_requests_total{exported_service=~"code-place-dev-.*"}[2m])) or sum(rate(traefik_service_requests_total{service=~"code-place-dev-.*"}[2m]))
+          labels:
+            namespace: code-place-dev
+        - record: codeplace:ingress_5xx_rate2m
+          expr: sum(rate(traefik_service_requests_total{exported_service=~"code-place-dev-.*", code=~"5.."}[2m])) or sum(rate(traefik_service_requests_total{service=~"code-place-dev-.*", code=~"5.."}[2m]))
+          labels:
+            namespace: code-place-dev
+        - record: codeplace:ingress_request_rate2m
+          expr: sum(rate(traefik_service_requests_total{exported_service=~"code-place-prod-.*"}[2m])) or sum(rate(traefik_service_requests_total{service=~"code-place-prod-.*"}[2m]))
+          labels:
+            namespace: code-place-prod
+        - record: codeplace:ingress_5xx_rate2m
+          expr: sum(rate(traefik_service_requests_total{exported_service=~"code-place-prod-.*", code=~"5.."}[2m])) or sum(rate(traefik_service_requests_total{service=~"code-place-prod-.*", code=~"5.."}[2m]))
+          labels:
+            namespace: code-place-prod
+        - record: codeplace:public_endpoint_availability5m
+          expr: avg by (environment, namespace, service, instance) (avg_over_time(probe_success{probe_type="public-http"}[5m]))
+        - record: codeplace:judge_waiting_queue_length
+          expr: max by (namespace) (codeplace_waiting_queue_length{namespace=~"code-place-(dev|prod)"})
     - name: codeplace.p0
       interval: 15s
       rules:
         - alert: BackendTargetDown
-          expr: up{job="backend", namespace=~"code-place-(dev|prod)"} == 0
+          expr: (min(up{job="backend", namespace="code-place-dev"}) == 0) or absent(up{job="backend", namespace="code-place-dev"})
           for: 1m
           labels:
+            namespace: code-place-dev
             severity: critical
             priority: P0
           annotations:
-            summary: "Backend metrics target is down"
-            description: "Prometheus cannot scrape the backend /metrics endpoint for 1 minute."
+            summary: "Backend metrics target is down in dev"
+            description: "Prometheus cannot scrape the dev backend /metrics endpoint, or the backend target series is missing, for 1 minute."
+        - alert: BackendTargetDown
+          expr: (min(up{job="backend", namespace="code-place-prod"}) == 0) or absent(up{job="backend", namespace="code-place-prod"})
+          for: 1m
+          labels:
+            namespace: code-place-prod
+            severity: critical
+            priority: P0
+          annotations:
+            summary: "Backend metrics target is down in prod"
+            description: "Prometheus cannot scrape the prod backend /metrics endpoint, or the backend target series is missing, for 1 minute."
         - alert: Api5xxSpike
           expr: sum by (namespace) (rate(codeplace_http_requests_total{namespace=~"code-place-(dev|prod)", status_code=~"5.."}[2m])) / clamp_min(sum by (namespace) (rate(codeplace_http_requests_total{namespace=~"code-place-(dev|prod)"}[2m])), 1) > 0.05
           for: 2m
@@ -28,7 +70,7 @@ spec:
             summary: "Backend API 5xx rate is high"
             description: "Backend API 5xx responses are above 5% for 2 minutes."
         - alert: Ingress5xxSpike
-          expr: sum(rate(traefik_service_requests_total{service=~"code-place-dev-.*", code=~"5.."}[2m])) / clamp_min(sum(rate(traefik_service_requests_total{service=~"code-place-dev-.*"}[2m])), 1) > 0.05
+          expr: codeplace:ingress_5xx_rate2m{namespace="code-place-dev"} / clamp_min(codeplace:ingress_request_rate2m{namespace="code-place-dev"}, 1) > 0.05
           for: 2m
           labels:
             namespace: code-place-dev
@@ -38,7 +80,7 @@ spec:
             summary: "Ingress 5xx rate is high in dev"
             description: "Traefik 5xx responses for code-place-dev are above 5% for 2 minutes."
         - alert: Ingress5xxSpike
-          expr: sum(rate(traefik_service_requests_total{service=~"code-place-prod-.*", code=~"5.."}[2m])) / clamp_min(sum(rate(traefik_service_requests_total{service=~"code-place-prod-.*"}[2m])), 1) > 0.05
+          expr: codeplace:ingress_5xx_rate2m{namespace="code-place-prod"} / clamp_min(codeplace:ingress_request_rate2m{namespace="code-place-prod"}, 1) > 0.05
           for: 2m
           labels:
             namespace: code-place-prod
@@ -47,41 +89,106 @@ spec:
           annotations:
             summary: "Ingress 5xx rate is high in prod"
             description: "Traefik 5xx responses for code-place-prod are above 5% for 2 minutes."
-        - alert: JudgeAllUnavailable
-          expr: (sum by (namespace) (codeplace_judge_server_available{namespace=~"code-place-(dev|prod)"}) == 0) or (max by (namespace) (up{job="backend", namespace=~"code-place-(dev|prod)"}) unless on (namespace) codeplace_judge_server_available{namespace=~"code-place-(dev|prod)"})
+        - alert: PublicEndpointDown
+          expr: (probe_success{environment="prod", probe_type="public-http"} == 0) or absent(probe_success{environment="prod", service="frontend", probe_type="public-http"}) or absent(probe_success{environment="prod", service="hub-auth", probe_type="public-http"})
           for: 1m
           labels:
             severity: critical
             priority: P0
+            namespace: code-place-prod
           annotations:
-            summary: "No judge-server is available"
-            description: "No enabled judge-server has a fresh heartbeat."
-        - alert: JudgeHeartbeatCritical
-          expr: max by (namespace) (codeplace_judge_server_last_heartbeat_age_seconds{namespace=~"code-place-(dev|prod)"}) > 180
-          labels:
-            severity: critical
-            priority: P0
-          annotations:
-            summary: "Judge-server heartbeat is stale"
-            description: "A judge-server heartbeat is older than 180 seconds."
+            summary: "Public endpoint is down in prod"
+            description: "A production synthetic HTTPS probe has failed for 1 minute."
         - alert: PostgresUnavailable
-          expr: min by (namespace) (kube_pod_status_ready{namespace=~"code-place-(dev|prod)", condition="true", pod=~"postgres-[0-9]+"}) == 0
+          expr: (sum(kube_pod_status_ready{namespace="code-place-dev", condition="true", pod=~"postgres-[0-9]+"}) == 0) or absent(kube_pod_status_ready{namespace="code-place-dev", condition="true", pod=~"postgres-[0-9]+"})
           for: 1m
           labels:
+            namespace: code-place-dev
             severity: critical
             priority: P0
           annotations:
-            summary: "PostgreSQL pod is not ready"
-            description: "At least one PostgreSQL pod has not been ready for 1 minute."
+            summary: "PostgreSQL pod is not ready in dev"
+            description: "No dev PostgreSQL pod has been ready, or PostgreSQL pod readiness metrics are missing, for 1 minute."
+        - alert: PostgresUnavailable
+          expr: (sum(kube_pod_status_ready{namespace="code-place-prod", condition="true", pod=~"postgres-[0-9]+"}) == 0) or absent(kube_pod_status_ready{namespace="code-place-prod", condition="true", pod=~"postgres-[0-9]+"})
+          for: 1m
+          labels:
+            namespace: code-place-prod
+            severity: critical
+            priority: P0
+          annotations:
+            summary: "PostgreSQL pod is not ready in prod"
+            description: "No prod PostgreSQL pod has been ready, or PostgreSQL pod readiness metrics are missing, for 1 minute."
         - alert: RedisUnavailable
-          expr: min by (namespace) (kube_pod_status_ready{namespace=~"code-place-(dev|prod)", condition="true", pod=~"redis-.*|redis-replication-.*"}) == 0
+          expr: (sum(kube_pod_status_ready{namespace="code-place-dev", condition="true", pod=~"redis-.*|redis-replication-.*"}) == 0) or absent(kube_pod_status_ready{namespace="code-place-dev", condition="true", pod=~"redis-.*|redis-replication-.*"})
+          for: 1m
+          labels:
+            namespace: code-place-dev
+            severity: critical
+            priority: P0
+          annotations:
+            summary: "Redis pod is not ready in dev"
+            description: "No dev Redis/Sentinel pod has been ready, or Redis pod readiness metrics are missing, for 1 minute."
+        - alert: RedisUnavailable
+          expr: (sum(kube_pod_status_ready{namespace="code-place-prod", condition="true", pod=~"redis-.*|redis-replication-.*"}) == 0) or absent(kube_pod_status_ready{namespace="code-place-prod", condition="true", pod=~"redis-.*|redis-replication-.*"})
+          for: 1m
+          labels:
+            namespace: code-place-prod
+            severity: critical
+            priority: P0
+          annotations:
+            summary: "Redis pod is not ready in prod"
+            description: "No prod Redis/Sentinel pod has been ready, or Redis pod readiness metrics are missing, for 1 minute."
+        - alert: LokiUnavailable
+          expr: (sum(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"loki-[0-9]+"}) == 0) or absent(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"loki-[0-9]+"})
           for: 1m
           labels:
             severity: critical
             priority: P0
+            namespace: monitoring
           annotations:
-            summary: "Redis pod is not ready"
-            description: "At least one Redis pod has not been ready for 1 minute."
+            summary: "Loki is not ready"
+            description: "No Loki single-binary pod has been ready for 1 minute. Log ingestion and log queries may be unavailable."
+        - alert: LonghornVolumeFaulted
+          expr: longhorn_volume_robustness == 3
+          for: 1m
+          labels:
+            severity: critical
+            priority: P0
+            namespace: longhorn-system
+          annotations:
+            summary: "Longhorn volume is faulted"
+            description: "A Longhorn volume is faulted for 1 minute. A PVC-backed workload may lose storage availability."
+        - alert: LonghornVolumeReadOnly
+          expr: longhorn_volume_file_system_read_only == 1
+          for: 1m
+          labels:
+            severity: critical
+            priority: P0
+            namespace: longhorn-system
+          annotations:
+            summary: "Longhorn volume is read-only"
+            description: "A Longhorn volume filesystem is read-only for 1 minute. Writes from the attached workload may fail."
+        - alert: VLLMUnavailable
+          expr: (up{job="vllm", namespace="code-place-prod"} == 0) or absent(up{job="vllm", namespace="code-place-prod"})
+          for: 2m
+          labels:
+            severity: critical
+            priority: P0
+            namespace: code-place-prod
+          annotations:
+            summary: "vLLM metrics target is unavailable"
+            description: "Prometheus cannot scrape the vLLM /metrics endpoint for 2 minutes. AI hint serving may be unavailable."
+        - alert: GPUXIDError
+          expr: max by (Hostname, gpu, UUID) (DCGM_FI_DEV_XID_ERRORS{namespace="monitoring"}) > 0
+          for: 1m
+          labels:
+            severity: critical
+            priority: P0
+            namespace: monitoring
+          annotations:
+            summary: "GPU driver reported an XID error"
+            description: "DCGM reports a non-zero NVIDIA XID error for 1 minute. vLLM GPU health and node driver state should be checked."
     - name: codeplace.p1
       interval: 30s
       rules:
@@ -94,6 +201,25 @@ spec:
           annotations:
             summary: "Backend API p95 latency is high"
             description: "Backend API p95 latency is above 2 seconds for 5 minutes."
+        - alert: PublicEndpointDown
+          expr: (probe_success{environment="dev", probe_type="public-http"} == 0) or absent(probe_success{environment="dev", service="frontend", probe_type="public-http"}) or absent(probe_success{environment="dev", service="hub-auth", probe_type="public-http"})
+          for: 2m
+          labels:
+            severity: warning
+            priority: P1
+            namespace: code-place-dev
+          annotations:
+            summary: "Public endpoint is down in dev"
+            description: "A dev synthetic HTTPS probe has failed for 2 minutes."
+        - alert: PublicEndpointLatencyHigh
+          expr: probe_duration_seconds{probe_type="public-http", namespace=~"code-place-(dev|prod)"} > 2
+          for: 5m
+          labels:
+            severity: warning
+            priority: P1
+          annotations:
+            summary: "Public frontend endpoint latency is high"
+            description: "A synthetic HTTPS probe has taken more than 2 seconds for 5 minutes."
         - alert: JudgeWaitingQueueBacklog
           expr: codeplace_waiting_queue_length{namespace=~"code-place-(dev|prod)"} > 5
           for: 3m
@@ -103,6 +229,33 @@ spec:
           annotations:
             summary: "Judge waiting queue is backing up"
             description: "More than 5 submissions are waiting because no judge-server was available."
+        - alert: CeleryBrokerQueueBacklog
+          expr: codeplace_celery_broker_queue_length{namespace=~"code-place-(dev|prod)"} > 20
+          for: 5m
+          labels:
+            severity: warning
+            priority: P1
+          annotations:
+            summary: "Celery broker queue is backing up"
+            description: "More than 20 Celery tasks have been waiting in the Redis broker default queue for 5 minutes. Check celery-worker capacity, Redis broker health, and task errors."
+        - alert: SubmissionCreateSystemFailures
+          expr: sum by (namespace, scope, status) (increase(codeplace_submission_create_outcome_total{namespace=~"code-place-(dev|prod)", status=~"db_error|enqueue_error"}[5m])) > 0
+          for: 2m
+          labels:
+            severity: warning
+            priority: P1
+          annotations:
+            summary: "Submission create path has system failures"
+            description: "Submission creation is reporting DB or judge enqueue failures. Check backend logs, PostgreSQL, Redis/Celery broker, and judge task queue."
+        - alert: JudgeTaskFailures
+          expr: sum by (namespace, scope, status) (increase(codeplace_judge_task_outcome_total{namespace=~"code-place-(dev|prod)", status=~"error|submission_missing|user_missing"}[5m])) > 0
+          for: 2m
+          labels:
+            severity: warning
+            priority: P1
+          annotations:
+            summary: "Judge task failures detected"
+            description: "Celery judge_task is failing before or during judge dispatch. Check celery-worker logs, submission/user rows, judge-server availability, and result save path."
         - alert: CeleryWorkerRestarting
           expr: sum by (namespace) (increase(kube_pod_container_status_restarts_total{namespace=~"code-place-(dev|prod)", pod=~"celery-worker-.*"}[15m])) > 3
           labels:
@@ -112,16 +265,16 @@ spec:
             summary: "Celery worker is restarting repeatedly"
             description: "Celery worker pods restarted more than 3 times in 15 minutes."
         - alert: CeleryBeatDown
-          expr: min by (namespace) (kube_pod_status_ready{namespace=~"code-place-(dev|prod)", condition="true", pod=~"celery-beat-.*"}) == 0
+          expr: (kube_deployment_status_replicas_available{namespace=~"code-place-(dev|prod)", deployment="celery-beat"} < 1) or (kube_deployment_spec_replicas{namespace=~"code-place-(dev|prod)", deployment="celery-beat"} unless on (namespace, deployment) kube_deployment_status_replicas_available{namespace=~"code-place-(dev|prod)", deployment="celery-beat"})
           for: 2m
           labels:
             severity: warning
             priority: P1
           annotations:
             summary: "Celery beat is not ready"
-            description: "The celery-beat pod has not been ready for 2 minutes."
+            description: "The celery-beat Deployment has no available replica for 2 minutes, or its availability metric is missing."
         - alert: PodCrashLooping
-          expr: sum by (namespace, pod) (increase(kube_pod_container_status_restarts_total{namespace=~"code-place-(dev|prod)", pod=~"backend-.*|frontend-.*|celery-.*|judge-server-.*"}[5m])) > 0
+          expr: sum by (namespace, pod) (increase(kube_pod_container_status_restarts_total{namespace=~"code-place-(dev|prod)", pod=~"backend-.*|frontend-.*|hub-auth-.*|celery-.*|judge-server-.*|vllm-.*"}[5m])) > 0
           for: 5m
           labels:
             severity: warning
@@ -129,8 +282,144 @@ spec:
           annotations:
             summary: "CodePlace pod is restarting"
             description: "A CodePlace application pod has restarted within the last 5 minutes."
+        - alert: CodePlacePodNotReady
+          expr: max by (namespace, pod) (kube_pod_status_ready{namespace=~"code-place-(dev|prod)", condition="true", pod=~"backend-.*|frontend-.*|hub-auth-.*|celery-.*|judge-server-.*|postgres-.*|redis-.*|vllm-.*"}) == 0
+          for: 5m
+          labels:
+            severity: warning
+            priority: P1
+          annotations:
+            summary: "CodePlace pod is not ready"
+            description: "A CodePlace application or datastore pod has not been ready for 5 minutes."
+        - alert: KubernetesPodImagePullBackOff
+          expr: max by (namespace, pod, container, reason) (kube_pod_container_status_waiting_reason{namespace=~"code-place-(dev|prod)", reason=~"ImagePullBackOff|ErrImagePull"}) == 1
+          for: 2m
+          labels:
+            severity: warning
+            priority: P1
+          annotations:
+            summary: "A Kubernetes pod cannot pull its image"
+            description: "A pod has been waiting with ImagePullBackOff or ErrImagePull for 2 minutes. Check image tag, registry access, and image pull secret."
+        - alert: KubernetesPodCrashLoopBackOff
+          expr: max by (namespace, pod, container) (kube_pod_container_status_waiting_reason{namespace=~"code-place-(dev|prod)", reason="CrashLoopBackOff"}) == 1
+          for: 5m
+          labels:
+            severity: warning
+            priority: P1
+          annotations:
+            summary: "A Kubernetes pod is in CrashLoopBackOff"
+            description: "A pod has been waiting with CrashLoopBackOff for 5 minutes. Check the previous container logs and Kubernetes Warning events."
+        - alert: KubernetesPodOOMKilled
+          expr: max by (namespace, pod, container) (max_over_time(kube_pod_container_status_last_terminated_reason{namespace=~"code-place-(dev|prod)", reason="OOMKilled"}[10m])) == 1
+          for: 2m
+          labels:
+            severity: warning
+            priority: P1
+          annotations:
+            summary: "A Kubernetes container was OOMKilled"
+            description: "A container was terminated by OOMKilled within the last 10 minutes. Check memory limits, recent traffic, and heap/cache growth."
+        - alert: KubernetesPodUnschedulable
+          expr: (max by (namespace, pod) (kube_pod_status_unschedulable{namespace=~"code-place-(dev|prod)"}) == 1) or (max by (namespace, pod) (kube_pod_status_phase{namespace=~"code-place-(dev|prod)", phase="Pending"}) == 1)
+          for: 10m
+          labels:
+            severity: warning
+            priority: P1
+          annotations:
+            summary: "A Kubernetes pod is pending or unschedulable"
+            description: "A pod has been pending or unschedulable for 10 minutes. Check node capacity, taints, affinity, PVC binding, and FailedScheduling events."
+        - alert: CodePlaceDeploymentUnavailable
+          expr: max by (namespace, deployment) (kube_deployment_status_replicas_unavailable{namespace=~"code-place-(dev|prod)", deployment=~"backend|frontend|hub-auth|celery-worker|celery-beat|judge-server|vllm"}) > 0
+          for: 5m
+          labels:
+            severity: warning
+            priority: P1
+          annotations:
+            summary: "CodePlace deployment has unavailable replicas"
+            description: "A CodePlace deployment has had unavailable replicas for 5 minutes. Check rollout status, pod events, readiness probes, image pulls, and resource pressure."
+        - alert: CodePlaceServiceNoReadyEndpoints
+          expr: (sum by (namespace, endpoint) (kube_endpoint_address{namespace=~"code-place-(dev|prod)", endpoint=~"backend|frontend|hub-auth|judge-server", ready="true"}) < 1) or (label_replace(kube_service_info{namespace=~"code-place-(dev|prod)", service=~"backend|frontend|hub-auth|judge-server"}, "endpoint", "$1", "service", "(.*)") unless on (namespace, endpoint) kube_endpoint_address{namespace=~"code-place-(dev|prod)", endpoint=~"backend|frontend|hub-auth|judge-server", ready="true"})
+          for: 2m
+          labels:
+            severity: warning
+            priority: P1
+          annotations:
+            summary: "CodePlace service has no ready endpoints"
+            description: "A CodePlace Service has had zero ready endpoints for 2 minutes, or the endpoint availability metric is missing while the Service exists. Check Service selector labels, Pod readiness, EndpointSlice state, and rollout events."
+        - alert: VLLMServiceNoReadyEndpoints
+          expr: (sum by (namespace, endpoint) (kube_endpoint_address{namespace="code-place-prod", endpoint="vllm", ready="true"}) < 1) or (label_replace(kube_service_info{namespace="code-place-prod", service="vllm"}, "endpoint", "$1", "service", "(.*)") unless on (namespace, endpoint) kube_endpoint_address{namespace="code-place-prod", endpoint="vllm", ready="true"})
+          for: 2m
+          labels:
+            severity: warning
+            priority: P1
+            namespace: code-place-prod
+          annotations:
+            summary: "vLLM service has no ready endpoints"
+            description: "The prod vLLM Service has had zero ready endpoints for 2 minutes, or the endpoint availability metric is missing while the Service exists. AI hint routing may fail even if the Service object exists."
+        - alert: CodePlaceContainerCPUHigh
+          expr: sum by (namespace, pod, container) (rate(container_cpu_usage_seconds_total{namespace=~"code-place-(dev|prod)", container!="", pod=~"backend-.*|frontend-.*|hub-auth-.*|celery-.*|judge-server-.*|postgres-.*|redis-.*|vllm-.*"}[5m])) / clamp_min(sum by (namespace, pod, container) (kube_pod_container_resource_limits{namespace=~"code-place-(dev|prod)", resource="cpu", unit="core", pod=~"backend-.*|frontend-.*|hub-auth-.*|celery-.*|judge-server-.*|postgres-.*|redis-.*|vllm-.*"}), 0.001) > 0.8
+          for: 10m
+          labels:
+            severity: warning
+            priority: P1
+          annotations:
+            summary: "CodePlace container CPU usage is high"
+            description: "A CodePlace container has used more than 80% of its CPU limit for 10 minutes."
+        - alert: CodePlaceContainerMemoryHigh
+          expr: max by (namespace, pod, container) (container_memory_working_set_bytes{namespace=~"code-place-(dev|prod)", container!="", pod=~"backend-.*|frontend-.*|hub-auth-.*|celery-.*|judge-server-.*|postgres-.*|redis-.*|vllm-.*"}) / clamp_min(sum by (namespace, pod, container) (kube_pod_container_resource_limits{namespace=~"code-place-(dev|prod)", resource="memory", unit="byte", pod=~"backend-.*|frontend-.*|hub-auth-.*|celery-.*|judge-server-.*|postgres-.*|redis-.*|vllm-.*"}), 1) > 0.85
+          for: 10m
+          labels:
+            severity: warning
+            priority: P1
+          annotations:
+            summary: "CodePlace container memory usage is high"
+            description: "A CodePlace container has used more than 85% of its memory limit for 10 minutes."
+        - alert: PostgresCollectorError
+          expr: max by (namespace, pod) (cnpg_collector_last_collection_error{namespace=~"code-place-(dev|prod)", cluster="postgres"}) > 0
+          for: 5m
+          labels:
+            severity: warning
+            priority: P1
+          annotations:
+            summary: "PostgreSQL metrics collection is failing"
+            description: "CNPG PostgreSQL metrics collection has reported errors for 5 minutes."
+        - alert: PostgresHADegraded
+          expr: min by (namespace) (cnpg_collector_nodes_used{namespace=~"code-place-(dev|prod)", cluster="postgres"}) < 3
+          for: 10m
+          labels:
+            severity: warning
+            priority: P1
+          annotations:
+            summary: "PostgreSQL HA placement is degraded"
+            description: "CNPG reports fewer than 3 distinct nodes for PostgreSQL instances for 10 minutes."
+        - alert: PostgresReplicaUnavailable
+          expr: sum by (namespace) (kube_pod_status_ready{namespace=~"code-place-(dev|prod)", condition="true", pod=~"postgres-[0-9]+"}) < 3
+          for: 5m
+          labels:
+            severity: warning
+            priority: P1
+          annotations:
+            summary: "PostgreSQL ready replica count is degraded"
+            description: "Fewer than 3 PostgreSQL pods have been ready for 5 minutes. Failover capacity or quorum may be reduced."
+        - alert: RedisReplicaUnavailable
+          expr: sum by (namespace) (kube_pod_status_ready{namespace=~"code-place-(dev|prod)", condition="true", pod=~"redis-.*|redis-replication-.*"}) < 6
+          for: 5m
+          labels:
+            severity: warning
+            priority: P1
+          annotations:
+            summary: "Redis/Sentinel ready replica count is degraded"
+            description: "Fewer than 6 Redis replication and Sentinel pods have been ready for 5 minutes. Redis failover capacity may be reduced."
+        - alert: RedisMemoryHigh
+          expr: (max by (namespace, pod) (redis_memory_used_bytes{namespace=~"code-place-(dev|prod)"}) / max by (namespace, pod) (redis_memory_max_bytes{namespace=~"code-place-(dev|prod)"}) > 0.85) and on (namespace, pod) max by (namespace, pod) (redis_memory_max_bytes{namespace=~"code-place-(dev|prod)"}) > 0
+          for: 10m
+          labels:
+            severity: warning
+            priority: P1
+          annotations:
+            summary: "Redis memory usage is high"
+            description: "Redis exporter reports memory usage above 85% of configured maxmemory for 10 minutes."
         - alert: PVCAlmostFull
-          expr: kubelet_volume_stats_used_bytes{namespace=~"code-place-(dev|prod)"} / kubelet_volume_stats_capacity_bytes{namespace=~"code-place-(dev|prod)"} > 0.85
+          expr: max by (namespace, persistentvolumeclaim) (kubelet_volume_stats_used_bytes{namespace=~"code-place-(dev|prod)"}) / clamp_min(max by (namespace, persistentvolumeclaim) (kubelet_volume_stats_capacity_bytes{namespace=~"code-place-(dev|prod)"}), 1) > 0.85
           for: 10m
           labels:
             severity: warning
@@ -138,3 +427,190 @@ spec:
           annotations:
             summary: "PVC usage is above 85%"
             description: "A persistent volume claim has been above 85% usage for 10 minutes."
+        - alert: LokiPVCAlmostFull
+          expr: max by (namespace, persistentvolumeclaim) (kubelet_volume_stats_used_bytes{namespace="monitoring", persistentvolumeclaim=~".*loki.*"}) / clamp_min(max by (namespace, persistentvolumeclaim) (kubelet_volume_stats_capacity_bytes{namespace="monitoring", persistentvolumeclaim=~".*loki.*"}), 1) > 0.85
+          for: 10m
+          labels:
+            severity: warning
+            priority: P1
+            namespace: monitoring
+          annotations:
+            summary: "Loki PVC usage is above 85%"
+            description: "The Loki Longhorn PVC has been above 85% usage for 10 minutes. Log retention or PVC size must be adjusted before ingestion stops."
+        - alert: AlloyDaemonSetUnavailable
+          expr: (kube_daemonset_status_number_available{namespace="monitoring", daemonset="alloy"} < kube_daemonset_status_desired_number_scheduled{namespace="monitoring", daemonset="alloy"}) or absent(kube_daemonset_status_desired_number_scheduled{namespace="monitoring", daemonset="alloy"})
+          for: 5m
+          labels:
+            severity: warning
+            priority: P1
+            namespace: monitoring
+          annotations:
+            summary: "Alloy log collector is not running on every node"
+            description: "At least one node is missing an available Alloy DaemonSet pod for 5 minutes. Logs from that node may be missing."
+        - alert: LokiGatewayUnavailable
+          expr: (sum(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"loki-gateway-.*"}) == 0) or absent(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"loki-gateway-.*"})
+          for: 2m
+          labels:
+            severity: warning
+            priority: P1
+            namespace: monitoring
+          annotations:
+            summary: "Loki gateway is not ready"
+            description: "No Loki gateway replica has been ready for 2 minutes. Alloy writes and Grafana Loki queries may fail."
+        - alert: LokiRequestErrors
+          expr: sum(rate(loki_request_duration_seconds_count{namespace="monitoring", status_code=~"5.."}[5m])) > 0
+          for: 5m
+          labels:
+            severity: warning
+            priority: P1
+            namespace: monitoring
+          annotations:
+            summary: "Loki is returning 5xx responses"
+            description: "Loki has returned 5xx responses for 5 minutes. Log writes or Grafana log queries may be failing."
+        - alert: LonghornVolumeDegraded
+          expr: longhorn_volume_robustness == 2
+          for: 5m
+          labels:
+            severity: warning
+            priority: P1
+            namespace: longhorn-system
+          annotations:
+            summary: "Longhorn volume is degraded"
+            description: "A Longhorn volume has been degraded for 5 minutes. Replica rebuild, node health, and disk pressure should be checked."
+        - alert: LonghornNodeNotReady
+          expr: longhorn_node_status{condition="ready"} == 0
+          for: 5m
+          labels:
+            severity: warning
+            priority: P1
+            namespace: longhorn-system
+          annotations:
+            summary: "Longhorn node is not ready"
+            description: "A Longhorn node has not been ready for 5 minutes."
+        - alert: LonghornDiskNotReady
+          expr: longhorn_disk_status{condition="ready"} == 0
+          for: 5m
+          labels:
+            severity: warning
+            priority: P1
+            namespace: longhorn-system
+          annotations:
+            summary: "Longhorn disk is not ready"
+            description: "A Longhorn disk has not been ready for 5 minutes."
+        - alert: LonghornNodeStorageHigh
+          expr: (longhorn_node_storage_usage_bytes + longhorn_node_storage_reservation_bytes) / clamp_min(longhorn_node_storage_capacity_bytes, 1) > 0.85
+          for: 10m
+          labels:
+            severity: warning
+            priority: P1
+            namespace: longhorn-system
+          annotations:
+            summary: "Longhorn node storage usage is high"
+            description: "A Longhorn node has used or reserved more than 85% of available storage for 10 minutes."
+        - alert: LonghornDiskUsageHigh
+          expr: (longhorn_disk_usage_bytes + longhorn_disk_reservation_bytes) / clamp_min(longhorn_disk_capacity_bytes, 1) > 0.85
+          for: 10m
+          labels:
+            severity: warning
+            priority: P1
+            namespace: longhorn-system
+          annotations:
+            summary: "Longhorn disk usage is high"
+            description: "A Longhorn disk has used or reserved more than 85% of capacity for 10 minutes."
+        - alert: VLLMWaitingQueueHigh
+          expr: max({__name__="vllm:num_requests_waiting", namespace="code-place-prod"}) > 5
+          for: 5m
+          labels:
+            severity: warning
+            priority: P1
+            namespace: code-place-prod
+          annotations:
+            summary: "vLLM request waiting queue is high"
+            description: "More than 5 vLLM requests have been waiting for 5 minutes. AI hint latency may be elevated."
+        - alert: VLLMKVCacheHigh
+          expr: max({__name__="vllm:kv_cache_usage_perc", namespace="code-place-prod"}) > 0.9
+          for: 10m
+          labels:
+            severity: warning
+            priority: P1
+            namespace: code-place-prod
+          annotations:
+            summary: "vLLM KV cache usage is high"
+            description: "vLLM KV cache usage has been above 90% for 10 minutes."
+        - alert: VLLMRequestLatencyHigh
+          expr: histogram_quantile(0.95, sum by (le) (rate({__name__="vllm:e2e_request_latency_seconds_bucket", namespace="code-place-prod"}[10m]))) > 60
+          for: 10m
+          labels:
+            severity: warning
+            priority: P1
+            namespace: code-place-prod
+          annotations:
+            summary: "vLLM request latency is high"
+            description: "vLLM p95 end-to-end request latency has been above 60 seconds for 10 minutes."
+        - alert: AIHintBackendErrors
+          expr: sum by (namespace, status) (increase(codeplace_ai_hint_requests_total{namespace=~"code-place-(dev|prod)", status=~"request_error|stream_parse_error|error"}[5m])) > 0
+          for: 2m
+          labels:
+            severity: warning
+            priority: P1
+          annotations:
+            summary: "Backend AI hint stream failures detected"
+            description: "Backend AI hint streaming has reported request, parse, or internal errors in the last 5 minutes. Check backend logs, vLLM Service endpoint, vLLM metrics, and request_id-linked traces."
+        - alert: AIHintBackendLatencyHigh
+          expr: histogram_quantile(0.95, sum by (namespace, le) (rate(codeplace_ai_hint_duration_seconds_bucket{namespace=~"code-place-(dev|prod)", status="success"}[10m]))) > 120
+          for: 10m
+          labels:
+            severity: warning
+            priority: P1
+          annotations:
+            summary: "Backend AI hint stream latency is high"
+            description: "Backend AI hint successful stream p95 duration has been above 120 seconds for 10 minutes. Check vLLM queue, GPU utilization, and client stream behavior."
+        - alert: AIHintAPIFailures
+          expr: sum by (namespace, scope, status) (increase(codeplace_ai_hint_api_outcome_total{namespace=~"code-place-(dev|prod)", status=~"llm_error|unexpected_error|empty_response"}[5m])) > 0
+          for: 2m
+          labels:
+            severity: warning
+            priority: P1
+          annotations:
+            summary: "User-facing AI hint API failures detected"
+            description: "AI hint API returned LLM errors, unexpected errors, or empty responses in the last 5 minutes. Compare API outcome status with backend stream and vLLM panels."
+        - alert: GPUUtilizationHigh
+          expr: max by (Hostname, gpu, UUID) (DCGM_FI_DEV_GPU_UTIL{namespace="monitoring"}) > 95
+          for: 15m
+          labels:
+            severity: warning
+            priority: P1
+            namespace: monitoring
+          annotations:
+            summary: "GPU utilization is high"
+            description: "DCGM reports GPU utilization above 95% for 15 minutes. vLLM AI hint latency may rise under sustained load."
+        - alert: GPUMemoryHigh
+          expr: max by (Hostname, gpu, UUID) (DCGM_FI_DEV_FB_USED{namespace="monitoring"} / clamp_min(DCGM_FI_DEV_FB_USED{namespace="monitoring"} + DCGM_FI_DEV_FB_FREE{namespace="monitoring"}, 1)) > 0.9
+          for: 10m
+          labels:
+            severity: warning
+            priority: P1
+            namespace: monitoring
+          annotations:
+            summary: "GPU framebuffer memory usage is high"
+            description: "DCGM reports GPU framebuffer memory usage above 90% for 10 minutes. vLLM KV cache and max sequence settings should be checked."
+        - alert: GPUTemperatureHigh
+          expr: max by (Hostname, gpu, UUID) (DCGM_FI_DEV_GPU_TEMP{namespace="monitoring"}) > 85
+          for: 10m
+          labels:
+            severity: warning
+            priority: P1
+            namespace: monitoring
+          annotations:
+            summary: "GPU temperature is high"
+            description: "DCGM reports GPU temperature above 85C for 10 minutes. Node cooling and sustained vLLM load should be checked."
+        - alert: CodePlaceNodePressure
+          expr: kube_node_status_condition{condition=~"MemoryPressure|DiskPressure|PIDPressure", status="true"} == 1
+          for: 5m
+          labels:
+            severity: warning
+            priority: P1
+            namespace: monitoring
+          annotations:
+            summary: "Kubernetes node is under pressure"
+            description: "A Kubernetes node has reported memory, disk, or PID pressure for 5 minutes."

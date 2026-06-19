@@ -1,10 +1,136 @@
 import json
+import logging
 import os
-from unittest.mock import patch, mock_open, MagicMock
-from django.test import TestCase, override_settings
+from unittest.mock import patch, mock_open
+from django.test import SimpleTestCase, TestCase, override_settings
 from django.core.cache import cache
+from prometheus_client.core import GaugeMetricFamily
 
+from utils.json_logging import CodePlaceJsonFormatter
+from utils.observability_metrics import CodePlaceCollector
+from utils import observability_tracing
 from utils.testcase_cache import TestCaseCacheManager
+
+
+class CodePlaceCollectorTest(SimpleTestCase):
+
+    def _samples_by_metric(self, metrics):
+        return {metric.name: metric.samples for metric in metrics}
+
+    def test_celery_broker_queue_length_is_collected_from_redis(self):
+        with patch("utils.observability_metrics.cache.llen", return_value=7) as llen:
+            samples = self._samples_by_metric([CodePlaceCollector()._celery_broker_queue_length()])
+
+        llen.assert_called_once_with("celery")
+        self.assertEqual(samples["codeplace_celery_broker_queue_length"][0].value, 7)
+
+
+class CodePlaceMetricsEndpointTest(SimpleTestCase):
+
+    def test_metrics_endpoint_exposes_django_and_codeplace_metrics(self):
+        waiting_queue_metric = GaugeMetricFamily(
+            "codeplace_waiting_queue_length",
+            "Number of submissions waiting because no judge-server was available.",
+        )
+        waiting_queue_metric.add_metric([], 0)
+        broker_queue_metric = GaugeMetricFamily(
+            "codeplace_celery_broker_queue_length",
+            "Number of Celery tasks waiting in the Redis broker default queue.",
+        )
+        broker_queue_metric.add_metric([], 0)
+        with patch.object(CodePlaceCollector, "_waiting_queue_length", return_value=waiting_queue_metric), \
+                patch.object(CodePlaceCollector, "_celery_broker_queue_length", return_value=broker_queue_metric):
+            response = self.client.get("/metrics")
+
+        self.assertEqual(response.status_code, 200)
+        body = response.content.decode()
+        self.assertIn("django_http_requests_total_by_method_total", body)
+        self.assertIn("codeplace_waiting_queue_length", body)
+        self.assertIn("codeplace_celery_broker_queue_length", body)
+
+
+class ObservabilityTracingTest(SimpleTestCase):
+
+    def tearDown(self):
+        observability_tracing._OTEL_CONFIGURED = False
+
+    def test_configure_opentelemetry_is_idempotent(self):
+        observability_tracing._OTEL_CONFIGURED = True
+        real_import = __import__
+
+        def fail_import(name, *args, **kwargs):
+            if name == "opentelemetry":
+                raise AssertionError("OpenTelemetry should not be imported again")
+            return real_import(name, *args, **kwargs)
+
+        with patch("utils.observability_tracing.get_env", return_value="1"), \
+                patch("builtins.__import__", side_effect=fail_import):
+            observability_tracing.configure_opentelemetry("codeplace-test")
+
+
+class CodePlaceJsonFormatterTest(SimpleTestCase):
+
+    def test_preserves_status_code_and_redacts_sensitive_fields(self):
+        record = logging.LogRecord(
+            name="codeplace.request",
+            level=logging.INFO,
+            pathname=__file__,
+            lineno=1,
+            msg="request completed",
+            args=(),
+            exc_info=None,
+        )
+        record.status_code = 500
+        record.request_id = "request-1"
+        record.token = "secret-token"
+        record.source_code = "print('secret')"
+
+        payload = json.loads(CodePlaceJsonFormatter().format(record))
+
+        self.assertEqual(payload["status_code"], 500)
+        self.assertEqual(payload["request_id"], "request-1")
+        self.assertNotIn("token", payload)
+        self.assertNotIn("source_code", payload)
+
+    def test_includes_trace_context_when_available(self):
+        record = logging.LogRecord(
+            name="codeplace.request",
+            level=logging.INFO,
+            pathname=__file__,
+            lineno=1,
+            msg="request completed",
+            args=(),
+            exc_info=None,
+        )
+
+        with patch("utils.json_logging.get_current_trace_context", return_value={
+            "trace_id": "0" * 31 + "1",
+            "span_id": "0" * 15 + "2",
+        }):
+            payload = json.loads(CodePlaceJsonFormatter().format(record))
+
+        self.assertEqual(payload["trace_id"], "0" * 31 + "1")
+        self.assertEqual(payload["span_id"], "0" * 15 + "2")
+
+    def test_redacts_nested_sensitive_fields(self):
+        formatter = CodePlaceJsonFormatter()
+        payload = {
+            "status_code": 200,
+            "data": {
+                "password": "secret",
+                "submission": {
+                    "code": "print('secret')",
+                    "language": "Python3",
+                },
+            },
+        }
+
+        redacted = formatter._redact(payload)
+
+        self.assertEqual(redacted["status_code"], 200)
+        self.assertEqual(redacted["data"]["password"], "[REDACTED]")
+        self.assertEqual(redacted["data"]["submission"]["code"], "[REDACTED]")
+        self.assertEqual(redacted["data"]["submission"]["language"], "Python3")
 
 
 class TestTestCaseCacheManager(TestCase):
