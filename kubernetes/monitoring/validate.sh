@@ -235,6 +235,16 @@ if loki_values.get("minio", {}).get("enabled") is not False:
     raise SystemExit("Loki chart MinIO subchart must stay disabled")
 print("LOKI ON-PREM STORAGE SHAPE OK")
 
+alloy_values = yaml.safe_load((root / "logs" / "alloy-values.yaml").read_text())
+if alloy_values.get("alloy", {}).get("mounts", {}).get("varlog") is not True:
+    raise SystemExit("Alloy must mount host /var/log for /var/log/pods log collection")
+alloy_config = alloy_values.get("alloy", {}).get("configMap", {}).get("content", "")
+if "/var/log/pods/" not in alloy_config:
+    raise SystemExit("Alloy config must read Kubernetes pod logs from /var/log/pods")
+if "loki-gateway.monitoring.svc.cluster.local" not in alloy_config:
+    raise SystemExit("Alloy config must write to the in-cluster Loki gateway")
+print("ALLOY LOG COLLECTION SHAPE OK")
+
 backend_sm = yaml.safe_load((root / "backend-service-monitor.yaml").read_text())
 if backend_sm.get("metadata", {}).get("labels", {}).get("release") != "kube-prometheus-stack":
     raise SystemExit("backend ServiceMonitor must keep release=kube-prometheus-stack label")

@@ -224,6 +224,10 @@ if kubectl -n "$NAMESPACE" get daemonset alloy >/dev/null 2>&1; then
   available="$(kubectl -n "$NAMESPACE" get daemonset alloy -o jsonpath='{.status.numberAvailable}')"
   [ "$desired" = "$available" ] || fail "daemonset/alloy available=$available desired=$desired"
   ok "daemonset/alloy available=$available desired=$desired"
+  require_jsonpath_value "$NAMESPACE" daemonset alloy \
+    '{.spec.template.spec.volumes[?(@.name=="varlog")].hostPath.path}' /var/log
+  require_jsonpath_value "$NAMESPACE" daemonset alloy \
+    '{.spec.template.spec.containers[?(@.name=="alloy")].volumeMounts[?(@.name=="varlog")].mountPath}' /var/log
 elif [ "$REQUIRE_LOGS_STACK" = "1" ]; then
   fail "daemonset/alloy is missing; set REQUIRE_LOGS_STACK=0 only for pre-Alloy bootstrap checks"
 else

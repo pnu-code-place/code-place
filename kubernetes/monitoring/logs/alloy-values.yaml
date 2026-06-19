@@ -5,6 +5,8 @@ controller:
   type: daemonset
 
 alloy:
+  mounts:
+    varlog: true
   extraEnv:
     - name: NODE_NAME
       valueFrom:
