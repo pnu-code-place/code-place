@@ -173,6 +173,14 @@ alertmanager_selector = (
 )
 if alertmanager_selector.get("alertmanagerConfig") != "codeplace":
     raise SystemExit("AlertmanagerConfig selector must match alertmanagerConfig=codeplace")
+alertmanager_matcher_strategy = (
+    stack_values.get("alertmanager", {})
+    .get("alertmanagerSpec", {})
+    .get("alertmanagerConfigMatcherStrategy", {})
+    .get("type")
+)
+if alertmanager_matcher_strategy != "None":
+    raise SystemExit("AlertmanagerConfig matcher strategy must be None for cross-namespace CodePlace alerts")
 grafana_values = stack_values.get("grafana", {})
 datasources = grafana_values.get("additionalDataSources") or []
 datasource_by_name = {ds.get("name"): ds for ds in datasources if ds.get("name")}

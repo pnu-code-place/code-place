@@ -49,6 +49,8 @@ Alerts -> alertname / namespace / priority
 Status -> Configuration -> p0-discord / p1-discord
 ```
 
+`kube-prometheus-stack-values.yaml`의 `alertmanager.alertmanagerSpec.alertmanagerConfigMatcherStrategy.type`은 `None`이어야 합니다. 기본 `OnNamespace` 전략이면 `monitoring` namespace의 AlertmanagerConfig가 `namespace=code-place-dev` 또는 `namespace=code-place-prod` alert를 라우팅하지 못할 수 있습니다.
+
 Email fallback을 켠 환경에서는 `Status -> Configuration`에서 `p0-email` / `p1-email` receiver도 확인합니다.
 
 Monitoring stack 확인:

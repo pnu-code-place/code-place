@@ -9,6 +9,8 @@ prometheus:
 
 alertmanager:
   alertmanagerSpec:
+    alertmanagerConfigMatcherStrategy:
+      type: None
     alertmanagerConfigSelector:
       matchLabels:
         alertmanagerConfig: codeplace

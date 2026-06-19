@@ -19,6 +19,7 @@ Pinned chart versions:
 ## Install or Upgrade
 
 Install or upgrade kube-prometheus-stack first so the Prometheus Operator CRDs are present and the Grafana `Loki` datasource is provisioned. Then install Loki and Alloy.
+The kube-prometheus-stack values set `alertmanager.alertmanagerSpec.alertmanagerConfigMatcherStrategy.type=None` so the `monitoring` namespace AlertmanagerConfig can route CodePlace alerts whose `namespace` labels are `code-place-dev` or `code-place-prod`.
 
 ```sh
 helm repo add grafana-community https://grafana-community.github.io/helm-charts
