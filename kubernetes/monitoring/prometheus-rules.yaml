@@ -1138,6 +1138,7 @@ spec:
           labels:
             severity: warning
             priority: P1
+            namespace: monitoring
           annotations:
             summary: "Kubernetes node is under pressure"
             description: "A Kubernetes node has reported memory, disk, or PID pressure for 5 minutes."
