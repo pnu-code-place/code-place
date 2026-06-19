@@ -60,6 +60,88 @@ for path in yaml_paths:
         for key, value in data.get("data", {}).items():
             json.loads(value)
             print(f"JSON OK {path}:{key}")
+
+if yaml is None:
+    sys.exit(0)
+
+rules = list(yaml.safe_load_all((root / "prometheus-rules.yaml").read_text()))[0]
+rule_groups = {group["name"]: group for group in rules["spec"]["groups"]}
+expected_intervals = {
+    "codeplace.p0": "15s",
+    "codeplace.p1": "30s",
+}
+for group_name, interval in expected_intervals.items():
+    actual = rule_groups.get(group_name, {}).get("interval")
+    if actual != interval:
+        raise SystemExit(f"{group_name} interval must be {interval}, got {actual}")
+
+alert_instances = {}
+for group in rules["spec"]["groups"]:
+    expected_priority = "P0" if group["name"].endswith(".p0") else "P1" if group["name"].endswith(".p1") else None
+    for rule in group.get("rules", []):
+        alert_name = rule.get("alert")
+        if not alert_name:
+            raise SystemExit(f"rule in {group['name']} is missing alert name")
+        if not rule.get("expr"):
+            raise SystemExit(f"{alert_name} is missing expr")
+        labels = rule.get("labels", {})
+        annotations = rule.get("annotations", {})
+        if labels.get("severity") not in {"critical", "warning"}:
+            raise SystemExit(f"{alert_name} is missing valid severity")
+        if labels.get("priority") not in {"P0", "P1"}:
+            raise SystemExit(f"{alert_name} is missing valid priority")
+        if expected_priority and labels.get("priority") != expected_priority:
+            raise SystemExit(f"{alert_name} priority must match {group['name']}")
+        for key in ("summary", "description"):
+            if not annotations.get(key):
+                raise SystemExit(f"{alert_name} is missing annotation {key}")
+        alert_instances.setdefault(alert_name, []).append(labels)
+
+for alert_name, labels_list in alert_instances.items():
+    if len(labels_list) > 1 and any("namespace" not in labels for labels in labels_list):
+        raise SystemExit(f"duplicate alert {alert_name} must include static namespace labels")
+print("PROMETHEUS RULE SHAPE OK")
+
+alertmanager = list(yaml.safe_load_all((root / "alertmanager-config.yaml").read_text()))[0]
+route = alertmanager["spec"]["route"]
+if set(route.get("groupBy", [])) != {"alertname", "priority", "namespace"}:
+    raise SystemExit("Alertmanager groupBy must be alertname, priority, namespace")
+receivers = {receiver["name"]: receiver for receiver in alertmanager["spec"]["receivers"]}
+for receiver_name in ("p0-discord", "p1-discord"):
+    receiver = receivers.get(receiver_name)
+    if not receiver:
+        raise SystemExit(f"missing receiver {receiver_name}")
+    configs = receiver.get("discordConfigs") or []
+    if not configs:
+        raise SystemExit(f"{receiver_name} must define discordConfigs")
+    api_url = configs[0].get("apiURL", {})
+    if api_url.get("name") != "alertmanager-contact-points" or api_url.get("key") != "webhook-url":
+        raise SystemExit(f"{receiver_name} must use alertmanager-contact-points/webhook-url")
+print("ALERTMANAGER SHAPE OK")
+
+kustomization = yaml.safe_load((root / "kustomization.yaml").read_text())
+if "./alertmanager-config-email.example.yaml" in kustomization.get("resources", []):
+    raise SystemExit("email fallback example must not be included in default kustomization")
+print("MONITORING KUSTOMIZATION SHAPE OK")
+
+for dashboard_path in (root / "grafana-dashboard-codeplace.yaml", root / "grafana-dashboard-logs.yaml"):
+    dashboard_map = yaml.safe_load(dashboard_path.read_text())
+    for key, value in dashboard_map.get("data", {}).items():
+        dashboard = json.loads(value)
+        if not dashboard.get("uid") or not dashboard.get("title"):
+            raise SystemExit(f"{dashboard_path}:{key} must define uid and title")
+        if dashboard.get("refresh") != "30s":
+            raise SystemExit(f"{dashboard_path}:{key} refresh must be 30s")
+        panels = dashboard.get("panels") or []
+        if not panels:
+            raise SystemExit(f"{dashboard_path}:{key} must contain panels")
+        for panel in panels:
+            if not panel.get("title") or not panel.get("type") or not panel.get("gridPos"):
+                raise SystemExit(f"{dashboard_path}:{key} has panel missing title/type/gridPos")
+            for target in panel.get("targets", []):
+                if not target.get("expr"):
+                    raise SystemExit(f"{dashboard_path}:{key}:{panel.get('title')} has target missing expr")
+print("GRAFANA DASHBOARD SHAPE OK")
 PY
 
 echo "==> rendering kustomize monitoring manifests"
