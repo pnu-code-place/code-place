@@ -444,18 +444,21 @@ if optional_cmd helm; then
   echo "==> rendering Helm charts"
   helm template kube-prometheus-stack prometheus-community/kube-prometheus-stack \
     --namespace monitoring \
+    --version 86.3.1 \
     --values "${MONITORING_DIR}/kube-prometheus-stack-values.yaml" \
     >/tmp/codeplace-kube-prometheus-stack-render.yaml
   echo "HELM OK kube-prometheus-stack"
 
   helm template loki grafana-community/loki \
     --namespace monitoring \
+    --version 17.4.7 \
     --values "${MONITORING_DIR}/logs/loki-values.yaml" \
     >/tmp/codeplace-loki-render.yaml
   echo "HELM OK loki"
 
   helm template alloy grafana/alloy \
     --namespace monitoring \
+    --version 1.10.0 \
     --values "${MONITORING_DIR}/logs/alloy-values.yaml" \
     >/tmp/codeplace-alloy-render.yaml
   echo "HELM OK alloy"

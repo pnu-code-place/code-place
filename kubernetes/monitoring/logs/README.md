@@ -10,6 +10,12 @@ This directory contains Helm values for the Kubernetes logs stack.
 
 This is the selected baseline while cloud object storage is unavailable. Longhorn PVC is better than local hostPath or emptyDir because it gives Kubernetes-managed persistence and operationally visible volume health without introducing a new storage service. It is still not a durable log archive and should be treated as short-retention troubleshooting storage.
 
+Pinned chart versions:
+
+- `prometheus-community/kube-prometheus-stack`: `86.3.1`
+- `grafana-community/loki`: `17.4.7`
+- `grafana/alloy`: `1.10.0`
+
 ## Install or Upgrade
 
 Install or upgrade kube-prometheus-stack first so the Prometheus Operator CRDs are present and the Grafana `Loki` datasource is provisioned. Then install Loki and Alloy.
@@ -22,14 +28,17 @@ helm repo update
 
 helm upgrade --install kube-prometheus-stack prometheus-community/kube-prometheus-stack \
   --namespace monitoring \
+  --version 86.3.1 \
   --values kubernetes/monitoring/kube-prometheus-stack-values.yaml
 
 helm upgrade --install loki grafana-community/loki \
   --namespace monitoring \
+  --version 17.4.7 \
   --values kubernetes/monitoring/logs/loki-values.yaml
 
 helm upgrade --install alloy grafana/alloy \
   --namespace monitoring \
+  --version 1.10.0 \
   --values kubernetes/monitoring/logs/alloy-values.yaml
 ```
 
@@ -90,6 +99,7 @@ This is not a horizontally scalable Loki design. It is the selected cloud-free b
 Keep these invariants unless the storage design changes intentionally:
 
 - Loki stays in `Monolithic` deployment mode.
+- Loki is installed from `grafana-community/loki` chart `17.4.7`. Do not switch it to the latest `grafana/loki` chart without revalidating rendered workloads and values compatibility.
 - Loki uses filesystem storage on a Longhorn PVC.
 - The PVC size is explicit at `50Gi`, and `LokiPVCAlmostFull` alerts at 85%.
 - Retention stays short: dev 72h, prod 168h.
