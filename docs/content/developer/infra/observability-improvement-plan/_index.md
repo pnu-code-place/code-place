@@ -49,6 +49,7 @@ backend는 `django-prometheus` 기반 `/metrics` 엔드포인트를 제공합니
 - `codeplace_celery_task_count{task_name,status}`
 - `codeplace_celery_task_runtime_seconds{task_name}`
 - `codeplace_celery_task_last_runtime_seconds{task_name,status}`
+- `codeplace_ai_hint_api_outcome_total{status,scope}`
 - `codeplace_ai_hint_requests_total{status}`
 - `codeplace_ai_hint_duration_seconds{status}`
 - `codeplace_postgres_connections`
@@ -317,6 +318,7 @@ P1은 `group_wait=30s`, `repeat_interval=1h`로 전달합니다.
 - `VLLMRequestLatencyHigh`: prod vLLM p95 e2e latency 60초 초과 10분 지속.
 - `AIHintBackendErrors`: backend AI hint stream request/parse/internal error 발생 2분 지속.
 - `AIHintBackendLatencyHigh`: backend AI hint successful stream p95 duration 120초 초과 10분 지속.
+- `AIHintAPIFailures`: AI hint 사용자-facing API에서 LLM error, unexpected error, empty response 발생 2분 지속.
 - `DCGMExporterUnavailable`: DCGM exporter DaemonSet unavailable 2분 지속.
 - `GPUUtilizationHigh`: GPU utilization 95% 초과 15분 지속.
 - `GPUMemoryHigh`: GPU framebuffer memory usage 90% 초과 10분 지속.
@@ -345,7 +347,7 @@ P1은 `group_wait=30s`, `repeat_interval=1h`로 전달합니다.
 12. Grafana의 `CodePlace Monitoring Stack` dashboard에서 Prometheus, Alertmanager, Grafana, operator readiness, target scrape failure, rule evaluation failure, notification failure panel을 확인합니다.
 13. Grafana의 `CodePlace Traces` dashboard에서 Tempo ready, OTel Collector ready, trace receive/export rate, Tempo PVC usage를 확인합니다.
 14. Grafana의 `CodePlace Storage` dashboard에서 Longhorn manager, volume robustness, node/disk usage panel이 비어 있지 않은지 확인합니다.
-15. Grafana의 `CodePlace AI Inference` dashboard에서 vLLM scrape, pod ready, waiting/running requests, KV cache, p95 latency, token throughput, HF cache PVC, backend AI hint stream status/duration, GPU utilization/memory/temperature/XID panel이 비어 있지 않은지 확인합니다.
+15. Grafana의 `CodePlace AI Inference` dashboard에서 vLLM scrape, pod ready, waiting/running requests, KV cache, p95 latency, token throughput, HF cache PVC, AI hint API outcome, backend AI hint stream status/duration, GPU utilization/memory/temperature/XID panel이 비어 있지 않은지 확인합니다.
 16. Grafana Explore에서 `Loki` datasource를 선택하고 `{namespace="code-place-dev"}` 쿼리가 로그를 반환하는지 확인합니다.
 17. Grafana Explore에서 `Loki` datasource를 선택하고 `{namespace="monitoring", app_kubernetes_io_name="kubernetes-event-exporter"}` 쿼리가 Kubernetes Warning event를 반환하는지 확인합니다.
 18. Grafana Explore에서 `Tempo` datasource를 선택하고 `service.name=codeplace-backend` 또는 `service.name=codeplace-celery` trace가 조회되는지 확인합니다.

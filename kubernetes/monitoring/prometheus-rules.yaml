@@ -890,6 +890,15 @@ spec:
           annotations:
             summary: "Backend AI hint stream latency is high"
             description: "Backend AI hint successful stream p95 duration has been above 120 seconds for 10 minutes. Check vLLM queue, GPU utilization, and client stream behavior."
+        - alert: AIHintAPIFailures
+          expr: sum by (namespace, scope, status) (increase(codeplace_ai_hint_api_outcome_total{namespace=~"code-place-(dev|prod)", status=~"llm_error|unexpected_error|empty_response"}[5m])) > 0
+          for: 2m
+          labels:
+            severity: warning
+            priority: P1
+          annotations:
+            summary: "User-facing AI hint API failures detected"
+            description: "AI hint API returned LLM errors, unexpected errors, or empty responses in the last 5 minutes. Compare API outcome status with backend stream and vLLM panels."
         - alert: DCGMExporterUnavailable
           expr: (kube_daemonset_status_desired_number_scheduled{namespace="monitoring", daemonset="dcgm-exporter"} == 0) or (kube_daemonset_status_number_available{namespace="monitoring", daemonset="dcgm-exporter"} < kube_daemonset_status_desired_number_scheduled{namespace="monitoring", daemonset="dcgm-exporter"}) or absent(kube_daemonset_status_desired_number_scheduled{namespace="monitoring", daemonset="dcgm-exporter"})
           for: 2m

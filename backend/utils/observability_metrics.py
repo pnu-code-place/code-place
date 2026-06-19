@@ -63,6 +63,11 @@ AI_HINT_DURATION_SECONDS = Histogram(
     ["status"],
     buckets=(0.5, 1, 2, 5, 10, 30, 60, 120, 300, 600),
 )
+AI_HINT_API_OUTCOME_TOTAL = Counter(
+    "codeplace_ai_hint_api_outcome_total",
+    "Total user-facing AI hint API outcomes.",
+    ["status", "scope"],
+)
 
 
 class CodePlaceCollector:

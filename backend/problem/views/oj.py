@@ -14,6 +14,7 @@ from contest.models import Contest, ContestRuleType, ContestStatus, ContestType
 from submission.models import JudgeStatus, Submission
 from utils.api import APIView
 from utils.constants import Difficulty, ProblemField, Tier
+from utils.observability_metrics import AI_HINT_API_OUTCOME_TOTAL
 
 from ..llm_hint import LLMHintError, MAX_USER_CODE_LENGTH, stream_problem_hint
 from ..models import (Problem, ProblemRuleType, ProblemTag, get_default_week_info, ProblemAIHintLog)
@@ -164,17 +165,41 @@ class ProblemLLMHintAPI(APIView):
         yield self._format_sse_event("app-error", {"error": err, "message": message})
         yield self._format_sse_event("done", {"done": True})
 
-    def _error_response(self, message, err="llm-hint-unavailable"):
+    def _record_outcome(self, status, scope):
+        AI_HINT_API_OUTCOME_TOTAL.labels(status=status, scope=scope).inc()
+
+    @staticmethod
+    def _persist_hint_log(hint_log, full_text_chunks):
+        full_text = "".join(full_text_chunks)
+        if full_text.strip():
+            if hint_log:
+                hint_log.hint_content = full_text
+                hint_log.save(update_fields=['hint_content'])
+            return True
+
+        if hint_log:
+            hint_log.delete()
+        return False
+
+    def _error_response(self, message, err="llm-hint-unavailable", metric_status=None, scope="practice"):
+        if metric_status:
+            self._record_outcome(metric_status, scope)
         return self._streaming_response(self._error_events(message, err=err))
 
     def get(self, request):
-        if not request.user.is_authenticated:
-            return self._error_response("로그인이 필요합니다.", err="permission-denied")
-
         problem_id = request.GET.get("problem_id")
         contest_id = request.GET.get("contest_id")
+        scope = "contest" if contest_id else "practice"
+        if not request.user.is_authenticated:
+            return self._error_response(
+                "로그인이 필요합니다.",
+                err="permission-denied",
+                metric_status="permission_denied",
+                scope=scope,
+            )
+
         if not problem_id:
-            return self._error_response("문제 번호가 필요합니다.")
+            return self._error_response("문제 번호가 필요합니다.", metric_status="bad_request", scope=scope)
 
         # 사용자가 현재 작성 중인 코드 (없으면 None)
         # 서버에서 한 번 더 길이를 제한해 과도하게 큰 요청을 차단
@@ -185,7 +210,12 @@ class ProblemLLMHintAPI(APIView):
             try:
                 contest = Contest.objects.select_related("created_by").get(id=contest_id, visible=True)
             except Contest.DoesNotExist:
-                return self._error_response("대회를 찾을 수 없습니다.", err="permission-denied")
+                return self._error_response(
+                    "대회를 찾을 수 없습니다.",
+                    err="permission-denied",
+                    metric_status="permission_denied",
+                    scope=scope,
+                )
 
             if not request.user.is_contest_admin(contest):
                 if contest.contest_type == ContestType.PASSWORD_PROTECTED_CONTEST:
@@ -193,22 +223,36 @@ class ProblemLLMHintAPI(APIView):
                         request.session.get(CONTEST_PASSWORD_SESSION_KEY, {}).get(contest.id),
                         contest.password,
                     ):
-                        return self._error_response("비밀번호가 올바르지 않거나 만료되었습니다.", err="permission-denied")
+                        return self._error_response(
+                            "비밀번호가 올바르지 않거나 만료되었습니다.",
+                            err="permission-denied",
+                            metric_status="permission_denied",
+                            scope=scope,
+                        )
 
                 if contest.status == ContestStatus.CONTEST_NOT_START:
-                    return self._error_response("아직 시작하지 않은 대회입니다.", err="permission-denied")
+                    return self._error_response(
+                        "아직 시작하지 않은 대회입니다.",
+                        err="permission-denied",
+                        metric_status="permission_denied",
+                        scope=scope,
+                    )
 
             if not contest.ai_assistant_enabled:
-                return self._error_response("이 대회에서는 AI 조교를 사용할 수 없습니다.")
+                return self._error_response(
+                    "이 대회에서는 AI 조교를 사용할 수 없습니다.",
+                    metric_status="disabled",
+                    scope=scope,
+                )
             try:
                 problem = Problem.objects.get(_id=problem_id, contest_id=contest_id, visible=True)
             except Problem.DoesNotExist:
-                return self._error_response("문제를 찾을 수 없습니다.")
+                return self._error_response("문제를 찾을 수 없습니다.", metric_status="problem_not_found", scope=scope)
         else:
             try:
                 problem = Problem.objects.get(_id=problem_id, contest_id__isnull=True, visible=True)
             except Problem.DoesNotExist:
-                return self._error_response("문제를 찾을 수 없습니다.")
+                return self._error_response("문제를 찾을 수 없습니다.", metric_status="problem_not_found", scope=scope)
 
         hint_log = None
         previous_hints = []
@@ -225,7 +269,11 @@ class ProblemLLMHintAPI(APIView):
 
                 if problem_hint_count >= 5:
                     return self._error_response(
-                        "이 문제에 대한 AI 조교 사용 횟수(5회)를 모두 소진했습니다. 이전 답변을 복습해 보세요.", err="problem-limit-exceeded")
+                        "이 문제에 대한 AI 조교 사용 횟수(5회)를 모두 소진했습니다. 이전 답변을 복습해 보세요.",
+                        err="problem-limit-exceeded",
+                        metric_status="problem_limit_exceeded",
+                        scope=scope,
+                    )
 
                 # 이전 힌트 문자열 추출
                 previous_hints = [log.hint_content for log in previous_logs if log.hint_content.strip()]
@@ -244,48 +292,32 @@ class ProblemLLMHintAPI(APIView):
                 for chunk in stream_problem_hint(problem, previous_hints=previous_hints, user_code=user_code):
                     full_text_chunks.append(chunk)
                     yield self._format_sse_event("chunk", {"text": chunk})
-                full_text = "".join(full_text_chunks)
-                if full_text.strip():
-                    hint_log.hint_content = full_text
-                    hint_log.save(update_fields=['hint_content'])
-                elif hint_log:
-                    hint_log.delete()
+                if self._persist_hint_log(hint_log, full_text_chunks):
+                    self._record_outcome("success", scope)
+                else:
+                    self._record_outcome("empty_response", scope)
                 yield self._format_sse_event("done", {"done": True})
             except LLMHintError as exc:
                 logger.warning("Failed to stream LLM hint for problem %s: %s", problem_id, exc)
 
-                full_text = "".join(full_text_chunks)
-                if full_text.strip():
-                    # (1) 일부라도 생성된 텍스트가 있다면 그 시점까지의 내용을 저장
-                    hint_log.hint_content = full_text
-                    hint_log.save(update_fields=['hint_content'])
-                elif hint_log:
-                    # (2) 생성된 텍스트가 아예 없다면 선제 생성한 로그 삭제 및 횟수 복구
-                    hint_log.delete()
+                self._persist_hint_log(hint_log, full_text_chunks)
 
+                self._record_outcome("llm_error", scope)
                 yield from self._error_events("힌트를 생성하지 못했습니다.", err="llm-hint-unavailable")
 
             except (GeneratorExit, BrokenPipeError, ConnectionResetError):
                 logger.info("LLM hint stream client disconnected for problem %s", problem_id)
 
-                full_text = "".join(full_text_chunks)
-                if full_text.strip():
-                    hint_log.hint_content = full_text
-                    hint_log.save(update_fields=['hint_content'])
-                elif hint_log:
-                    hint_log.delete()
+                self._persist_hint_log(hint_log, full_text_chunks)
+                self._record_outcome("client_disconnected", scope)
                 return
 
             except Exception:
                 logger.exception("Unexpected error while streaming LLM hint for problem %s", problem_id)
 
-                full_text = "".join(full_text_chunks)
-                if full_text.strip():
-                    hint_log.hint_content = full_text
-                    hint_log.save(update_fields=['hint_content'])
-                elif hint_log:
-                    hint_log.delete()
+                self._persist_hint_log(hint_log, full_text_chunks)
 
+                self._record_outcome("unexpected_error", scope)
                 yield from self._error_events("힌트를 생성하지 못했습니다.", err="llm-hint-unavailable")
 
         return self._streaming_response(generator())

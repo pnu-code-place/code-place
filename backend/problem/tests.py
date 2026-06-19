@@ -320,6 +320,22 @@ class ProblemLLMHintAPITest(ProblemCreateTestBase):
             (VLLM_CONNECT_TIMEOUT_SEC, VLLM_STREAM_READ_TIMEOUT_SEC),
         )
 
+    @mock.patch("problem.views.oj.AI_HINT_API_OUTCOME_TOTAL")
+    @mock.patch("problem.llm_hint.requests.post")
+    def test_stream_llm_hint_records_api_success_outcome(self, mocked_post, outcome_total):
+        mocked_post.return_value = self._mock_streaming_response([
+            'data: {"choices":[{"delta":{"content":"힌트"}}]}',
+            "data: [DONE]",
+        ])
+        labels = mock.Mock()
+        outcome_total.labels.return_value = labels
+
+        resp = self.client.get(f"{self.url}?problem_id={self.problem._id}")
+        self._streaming_body(resp)
+
+        outcome_total.labels.assert_called_once_with(status="success", scope="practice")
+        labels.inc.assert_called_once()
+
     @mock.patch("problem.llm_hint.AI_HINT_DURATION_SECONDS")
     @mock.patch("problem.llm_hint.AI_HINT_REQUESTS_TOTAL")
     @mock.patch("problem.llm_hint.requests.post")
@@ -356,6 +372,21 @@ class ProblemLLMHintAPITest(ProblemCreateTestBase):
         request_labels.inc.assert_called_once()
         duration_seconds.labels.assert_called_once_with(status="request_error")
         duration_labels.observe.assert_called_once()
+
+    @mock.patch("problem.views.oj.AI_HINT_API_OUTCOME_TOTAL")
+    @mock.patch("problem.llm_hint.requests.post")
+    def test_stream_llm_hint_records_problem_limit_outcome(self, mocked_post, outcome_total):
+        for i in range(5):
+            ProblemAIHintLog.objects.create(user=self.user, problem=self.problem, hint_content=f"더미 {i}")
+        labels = mock.Mock()
+        outcome_total.labels.return_value = labels
+
+        resp = self.client.get(f"{self.url}?problem_id={self.problem._id}")
+        self._streaming_body(resp)
+
+        outcome_total.labels.assert_called_once_with(status="problem_limit_exceeded", scope="practice")
+        labels.inc.assert_called_once()
+        mocked_post.assert_not_called()
 
     @mock.patch("problem.llm_hint.requests.post")
     def test_stream_llm_hint_problem_limit(self, mocked_post):
