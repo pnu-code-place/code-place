@@ -165,35 +165,13 @@ data:
         {
           "type": "bargauge",
           "title": "Judge Queue Length",
-          "gridPos": {"x": 16, "y": 4, "w": 4, "h": 8},
+          "gridPos": {"x": 16, "y": 4, "w": 8, "h": 8},
           "datasource": "Prometheus",
           "fieldConfig": {"defaults": {"unit": "short"}},
           "options": {"displayMode": "gradient", "orientation": "horizontal", "reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
           "targets": [
             {"expr": "codeplace_waiting_queue_length{namespace=~\"$namespace\"}", "legendFormat": "{{namespace}} waiting_queue"},
             {"expr": "codeplace_celery_broker_queue_length{namespace=~\"$namespace\"}", "legendFormat": "{{namespace}} celery"}
-          ]
-        },
-        {
-          "type": "bargauge",
-          "title": "Custom Collector Success",
-          "gridPos": {"x": 20, "y": 4, "w": 4, "h": 8},
-          "datasource": "Prometheus",
-          "fieldConfig": {
-            "defaults": {
-              "unit": "short",
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {"color": "red", "value": null},
-                  {"color": "green", "value": 1}
-                ]
-              }
-            }
-          },
-          "options": {"displayMode": "gradient", "orientation": "horizontal", "reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
-          "targets": [
-            {"expr": "codeplace_observability_collector_success{namespace=~\"$namespace\"}", "legendFormat": "{{namespace}} {{collector}}"}
           ]
         },
         {
@@ -205,18 +183,8 @@ data:
         },
         {
           "type": "timeseries",
-          "title": "Judge Duration p95",
-          "gridPos": {"x": 0, "y": 20, "w": 8, "h": 8},
-          "datasource": "Prometheus",
-          "fieldConfig": {"defaults": {"unit": "s"}},
-          "targets": [
-            {"expr": "histogram_quantile(0.95, sum by (namespace, le) (rate(codeplace_submission_judge_duration_seconds_bucket{namespace=~\"$namespace\"}[10m])))", "legendFormat": "{{namespace}} judge p95"}
-          ]
-        },
-        {
-          "type": "timeseries",
           "title": "Submission / Judge Outcomes",
-          "gridPos": {"x": 0, "y": 28, "w": 24, "h": 8},
+          "gridPos": {"x": 0, "y": 20, "w": 24, "h": 8},
           "datasource": "Prometheus",
           "fieldConfig": {"defaults": {"unit": "ops"}},
           "targets": [
@@ -509,23 +477,11 @@ data:
         {
           "type": "timeseries",
           "title": "PostgreSQL Nodes Used",
-          "gridPos": {"x": 8, "y": 65, "w": 8, "h": 6},
+          "gridPos": {"x": 8, "y": 65, "w": 16, "h": 6},
           "datasource": "Prometheus",
           "fieldConfig": {"defaults": {"unit": "short"}},
           "targets": [
             {"expr": "min by (namespace) (cnpg_collector_nodes_used{namespace=~\"$namespace\", cluster=\"postgres\"})", "legendFormat": "{{namespace}} nodes"}
-          ]
-        },
-        {
-          "type": "timeseries",
-          "title": "Redis Clients and Rejections",
-          "gridPos": {"x": 16, "y": 65, "w": 8, "h": 6},
-          "datasource": "Prometheus",
-          "fieldConfig": {"defaults": {"unit": "short"}},
-          "targets": [
-            {"expr": "codeplace_redis_connected_clients{namespace=~\"$namespace\"}", "legendFormat": "{{namespace}} clients"},
-            {"expr": "codeplace_redis_max_clients{namespace=~\"$namespace\"}", "legendFormat": "{{namespace}} maxclients"},
-            {"expr": "increase(codeplace_redis_rejected_connections_total{namespace=~\"$namespace\"}[5m])", "legendFormat": "{{namespace}} rejected/5m"}
           ]
         }
       ]

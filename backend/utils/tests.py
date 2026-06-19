@@ -1,10 +1,10 @@
 import json
 import logging
 import os
-from unittest.mock import patch, mock_open, MagicMock
+from unittest.mock import patch, mock_open
 from django.test import SimpleTestCase, TestCase, override_settings
 from django.core.cache import cache
-from prometheus_client.core import GaugeMetricFamily, HistogramMetricFamily
+from prometheus_client.core import GaugeMetricFamily
 
 from utils.json_logging import CodePlaceJsonFormatter
 from utils.constants import CacheKey
@@ -25,77 +25,6 @@ class CodePlaceCollectorTest(SimpleTestCase):
         llen.assert_called_once_with("celery")
         self.assertEqual(samples["codeplace_celery_broker_queue_length"][0].value, 7)
 
-    def test_judge_duration_histogram_is_collected_from_redis(self):
-        with patch("utils.observability_metrics.cache.hgetall", return_value={
-            b"1": b"0",
-            b"3": b"1",
-            b"+Inf": b"2",
-        }), patch("utils.observability_metrics.cache.get", return_value="4.5"):
-            samples = self._samples_by_metric([CodePlaceCollector()._judge_duration_histogram()])
-
-        bucket_samples = [
-            sample for sample in samples["codeplace_submission_judge_duration_seconds"]
-            if sample.name.endswith("_bucket")
-        ]
-        self.assertTrue(any(sample.labels["le"] == "3" and sample.value == 1 for sample in bucket_samples))
-        self.assertTrue(any(sample.labels["le"] == "+Inf" and sample.value == 2 for sample in bucket_samples))
-        self.assertTrue(any(
-            sample.name.endswith("_sum") and sample.value == 4.5
-            for sample in samples["codeplace_submission_judge_duration_seconds"]
-        ))
-
-    def test_redis_health_metrics_are_collected(self):
-        redis_client = MagicMock()
-        redis_client.info.return_value = {
-            "connected_clients": 25,
-            "rejected_connections": 3,
-        }
-        redis_client.config_get.return_value = {"maxclients": "1000"}
-
-        with patch("utils.observability_metrics.cache.client.get_client", return_value=redis_client):
-            samples = self._samples_by_metric(list(CodePlaceCollector()._redis_health_metrics()))
-
-        self.assertEqual(samples["codeplace_redis_connected_clients"][0].value, 25)
-        self.assertEqual(samples["codeplace_redis_max_clients"][0].value, 1000)
-        rejected_sample = samples["codeplace_redis_rejected_connections"][0]
-        self.assertEqual(rejected_sample.name, "codeplace_redis_rejected_connections_total")
-        self.assertEqual(rejected_sample.value, 3)
-
-    def test_redis_health_metrics_prefer_info_maxclients(self):
-        redis_client = MagicMock()
-        redis_client.info.return_value = {
-            "connected_clients": 25,
-            "rejected_connections": 3,
-            "maxclients": 2000,
-        }
-
-        with patch("utils.observability_metrics.cache.client.get_client", return_value=redis_client):
-            samples = self._samples_by_metric(list(CodePlaceCollector()._redis_health_metrics()))
-
-        redis_client.config_get.assert_not_called()
-        self.assertEqual(samples["codeplace_redis_max_clients"][0].value, 2000)
-
-    def test_redis_collector_failure_is_reported_when_maxclients_is_unavailable(self):
-        redis_client = MagicMock()
-        redis_client.info.return_value = {
-            "connected_clients": 25,
-            "rejected_connections": 3,
-        }
-        redis_client.config_get.side_effect = RuntimeError("CONFIG disabled")
-        collector = CodePlaceCollector()
-        collector._collector_success = {}
-
-        with patch("utils.observability_metrics.cache.client.get_client", return_value=redis_client), \
-                patch("utils.observability_metrics.logger"):
-            list(collector._redis_health_metrics())
-            samples = self._samples_by_metric([collector._collector_success_metric()])
-
-        redis_success = [
-            sample for sample in samples["codeplace_observability_collector_success"]
-            if sample.labels["collector"] == "redis"
-        ][0]
-        self.assertEqual(redis_success.value, 0)
-
 
 class CodePlaceMetricsEndpointTest(SimpleTestCase):
 
@@ -110,16 +39,8 @@ class CodePlaceMetricsEndpointTest(SimpleTestCase):
             "Number of Celery tasks waiting in the Redis broker default queue.",
         )
         broker_queue_metric.add_metric([], 0)
-        judge_duration_metric = HistogramMetricFamily(
-            "codeplace_submission_judge_duration_seconds",
-            "Judge duration for submissions completed in the last 10 minutes.",
-        )
-        judge_duration_metric.add_metric([], [("+Inf", 0)], 0)
-
         with patch.object(CodePlaceCollector, "_waiting_queue_length", return_value=waiting_queue_metric), \
-                patch.object(CodePlaceCollector, "_celery_broker_queue_length", return_value=broker_queue_metric), \
-                patch.object(CodePlaceCollector, "_judge_duration_histogram", return_value=judge_duration_metric), \
-                patch.object(CodePlaceCollector, "_redis_health_metrics", return_value=[]):
+                patch.object(CodePlaceCollector, "_celery_broker_queue_length", return_value=broker_queue_metric):
             response = self.client.get("/metrics")
 
         self.assertEqual(response.status_code, 200)

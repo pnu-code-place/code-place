@@ -238,15 +238,6 @@ spec:
           annotations:
             summary: "Celery broker queue is backing up"
             description: "More than 20 Celery tasks have been waiting in the Redis broker default queue for 5 minutes. Check celery-worker capacity, Redis broker health, and task errors."
-        - alert: CodePlaceCollectorFailed
-          expr: codeplace_observability_collector_success{namespace=~"code-place-(dev|prod)"} == 0
-          for: 5m
-          labels:
-            severity: warning
-            priority: P1
-          annotations:
-            summary: "A CodePlace custom metrics collector is failing"
-            description: "A backend /metrics collector block has failed for 5 minutes. Metric values may be stale or zero even though the scrape target is up."
         - alert: SubmissionCreateSystemFailures
           expr: sum by (namespace, scope, status) (increase(codeplace_submission_create_outcome_total{namespace=~"code-place-(dev|prod)", status=~"db_error|enqueue_error"}[5m])) > 0
           for: 2m
@@ -427,24 +418,6 @@ spec:
           annotations:
             summary: "Redis memory usage is high"
             description: "Redis exporter reports memory usage above 85% of configured maxmemory for 10 minutes."
-        - alert: RedisConnectedClientsHigh
-          expr: (codeplace_redis_connected_clients{namespace=~"code-place-(dev|prod)"} / clamp_min(codeplace_redis_max_clients{namespace=~"code-place-(dev|prod)"}, 1) > 0.8) and codeplace_redis_max_clients{namespace=~"code-place-(dev|prod)"} > 0
-          for: 10m
-          labels:
-            severity: warning
-            priority: P1
-          annotations:
-            summary: "Redis connected clients usage is high"
-            description: "Backend reports Redis connected clients above 80% of maxclients for 10 minutes."
-        - alert: RedisRejectedConnections
-          expr: increase(codeplace_redis_rejected_connections_total{namespace=~"code-place-(dev|prod)"}[5m]) > 0
-          for: 2m
-          labels:
-            severity: warning
-            priority: P1
-          annotations:
-            summary: "Redis rejected connections detected"
-            description: "Backend reports Redis rejected connections in the last 5 minutes. Check maxclients, connection pooling, and Redis resource pressure."
         - alert: PVCAlmostFull
           expr: max by (namespace, persistentvolumeclaim) (kubelet_volume_stats_used_bytes{namespace=~"code-place-(dev|prod)"}) / clamp_min(max by (namespace, persistentvolumeclaim) (kubelet_volume_stats_capacity_bytes{namespace=~"code-place-(dev|prod)"}), 1) > 0.85
           for: 10m

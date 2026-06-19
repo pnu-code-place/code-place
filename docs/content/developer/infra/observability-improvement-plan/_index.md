@@ -30,7 +30,6 @@ backend는 `django-prometheus` 기반 `/metrics` 엔드포인트를 제공합니
 
 - `codeplace_http_requests_total{method,endpoint,status_code}`
 - `codeplace_http_request_duration_seconds{method,endpoint}`
-- `codeplace_submission_judge_duration_seconds`
 - `codeplace_submission_create_outcome_total{status,scope}`
 - `codeplace_judge_task_outcome_total{status,scope}`
 - `codeplace_waiting_queue_length`

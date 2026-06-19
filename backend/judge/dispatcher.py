@@ -20,7 +20,6 @@ from problem.utils import parse_problem_template
 from submission.models import JudgeStatus, Submission
 from utils.cache import cache
 from utils.constants import CacheKey, ProblemScore, ProblemField, Tier
-from utils.observability_metrics import record_judge_duration
 from utils.observability_tracing import get_tracer
 
 logger = logging.getLogger(__name__)
@@ -189,7 +188,6 @@ class JudgeDispatcher(DispatcherBase):
             self.submission.judge_start_time = timezone.now()
             resp = self._request(urljoin(server.service_url, "/judge"), data=data)
             self.submission.judge_end_time = timezone.now()
-            record_judge_duration((self.submission.judge_end_time - self.submission.judge_start_time).total_seconds())
 
         if not resp:
             Submission.objects.filter(id=self.submission.id).update(result=JudgeStatus.SYSTEM_ERROR)
