@@ -13,6 +13,7 @@ CELERY_TASK_RUNTIME_BUCKET_KEY = "observability:celery:task_runtime_bucket"
 CELERY_TASK_RUNTIME_COUNT_KEY = "observability:celery:task_runtime_count"
 CELERY_TASK_RUNTIME_SUM_KEY = "observability:celery:task_runtime_sum"
 CELERY_TASK_RUNTIME_LAST_KEY = "observability:celery:task_runtime_last"
+CELERY_TASK_LAST_SEEN_AT_KEY = "observability:celery:task_last_seen_at"
 CELERY_TASK_RUNTIME_BUCKETS = (1, 3, 5, 10, 30, 60, 120, 300, 600, float("inf"))
 
 _task_start_times = {}
@@ -53,6 +54,7 @@ def _record_task(task_name, status, duration_seconds=None):
     status = (status or "unknown").lower()
     try:
         cache.hincrby(CELERY_TASK_TOTAL_KEY, _field(task_name, status), 1)
+        _hsetfloat(CELERY_TASK_LAST_SEEN_AT_KEY, _field(task_name, status), time.time())
         if duration_seconds is not None:
             _hincrbyfloat(CELERY_TASK_RUNTIME_SUM_KEY, task_name, duration_seconds)
             cache.hincrby(CELERY_TASK_RUNTIME_COUNT_KEY, task_name, 1)

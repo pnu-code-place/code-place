@@ -51,6 +51,8 @@ backend는 `django-prometheus` 기반 `/metrics` 엔드포인트를 제공합니
 - `codeplace_celery_task_count{task_name,status}`
 - `codeplace_celery_task_runtime_seconds{task_name}`
 - `codeplace_celery_task_last_runtime_seconds{task_name,status}`
+- `codeplace_celery_task_last_seen_age_seconds{task_name,status}`
+- `codeplace_celery_task_last_success_age_seconds{task_name}`
 - `codeplace_ai_hint_api_outcome_total{status,scope}`
 - `codeplace_ai_hint_requests_total{status}`
 - `codeplace_ai_hint_duration_seconds{status}`
@@ -278,6 +280,9 @@ P1은 `group_wait=30s`, `repeat_interval=1h`로 전달합니다.
 - `CeleryTaskFailures`: task failure 발생 2분 지속.
 - `CeleryTaskRetries`: task retry 3회 초과/10분, 5분 지속.
 - `CeleryTaskRuntimeHigh`: task p95 runtime 120초 초과 10분 지속.
+- `CeleryMinuteScheduledTaskStale`: 1분 주기 점수 변동 작업 성공 age 10분 초과.
+- `CeleryDailyScheduledTaskStale`: 일간 점수 기준 작업 성공 age 26시간 초과.
+- `CeleryWeeklyScheduledTaskStale`: 주간 문제 통계/보너스 문제 작업 성공 age 8일 초과.
 - `PodCrashLooping`: 주요 Pod restart 증가 5분 지속.
 - `CodePlacePodNotReady`: 주요 앱/DB/Redis Pod not ready 5분 지속.
 - `KubernetesPodImagePullBackOff`: image pull 실패 2분 지속.

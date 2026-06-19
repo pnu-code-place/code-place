@@ -490,6 +490,33 @@ spec:
           annotations:
             summary: "Celery task runtime is high"
             description: "Celery task p95 runtime has been above 120 seconds for 10 minutes."
+        - alert: CeleryMinuteScheduledTaskStale
+          expr: codeplace_celery_task_last_success_age_seconds{namespace=~"code-place-(dev|prod)", task_name="account.tasks.calculate_user_score_fluctuation"} > 600
+          for: 5m
+          labels:
+            severity: warning
+            priority: P1
+          annotations:
+            summary: "Minute scheduled Celery task is stale"
+            description: "calculate_user_score_fluctuation has not completed successfully for more than 10 minutes. Check celery-beat, celery-worker, Redis broker, and task logs."
+        - alert: CeleryDailyScheduledTaskStale
+          expr: codeplace_celery_task_last_success_age_seconds{namespace=~"code-place-(dev|prod)", task_name="account.tasks.calculate_user_score_basis"} > 93600
+          for: 30m
+          labels:
+            severity: warning
+            priority: P1
+          annotations:
+            summary: "Daily scheduled Celery task is stale"
+            description: "calculate_user_score_basis has not completed successfully for more than 26 hours. Check celery-beat, celery-worker, Redis broker, and task logs."
+        - alert: CeleryWeeklyScheduledTaskStale
+          expr: codeplace_celery_task_last_success_age_seconds{namespace=~"code-place-(dev|prod)", task_name=~"problem.tasks.update_weekly_stats|problem.tasks.update_bonus_problem"} > 691200
+          for: 1h
+          labels:
+            severity: warning
+            priority: P1
+          annotations:
+            summary: "Weekly scheduled Celery task is stale"
+            description: "A weekly problem maintenance task has not completed successfully for more than 8 days. Check celery-beat, celery-worker, Redis broker, and task logs."
         - alert: PodCrashLooping
           expr: sum by (namespace, pod) (increase(kube_pod_container_status_restarts_total{namespace=~"code-place-(dev|prod)", pod=~"backend-.*|frontend-.*|hub-auth-.*|celery-.*|judge-server-.*|vllm-.*"}[5m])) > 0
           for: 5m

@@ -103,6 +103,10 @@ class CodePlaceCollectorTest(SimpleTestCase):
             celery_observability.CELERY_TASK_RUNTIME_LAST_KEY: {
                 b"judge.tasks.judge_task|success": b"1.5",
             },
+            celery_observability.CELERY_TASK_LAST_SEEN_AT_KEY: {
+                b"judge.tasks.judge_task|success": str(timezone.now().timestamp() - 30).encode(),
+                b"judge.tasks.judge_task|failure": str(timezone.now().timestamp() - 10).encode(),
+            },
         }
 
         with patch("utils.observability_metrics.cache.hgetall", side_effect=lambda key: hashes.get(key, {})):
@@ -118,6 +122,15 @@ class CodePlaceCollectorTest(SimpleTestCase):
         bucket_samples = [sample for sample in runtime_samples if sample.name.endswith("_bucket")]
         self.assertTrue(any(sample.labels["le"] == "+Inf" and sample.value == 3 for sample in bucket_samples))
         self.assertTrue(any(sample.name.endswith("_sum") and sample.value == 4.5 for sample in runtime_samples))
+        last_seen_samples = samples["codeplace_celery_task_last_seen_age_seconds"]
+        self.assertTrue(any(
+            sample.labels == {"task_name": "judge.tasks.judge_task", "status": "success"}
+            and sample.value >= 29
+            for sample in last_seen_samples
+        ))
+        last_success_samples = samples["codeplace_celery_task_last_success_age_seconds"]
+        self.assertEqual(last_success_samples[0].labels, {"task_name": "judge.tasks.judge_task"})
+        self.assertGreaterEqual(last_success_samples[0].value, 29)
         last_runtime = samples["codeplace_celery_task_last_runtime_seconds"][0]
         self.assertEqual(last_runtime.value, 1.5)
 

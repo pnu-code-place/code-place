@@ -13,6 +13,7 @@ from utils.celery_observability import (
     CELERY_TASK_RUNTIME_BUCKET_KEY,
     CELERY_TASK_RUNTIME_BUCKETS,
     CELERY_TASK_RUNTIME_COUNT_KEY,
+    CELERY_TASK_LAST_SEEN_AT_KEY,
     CELERY_TASK_RUNTIME_LAST_KEY,
     CELERY_TASK_RUNTIME_SUM_KEY,
     CELERY_TASK_TOTAL_KEY,
@@ -159,6 +160,16 @@ class CodePlaceCollector:
             "codeplace_redis_rejected_connections_total",
             "Total Redis rejected connections from INFO stats.",
         )
+        yield GaugeMetricFamily(
+            "codeplace_celery_task_last_seen_age_seconds",
+            "Seconds since each Celery task status was last observed.",
+            labels=["task_name", "status"],
+        )
+        yield GaugeMetricFamily(
+            "codeplace_celery_task_last_success_age_seconds",
+            "Seconds since each Celery task last completed successfully.",
+            labels=["task_name"],
+        )
 
     def collect(self):
         yield from self._submission_status_count()
@@ -303,17 +314,30 @@ class CodePlaceCollector:
             "Latest observed Celery task runtime grouped by task name and status.",
             labels=["task_name", "status"],
         )
+        last_seen_age_metric = GaugeMetricFamily(
+            "codeplace_celery_task_last_seen_age_seconds",
+            "Seconds since each Celery task status was last observed.",
+            labels=["task_name", "status"],
+        )
+        last_success_age_metric = GaugeMetricFamily(
+            "codeplace_celery_task_last_success_age_seconds",
+            "Seconds since each Celery task last completed successfully.",
+            labels=["task_name"],
+        )
         try:
             task_totals = self._redis_hash(CELERY_TASK_TOTAL_KEY)
             runtime_buckets = self._redis_hash(CELERY_TASK_RUNTIME_BUCKET_KEY)
             runtime_counts = self._redis_hash(CELERY_TASK_RUNTIME_COUNT_KEY)
             runtime_sums = self._redis_hash(CELERY_TASK_RUNTIME_SUM_KEY)
             last_runtimes = self._redis_hash(CELERY_TASK_RUNTIME_LAST_KEY)
+            last_seen_at = self._redis_hash(CELERY_TASK_LAST_SEEN_AT_KEY)
         except Exception as e:
             logger.warning("Failed to collect Celery task metrics: %s", e)
             yield total_metric
             yield runtime_metric
             yield last_runtime_metric
+            yield last_seen_age_metric
+            yield last_success_age_metric
             return
 
         for field, value in task_totals.items():
@@ -340,9 +364,19 @@ class CodePlaceCollector:
             task_name, status = self._split_field(field, 2)
             last_runtime_metric.add_metric([task_name, status], float(value))
 
+        now_timestamp = timezone.now().timestamp()
+        for field, value in last_seen_at.items():
+            task_name, status = self._split_field(field, 2)
+            age_seconds = max(now_timestamp - float(value), 0)
+            last_seen_age_metric.add_metric([task_name, status], age_seconds)
+            if status == "success":
+                last_success_age_metric.add_metric([task_name], age_seconds)
+
         yield total_metric
         yield runtime_metric
         yield last_runtime_metric
+        yield last_seen_age_metric
+        yield last_success_age_metric
 
     def _postgres_metrics(self):
         connections_metric = GaugeMetricFamily(
