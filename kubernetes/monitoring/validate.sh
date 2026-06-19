@@ -245,6 +245,27 @@ if "loki-gateway.monitoring.svc.cluster.local" not in alloy_config:
     raise SystemExit("Alloy config must write to the in-cluster Loki gateway")
 print("ALLOY LOG COLLECTION SHAPE OK")
 
+frontend_nginx = Path("frontend/deploy/kube_nginx/nginx.conf").read_text()
+frontend_proxy = Path("frontend/deploy/kube_nginx/api_proxy.conf").read_text()
+frontend_entrypoint = Path("frontend/deploy/entrypoint.sh").read_text()
+required_frontend_nginx_parts = [
+    "error_log /dev/stderr",
+    "log_format main escape=json",
+    "\"logger\":\"frontend.nginx\"",
+    "\"request_id\":\"$codeplace_request_id\"",
+    "\"status_code\":$status",
+    "access_log /dev/stdout main",
+    "add_header X-Request-ID $codeplace_request_id always",
+]
+for text in required_frontend_nginx_parts:
+    if text not in frontend_nginx:
+        raise SystemExit(f"frontend Kubernetes nginx config missing {text}")
+if "proxy_set_header X-Request-ID $codeplace_request_id;" not in frontend_proxy:
+    raise SystemExit("frontend Kubernetes nginx proxy must propagate X-Request-ID")
+if "exec nginx -c /app/deploy/kube_nginx/nginx.conf" not in frontend_entrypoint:
+    raise SystemExit("frontend entrypoint must use Kubernetes nginx config")
+print("FRONTEND NGINX LOGGING SHAPE OK")
+
 backend_sm = yaml.safe_load((root / "backend-service-monitor.yaml").read_text())
 if backend_sm.get("metadata", {}).get("labels", {}).get("release") != "kube-prometheus-stack":
     raise SystemExit("backend ServiceMonitor must keep release=kube-prometheus-stack label")
@@ -424,6 +445,11 @@ for overlay in ("dev", "prod"):
     port_names = {port.get("name") for port in backend_service.get("spec", {}).get("ports", [])}
     if "api" not in port_names:
         raise SystemExit(f"{overlay} backend Service must expose port name api for ServiceMonitor")
+
+    frontend_deployment = find_one(docs, "Deployment", "frontend", path)
+    frontend_env = env_map(frontend_deployment, "frontend")
+    if frontend_env.get("FORCE_HTTPS") != "0":
+        raise SystemExit(f"{overlay} frontend must keep FORCE_HTTPS=0 because Traefik terminates TLS")
 
     for deployment_name, container_name in (
         ("backend", "backend"),
