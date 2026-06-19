@@ -2,8 +2,8 @@
 
 This directory contains Helm values for the Kubernetes logs stack.
 
-- Loki: monolithic mode, filesystem storage, Longhorn PVC.
-- Alloy: DaemonSet log collector for `code-place-dev`, `code-place-prod`, `monitoring`, and Traefik pods in `kube-system`. It mounts host `/var/log` so `/var/log/pods` is readable from the Alloy container.
+- Loki: SingleBinary mode, filesystem storage, Longhorn PVC.
+- Alloy: DaemonSet log collector for every pod in `code-place-dev`, `code-place-prod`, and `monitoring`, plus Traefik pods in `kube-system`. It mounts host `/var/log` so `/var/log/pods` is readable from the Alloy container.
 - Kubernetes Event Exporter: Warning events are written to stdout as JSON and collected by Alloy from the `monitoring` namespace.
 - Retention: `code-place-dev` 3 days, `code-place-prod` 7 days.
 - Monitoring: Loki and Alloy ServiceMonitors are enabled for kube-prometheus-stack.
@@ -101,6 +101,7 @@ Keep these invariants unless the storage design changes intentionally:
 - Loki stays in `SingleBinary` deployment mode.
 - Loki is installed from `grafana/loki` chart `6.55.0`. Do not upgrade the chart without revalidating rendered workloads and values compatibility.
 - Loki uses filesystem storage on a Longhorn PVC.
+- Alloy keeps namespace-based collection for `code-place-dev`, `code-place-prod`, and `monitoring`; do not depend on `app.kubernetes.io/name` for CodePlace app logs because the application manifests primarily use `app`.
 - Alloy keeps `alloy.mounts.varlog=true`; otherwise the `/var/log/pods` targets are discovered but cannot be read.
 - The PVC size is explicit at `50Gi`, and `LokiPVCAlmostFull` alerts at 85%.
 - Retention stays short: dev 72h, prod 168h.

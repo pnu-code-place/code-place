@@ -244,6 +244,10 @@ if "/var/log/pods/" not in alloy_config:
     raise SystemExit("Alloy config must read Kubernetes pod logs from /var/log/pods")
 if "loki-gateway.monitoring.svc.cluster.local" not in alloy_config:
     raise SystemExit("Alloy config must write to the in-cluster Loki gateway")
+if '"__meta_kubernetes_namespace", "__meta_kubernetes_pod_label_app", "__meta_kubernetes_pod_label_app_kubernetes_io_name"' not in alloy_config:
+    raise SystemExit("Alloy keep rule must consider namespace, app, and app.kubernetes.io/name labels")
+if "regex = \"(code-place-dev|code-place-prod|monitoring)/.*|kube-system/.*/traefik\"" not in alloy_config:
+    raise SystemExit("Alloy keep rule must collect CodePlace/monitoring namespaces and kube-system Traefik logs")
 print("ALLOY LOG COLLECTION SHAPE OK")
 
 frontend_nginx = Path("frontend/deploy/kube_nginx/nginx.conf").read_text()
