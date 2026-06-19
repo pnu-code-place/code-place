@@ -385,6 +385,17 @@ if len(logs_namespace_variables) != 1:
     raise SystemExit("grafana-dashboard-logs.yaml must define exactly one namespace variable")
 if logs_namespace_variables[0].get("allValue") != "code-place-dev|code-place-prod|monitoring":
     raise SystemExit("CodePlace Logs dashboard namespace All value must include monitoring logs")
+logs_panels = {
+    panel.get("title"): panel
+    for panel in logs_dashboard.get("panels", [])
+}
+for title in ("Loki Ready", "Alloy Nodes", "Loki PVC Usage"):
+    panel = logs_panels.get(title)
+    if not panel:
+        raise SystemExit(f"grafana-dashboard-logs.yaml missing panel {title}")
+    exprs = "\n".join(target.get("expr", "") for target in panel.get("targets", []))
+    if "or vector(0)" not in exprs:
+        raise SystemExit(f"grafana-dashboard-logs.yaml:{title} must avoid empty stat panels with or vector(0)")
 for dashboard_name, panel_requirements in dashboard_requirements.items():
     dashboard_map = dashboard_by_name.get(dashboard_name)
     if not dashboard_map:
