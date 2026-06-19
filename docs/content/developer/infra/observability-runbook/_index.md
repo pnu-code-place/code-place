@@ -49,6 +49,17 @@ Alerts -> alertname / namespace / priority
 Status -> Configuration -> p0-discord / p1-discord
 ```
 
+Discord webhook은 SealedSecret으로 관리합니다. AlertmanagerConfig는 최종적으로 `monitoring` namespace의 `alertmanager-contact-points` Secret key `webhook-url`을 참조하므로, 알림이 오지 않으면 SealedSecret controller와 복호화된 Secret을 함께 확인합니다.
+
+```sh
+kubectl get crd sealedsecrets.bitnami.com
+kubectl get pod -A | grep -i sealed
+kubectl -n monitoring get sealedsecret,secret | grep alertmanager-contact-points
+kubectl -n monitoring get secret alertmanager-contact-points -o jsonpath='{.data.webhook-url}' | wc -c
+kubectl -n monitoring get alertmanagerconfig codeplace-alert-routing -o yaml
+kubectl -n monitoring logs alertmanager-kube-prometheus-stack-alertmanager-0 -c alertmanager --tail=100
+```
+
 `kube-prometheus-stack-values.yaml`의 `alertmanager.alertmanagerSpec.alertmanagerConfigMatcherStrategy.type`은 `None`이어야 합니다. 기본 `OnNamespace` 전략이면 `monitoring` namespace의 AlertmanagerConfig가 `namespace=code-place-dev` 또는 `namespace=code-place-prod` alert를 라우팅하지 못할 수 있습니다.
 
 Email fallback을 켠 환경에서는 `Status -> Configuration`에서 `p0-email` / `p1-email` receiver도 확인합니다.
@@ -1087,6 +1098,20 @@ node pressure는 앱 문제가 아니라 cluster resource 문제일 가능성이
 
 Discord webhook 자체는 curl로 확인할 수 있습니다. Alertmanager routing은 임시 `PrometheusRule`로 확인합니다.
 Email fallback은 SMTP 정보가 정해진 환경에서만 켭니다. `kubernetes/monitoring/alertmanager-config-email.example.yaml`의 placeholder를 실제 `smarthost`, `from`, `to`, `authUsername`으로 바꾸고 `alertmanager-email` Secret을 만든 뒤 적용합니다.
+
+SealedSecret으로 webhook을 새로 만들 때는 운영자가 실제 cluster 공개키로 암호화합니다.
+
+```sh
+mkdir -p kubernetes/monitoring/secrets
+
+kubectl -n monitoring create secret generic alertmanager-contact-points \
+  --from-literal=webhook-url="$ALERT_WEBHOOK_URL" \
+  --dry-run=client -o yaml \
+  | kubeseal --controller-namespace kube-system --format yaml \
+  > kubernetes/monitoring/secrets/alertmanager-contact-points.sealedsecret.yaml
+
+kubectl apply -f kubernetes/monitoring/secrets/alertmanager-contact-points.sealedsecret.yaml
+```
 
 ```yaml
 apiVersion: monitoring.coreos.com/v1
