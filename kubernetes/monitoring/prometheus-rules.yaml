@@ -209,7 +209,7 @@ spec:
             summary: "Redis metrics exporter is down"
             description: "Prometheus cannot collect Redis exporter metrics for code-place-prod for 2 minutes."
         - alert: LokiUnavailable
-          expr: (min(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"loki-[0-9]+"}) == 0) or absent(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"loki-[0-9]+"})
+          expr: (sum(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"loki-[0-9]+"}) == 0) or absent(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"loki-[0-9]+"})
           for: 1m
           labels:
             severity: critical
@@ -217,7 +217,7 @@ spec:
             namespace: monitoring
           annotations:
             summary: "Loki is not ready"
-            description: "The Loki single-binary pod has not been ready for 1 minute. Log ingestion and log queries may be unavailable."
+            description: "No Loki single-binary pod has been ready for 1 minute. Log ingestion and log queries may be unavailable."
         - alert: LonghornManagerDown
           expr: (sum(kube_pod_status_ready{namespace="longhorn-system", condition="true", pod=~"longhorn-manager-.*"}) == 0) or absent(kube_pod_status_ready{namespace="longhorn-system", condition="true", pod=~"longhorn-manager-.*"})
           for: 2m
@@ -802,7 +802,7 @@ spec:
             summary: "Alloy log collector is not running on every node"
             description: "At least one node is missing an available Alloy DaemonSet pod for 5 minutes. Logs from that node may be missing."
         - alert: LokiGatewayUnavailable
-          expr: (max by (namespace, pod) (kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"loki-gateway-.*"}) == 0) or absent(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"loki-gateway-.*"})
+          expr: (sum(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"loki-gateway-.*"}) == 0) or absent(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"loki-gateway-.*"})
           for: 2m
           labels:
             severity: warning
@@ -810,7 +810,7 @@ spec:
             namespace: monitoring
           annotations:
             summary: "Loki gateway is not ready"
-            description: "The Loki gateway has not been ready for 2 minutes. Alloy writes and Grafana Loki queries may fail."
+            description: "No Loki gateway replica has been ready for 2 minutes. Alloy writes and Grafana Loki queries may fail."
         - alert: LokiGatewayReplicaUnavailable
           expr: sum(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"loki-gateway-.*"}) < 2
           for: 5m
@@ -872,7 +872,7 @@ spec:
             summary: "Alloy is retrying Loki writes"
             description: "Alloy has retried Loki write batches for 5 minutes. Loki writes may be slow or intermittently failing."
         - alert: OTelCollectorUnavailable
-          expr: (max by (namespace, pod) (kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"otel-collector-.*"}) == 0) or absent(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"otel-collector-.*"})
+          expr: (sum(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"otel-collector-.*"}) == 0) or absent(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"otel-collector-.*"})
           for: 2m
           labels:
             severity: warning
@@ -880,7 +880,7 @@ spec:
             namespace: monitoring
           annotations:
             summary: "OpenTelemetry Collector is not ready"
-            description: "The OpenTelemetry Collector has not been ready for 2 minutes. Enabled services cannot export traces."
+            description: "No OpenTelemetry Collector replica has been ready for 2 minutes. Enabled services cannot export traces."
         - alert: OTelCollectorReplicaUnavailable
           expr: kube_deployment_status_replicas_available{namespace="monitoring", deployment="otel-collector"} < kube_deployment_spec_replicas{namespace="monitoring", deployment="otel-collector"}
           for: 5m
@@ -912,7 +912,7 @@ spec:
             summary: "OpenTelemetry Collector cannot export spans"
             description: "The OpenTelemetry Collector has failed to export spans to Tempo in the last 5 minutes. Check Tempo readiness, collector exporter logs, and network path."
         - alert: TempoUnavailable
-          expr: (max by (namespace, pod) (kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"tempo-.*"}) == 0) or absent(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"tempo-.*"})
+          expr: (sum(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"tempo-.*"}) == 0) or absent(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"tempo-.*"})
           for: 2m
           labels:
             severity: warning
@@ -920,7 +920,7 @@ spec:
             namespace: monitoring
           annotations:
             summary: "Tempo is not ready"
-            description: "Tempo has not been ready for 2 minutes. Trace queries and trace ingestion may fail."
+            description: "No Tempo pod has been ready for 2 minutes. Trace queries and trace ingestion may fail."
         - alert: TempoPVCAlmostFull
           expr: max(kubelet_volume_stats_used_bytes{namespace="monitoring", persistentvolumeclaim="tempo-data"}) / clamp_min(max(kubelet_volume_stats_capacity_bytes{namespace="monitoring", persistentvolumeclaim="tempo-data"}), 1) > 0.85
           for: 10m
