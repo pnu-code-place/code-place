@@ -131,8 +131,8 @@ data:
         },
         {
           "type": "stat",
-          "title": "Rule Eval Failures",
-          "gridPos": {"x": 20, "y": 0, "w": 4, "h": 4},
+          "title": "Rule Fail",
+          "gridPos": {"x": 20, "y": 0, "w": 2, "h": 4},
           "datasource": "Prometheus",
           "fieldConfig": {
             "defaults": {
@@ -149,6 +149,28 @@ data:
           "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
           "targets": [
             {"expr": "sum(increase(prometheus_rule_evaluation_failures_total[5m])) or vector(0)", "legendFormat": "failures"}
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "Notify Fail",
+          "gridPos": {"x": 22, "y": 0, "w": 2, "h": 4},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "red", "value": 1}
+                ]
+              }
+            }
+          },
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "sum(increase(alertmanager_notifications_failed_total[5m])) or vector(0)", "legendFormat": "failures"}
           ]
         },
         {

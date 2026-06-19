@@ -331,6 +331,16 @@ spec:
           annotations:
             summary: "Prometheus has not discovered Alertmanager"
             description: "Prometheus has discovered zero Alertmanager targets for 2 minutes. Alert delivery may be broken even if alert rules are firing."
+        - alert: AlertmanagerNotificationFailures
+          expr: sum(increase(alertmanager_notifications_failed_total[5m])) > 0
+          for: 2m
+          labels:
+            severity: warning
+            priority: P1
+            namespace: monitoring
+          annotations:
+            summary: "Alertmanager notification delivery is failing"
+            description: "Alertmanager has failed to send one or more notifications in the last 5 minutes. Check Discord webhook secret, receiver config, outbound network, and Alertmanager logs."
         - alert: JudgeWaitingQueueBacklog
           expr: codeplace_waiting_queue_length{namespace=~"code-place-(dev|prod)"} > 5
           for: 3m
@@ -532,6 +542,26 @@ spec:
           annotations:
             summary: "OpenTelemetry Collector is not ready"
             description: "The OpenTelemetry Collector has not been ready for 2 minutes. Enabled services cannot export traces."
+        - alert: OTelCollectorRefusedSpans
+          expr: sum(increase(otelcol_receiver_refused_spans_total{namespace="monitoring"}[5m])) > 0
+          for: 2m
+          labels:
+            severity: warning
+            priority: P1
+            namespace: monitoring
+          annotations:
+            summary: "OpenTelemetry Collector is refusing spans"
+            description: "The OpenTelemetry Collector has refused incoming spans in the last 5 minutes. Check collector limits, receiver errors, and backend/celery OTLP client logs."
+        - alert: OTelCollectorExportFailures
+          expr: sum(increase(otelcol_exporter_send_failed_spans_total{namespace="monitoring"}[5m])) > 0
+          for: 2m
+          labels:
+            severity: warning
+            priority: P1
+            namespace: monitoring
+          annotations:
+            summary: "OpenTelemetry Collector cannot export spans"
+            description: "The OpenTelemetry Collector has failed to export spans to Tempo in the last 5 minutes. Check Tempo readiness, collector exporter logs, and network path."
         - alert: TempoUnavailable
           expr: (max by (namespace, pod) (kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"tempo-.*"}) == 0) or absent(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"tempo-.*"})
           for: 2m

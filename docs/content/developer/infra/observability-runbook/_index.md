@@ -63,6 +63,7 @@ kubectl -n monitoring get alertmanagerconfig codeplace-alert-routing -o yaml
 kube_pod_status_ready{namespace="monitoring", pod=~"prometheus-kube-prometheus-stack-prometheus-.*|alertmanager-kube-prometheus-stack-alertmanager-.*|kube-prometheus-stack-grafana-.*|grafana-.*|kube-prometheus-stack-operator-.*", condition="true"}
 prometheus_notifications_alertmanagers_discovered
 increase(prometheus_rule_evaluation_failures_total[5m])
+increase(alertmanager_notifications_failed_total[5m])
 sum by (job, namespace) (up == 0)
 ```
 
@@ -500,7 +501,7 @@ DCGM_FI_DEV_GPU_UTIL{namespace="monitoring"}
 
 ## P1
 
-### OTelCollectorUnavailable / TempoUnavailable / TempoPVCAlmostFull
+### OTelCollectorUnavailable / OTelCollectorRefusedSpans / OTelCollectorExportFailures / TempoUnavailable / TempoPVCAlmostFull
 
 확인:
 
@@ -520,12 +521,15 @@ kube_pod_status_ready{namespace="monitoring", pod=~"otel-collector-.*|tempo-.*",
 max(kubelet_volume_stats_used_bytes{namespace="monitoring", persistentvolumeclaim="tempo-data"}) /
 max(kubelet_volume_stats_capacity_bytes{namespace="monitoring", persistentvolumeclaim="tempo-data"})
 sum(rate(otelcol_receiver_accepted_spans_total{namespace="monitoring"}[5m]))
+sum(rate(otelcol_receiver_refused_spans_total{namespace="monitoring"}[5m]))
 sum(rate(otelcol_exporter_send_failed_spans_total{namespace="monitoring"}[5m]))
 ```
 
 판단:
 
 - Collector가 down이면 dev backend/celery trace export가 실패합니다. 앱 요청 처리는 계속되지만 trace 관측이 끊깁니다.
+- refused span이 증가하면 Collector receiver limit, malformed OTLP payload, backend/celery exporter 설정, collector 로그를 먼저 봅니다.
+- export failure가 증가하면 Tempo readiness, `tempo.monitoring.svc.cluster.local:4317` 경로, Collector exporter queue/retry 로그를 봅니다.
 - Tempo가 down이면 Collector가 span export 실패를 기록합니다.
 - Tempo PVC가 85%를 넘으면 retention 단축, noisy trace sampling 조정, PVC 증설 중 하나를 먼저 결정합니다.
 - prod는 기본 `OTEL_ENABLED=0`입니다. prod trace가 없다고 해서 장애는 아니며, dev에서 Collector/Tempo를 먼저 확인한 뒤 prod 승격 여부를 결정합니다.
@@ -559,7 +563,7 @@ kube_pod_status_ready{namespace="monitoring", pod=~"blackbox-exporter-.*", condi
 - latency가 synthetic probe에서만 높으면 public route/TLS/frontend nginx를 먼저 보고, backend latency도 높으면 API/DB/Redis 병목을 같이 봅니다.
 - `BlackboxExporterUnavailable`이면 probe 자체가 죽은 것이므로 공개 URL 상태를 판단할 수 없습니다.
 
-### GrafanaUnavailable / PrometheusOperatorUnavailable / PrometheusRuleEvaluationFailures / PrometheusAlertmanagerDiscoveryFailed
+### GrafanaUnavailable / PrometheusOperatorUnavailable / PrometheusRuleEvaluationFailures / PrometheusAlertmanagerDiscoveryFailed / AlertmanagerNotificationFailures
 
 확인:
 
@@ -568,6 +572,7 @@ kubectl -n monitoring get pod | grep -E 'grafana|operator|prometheus|alertmanage
 kubectl -n monitoring describe pod -l app.kubernetes.io/name=grafana
 kubectl -n monitoring describe pod -l app.kubernetes.io/name=prometheus-operator
 kubectl -n monitoring logs deploy/kube-prometheus-stack-operator --tail=200
+kubectl -n monitoring logs alertmanager-kube-prometheus-stack-alertmanager-0 -c alertmanager --tail=200
 kubectl -n monitoring get prometheusrule,servicemonitor,podmonitor,alertmanagerconfig
 ```
 
@@ -577,6 +582,7 @@ PromQL:
 kube_pod_status_ready{namespace="monitoring", pod=~"kube-prometheus-stack-grafana-.*|grafana-.*|kube-prometheus-stack-operator-.*", condition="true"}
 sum by (rule_group) (increase(prometheus_rule_evaluation_failures_total[5m]))
 prometheus_notifications_alertmanagers_discovered
+sum by (integration) (increase(alertmanager_notifications_failed_total[5m]))
 sum by (job, namespace) (up == 0)
 ```
 
@@ -586,6 +592,7 @@ sum by (job, namespace) (up == 0)
 - Operator가 down이면 새 ServiceMonitor/PodMonitor/PrometheusRule/AlertmanagerConfig 변경이 Prometheus/Alertmanager에 반영되지 않을 수 있습니다.
 - rule evaluation failure가 있으면 최근 추가한 PromQL expression과 label cardinality, metric 존재 여부를 먼저 봅니다.
 - Alertmanager discovery가 0이면 AlertmanagerConfig가 맞아도 Prometheus가 알림을 보낼 대상이 없습니다. Prometheus generated config와 Alertmanager Service/endpoints를 확인합니다.
+- notification failure가 있으면 webhook Secret 값, Alertmanager generated config, Discord endpoint 응답, cluster outbound network, rate limit을 확인합니다. 로컬 `curl` 성공만으로 Alertmanager Pod의 egress 성공을 보장하지 않습니다.
 
 ### FrontendRuntimeErrorsSpike
 

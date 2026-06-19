@@ -38,7 +38,7 @@ data:
           },
           "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
           "targets": [
-            {"expr": "min(kube_pod_status_ready{namespace=\"monitoring\", condition=\"true\", pod=~\"tempo-.*\"})", "legendFormat": "tempo"}
+            {"expr": "min(kube_pod_status_ready{namespace=\"monitoring\", condition=\"true\", pod=~\"tempo-.*\"}) or vector(0)", "legendFormat": "tempo"}
           ]
         },
         {
@@ -60,7 +60,7 @@ data:
           },
           "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
           "targets": [
-            {"expr": "min(kube_pod_status_ready{namespace=\"monitoring\", condition=\"true\", pod=~\"otel-collector-.*\"})", "legendFormat": "otel-collector"}
+            {"expr": "min(kube_pod_status_ready{namespace=\"monitoring\", condition=\"true\", pod=~\"otel-collector-.*\"}) or vector(0)", "legendFormat": "otel-collector"}
           ]
         },
         {
@@ -71,7 +71,7 @@ data:
           "fieldConfig": {"defaults": {"unit": "ops"}},
           "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
           "targets": [
-            {"expr": "sum(rate(otelcol_receiver_accepted_spans_total{namespace=\"monitoring\"}[5m]))", "legendFormat": "spans/s"}
+            {"expr": "sum(rate(otelcol_receiver_accepted_spans_total{namespace=\"monitoring\"}[5m])) or vector(0)", "legendFormat": "spans/s"}
           ]
         },
         {
@@ -94,7 +94,7 @@ data:
           },
           "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
           "targets": [
-            {"expr": "sum(increase(otelcol_exporter_send_failed_spans_total{namespace=\"monitoring\"}[5m]))", "legendFormat": "failed"}
+            {"expr": "sum(increase(otelcol_exporter_send_failed_spans_total{namespace=\"monitoring\"}[5m])) or vector(0)", "legendFormat": "failed"}
           ]
         },
         {
@@ -138,8 +138,8 @@ data:
           "datasource": "Prometheus",
           "fieldConfig": {"defaults": {"unit": "ops"}},
           "targets": [
-            {"expr": "sum(rate(otelcol_receiver_refused_spans_total{namespace=\"monitoring\"}[5m]))", "legendFormat": "refused"},
-            {"expr": "sum(rate(otelcol_exporter_send_failed_spans_total{namespace=\"monitoring\"}[5m]))", "legendFormat": "failed"}
+            {"expr": "sum(rate(otelcol_receiver_refused_spans_total{namespace=\"monitoring\"}[5m])) or vector(0)", "legendFormat": "refused"},
+            {"expr": "sum(rate(otelcol_exporter_send_failed_spans_total{namespace=\"monitoring\"}[5m])) or vector(0)", "legendFormat": "failed"}
           ]
         }
       ]
