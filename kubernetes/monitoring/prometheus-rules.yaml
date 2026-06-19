@@ -872,6 +872,24 @@ spec:
           annotations:
             summary: "vLLM request latency is high"
             description: "vLLM p95 end-to-end request latency has been above 60 seconds for 10 minutes."
+        - alert: AIHintBackendErrors
+          expr: sum by (namespace, status) (increase(codeplace_ai_hint_requests_total{namespace=~"code-place-(dev|prod)", status=~"request_error|stream_parse_error|error"}[5m])) > 0
+          for: 2m
+          labels:
+            severity: warning
+            priority: P1
+          annotations:
+            summary: "Backend AI hint stream failures detected"
+            description: "Backend AI hint streaming has reported request, parse, or internal errors in the last 5 minutes. Check backend logs, vLLM Service endpoint, vLLM metrics, and request_id-linked traces."
+        - alert: AIHintBackendLatencyHigh
+          expr: histogram_quantile(0.95, sum by (namespace, le) (rate(codeplace_ai_hint_duration_seconds_bucket{namespace=~"code-place-(dev|prod)", status="success"}[10m]))) > 120
+          for: 10m
+          labels:
+            severity: warning
+            priority: P1
+          annotations:
+            summary: "Backend AI hint stream latency is high"
+            description: "Backend AI hint successful stream p95 duration has been above 120 seconds for 10 minutes. Check vLLM queue, GPU utilization, and client stream behavior."
         - alert: DCGMExporterUnavailable
           expr: (kube_daemonset_status_desired_number_scheduled{namespace="monitoring", daemonset="dcgm-exporter"} == 0) or (kube_daemonset_status_number_available{namespace="monitoring", daemonset="dcgm-exporter"} < kube_daemonset_status_desired_number_scheduled{namespace="monitoring", daemonset="dcgm-exporter"}) or absent(kube_daemonset_status_desired_number_scheduled{namespace="monitoring", daemonset="dcgm-exporter"})
           for: 2m

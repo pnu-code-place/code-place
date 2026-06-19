@@ -928,6 +928,30 @@ kubectl -n code-place-prod describe pvc vllm-hf-cache
 - e2e latency만 증가하면 prompt/generation token 증가, backend streaming read timeout, vLLM 로그의 model/engine warning을 확인합니다.
   현재 vLLM은 prod 전용입니다. dev에서 AI hint를 별도 검증하려면 dev vLLM 배포와 ServiceMonitor 확장이 먼저 필요합니다.
 
+### AIHintBackendErrors / AIHintBackendLatencyHigh
+
+확인:
+
+```promql
+sum by (namespace, status) (increase(codeplace_ai_hint_requests_total{namespace="<namespace>"}[5m]))
+histogram_quantile(0.95, sum by (namespace, le) (rate(codeplace_ai_hint_duration_seconds_bucket{namespace="<namespace>", status="success"}[10m])))
+{__name__="vllm:num_requests_waiting", namespace="code-place-prod"}
+histogram_quantile(0.95, sum by (le) (rate({__name__="vllm:e2e_request_latency_seconds_bucket", namespace="code-place-prod"}[10m])))
+```
+
+```sh
+kubectl -n <namespace> logs deploy/backend --tail=200
+kubectl -n code-place-prod get svc,endpoints vllm
+kubectl -n code-place-prod logs deploy/vllm --tail=200
+```
+
+판단:
+
+- `request_error`는 backend에서 vLLM Service까지의 endpoint, network, timeout, HTTP error를 먼저 확인합니다.
+- `stream_parse_error`는 vLLM OpenAI-compatible stream format과 backend parser 호환성을 확인합니다.
+- backend duration과 vLLM queue/e2e latency가 같이 높으면 vLLM/GPU 병목으로 봅니다.
+- backend duration만 높으면 client stream read behavior, backend worker saturation, proxy timeout을 확인합니다.
+
 ### DCGMExporterUnavailable / GPUUtilizationHigh / GPUMemoryHigh / GPUTemperatureHigh
 
 확인:

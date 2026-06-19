@@ -210,8 +210,29 @@ data:
         },
         {
           "type": "timeseries",
+          "title": "Backend AI Hint Streams",
+          "gridPos": {"x": 0, "y": 20, "w": 12, "h": 8},
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "ops"}},
+          "targets": [
+            {"expr": "sum by (namespace, status) (rate(codeplace_ai_hint_requests_total{namespace=~\"code-place-(dev|prod)\"}[5m]))", "legendFormat": "{{namespace}} {{status}} streams/s"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Backend AI Hint Duration",
+          "gridPos": {"x": 12, "y": 20, "w": 12, "h": 8},
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "s"}},
+          "targets": [
+            {"expr": "histogram_quantile(0.95, sum by (namespace, le) (rate(codeplace_ai_hint_duration_seconds_bucket{namespace=~\"code-place-(dev|prod)\", status=\"success\"}[10m])))", "legendFormat": "{{namespace}} success p95"},
+            {"expr": "histogram_quantile(0.95, sum by (namespace, status, le) (rate(codeplace_ai_hint_duration_seconds_bucket{namespace=~\"code-place-(dev|prod)\", status!=\"success\"}[10m])))", "legendFormat": "{{namespace}} {{status}} p95"}
+          ]
+        },
+        {
+          "type": "timeseries",
           "title": "GPU Utilization",
-          "gridPos": {"x": 0, "y": 20, "w": 6, "h": 8},
+          "gridPos": {"x": 0, "y": 28, "w": 6, "h": 8},
           "datasource": "Prometheus",
           "fieldConfig": {
             "defaults": {
@@ -233,7 +254,7 @@ data:
         {
           "type": "timeseries",
           "title": "GPU FB Memory Usage",
-          "gridPos": {"x": 6, "y": 20, "w": 6, "h": 8},
+          "gridPos": {"x": 6, "y": 28, "w": 6, "h": 8},
           "datasource": "Prometheus",
           "fieldConfig": {
             "defaults": {
@@ -255,7 +276,7 @@ data:
         {
           "type": "timeseries",
           "title": "GPU Temperature",
-          "gridPos": {"x": 12, "y": 20, "w": 6, "h": 8},
+          "gridPos": {"x": 12, "y": 28, "w": 6, "h": 8},
           "datasource": "Prometheus",
           "fieldConfig": {
             "defaults": {
@@ -277,7 +298,7 @@ data:
         {
           "type": "timeseries",
           "title": "GPU XID Errors",
-          "gridPos": {"x": 18, "y": 20, "w": 6, "h": 8},
+          "gridPos": {"x": 18, "y": 28, "w": 6, "h": 8},
           "datasource": "Prometheus",
           "fieldConfig": {
             "defaults": {
@@ -298,7 +319,7 @@ data:
         {
           "type": "timeseries",
           "title": "GPU Tensor / DRAM Activity",
-          "gridPos": {"x": 0, "y": 28, "w": 12, "h": 8},
+          "gridPos": {"x": 0, "y": 36, "w": 12, "h": 8},
           "datasource": "Prometheus",
           "fieldConfig": {"defaults": {"unit": "percentunit"}},
           "targets": [
@@ -309,7 +330,7 @@ data:
         {
           "type": "timeseries",
           "title": "GPU FB Memory Bytes",
-          "gridPos": {"x": 12, "y": 28, "w": 12, "h": 8},
+          "gridPos": {"x": 12, "y": 36, "w": 12, "h": 8},
           "datasource": "Prometheus",
           "fieldConfig": {"defaults": {"unit": "bytes"}},
           "targets": [

@@ -23,7 +23,7 @@ from contest.tests import DEFAULT_CONTEST_DATA
 from utils.constants import CONTEST_PASSWORD_SESSION_KEY
 from .llm_hint import (CLUSTER_VLLM_CHAT_COMPLETIONS_URL, LOCAL_VLLM_CHAT_COMPLETIONS_URL,
                        VLLM_CONNECT_TIMEOUT_SEC, VLLM_MODEL, VLLM_STREAM_READ_TIMEOUT_SEC,
-                       get_vllm_chat_completions_url)
+                       LLMHintError, get_vllm_chat_completions_url, stream_problem_hint)
 
 from .views.admin import TestCaseAPI
 from .utils import parse_problem_template
@@ -319,6 +319,43 @@ class ProblemLLMHintAPITest(ProblemCreateTestBase):
             mocked_post.call_args.kwargs["timeout"],
             (VLLM_CONNECT_TIMEOUT_SEC, VLLM_STREAM_READ_TIMEOUT_SEC),
         )
+
+    @mock.patch("problem.llm_hint.AI_HINT_DURATION_SECONDS")
+    @mock.patch("problem.llm_hint.AI_HINT_REQUESTS_TOTAL")
+    @mock.patch("problem.llm_hint.requests.post")
+    def test_stream_llm_hint_records_success_metric(self, mocked_post, requests_total, duration_seconds):
+        mocked_post.return_value = self._mock_streaming_response([
+            'data: {"choices":[{"delta":{"content":"힌트"}}]}',
+            "data: [DONE]",
+        ])
+        request_labels = mock.Mock()
+        duration_labels = mock.Mock()
+        requests_total.labels.return_value = request_labels
+        duration_seconds.labels.return_value = duration_labels
+
+        self.assertEqual("".join(stream_problem_hint(self.problem)), "힌트")
+
+        requests_total.labels.assert_called_once_with(status="success")
+        request_labels.inc.assert_called_once()
+        duration_seconds.labels.assert_called_once_with(status="success")
+        duration_labels.observe.assert_called_once()
+
+    @mock.patch("problem.llm_hint.AI_HINT_DURATION_SECONDS")
+    @mock.patch("problem.llm_hint.AI_HINT_REQUESTS_TOTAL")
+    @mock.patch("problem.llm_hint.requests.post", side_effect=requests.Timeout)
+    def test_stream_llm_hint_records_request_error_metric(self, mocked_post, requests_total, duration_seconds):
+        request_labels = mock.Mock()
+        duration_labels = mock.Mock()
+        requests_total.labels.return_value = request_labels
+        duration_seconds.labels.return_value = duration_labels
+
+        with self.assertRaises(LLMHintError):
+            list(stream_problem_hint(self.problem))
+
+        requests_total.labels.assert_called_once_with(status="request_error")
+        request_labels.inc.assert_called_once()
+        duration_seconds.labels.assert_called_once_with(status="request_error")
+        duration_labels.observe.assert_called_once()
 
     @mock.patch("problem.llm_hint.requests.post")
     def test_stream_llm_hint_problem_limit(self, mocked_post):

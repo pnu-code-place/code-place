@@ -52,6 +52,17 @@ FRONTEND_ERROR_TOTAL = Counter(
     "Total frontend runtime errors reported by browser clients.",
     ["surface", "error_type"],
 )
+AI_HINT_REQUESTS_TOTAL = Counter(
+    "codeplace_ai_hint_requests_total",
+    "Total backend AI hint streaming requests to the LLM service.",
+    ["status"],
+)
+AI_HINT_DURATION_SECONDS = Histogram(
+    "codeplace_ai_hint_duration_seconds",
+    "Backend AI hint streaming duration.",
+    ["status"],
+    buckets=(0.5, 1, 2, 5, 10, 30, 60, 120, 300, 600),
+)
 
 
 class CodePlaceCollector:
