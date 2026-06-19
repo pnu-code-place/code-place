@@ -35,6 +35,7 @@ yaml_paths = [
     root / "kube-prometheus-stack-values.yaml",
     root / "prometheus-rules.yaml",
     root / "alertmanager-config.yaml",
+    root / "alertmanager-config-email.example.yaml",
     root / "backend-service-monitor.yaml",
     root / "datastore-pod-monitors.yaml",
     root / "logs" / "loki-values.yaml",

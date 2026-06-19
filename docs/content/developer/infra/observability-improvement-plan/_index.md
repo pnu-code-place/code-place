@@ -113,6 +113,8 @@ OpenTelemetry는 앱 초기화 코드에 내장되어 있지만 기본값은 `OT
 
 `alertmanager-contact-points` Secret은 repo에 저장하지 않습니다. backend의 `/data/config/secret.key`와 같은 비밀값이지만, 자동으로 파일이 생기는 구조는 아닙니다. 운영자가 `kubectl create secret`으로 만들거나 ExternalSecrets/SealedSecrets 같은 Secret 주입 도구로 생성해야 합니다. AlertmanagerConfig는 generic webhook이 아니라 Prometheus Operator의 native `discordConfigs`를 사용합니다.
 
+Email fallback은 SMTP host/from/to/auth가 필요하므로 기본 kustomization에는 포함하지 않습니다. SMTP 값이 정해지면 `kubernetes/monitoring/alertmanager-config-email.example.yaml`을 실제 값으로 복사하거나 패치해서 적용합니다. Prometheus Operator의 `AlertmanagerConfig`는 receiver에 `emailConfigs`를 지원하며, SMTP password는 같은 namespace의 Secret key로 참조합니다.
+
 ## 4. 빠른 알림 정책
 
 ### P0
@@ -155,6 +157,7 @@ P1은 `group_wait=30s`, `repeat_interval=1h`로 전달합니다.
 
 1. kube-prometheus-stack을 `monitoring` namespace에 설치하거나 업그레이드할 때 `kubernetes/monitoring/kube-prometheus-stack-values.yaml`을 함께 적용합니다. 이 값 파일이 `monitoring.code-place-dev.site` Grafana ingress와 dashboard sidecar 설정까지 관리합니다. Prometheus Operator CRD가 `AlertmanagerConfig.discordConfigs`를 지원하는 버전인지 확인합니다.
 2. `alertmanager-contact-points` Secret을 운영 클러스터의 `monitoring` namespace에 생성합니다. 이 값은 Kubernetes Secret으로 참조되며, Pod 파일로 mount하지 않습니다.
+   Email fallback을 켤 경우 SMTP 정보를 별도로 정한 뒤 `alertmanager-email` Secret과 email AlertmanagerConfig를 추가 적용합니다.
 3. Loki와 Alloy를 설치합니다.
    - `helm upgrade --install loki grafana-community/loki --namespace monitoring --values kubernetes/monitoring/logs/loki-values.yaml`
    - `helm upgrade --install alloy grafana/alloy --namespace monitoring --values kubernetes/monitoring/logs/alloy-values.yaml`

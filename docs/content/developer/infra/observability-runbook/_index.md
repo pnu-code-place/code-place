@@ -38,6 +38,8 @@ Alerts -> alertname / namespace / priority
 Status -> Configuration -> p0-discord / p1-discord
 ```
 
+Email fallback을 켠 환경에서는 `Status -> Configuration`에서 `p0-email` / `p1-email` receiver도 확인합니다.
+
 Loki 로그 확인:
 
 ```logql
@@ -404,6 +406,7 @@ node pressure는 앱 문제가 아니라 cluster resource 문제일 가능성이
 ## Test Alert
 
 Discord webhook 자체는 curl로 확인할 수 있습니다. Alertmanager routing은 임시 `PrometheusRule`로 확인합니다.
+Email fallback은 SMTP 정보가 정해진 환경에서만 켭니다. `kubernetes/monitoring/alertmanager-config-email.example.yaml`의 placeholder를 실제 `smarthost`, `from`, `to`, `authUsername`으로 바꾸고 `alertmanager-email` Secret을 만든 뒤 적용합니다.
 
 ```yaml
 apiVersion: monitoring.coreos.com/v1
