@@ -299,6 +299,16 @@ spec:
           annotations:
             summary: "Alertmanager is not ready"
             description: "The kube-prometheus-stack Alertmanager pod has not been ready for 1 minute. Fast alert delivery may be unavailable."
+        - alert: AlertmanagerWebhookSecretMissing
+          expr: absent(kube_secret_info{namespace="monitoring", secret="alertmanager-contact-points"})
+          for: 1m
+          labels:
+            severity: critical
+            priority: P0
+            namespace: monitoring
+          annotations:
+            summary: "Alertmanager Discord webhook secret is missing"
+            description: "The monitoring namespace does not expose the alertmanager-contact-points Secret through kube-state-metrics. Discord notifications cannot work until the SealedSecret is decrypted into this Secret."
     - name: codeplace.p1
       interval: 30s
       rules:

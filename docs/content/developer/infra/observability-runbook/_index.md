@@ -595,12 +595,13 @@ kube_deployment_spec_replicas{namespace="monitoring", deployment="blackbox-expor
 - latency가 synthetic probe에서만 높으면 public route/TLS/frontend nginx를 먼저 보고, backend latency도 높으면 API/DB/Redis 병목을 같이 봅니다.
 - `BlackboxExporterUnavailable`이면 probe 자체가 죽은 것이므로 공개 URL 상태를 판단할 수 없습니다.
 
-### GrafanaUnavailable / GrafanaMetricsTargetDown / MonitoringServiceMetricsTargetDown / PrometheusOperatorUnavailable / PrometheusConfigReloadFailed / AlertmanagerConfigReloadFailed / PrometheusRuleEvaluationFailures / PrometheusAlertmanagerDiscoveryFailed / AlertmanagerNotificationFailures
+### GrafanaUnavailable / GrafanaMetricsTargetDown / MonitoringServiceMetricsTargetDown / PrometheusOperatorUnavailable / PrometheusConfigReloadFailed / AlertmanagerConfigReloadFailed / PrometheusRuleEvaluationFailures / PrometheusAlertmanagerDiscoveryFailed / AlertmanagerNotificationFailures / AlertmanagerWebhookSecretMissing
 
 확인:
 
 ```sh
 kubectl -n monitoring get pod | grep -E 'grafana|operator|prometheus|alertmanager'
+kubectl -n monitoring get secret alertmanager-contact-points
 kubectl -n monitoring describe pod -l app.kubernetes.io/name=grafana
 kubectl -n monitoring describe pod -l app.kubernetes.io/name=prometheus-operator
 kubectl -n monitoring logs deploy/kube-prometheus-stack-operator --tail=200
@@ -618,6 +619,7 @@ sum by (rule_group) (increase(prometheus_rule_evaluation_failures_total[5m]))
 sum(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"prometheus-kube-prometheus-stack-prometheus-.*"})
 prometheus_config_last_reload_successful{namespace="monitoring"}
 alertmanager_config_last_reload_successful{namespace="monitoring"}
+kube_secret_info{namespace="monitoring", secret="alertmanager-contact-points"}
 prometheus_notifications_alertmanagers_discovered
 sum by (integration) (increase(alertmanager_notifications_failed_total[5m]))
 sum by (job, namespace) (up == 0)
@@ -631,6 +633,7 @@ sum by (job, namespace) (up == 0)
 - Operator가 down이면 새 ServiceMonitor/PodMonitor/PrometheusRule/AlertmanagerConfig 변경이 Prometheus/Alertmanager에 반영되지 않을 수 있습니다.
 - rule evaluation failure가 있으면 최근 추가한 PromQL expression과 label cardinality, metric 존재 여부를 먼저 봅니다.
 - Alertmanager discovery가 0이면 AlertmanagerConfig가 맞아도 Prometheus가 알림을 보낼 대상이 없습니다. Prometheus generated config와 Alertmanager Service/endpoints를 확인합니다.
+- webhook Secret이 없으면 Discord 알림은 동작하지 않습니다. 이 경우 SealedSecret controller가 `alertmanager-contact-points` Secret을 복호화했는지, Secret key가 `webhook-url`인지 확인합니다.
 - notification failure가 있으면 webhook Secret 값, Alertmanager generated config, Discord endpoint 응답, cluster outbound network, rate limit을 확인합니다. 로컬 `curl` 성공만으로 Alertmanager Pod의 egress 성공을 보장하지 않습니다.
 
 ### FrontendRuntimeErrorsSpike
