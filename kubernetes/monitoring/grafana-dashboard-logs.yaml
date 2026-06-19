@@ -136,6 +136,29 @@ data:
           ]
         },
         {
+          "type": "stat",
+          "title": "Frontend 5xx",
+          "gridPos": {"x": 20, "y": 0, "w": 4, "h": 4},
+          "datasource": "Loki",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "orange", "value": 1},
+                  {"color": "red", "value": 5}
+                ]
+              }
+            }
+          },
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "sum(count_over_time({namespace=~\"$namespace\", app=\"frontend\"} | json | status_code >= 500 [5m]))", "legendFormat": "5xx"}
+          ]
+        },
+        {
           "type": "logs",
           "title": "Recent Backend Errors",
           "gridPos": {"x": 0, "y": 4, "w": 12, "h": 10},
@@ -167,8 +190,23 @@ data:
         },
         {
           "type": "logs",
+          "title": "Frontend 4xx/5xx Logs",
+          "gridPos": {"x": 0, "y": 14, "w": 24, "h": 8},
+          "datasource": "Loki",
+          "options": {
+            "showLabels": false,
+            "showTime": true,
+            "wrapLogMessage": true,
+            "dedupStrategy": "none"
+          },
+          "targets": [
+            {"expr": "{namespace=~\"$namespace\", app=\"frontend\"} | json | status_code >= 400"}
+          ]
+        },
+        {
+          "type": "logs",
           "title": "Request ID Lookup",
-          "gridPos": {"x": 0, "y": 14, "w": 24, "h": 9},
+          "gridPos": {"x": 0, "y": 22, "w": 24, "h": 9},
           "datasource": "Loki",
           "options": {
             "showLabels": false,

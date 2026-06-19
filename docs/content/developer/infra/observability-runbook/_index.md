@@ -44,6 +44,7 @@ Loki 로그 확인:
 
 ```logql
 {namespace="<namespace>"}
+{namespace="<namespace>", app="frontend"} | json
 {namespace="<namespace>", app="backend"} | json
 {namespace="<namespace>", container=~"backend|celery-worker|judge-server"}
 ```
@@ -114,6 +115,7 @@ kubectl -n <namespace> describe pod -l app=backend
 Grafana Explore:
 
 ```logql
+{namespace="<namespace>", app="frontend"} | json | status_code >= 500
 {namespace="<namespace>", app="backend"} | json | status_code >= 500
 {namespace="<namespace>", app="backend"} |= "<request_id>"
 ```
