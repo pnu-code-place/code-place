@@ -682,7 +682,7 @@ Grafana Explore:
 {namespace="<namespace>", container=~"celery-worker|celery-beat"}
 ```
 
-### CeleryTaskFailures / CeleryTaskRetries / CeleryTaskRuntimeHigh / ScheduledTaskStale
+### CeleryTaskFailures / CeleryTaskRetries / CeleryTaskRuntimeHigh / CeleryMinuteScheduledTaskStale / CeleryDailyScheduledTaskStale / CeleryWeeklyScheduledTaskStale
 
 확인:
 
