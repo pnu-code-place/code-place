@@ -52,6 +52,18 @@ require_label() {
   ok "$resource/$name label $key=$expected"
 }
 
+require_jsonpath_value() {
+  local namespace="$1"
+  local resource="$2"
+  local name="$3"
+  local jsonpath="$4"
+  local expected="$5"
+  local actual
+  actual="$(kubectl -n "$namespace" get "$resource" "$name" -o "jsonpath=$jsonpath")"
+  [ "$actual" = "$expected" ] || fail "$resource/$name $jsonpath expected=$expected actual=$actual"
+  ok "$resource/$name $jsonpath=$expected"
+}
+
 require_cmd kubectl
 
 echo "==> checking Prometheus Operator CRDs"
@@ -126,6 +138,8 @@ require_label "$NAMESPACE" configmap grafana-dashboard-codeplace-monitoring-stac
 require_label "$NAMESPACE" configmap grafana-dashboard-codeplace-public-endpoints grafana_dashboard 1
 require_label "$NAMESPACE" configmap grafana-dashboard-codeplace-storage grafana_dashboard 1
 require_label "$NAMESPACE" configmap grafana-dashboard-codeplace-traces grafana_dashboard 1
+require_jsonpath_value "$NAMESPACE" alertmanager kube-prometheus-stack-alertmanager \
+  '{.spec.alertmanagerConfigMatcherStrategy.type}' None
 
 if resource_exists "$NAMESPACE" secret alertmanager-contact-points; then
   kubectl -n "$NAMESPACE" get secret alertmanager-contact-points \
