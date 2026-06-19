@@ -86,7 +86,7 @@ prod 로그량이 커지면 먼저 noisy log를 줄이거나 retention을 줄입
 
 ### Tracing
 
-OpenTelemetry는 앱 초기화 코드에 내장되어 있지만 기본값은 `OTEL_ENABLED=0`입니다. dev/staging에서 먼저 활성화하고 collector/Tempo/sampling 확인 후 prod 활성화를 결정합니다.
+OpenTelemetry는 앱 초기화 코드에 내장되어 있고, base/prod 기본값은 `OTEL_ENABLED=0`입니다. dev overlay에서만 `OTEL_ENABLED=1`로 켜서 collector/Tempo/sampling을 먼저 확인합니다.
 
 자동 계측 대상은 Django, requests, psycopg2, Redis, Celery입니다. 제출/채점 경로에는 manual span을 추가합니다.
 
@@ -96,15 +96,16 @@ OpenTelemetry는 앱 초기화 코드에 내장되어 있지만 기본값은 `OT
 
 기본 sampling 값은 `OTEL_TRACES_SAMPLER_ARG=0.05`입니다.
 
-현재 Kubernetes manifest에는 backend/celery의 `OTEL_EXPORTER_OTLP_ENDPOINT`가 `http://otel-collector.monitoring.svc.cluster.local:4317`로 잡혀 있습니다. 다만 `otel-collector`와 Tempo는 아직 배포 리소스로 포함하지 않습니다. 다음 조건이 정해지기 전에는 `OTEL_ENABLED=1`을 켜지 않습니다.
+현재 Kubernetes manifest에는 backend/celery의 `OTEL_EXPORTER_OTLP_ENDPOINT`가 `http://otel-collector.monitoring.svc.cluster.local:4317`로 잡혀 있습니다. monitoring namespace에는 OTel Collector와 Tempo 단일 binary를 배포합니다.
 
-- trace 저장 backend: Tempo 단일 binary, Tempo distributed, 외부 managed backend 중 선택.
-- retention: dev/prod별 trace 보관 기간과 저장 용량.
-- storage: filesystem, S3 호환 object storage, Longhorn PVC 중 선택.
-- sampling: dev/prod sampling ratio와 error trace 우선 보존 정책.
-- Grafana datasource: Tempo datasource 이름과 dashboard trace link 규칙.
+- OTel Collector release: raw Kubernetes Deployment, namespace `monitoring`.
+- Tempo deployment mode: single binary, namespace `monitoring`.
+- Tempo storage: filesystem on Longhorn PVC.
+- Tempo PVC: `tempo-data`, 20Gi.
+- Tempo retention: 72h.
+- Grafana datasource: 기존 kube-prometheus-stack Grafana에 `Tempo` datasource를 추가합니다.
 
-이 조건이 정해진 뒤 `otel-collector`와 Tempo를 `kubernetes/monitoring` 하위 Helm values 또는 별도 kustomize 리소스로 추가합니다.
+prod tracing은 dev에서 trace ingest, query, traces-to-logs 동작과 Collector/Tempo 리소스 사용량을 확인한 뒤 별도 overlay에서 `OTEL_ENABLED=1`로 승격합니다.
 
 ## 3. Kubernetes Monitoring
 
@@ -118,6 +119,9 @@ OpenTelemetry는 앱 초기화 코드에 내장되어 있지만 기본값은 `OT
 - `logs/loki-values.yaml`: Loki Monolithic, Longhorn PVC, dev/prod retention 설정.
 - `logs/alloy-values.yaml`: Alloy DaemonSet 기반 Kubernetes Pod log collection 설정.
 - `grafana-dashboard-logs.yaml`: Loki/Alloy health, Loki PVC, 최근 backend error, judge/celery log 조회 dashboard.
+- `otel-collector.yaml`: backend/celery OTLP trace를 받아 Tempo로 전송하는 OpenTelemetry Collector.
+- `tempo.yaml`: Tempo single binary, Longhorn PVC 기반 trace 저장소.
+- `grafana-dashboard-traces.yaml`: Collector/Tempo readiness, span ingest/export, Tempo PVC usage dashboard.
 - `validate.sh`: monitoring YAML, Grafana dashboard JSON, kustomize render, 선택적 promtool/Helm render 검증 스크립트.
 - `kustomization.yaml`: 기존 `monitoring` namespace의 kube-prometheus-stack/Grafana/Alertmanager에 붙일 CodePlace monitoring 리소스 묶음.
 
@@ -161,6 +165,9 @@ P1은 `group_wait=30s`, `repeat_interval=1h`로 전달합니다.
 - `LokiPVCAlmostFull`: Loki Longhorn PVC 사용률 85% 초과 10분 지속.
 - `AlloyDaemonSetUnavailable`: Alloy log collector가 모든 node에서 available하지 않음 5분 지속.
 - `LokiGatewayUnavailable`: Loki gateway Pod not ready 2분 지속.
+- `OTelCollectorUnavailable`: OpenTelemetry Collector Pod not ready 2분 지속.
+- `TempoUnavailable`: Tempo Pod not ready 2분 지속.
+- `TempoPVCAlmostFull`: Tempo PVC 사용률 85% 초과 10분.
 - `CodePlaceNodePressure`: node memory/disk/PID pressure 5분 지속.
 
 ## 5. 운영 확인 절차
@@ -180,15 +187,17 @@ P1은 `group_wait=30s`, `repeat_interval=1h`로 전달합니다.
 7. Grafana의 `CodePlace Overview` dashboard에서 request rate, 5xx, latency, submission status, waiting queue, judge heartbeat, Pod readiness/restart, CPU/memory, PVC, PostgreSQL/Redis readiness panel을 확인합니다.
 8. Grafana의 `CodePlace Logs` dashboard에서 Loki ready, Alloy node coverage, Loki PVC usage, 최근 backend error, judge/celery log panel을 확인합니다.
 9. Grafana의 `CodePlace Logs` dashboard에서 `request_id` 변수에 실제 응답 header 또는 JSON log의 request ID를 넣고 해당 요청 로그가 좁혀지는지 확인합니다.
-10. Grafana Explore에서 `Loki` datasource를 선택하고 `{namespace="code-place-dev"}` 쿼리가 로그를 반환하는지 확인합니다.
-11. test alert 또는 임시 rule로 P0 webhook 수신 시간이 1분 이내인지 확인합니다.
+10. Grafana의 `CodePlace Traces` dashboard에서 Tempo ready, OTel Collector ready, trace receive/export rate, Tempo PVC usage를 확인합니다.
+11. Grafana Explore에서 `Loki` datasource를 선택하고 `{namespace="code-place-dev"}` 쿼리가 로그를 반환하는지 확인합니다.
+12. Grafana Explore에서 `Tempo` datasource를 선택하고 `service.name=codeplace-backend` 또는 `service.name=codeplace-celery` trace가 조회되는지 확인합니다.
+13. test alert 또는 임시 rule로 P0 webhook 수신 시간이 1분 이내인지 확인합니다.
 
 운영 적용 전제는 다음과 같습니다.
 
 - `/metrics`는 cluster 내부 scrape 전용이며 외부 Ingress에 노출하지 않습니다.
 - Discord webhook URL은 Git에 저장하지 않습니다.
 - Docker Swarm monitoring 구성은 레거시로 유지하고 신규 관측성 리소스와 분리합니다.
-- OpenTelemetry는 `OTEL_ENABLED=0` 기본값을 유지하고 dev/staging에서 먼저 활성화합니다.
+- OpenTelemetry는 base/prod `OTEL_ENABLED=0` 기본값을 유지하고 dev overlay에서 먼저 활성화합니다.
 - P0/P1 알림 라우팅은 AlertmanagerConfig로 관리하며 Grafana UI 수동 설정에 의존하지 않습니다.
 - 로그 수집은 Grafana Alloy와 Loki로 관리하며 Promtail은 신규 도입하지 않습니다.
 - PostgreSQL은 CNPG instance exporter와 PodMonitor로 `cnpg_collector_*` 지표를 수집합니다. Redis는 Opstree Redis exporter sidecar와 PodMonitor로 `redis_*` 지표를 수집합니다.
@@ -196,7 +205,7 @@ P1은 `group_wait=30s`, `repeat_interval=1h`로 전달합니다.
 - Frontend는 axios 요청마다 `X-Request-ID`를 전파하고 마지막 request ID를 `window.__CODEPLACE_LAST_REQUEST_ID__`와 Sentry request context에 저장합니다.
 - Frontend Sentry 설정은 빌드 시점 값입니다. `APP_VERSION`, `SENTRY_ENVIRONMENT`, `SENTRY_DSN`, `USE_SENTRY`는 frontend image build-arg로 주입하며, Kubernetes Deployment의 런타임 env만 변경해도 이미 빌드된 JS bundle에는 반영되지 않습니다.
 - Backend/Celery Sentry release는 `SENTRY_RELEASE` env가 있으면 사용합니다. 이미지 태그와 동일한 commit SHA를 넣어 Grafana/Loki/Sentry 간 배포 기준을 맞추는 것을 권장합니다.
-- Tempo tracing은 저장소/retention 결정을 먼저 요구하므로 현재 PR에서는 켜지 않습니다.
+- Tempo tracing은 monitoring namespace에 배포하지만, prod app trace export는 dev 확인 후 별도 승격합니다.
 
 ## 6. 검증
 

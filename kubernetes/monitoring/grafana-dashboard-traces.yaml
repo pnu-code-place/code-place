@@ -1,0 +1,146 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-codeplace-traces
+  labels:
+    grafana_dashboard: "1"
+data:
+  codeplace-traces.json: |
+    {
+      "uid": "codeplace-traces",
+      "title": "CodePlace Traces",
+      "schemaVersion": 39,
+      "version": 1,
+      "refresh": "30s",
+      "tags": ["codeplace", "traces"],
+      "editable": true,
+      "time": {
+        "from": "now-1h",
+        "to": "now"
+      },
+      "panels": [
+        {
+          "type": "stat",
+          "title": "Tempo Ready",
+          "gridPos": {"x": 0, "y": 0, "w": 4, "h": 4},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "red", "value": null},
+                  {"color": "green", "value": 1}
+                ]
+              }
+            }
+          },
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "min(kube_pod_status_ready{namespace=\"monitoring\", condition=\"true\", pod=~\"tempo-.*\"})", "legendFormat": "tempo"}
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "OTel Collector Ready",
+          "gridPos": {"x": 4, "y": 0, "w": 4, "h": 4},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "red", "value": null},
+                  {"color": "green", "value": 1}
+                ]
+              }
+            }
+          },
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "min(kube_pod_status_ready{namespace=\"monitoring\", condition=\"true\", pod=~\"otel-collector-.*\"})", "legendFormat": "otel-collector"}
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "Trace Receive Rate",
+          "gridPos": {"x": 8, "y": 0, "w": 4, "h": 4},
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "ops"}},
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "sum(rate(otelcol_receiver_accepted_spans_total{namespace=\"monitoring\"}[5m]))", "legendFormat": "spans/s"}
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "Trace Export Failures",
+          "gridPos": {"x": 12, "y": 0, "w": 4, "h": 4},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "orange", "value": 1},
+                  {"color": "red", "value": 5}
+                ]
+              }
+            }
+          },
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "sum(increase(otelcol_exporter_send_failed_spans_total{namespace=\"monitoring\"}[5m]))", "legendFormat": "failed"}
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "Tempo PVC Usage",
+          "gridPos": {"x": 16, "y": 0, "w": 4, "h": 4},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percentunit",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "orange", "value": 0.75},
+                  {"color": "red", "value": 0.85}
+                ]
+              }
+            }
+          },
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "max(kubelet_volume_stats_used_bytes{namespace=\"monitoring\", persistentvolumeclaim=\"tempo-data\"}) / clamp_min(max(kubelet_volume_stats_capacity_bytes{namespace=\"monitoring\", persistentvolumeclaim=\"tempo-data\"}), 1)", "legendFormat": "usage"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Collector Spans",
+          "gridPos": {"x": 0, "y": 4, "w": 12, "h": 8},
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "ops"}},
+          "targets": [
+            {"expr": "sum by (receiver, transport) (rate(otelcol_receiver_accepted_spans_total{namespace=\"monitoring\"}[5m]))", "legendFormat": "{{receiver}} {{transport}} accepted"},
+            {"expr": "sum by (exporter) (rate(otelcol_exporter_sent_spans_total{namespace=\"monitoring\"}[5m]))", "legendFormat": "{{exporter}} sent"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Collector Refused or Failed Spans",
+          "gridPos": {"x": 12, "y": 4, "w": 12, "h": 8},
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "ops"}},
+          "targets": [
+            {"expr": "sum(rate(otelcol_receiver_refused_spans_total{namespace=\"monitoring\"}[5m]))", "legendFormat": "refused"},
+            {"expr": "sum(rate(otelcol_exporter_send_failed_spans_total{namespace=\"monitoring\"}[5m]))", "legendFormat": "failed"}
+          ]
+        }
+      ]
+    }

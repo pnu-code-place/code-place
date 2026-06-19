@@ -18,12 +18,28 @@ alertmanager:
 grafana:
   additionalDataSources:
     - name: Loki
+      uid: Loki
       type: loki
       access: proxy
       url: http://loki-gateway.monitoring.svc.cluster.local
       isDefault: false
       jsonData:
         timeout: 60
+    - name: Tempo
+      uid: Tempo
+      type: tempo
+      access: proxy
+      url: http://tempo.monitoring.svc.cluster.local:3200
+      isDefault: false
+      jsonData:
+        tracesToLogsV2:
+          datasourceUid: Loki
+          spanStartTimeShift: "-5m"
+          spanEndTimeShift: "5m"
+          filterByTraceID: false
+          filterBySpanID: false
+          customQuery: true
+          query: "{namespace=~\"code-place-dev|code-place-prod\"} |= \"${__span.traceId}\""
   ingress:
     enabled: true
     ingressClassName: traefik

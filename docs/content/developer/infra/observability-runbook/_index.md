@@ -56,6 +56,17 @@ kubectl -n monitoring logs deploy/loki-gateway --tail=100
 kubectl -n monitoring logs daemonset/alloy --tail=100
 ```
 
+Trace 상태 확인:
+
+```sh
+kubectl -n monitoring get pod,svc,pvc | grep -E 'otel-collector|tempo'
+kubectl -n monitoring logs deploy/otel-collector --tail=100
+kubectl -n monitoring logs deploy/tempo --tail=100
+kubectl -n code-place-dev get deploy backend celery-worker celery-beat -o yaml | grep -A1 OTEL_ENABLED
+```
+
+Grafana에서는 `CodePlace Traces` dashboard와 `Tempo` datasource Explore를 확인합니다. dev에서 먼저 `service.name=codeplace-backend`와 `service.name=codeplace-celery` trace가 조회되어야 합니다.
+
 ## P0
 
 ### BackendTargetDown
@@ -252,6 +263,36 @@ kubectl -n monitoring describe pvc -l app.kubernetes.io/name=loki
 - Loki가 내려가도 앱 요청 처리는 계속되지만 로그 수집/조회가 끊기므로 빠르게 복구합니다.
 
 ## P1
+
+### OTelCollectorUnavailable / TempoUnavailable / TempoPVCAlmostFull
+
+확인:
+
+```sh
+kubectl -n monitoring get pod,svc,pvc | grep -E 'otel-collector|tempo'
+kubectl -n monitoring describe pod -l app=otel-collector
+kubectl -n monitoring describe pod -l app=tempo
+kubectl -n monitoring logs deploy/otel-collector --tail=200
+kubectl -n monitoring logs deploy/tempo --tail=200
+kubectl -n monitoring describe pvc tempo-data
+```
+
+PromQL:
+
+```promql
+kube_pod_status_ready{namespace="monitoring", pod=~"otel-collector-.*|tempo-.*", condition="true"}
+max(kubelet_volume_stats_used_bytes{namespace="monitoring", persistentvolumeclaim="tempo-data"}) /
+max(kubelet_volume_stats_capacity_bytes{namespace="monitoring", persistentvolumeclaim="tempo-data"})
+sum(rate(otelcol_receiver_accepted_spans_total{namespace="monitoring"}[5m]))
+sum(rate(otelcol_exporter_send_failed_spans_total{namespace="monitoring"}[5m]))
+```
+
+판단:
+
+- Collector가 down이면 dev backend/celery trace export가 실패합니다. 앱 요청 처리는 계속되지만 trace 관측이 끊깁니다.
+- Tempo가 down이면 Collector가 span export 실패를 기록합니다.
+- Tempo PVC가 85%를 넘으면 retention 단축, noisy trace sampling 조정, PVC 증설 중 하나를 먼저 결정합니다.
+- prod는 기본 `OTEL_ENABLED=0`입니다. prod trace가 없다고 해서 장애는 아니며, dev에서 Collector/Tempo를 먼저 확인한 뒤 prod 승격 여부를 결정합니다.
 
 ### ApiLatencyHigh
 
