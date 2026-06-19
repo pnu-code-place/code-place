@@ -438,18 +438,48 @@ def env_map(deployment, container_name):
     raise SystemExit(f"{deployment['metadata']['name']} missing container {container_name}")
 
 
+def require_labels(name, actual, expected):
+    for key, value in expected.items():
+        if actual.get(key) != value:
+            raise SystemExit(f"{name} label {key} expected={value} actual={actual.get(key)}")
+
+
+def require_service_targets_deployment(service, deployment, source):
+    service_name = service["metadata"]["name"]
+    service_selector = service.get("spec", {}).get("selector", {})
+    pod_labels = deployment.get("spec", {}).get("template", {}).get("metadata", {}).get("labels", {})
+    require_labels(f"{source} Service/{service_name} selector target", pod_labels, service_selector)
+
+
+backend_service_monitor = yaml.safe_load(Path("kubernetes/monitoring/backend-service-monitor.yaml").read_text())
+backend_service_monitor_selector = backend_service_monitor.get("spec", {}).get("selector", {}).get("matchLabels", {})
+vllm_service_monitor = yaml.safe_load(Path("kubernetes/monitoring/vllm-service-monitor.yaml").read_text())
+vllm_service_monitor_selector = vllm_service_monitor.get("spec", {}).get("selector", {}).get("matchLabels", {})
+
+
 for overlay in ("dev", "prod"):
     path = f"/tmp/codeplace-{overlay}-render.yaml"
     docs = docs_for(path)
     backend_service = find_one(docs, "Service", "backend", path)
+    backend_deployment = find_one(docs, "Deployment", "backend", path)
     port_names = {port.get("name") for port in backend_service.get("spec", {}).get("ports", [])}
     if "api" not in port_names:
         raise SystemExit(f"{overlay} backend Service must expose port name api for ServiceMonitor")
+    require_labels(f"{overlay} backend ServiceMonitor selector", backend_service.get("metadata", {}).get("labels", {}), backend_service_monitor_selector)
+    require_service_targets_deployment(backend_service, backend_deployment, overlay)
 
     frontend_deployment = find_one(docs, "Deployment", "frontend", path)
+    frontend_service = find_one(docs, "Service", "frontend", path)
+    require_service_targets_deployment(frontend_service, frontend_deployment, overlay)
     frontend_env = env_map(frontend_deployment, "frontend")
     if frontend_env.get("FORCE_HTTPS") != "0":
         raise SystemExit(f"{overlay} frontend must keep FORCE_HTTPS=0 because Traefik terminates TLS")
+
+    if overlay == "prod":
+        vllm_service = find_one(docs, "Service", "vllm", path)
+        vllm_deployment = find_one(docs, "Deployment", "vllm", path)
+        require_labels(f"{overlay} vLLM ServiceMonitor selector", vllm_service.get("metadata", {}).get("labels", {}), vllm_service_monitor_selector)
+        require_service_targets_deployment(vllm_service, vllm_deployment, overlay)
 
     for deployment_name, container_name in (
         ("backend", "backend"),
