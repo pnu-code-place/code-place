@@ -17,6 +17,7 @@ from utils.judge_server_observability import (
     increment_judge_server_task_snapshot,
 )
 from utils.observability_metrics import CodePlaceCollector
+from utils import observability_tracing
 from utils.observability_tracing import get_tracer
 from utils.testcase_cache import TestCaseCacheManager
 
@@ -407,6 +408,9 @@ class ClientErrorReportAPITest(SimpleTestCase):
 
 class ObservabilityTracingTest(SimpleTestCase):
 
+    def tearDown(self):
+        observability_tracing._OTEL_CONFIGURED = False
+
     def test_get_tracer_returns_noop_tracer_when_opentelemetry_is_unavailable(self):
         real_import = __import__
 
@@ -433,6 +437,19 @@ class ObservabilityTracingTest(SimpleTestCase):
 
         with patch("builtins.__import__", side_effect=fake_import):
             self.assertEqual(get_current_trace_context(), {})
+
+    def test_configure_opentelemetry_is_idempotent(self):
+        observability_tracing._OTEL_CONFIGURED = True
+        real_import = __import__
+
+        def fail_import(name, *args, **kwargs):
+            if name == "opentelemetry":
+                raise AssertionError("OpenTelemetry should not be imported again")
+            return real_import(name, *args, **kwargs)
+
+        with patch("utils.observability_tracing.get_env", return_value="1"), \
+                patch("builtins.__import__", side_effect=fail_import):
+            observability_tracing.configure_opentelemetry("codeplace-test")
 
 
 class CodePlaceJsonFormatterTest(SimpleTestCase):

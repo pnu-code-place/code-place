@@ -4,6 +4,7 @@ from contextlib import nullcontext
 from utils.shortcuts import get_env
 
 logger = logging.getLogger(__name__)
+_OTEL_CONFIGURED = False
 
 
 class _NoOpSpan:
@@ -45,7 +46,10 @@ def get_current_trace_context():
 
 
 def configure_opentelemetry(service_name):
+    global _OTEL_CONFIGURED
     if get_env("OTEL_ENABLED", "0").lower() not in ("1", "true", "yes", "on"):
+        return
+    if _OTEL_CONFIGURED:
         return
 
     try:
@@ -76,6 +80,12 @@ def configure_opentelemetry(service_name):
     })
     provider = TracerProvider(resource=resource, sampler=ParentBased(TraceIdRatioBased(sampler_ratio)))
     endpoint = get_env("OTEL_EXPORTER_OTLP_ENDPOINT", "http://otel-collector.monitoring.svc.cluster.local:4317")
+    current_provider = trace.get_tracer_provider()
+    if type(current_provider).__name__ != "ProxyTracerProvider":
+        logger.info("OpenTelemetry tracer provider is already configured; skipping CodePlace setup")
+        _OTEL_CONFIGURED = True
+        return
+
     provider.add_span_processor(BatchSpanProcessor(OTLPSpanExporter(endpoint=endpoint, insecure=True)))
     trace.set_tracer_provider(provider)
 
@@ -84,3 +94,4 @@ def configure_opentelemetry(service_name):
     Psycopg2Instrumentor().instrument()
     RedisInstrumentor().instrument()
     CeleryInstrumentor().instrument()
+    _OTEL_CONFIGURED = True
