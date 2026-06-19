@@ -140,7 +140,7 @@ Traefik은 JSON access log를 출력하고, `X-Request-ID`, `X-Forwarded-For` he
 
 frontend nginx의 Kubernetes 설정은 access log를 `/dev/stdout`, error log를 `/dev/stderr`로 출력합니다. access log는 Loki에서 파싱 가능한 JSON 형식이며, `request_id`, `method`, `path`, `status_code`, `duration_seconds`, `remote_addr`, `user_agent`, `x_forwarded_for`를 포함합니다. nginx는 들어온 `X-Request-ID`를 유지하고, 없으면 nginx `$request_id`를 생성해 응답 header와 backend proxy header로 전달합니다.
 
-Kubernetes Pod 로그 수집은 Grafana Alloy와 Loki로 처리합니다. 클라우드 object storage를 사용할 수 없는 현재 운영 조건에서는 Loki를 Monolithic mode로 배포하고 Longhorn PVC 기반 filesystem storage를 사용합니다.
+Kubernetes Pod 로그 수집은 Grafana Alloy와 Loki로 처리합니다. 클라우드 object storage를 사용할 수 없는 현재 운영 조건에서는 Loki를 SingleBinary mode로 배포하고 Longhorn PVC 기반 filesystem storage를 사용합니다.
 
 - Loki release: `loki`, namespace: `monitoring`.
 - Alloy release: `alloy`, namespace: `monitoring`.
@@ -153,7 +153,7 @@ Kubernetes Pod 로그 수집은 Grafana Alloy와 Loki로 처리합니다. 클라
 
 현재 유지해야 하는 로그 저장소 불변 조건은 다음과 같습니다.
 
-- Loki deployment mode는 `Monolithic`입니다.
+- Loki deployment mode는 `SingleBinary`입니다.
 - Loki storage type은 `filesystem`입니다.
 - Loki PVC storageClass는 `longhorn`, size는 `50Gi`입니다.
 - Loki retention은 dev 72h, prod 168h입니다.
@@ -211,7 +211,7 @@ prod tracing은 dev에서 trace ingest, query, traces-to-logs 동작과 Collecto
 - `grafana-dashboard-public-endpoints.yaml`: 공개 URL availability, HTTP status, latency, TLS expiry dashboard.
 - `kubernetes-event-exporter.yaml`: Kubernetes Warning event를 stdout JSON으로 export해서 Alloy/Loki가 수집하도록 하는 exporter, ServiceMonitor, 최소 event read RBAC.
 - `kube-prometheus-stack-values.yaml`: Prometheus/Alertmanager selector, evaluation interval, shared Grafana ingress와 dashboard sidecar 설정.
-- `logs/loki-values.yaml`: Loki Monolithic, Longhorn PVC, dev/prod retention 설정.
+- `logs/loki-values.yaml`: Loki SingleBinary, Longhorn PVC, dev/prod retention 설정.
 - `logs/alloy-values.yaml`: Alloy DaemonSet 기반 Kubernetes Pod log collection 설정.
 - `grafana-dashboard-logs.yaml`: Loki/Alloy health, Loki PVC, Loki ingest/error/canary, Alloy write backpressure, 최근 backend error, judge/celery log 조회 dashboard.
 - `otel-collector.yaml`: backend/celery OTLP trace를 받아 Tempo로 전송하는 OpenTelemetry Collector.
@@ -225,7 +225,7 @@ prod tracing은 dev에서 trace ingest, query, traces-to-logs 동작과 Collecto
 - `smoke-check.sh`: 운영 클러스터 적용 후 CRD, 핵심 monitoring 리소스, dashboard ConfigMap, Probe, Traefik metrics scrape 설정, OTel/Tempo/Event exporter, Service endpoint, Loki/Alloy, optional DCGM 상태를 확인하는 smoke 검증 스크립트. 첫 bootstrap에서 logs stack 설치 전만 `REQUIRE_LOGS_STACK=0`으로 건너뜁니다.
 - `kustomization.yaml`: 기존 `monitoring` namespace의 kube-prometheus-stack/Grafana/Alertmanager에 붙일 CodePlace monitoring 리소스 묶음.
 
-`alertmanager-contact-points` Secret은 repo에 저장하지 않습니다. backend의 `/data/config/secret.key`와 같은 비밀값이지만, 자동으로 파일이 생기는 구조는 아닙니다. 운영자가 `kubectl create secret`으로 만들거나 ExternalSecrets/SealedSecrets 같은 Secret 주입 도구로 생성해야 합니다. AlertmanagerConfig는 generic webhook이 아니라 Prometheus Operator의 native `discordConfigs`를 사용합니다.
+`alertmanager-contact-points` Secret은 repo에 평문으로 저장하지 않습니다. backend의 `/data/config/secret.key`와 같은 비밀값이지만, 자동으로 파일이 생기는 구조는 아닙니다. 운영자는 SealedSecrets로 `alertmanager-contact-points` Secret을 생성합니다. AlertmanagerConfig는 generic webhook이 아니라 Prometheus Operator의 native `discordConfigs`를 사용합니다.
 
 Email fallback은 SMTP host/from/to/auth가 필요하므로 기본 kustomization에는 포함하지 않습니다. SMTP 값이 정해지면 `kubernetes/monitoring/alertmanager-config-email.example.yaml`을 실제 값으로 복사하거나 패치해서 적용합니다. Prometheus Operator의 `AlertmanagerConfig`는 receiver에 `emailConfigs`를 지원하며, SMTP password는 같은 namespace의 Secret key로 참조합니다.
 
@@ -341,10 +341,10 @@ P1은 `group_wait=30s`, `repeat_interval=1h`로 전달합니다.
 1. kube-prometheus-stack을 `monitoring` namespace에 설치하거나 업그레이드할 때 `kubernetes/monitoring/kube-prometheus-stack-values.yaml`을 함께 적용합니다. 이 값 파일이 `monitoring.code-place-dev.site` Grafana ingress와 dashboard sidecar 설정까지 관리합니다. Prometheus Operator CRD가 `AlertmanagerConfig.discordConfigs`를 지원하는 버전인지 확인합니다.
    - `helm upgrade --install kube-prometheus-stack prometheus-community/kube-prometheus-stack --namespace monitoring --version 86.3.1 --values kubernetes/monitoring/kube-prometheus-stack-values.yaml`
    - values는 `alertmanager.alertmanagerSpec.alertmanagerConfigMatcherStrategy.type=None`을 설정합니다. AlertmanagerConfig는 `monitoring` namespace에 있지만 CodePlace alert의 `namespace` label은 `code-place-dev`/`code-place-prod`이므로, 기본 `OnNamespace` matcher를 쓰면 외부 namespace alert가 Discord receiver까지 도달하지 않을 수 있습니다.
-2. `alertmanager-contact-points` Secret을 운영 클러스터의 `monitoring` namespace에 생성합니다. 이 값은 Kubernetes Secret으로 참조되며, Pod 파일로 mount하지 않습니다.
+2. `alertmanager-contact-points` Secret을 운영 클러스터의 `monitoring` namespace에 SealedSecret으로 생성합니다. 이 값은 Kubernetes Secret으로 참조되며, Pod 파일로 mount하지 않습니다.
    Email fallback을 켤 경우 SMTP 정보를 별도로 정한 뒤 `alertmanager-email` Secret과 email AlertmanagerConfig를 추가 적용합니다.
 3. Loki와 Alloy를 설치합니다.
-   - `helm upgrade --install loki grafana-community/loki --namespace monitoring --version 17.4.7 --values kubernetes/monitoring/logs/loki-values.yaml`
+   - `helm upgrade --install loki grafana/loki --namespace monitoring --version 6.55.0 --values kubernetes/monitoring/logs/loki-values.yaml`
    - `helm upgrade --install alloy grafana/alloy --namespace monitoring --version 1.10.0 --values kubernetes/monitoring/logs/alloy-values.yaml`
 4. 애플리케이션은 환경별 overlay로 적용합니다.
    - dev: `kubectl apply -k kubernetes/overlays/dev`
@@ -370,10 +370,11 @@ P1은 `group_wait=30s`, `repeat_interval=1h`로 전달합니다.
 
 - `/metrics`는 cluster 내부 scrape 전용이며 외부 Ingress에 노출하지 않습니다.
 - 공개 URL synthetic probe는 monitoring namespace 내부에서 외부 도메인으로 나가는 HTTPS 요청입니다. DNS, outbound network, TLS, Traefik/frontend/hub-auth 경로를 함께 검증하지만 브라우저 JS runtime error를 대체하지는 않습니다.
-- Discord webhook URL은 Git에 저장하지 않습니다.
+- Discord webhook URL은 Git에 평문으로 저장하지 않습니다. 운영 Secret은 SealedSecret으로 관리합니다.
 - Docker Swarm monitoring 구성은 레거시로 유지하고 신규 관측성 리소스와 분리합니다.
 - OpenTelemetry는 base/prod `OTEL_ENABLED=0` 기본값을 유지하고 dev overlay에서 먼저 활성화합니다.
 - P0/P1 알림 라우팅은 AlertmanagerConfig로 관리하며 Grafana UI 수동 설정에 의존하지 않습니다.
+- Metrics backend는 kube-prometheus-stack의 Prometheus입니다. Mimir는 현재 온프렘 단기 운영 기준선에 포함하지 않습니다.
 - 로그 수집은 Grafana Alloy와 Loki로 관리하며 Promtail은 신규 도입하지 않습니다.
 - Kubernetes event는 Kubernetes Event Exporter가 Warning event만 stdout JSON으로 내보내고, Alloy가 일반 Pod log와 같은 경로로 Loki에 적재합니다.
 - PostgreSQL은 CNPG instance exporter와 PodMonitor로 `cnpg_collector_*` 지표를 수집합니다. Redis는 Opstree Redis exporter sidecar와 PodMonitor로 `redis_*` 지표를 수집합니다.
@@ -402,7 +403,7 @@ P1은 `group_wait=30s`, `repeat_interval=1h`로 전달합니다.
   - PrometheusRule shape check: P0/P1 interval, alert priority/severity, summary/description, duplicate alert namespace label.
   - AlertmanagerConfig shape check: groupBy, P0/P1 Discord receivers, webhook Secret reference.
   - kube-prometheus-stack values shape check: Prometheus selector policy, AlertmanagerConfig selector, Loki datasource, dashboard sidecar label.
-  - Loki storage shape check: Monolithic mode, filesystem storage, Longhorn PVC, 50Gi size, dev/prod retention, MinIO disabled.
+  - Loki storage shape check: SingleBinary mode, filesystem storage, Longhorn PVC, 50Gi size, dev/prod retention, MinIO disabled.
   - scrape resource shape check: ServiceMonitor/PodMonitor selector label, scrape path/port/interval.
   - Monitoring kustomization shape check: email fallback example이 기본 적용에 섞이지 않는지 확인.
 - Live cluster smoke check: `bash kubernetes/monitoring/smoke-check.sh`
@@ -413,10 +414,18 @@ P1은 `group_wait=30s`, `repeat_interval=1h`로 전달합니다.
 
 ### Discord Webhook Secret
 
-Discord webhook URL은 repo에 커밋하지 않습니다. 클러스터별로 다음 명령으로 생성합니다.
+Discord webhook URL은 repo에 평문으로 커밋하지 않습니다. SealedSecrets controller가 설치된 클러스터에서 운영자가 다음 흐름으로 SealedSecret을 생성합니다.
 
 ```sh
+mkdir -p kubernetes/monitoring/secrets
+
 kubectl -n monitoring create secret generic alertmanager-contact-points \
   --from-literal=webhook-url="$ALERT_WEBHOOK_URL" \
-  --dry-run=client -o yaml | kubectl apply -f -
+  --dry-run=client -o yaml \
+  | kubeseal --controller-namespace kube-system --format yaml \
+  > kubernetes/monitoring/secrets/alertmanager-contact-points.sealedsecret.yaml
+
+kubectl apply -f kubernetes/monitoring/secrets/alertmanager-contact-points.sealedsecret.yaml
 ```
+
+SealedSecret 파일은 cluster 공개키로 암호화된 값만 포함합니다. controller namespace가 다르면 `--controller-namespace`를 실제 설치 namespace로 바꿉니다.
