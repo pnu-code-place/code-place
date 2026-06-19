@@ -14,7 +14,7 @@ spec:
         - name: celery-beat
           envFrom:
             - configMapRef:
-                name: sentry-release
+                name: app-version
           env:
             - name: SENTRY_DSN
               valueFrom:

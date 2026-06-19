@@ -9,7 +9,7 @@ spec:
         - name: backend
           envFrom:
             - configMapRef:
-                name: sentry-release
+                name: app-version
           env:
             - name: CSRF_TRUSTED_ORIGINS
               value: "https://k3s.code-place-dev.site"

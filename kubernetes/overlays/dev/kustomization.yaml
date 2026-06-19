@@ -8,9 +8,9 @@ resources:
   - ./secrets/sentry-secret.yaml
 namespace: code-place-dev
 configMapGenerator:
-  - name: sentry-release
+  - name: app-version
     literals:
-      - SENTRY_RELEASE=82d1bcd221199cd9ad9beb930239a58b38340cba-dev
+      - APP_VERSION=82d1bcd221199cd9ad9beb930239a58b38340cba-dev
 generatorOptions:
   disableNameSuffixHash: true
 patches:

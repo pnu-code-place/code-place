@@ -3,7 +3,7 @@
 // let version = `"${date}-${commit}"`
 const sentry = require("./sentry")
 
-let version = JSON.stringify(process.env.VUE_APP_VERSION || "dev")
+let version = JSON.stringify(process.env.APP_VERSION || process.env.VUE_APP_VERSION || "dev")
 let useSentry = JSON.stringify(sentry.isSentryEnabled() ? "1" : "0")
 let sentryDsn = JSON.stringify(sentry.getSentryDsn())
 let sentryEnvironment = JSON.stringify(sentry.getSentryEnvironment())

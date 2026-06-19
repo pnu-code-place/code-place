@@ -17,7 +17,7 @@ spec:
         - name: celery-worker
           envFrom:
             - configMapRef:
-                name: sentry-release
+                name: app-version
           env:
             - name: SENTRY_DSN
               valueFrom:

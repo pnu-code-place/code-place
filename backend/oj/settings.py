@@ -89,9 +89,9 @@ if SENTRY_DSN:
             CeleryIntegration(),
         ],
     }
-    SENTRY_RELEASE = get_env("SENTRY_RELEASE", "")
-    if SENTRY_RELEASE:
-        SENTRY_OPTIONS["release"] = SENTRY_RELEASE
+    APP_VERSION = get_env("APP_VERSION", "")
+    if APP_VERSION:
+        SENTRY_OPTIONS["release"] = APP_VERSION
     sentry_sdk.init(**SENTRY_OPTIONS)
 
 with open(os.path.join(DATA_DIR, "config", "secret.key"), "r") as f:
