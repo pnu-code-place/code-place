@@ -13,9 +13,6 @@ spec:
     spec:
       containers:
         - name: backend
-          envFrom:
-            - configMapRef:
-                name: app-version
           imagePullPolicy: IfNotPresent
           env:
             - name: CSRF_TRUSTED_ORIGINS

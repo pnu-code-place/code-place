@@ -10,13 +10,6 @@ resources:
 
 namespace: code-place-prod
 
-configMapGenerator:
-  - name: app-version
-    literals:
-      - APP_VERSION=3a65dc653fc6fb3050a04e373bbf58e7d391c762-prod
-generatorOptions:
-  disableNameSuffixHash: true
-
 patches:
   - path: backend-deployment-patch.yaml
   - path: frontend-deployment-patch.yaml

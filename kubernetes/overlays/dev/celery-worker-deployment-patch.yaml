@@ -15,9 +15,6 @@ spec:
     spec:
       containers:
         - name: celery-worker
-          envFrom:
-            - configMapRef:
-                name: app-version
           env:
             - name: SENTRY_DSN
               valueFrom:

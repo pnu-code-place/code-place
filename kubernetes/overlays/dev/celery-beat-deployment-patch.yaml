@@ -12,9 +12,6 @@ spec:
     spec:
       containers:
         - name: celery-beat
-          envFrom:
-            - configMapRef:
-                name: app-version
           env:
             - name: SENTRY_DSN
               valueFrom:

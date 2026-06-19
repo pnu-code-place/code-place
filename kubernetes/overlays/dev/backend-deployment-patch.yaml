@@ -7,9 +7,6 @@ spec:
     spec:
       containers:
         - name: backend
-          envFrom:
-            - configMapRef:
-                name: app-version
           env:
             - name: CSRF_TRUSTED_ORIGINS
               value: "https://k3s.code-place-dev.site"
