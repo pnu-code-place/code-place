@@ -175,8 +175,14 @@ if alertmanager_selector.get("alertmanagerConfig") != "codeplace":
     raise SystemExit("AlertmanagerConfig selector must match alertmanagerConfig=codeplace")
 grafana_values = stack_values.get("grafana", {})
 datasources = grafana_values.get("additionalDataSources") or []
-if not any(ds.get("name") == "Loki" and ds.get("type") == "loki" for ds in datasources):
+datasource_by_name = {ds.get("name"): ds for ds in datasources if ds.get("name")}
+if not any(ds.get("name") == "Loki" and ds.get("uid") == "Loki" and ds.get("type") == "loki" for ds in datasources):
     raise SystemExit("Grafana values must provision Loki datasource")
+if not any(ds.get("name") == "Tempo" and ds.get("uid") == "Tempo" and ds.get("type") == "tempo" for ds in datasources):
+    raise SystemExit("Grafana values must provision Tempo datasource")
+tempo_datasource = datasource_by_name.get("Tempo", {})
+if tempo_datasource.get("jsonData", {}).get("tracesToLogsV2", {}).get("datasourceUid") != "Loki":
+    raise SystemExit("Grafana Tempo datasource must link tracesToLogsV2 to Loki")
 dashboard_sidecar = grafana_values.get("sidecar", {}).get("dashboards", {})
 if dashboard_sidecar.get("label") != "grafana_dashboard":
     raise SystemExit("Grafana dashboard sidecar must select grafana_dashboard label")
@@ -258,6 +264,8 @@ if "./alertmanager-config-email.example.yaml" in kustomization.get("resources", 
 print("MONITORING KUSTOMIZATION SHAPE OK")
 
 all_dashboard_paths = sorted(root.glob("grafana-dashboard-*.yaml"))
+provisioned_datasources = {"Prometheus", *datasource_by_name}
+dashboard_datasources = {}
 for dashboard_path in all_dashboard_paths:
     dashboard_map = yaml.safe_load(dashboard_path.read_text())
     for key, value in dashboard_map.get("data", {}).items():
@@ -269,12 +277,39 @@ for dashboard_path in all_dashboard_paths:
         panels = dashboard.get("panels") or []
         if not panels:
             raise SystemExit(f"{dashboard_path}:{key} must contain panels")
+        datasource_names = set()
         for panel in panels:
             if not panel.get("title") or not panel.get("type") or not panel.get("gridPos"):
                 raise SystemExit(f"{dashboard_path}:{key} has panel missing title/type/gridPos")
+            datasource = panel.get("datasource")
+            if isinstance(datasource, dict):
+                datasource = datasource.get("uid") or datasource.get("type")
+            if datasource:
+                datasource_names.add(datasource)
+                if datasource not in provisioned_datasources:
+                    raise SystemExit(f"{dashboard_path}:{key}:{panel.get('title')} uses unknown datasource {datasource}")
             for target in panel.get("targets", []):
                 if not target.get("expr"):
                     raise SystemExit(f"{dashboard_path}:{key}:{panel.get('title')} has target missing expr")
+        dashboard_datasources[dashboard_path.name] = datasource_names
+
+required_dashboard_datasources = {
+    "grafana-dashboard-logs.yaml": {"Prometheus", "Loki"},
+    "grafana-dashboard-kubernetes-events.yaml": {"Prometheus", "Loki"},
+    "grafana-dashboard-traces.yaml": {"Prometheus"},
+    "grafana-dashboard-codeplace.yaml": set(),
+    "grafana-dashboard-ai-inference.yaml": {"Prometheus"},
+    "grafana-dashboard-monitoring-stack.yaml": {"Prometheus"},
+    "grafana-dashboard-public-endpoints.yaml": {"Prometheus"},
+    "grafana-dashboard-storage.yaml": {"Prometheus"},
+}
+for dashboard_name, required_datasources in required_dashboard_datasources.items():
+    actual_datasources = dashboard_datasources.get(dashboard_name)
+    if actual_datasources is None:
+        raise SystemExit(f"missing dashboard {dashboard_name}")
+    missing_datasources = required_datasources - actual_datasources
+    if missing_datasources:
+        raise SystemExit(f"{dashboard_name} must use datasources {sorted(missing_datasources)}")
 
 dashboard_requirements = {
     "grafana-dashboard-codeplace.yaml": {
