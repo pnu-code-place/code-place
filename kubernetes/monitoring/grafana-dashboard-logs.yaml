@@ -160,9 +160,41 @@ data:
           ]
         },
         {
+          "type": "timeseries",
+          "title": "Log Lines by Namespace",
+          "gridPos": {"x": 0, "y": 4, "w": 8, "h": 7},
+          "datasource": "Loki",
+          "fieldConfig": {"defaults": {"unit": "logs/sec"}},
+          "targets": [
+            {"expr": "sum by (namespace) (rate({namespace=~\"code-place-dev|code-place-prod|monitoring|kube-system\"}[5m]))", "legendFormat": "{{namespace}}"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Application Log Lines by App",
+          "gridPos": {"x": 8, "y": 4, "w": 8, "h": 7},
+          "datasource": "Loki",
+          "fieldConfig": {"defaults": {"unit": "logs/sec"}},
+          "targets": [
+            {"expr": "sum by (namespace, app) (rate({namespace=~\"code-place-dev|code-place-prod\", app=~\"backend|frontend\"}[5m]))", "legendFormat": "{{namespace}} {{app}}"},
+            {"expr": "sum by (namespace, container) (rate({namespace=~\"code-place-dev|code-place-prod\", container=~\"celery-worker|celery-beat|judge-server|hub-auth|vllm\"}[5m]))", "legendFormat": "{{namespace}} {{container}}"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Structured Error Logs by Component",
+          "gridPos": {"x": 16, "y": 4, "w": 8, "h": 7},
+          "datasource": "Loki",
+          "fieldConfig": {"defaults": {"unit": "logs/sec"}},
+          "targets": [
+            {"expr": "sum by (namespace, app) (rate({namespace=~\"code-place-dev|code-place-prod\", app=~\"backend|frontend\"} | json | level=~\"ERROR|CRITICAL\" [5m]))", "legendFormat": "{{namespace}} {{app}}"},
+            {"expr": "sum by (namespace, container) (rate({namespace=~\"code-place-dev|code-place-prod\", container=~\"celery-worker|celery-beat|judge-server|hub-auth|vllm\"} | json | level=~\"ERROR|CRITICAL\" [5m]))", "legendFormat": "{{namespace}} {{container}}"}
+          ]
+        },
+        {
           "type": "stat",
           "title": "Ingress 5xx",
-          "gridPos": {"x": 0, "y": 4, "w": 4, "h": 4},
+          "gridPos": {"x": 0, "y": 11, "w": 4, "h": 4},
           "datasource": "Loki",
           "fieldConfig": {
             "defaults": {
@@ -185,7 +217,7 @@ data:
         {
           "type": "logs",
           "title": "Recent Backend Errors",
-          "gridPos": {"x": 4, "y": 4, "w": 10, "h": 10},
+          "gridPos": {"x": 4, "y": 11, "w": 10, "h": 10},
           "datasource": "Loki",
           "options": {
             "showLabels": false,
@@ -200,7 +232,7 @@ data:
         {
           "type": "logs",
           "title": "Auth, Judge, Celery, and vLLM Logs",
-          "gridPos": {"x": 14, "y": 4, "w": 10, "h": 10},
+          "gridPos": {"x": 14, "y": 11, "w": 10, "h": 10},
           "datasource": "Loki",
           "options": {
             "showLabels": false,
@@ -215,7 +247,7 @@ data:
         {
           "type": "logs",
           "title": "Ingress and Frontend 4xx/5xx Logs",
-          "gridPos": {"x": 0, "y": 14, "w": 24, "h": 8},
+          "gridPos": {"x": 0, "y": 21, "w": 24, "h": 8},
           "datasource": "Loki",
           "options": {
             "showLabels": false,
@@ -231,7 +263,7 @@ data:
         {
           "type": "logs",
           "title": "Request ID Lookup",
-          "gridPos": {"x": 0, "y": 22, "w": 24, "h": 9},
+          "gridPos": {"x": 0, "y": 29, "w": 24, "h": 9},
           "datasource": "Loki",
           "options": {
             "showLabels": false,
@@ -246,7 +278,7 @@ data:
         {
           "type": "logs",
           "title": "Frontend Runtime Error Reports",
-          "gridPos": {"x": 0, "y": 31, "w": 24, "h": 8},
+          "gridPos": {"x": 0, "y": 38, "w": 24, "h": 8},
           "datasource": "Loki",
           "options": {
             "showLabels": false,
@@ -261,7 +293,7 @@ data:
         {
           "type": "timeseries",
           "title": "Loki Ingestion Rate",
-          "gridPos": {"x": 0, "y": 39, "w": 8, "h": 7},
+          "gridPos": {"x": 0, "y": 46, "w": 8, "h": 7},
           "datasource": "Prometheus",
           "fieldConfig": {"defaults": {"unit": "logs/sec"}},
           "targets": [
@@ -272,7 +304,7 @@ data:
         {
           "type": "timeseries",
           "title": "Loki Request Errors",
-          "gridPos": {"x": 8, "y": 39, "w": 8, "h": 7},
+          "gridPos": {"x": 8, "y": 46, "w": 8, "h": 7},
           "datasource": "Prometheus",
           "fieldConfig": {"defaults": {"unit": "reqps"}},
           "targets": [
@@ -283,7 +315,7 @@ data:
         {
           "type": "timeseries",
           "title": "Alloy Loki Write Backpressure",
-          "gridPos": {"x": 16, "y": 39, "w": 8, "h": 7},
+          "gridPos": {"x": 16, "y": 46, "w": 8, "h": 7},
           "datasource": "Prometheus",
           "fieldConfig": {"defaults": {"unit": "short"}},
           "targets": [
@@ -294,7 +326,7 @@ data:
         {
           "type": "timeseries",
           "title": "Loki Canary Missing Entries",
-          "gridPos": {"x": 0, "y": 46, "w": 8, "h": 6},
+          "gridPos": {"x": 0, "y": 53, "w": 8, "h": 6},
           "datasource": "Prometheus",
           "fieldConfig": {"defaults": {"unit": "short"}},
           "targets": [
