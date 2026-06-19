@@ -128,11 +128,6 @@ class CodePlaceCollector:
             "Total Redis rejected connections from INFO stats.",
         )
         yield GaugeMetricFamily(
-            "codeplace_celery_task_last_seen_age_seconds",
-            "Seconds since each Celery task status was last observed.",
-            labels=["task_name", "status"],
-        )
-        yield GaugeMetricFamily(
             "codeplace_celery_task_last_success_age_seconds",
             "Seconds since each Celery task last completed successfully.",
             labels=["task_name"],
@@ -252,11 +247,6 @@ class CodePlaceCollector:
             "Latest observed Celery task runtime grouped by task name and status.",
             labels=["task_name", "status"],
         )
-        last_seen_age_metric = GaugeMetricFamily(
-            "codeplace_celery_task_last_seen_age_seconds",
-            "Seconds since each Celery task status was last observed.",
-            labels=["task_name", "status"],
-        )
         last_success_age_metric = GaugeMetricFamily(
             "codeplace_celery_task_last_success_age_seconds",
             "Seconds since each Celery task last completed successfully.",
@@ -275,7 +265,6 @@ class CodePlaceCollector:
             yield total_metric
             yield runtime_metric
             yield last_runtime_metric
-            yield last_seen_age_metric
             yield last_success_age_metric
             return
         else:
@@ -313,14 +302,12 @@ class CodePlaceCollector:
                 logger.warning("Skipping invalid Celery task last_seen_at metric: %s=%s", field, value)
                 continue
             age_seconds = max(now_timestamp - seen_timestamp, 0)
-            last_seen_age_metric.add_metric([task_name, status], age_seconds)
             if status == "success":
                 last_success_age_metric.add_metric([task_name], age_seconds)
 
         yield total_metric
         yield runtime_metric
         yield last_runtime_metric
-        yield last_seen_age_metric
         yield last_success_age_metric
 
     def _redis_health_metrics(self):

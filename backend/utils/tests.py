@@ -158,12 +158,6 @@ class CodePlaceCollectorTest(SimpleTestCase):
         bucket_samples = [sample for sample in runtime_samples if sample.name.endswith("_bucket")]
         self.assertTrue(any(sample.labels["le"] == "+Inf" and sample.value == 3 for sample in bucket_samples))
         self.assertTrue(any(sample.name.endswith("_sum") and sample.value == 4.5 for sample in runtime_samples))
-        last_seen_samples = samples["codeplace_celery_task_last_seen_age_seconds"]
-        self.assertTrue(any(
-            sample.labels == {"task_name": "judge.tasks.judge_task", "status": "success"}
-            and sample.value >= 29
-            for sample in last_seen_samples
-        ))
         last_success_samples = samples["codeplace_celery_task_last_success_age_seconds"]
         self.assertEqual(last_success_samples[0].labels, {"task_name": "judge.tasks.judge_task"})
         self.assertGreaterEqual(last_success_samples[0].value, 29)
@@ -200,7 +194,7 @@ class CodePlaceCollectorTest(SimpleTestCase):
         self.assertEqual(total_sample.value, 0)
         last_runtime_sample = samples["codeplace_celery_task_last_runtime_seconds"][0]
         self.assertEqual(last_runtime_sample.value, 0)
-        self.assertEqual(samples["codeplace_celery_task_last_seen_age_seconds"], [])
+        self.assertEqual(samples["codeplace_celery_task_last_success_age_seconds"], [])
 
     def test_redis_health_metrics_are_collected(self):
         redis_client = MagicMock()

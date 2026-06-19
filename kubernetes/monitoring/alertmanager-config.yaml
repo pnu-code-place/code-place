@@ -56,7 +56,6 @@ spec:
             Overview: https://monitoring.code-place-dev.site/d/codeplace-overview/codeplace-overview?orgId=1&var-namespace={{ .CommonLabels.namespace }}
             Logs: https://monitoring.code-place-dev.site/d/codeplace-logs/codeplace-logs?orgId=1&var-namespace={{ .CommonLabels.namespace }}
             Monitoring: https://monitoring.code-place-dev.site/d/codeplace-monitoring-stack/codeplace-monitoring-stack?orgId=1
-            Runbook: https://github.com/pnu-code-place/code-place/blob/develop/docs/content/developer/infra/observability-runbook/_index.md
             Source: {{ range .Alerts }}{{ .GeneratorURL }}{{ end }}
           username: CodePlace Alertmanager
     - name: dev-p1-muted
@@ -76,6 +75,5 @@ spec:
             Overview: https://monitoring.code-place-dev.site/d/codeplace-overview/codeplace-overview?orgId=1&var-namespace={{ .CommonLabels.namespace }}
             Logs: https://monitoring.code-place-dev.site/d/codeplace-logs/codeplace-logs?orgId=1&var-namespace={{ .CommonLabels.namespace }}
             Monitoring: https://monitoring.code-place-dev.site/d/codeplace-monitoring-stack/codeplace-monitoring-stack?orgId=1
-            Runbook: https://github.com/pnu-code-place/code-place/blob/develop/docs/content/developer/infra/observability-runbook/_index.md
             Source: {{ range .Alerts }}{{ .GeneratorURL }}{{ end }}
           username: CodePlace Alertmanager
