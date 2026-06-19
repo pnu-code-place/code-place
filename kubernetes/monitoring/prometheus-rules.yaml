@@ -27,14 +27,25 @@ spec:
       interval: 15s
       rules:
         - alert: BackendTargetDown
-          expr: up{job="backend", namespace=~"code-place-(dev|prod)"} == 0
+          expr: (min(up{job="backend", namespace="code-place-dev"}) == 0) or absent(up{job="backend", namespace="code-place-dev"})
           for: 1m
           labels:
+            namespace: code-place-dev
             severity: critical
             priority: P0
           annotations:
-            summary: "Backend metrics target is down"
-            description: "Prometheus cannot scrape the backend /metrics endpoint for 1 minute."
+            summary: "Backend metrics target is down in dev"
+            description: "Prometheus cannot scrape the dev backend /metrics endpoint, or the backend target series is missing, for 1 minute."
+        - alert: BackendTargetDown
+          expr: (min(up{job="backend", namespace="code-place-prod"}) == 0) or absent(up{job="backend", namespace="code-place-prod"})
+          for: 1m
+          labels:
+            namespace: code-place-prod
+            severity: critical
+            priority: P0
+          annotations:
+            summary: "Backend metrics target is down in prod"
+            description: "Prometheus cannot scrape the prod backend /metrics endpoint, or the backend target series is missing, for 1 minute."
         - alert: Api5xxSpike
           expr: sum by (namespace) (rate(codeplace_http_requests_total{namespace=~"code-place-(dev|prod)", status_code=~"5.."}[2m])) / clamp_min(sum by (namespace) (rate(codeplace_http_requests_total{namespace=~"code-place-(dev|prod)"}[2m])), 1) > 0.05
           for: 2m
@@ -102,23 +113,45 @@ spec:
             summary: "Judge-server heartbeat is stale"
             description: "A judge-server heartbeat is older than 180 seconds."
         - alert: PostgresUnavailable
-          expr: min by (namespace) (kube_pod_status_ready{namespace=~"code-place-(dev|prod)", condition="true", pod=~"postgres-[0-9]+"}) == 0
+          expr: (min(kube_pod_status_ready{namespace="code-place-dev", condition="true", pod=~"postgres-[0-9]+"}) == 0) or absent(kube_pod_status_ready{namespace="code-place-dev", condition="true", pod=~"postgres-[0-9]+"})
           for: 1m
           labels:
+            namespace: code-place-dev
             severity: critical
             priority: P0
           annotations:
-            summary: "PostgreSQL pod is not ready"
-            description: "At least one PostgreSQL pod has not been ready for 1 minute."
+            summary: "PostgreSQL pod is not ready in dev"
+            description: "At least one dev PostgreSQL pod has not been ready, or PostgreSQL pod readiness metrics are missing, for 1 minute."
+        - alert: PostgresUnavailable
+          expr: (min(kube_pod_status_ready{namespace="code-place-prod", condition="true", pod=~"postgres-[0-9]+"}) == 0) or absent(kube_pod_status_ready{namespace="code-place-prod", condition="true", pod=~"postgres-[0-9]+"})
+          for: 1m
+          labels:
+            namespace: code-place-prod
+            severity: critical
+            priority: P0
+          annotations:
+            summary: "PostgreSQL pod is not ready in prod"
+            description: "At least one prod PostgreSQL pod has not been ready, or PostgreSQL pod readiness metrics are missing, for 1 minute."
         - alert: RedisUnavailable
-          expr: min by (namespace) (kube_pod_status_ready{namespace=~"code-place-(dev|prod)", condition="true", pod=~"redis-.*|redis-replication-.*"}) == 0
+          expr: (min(kube_pod_status_ready{namespace="code-place-dev", condition="true", pod=~"redis-.*|redis-replication-.*"}) == 0) or absent(kube_pod_status_ready{namespace="code-place-dev", condition="true", pod=~"redis-.*|redis-replication-.*"})
           for: 1m
           labels:
+            namespace: code-place-dev
             severity: critical
             priority: P0
           annotations:
-            summary: "Redis pod is not ready"
-            description: "At least one Redis pod has not been ready for 1 minute."
+            summary: "Redis pod is not ready in dev"
+            description: "At least one dev Redis pod has not been ready, or Redis pod readiness metrics are missing, for 1 minute."
+        - alert: RedisUnavailable
+          expr: (min(kube_pod_status_ready{namespace="code-place-prod", condition="true", pod=~"redis-.*|redis-replication-.*"}) == 0) or absent(kube_pod_status_ready{namespace="code-place-prod", condition="true", pod=~"redis-.*|redis-replication-.*"})
+          for: 1m
+          labels:
+            namespace: code-place-prod
+            severity: critical
+            priority: P0
+          annotations:
+            summary: "Redis pod is not ready in prod"
+            description: "At least one prod Redis pod has not been ready, or Redis pod readiness metrics are missing, for 1 minute."
         - alert: PostgresExporterDown
           expr: (min(cnpg_collector_up{namespace="code-place-dev", cluster="postgres"}) == 0) or absent(cnpg_collector_up{namespace="code-place-dev", cluster="postgres"})
           for: 2m

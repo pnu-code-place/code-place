@@ -226,15 +226,15 @@ Email fallback은 SMTP host/from/to/auth가 필요하므로 기본 kustomization
 
 P0는 `group_wait=10s`, `repeat_interval=15m`로 Discord에 빠르게 전달합니다.
 
-- `BackendTargetDown`: backend scrape 실패 1분 지속.
+- `BackendTargetDown`: backend scrape 실패 또는 target series missing 1분 지속.
 - `Api5xxSpike`: backend 5xx 비율 5% 초과 2분 지속.
 - `Ingress5xxSpike`: Traefik 5xx 비율 5% 초과 2분 지속.
 - `PublicEndpointDown`: prod 공개 HTTPS endpoint probe 실패 1분 지속. frontend와 hub-auth를 포함합니다.
 - `PublicEndpointTLSCritical`: prod 공개 HTTPS 인증서 만료 3일 이내.
 - `JudgeAllUnavailable`: 사용 가능한 judge-server 0개 1분 지속.
 - `JudgeHeartbeatCritical`: judge heartbeat age 180초 초과.
-- `PostgresUnavailable`: PostgreSQL Pod not ready 1분 지속.
-- `RedisUnavailable`: Redis Pod not ready 1분 지속.
+- `PostgresUnavailable`: PostgreSQL Pod not ready 또는 readiness series missing 1분 지속.
+- `RedisUnavailable`: Redis Pod not ready 또는 readiness series missing 1분 지속.
 - `PostgresExporterDown`: CNPG PostgreSQL exporter metric 수집 실패 2분 지속.
 - `RedisExporterDown`: Redis exporter metric 수집 실패 2분 지속.
 - `LokiUnavailable`: Loki single-binary Pod not ready 1분 지속.
