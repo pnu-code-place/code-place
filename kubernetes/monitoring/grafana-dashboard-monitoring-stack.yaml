@@ -235,7 +235,7 @@ data:
             }
           },
           "targets": [
-            {"expr": "max by (service) (up{namespace=\"monitoring\", service=~\"blackbox-exporter|kubernetes-event-exporter|otel-collector|tempo|kube-prometheus-stack-grafana|loki.*|alloy.*\"})", "legendFormat": "{{service}}"}
+            {"expr": "max by (service) (up{namespace=\"monitoring\", service=~\"blackbox-exporter|kubernetes-event-exporter|otel-collector|tempo|kube-prometheus-stack-grafana|loki|loki-gateway|loki-canary|alloy\"})", "legendFormat": "{{service}}"}
           ]
         },
         {

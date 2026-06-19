@@ -602,7 +602,7 @@ PromQL:
 ```promql
 kube_pod_status_ready{namespace="monitoring", pod=~"kube-prometheus-stack-grafana-.*|grafana-.*|kube-prometheus-stack-operator-.*", condition="true"}
 up{namespace="monitoring", service="kube-prometheus-stack-grafana"}
-up{namespace="monitoring", service=~"blackbox-exporter|kubernetes-event-exporter|otel-collector|tempo|kube-prometheus-stack-grafana|loki.*|alloy.*"}
+up{namespace="monitoring", service=~"blackbox-exporter|kubernetes-event-exporter|otel-collector|tempo|kube-prometheus-stack-grafana|loki|loki-gateway|loki-canary|alloy"}
 sum by (rule_group) (increase(prometheus_rule_evaluation_failures_total[5m]))
 sum(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"prometheus-kube-prometheus-stack-prometheus-.*"})
 prometheus_notifications_alertmanagers_discovered

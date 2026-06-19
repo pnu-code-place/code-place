@@ -408,7 +408,7 @@ spec:
             summary: "Grafana metrics target is down"
             description: "Prometheus cannot scrape Grafana /metrics for 2 minutes. Grafana may still serve UI, but dashboard/datasource/provisioning health visibility is degraded."
         - alert: MonitoringServiceMetricsTargetDown
-          expr: (up{namespace="monitoring", service=~"blackbox-exporter|kubernetes-event-exporter|otel-collector|tempo|kube-prometheus-stack-grafana|loki.*|alloy.*"} == 0) or (kube_service_info{namespace="monitoring", service=~"blackbox-exporter|kubernetes-event-exporter|otel-collector|tempo|kube-prometheus-stack-grafana|loki.*|alloy.*"} unless on (namespace, service) up{namespace="monitoring", service=~"blackbox-exporter|kubernetes-event-exporter|otel-collector|tempo|kube-prometheus-stack-grafana|loki.*|alloy.*"})
+          expr: (up{namespace="monitoring", service=~"blackbox-exporter|kubernetes-event-exporter|otel-collector|tempo|kube-prometheus-stack-grafana|loki|loki-gateway|loki-canary|alloy"} == 0) or (kube_service_info{namespace="monitoring", service=~"blackbox-exporter|kubernetes-event-exporter|otel-collector|tempo|kube-prometheus-stack-grafana|loki|loki-gateway|loki-canary|alloy"} unless on (namespace, service) up{namespace="monitoring", service=~"blackbox-exporter|kubernetes-event-exporter|otel-collector|tempo|kube-prometheus-stack-grafana|loki|loki-gateway|loki-canary|alloy"})
           for: 2m
           labels:
             severity: warning
