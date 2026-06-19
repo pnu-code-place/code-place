@@ -222,7 +222,7 @@ prod tracing은 dev에서 trace ingest, query, traces-to-logs 동작과 Collecto
 - `vllm-service-monitor.yaml`: prod vLLM `/metrics` scrape, interval 30s.
 - `dcgm-exporter.yaml`: vLLM GPU node용 NVIDIA DCGM exporter DaemonSet/Service/ServiceMonitor.
 - `validate.sh`: monitoring YAML, Grafana dashboard JSON, monitoring/app kustomize render, app observability env/Service wiring, 선택적 promtool/Helm render 검증 스크립트.
-- `smoke-check.sh`: 운영 클러스터 적용 후 CRD, 핵심 monitoring 리소스, dashboard ConfigMap, Probe, Traefik metrics scrape 설정, OTel/Tempo/Event exporter, Service endpoint, optional Loki/Alloy/DCGM 상태를 확인하는 smoke 검증 스크립트.
+- `smoke-check.sh`: 운영 클러스터 적용 후 CRD, 핵심 monitoring 리소스, dashboard ConfigMap, Probe, Traefik metrics scrape 설정, OTel/Tempo/Event exporter, Service endpoint, Loki/Alloy, optional DCGM 상태를 확인하는 smoke 검증 스크립트. 첫 bootstrap에서 logs stack 설치 전만 `REQUIRE_LOGS_STACK=0`으로 건너뜁니다.
 - `kustomization.yaml`: 기존 `monitoring` namespace의 kube-prometheus-stack/Grafana/Alertmanager에 붙일 CodePlace monitoring 리소스 묶음.
 
 `alertmanager-contact-points` Secret은 repo에 저장하지 않습니다. backend의 `/data/config/secret.key`와 같은 비밀값이지만, 자동으로 파일이 생기는 구조는 아닙니다. 운영자가 `kubectl create secret`으로 만들거나 ExternalSecrets/SealedSecrets 같은 Secret 주입 도구로 생성해야 합니다. AlertmanagerConfig는 generic webhook이 아니라 Prometheus Operator의 native `discordConfigs`를 사용합니다.
@@ -404,9 +404,9 @@ P1은 `group_wait=30s`, `repeat_interval=1h`로 전달합니다.
   - scrape resource shape check: ServiceMonitor/PodMonitor selector label, scrape path/port/interval.
   - Monitoring kustomization shape check: email fallback example이 기본 적용에 섞이지 않는지 확인.
 - Live cluster smoke check: `bash kubernetes/monitoring/smoke-check.sh`
-  - Prometheus Operator CRD, monitoring namespace resource, selector label, webhook Secret, kube-prometheus-stack Pod readiness, optional Loki/Alloy, app namespace backend service/port/readiness를 읽기 전용으로 확인합니다.
+  - Prometheus Operator CRD, monitoring namespace resource, selector label, webhook Secret, kube-prometheus-stack Pod readiness, Loki/Alloy, app namespace backend service/port/readiness를 읽기 전용으로 확인합니다.
 
-`promtool`이 있는 환경에서는 `promtool check rules kubernetes/monitoring/prometheus-rules.yaml`도 실행합니다.
+`promtool`이 있는 환경에서는 `validate.sh`가 `PrometheusRule.spec.groups`를 임시 rule file로 추출한 뒤 `promtool check rules`를 실행합니다.
 `helm`이 있는 환경에서는 Loki/Alloy values를 `helm template`로 렌더링 검증합니다.
 
 ### Discord Webhook Secret

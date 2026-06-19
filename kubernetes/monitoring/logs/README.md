@@ -56,6 +56,13 @@ MONITORING_NAMESPACE=monitoring CODEPLACE_NAMESPACES="code-place-dev" \
   bash kubernetes/monitoring/smoke-check.sh
 ```
 
+The smoke check treats Loki and Alloy as required by default. During the first
+bootstrap before installing the logs stack, explicitly opt out:
+
+```sh
+REQUIRE_LOGS_STACK=0 bash kubernetes/monitoring/smoke-check.sh
+```
+
 ```sh
 kubectl -n monitoring get pod | grep -E 'loki|alloy|grafana'
 kubectl -n monitoring get pvc | grep loki

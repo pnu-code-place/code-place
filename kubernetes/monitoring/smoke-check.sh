@@ -3,6 +3,7 @@ set -euo pipefail
 
 NAMESPACE="${MONITORING_NAMESPACE:-monitoring}"
 APP_NAMESPACES="${CODEPLACE_NAMESPACES:-code-place-dev code-place-prod}"
+REQUIRE_LOGS_STACK="${REQUIRE_LOGS_STACK:-1}"
 
 ok() {
   echo "OK $*"
@@ -171,13 +172,17 @@ if kubectl -n "$NAMESPACE" get daemonset dcgm-exporter >/dev/null 2>&1; then
   require_service_endpoints "$NAMESPACE" dcgm-exporter
 fi
 
-echo "==> checking optional logs stack"
+echo "==> checking logs stack"
 if [ "$(resource_count "$NAMESPACE" pod app.kubernetes.io/name=loki)" -gt 0 ]; then
   kubectl -n "$NAMESPACE" wait --for=condition=Ready pod -l app.kubernetes.io/name=loki --timeout=30s
   ok "loki pods ready"
   if resource_exists "$NAMESPACE" service loki-gateway; then
     require_service_endpoints "$NAMESPACE" loki-gateway
+  else
+    fail "$NAMESPACE service/loki-gateway is missing"
   fi
+elif [ "$REQUIRE_LOGS_STACK" = "1" ]; then
+  fail "loki pods are missing; set REQUIRE_LOGS_STACK=0 only for pre-Loki bootstrap checks"
 else
   echo "SKIP loki pods: app.kubernetes.io/name=loki not found"
 fi
@@ -187,6 +192,8 @@ if kubectl -n "$NAMESPACE" get daemonset alloy >/dev/null 2>&1; then
   available="$(kubectl -n "$NAMESPACE" get daemonset alloy -o jsonpath='{.status.numberAvailable}')"
   [ "$desired" = "$available" ] || fail "daemonset/alloy available=$available desired=$desired"
   ok "daemonset/alloy available=$available desired=$desired"
+elif [ "$REQUIRE_LOGS_STACK" = "1" ]; then
+  fail "daemonset/alloy is missing; set REQUIRE_LOGS_STACK=0 only for pre-Alloy bootstrap checks"
 else
   echo "SKIP daemonset/alloy: not found"
 fi
