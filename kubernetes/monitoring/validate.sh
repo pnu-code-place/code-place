@@ -398,6 +398,21 @@ for title in ("Loki Ready", "Alloy Nodes", "Loki PVC Usage"):
     exprs = "\n".join(target.get("expr", "") for target in panel.get("targets", []))
     if "or vector(0)" not in exprs:
         raise SystemExit(f"grafana-dashboard-logs.yaml:{title} must avoid empty stat panels with or vector(0)")
+traces_dashboard = [
+    json.loads(value)
+    for value in dashboard_by_name["grafana-dashboard-traces.yaml"].get("data", {}).values()
+][0]
+traces_panels = {
+    panel.get("title"): panel
+    for panel in traces_dashboard.get("panels", [])
+}
+for title in ("Tempo Ready", "OTel Collector Ready", "Trace Receive Rate", "Trace Export Failures", "Tempo PVC Usage"):
+    panel = traces_panels.get(title)
+    if not panel:
+        raise SystemExit(f"grafana-dashboard-traces.yaml missing panel {title}")
+    exprs = "\n".join(target.get("expr", "") for target in panel.get("targets", []))
+    if "or vector(0)" not in exprs:
+        raise SystemExit(f"grafana-dashboard-traces.yaml:{title} must avoid empty stat panels with or vector(0)")
 for dashboard_name, panel_requirements in dashboard_requirements.items():
     dashboard_map = dashboard_by_name.get(dashboard_name)
     if not dashboard_map:

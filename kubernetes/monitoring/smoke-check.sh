@@ -158,6 +158,10 @@ require_configmap_data_contains "$NAMESPACE" kube-prometheus-stack-grafana-datas
 require_configmap_data_contains "$NAMESPACE" kube-prometheus-stack-grafana-datasource datasource.yaml 'uid: Tempo'
 require_jsonpath_value "$NAMESPACE" alertmanager kube-prometheus-stack-alertmanager \
   '{.spec.alertmanagerConfigMatcherStrategy.type}' None
+require_jsonpath_value "$NAMESPACE" persistentvolumeclaim tempo-data \
+  '{.spec.storageClassName}' longhorn
+require_jsonpath_value "$NAMESPACE" persistentvolumeclaim tempo-data \
+  '{.spec.resources.requests.storage}' 20Gi
 
 if resource_exists "$NAMESPACE" secret alertmanager-contact-points; then
   kubectl -n "$NAMESPACE" get secret alertmanager-contact-points \

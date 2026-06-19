@@ -117,7 +117,7 @@ data:
           },
           "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
           "targets": [
-            {"expr": "max(kubelet_volume_stats_used_bytes{namespace=\"monitoring\", persistentvolumeclaim=\"tempo-data\"}) / clamp_min(max(kubelet_volume_stats_capacity_bytes{namespace=\"monitoring\", persistentvolumeclaim=\"tempo-data\"}), 1)", "legendFormat": "usage"}
+            {"expr": "max(kubelet_volume_stats_used_bytes{namespace=\"monitoring\", persistentvolumeclaim=\"tempo-data\"}) / clamp_min(max(kubelet_volume_stats_capacity_bytes{namespace=\"monitoring\", persistentvolumeclaim=\"tempo-data\"}), 1) or vector(0)", "legendFormat": "usage"}
           ]
         },
         {
