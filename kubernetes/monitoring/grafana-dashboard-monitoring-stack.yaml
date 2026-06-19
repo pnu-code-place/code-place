@@ -84,7 +84,7 @@ data:
           },
           "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
           "targets": [
-            {"expr": "max(kube_pod_status_ready{namespace=\"monitoring\", condition=\"true\", pod=~\"kube-prometheus-stack-grafana-.*|grafana-.*\"}) or vector(0)", "legendFormat": "grafana"}
+            {"expr": "max(kube_pod_status_ready{namespace=\"monitoring\", condition=\"true\", pod=~\"kube-prometheus-stack-grafana-.*\"}) or vector(0)", "legendFormat": "grafana"}
           ]
         },
         {
@@ -204,7 +204,7 @@ data:
           "datasource": "Prometheus",
           "fieldConfig": {"defaults": {"unit": "short"}},
           "targets": [
-            {"expr": "sum by (pod) (increase(kube_pod_container_status_restarts_total{namespace=\"monitoring\", pod=~\"prometheus-.*|alertmanager-.*|kube-prometheus-stack-grafana-.*|grafana-.*|kube-prometheus-stack-operator-.*\"}[1h]))", "legendFormat": "{{pod}}"}
+            {"expr": "sum by (pod) (increase(kube_pod_container_status_restarts_total{namespace=\"monitoring\", pod=~\"prometheus-.*|alertmanager-.*|kube-prometheus-stack-grafana-.*|kube-prometheus-stack-operator-.*\"}[1h]))", "legendFormat": "{{pod}}"}
           ]
         },
         {
@@ -289,8 +289,8 @@ data:
           "datasource": "Prometheus",
           "fieldConfig": {"defaults": {"unit": "short"}},
           "targets": [
-            {"expr": "sum by (pod) (rate(container_cpu_usage_seconds_total{namespace=\"monitoring\", pod=~\"kube-prometheus-stack-grafana-.*|grafana-.*\", container!=\"\"}[5m]))", "legendFormat": "{{pod}} cpu cores"},
-            {"expr": "max by (pod) (container_memory_working_set_bytes{namespace=\"monitoring\", pod=~\"kube-prometheus-stack-grafana-.*|grafana-.*\", container!=\"\"})", "legendFormat": "{{pod}} memory bytes"}
+            {"expr": "sum by (pod) (rate(container_cpu_usage_seconds_total{namespace=\"monitoring\", pod=~\"kube-prometheus-stack-grafana-.*\", container!=\"\"}[5m]))", "legendFormat": "{{pod}} cpu cores"},
+            {"expr": "max by (pod) (container_memory_working_set_bytes{namespace=\"monitoring\", pod=~\"kube-prometheus-stack-grafana-.*\", container!=\"\"})", "legendFormat": "{{pod}} memory bytes"}
           ]
         },
         {

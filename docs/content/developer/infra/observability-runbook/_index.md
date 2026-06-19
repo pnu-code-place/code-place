@@ -74,7 +74,7 @@ kubectl -n monitoring get alertmanager kube-prometheus-stack-alertmanager -o jso
 ```
 
 ```promql
-kube_pod_status_ready{namespace="monitoring", pod=~"prometheus-kube-prometheus-stack-prometheus-.*|alertmanager-kube-prometheus-stack-alertmanager-.*|kube-prometheus-stack-grafana-.*|grafana-.*|kube-prometheus-stack-operator-.*", condition="true"}
+kube_pod_status_ready{namespace="monitoring", pod=~"prometheus-kube-prometheus-stack-prometheus-.*|alertmanager-kube-prometheus-stack-alertmanager-.*|kube-prometheus-stack-grafana-.*|kube-prometheus-stack-operator-.*", condition="true"}
 prometheus_notifications_alertmanagers_discovered
 increase(prometheus_rule_evaluation_failures_total[5m])
 increase(alertmanager_notifications_failed_total[5m])
@@ -607,7 +607,7 @@ kubectl -n monitoring get prometheusrule,servicemonitor,podmonitor,alertmanagerc
 PromQL:
 
 ```promql
-kube_pod_status_ready{namespace="monitoring", pod=~"kube-prometheus-stack-grafana-.*|grafana-.*|kube-prometheus-stack-operator-.*", condition="true"}
+kube_pod_status_ready{namespace="monitoring", pod=~"kube-prometheus-stack-grafana-.*|kube-prometheus-stack-operator-.*", condition="true"}
 up{namespace="monitoring", service="kube-prometheus-stack-grafana"}
 up{namespace="monitoring", service=~"blackbox-exporter|kubernetes-event-exporter|otel-collector|tempo|kube-prometheus-stack-grafana|loki|loki-gateway|loki-canary|alloy"}
 sum by (rule_group) (increase(prometheus_rule_evaluation_failures_total[5m]))

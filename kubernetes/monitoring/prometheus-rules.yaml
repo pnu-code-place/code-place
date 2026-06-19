@@ -388,7 +388,7 @@ spec:
             summary: "Kubernetes event exporter is not ready"
             description: "Kubernetes Warning events may not be available in Loki for deployment and scheduling failure triage."
         - alert: GrafanaUnavailable
-          expr: (max(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"kube-prometheus-stack-grafana-.*|grafana-.*"}) == 0) or absent(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"kube-prometheus-stack-grafana-.*|grafana-.*"})
+          expr: (max(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"kube-prometheus-stack-grafana-.*"}) == 0) or absent(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"kube-prometheus-stack-grafana-.*"})
           for: 2m
           labels:
             severity: warning
@@ -396,7 +396,7 @@ spec:
             namespace: monitoring
           annotations:
             summary: "Grafana is not ready"
-            description: "No Grafana pod in the monitoring namespace has been ready for 2 minutes. Dashboards and Explore may be unavailable."
+            description: "No kube-prometheus-stack Grafana pod in the monitoring namespace has been ready for 2 minutes. Dashboards and Explore may be unavailable."
         - alert: GrafanaMetricsTargetDown
           expr: (up{namespace="monitoring", service="kube-prometheus-stack-grafana"} == 0) or absent(up{namespace="monitoring", service="kube-prometheus-stack-grafana"})
           for: 2m
