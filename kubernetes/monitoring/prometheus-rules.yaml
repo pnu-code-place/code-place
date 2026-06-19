@@ -347,6 +347,16 @@ spec:
           annotations:
             summary: "Blackbox exporter is not ready"
             description: "The synthetic public endpoint probe exporter has not been ready for 2 minutes."
+        - alert: BlackboxExporterReplicaUnavailable
+          expr: kube_deployment_status_replicas_available{namespace="monitoring", deployment="blackbox-exporter"} < kube_deployment_spec_replicas{namespace="monitoring", deployment="blackbox-exporter"}
+          for: 5m
+          labels:
+            severity: warning
+            priority: P1
+            namespace: monitoring
+          annotations:
+            summary: "Blackbox exporter replica is unavailable"
+            description: "At least one synthetic public endpoint probe exporter replica is unavailable for 5 minutes. Public endpoint probing is degraded."
         - alert: GrafanaPublicEndpointDown
           expr: probe_success{environment="monitoring", service="grafana", probe_type="public-http"} == 0
           for: 2m

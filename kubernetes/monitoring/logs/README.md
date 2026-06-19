@@ -76,7 +76,7 @@ Keep these invariants unless the storage design changes intentionally:
 - Loki stays in `SingleBinary` deployment mode.
 - Loki is installed from `grafana/loki` chart `6.55.0`. Do not upgrade the chart without revalidating rendered workloads and values compatibility.
 - Loki uses filesystem storage on a Longhorn PVC.
-- In the current three-node cluster, Alloy runs on every node. Loki and Tempo remain single-writer services on Longhorn PVCs, while stateless collectors can be replicated across nodes.
+- In the current three-node cluster, Alloy runs on every node. Loki and Tempo remain single-writer services on Longhorn PVCs, while stateless collectors and probe exporters can be replicated across nodes.
 - Alloy keeps namespace-based collection for `code-place-dev`, `code-place-prod`, and `monitoring`; do not depend on `app.kubernetes.io/name` for CodePlace app logs because the application manifests primarily use `app`.
 - Alloy keeps `alloy.mounts.varlog=true`; otherwise the `/var/log/pods` targets are discovered but cannot be read.
 - The PVC size is explicit at `50Gi`, and `LokiPVCAlmostFull` alerts at 85%.

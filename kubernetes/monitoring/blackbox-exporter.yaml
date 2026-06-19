@@ -27,7 +27,7 @@ metadata:
   labels:
     app: blackbox-exporter
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: blackbox-exporter
@@ -36,6 +36,13 @@ spec:
       labels:
         app: blackbox-exporter
     spec:
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: blackbox-exporter
       containers:
         - name: blackbox-exporter
           image: quay.io/prometheus/blackbox-exporter:v0.27.0
@@ -71,6 +78,16 @@ spec:
         - name: config
           configMap:
             name: blackbox-exporter-config
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: blackbox-exporter
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: blackbox-exporter
 ---
 apiVersion: v1
 kind: Service
