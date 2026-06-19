@@ -332,7 +332,7 @@ spec:
             summary: "Public endpoint is down in dev"
             description: "A dev synthetic HTTPS probe has failed for 2 minutes."
         - alert: PublicEndpointLatencyHigh
-          expr: probe_duration_seconds{probe_type="public-http"} > 2
+          expr: probe_duration_seconds{probe_type="public-http", namespace=~"code-place-(dev|prod)|monitoring"} > 2
           for: 5m
           labels:
             severity: warning
@@ -341,7 +341,7 @@ spec:
             summary: "Public frontend endpoint latency is high"
             description: "A synthetic HTTPS probe has taken more than 2 seconds for 5 minutes."
         - alert: PublicEndpointTLSExpiringSoon
-          expr: (probe_ssl_earliest_cert_expiry{probe_type="public-http"} - time()) < 1209600
+          expr: (probe_ssl_earliest_cert_expiry{probe_type="public-http", namespace=~"code-place-(dev|prod)|monitoring"} - time()) < 1209600
           for: 1h
           labels:
             severity: warning
