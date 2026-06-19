@@ -1,5 +1,9 @@
 prometheus:
   prometheusSpec:
+    replicas: 2
+    podAntiAffinity: soft
+    podAntiAffinityTopologyKey: kubernetes.io/hostname
+    replicaExternalLabelNameClear: true
     evaluationInterval: 15s
     scrapeInterval: 15s
     retention: 15d

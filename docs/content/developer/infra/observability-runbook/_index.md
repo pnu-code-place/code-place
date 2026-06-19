@@ -416,15 +416,16 @@ kubectl -n monitoring describe pvc -l app.kubernetes.io/name=loki
 - readiness만 실패하면 Loki config, retention, disk full, compactor error를 확인합니다.
 - Loki가 내려가도 앱 요청 처리는 계속되지만 로그 수집/조회가 끊기므로 빠르게 복구합니다.
 
-### PrometheusUnavailable / AlertmanagerUnavailable
+### PrometheusUnavailable / PrometheusReplicaUnavailable / AlertmanagerUnavailable
 
-증상: Prometheus 또는 Alertmanager Pod가 1분 이상 ready가 아닙니다.
+증상: Prometheus 또는 Alertmanager Pod가 ready가 아니거나, Prometheus ready replica가 2개 미만입니다.
 
 확인:
 
 ```sh
 kubectl -n monitoring get pod,svc | grep -E 'prometheus|alertmanager'
 kubectl -n monitoring describe pod prometheus-kube-prometheus-stack-prometheus-0
+kubectl -n monitoring describe pod prometheus-kube-prometheus-stack-prometheus-1
 kubectl -n monitoring describe pod alertmanager-kube-prometheus-stack-alertmanager-0
 kubectl -n monitoring logs prometheus-kube-prometheus-stack-prometheus-0 -c prometheus --tail=200
 kubectl -n monitoring logs alertmanager-kube-prometheus-stack-alertmanager-0 -c alertmanager --tail=200
@@ -438,7 +439,8 @@ prometheus_rule_evaluation_failures_total
 
 판단:
 
-- Prometheus가 down이면 metric 수집과 rule evaluation이 멈춥니다. Alertmanager가 살아 있어도 새 알림은 생성되지 않습니다.
+- Prometheus ready replica가 1개만 남으면 metric 수집과 rule evaluation은 계속되지만 monitoring path HA를 잃은 상태입니다. 남은 replica까지 내려가기 전에 PVC attach, config reload, resource pressure, scheduling event를 확인합니다.
+- Prometheus가 전부 down이면 metric 수집과 rule evaluation이 멈춥니다. Alertmanager가 살아 있어도 새 알림은 생성되지 않습니다.
 - Alertmanager가 down이면 firing alert가 있어도 Discord/email 전달이 실패합니다. P0 수신 지연 원인으로 먼저 봅니다.
 - PVC, config reload, rule syntax, resource pressure, operator reconciliation event를 함께 확인합니다.
 
@@ -600,6 +602,7 @@ PromQL:
 ```promql
 kube_pod_status_ready{namespace="monitoring", pod=~"kube-prometheus-stack-grafana-.*|grafana-.*|kube-prometheus-stack-operator-.*", condition="true"}
 sum by (rule_group) (increase(prometheus_rule_evaluation_failures_total[5m]))
+sum(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"prometheus-kube-prometheus-stack-prometheus-.*"})
 prometheus_notifications_alertmanagers_discovered
 sum by (integration) (increase(alertmanager_notifications_failed_total[5m]))
 sum by (job, namespace) (up == 0)

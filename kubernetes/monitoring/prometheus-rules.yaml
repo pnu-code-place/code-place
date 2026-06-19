@@ -437,6 +437,16 @@ spec:
           annotations:
             summary: "Prometheus has not discovered Alertmanager"
             description: "Prometheus has discovered zero Alertmanager targets for 2 minutes. Alert delivery may be broken even if alert rules are firing."
+        - alert: PrometheusReplicaUnavailable
+          expr: sum(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"prometheus-kube-prometheus-stack-prometheus-.*"}) < 2
+          for: 5m
+          labels:
+            severity: warning
+            priority: P1
+            namespace: monitoring
+          annotations:
+            summary: "Prometheus replica count is degraded"
+            description: "Fewer than 2 Prometheus replicas have been ready for 5 minutes. Metric collection and alert evaluation still work, but the monitoring path has lost HA."
         - alert: AlertmanagerReplicaUnavailable
           expr: sum(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"alertmanager-kube-prometheus-stack-alertmanager-.*"}) < 2
           for: 5m

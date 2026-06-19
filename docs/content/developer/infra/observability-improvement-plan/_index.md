@@ -198,7 +198,7 @@ prod tracing은 dev에서 trace ingest, query, traces-to-logs 동작과 Collecto
 
 신규 monitoring 리소스는 `kubernetes/monitoring` 아래에 두고, 애플리케이션 `dev/prod` overlay에 포함하지 않습니다.
 
-- `backend-service-monitor.yaml`: backend `/metrics` scrape, interval 15s.
+- `backend-service-monitor.yaml`: `code-place-dev`와 `code-place-prod` backend `/metrics` scrape, interval 15s.
 - `traefik-service-monitor.yaml`: kube-system Traefik Prometheus metrics scrape, interval 15s. `Ingress5xxSpike`의 `traefik_service_requests_total` 원천입니다.
 - `blackbox-exporter.yaml`: public endpoint synthetic probe용 Blackbox exporter.
 - `public-endpoint-probes.yaml`: dev/prod frontend, hub-auth, Grafana 공개 HTTPS URL Probe, interval 30s.
@@ -210,7 +210,7 @@ prod tracing은 dev에서 trace ingest, query, traces-to-logs 동작과 Collecto
 - `grafana-dashboard-monitoring-stack.yaml`: Prometheus, Alertmanager, Grafana, Prometheus Operator readiness와 rule/notification 상태 dashboard.
 - `grafana-dashboard-public-endpoints.yaml`: 공개 URL availability, HTTP status, latency, TLS expiry dashboard.
 - `kubernetes-event-exporter.yaml`: Kubernetes Warning event를 stdout JSON으로 export해서 Alloy/Loki가 수집하도록 하는 exporter, ServiceMonitor, 최소 event read RBAC.
-- `kube-prometheus-stack-values.yaml`: Prometheus/Alertmanager selector, Alertmanager 2 replicas, evaluation interval, shared Grafana ingress와 dashboard sidecar 설정.
+- `kube-prometheus-stack-values.yaml`: Prometheus/Alertmanager selector, Prometheus 2 replicas, Prometheus replica external label 제거, Alertmanager 2 replicas, evaluation interval, shared Grafana ingress와 dashboard sidecar 설정.
 - `logs/loki-values.yaml`: Loki SingleBinary, Longhorn PVC, dev/prod retention, Loki gateway 2 replicas 설정.
 - `logs/alloy-values.yaml`: Alloy DaemonSet 기반 Kubernetes Pod log collection 설정.
 - `grafana-dashboard-logs.yaml`: Loki/Alloy health, Loki PVC, Loki ingest/error/canary, Alloy write backpressure, 최근 backend error, judge/celery log 조회 dashboard.
@@ -270,6 +270,7 @@ P1은 `group_wait=30s`, `repeat_interval=1h`로 전달합니다. `code-place-dev
 - `PrometheusRuleEvaluationFailures`: Prometheus rule evaluation failure 5분 지속.
 - `PrometheusConfigReloadFailed`: Prometheus generated config reload 실패 또는 reload metric 누락 2분 지속.
 - `PrometheusAlertmanagerDiscoveryFailed`: Prometheus가 Alertmanager target을 0개 discovery 2분 지속.
+- `PrometheusReplicaUnavailable`: Prometheus ready replica 2개 미만 5분 지속.
 - `AlertmanagerReplicaUnavailable`: Alertmanager ready replica 2개 미만 5분 지속.
 - `AlertmanagerConfigReloadFailed`: Alertmanager generated config reload 실패 또는 reload metric 누락 2분 지속.
 - `AlertmanagerNotificationFailures`: Alertmanager notification delivery failure 2분 지속.
@@ -340,7 +341,7 @@ P1은 `group_wait=30s`, `repeat_interval=1h`로 전달합니다. `code-place-dev
 
 ## 5. 운영 확인 절차
 
-1. kube-prometheus-stack을 `monitoring` namespace에 설치하거나 업그레이드할 때 `kubernetes/monitoring/kube-prometheus-stack-values.yaml`을 함께 적용합니다. 이 값 파일이 Alertmanager 2 replicas, `monitoring.code-place-dev.site` Grafana ingress와 dashboard sidecar 설정까지 관리합니다. Prometheus Operator CRD가 `AlertmanagerConfig.discordConfigs`를 지원하는 버전인지 확인합니다.
+1. kube-prometheus-stack을 `monitoring` namespace에 설치하거나 업그레이드할 때 `kubernetes/monitoring/kube-prometheus-stack-values.yaml`을 함께 적용합니다. 이 값 파일이 Prometheus 2 replicas, Alertmanager 2 replicas, `monitoring.code-place-dev.site` Grafana ingress와 dashboard sidecar 설정까지 관리합니다. Prometheus Operator CRD가 `AlertmanagerConfig.discordConfigs`를 지원하는 버전인지 확인합니다.
    - `helm upgrade --install kube-prometheus-stack prometheus-community/kube-prometheus-stack --namespace monitoring --version 86.3.1 --values kubernetes/monitoring/kube-prometheus-stack-values.yaml`
    - values는 `alertmanager.alertmanagerSpec.alertmanagerConfigMatcherStrategy.type=None`을 설정합니다. AlertmanagerConfig는 `monitoring` namespace에 있지만 CodePlace alert의 `namespace` label은 `code-place-dev`/`code-place-prod`이므로, 기본 `OnNamespace` matcher를 쓰면 외부 namespace alert가 Discord receiver까지 도달하지 않을 수 있습니다.
 2. `alertmanager-contact-points` Secret을 운영 클러스터의 `monitoring` namespace에 SealedSecret으로 생성합니다. 이 값은 Kubernetes Secret으로 참조되며, Pod 파일로 mount하지 않습니다.
