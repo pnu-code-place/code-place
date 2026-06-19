@@ -417,7 +417,7 @@ data:
         },
         {
           "type": "stat",
-          "title": "PostgreSQL Ready",
+          "title": "PostgreSQL Ready Replicas",
           "gridPos": {"x": 0, "y": 55, "w": 6, "h": 5},
           "fieldConfig": {
             "defaults": {
@@ -426,19 +426,20 @@ data:
                 "mode": "absolute",
                 "steps": [
                   {"color": "red", "value": null},
-                  {"color": "green", "value": 1}
+                  {"color": "orange", "value": 1},
+                  {"color": "green", "value": 3}
                 ]
               }
             }
           },
           "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
           "targets": [
-            {"expr": "min by (namespace) (kube_pod_status_ready{namespace=~\"$namespace\", condition=\"true\", pod=~\"postgres-[0-9]+\"})", "legendFormat": "{{namespace}}"}
+            {"expr": "sum by (namespace) (kube_pod_status_ready{namespace=~\"$namespace\", condition=\"true\", pod=~\"postgres-[0-9]+\"}) or vector(0)", "legendFormat": "{{namespace}} ready"}
           ]
         },
         {
           "type": "stat",
-          "title": "Redis Ready",
+          "title": "Redis/Sentinel Ready Replicas",
           "gridPos": {"x": 6, "y": 55, "w": 6, "h": 5},
           "fieldConfig": {
             "defaults": {
@@ -447,14 +448,15 @@ data:
                 "mode": "absolute",
                 "steps": [
                   {"color": "red", "value": null},
-                  {"color": "green", "value": 1}
+                  {"color": "orange", "value": 3},
+                  {"color": "green", "value": 6}
                 ]
               }
             }
           },
           "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
           "targets": [
-            {"expr": "min by (namespace) (kube_pod_status_ready{namespace=~\"$namespace\", condition=\"true\", pod=~\"redis-.*|redis-replication-.*\"})", "legendFormat": "{{namespace}}"}
+            {"expr": "sum by (namespace) (kube_pod_status_ready{namespace=~\"$namespace\", condition=\"true\", pod=~\"redis-.*|redis-replication-.*\"}) or vector(0)", "legendFormat": "{{namespace}} ready"}
           ]
         },
         {
