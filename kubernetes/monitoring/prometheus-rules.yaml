@@ -466,6 +466,24 @@ spec:
           annotations:
             summary: "A Kubernetes pod is pending or unschedulable"
             description: "A pod has been pending or unschedulable for 10 minutes. Check node capacity, taints, affinity, PVC binding, and FailedScheduling events."
+        - alert: CodePlaceDeploymentUnavailable
+          expr: max by (namespace, deployment) (kube_deployment_status_replicas_unavailable{namespace=~"code-place-(dev|prod)", deployment=~"backend|frontend|hub-auth|celery-worker|celery-beat|judge-server|vllm"}) > 0
+          for: 5m
+          labels:
+            severity: warning
+            priority: P1
+          annotations:
+            summary: "CodePlace deployment has unavailable replicas"
+            description: "A CodePlace deployment has had unavailable replicas for 5 minutes. Check rollout status, pod events, readiness probes, image pulls, and resource pressure."
+        - alert: CodePlaceDeploymentRolloutStuck
+          expr: max by (namespace, deployment) (kube_deployment_status_observed_generation{namespace=~"code-place-(dev|prod)", deployment=~"backend|frontend|hub-auth|celery-worker|celery-beat|judge-server|vllm"} != on (namespace, deployment) kube_deployment_metadata_generation{namespace=~"code-place-(dev|prod)", deployment=~"backend|frontend|hub-auth|celery-worker|celery-beat|judge-server|vllm"}) > 0
+          for: 10m
+          labels:
+            severity: warning
+            priority: P1
+          annotations:
+            summary: "CodePlace deployment rollout is stuck"
+            description: "A CodePlace deployment observed generation has not caught up with metadata generation for 10 minutes. Check deployment events, ReplicaSet state, and rollout history."
         - alert: CodePlaceContainerCPUHigh
           expr: sum by (namespace, pod, container) (rate(container_cpu_usage_seconds_total{namespace=~"code-place-(dev|prod)", container!="", pod=~"backend-.*|frontend-.*|hub-auth-.*|celery-.*|judge-server-.*|postgres-.*|redis-.*|vllm-.*"}[5m])) / clamp_min(sum by (namespace, pod, container) (kube_pod_container_resource_limits{namespace=~"code-place-(dev|prod)", resource="cpu", unit="core", pod=~"backend-.*|frontend-.*|hub-auth-.*|celery-.*|judge-server-.*|postgres-.*|redis-.*|vllm-.*"}), 0.001) > 0.8
           for: 10m

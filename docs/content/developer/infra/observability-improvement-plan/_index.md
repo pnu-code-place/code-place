@@ -261,6 +261,8 @@ P1은 `group_wait=30s`, `repeat_interval=1h`로 전달합니다.
 - `KubernetesPodCrashLoopBackOff`: CrashLoopBackOff 5분 지속.
 - `KubernetesPodOOMKilled`: OOMKilled 종료가 최근 10분 내 발생하고 2분 지속.
 - `KubernetesPodUnschedulable`: Pending 또는 Unschedulable 상태 10분 지속.
+- `CodePlaceDeploymentUnavailable`: 주요 Deployment unavailable replica 5분 지속.
+- `CodePlaceDeploymentRolloutStuck`: Deployment observed generation 미반영 10분 지속.
 - `CodePlaceContainerCPUHigh`: 주요 컨테이너 CPU limit 사용률 80% 초과 10분 지속.
 - `CodePlaceContainerMemoryHigh`: 주요 컨테이너 memory limit 사용률 85% 초과 10분 지속.
 - `PostgresCollectorError`: CNPG PostgreSQL metrics collection error 5분 지속.
@@ -309,7 +311,7 @@ P1은 `group_wait=30s`, `repeat_interval=1h`로 전달합니다.
    - `kubectl apply -k kubernetes/monitoring`
 6. Prometheus target에서 `backend`, `longhorn`, `vllm`, `blackbox-exporter`, `kubernetes-event-exporter`, `codeplace-public-http-dev`, `codeplace-public-http-prod`가 healthy인지 확인합니다.
 7. Grafana의 `CodePlace Public Endpoints` dashboard에서 prod/dev availability, HTTP status, latency, TLS expiry panel이 비어 있지 않은지 확인합니다.
-8. Grafana의 `CodePlace Overview` dashboard에서 request rate, 5xx, latency, frontend runtime error, submission status, oldest in-flight submission age, waiting queue, judge heartbeat, Celery task throughput/runtime, Pod readiness/restart, CPU/memory, PVC, PostgreSQL/Redis readiness/connection/lock/client panel을 확인합니다.
+8. Grafana의 `CodePlace Overview` dashboard에서 request rate, 5xx, latency, frontend runtime error, submission status, oldest in-flight submission age, waiting queue, judge heartbeat, Celery task throughput/runtime, Pod readiness/restart, CPU/memory, PVC, Deployment unavailable/rollout, PostgreSQL/Redis readiness/connection/lock/client panel을 확인합니다.
 9. Grafana의 `CodePlace Logs` dashboard에서 Loki ready, Alloy node coverage, Loki PVC usage, ingress/frontend 4xx/5xx, 최근 backend error, frontend runtime error, judge/celery log panel을 확인합니다.
 10. Grafana의 `CodePlace Logs` dashboard에서 `request_id` 변수에 실제 응답 header 또는 JSON log의 request ID를 넣고 해당 요청 로그가 좁혀지는지 확인합니다.
 11. Grafana의 `CodePlace Kubernetes Events` dashboard에서 event exporter ready, image pull, CrashLoopBackOff, OOMKilled, Pending/Unschedulable, Kubernetes Warning event panel을 확인합니다.

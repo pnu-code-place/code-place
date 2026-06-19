@@ -338,7 +338,7 @@ data:
         {
           "type": "timeseries",
           "title": "PVC Usage",
-          "gridPos": {"x": 0, "y": 34, "w": 12, "h": 6},
+          "gridPos": {"x": 0, "y": 34, "w": 8, "h": 6},
           "fieldConfig": {
             "defaults": {
               "unit": "percentunit",
@@ -359,23 +359,33 @@ data:
         {
           "type": "timeseries",
           "title": "Node Pressure",
-          "gridPos": {"x": 12, "y": 34, "w": 12, "h": 6},
+          "gridPos": {"x": 8, "y": 34, "w": 8, "h": 6},
           "fieldConfig": {"defaults": {"unit": "short"}},
           "targets": [
             {"expr": "kube_node_status_condition{condition=~\"MemoryPressure|DiskPressure|PIDPressure\", status=\"true\"}", "legendFormat": "{{node}} {{condition}}"}
           ]
         },
         {
+          "type": "timeseries",
+          "title": "Deployment Unavailable Replicas",
+          "gridPos": {"x": 16, "y": 34, "w": 8, "h": 6},
+          "fieldConfig": {"defaults": {"unit": "short"}},
+          "targets": [
+            {"expr": "max by (namespace, deployment) (kube_deployment_status_replicas_unavailable{namespace=~\"$namespace\", deployment=~\"backend|frontend|hub-auth|celery-worker|celery-beat|judge-server|vllm\"})", "legendFormat": "{{namespace}} {{deployment}} unavailable"},
+            {"expr": "max by (namespace, deployment) (kube_deployment_status_observed_generation{namespace=~\"$namespace\", deployment=~\"backend|frontend|hub-auth|celery-worker|celery-beat|judge-server|vllm\"} != on (namespace, deployment) kube_deployment_metadata_generation{namespace=~\"$namespace\", deployment=~\"backend|frontend|hub-auth|celery-worker|celery-beat|judge-server|vllm\"})", "legendFormat": "{{namespace}} {{deployment}} generation mismatch"}
+          ]
+        },
+        {
           "type": "row",
           "title": "Data Stores",
-          "gridPos": {"x": 0, "y": 40, "w": 24, "h": 1},
+          "gridPos": {"x": 0, "y": 46, "w": 24, "h": 1},
           "collapsed": false,
           "panels": []
         },
         {
           "type": "stat",
           "title": "PostgreSQL Ready",
-          "gridPos": {"x": 0, "y": 41, "w": 6, "h": 5},
+          "gridPos": {"x": 0, "y": 47, "w": 6, "h": 5},
           "fieldConfig": {
             "defaults": {
               "unit": "short",
@@ -396,7 +406,7 @@ data:
         {
           "type": "stat",
           "title": "Redis Ready",
-          "gridPos": {"x": 6, "y": 41, "w": 6, "h": 5},
+          "gridPos": {"x": 6, "y": 47, "w": 6, "h": 5},
           "fieldConfig": {
             "defaults": {
               "unit": "short",
@@ -417,7 +427,7 @@ data:
         {
           "type": "stat",
           "title": "PostgreSQL Exporter Up",
-          "gridPos": {"x": 12, "y": 41, "w": 6, "h": 5},
+          "gridPos": {"x": 12, "y": 47, "w": 6, "h": 5},
           "fieldConfig": {
             "defaults": {
               "unit": "short",
@@ -438,7 +448,7 @@ data:
         {
           "type": "stat",
           "title": "Redis Exporter Up",
-          "gridPos": {"x": 18, "y": 41, "w": 6, "h": 5},
+          "gridPos": {"x": 18, "y": 47, "w": 6, "h": 5},
           "fieldConfig": {
             "defaults": {
               "unit": "short",
@@ -459,7 +469,7 @@ data:
         {
           "type": "timeseries",
           "title": "PostgreSQL Restarts",
-          "gridPos": {"x": 0, "y": 46, "w": 6, "h": 5},
+          "gridPos": {"x": 0, "y": 52, "w": 6, "h": 5},
           "fieldConfig": {"defaults": {"unit": "short"}},
           "targets": [
             {"expr": "sum by (namespace, pod) (increase(kube_pod_container_status_restarts_total{namespace=~\"$namespace\", pod=~\"postgres-.*\"}[1h]))", "legendFormat": "{{namespace}} {{pod}}"}
@@ -468,7 +478,7 @@ data:
         {
           "type": "timeseries",
           "title": "Redis Restarts",
-          "gridPos": {"x": 6, "y": 46, "w": 6, "h": 5},
+          "gridPos": {"x": 6, "y": 52, "w": 6, "h": 5},
           "fieldConfig": {"defaults": {"unit": "short"}},
           "targets": [
             {"expr": "sum by (namespace, pod) (increase(kube_pod_container_status_restarts_total{namespace=~\"$namespace\", pod=~\"redis-.*|redis-replication-.*\"}[1h]))", "legendFormat": "{{namespace}} {{pod}}"}
@@ -477,7 +487,7 @@ data:
         {
           "type": "timeseries",
           "title": "PostgreSQL WAL Bytes",
-          "gridPos": {"x": 12, "y": 46, "w": 6, "h": 5},
+          "gridPos": {"x": 12, "y": 52, "w": 6, "h": 5},
           "fieldConfig": {"defaults": {"unit": "Bps"}},
           "targets": [
             {"expr": "sum by (namespace) (rate(cnpg_collector_wal_bytes{namespace=~\"$namespace\", cluster=\"postgres\"}[5m]))", "legendFormat": "{{namespace}}"}
@@ -486,7 +496,7 @@ data:
         {
           "type": "timeseries",
           "title": "Redis Memory Usage",
-          "gridPos": {"x": 18, "y": 46, "w": 6, "h": 5},
+          "gridPos": {"x": 18, "y": 52, "w": 6, "h": 5},
           "fieldConfig": {"defaults": {"unit": "bytes"}},
           "targets": [
             {"expr": "max by (namespace, pod) (redis_memory_used_bytes{namespace=~\"$namespace\"})", "legendFormat": "{{namespace}} {{pod}} used"},
@@ -496,7 +506,7 @@ data:
         {
           "type": "timeseries",
           "title": "PostgreSQL Connections",
-          "gridPos": {"x": 0, "y": 51, "w": 8, "h": 6},
+          "gridPos": {"x": 0, "y": 57, "w": 8, "h": 6},
           "fieldConfig": {"defaults": {"unit": "short"}},
           "targets": [
             {"expr": "codeplace_postgres_connections{namespace=~\"$namespace\"}", "legendFormat": "{{namespace}} connections"},
@@ -506,7 +516,7 @@ data:
         {
           "type": "timeseries",
           "title": "PostgreSQL Long Tx and Lock Waits",
-          "gridPos": {"x": 8, "y": 51, "w": 8, "h": 6},
+          "gridPos": {"x": 8, "y": 57, "w": 8, "h": 6},
           "fieldConfig": {"defaults": {"unit": "short"}},
           "targets": [
             {"expr": "codeplace_postgres_long_transactions{namespace=~\"$namespace\"}", "legendFormat": "{{namespace}} long tx"},
@@ -516,7 +526,7 @@ data:
         {
           "type": "timeseries",
           "title": "Redis Clients and Rejections",
-          "gridPos": {"x": 16, "y": 51, "w": 8, "h": 6},
+          "gridPos": {"x": 16, "y": 57, "w": 8, "h": 6},
           "fieldConfig": {"defaults": {"unit": "short"}},
           "targets": [
             {"expr": "codeplace_redis_connected_clients{namespace=~\"$namespace\"}", "legendFormat": "{{namespace}} clients"},
@@ -527,7 +537,7 @@ data:
         {
           "type": "timeseries",
           "title": "Frontend Runtime Errors",
-          "gridPos": {"x": 0, "y": 57, "w": 12, "h": 6},
+          "gridPos": {"x": 0, "y": 63, "w": 12, "h": 6},
           "fieldConfig": {
             "defaults": {
               "unit": "ops",
