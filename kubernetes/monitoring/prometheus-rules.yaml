@@ -122,6 +122,7 @@ spec:
             description: "No enabled judge-server has a fresh heartbeat."
         - alert: JudgeHeartbeatCritical
           expr: max by (namespace) (codeplace_judge_server_last_heartbeat_age_seconds{namespace=~"code-place-(dev|prod)"}) > 180
+          for: 1m
           labels:
             severity: critical
             priority: P0

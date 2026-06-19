@@ -11,6 +11,8 @@ from prometheus_client.core import GaugeMetricFamily, HistogramMetricFamily
 from utils import celery_observability
 from utils.json_logging import CodePlaceJsonFormatter
 from utils.observability_context import get_request_id, reset_request_id, set_request_id
+from utils.constants import CacheKey
+from utils.judge_server_observability import increment_judge_server_task_snapshot
 from utils.observability_metrics import CodePlaceCollector
 from utils.observability_tracing import get_tracer
 from utils.testcase_cache import TestCaseCacheManager
@@ -21,24 +23,16 @@ class CodePlaceCollectorTest(SimpleTestCase):
     def _samples_by_metric(self, metrics):
         return {metric.name: metric.samples for metric in metrics}
 
-    def test_judge_server_metrics_skip_disabled_servers(self):
+    def test_judge_server_metrics_emit_snapshot_servers(self):
         now = timezone.now()
-        enabled = MagicMock(
-            hostname="enabled-judge",
-            is_disabled=False,
-            last_heartbeat=now,
-            status="normal",
-            task_number=2,
-        )
-        disabled = MagicMock(
-            hostname="disabled-judge",
-            is_disabled=True,
-            last_heartbeat=now - timedelta(days=30),
-            status="abnormal",
-            task_number=99,
-        )
+        snapshots = {
+            b"enabled-judge": json.dumps({
+                "last_heartbeat_timestamp": now.timestamp(),
+                "task_number": 2,
+            }).encode(),
+        }
 
-        with patch("conf.models.JudgeServer.objects.all", return_value=[enabled, disabled]):
+        with patch("utils.judge_server_observability.cache.hgetall", return_value=snapshots):
             samples = self._samples_by_metric(list(CodePlaceCollector()._judge_server_metrics()))
 
         for metric_samples in samples.values():
@@ -47,15 +41,14 @@ class CodePlaceCollectorTest(SimpleTestCase):
             self.assertNotIn("disabled-judge", hostnames)
 
     def test_judge_server_metrics_mark_stale_enabled_server_unavailable(self):
-        stale = MagicMock(
-            hostname="stale-judge",
-            is_disabled=False,
-            last_heartbeat=timezone.now() - timedelta(minutes=10),
-            status="abnormal",
-            task_number=1,
-        )
+        snapshots = {
+            b"stale-judge": json.dumps({
+                "last_heartbeat_timestamp": (timezone.now() - timedelta(minutes=10)).timestamp(),
+                "task_number": 1,
+            }).encode(),
+        }
 
-        with patch("conf.models.JudgeServer.objects.all", return_value=[stale]):
+        with patch("utils.judge_server_observability.cache.hgetall", return_value=snapshots):
             samples = self._samples_by_metric(list(CodePlaceCollector()._judge_server_metrics()))
 
         available = samples["codeplace_judge_server_available"][0]
@@ -63,6 +56,19 @@ class CodePlaceCollectorTest(SimpleTestCase):
         self.assertEqual(available.labels["hostname"], "stale-judge")
         self.assertEqual(available.value, 0)
         self.assertGreaterEqual(heartbeat_age.value, 599)
+
+    def test_judge_server_metrics_are_loaded_from_redis_snapshot(self):
+        with patch("utils.judge_server_observability.cache.hgetall", return_value={}) as hgetall:
+            list(CodePlaceCollector()._judge_server_metrics())
+
+        hgetall.assert_called_once_with(CacheKey.judge_server_observability)
+
+    def test_judge_server_task_increment_does_not_create_snapshot_without_heartbeat(self):
+        with patch("utils.judge_server_observability.cache.hget", return_value=None), \
+                patch("utils.judge_server_observability.cache.hset") as hset:
+            increment_judge_server_task_snapshot("judge-1", 1)
+
+        hset.assert_not_called()
 
     def test_celery_broker_queue_length_is_collected_from_redis(self):
         with patch("utils.observability_metrics.cache.llen", return_value=7) as llen:

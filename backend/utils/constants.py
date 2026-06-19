@@ -24,6 +24,7 @@ class ContestRuleType(Choices):
 
 class CacheKey:
     waiting_queue = "waiting_queue"
+    judge_server_observability = "codeplace:judge_server_observability"
     contest_rank_cache = "contest_rank_cache"
     website_config = "website_config"
 

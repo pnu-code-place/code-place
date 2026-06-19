@@ -16,6 +16,7 @@ from utils.celery_observability import (
     CELERY_TASK_TOTAL_KEY,
 )
 from utils.constants import CacheKey
+from utils.judge_server_observability import load_judge_server_snapshots
 
 logger = logging.getLogger(__name__)
 
@@ -183,8 +184,6 @@ class CodePlaceCollector:
         return metric
 
     def _judge_server_metrics(self):
-        from conf.models import JudgeServer
-
         available_metric = GaugeMetricFamily(
             "codeplace_judge_server_available",
             "Whether each judge-server is enabled and has a fresh heartbeat.",
@@ -200,24 +199,16 @@ class CodePlaceCollector:
             "Current task_number recorded for each judge-server.",
             labels=["hostname"],
         )
-        now = timezone.now()
-        try:
-            servers = list(JudgeServer.objects.all())
-        except Exception as e:
-            logger.warning("Failed to collect judge-server metrics: %s", e)
-            servers = []
+        snapshots = load_judge_server_snapshots()
+        if snapshots is None:
             self._mark_collector_success("judge_server", False)
         else:
             self._mark_collector_success("judge_server", True)
-        for server in servers:
-            if server.is_disabled:
-                continue
-            hostname = server.hostname or "unknown"
-            heartbeat_age = max((now - server.last_heartbeat).total_seconds(), 0)
-            available = 1 if server.status == "normal" else 0
-            available_metric.add_metric([hostname], available)
-            heartbeat_metric.add_metric([hostname], heartbeat_age)
-            task_metric.add_metric([hostname], server.task_number)
+        for snapshot in snapshots or []:
+            hostname = snapshot["hostname"] or "unknown"
+            available_metric.add_metric([hostname], snapshot["available"])
+            heartbeat_metric.add_metric([hostname], snapshot["heartbeat_age"])
+            task_metric.add_metric([hostname], snapshot["task_number"])
         yield available_metric
         yield heartbeat_metric
         yield task_metric
