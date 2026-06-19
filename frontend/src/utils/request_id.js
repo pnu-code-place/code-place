@@ -25,7 +25,6 @@ function rememberRequestId(requestId) {
     return
   }
 
-  window.__CODEPLACE_LAST_REQUEST_ID__ = requestId
   setRequestIdContext(requestId)
 }
 

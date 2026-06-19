@@ -7,7 +7,6 @@ from django.core.cache import cache
 from prometheus_client.core import GaugeMetricFamily
 
 from utils.json_logging import CodePlaceJsonFormatter
-from utils.constants import CacheKey
 from utils.observability_metrics import CodePlaceCollector
 from utils import observability_tracing
 from utils.testcase_cache import TestCaseCacheManager
