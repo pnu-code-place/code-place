@@ -717,7 +717,7 @@ spec:
             summary: "CodePlace PDB has no disruption headroom"
             description: "A backend or frontend PodDisruptionBudget has been at or below its desired healthy count for 10 minutes. Node drain or voluntary disruption may reduce user-path availability."
         - alert: CodePlaceServiceNoReadyEndpoints
-          expr: (max by (namespace, endpoint) (kube_endpoint_address_available{namespace=~"code-place-(dev|prod)", endpoint=~"backend|frontend|hub-auth|judge-server"}) < 1) or (label_replace(kube_service_info{namespace=~"code-place-(dev|prod)", service=~"backend|frontend|hub-auth|judge-server"}, "endpoint", "$1", "service", "(.*)") unless on (namespace, endpoint) kube_endpoint_address_available{namespace=~"code-place-(dev|prod)", endpoint=~"backend|frontend|hub-auth|judge-server"})
+          expr: (sum by (namespace, endpoint) (kube_endpoint_address{namespace=~"code-place-(dev|prod)", endpoint=~"backend|frontend|hub-auth|judge-server", ready="true"}) < 1) or (label_replace(kube_service_info{namespace=~"code-place-(dev|prod)", service=~"backend|frontend|hub-auth|judge-server"}, "endpoint", "$1", "service", "(.*)") unless on (namespace, endpoint) kube_endpoint_address{namespace=~"code-place-(dev|prod)", endpoint=~"backend|frontend|hub-auth|judge-server", ready="true"})
           for: 2m
           labels:
             severity: warning
@@ -726,7 +726,7 @@ spec:
             summary: "CodePlace service has no ready endpoints"
             description: "A CodePlace Service has had zero ready endpoints for 2 minutes, or the endpoint availability metric is missing while the Service exists. Check Service selector labels, Pod readiness, EndpointSlice state, and rollout events."
         - alert: VLLMServiceNoReadyEndpoints
-          expr: (max by (namespace, endpoint) (kube_endpoint_address_available{namespace="code-place-prod", endpoint="vllm"}) < 1) or (label_replace(kube_service_info{namespace="code-place-prod", service="vllm"}, "endpoint", "$1", "service", "(.*)") unless on (namespace, endpoint) kube_endpoint_address_available{namespace="code-place-prod", endpoint="vllm"})
+          expr: (sum by (namespace, endpoint) (kube_endpoint_address{namespace="code-place-prod", endpoint="vllm", ready="true"}) < 1) or (label_replace(kube_service_info{namespace="code-place-prod", service="vllm"}, "endpoint", "$1", "service", "(.*)") unless on (namespace, endpoint) kube_endpoint_address{namespace="code-place-prod", endpoint="vllm", ready="true"})
           for: 2m
           labels:
             severity: warning

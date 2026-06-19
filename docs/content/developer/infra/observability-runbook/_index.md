@@ -872,8 +872,8 @@ kubectl -n <namespace> get event --sort-by=.lastTimestamp | tail -50
 PromQL:
 
 ```promql
-kube_endpoint_address_available{namespace="<namespace>"}
-kube_endpoint_address_not_ready{namespace="<namespace>"}
+sum by (namespace, endpoint) (kube_endpoint_address{namespace="<namespace>", ready="true"})
+sum by (namespace, endpoint) (kube_endpoint_address{namespace="<namespace>", ready="false"})
 kube_pod_status_ready{namespace="<namespace>", condition="true"}
 kube_deployment_status_replicas_unavailable{namespace="<namespace>"}
 ```

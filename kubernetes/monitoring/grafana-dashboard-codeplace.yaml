@@ -430,7 +430,7 @@ data:
             }
           },
           "targets": [
-            {"expr": "max by (namespace, endpoint) (kube_endpoint_address_available{namespace=~\"$namespace\", endpoint=~\"backend|frontend|hub-auth|judge-server|vllm\"})", "legendFormat": "{{namespace}} {{endpoint}} ready"}
+            {"expr": "sum by (namespace, endpoint) (kube_endpoint_address{namespace=~\"$namespace\", endpoint=~\"backend|frontend|hub-auth|judge-server|vllm\", ready=\"true\"})", "legendFormat": "{{namespace}} {{endpoint}} ready endpoints"}
           ]
         },
         {
