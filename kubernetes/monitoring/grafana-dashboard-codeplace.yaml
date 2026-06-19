@@ -391,7 +391,7 @@ data:
         {
           "type": "timeseries",
           "title": "Service Ready Endpoints",
-          "gridPos": {"x": 0, "y": 48, "w": 24, "h": 6},
+          "gridPos": {"x": 0, "y": 48, "w": 12, "h": 6},
           "fieldConfig": {
             "defaults": {
               "unit": "short",
@@ -406,6 +406,16 @@ data:
           },
           "targets": [
             {"expr": "max by (namespace, endpoint) (kube_endpoint_address_available{namespace=~\"$namespace\", endpoint=~\"backend|frontend|hub-auth|judge-server|vllm\"})", "legendFormat": "{{namespace}} {{endpoint}} ready"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "PDB Healthy Pods",
+          "gridPos": {"x": 12, "y": 48, "w": 12, "h": 6},
+          "fieldConfig": {"defaults": {"unit": "short"}},
+          "targets": [
+            {"expr": "kube_poddisruptionbudget_status_current_healthy{namespace=~\"$namespace\", poddisruptionbudget=~\"backend|frontend\"}", "legendFormat": "{{namespace}} {{poddisruptionbudget}} current"},
+            {"expr": "kube_poddisruptionbudget_status_desired_healthy{namespace=~\"$namespace\", poddisruptionbudget=~\"backend|frontend\"}", "legendFormat": "{{namespace}} {{poddisruptionbudget}} desired"}
           ]
         },
         {

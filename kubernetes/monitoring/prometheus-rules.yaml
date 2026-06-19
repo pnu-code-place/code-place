@@ -685,6 +685,15 @@ spec:
           annotations:
             summary: "CodePlace deployment rollout is stuck"
             description: "A CodePlace deployment observed generation has not caught up with metadata generation for 10 minutes. Check deployment events, ReplicaSet state, and rollout history."
+        - alert: CodePlacePDBAtRisk
+          expr: kube_poddisruptionbudget_status_current_healthy{namespace=~"code-place-(dev|prod)", poddisruptionbudget=~"backend|frontend"} <= kube_poddisruptionbudget_status_desired_healthy{namespace=~"code-place-(dev|prod)", poddisruptionbudget=~"backend|frontend"}
+          for: 10m
+          labels:
+            severity: warning
+            priority: P1
+          annotations:
+            summary: "CodePlace PDB has no disruption headroom"
+            description: "A backend or frontend PodDisruptionBudget has been at or below its desired healthy count for 10 minutes. Node drain or voluntary disruption may reduce user-path availability."
         - alert: CodePlaceServiceNoReadyEndpoints
           expr: (max by (namespace, endpoint) (kube_endpoint_address_available{namespace=~"code-place-(dev|prod)", endpoint=~"backend|frontend|hub-auth|judge-server"}) < 1) or (label_replace(kube_service_info{namespace=~"code-place-(dev|prod)", service=~"backend|frontend|hub-auth|judge-server"}, "endpoint", "$1", "service", "(.*)") unless on (namespace, endpoint) kube_endpoint_address_available{namespace=~"code-place-(dev|prod)", endpoint=~"backend|frontend|hub-auth|judge-server"})
           for: 2m

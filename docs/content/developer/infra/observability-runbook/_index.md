@@ -821,7 +821,7 @@ Grafana Explore:
 - `OOMKilled`는 memory limit, 최근 트래픽, 캐시/큐 증가, JVM/Python heap 설정을 확인합니다.
 - `Pending`/`Unschedulable`은 node capacity, taint/toleration, nodeSelector/affinity, PVC binding, Longhorn volume attach event를 확인합니다.
 
-### CodePlaceDeploymentUnavailable / CodePlaceDeploymentRolloutStuck
+### CodePlaceDeploymentUnavailable / CodePlaceDeploymentRolloutStuck / CodePlacePDBAtRisk
 
 확인:
 
@@ -838,6 +838,8 @@ PromQL:
 kube_deployment_status_replicas_unavailable{namespace="<namespace>"}
 kube_deployment_status_observed_generation{namespace="<namespace>"}
 kube_deployment_metadata_generation{namespace="<namespace>"}
+kube_poddisruptionbudget_status_current_healthy{namespace="<namespace>", poddisruptionbudget=~"backend|frontend"}
+kube_poddisruptionbudget_status_desired_healthy{namespace="<namespace>", poddisruptionbudget=~"backend|frontend"}
 kube_pod_container_status_waiting_reason{namespace="<namespace>"}
 ```
 
@@ -845,6 +847,7 @@ kube_pod_container_status_waiting_reason{namespace="<namespace>"}
 
 - unavailable replica가 늘면 readiness probe, image pull, crash loop, resource pressure, scheduling event를 먼저 봅니다.
 - observed generation이 metadata generation을 따라가지 못하면 Deployment controller reconcile, ReplicaSet 생성 실패, admission/image pull/secret 문제를 확인합니다.
+- PDB current healthy가 desired healthy 이하이면 node drain/upgrade 전에 backend/frontend replica readiness를 먼저 복구합니다.
 - 배포 직후 API 5xx/latency와 같이 발생하면 사용자 영향이 있는 rollout 장애로 봅니다.
 
 ### CodePlaceServiceNoReadyEndpoints / VLLMServiceNoReadyEndpoints
