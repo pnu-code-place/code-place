@@ -1,11 +1,13 @@
 import Vue from "vue"
 import store from "@/store"
 import axios from "axios"
+import { configureAxiosRequestId } from "@/utils/request_id"
 
 Vue.prototype.$http = axios
 axios.defaults.baseURL = "/api"
 axios.defaults.xsrfHeaderName = "X-CSRFToken"
 axios.defaults.xsrfCookieName = "csrftoken"
+configureAxiosRequestId(axios)
 
 export default {
   getPopup() {

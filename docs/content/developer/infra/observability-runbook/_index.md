@@ -104,6 +104,7 @@ Grafana Explore:
 - 5xx와 latency가 같이 오르면 backend/DB/Redis 병목 가능성이 큽니다.
 - 5xx만 증가하면 최근 배포, exception, 외부 dependency를 우선 확인합니다.
 - Sentry event가 있으면 `environment`, `release`, `request_id` tag를 기준으로 같은 시간대 Loki 로그와 대조합니다.
+- 사용자 브라우저에서 재현 중이면 `window.__CODEPLACE_LAST_REQUEST_ID__` 값을 확인해 같은 request ID로 Loki/backend JSON log를 조회합니다.
 - Frontend Sentry 설정은 image build 시점에 결정됩니다. `SENTRY_DSN`, `USE_SENTRY`, `SENTRY_ENVIRONMENT`, `APP_VERSION` 변경 후에는 frontend image rebuild가 필요합니다.
 
 ### Ingress5xxSpike

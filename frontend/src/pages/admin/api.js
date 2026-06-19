@@ -2,11 +2,13 @@ import Vue from "vue"
 import router from "./router"
 import axios from "axios"
 import utils from "@/utils/utils"
+import { configureAxiosRequestId } from "@/utils/request_id"
 
 Vue.prototype.$http = axios
 axios.defaults.baseURL = "/api"
 axios.defaults.xsrfHeaderName = "X-CSRFToken"
 axios.defaults.xsrfCookieName = "csrftoken"
+configureAxiosRequestId(axios)
 
 export default {
   // 登录

@@ -85,3 +85,9 @@ export function initSentry(Vue) {
     location: window.location.href,
   })
 }
+
+export function setRequestIdContext(requestId) {
+  setContext("request", {
+    request_id: requestId,
+  })
+}
