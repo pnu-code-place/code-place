@@ -25,6 +25,15 @@ spec:
       - matchers:
           - name: priority
             value: P1
+          - name: namespace
+            value: code-place-dev
+        groupWait: 30s
+        groupInterval: 5m
+        repeatInterval: 1h
+        receiver: dev-p1-muted
+      - matchers:
+          - name: priority
+            value: P1
         groupWait: 30s
         groupInterval: 5m
         repeatInterval: 1h
@@ -40,6 +49,7 @@ spec:
           content: '{{ .CommonAnnotations.summary }}'
           message: '{{ .CommonAnnotations.description }}'
           username: CodePlace Alertmanager
+    - name: dev-p1-muted
     - name: p1-discord
       discordConfigs:
         - sendResolved: true
