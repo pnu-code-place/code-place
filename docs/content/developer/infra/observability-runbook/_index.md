@@ -57,6 +57,7 @@ Monitoring stack 확인:
 
 ```sh
 kubectl -n monitoring get pod | grep -E 'prometheus|alertmanager|grafana|operator'
+kubectl -n monitoring get configmap kube-prometheus-stack-grafana-datasource -o yaml
 kubectl -n monitoring get prometheusrule codeplace-fast-alerts -o yaml
 kubectl -n monitoring get alertmanagerconfig codeplace-alert-routing -o yaml
 kubectl -n monitoring get alertmanager kube-prometheus-stack-alertmanager -o jsonpath='{.spec.alertmanagerConfigMatcherStrategy.type}'

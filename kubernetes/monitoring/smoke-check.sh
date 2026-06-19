@@ -64,6 +64,18 @@ require_jsonpath_value() {
   ok "$resource/$name $jsonpath=$expected"
 }
 
+require_configmap_data_contains() {
+  local namespace="$1"
+  local name="$2"
+  local key="$3"
+  local expected="$4"
+  local value
+  value="$(kubectl -n "$namespace" get configmap "$name" -o "jsonpath={.data.${key//./\\.}}")"
+  printf '%s' "$value" | grep -Fq "$expected" \
+    || fail "configmap/$name $key missing expected content: $expected"
+  ok "configmap/$name $key contains $expected"
+}
+
 require_cmd kubectl
 
 echo "==> checking Prometheus Operator CRDs"
@@ -103,6 +115,7 @@ for resource in \
   "configmap/grafana-dashboard-codeplace-public-endpoints" \
   "configmap/grafana-dashboard-codeplace-storage" \
   "configmap/grafana-dashboard-codeplace-traces" \
+  "configmap/kube-prometheus-stack-grafana-datasource" \
   "configmap/kubernetes-event-exporter-config" \
   "configmap/otel-collector-config" \
   "configmap/tempo-config" \
@@ -138,6 +151,11 @@ require_label "$NAMESPACE" configmap grafana-dashboard-codeplace-monitoring-stac
 require_label "$NAMESPACE" configmap grafana-dashboard-codeplace-public-endpoints grafana_dashboard 1
 require_label "$NAMESPACE" configmap grafana-dashboard-codeplace-storage grafana_dashboard 1
 require_label "$NAMESPACE" configmap grafana-dashboard-codeplace-traces grafana_dashboard 1
+require_label "$NAMESPACE" configmap kube-prometheus-stack-grafana-datasource grafana_datasource 1
+require_configmap_data_contains "$NAMESPACE" kube-prometheus-stack-grafana-datasource datasource.yaml 'name: Loki'
+require_configmap_data_contains "$NAMESPACE" kube-prometheus-stack-grafana-datasource datasource.yaml 'uid: Loki'
+require_configmap_data_contains "$NAMESPACE" kube-prometheus-stack-grafana-datasource datasource.yaml 'name: Tempo'
+require_configmap_data_contains "$NAMESPACE" kube-prometheus-stack-grafana-datasource datasource.yaml 'uid: Tempo'
 require_jsonpath_value "$NAMESPACE" alertmanager kube-prometheus-stack-alertmanager \
   '{.spec.alertmanagerConfigMatcherStrategy.type}' None
 
