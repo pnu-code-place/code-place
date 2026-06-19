@@ -60,17 +60,18 @@ data:
         },
         {
           "type": "stat",
-          "title": "Request Rate",
+          "title": "API / Ingress Request Rate",
           "gridPos": {"x": 4, "y": 0, "w": 4, "h": 4},
           "fieldConfig": {"defaults": {"unit": "reqps"}},
           "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
           "targets": [
-            {"expr": "codeplace:api_request_rate5m{namespace=~\"$namespace\"}", "legendFormat": "{{namespace}}"}
+            {"expr": "codeplace:api_request_rate5m{namespace=~\"$namespace\"}", "legendFormat": "{{namespace}} api"},
+            {"expr": "codeplace:ingress_request_rate2m{namespace=~\"$namespace\"}", "legendFormat": "{{namespace}} ingress"}
           ]
         },
         {
           "type": "stat",
-          "title": "5xx Ratio",
+          "title": "API / Ingress 5xx Ratio",
           "gridPos": {"x": 8, "y": 0, "w": 4, "h": 4},
           "fieldConfig": {
             "defaults": {
@@ -87,7 +88,8 @@ data:
           },
           "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
           "targets": [
-            {"expr": "codeplace:api_5xx_ratio5m{namespace=~\"$namespace\"}", "legendFormat": "{{namespace}}"}
+            {"expr": "codeplace:api_5xx_ratio5m{namespace=~\"$namespace\"}", "legendFormat": "{{namespace}} api"},
+            {"expr": "codeplace:ingress_5xx_rate2m{namespace=~\"$namespace\"} / clamp_min(codeplace:ingress_request_rate2m{namespace=~\"$namespace\"}, 1)", "legendFormat": "{{namespace}} ingress"}
           ]
         },
         {
