@@ -64,6 +64,25 @@ class CodePlaceCollectorTest(SimpleTestCase):
         self.assertEqual(available.value, 0)
         self.assertGreaterEqual(heartbeat_age.value, 599)
 
+    def test_submission_oldest_age_metrics_are_collected_for_inflight_statuses(self):
+        now = timezone.now()
+        rows = [
+            {"result": 6, "oldest_create_time": now - timedelta(minutes=7)},
+            {"result": 7, "oldest_create_time": now - timedelta(minutes=3)},
+        ]
+        queryset = MagicMock()
+        queryset.values.return_value.annotate.return_value = rows
+
+        with patch("utils.observability_metrics.Submission.objects.filter", return_value=queryset):
+            samples = self._samples_by_metric([CodePlaceCollector()._submission_oldest_age_seconds()])
+
+        by_status = {
+            sample.labels["status"]: sample.value
+            for sample in samples["codeplace_submission_oldest_age_seconds"]
+        }
+        self.assertGreaterEqual(by_status["pending"], 419)
+        self.assertGreaterEqual(by_status["judging"], 179)
+
     def test_celery_task_metrics_are_collected_from_redis(self):
         hashes = {
             celery_observability.CELERY_TASK_TOTAL_KEY: {
@@ -216,6 +235,12 @@ class CodePlaceMetricsEndpointTest(SimpleTestCase):
             "Number of submissions waiting because no judge-server was available.",
         )
         waiting_queue_metric.add_metric([], 0)
+        oldest_age_metric = GaugeMetricFamily(
+            "codeplace_submission_oldest_age_seconds",
+            "Age of the oldest submission in each in-flight judge status.",
+            labels=["status"],
+        )
+        oldest_age_metric.add_metric(["pending"], 0)
         judge_metric = GaugeMetricFamily(
             "codeplace_judge_server_available",
             "Whether each judge-server is enabled and has a fresh heartbeat.",
@@ -229,6 +254,7 @@ class CodePlaceMetricsEndpointTest(SimpleTestCase):
         judge_duration_metric.add_metric([], [("+Inf", 0)], 0)
 
         with patch.object(CodePlaceCollector, "_submission_status_count", return_value=[submission_metric]), \
+                patch.object(CodePlaceCollector, "_submission_oldest_age_seconds", return_value=oldest_age_metric), \
                 patch.object(CodePlaceCollector, "_waiting_queue_length", return_value=waiting_queue_metric), \
                 patch.object(CodePlaceCollector, "_judge_server_metrics", return_value=[judge_metric]), \
                 patch.object(CodePlaceCollector, "_judge_duration_histogram", return_value=judge_duration_metric), \

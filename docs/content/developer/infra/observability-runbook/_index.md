@@ -617,16 +617,29 @@ Grafana Explore:
 - `error_type="unhandled_rejection"`이 많으면 API response handling, auth/session 만료 처리, network rejection을 봅니다.
 - Sentry가 켜진 환경이면 같은 `release`, `environment`, `request_id`로 Sentry event와 Loki `frontend.error` 로그를 대조합니다.
 
-### JudgeWaitingQueueBacklog
+### JudgeWaitingQueueBacklog / PendingSubmissionsStuck / JudgingSubmissionsStuck
 
 확인:
 
 ```promql
 codeplace_waiting_queue_length{namespace="<namespace>"}
+codeplace_submission_oldest_age_seconds{namespace="<namespace>"}
+codeplace_submission_status_count{namespace="<namespace>", status=~"pending|judging"}
 sum by (namespace) (codeplace_judge_server_available{namespace="<namespace>"})
 ```
 
-queue 증가와 judge available 감소가 같이 보이면 judge-server 문제입니다. judge는 정상인데 queue만 증가하면 celery-worker 처리량을 봅니다.
+```sh
+kubectl -n <namespace> logs deploy/backend --tail=200
+kubectl -n <namespace> logs deploy/celery-worker --tail=200
+kubectl -n <namespace> get pod -l app=judge-server
+```
+
+판단:
+
+- queue 증가와 judge available 감소가 같이 보이면 judge-server 문제입니다.
+- pending age만 증가하면 submission 생성 이후 Celery enqueue/worker dispatch/Redis queue 경로를 봅니다.
+- judging age가 증가하면 judge-server 실행, judge-server `/judge` 호출, result save path, worker 로그의 `judge.tasks.judge_task`를 봅니다.
+- pending/judging count는 낮지만 oldest age만 높으면 특정 제출이 고립된 상태입니다. 사용자 영향은 제한적일 수 있으나 결과 저장/상태 전환 실패를 확인합니다.
 
 ### CeleryWorkerRestarting / CeleryBeatDown
 

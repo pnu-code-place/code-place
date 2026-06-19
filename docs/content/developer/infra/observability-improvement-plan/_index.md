@@ -39,6 +39,7 @@ backend는 `django-prometheus` 기반 `/metrics` 엔드포인트를 제공합니
 - `codeplace_http_requests_total{method,endpoint,status_code}`
 - `codeplace_http_request_duration_seconds{method,endpoint}`
 - `codeplace_submission_status_count{status}`
+- `codeplace_submission_oldest_age_seconds{status}`
 - `codeplace_submission_judge_duration_seconds`
 - `codeplace_waiting_queue_length`
 - `codeplace_judge_server_available{hostname}`
@@ -247,6 +248,8 @@ P1은 `group_wait=30s`, `repeat_interval=1h`로 전달합니다.
 - `PrometheusAlertmanagerDiscoveryFailed`: Prometheus가 Alertmanager target을 0개 discovery 2분 지속.
 - `AlertmanagerNotificationFailures`: Alertmanager notification delivery failure 2분 지속.
 - `JudgeWaitingQueueBacklog`: `waiting_queue` 5 초과 3분 지속.
+- `PendingSubmissionsStuck`: oldest pending submission age 300초 초과 3분 지속.
+- `JudgingSubmissionsStuck`: oldest judging submission age 900초 초과 5분 지속.
 - `CeleryWorkerRestarting`: worker restart 3회 이상/15분.
 - `CeleryBeatDown`: beat Pod not ready 2분 지속.
 - `CeleryTaskFailures`: task failure 발생 2분 지속.
@@ -306,7 +309,7 @@ P1은 `group_wait=30s`, `repeat_interval=1h`로 전달합니다.
    - `kubectl apply -k kubernetes/monitoring`
 6. Prometheus target에서 `backend`, `longhorn`, `vllm`, `blackbox-exporter`, `kubernetes-event-exporter`, `codeplace-public-http-dev`, `codeplace-public-http-prod`가 healthy인지 확인합니다.
 7. Grafana의 `CodePlace Public Endpoints` dashboard에서 prod/dev availability, HTTP status, latency, TLS expiry panel이 비어 있지 않은지 확인합니다.
-8. Grafana의 `CodePlace Overview` dashboard에서 request rate, 5xx, latency, frontend runtime error, submission status, waiting queue, judge heartbeat, Celery task throughput/runtime, Pod readiness/restart, CPU/memory, PVC, PostgreSQL/Redis readiness/connection/lock/client panel을 확인합니다.
+8. Grafana의 `CodePlace Overview` dashboard에서 request rate, 5xx, latency, frontend runtime error, submission status, oldest in-flight submission age, waiting queue, judge heartbeat, Celery task throughput/runtime, Pod readiness/restart, CPU/memory, PVC, PostgreSQL/Redis readiness/connection/lock/client panel을 확인합니다.
 9. Grafana의 `CodePlace Logs` dashboard에서 Loki ready, Alloy node coverage, Loki PVC usage, ingress/frontend 4xx/5xx, 최근 backend error, frontend runtime error, judge/celery log panel을 확인합니다.
 10. Grafana의 `CodePlace Logs` dashboard에서 `request_id` 변수에 실제 응답 header 또는 JSON log의 request ID를 넣고 해당 요청 로그가 좁혀지는지 확인합니다.
 11. Grafana의 `CodePlace Kubernetes Events` dashboard에서 event exporter ready, image pull, CrashLoopBackOff, OOMKilled, Pending/Unschedulable, Kubernetes Warning event panel을 확인합니다.

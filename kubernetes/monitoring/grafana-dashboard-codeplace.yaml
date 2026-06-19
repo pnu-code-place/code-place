@@ -177,11 +177,33 @@ data:
         {
           "type": "bargauge",
           "title": "Submission Status",
-          "gridPos": {"x": 16, "y": 4, "w": 8, "h": 8},
+          "gridPos": {"x": 16, "y": 4, "w": 4, "h": 8},
           "fieldConfig": {"defaults": {"unit": "short"}},
           "options": {"displayMode": "gradient", "orientation": "horizontal", "reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
           "targets": [
             {"expr": "codeplace_submission_status_count{namespace=~\"$namespace\"}", "legendFormat": "{{namespace}} {{status}}"}
+          ]
+        },
+        {
+          "type": "bargauge",
+          "title": "Oldest In-flight Submission",
+          "gridPos": {"x": 20, "y": 4, "w": 4, "h": 8},
+          "fieldConfig": {
+            "defaults": {
+              "unit": "s",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "orange", "value": 300},
+                  {"color": "red", "value": 900}
+                ]
+              }
+            }
+          },
+          "options": {"displayMode": "gradient", "orientation": "horizontal", "reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "codeplace_submission_oldest_age_seconds{namespace=~\"$namespace\"}", "legendFormat": "{{namespace}} {{status}}"}
           ]
         },
         {

@@ -2,7 +2,7 @@ import logging
 from datetime import timedelta
 
 from django.db import connection
-from django.db.models import Count
+from django.db.models import Count, Min
 from django.utils import timezone
 from prometheus_client import Counter, Histogram, REGISTRY
 from prometheus_client.core import GaugeMetricFamily, HistogramMetricFamily
@@ -60,6 +60,11 @@ class CodePlaceCollector:
         yield GaugeMetricFamily(
             "codeplace_submission_status_count",
             "Current number of submissions grouped by judge status.",
+            labels=["status"],
+        )
+        yield GaugeMetricFamily(
+            "codeplace_submission_oldest_age_seconds",
+            "Age of the oldest submission in each in-flight judge status.",
             labels=["status"],
         )
         yield GaugeMetricFamily(
@@ -131,6 +136,7 @@ class CodePlaceCollector:
 
     def collect(self):
         yield from self._submission_status_count()
+        yield self._submission_oldest_age_seconds()
         yield self._waiting_queue_length()
         yield from self._judge_server_metrics()
         yield self._judge_duration_histogram()
@@ -163,6 +169,34 @@ class CodePlaceCollector:
         except Exception as e:
             logger.warning("Failed to collect waiting queue length: %s", e)
             metric.add_metric([], 0)
+        return metric
+
+    def _submission_oldest_age_seconds(self):
+        metric = GaugeMetricFamily(
+            "codeplace_submission_oldest_age_seconds",
+            "Age of the oldest submission in each in-flight judge status.",
+            labels=["status"],
+        )
+        now = timezone.now()
+        status_map = {
+            JudgeStatus.PENDING: "pending",
+            JudgeStatus.JUDGING: "judging",
+        }
+        try:
+            oldest_by_status = {
+                row["result"]: row["oldest_create_time"]
+                for row in Submission.objects.filter(
+                    result__in=status_map.keys(),
+                ).values("result").annotate(oldest_create_time=Min("create_time"))
+            }
+        except Exception as e:
+            logger.warning("Failed to collect oldest submission age metrics: %s", e)
+            oldest_by_status = {}
+
+        for status_value, status_label in status_map.items():
+            created_at = oldest_by_status.get(status_value)
+            age_seconds = max((now - created_at).total_seconds(), 0) if created_at else 0
+            metric.add_metric([status_label], age_seconds)
         return metric
 
     def _judge_server_metrics(self):
