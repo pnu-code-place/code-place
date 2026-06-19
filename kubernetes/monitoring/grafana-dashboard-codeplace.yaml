@@ -527,28 +527,6 @@ data:
             {"expr": "codeplace_redis_max_clients{namespace=~\"$namespace\"}", "legendFormat": "{{namespace}} maxclients"},
             {"expr": "increase(codeplace_redis_rejected_connections_total{namespace=~\"$namespace\"}[5m])", "legendFormat": "{{namespace}} rejected/5m"}
           ]
-        },
-        {
-          "type": "timeseries",
-          "title": "Frontend Runtime Errors",
-          "gridPos": {"x": 0, "y": 71, "w": 12, "h": 6},
-          "datasource": "Prometheus",
-          "fieldConfig": {
-            "defaults": {
-              "unit": "ops",
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {"color": "green", "value": null},
-                  {"color": "orange", "value": 0.02},
-                  {"color": "red", "value": 0.1}
-                ]
-              }
-            }
-          },
-          "targets": [
-            {"expr": "sum by (namespace, surface, error_type) (rate(codeplace_frontend_error_total{namespace=~\"$namespace\"}[5m]))", "legendFormat": "{{namespace}} {{surface}} {{error_type}}"}
-          ]
         }
       ]
     }

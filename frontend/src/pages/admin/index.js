@@ -25,7 +25,6 @@ import "./style.less"
 import ECharts from "vue-echarts"
 import "@/utils/echarts"
 import { initSentry } from "@/utils/sentry"
-import { initClientErrorReporter } from "@/utils/client_error_reporter"
 
 const legacyPanelTag = "Panel"
 const legacySaveTag = "Save"
@@ -69,6 +68,5 @@ Vue.prototype.$success = (msg) => {
 }
 
 initSentry(Vue)
-initClientErrorReporter(Vue, { surface: "admin", router })
 
 new Vue(Vue.util.extend({ router, store, i18n }, App)).$mount("#app")

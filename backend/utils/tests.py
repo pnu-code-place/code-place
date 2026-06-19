@@ -129,59 +129,6 @@ class CodePlaceMetricsEndpointTest(SimpleTestCase):
         self.assertIn("codeplace_celery_broker_queue_length", body)
 
 
-class ClientErrorReportAPITest(SimpleTestCase):
-
-    def test_client_error_report_records_metric_and_log(self):
-        labels = MagicMock()
-        with patch("utils.views.FRONTEND_ERROR_TOTAL.labels", return_value=labels) as metric_labels, \
-                patch("utils.views.frontend_error_logger") as frontend_error_logger:
-            response = self.client.post(
-                "/api/client_error",
-                data=json.dumps({
-                    "surface": "oj",
-                    "error_type": "vue",
-                    "message": "boom\nwith newline",
-                    "route": "/problem/1",
-                    "release": "20260619-test",
-                    "component": "ProblemView",
-                    "info": "render",
-                }),
-                content_type="application/json",
-                HTTP_X_REQUEST_ID="request-frontend-1",
-            )
-
-        self.assertEqual(response.status_code, 200)
-        metric_labels.assert_called_once_with(surface="oj", error_type="vue")
-        labels.inc.assert_called_once()
-        extra = frontend_error_logger.warning.call_args.kwargs["extra"]
-        self.assertEqual(extra["request_id"], "request-frontend-1")
-        self.assertEqual(extra["frontend_surface"], "oj")
-        self.assertEqual(extra["frontend_error_type"], "vue")
-        self.assertEqual(extra["frontend_message"], "boom with newline")
-        self.assertEqual(extra["frontend_route"], "/problem/1")
-        self.assertEqual(extra["frontend_release"], "20260619-test")
-
-    def test_client_error_report_bounds_metric_labels(self):
-        labels = MagicMock()
-        with patch("utils.views.FRONTEND_ERROR_TOTAL.labels", return_value=labels) as metric_labels, \
-                patch("utils.views.frontend_error_logger") as frontend_error_logger:
-            response = self.client.post(
-                "/api/client_error",
-                data=json.dumps({
-                    "surface": "attacker-controlled",
-                    "error_type": "TypeError: high cardinality",
-                    "message": "token=abc123 " + ("x" * 500),
-                }),
-                content_type="application/json",
-            )
-
-        self.assertEqual(response.status_code, 200)
-        metric_labels.assert_called_once_with(surface="unknown", error_type="unknown")
-        extra = frontend_error_logger.warning.call_args.kwargs["extra"]
-        self.assertTrue(extra["frontend_message"].startswith("token=[REDACTED]"))
-        self.assertLessEqual(len(extra["frontend_message"]), 300)
-
-
 class ObservabilityTracingTest(SimpleTestCase):
 
     def tearDown(self):

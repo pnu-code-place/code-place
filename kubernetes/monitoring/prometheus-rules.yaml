@@ -220,15 +220,6 @@ spec:
           annotations:
             summary: "Public frontend endpoint latency is high"
             description: "A synthetic HTTPS probe has taken more than 2 seconds for 5 minutes."
-        - alert: FrontendRuntimeErrorsSpike
-          expr: sum by (namespace, surface) (increase(codeplace_frontend_error_total{namespace=~"code-place-(dev|prod)"}[5m])) > 10
-          for: 5m
-          labels:
-            severity: warning
-            priority: P1
-          annotations:
-            summary: "Frontend runtime errors increased"
-            description: "Browser clients reported more than 10 frontend runtime errors in 5 minutes. Check recent deploys, Sentry events, and frontend.error logs."
         - alert: JudgeWaitingQueueBacklog
           expr: codeplace_waiting_queue_length{namespace=~"code-place-(dev|prod)"} > 5
           for: 3m

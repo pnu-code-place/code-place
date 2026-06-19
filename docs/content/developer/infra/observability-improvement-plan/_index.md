@@ -35,7 +35,6 @@ backend는 `django-prometheus` 기반 `/metrics` 엔드포인트를 제공합니
 - `codeplace_judge_task_outcome_total{status,scope}`
 - `codeplace_waiting_queue_length`
 - `codeplace_celery_broker_queue_length`
-- `codeplace_frontend_error_total{surface,error_type}`
 
 `/metrics`와 `/api/health` 요청은 API request rate/latency metric과 request completion log에서 제외합니다.
 
