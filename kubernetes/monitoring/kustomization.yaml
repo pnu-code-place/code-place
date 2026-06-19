@@ -8,7 +8,9 @@ resources:
   - ./datastore-pod-monitors.yaml
   - ./grafana-dashboard-codeplace.yaml
   - ./grafana-dashboard-logs.yaml
+  - ./grafana-dashboard-storage.yaml
   - ./grafana-dashboard-traces.yaml
+  - ./longhorn-service-monitor.yaml
   - ./otel-collector.yaml
   - ./prometheus-rules.yaml
   - ./tempo.yaml

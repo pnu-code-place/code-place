@@ -1,0 +1,243 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-codeplace-storage
+  labels:
+    grafana_dashboard: "1"
+data:
+  codeplace-storage.json: |
+    {
+      "uid": "codeplace-storage",
+      "title": "CodePlace Storage",
+      "schemaVersion": 39,
+      "version": 1,
+      "refresh": "30s",
+      "tags": ["codeplace", "storage", "longhorn"],
+      "editable": true,
+      "time": {
+        "from": "now-1h",
+        "to": "now"
+      },
+      "panels": [
+        {
+          "type": "stat",
+          "title": "Longhorn Managers Ready",
+          "gridPos": {"x": 0, "y": 0, "w": 4, "h": 4},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "red", "value": null},
+                  {"color": "green", "value": 1}
+                ]
+              }
+            }
+          },
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "sum(kube_pod_status_ready{namespace=\"longhorn-system\", condition=\"true\", pod=~\"longhorn-manager-.*\"})", "legendFormat": "ready"}
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "Faulted Volumes",
+          "gridPos": {"x": 4, "y": 0, "w": 4, "h": 4},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "red", "value": 1}
+                ]
+              }
+            }
+          },
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "count(longhorn_volume_robustness == 3) or vector(0)", "legendFormat": "faulted"}
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "Degraded Volumes",
+          "gridPos": {"x": 8, "y": 0, "w": 4, "h": 4},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "orange", "value": 1}
+                ]
+              }
+            }
+          },
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "count(longhorn_volume_robustness == 2) or vector(0)", "legendFormat": "degraded"}
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "Read-only Volumes",
+          "gridPos": {"x": 12, "y": 0, "w": 4, "h": 4},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "red", "value": 1}
+                ]
+              }
+            }
+          },
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "sum(longhorn_volume_file_system_read_only) or vector(0)", "legendFormat": "read-only"}
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "Max Node Storage",
+          "gridPos": {"x": 16, "y": 0, "w": 4, "h": 4},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percentunit",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "orange", "value": 0.75},
+                  {"color": "red", "value": 0.85}
+                ]
+              }
+            }
+          },
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "max((longhorn_node_storage_usage_bytes + longhorn_node_storage_reservation_bytes) / clamp_min(longhorn_node_storage_capacity_bytes, 1))", "legendFormat": "usage"}
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "Max Disk Usage",
+          "gridPos": {"x": 20, "y": 0, "w": 4, "h": 4},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percentunit",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "orange", "value": 0.75},
+                  {"color": "red", "value": 0.85}
+                ]
+              }
+            }
+          },
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "max((longhorn_disk_usage_bytes + longhorn_disk_reservation_bytes) / clamp_min(longhorn_disk_capacity_bytes, 1))", "legendFormat": "usage"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Volume Robustness",
+          "description": "1 healthy, 2 degraded, 3 faulted",
+          "gridPos": {"x": 0, "y": 4, "w": 12, "h": 8},
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "short", "decimals": 0}},
+          "targets": [
+            {"expr": "longhorn_volume_robustness", "legendFormat": "{{pvc_namespace}}/{{pvc}}"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Volume Actual Size",
+          "gridPos": {"x": 12, "y": 4, "w": 12, "h": 8},
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "bytes"}},
+          "targets": [
+            {"expr": "longhorn_volume_actual_size_bytes", "legendFormat": "{{pvc_namespace}}/{{pvc}} actual"},
+            {"expr": "longhorn_volume_capacity_bytes", "legendFormat": "{{pvc_namespace}}/{{pvc}} capacity"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Node Storage Usage",
+          "gridPos": {"x": 0, "y": 12, "w": 12, "h": 8},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percentunit",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "orange", "value": 0.75},
+                  {"color": "red", "value": 0.85}
+                ]
+              }
+            }
+          },
+          "targets": [
+            {"expr": "(longhorn_node_storage_usage_bytes + longhorn_node_storage_reservation_bytes) / clamp_min(longhorn_node_storage_capacity_bytes, 1)", "legendFormat": "{{node}}"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Disk Usage",
+          "gridPos": {"x": 12, "y": 12, "w": 12, "h": 8},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percentunit",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "orange", "value": 0.75},
+                  {"color": "red", "value": 0.85}
+                ]
+              }
+            }
+          },
+          "targets": [
+            {"expr": "(longhorn_disk_usage_bytes + longhorn_disk_reservation_bytes) / clamp_min(longhorn_disk_capacity_bytes, 1)", "legendFormat": "{{node}} {{disk}}"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Longhorn Manager CPU",
+          "gridPos": {"x": 0, "y": 20, "w": 12, "h": 8},
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "m"}},
+          "targets": [
+            {"expr": "longhorn_manager_cpu_usage_millicpu", "legendFormat": "{{node}}"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Longhorn Manager Memory",
+          "gridPos": {"x": 12, "y": 20, "w": 12, "h": 8},
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "bytes"}},
+          "targets": [
+            {"expr": "longhorn_manager_memory_usage_bytes", "legendFormat": "{{node}}"}
+          ]
+        }
+      ]
+    }
