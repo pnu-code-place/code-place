@@ -64,48 +64,29 @@ class CodePlaceCollectorTest(SimpleTestCase):
         self.assertEqual(available.value, 0)
         self.assertGreaterEqual(heartbeat_age.value, 599)
 
-    def test_submission_oldest_age_metrics_are_collected_for_inflight_statuses(self):
-        now = timezone.now()
-        rows = [
-            {"result": 6, "oldest_create_time": now - timedelta(minutes=7)},
-            {"result": 7, "oldest_create_time": now - timedelta(minutes=3)},
-        ]
-        queryset = MagicMock()
-        queryset.values.return_value.annotate.return_value = rows
+    def test_celery_broker_queue_length_is_collected_from_redis(self):
+        with patch("utils.observability_metrics.cache.llen", return_value=7) as llen:
+            samples = self._samples_by_metric([CodePlaceCollector()._celery_broker_queue_length()])
 
-        with patch("utils.observability_metrics.Submission.objects.filter", return_value=queryset):
-            samples = self._samples_by_metric([CodePlaceCollector()._submission_oldest_age_seconds()])
+        llen.assert_called_once_with("celery")
+        self.assertEqual(samples["codeplace_celery_broker_queue_length"][0].value, 7)
 
-        by_status = {
-            sample.labels["status"]: sample.value
-            for sample in samples["codeplace_submission_oldest_age_seconds"]
-        }
-        self.assertGreaterEqual(by_status["pending"], 419)
-        self.assertGreaterEqual(by_status["judging"], 179)
-
-    def test_judge_duration_histogram_uses_recent_completion_time(self):
-        now = timezone.now()
-        submission = MagicMock(
-            judge_start_time=now - timedelta(minutes=20),
-            judge_end_time=now - timedelta(minutes=1),
-        )
-        queryset = MagicMock()
-        queryset.only.return_value = [submission]
-
-        with patch("utils.observability_metrics.timezone.now", return_value=now), \
-                patch("utils.observability_metrics.Submission.objects.filter", return_value=queryset) as filter_mock:
+    def test_judge_duration_histogram_is_collected_from_redis(self):
+        with patch("utils.observability_metrics.cache.hgetall", return_value={
+            b"1": b"0",
+            b"3": b"1",
+            b"+Inf": b"2",
+        }), patch("utils.observability_metrics.cache.get", return_value="4.5"):
             samples = self._samples_by_metric([CodePlaceCollector()._judge_duration_histogram()])
 
-        filter_kwargs = filter_mock.call_args.kwargs
-        self.assertEqual(filter_kwargs["judge_end_time__gte"], now - timedelta(minutes=10))
-        self.assertNotIn("judge_start_time__gte", filter_kwargs)
         bucket_samples = [
             sample for sample in samples["codeplace_submission_judge_duration_seconds"]
             if sample.name.endswith("_bucket")
         ]
-        self.assertTrue(any(sample.labels["le"] == "+Inf" and sample.value == 1 for sample in bucket_samples))
+        self.assertTrue(any(sample.labels["le"] == "3" and sample.value == 1 for sample in bucket_samples))
+        self.assertTrue(any(sample.labels["le"] == "+Inf" and sample.value == 2 for sample in bucket_samples))
         self.assertTrue(any(
-            sample.name.endswith("_sum") and sample.value == 1140
+            sample.name.endswith("_sum") and sample.value == 4.5
             for sample in samples["codeplace_submission_judge_duration_seconds"]
         ))
 
@@ -298,23 +279,16 @@ class CeleryObservabilityTest(SimpleTestCase):
 class CodePlaceMetricsEndpointTest(SimpleTestCase):
 
     def test_metrics_endpoint_exposes_django_and_codeplace_metrics(self):
-        submission_metric = GaugeMetricFamily(
-            "codeplace_submission_status_count",
-            "Current number of submissions grouped by judge status.",
-            labels=["status"],
-        )
-        submission_metric.add_metric(["accepted"], 0)
         waiting_queue_metric = GaugeMetricFamily(
             "codeplace_waiting_queue_length",
             "Number of submissions waiting because no judge-server was available.",
         )
         waiting_queue_metric.add_metric([], 0)
-        oldest_age_metric = GaugeMetricFamily(
-            "codeplace_submission_oldest_age_seconds",
-            "Age of the oldest submission in each in-flight judge status.",
-            labels=["status"],
+        broker_queue_metric = GaugeMetricFamily(
+            "codeplace_celery_broker_queue_length",
+            "Number of Celery tasks waiting in the Redis broker default queue.",
         )
-        oldest_age_metric.add_metric(["pending"], 0)
+        broker_queue_metric.add_metric([], 0)
         judge_metric = GaugeMetricFamily(
             "codeplace_judge_server_available",
             "Whether each judge-server is enabled and has a fresh heartbeat.",
@@ -327,9 +301,8 @@ class CodePlaceMetricsEndpointTest(SimpleTestCase):
         )
         judge_duration_metric.add_metric([], [("+Inf", 0)], 0)
 
-        with patch.object(CodePlaceCollector, "_submission_status_count", return_value=[submission_metric]), \
-                patch.object(CodePlaceCollector, "_submission_oldest_age_seconds", return_value=oldest_age_metric), \
-                patch.object(CodePlaceCollector, "_waiting_queue_length", return_value=waiting_queue_metric), \
+        with patch.object(CodePlaceCollector, "_waiting_queue_length", return_value=waiting_queue_metric), \
+                patch.object(CodePlaceCollector, "_celery_broker_queue_length", return_value=broker_queue_metric), \
                 patch.object(CodePlaceCollector, "_judge_server_metrics", return_value=[judge_metric]), \
                 patch.object(CodePlaceCollector, "_judge_duration_histogram", return_value=judge_duration_metric), \
                 patch.object(CodePlaceCollector, "_celery_task_metrics", return_value=[]), \
@@ -340,8 +313,8 @@ class CodePlaceMetricsEndpointTest(SimpleTestCase):
         self.assertEqual(response.status_code, 200)
         body = response.content.decode()
         self.assertIn("django_http_requests_total_by_method_total", body)
-        self.assertIn("codeplace_submission_status_count", body)
         self.assertIn("codeplace_waiting_queue_length", body)
+        self.assertIn("codeplace_celery_broker_queue_length", body)
         self.assertIn("codeplace_judge_server_available", body)
 
 

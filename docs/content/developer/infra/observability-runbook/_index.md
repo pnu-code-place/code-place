@@ -653,14 +653,14 @@ Grafana Explore:
 - `error_type="unhandled_rejection"`이 많으면 API response handling, auth/session 만료 처리, network rejection을 봅니다.
 - Sentry가 켜진 환경이면 같은 `release`, `environment`, `request_id`로 Sentry event와 Loki `frontend.error` 로그를 대조합니다.
 
-### JudgeWaitingQueueBacklog / PendingSubmissionsStuck / JudgingSubmissionsStuck
+### JudgeWaitingQueueBacklog / CeleryBrokerQueueBacklog / CodePlaceCollectorFailed
 
 확인:
 
 ```promql
 codeplace_waiting_queue_length{namespace="<namespace>"}
-codeplace_submission_oldest_age_seconds{namespace="<namespace>"}
-codeplace_submission_status_count{namespace="<namespace>", status=~"pending|judging"}
+codeplace_celery_broker_queue_length{namespace="<namespace>"}
+codeplace_observability_collector_success{namespace="<namespace>"}
 sum by (namespace) (codeplace_judge_server_available{namespace="<namespace>"})
 ```
 

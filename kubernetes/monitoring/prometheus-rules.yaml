@@ -506,24 +506,24 @@ spec:
           annotations:
             summary: "Judge waiting queue is backing up"
             description: "More than 5 submissions are waiting because no judge-server was available."
-        - alert: PendingSubmissionsStuck
-          expr: codeplace_submission_oldest_age_seconds{namespace=~"code-place-(dev|prod)", status="pending"} > 300
-          for: 3m
-          labels:
-            severity: warning
-            priority: P1
-          annotations:
-            summary: "Pending submissions are stuck"
-            description: "The oldest pending submission has been pending for more than 5 minutes. Check Celery workers, Redis queue state, judge dispatch, and backend logs."
-        - alert: JudgingSubmissionsStuck
-          expr: codeplace_submission_oldest_age_seconds{namespace=~"code-place-(dev|prod)", status="judging"} > 900
+        - alert: CeleryBrokerQueueBacklog
+          expr: codeplace_celery_broker_queue_length{namespace=~"code-place-(dev|prod)"} > 20
           for: 5m
           labels:
             severity: warning
             priority: P1
           annotations:
-            summary: "Judging submissions are stuck"
-            description: "The oldest judging submission has been judging for more than 15 minutes. Check judge-server execution, callback/result save path, and worker logs."
+            summary: "Celery broker queue is backing up"
+            description: "More than 20 Celery tasks have been waiting in the Redis broker default queue for 5 minutes. Check celery-worker capacity, Redis broker health, and task errors."
+        - alert: CodePlaceCollectorFailed
+          expr: codeplace_observability_collector_success{namespace=~"code-place-(dev|prod)"} == 0
+          for: 5m
+          labels:
+            severity: warning
+            priority: P1
+          annotations:
+            summary: "A CodePlace custom metrics collector is failing"
+            description: "A backend /metrics collector block has failed for 5 minutes. Metric values may be stale or zero even though the scrape target is up."
         - alert: SubmissionCreateSystemFailures
           expr: sum by (namespace, scope, status) (increase(codeplace_submission_create_outcome_total{namespace=~"code-place-(dev|prod)", status=~"db_error|enqueue_error"}[5m])) > 0
           for: 2m

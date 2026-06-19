@@ -39,12 +39,12 @@ backend는 `django-prometheus` 기반 `/metrics` 엔드포인트를 제공합니
 
 - `codeplace_http_requests_total{method,endpoint,status_code}`
 - `codeplace_http_request_duration_seconds{method,endpoint}`
-- `codeplace_submission_status_count{status}`
-- `codeplace_submission_oldest_age_seconds{status}`
 - `codeplace_submission_judge_duration_seconds`
 - `codeplace_submission_create_outcome_total{status,scope}`
 - `codeplace_judge_task_outcome_total{status,scope}`
 - `codeplace_waiting_queue_length`
+- `codeplace_celery_broker_queue_length`
+- `codeplace_observability_collector_success{collector}`
 - `codeplace_judge_server_available{hostname}`
 - `codeplace_judge_server_last_heartbeat_age_seconds{hostname}`
 - `codeplace_judge_server_task_number{hostname}`
@@ -277,10 +277,10 @@ P1은 `group_wait=30s`, `repeat_interval=1h`로 전달합니다. `code-place-dev
 - `AlertmanagerConfigReloadFailed`: Alertmanager generated config reload 실패 또는 reload metric 누락 2분 지속.
 - `AlertmanagerNotificationFailures`: Alertmanager notification delivery failure 2분 지속.
 - `JudgeWaitingQueueBacklog`: `waiting_queue` 5 초과 3분 지속.
+- `CeleryBrokerQueueBacklog`: Redis broker default queue 20 초과 5분 지속.
+- `CodePlaceCollectorFailed`: backend custom metrics collector 실패 5분 지속.
 - `SubmissionCreateSystemFailures`: 제출 생성 API에서 DB 또는 judge enqueue 실패 발생 2분 지속.
 - `JudgeTaskFailures`: `judge_task`에서 submission/user lookup 또는 dispatch 실패 발생 2분 지속.
-- `PendingSubmissionsStuck`: oldest pending submission age 300초 초과 3분 지속.
-- `JudgingSubmissionsStuck`: oldest judging submission age 900초 초과 5분 지속.
 - `CeleryWorkerRestarting`: worker restart 3회 이상/15분.
 - `CeleryBeatDown`: beat Deployment available replica 0개 또는 availability metric 누락 2분 지속.
 - `CeleryTaskFailures`: task failure 발생 2분 지속.

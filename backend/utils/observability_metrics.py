@@ -2,12 +2,10 @@ import logging
 from datetime import timedelta
 
 from django.db import connection
-from django.db.models import Count, Min
 from django.utils import timezone
 from prometheus_client import Counter, Histogram, REGISTRY
 from prometheus_client.core import CounterMetricFamily, GaugeMetricFamily, HistogramMetricFamily
 
-from submission.models import JudgeStatus, Submission
 from utils.cache import cache
 from utils.celery_observability import (
     CELERY_TASK_RUNTIME_BUCKET_KEY,
@@ -23,19 +21,10 @@ from utils.constants import CacheKey
 logger = logging.getLogger(__name__)
 
 JUDGE_DURATION_BUCKETS = (1, 3, 5, 10, 30, 60, 120, 300, 600, float("inf"))
-JUDGE_STATUS_LABELS = {
-    JudgeStatus.COMPILE_ERROR: "compile_error",
-    JudgeStatus.WRONG_ANSWER: "wrong_answer",
-    JudgeStatus.ACCEPTED: "accepted",
-    JudgeStatus.CPU_TIME_LIMIT_EXCEEDED: "cpu_time_limit_exceeded",
-    JudgeStatus.REAL_TIME_LIMIT_EXCEEDED: "real_time_limit_exceeded",
-    JudgeStatus.MEMORY_LIMIT_EXCEEDED: "memory_limit_exceeded",
-    JudgeStatus.RUNTIME_ERROR: "runtime_error",
-    JudgeStatus.SYSTEM_ERROR: "system_error",
-    JudgeStatus.PENDING: "pending",
-    JudgeStatus.JUDGING: "judging",
-    JudgeStatus.PARTIALLY_ACCEPTED: "partially_accepted",
-}
+CELERY_BROKER_QUEUE_KEY = "celery"
+JUDGE_DURATION_BUCKET_KEY = "codeplace:judge_duration_seconds_bucket"
+JUDGE_DURATION_COUNT_KEY = "codeplace:judge_duration_seconds_count"
+JUDGE_DURATION_SUM_KEY = "codeplace:judge_duration_seconds_sum"
 
 HTTP_REQUESTS_TOTAL = Counter(
     "codeplace_http_requests_total",
@@ -85,18 +74,12 @@ class CodePlaceCollector:
 
     def describe(self):
         yield GaugeMetricFamily(
-            "codeplace_submission_status_count",
-            "Current number of submissions grouped by judge status.",
-            labels=["status"],
-        )
-        yield GaugeMetricFamily(
-            "codeplace_submission_oldest_age_seconds",
-            "Age of the oldest submission in each in-flight judge status.",
-            labels=["status"],
-        )
-        yield GaugeMetricFamily(
             "codeplace_waiting_queue_length",
             "Number of submissions waiting because no judge-server was available.",
+        )
+        yield GaugeMetricFamily(
+            "codeplace_celery_broker_queue_length",
+            "Number of Celery tasks waiting in the Redis broker default queue.",
         )
         yield GaugeMetricFamily(
             "codeplace_judge_server_available",
@@ -170,31 +153,22 @@ class CodePlaceCollector:
             "Seconds since each Celery task last completed successfully.",
             labels=["task_name"],
         )
+        yield GaugeMetricFamily(
+            "codeplace_observability_collector_success",
+            "Whether each CodePlace custom metrics collector completed successfully.",
+            labels=["collector"],
+        )
 
     def collect(self):
-        yield from self._submission_status_count()
-        yield self._submission_oldest_age_seconds()
+        self._collector_success = {}
         yield self._waiting_queue_length()
+        yield self._celery_broker_queue_length()
         yield from self._judge_server_metrics()
         yield self._judge_duration_histogram()
         yield from self._celery_task_metrics()
         yield from self._postgres_metrics()
         yield from self._redis_health_metrics()
-
-    def _submission_status_count(self):
-        metric = GaugeMetricFamily(
-            "codeplace_submission_status_count",
-            "Current number of submissions grouped by judge status.",
-            labels=["status"],
-        )
-        try:
-            counts = dict(Submission.objects.values_list("result").order_by("result").annotate(count=Count("id")))
-        except Exception as e:
-            logger.warning("Failed to collect submission status counts: %s", e)
-            counts = {}
-        for status_value, status_label in JUDGE_STATUS_LABELS.items():
-            metric.add_metric([status_label], counts.get(status_value, 0))
-        yield metric
+        yield self._collector_success_metric()
 
     def _waiting_queue_length(self):
         metric = GaugeMetricFamily(
@@ -206,34 +180,24 @@ class CodePlaceCollector:
         except Exception as e:
             logger.warning("Failed to collect waiting queue length: %s", e)
             metric.add_metric([], 0)
+            self._mark_collector_success("waiting_queue", False)
+        else:
+            self._mark_collector_success("waiting_queue", True)
         return metric
 
-    def _submission_oldest_age_seconds(self):
+    def _celery_broker_queue_length(self):
         metric = GaugeMetricFamily(
-            "codeplace_submission_oldest_age_seconds",
-            "Age of the oldest submission in each in-flight judge status.",
-            labels=["status"],
+            "codeplace_celery_broker_queue_length",
+            "Number of Celery tasks waiting in the Redis broker default queue.",
         )
-        now = timezone.now()
-        status_map = {
-            JudgeStatus.PENDING: "pending",
-            JudgeStatus.JUDGING: "judging",
-        }
         try:
-            oldest_by_status = {
-                row["result"]: row["oldest_create_time"]
-                for row in Submission.objects.filter(
-                    result__in=status_map.keys(),
-                ).values("result").annotate(oldest_create_time=Min("create_time"))
-            }
+            metric.add_metric([], cache.llen(CELERY_BROKER_QUEUE_KEY) or 0)
         except Exception as e:
-            logger.warning("Failed to collect oldest submission age metrics: %s", e)
-            oldest_by_status = {}
-
-        for status_value, status_label in status_map.items():
-            created_at = oldest_by_status.get(status_value)
-            age_seconds = max((now - created_at).total_seconds(), 0) if created_at else 0
-            metric.add_metric([status_label], age_seconds)
+            logger.warning("Failed to collect Celery broker queue length: %s", e)
+            metric.add_metric([], 0)
+            self._mark_collector_success("celery_broker_queue", False)
+        else:
+            self._mark_collector_success("celery_broker_queue", True)
         return metric
 
     def _judge_server_metrics(self):
@@ -260,6 +224,9 @@ class CodePlaceCollector:
         except Exception as e:
             logger.warning("Failed to collect judge-server metrics: %s", e)
             servers = []
+            self._mark_collector_success("judge_server", False)
+        else:
+            self._mark_collector_success("judge_server", True)
         for server in servers:
             if server.is_disabled:
                 continue
@@ -276,26 +243,24 @@ class CodePlaceCollector:
     def _judge_duration_histogram(self):
         metric = HistogramMetricFamily(
             "codeplace_submission_judge_duration_seconds",
-            "Judge duration for submissions completed in the last 10 minutes.",
+            "Judge duration recorded by celery workers.",
         )
-        cutoff = timezone.now() - timedelta(minutes=10)
-        durations = []
         try:
-            submissions = Submission.objects.filter(
-                judge_end_time__gte=cutoff,
-                judge_start_time__isnull=False,
-                judge_end_time__isnull=False,
-            ).only("judge_start_time", "judge_end_time")
-            for submission in submissions:
-                durations.append(max((submission.judge_end_time - submission.judge_start_time).total_seconds(), 0))
+            duration_buckets = self._redis_hash(JUDGE_DURATION_BUCKET_KEY)
+            duration_sum = self._float_or_zero(cache.get(JUDGE_DURATION_SUM_KEY, 0))
         except Exception as e:
             logger.warning("Failed to collect judge duration metrics: %s", e)
+            duration_buckets = {}
+            duration_sum = 0
+            self._mark_collector_success("judge_duration", False)
+        else:
+            self._mark_collector_success("judge_duration", True)
 
         cumulative_buckets = []
         for bucket in JUDGE_DURATION_BUCKETS:
             label = "+Inf" if bucket == float("inf") else str(bucket)
-            cumulative_buckets.append((label, sum(1 for duration in durations if duration <= bucket)))
-        metric.add_metric([], cumulative_buckets, sum(durations))
+            cumulative_buckets.append((label, self._float_or_zero(duration_buckets.get(label, 0))))
+        metric.add_metric([], cumulative_buckets, duration_sum)
         return metric
 
     def _celery_task_metrics(self):
@@ -333,12 +298,15 @@ class CodePlaceCollector:
             last_seen_at = self._redis_hash(CELERY_TASK_LAST_SEEN_AT_KEY)
         except Exception as e:
             logger.warning("Failed to collect Celery task metrics: %s", e)
+            self._mark_collector_success("celery_task", False)
             yield total_metric
             yield runtime_metric
             yield last_runtime_metric
             yield last_seen_age_metric
             yield last_success_age_metric
             return
+        else:
+            self._mark_collector_success("celery_task", True)
 
         for field, value in task_totals.items():
             task_name, status = self._split_field(field, 2)
@@ -421,6 +389,9 @@ class CodePlaceCollector:
         except Exception as e:
             logger.warning("Failed to collect PostgreSQL health metrics: %s", e)
             connections = max_connections = long_transactions = lock_waits = 0
+            self._mark_collector_success("postgres", False)
+        else:
+            self._mark_collector_success("postgres", True)
 
         connections_metric.add_metric([], float(connections or 0))
         max_connections_metric.add_metric([], float(max_connections or 0))
@@ -455,9 +426,14 @@ class CodePlaceCollector:
                 max_clients = float(raw_max_clients.get("maxclients") or 0)
             except Exception as e:
                 logger.warning("Failed to collect Redis maxclients metric: %s", e)
+                self._mark_collector_success("redis", False)
         except Exception as e:
             logger.warning("Failed to collect Redis health metrics: %s", e)
             connected_clients = max_clients = rejected_connections = 0
+            self._mark_collector_success("redis", False)
+        else:
+            if not getattr(self, "_collector_success", {}).get("redis", False):
+                self._mark_collector_success("redis", True)
 
         connected_clients_metric.add_metric([], connected_clients)
         max_clients_metric.add_metric([], max_clients)
@@ -465,6 +441,30 @@ class CodePlaceCollector:
         yield connected_clients_metric
         yield max_clients_metric
         yield rejected_connections_metric
+
+    def _collector_success_metric(self):
+        metric = GaugeMetricFamily(
+            "codeplace_observability_collector_success",
+            "Whether each CodePlace custom metrics collector completed successfully.",
+            labels=["collector"],
+        )
+        collectors = (
+            "waiting_queue",
+            "celery_broker_queue",
+            "judge_server",
+            "judge_duration",
+            "celery_task",
+            "postgres",
+            "redis",
+        )
+        for collector in collectors:
+            metric.add_metric([collector], 1 if self._collector_success.get(collector, False) else 0)
+        return metric
+
+    def _mark_collector_success(self, collector, success):
+        if not hasattr(self, "_collector_success"):
+            self._collector_success = {}
+        self._collector_success[collector] = bool(success)
 
     @staticmethod
     def _redis_hash(key):
@@ -512,3 +512,16 @@ def register_codeplace_metrics():
     except ValueError:
         logger.debug("CodePlace metrics collector is already registered")
     register_codeplace_metrics._registered = True
+
+
+def record_judge_duration(duration_seconds):
+    try:
+        duration = max(float(duration_seconds), 0)
+        for bucket in JUDGE_DURATION_BUCKETS:
+            if duration <= bucket:
+                label = "+Inf" if bucket == float("inf") else str(bucket)
+                cache.hincrby(JUDGE_DURATION_BUCKET_KEY, label, 1)
+        cache.redis_incr(JUDGE_DURATION_COUNT_KEY, 1)
+        cache.incrbyfloat(JUDGE_DURATION_SUM_KEY, duration)
+    except Exception:
+        logger.exception("Failed to record judge duration metric")

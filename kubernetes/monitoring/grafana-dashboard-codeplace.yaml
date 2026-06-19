@@ -178,34 +178,34 @@ data:
         },
         {
           "type": "bargauge",
-          "title": "Submission Status",
+          "title": "Judge Queue Length",
           "gridPos": {"x": 16, "y": 4, "w": 4, "h": 8},
           "fieldConfig": {"defaults": {"unit": "short"}},
           "options": {"displayMode": "gradient", "orientation": "horizontal", "reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
           "targets": [
-            {"expr": "codeplace_submission_status_count{namespace=~\"$namespace\"}", "legendFormat": "{{namespace}} {{status}}"}
+            {"expr": "codeplace_waiting_queue_length{namespace=~\"$namespace\"}", "legendFormat": "{{namespace}} waiting_queue"},
+            {"expr": "codeplace_celery_broker_queue_length{namespace=~\"$namespace\"}", "legendFormat": "{{namespace}} celery"}
           ]
         },
         {
           "type": "bargauge",
-          "title": "Oldest In-flight Submission",
+          "title": "Custom Collector Success",
           "gridPos": {"x": 20, "y": 4, "w": 4, "h": 8},
           "fieldConfig": {
             "defaults": {
-              "unit": "s",
+              "unit": "short",
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
-                  {"color": "green", "value": null},
-                  {"color": "orange", "value": 300},
-                  {"color": "red", "value": 900}
+                  {"color": "red", "value": null},
+                  {"color": "green", "value": 1}
                 ]
               }
             }
           },
           "options": {"displayMode": "gradient", "orientation": "horizontal", "reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
           "targets": [
-            {"expr": "codeplace_submission_oldest_age_seconds{namespace=~\"$namespace\"}", "legendFormat": "{{namespace}} {{status}}"}
+            {"expr": "codeplace_observability_collector_success{namespace=~\"$namespace\"}", "legendFormat": "{{namespace}} {{collector}}"}
           ]
         },
         {
