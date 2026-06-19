@@ -437,6 +437,15 @@ spec:
           annotations:
             summary: "Submission create path has system failures"
             description: "Submission creation is reporting DB or judge enqueue failures. Check backend logs, PostgreSQL, Redis/Celery broker, and judge task queue."
+        - alert: JudgeTaskFailures
+          expr: sum by (namespace, scope, status) (increase(codeplace_judge_task_outcome_total{namespace=~"code-place-(dev|prod)", status=~"error|submission_missing|user_missing"}[5m])) > 0
+          for: 2m
+          labels:
+            severity: warning
+            priority: P1
+          annotations:
+            summary: "Judge task failures detected"
+            description: "Celery judge_task is failing before or during judge dispatch. Check celery-worker logs, submission/user rows, judge-server availability, and result save path."
         - alert: CeleryWorkerRestarting
           expr: sum by (namespace) (increase(kube_pod_container_status_restarts_total{namespace=~"code-place-(dev|prod)", pod=~"celery-worker-.*"}[15m])) > 3
           labels:

@@ -282,11 +282,12 @@ data:
         },
         {
           "type": "timeseries",
-          "title": "Submission Create Outcomes",
+          "title": "Submission / Judge Outcomes",
           "gridPos": {"x": 0, "y": 28, "w": 24, "h": 8},
           "fieldConfig": {"defaults": {"unit": "ops"}},
           "targets": [
-            {"expr": "sum by (namespace, scope, status) (rate(codeplace_submission_create_outcome_total{namespace=~\"$namespace\"}[5m]))", "legendFormat": "{{namespace}} {{scope}} {{status}}/s"}
+            {"expr": "sum by (namespace, scope, status) (rate(codeplace_submission_create_outcome_total{namespace=~\"$namespace\"}[5m]))", "legendFormat": "{{namespace}} create {{scope}} {{status}}/s"},
+            {"expr": "sum by (namespace, scope, status) (rate(codeplace_judge_task_outcome_total{namespace=~\"$namespace\"}[5m]))", "legendFormat": "{{namespace}} judge {{scope}} {{status}}/s"}
           ]
         },
         {

@@ -73,6 +73,11 @@ SUBMISSION_CREATE_OUTCOME_TOTAL = Counter(
     "Total user-facing submission create API outcomes.",
     ["status", "scope"],
 )
+JUDGE_TASK_OUTCOME_TOTAL = Counter(
+    "codeplace_judge_task_outcome_total",
+    "Total Celery judge task outcomes.",
+    ["status", "scope"],
+)
 
 
 class CodePlaceCollector:
