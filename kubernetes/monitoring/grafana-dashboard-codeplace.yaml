@@ -221,7 +221,7 @@ data:
           "gridPos": {"x": 0, "y": 13, "w": 8, "h": 7},
           "fieldConfig": {"defaults": {"unit": "ops"}},
           "targets": [
-            {"expr": "sum by (namespace, task_name, status) (rate(codeplace_celery_task_count{namespace=~\"$namespace\"}[5m]))", "legendFormat": "{{namespace}} {{task_name}} {{status}}"}
+            {"expr": "sum by (namespace, task_name, status) (rate(codeplace_celery_task_total{namespace=~\"$namespace\"}[5m]))", "legendFormat": "{{namespace}} {{task_name}} {{status}}"}
           ]
         },
         {

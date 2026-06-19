@@ -704,7 +704,7 @@ Grafana Explore:
 확인:
 
 ```promql
-sum by (task_name, status) (increase(codeplace_celery_task_count{namespace="<namespace>"}[10m]))
+sum by (task_name, status) (increase(codeplace_celery_task_total{namespace="<namespace>"}[10m]))
 histogram_quantile(0.95, sum by (task_name, le) (rate(codeplace_celery_task_runtime_seconds_bucket{namespace="<namespace>"}[10m])))
 codeplace_celery_task_last_runtime_seconds{namespace="<namespace>"}
 codeplace_celery_task_last_seen_age_seconds{namespace="<namespace>"}

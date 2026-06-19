@@ -48,7 +48,7 @@ backend는 `django-prometheus` 기반 `/metrics` 엔드포인트를 제공합니
 - `codeplace_judge_server_available{hostname}`
 - `codeplace_judge_server_last_heartbeat_age_seconds{hostname}`
 - `codeplace_judge_server_task_number{hostname}`
-- `codeplace_celery_task_count{task_name,status}`
+- `codeplace_celery_task_total{task_name,status}`
 - `codeplace_celery_task_runtime_seconds{task_name}`
 - `codeplace_celery_task_last_runtime_seconds{task_name,status}`
 - `codeplace_celery_task_last_seen_age_seconds{task_name,status}`

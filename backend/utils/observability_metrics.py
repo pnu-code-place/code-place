@@ -5,7 +5,7 @@ from django.db import connection
 from django.db.models import Count, Min
 from django.utils import timezone
 from prometheus_client import Counter, Histogram, REGISTRY
-from prometheus_client.core import GaugeMetricFamily, HistogramMetricFamily
+from prometheus_client.core import CounterMetricFamily, GaugeMetricFamily, HistogramMetricFamily
 
 from submission.models import JudgeStatus, Submission
 from utils.cache import cache
@@ -117,8 +117,8 @@ class CodePlaceCollector:
             "codeplace_submission_judge_duration_seconds",
             "Judge duration for submissions completed in the last 10 minutes.",
         )
-        yield GaugeMetricFamily(
-            "codeplace_celery_task_count",
+        yield CounterMetricFamily(
+            "codeplace_celery_task_total",
             "Total Celery tasks grouped by task name and status.",
             labels=["task_name", "status"],
         )
@@ -156,7 +156,7 @@ class CodePlaceCollector:
             "codeplace_redis_max_clients",
             "Configured Redis maxclients from CONFIG GET maxclients.",
         )
-        yield GaugeMetricFamily(
+        yield CounterMetricFamily(
             "codeplace_redis_rejected_connections_total",
             "Total Redis rejected connections from INFO stats.",
         )
@@ -299,8 +299,8 @@ class CodePlaceCollector:
         return metric
 
     def _celery_task_metrics(self):
-        total_metric = GaugeMetricFamily(
-            "codeplace_celery_task_count",
+        total_metric = CounterMetricFamily(
+            "codeplace_celery_task_total",
             "Total Celery tasks grouped by task name and status.",
             labels=["task_name", "status"],
         )
@@ -440,7 +440,7 @@ class CodePlaceCollector:
             "codeplace_redis_max_clients",
             "Configured Redis maxclients from CONFIG GET maxclients.",
         )
-        rejected_connections_metric = GaugeMetricFamily(
+        rejected_connections_metric = CounterMetricFamily(
             "codeplace_redis_rejected_connections_total",
             "Total Redis rejected connections from INFO stats.",
         )

@@ -112,7 +112,8 @@ class CodePlaceCollectorTest(SimpleTestCase):
         with patch("utils.observability_metrics.cache.hgetall", side_effect=lambda key: hashes.get(key, {})):
             samples = self._samples_by_metric(list(CodePlaceCollector()._celery_task_metrics()))
 
-        total_samples = samples["codeplace_celery_task_count"]
+        total_samples = samples["codeplace_celery_task"]
+        self.assertEqual(total_samples[0].name, "codeplace_celery_task_total")
         self.assertEqual(total_samples[0].labels, {
             "task_name": "judge.tasks.judge_task",
             "status": "success",
@@ -159,7 +160,8 @@ class CodePlaceCollectorTest(SimpleTestCase):
         with patch("utils.observability_metrics.cache.hgetall", side_effect=lambda key: hashes.get(key, {})):
             samples = self._samples_by_metric(list(CodePlaceCollector()._celery_task_metrics()))
 
-        total_sample = samples["codeplace_celery_task_count"][0]
+        total_sample = samples["codeplace_celery_task"][0]
+        self.assertEqual(total_sample.name, "codeplace_celery_task_total")
         self.assertEqual(total_sample.value, 0)
         last_runtime_sample = samples["codeplace_celery_task_last_runtime_seconds"][0]
         self.assertEqual(last_runtime_sample.value, 0)
@@ -205,7 +207,9 @@ class CodePlaceCollectorTest(SimpleTestCase):
 
         self.assertEqual(samples["codeplace_redis_connected_clients"][0].value, 25)
         self.assertEqual(samples["codeplace_redis_max_clients"][0].value, 1000)
-        self.assertEqual(samples["codeplace_redis_rejected_connections_total"][0].value, 3)
+        rejected_sample = samples["codeplace_redis_rejected_connections"][0]
+        self.assertEqual(rejected_sample.name, "codeplace_redis_rejected_connections_total")
+        self.assertEqual(rejected_sample.value, 3)
 
 
 class CeleryObservabilityTest(SimpleTestCase):
