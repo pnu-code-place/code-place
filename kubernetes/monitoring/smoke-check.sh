@@ -42,6 +42,7 @@ require_cmd kubectl
 echo "==> checking Prometheus Operator CRDs"
 for crd in \
   prometheusrules.monitoring.coreos.com \
+  probes.monitoring.coreos.com \
   servicemonitors.monitoring.coreos.com \
   podmonitors.monitoring.coreos.com \
   alertmanagerconfigs.monitoring.coreos.com; do
@@ -56,11 +57,41 @@ ok "namespace $NAMESPACE"
 for resource in \
   "prometheusrule/codeplace-fast-alerts" \
   "servicemonitor/backend" \
+  "servicemonitor/blackbox-exporter" \
+  "servicemonitor/dcgm-exporter" \
+  "servicemonitor/kubernetes-event-exporter" \
+  "servicemonitor/longhorn" \
+  "servicemonitor/otel-collector" \
+  "servicemonitor/tempo" \
+  "servicemonitor/vllm" \
   "podmonitor/postgres" \
   "podmonitor/redis" \
   "alertmanagerconfig/codeplace-alert-routing" \
   "configmap/grafana-dashboard-codeplace" \
-  "configmap/grafana-dashboard-codeplace-logs"; do
+  "configmap/grafana-dashboard-codeplace-ai-inference" \
+  "configmap/grafana-dashboard-codeplace-kubernetes-events" \
+  "configmap/grafana-dashboard-codeplace-logs" \
+  "configmap/grafana-dashboard-codeplace-monitoring-stack" \
+  "configmap/grafana-dashboard-codeplace-public-endpoints" \
+  "configmap/grafana-dashboard-codeplace-storage" \
+  "configmap/grafana-dashboard-codeplace-traces" \
+  "configmap/kubernetes-event-exporter-config" \
+  "configmap/otel-collector-config" \
+  "configmap/tempo-config" \
+  "deployment/blackbox-exporter" \
+  "deployment/kubernetes-event-exporter" \
+  "deployment/otel-collector" \
+  "deployment/tempo" \
+  "service/blackbox-exporter" \
+  "service/kubernetes-event-exporter" \
+  "service/otel-collector" \
+  "service/tempo" \
+  "persistentvolumeclaim/tempo-data" \
+  "probe/codeplace-public-dev-http" \
+  "probe/codeplace-public-prod-http" \
+  "probe/codeplace-grafana-http" \
+  "probe/codeplace-hub-auth-dev-http" \
+  "probe/codeplace-hub-auth-prod-http"; do
   kubectl -n "$NAMESPACE" get "$resource" >/dev/null
   ok "$resource"
 done
@@ -71,7 +102,13 @@ require_label "$NAMESPACE" podmonitor postgres release kube-prometheus-stack
 require_label "$NAMESPACE" podmonitor redis release kube-prometheus-stack
 require_label "$NAMESPACE" alertmanagerconfig codeplace-alert-routing alertmanagerConfig codeplace
 require_label "$NAMESPACE" configmap grafana-dashboard-codeplace grafana_dashboard 1
+require_label "$NAMESPACE" configmap grafana-dashboard-codeplace-ai-inference grafana_dashboard 1
+require_label "$NAMESPACE" configmap grafana-dashboard-codeplace-kubernetes-events grafana_dashboard 1
 require_label "$NAMESPACE" configmap grafana-dashboard-codeplace-logs grafana_dashboard 1
+require_label "$NAMESPACE" configmap grafana-dashboard-codeplace-monitoring-stack grafana_dashboard 1
+require_label "$NAMESPACE" configmap grafana-dashboard-codeplace-public-endpoints grafana_dashboard 1
+require_label "$NAMESPACE" configmap grafana-dashboard-codeplace-storage grafana_dashboard 1
+require_label "$NAMESPACE" configmap grafana-dashboard-codeplace-traces grafana_dashboard 1
 
 if resource_exists "$NAMESPACE" secret alertmanager-contact-points; then
   kubectl -n "$NAMESPACE" get secret alertmanager-contact-points \
@@ -91,6 +128,23 @@ for selector in \
   kubectl -n "$NAMESPACE" wait --for=condition=Ready pod -l "$selector" --timeout=30s
   ok "pods ready for $selector"
 done
+
+echo "==> checking CodePlace monitoring pods"
+for selector in \
+  "app=blackbox-exporter" \
+  "app.kubernetes.io/name=kubernetes-event-exporter" \
+  "app=otel-collector" \
+  "app=tempo"; do
+  kubectl -n "$NAMESPACE" wait --for=condition=Ready pod -l "$selector" --timeout=30s
+  ok "pods ready for $selector"
+done
+
+if kubectl -n "$NAMESPACE" get daemonset dcgm-exporter >/dev/null 2>&1; then
+  desired="$(kubectl -n "$NAMESPACE" get daemonset dcgm-exporter -o jsonpath='{.status.desiredNumberScheduled}')"
+  available="$(kubectl -n "$NAMESPACE" get daemonset dcgm-exporter -o jsonpath='{.status.numberAvailable}')"
+  [ "$desired" = "$available" ] || fail "daemonset/dcgm-exporter available=$available desired=$desired"
+  ok "daemonset/dcgm-exporter available=$available desired=$desired"
+fi
 
 echo "==> checking optional logs stack"
 if [ "$(resource_count "$NAMESPACE" pod app.kubernetes.io/name=loki)" -gt 0 ]; then
