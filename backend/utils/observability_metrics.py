@@ -282,7 +282,7 @@ class CodePlaceCollector:
         durations = []
         try:
             submissions = Submission.objects.filter(
-                judge_start_time__gte=cutoff,
+                judge_end_time__gte=cutoff,
                 judge_start_time__isnull=False,
                 judge_end_time__isnull=False,
             ).only("judge_start_time", "judge_end_time")

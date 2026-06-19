@@ -83,6 +83,32 @@ class CodePlaceCollectorTest(SimpleTestCase):
         self.assertGreaterEqual(by_status["pending"], 419)
         self.assertGreaterEqual(by_status["judging"], 179)
 
+    def test_judge_duration_histogram_uses_recent_completion_time(self):
+        now = timezone.now()
+        submission = MagicMock(
+            judge_start_time=now - timedelta(minutes=20),
+            judge_end_time=now - timedelta(minutes=1),
+        )
+        queryset = MagicMock()
+        queryset.only.return_value = [submission]
+
+        with patch("utils.observability_metrics.timezone.now", return_value=now), \
+                patch("utils.observability_metrics.Submission.objects.filter", return_value=queryset) as filter_mock:
+            samples = self._samples_by_metric([CodePlaceCollector()._judge_duration_histogram()])
+
+        filter_kwargs = filter_mock.call_args.kwargs
+        self.assertEqual(filter_kwargs["judge_end_time__gte"], now - timedelta(minutes=10))
+        self.assertNotIn("judge_start_time__gte", filter_kwargs)
+        bucket_samples = [
+            sample for sample in samples["codeplace_submission_judge_duration_seconds"]
+            if sample.name.endswith("_bucket")
+        ]
+        self.assertTrue(any(sample.labels["le"] == "+Inf" and sample.value == 1 for sample in bucket_samples))
+        self.assertTrue(any(
+            sample.name.endswith("_sum") and sample.value == 1140
+            for sample in samples["codeplace_submission_judge_duration_seconds"]
+        ))
+
     def test_celery_task_metrics_are_collected_from_redis(self):
         hashes = {
             celery_observability.CELERY_TASK_TOTAL_KEY: {
