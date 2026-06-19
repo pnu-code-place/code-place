@@ -4,12 +4,9 @@ import os
 from unittest.mock import patch, mock_open, MagicMock
 from django.test import SimpleTestCase, TestCase, override_settings
 from django.core.cache import cache
-from django.utils import timezone
 from prometheus_client.core import GaugeMetricFamily, HistogramMetricFamily
 
-from utils import celery_observability
 from utils.json_logging import CodePlaceJsonFormatter
-from utils.observability_context import get_request_id, reset_request_id, set_request_id
 from utils.constants import CacheKey
 from utils.observability_metrics import CodePlaceCollector
 from utils import observability_tracing
@@ -46,84 +43,6 @@ class CodePlaceCollectorTest(SimpleTestCase):
             sample.name.endswith("_sum") and sample.value == 4.5
             for sample in samples["codeplace_submission_judge_duration_seconds"]
         ))
-
-    def test_celery_task_metrics_are_collected_from_redis(self):
-        hashes = {
-            celery_observability.CELERY_TASK_TOTAL_KEY: {
-                b"judge.tasks.judge_task|success": b"3",
-                b"judge.tasks.judge_task|failure": b"1",
-            },
-            celery_observability.CELERY_TASK_RUNTIME_BUCKET_KEY: {
-                b"judge.tasks.judge_task|1": b"2",
-                b"judge.tasks.judge_task|3": b"3",
-                b"judge.tasks.judge_task|+Inf": b"3",
-            },
-            celery_observability.CELERY_TASK_RUNTIME_COUNT_KEY: {
-                b"judge.tasks.judge_task": b"3",
-            },
-            celery_observability.CELERY_TASK_RUNTIME_SUM_KEY: {
-                b"judge.tasks.judge_task": b"4.5",
-            },
-            celery_observability.CELERY_TASK_RUNTIME_LAST_KEY: {
-                b"judge.tasks.judge_task|success": b"1.5",
-            },
-            celery_observability.CELERY_TASK_LAST_SEEN_AT_KEY: {
-                b"judge.tasks.judge_task|success": str(timezone.now().timestamp() - 30).encode(),
-                b"judge.tasks.judge_task|failure": str(timezone.now().timestamp() - 10).encode(),
-            },
-        }
-
-        with patch("utils.observability_metrics.cache.hgetall", side_effect=lambda key: hashes.get(key, {})):
-            samples = self._samples_by_metric(list(CodePlaceCollector()._celery_task_metrics()))
-
-        total_samples = samples["codeplace_celery_task"]
-        self.assertEqual(total_samples[0].name, "codeplace_celery_task_total")
-        self.assertEqual(total_samples[0].labels, {
-            "task_name": "judge.tasks.judge_task",
-            "status": "success",
-        })
-        self.assertEqual(total_samples[0].value, 3)
-        runtime_samples = samples["codeplace_celery_task_runtime_seconds"]
-        bucket_samples = [sample for sample in runtime_samples if sample.name.endswith("_bucket")]
-        self.assertTrue(any(sample.labels["le"] == "+Inf" and sample.value == 3 for sample in bucket_samples))
-        self.assertTrue(any(sample.name.endswith("_sum") and sample.value == 4.5 for sample in runtime_samples))
-        last_success_samples = samples["codeplace_celery_task_last_success_age_seconds"]
-        self.assertEqual(last_success_samples[0].labels, {"task_name": "judge.tasks.judge_task"})
-        self.assertGreaterEqual(last_success_samples[0].value, 29)
-        last_runtime = samples["codeplace_celery_task_last_runtime_seconds"][0]
-        self.assertEqual(last_runtime.value, 1.5)
-
-    def test_celery_task_metrics_tolerate_malformed_redis_values(self):
-        hashes = {
-            celery_observability.CELERY_TASK_TOTAL_KEY: {
-                b"judge.tasks.judge_task|success": b"bad-count",
-            },
-            celery_observability.CELERY_TASK_RUNTIME_BUCKET_KEY: {
-                b"judge.tasks.judge_task|1": b"bad-bucket",
-            },
-            celery_observability.CELERY_TASK_RUNTIME_COUNT_KEY: {
-                b"judge.tasks.judge_task": b"bad-count",
-            },
-            celery_observability.CELERY_TASK_RUNTIME_SUM_KEY: {
-                b"judge.tasks.judge_task": b"bad-sum",
-            },
-            celery_observability.CELERY_TASK_RUNTIME_LAST_KEY: {
-                b"judge.tasks.judge_task|success": b"bad-runtime",
-            },
-            celery_observability.CELERY_TASK_LAST_SEEN_AT_KEY: {
-                b"judge.tasks.judge_task|success": b"bad-timestamp",
-            },
-        }
-
-        with patch("utils.observability_metrics.cache.hgetall", side_effect=lambda key: hashes.get(key, {})):
-            samples = self._samples_by_metric(list(CodePlaceCollector()._celery_task_metrics()))
-
-        total_sample = samples["codeplace_celery_task"][0]
-        self.assertEqual(total_sample.name, "codeplace_celery_task_total")
-        self.assertEqual(total_sample.value, 0)
-        last_runtime_sample = samples["codeplace_celery_task_last_runtime_seconds"][0]
-        self.assertEqual(last_runtime_sample.value, 0)
-        self.assertEqual(samples["codeplace_celery_task_last_success_age_seconds"], [])
 
     def test_redis_health_metrics_are_collected(self):
         redis_client = MagicMock()
@@ -178,63 +97,6 @@ class CodePlaceCollectorTest(SimpleTestCase):
         self.assertEqual(redis_success.value, 0)
 
 
-class CeleryObservabilityTest(SimpleTestCase):
-
-    def tearDown(self):
-        celery_observability._task_start_times.clear()
-        celery_observability._request_id_tokens.clear()
-
-    def test_record_task_writes_total_and_runtime_hashes(self):
-        redis_client = MagicMock()
-        with patch("utils.celery_observability.cache.hincrby") as hincrby, \
-                patch("utils.celery_observability.cache.client.get_client", return_value=redis_client):
-            celery_observability._record_task("judge.tasks.judge_task", "success", 2.5)
-
-        hincrby.assert_any_call(
-            celery_observability.CELERY_TASK_TOTAL_KEY,
-            "judge.tasks.judge_task|success",
-            1,
-        )
-        hincrby.assert_any_call(
-            celery_observability.CELERY_TASK_RUNTIME_COUNT_KEY,
-            "judge.tasks.judge_task",
-            1,
-        )
-        redis_client.hincrbyfloat.assert_any_call(
-            celery_observability.CELERY_TASK_RUNTIME_SUM_KEY,
-            "judge.tasks.judge_task",
-            2.5,
-        )
-        redis_client.hset.assert_any_call(
-            celery_observability.CELERY_TASK_RUNTIME_LAST_KEY,
-            "judge.tasks.judge_task|success",
-            2.5,
-        )
-
-    def test_before_task_publish_propagates_current_request_id(self):
-        token = set_request_id("request-123")
-        headers = {}
-        try:
-            celery_observability._on_before_task_publish(headers=headers)
-        finally:
-            reset_request_id(token)
-
-        self.assertEqual(headers["x-request-id"], "request-123")
-
-    def test_task_prerun_and_postrun_restore_request_id_context(self):
-        task = MagicMock()
-        task.name = "judge.tasks.judge_task"
-        task.request.headers = {"x-request-id": "request-456"}
-
-        with patch("utils.celery_observability._record_task"), \
-                patch("utils.celery_observability.logger"):
-            celery_observability._on_task_prerun(task_id="task-1", task=task)
-            self.assertEqual(get_request_id(), "request-456")
-            celery_observability._on_task_postrun(task_id="task-1", task=task, state="SUCCESS")
-
-        self.assertIsNone(get_request_id())
-
-
 class CodePlaceMetricsEndpointTest(SimpleTestCase):
 
     def test_metrics_endpoint_exposes_django_and_codeplace_metrics(self):
@@ -257,7 +119,6 @@ class CodePlaceMetricsEndpointTest(SimpleTestCase):
         with patch.object(CodePlaceCollector, "_waiting_queue_length", return_value=waiting_queue_metric), \
                 patch.object(CodePlaceCollector, "_celery_broker_queue_length", return_value=broker_queue_metric), \
                 patch.object(CodePlaceCollector, "_judge_duration_histogram", return_value=judge_duration_metric), \
-                patch.object(CodePlaceCollector, "_celery_task_metrics", return_value=[]), \
                 patch.object(CodePlaceCollector, "_redis_health_metrics", return_value=[]):
             response = self.client.get("/metrics")
 

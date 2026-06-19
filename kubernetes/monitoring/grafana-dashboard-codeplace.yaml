@@ -198,42 +198,10 @@ data:
         },
         {
           "type": "row",
-          "title": "Async Jobs",
+          "title": "Judge / Async Outcomes",
           "gridPos": {"x": 0, "y": 12, "w": 24, "h": 1},
           "collapsed": false,
           "panels": []
-        },
-        {
-          "type": "timeseries",
-          "title": "Celery Task Throughput",
-          "gridPos": {"x": 0, "y": 13, "w": 8, "h": 7},
-          "datasource": "Prometheus",
-          "fieldConfig": {"defaults": {"unit": "ops"}},
-          "targets": [
-            {"expr": "sum by (namespace, task_name, status) (rate(codeplace_celery_task_total{namespace=~\"$namespace\"}[5m]))", "legendFormat": "{{namespace}} {{task_name}} {{status}}"}
-          ]
-        },
-        {
-          "type": "timeseries",
-          "title": "Celery Task Runtime / Freshness",
-          "gridPos": {"x": 8, "y": 13, "w": 8, "h": 7},
-          "datasource": "Prometheus",
-          "fieldConfig": {"defaults": {"unit": "s"}},
-          "targets": [
-            {"expr": "histogram_quantile(0.95, sum by (namespace, task_name, le) (rate(codeplace_celery_task_runtime_seconds_bucket{namespace=~\"$namespace\"}[10m])))", "legendFormat": "{{namespace}} {{task_name}} p95"},
-            {"expr": "codeplace_celery_task_last_success_age_seconds{namespace=~\"$namespace\"}", "legendFormat": "{{namespace}} {{task_name}} last success age"}
-          ]
-        },
-        {
-          "type": "bargauge",
-          "title": "Celery Last Runtime",
-          "gridPos": {"x": 16, "y": 13, "w": 8, "h": 7},
-          "datasource": "Prometheus",
-          "fieldConfig": {"defaults": {"unit": "s"}},
-          "options": {"displayMode": "gradient", "orientation": "horizontal", "reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
-          "targets": [
-            {"expr": "codeplace_celery_task_last_runtime_seconds{namespace=~\"$namespace\"}", "legendFormat": "{{namespace}} {{task_name}} {{status}}"}
-          ]
         },
         {
           "type": "timeseries",
