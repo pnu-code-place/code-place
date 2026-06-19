@@ -1,0 +1,45 @@
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: codeplace-public-dev-http
+  labels:
+    release: kube-prometheus-stack
+spec:
+  jobName: codeplace-public-http-dev
+  interval: 30s
+  scrapeTimeout: 15s
+  module: http_2xx
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:9115
+  targets:
+    staticConfig:
+      static:
+        - https://k3s.code-place-dev.site/
+      labels:
+        environment: dev
+        namespace: code-place-dev
+        service: frontend
+        probe_type: public-http
+---
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: codeplace-public-prod-http
+  labels:
+    release: kube-prometheus-stack
+spec:
+  jobName: codeplace-public-http-prod
+  interval: 30s
+  scrapeTimeout: 15s
+  module: http_2xx
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:9115
+  targets:
+    staticConfig:
+      static:
+        - https://code.pusan.ac.kr/
+      labels:
+        environment: prod
+        namespace: code-place-prod
+        service: frontend
+        probe_type: public-http

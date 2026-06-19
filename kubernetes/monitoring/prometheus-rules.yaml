@@ -47,6 +47,26 @@ spec:
           annotations:
             summary: "Ingress 5xx rate is high in prod"
             description: "Traefik 5xx responses for code-place-prod are above 5% for 2 minutes."
+        - alert: PublicEndpointDown
+          expr: probe_success{job="codeplace-public-http-prod", environment="prod"} == 0
+          for: 1m
+          labels:
+            severity: critical
+            priority: P0
+            namespace: code-place-prod
+          annotations:
+            summary: "Public frontend endpoint is down in prod"
+            description: "The synthetic HTTPS probe for code.pusan.ac.kr has failed for 1 minute."
+        - alert: PublicEndpointTLSCritical
+          expr: (probe_ssl_earliest_cert_expiry{probe_type="public-http", environment="prod"} - time()) < 259200
+          for: 15m
+          labels:
+            severity: critical
+            priority: P0
+            namespace: code-place-prod
+          annotations:
+            summary: "Public endpoint TLS certificate expires within 3 days"
+            description: "The production CodePlace public HTTPS certificate expires within 3 days."
         - alert: JudgeAllUnavailable
           expr: (sum by (namespace) (codeplace_judge_server_available{namespace=~"code-place-(dev|prod)"}) == 0) or (max by (namespace) (up{job="backend", namespace=~"code-place-(dev|prod)"}) unless on (namespace) codeplace_judge_server_available{namespace=~"code-place-(dev|prod)"})
           for: 1m
@@ -174,6 +194,44 @@ spec:
           annotations:
             summary: "Backend API p95 latency is high"
             description: "Backend API p95 latency is above 2 seconds for 5 minutes."
+        - alert: PublicEndpointDown
+          expr: probe_success{job="codeplace-public-http-dev", environment="dev"} == 0
+          for: 2m
+          labels:
+            severity: warning
+            priority: P1
+            namespace: code-place-dev
+          annotations:
+            summary: "Public frontend endpoint is down in dev"
+            description: "The synthetic HTTPS probe for k3s.code-place-dev.site has failed for 2 minutes."
+        - alert: PublicEndpointLatencyHigh
+          expr: probe_duration_seconds{probe_type="public-http"} > 2
+          for: 5m
+          labels:
+            severity: warning
+            priority: P1
+          annotations:
+            summary: "Public frontend endpoint latency is high"
+            description: "A synthetic HTTPS probe has taken more than 2 seconds for 5 minutes."
+        - alert: PublicEndpointTLSExpiringSoon
+          expr: (probe_ssl_earliest_cert_expiry{probe_type="public-http"} - time()) < 1209600
+          for: 1h
+          labels:
+            severity: warning
+            priority: P1
+          annotations:
+            summary: "Public endpoint TLS certificate expires within 14 days"
+            description: "A CodePlace public HTTPS certificate expires within 14 days."
+        - alert: BlackboxExporterUnavailable
+          expr: (max(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"blackbox-exporter-.*"}) == 0) or absent(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"blackbox-exporter-.*"})
+          for: 2m
+          labels:
+            severity: warning
+            priority: P1
+            namespace: monitoring
+          annotations:
+            summary: "Blackbox exporter is not ready"
+            description: "The synthetic public endpoint probe exporter has not been ready for 2 minutes."
         - alert: JudgeWaitingQueueBacklog
           expr: codeplace_waiting_queue_length{namespace=~"code-place-(dev|prod)"} > 5
           for: 3m

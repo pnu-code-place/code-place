@@ -4,6 +4,7 @@ prometheus:
     scrapeInterval: 15s
     serviceMonitorSelectorNilUsesHelmValues: false
     podMonitorSelectorNilUsesHelmValues: false
+    probeSelectorNilUsesHelmValues: false
     ruleSelectorNilUsesHelmValues: false
 
 alertmanager:

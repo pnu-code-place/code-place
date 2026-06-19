@@ -5,12 +5,15 @@ namespace: monitoring
 resources:
   - ./alertmanager-config.yaml
   - ./backend-service-monitor.yaml
+  - ./blackbox-exporter.yaml
   - ./datastore-pod-monitors.yaml
   - ./grafana-dashboard-codeplace.yaml
   - ./grafana-dashboard-logs.yaml
+  - ./grafana-dashboard-public-endpoints.yaml
   - ./grafana-dashboard-storage.yaml
   - ./grafana-dashboard-traces.yaml
   - ./longhorn-service-monitor.yaml
   - ./otel-collector.yaml
   - ./prometheus-rules.yaml
+  - ./public-endpoint-probes.yaml
   - ./tempo.yaml
