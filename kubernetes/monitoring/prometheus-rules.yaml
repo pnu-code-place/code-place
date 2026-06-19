@@ -281,6 +281,16 @@ spec:
           annotations:
             summary: "Blackbox exporter is not ready"
             description: "The synthetic public endpoint probe exporter has not been ready for 2 minutes."
+        - alert: KubernetesEventExporterUnavailable
+          expr: (max(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"kubernetes-event-exporter-.*"}) == 0) or absent(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"kubernetes-event-exporter-.*"})
+          for: 2m
+          labels:
+            severity: warning
+            priority: P1
+            namespace: monitoring
+          annotations:
+            summary: "Kubernetes event exporter is not ready"
+            description: "Kubernetes Warning events may not be available in Loki for deployment and scheduling failure triage."
         - alert: GrafanaUnavailable
           expr: (max(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"kube-prometheus-stack-grafana-.*|grafana-.*"}) == 0) or absent(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"kube-prometheus-stack-grafana-.*|grafana-.*"})
           for: 2m
@@ -392,6 +402,42 @@ spec:
           annotations:
             summary: "CodePlace pod is not ready"
             description: "A CodePlace application or datastore pod has not been ready for 5 minutes."
+        - alert: KubernetesPodImagePullBackOff
+          expr: max by (namespace, pod, container, reason) (kube_pod_container_status_waiting_reason{namespace=~"code-place-(dev|prod)|monitoring", reason=~"ImagePullBackOff|ErrImagePull"}) == 1
+          for: 2m
+          labels:
+            severity: warning
+            priority: P1
+          annotations:
+            summary: "A Kubernetes pod cannot pull its image"
+            description: "A pod has been waiting with ImagePullBackOff or ErrImagePull for 2 minutes. Check image tag, registry access, and image pull secret."
+        - alert: KubernetesPodCrashLoopBackOff
+          expr: max by (namespace, pod, container) (kube_pod_container_status_waiting_reason{namespace=~"code-place-(dev|prod)|monitoring", reason="CrashLoopBackOff"}) == 1
+          for: 5m
+          labels:
+            severity: warning
+            priority: P1
+          annotations:
+            summary: "A Kubernetes pod is in CrashLoopBackOff"
+            description: "A pod has been waiting with CrashLoopBackOff for 5 minutes. Check the previous container logs and Kubernetes Warning events."
+        - alert: KubernetesPodOOMKilled
+          expr: max by (namespace, pod, container) (max_over_time(kube_pod_container_status_last_terminated_reason{namespace=~"code-place-(dev|prod)|monitoring", reason="OOMKilled"}[10m])) == 1
+          for: 2m
+          labels:
+            severity: warning
+            priority: P1
+          annotations:
+            summary: "A Kubernetes container was OOMKilled"
+            description: "A container was terminated by OOMKilled within the last 10 minutes. Check memory limits, recent traffic, and heap/cache growth."
+        - alert: KubernetesPodUnschedulable
+          expr: (max by (namespace, pod) (kube_pod_status_unschedulable{namespace=~"code-place-(dev|prod)|monitoring"}) == 1) or (max by (namespace, pod) (kube_pod_status_phase{namespace=~"code-place-(dev|prod)|monitoring", phase="Pending"}) == 1)
+          for: 10m
+          labels:
+            severity: warning
+            priority: P1
+          annotations:
+            summary: "A Kubernetes pod is pending or unschedulable"
+            description: "A pod has been pending or unschedulable for 10 minutes. Check node capacity, taints, affinity, PVC binding, and FailedScheduling events."
         - alert: CodePlaceContainerCPUHigh
           expr: sum by (namespace, pod, container) (rate(container_cpu_usage_seconds_total{namespace=~"code-place-(dev|prod)", container!="", pod=~"backend-.*|frontend-.*|hub-auth-.*|celery-.*|judge-server-.*|postgres-.*|redis-.*|vllm-.*"}[5m])) / clamp_min(sum by (namespace, pod, container) (kube_pod_container_resource_limits{namespace=~"code-place-(dev|prod)", resource="cpu", unit="core", pod=~"backend-.*|frontend-.*|hub-auth-.*|celery-.*|judge-server-.*|postgres-.*|redis-.*|vllm-.*"}), 0.001) > 0.8
           for: 10m

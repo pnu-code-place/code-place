@@ -1,0 +1,221 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-codeplace-kubernetes-events
+  labels:
+    grafana_dashboard: "1"
+data:
+  codeplace-kubernetes-events.json: |
+    {
+      "uid": "codeplace-kubernetes-events",
+      "title": "CodePlace Kubernetes Events",
+      "schemaVersion": 39,
+      "version": 1,
+      "refresh": "30s",
+      "tags": ["codeplace", "kubernetes", "events"],
+      "editable": true,
+      "time": {
+        "from": "now-1h",
+        "to": "now"
+      },
+      "templating": {
+        "list": [
+          {
+            "name": "namespace",
+            "type": "custom",
+            "query": "code-place-dev,code-place-prod,monitoring,longhorn-system,kube-system",
+            "multi": true,
+            "includeAll": true,
+            "allValue": "code-place-dev|code-place-prod|monitoring|longhorn-system|kube-system",
+            "current": {
+              "text": "code-place-dev",
+              "value": "code-place-dev"
+            }
+          }
+        ]
+      },
+      "panels": [
+        {
+          "type": "stat",
+          "title": "Event Exporter Ready",
+          "gridPos": {"x": 0, "y": 0, "w": 4, "h": 4},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "red", "value": null},
+                  {"color": "green", "value": 1}
+                ]
+              }
+            }
+          },
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "max(kube_pod_status_ready{namespace=\"monitoring\", condition=\"true\", pod=~\"kubernetes-event-exporter-.*\"}) or vector(0)", "legendFormat": "ready"}
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "Image Pull BackOff",
+          "gridPos": {"x": 4, "y": 0, "w": 4, "h": 4},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "red", "value": 1}
+                ]
+              }
+            }
+          },
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "sum(kube_pod_container_status_waiting_reason{namespace=~\"$namespace\", reason=~\"ImagePullBackOff|ErrImagePull\"}) or vector(0)", "legendFormat": "pods"}
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "CrashLoop BackOff",
+          "gridPos": {"x": 8, "y": 0, "w": 4, "h": 4},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "red", "value": 1}
+                ]
+              }
+            }
+          },
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "sum(kube_pod_container_status_waiting_reason{namespace=~\"$namespace\", reason=\"CrashLoopBackOff\"}) or vector(0)", "legendFormat": "pods"}
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "OOMKilled",
+          "gridPos": {"x": 12, "y": 0, "w": 4, "h": 4},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "red", "value": 1}
+                ]
+              }
+            }
+          },
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "sum(max_over_time(kube_pod_container_status_last_terminated_reason{namespace=~\"$namespace\", reason=\"OOMKilled\"}[10m])) or vector(0)", "legendFormat": "containers"}
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "Pending Pods",
+          "gridPos": {"x": 16, "y": 0, "w": 4, "h": 4},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "orange", "value": 1}
+                ]
+              }
+            }
+          },
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "sum(kube_pod_status_phase{namespace=~\"$namespace\", phase=\"Pending\"}) or vector(0)", "legendFormat": "pods"}
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "Unschedulable Pods",
+          "gridPos": {"x": 20, "y": 0, "w": 4, "h": 4},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "red", "value": 1}
+                ]
+              }
+            }
+          },
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "sum(kube_pod_status_unschedulable{namespace=~\"$namespace\"}) or vector(0)", "legendFormat": "pods"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Container Waiting Reasons",
+          "gridPos": {"x": 0, "y": 4, "w": 12, "h": 8},
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "short"}},
+          "targets": [
+            {"expr": "sum by (namespace, pod, container, reason) (kube_pod_container_status_waiting_reason{namespace=~\"$namespace\", reason=~\"CrashLoopBackOff|ImagePullBackOff|ErrImagePull|CreateContainerConfigError|CreateContainerError\"})", "legendFormat": "{{namespace}} {{pod}} {{container}} {{reason}}"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Recent OOMKilled Containers",
+          "gridPos": {"x": 12, "y": 4, "w": 12, "h": 8},
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "short"}},
+          "targets": [
+            {"expr": "max by (namespace, pod, container) (max_over_time(kube_pod_container_status_last_terminated_reason{namespace=~\"$namespace\", reason=\"OOMKilled\"}[10m]))", "legendFormat": "{{namespace}} {{pod}} {{container}}"}
+          ]
+        },
+        {
+          "type": "logs",
+          "title": "Kubernetes Warning Events",
+          "gridPos": {"x": 0, "y": 12, "w": 24, "h": 9},
+          "datasource": "Loki",
+          "options": {
+            "showLabels": false,
+            "showTime": true,
+            "wrapLogMessage": true,
+            "dedupStrategy": "none"
+          },
+          "targets": [
+            {"expr": "{namespace=\"monitoring\", app_kubernetes_io_name=\"kubernetes-event-exporter\"}"}
+          ]
+        },
+        {
+          "type": "logs",
+          "title": "Scheduling, Pull, Restart, and Probe Events",
+          "gridPos": {"x": 0, "y": 21, "w": 24, "h": 9},
+          "datasource": "Loki",
+          "options": {
+            "showLabels": false,
+            "showTime": true,
+            "wrapLogMessage": true,
+            "dedupStrategy": "none"
+          },
+          "targets": [
+            {"expr": "{namespace=\"monitoring\", app_kubernetes_io_name=\"kubernetes-event-exporter\"} |~ \"FailedScheduling|ImagePullBackOff|ErrImagePull|BackOff|OOMKilling|Unhealthy|FailedMount|FailedAttachVolume\""}
+          ]
+        }
+      ]
+    }

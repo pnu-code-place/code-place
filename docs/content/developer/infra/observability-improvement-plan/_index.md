@@ -175,8 +175,10 @@ prod tracing은 dev에서 trace ingest, query, traces-to-logs 동작과 Collecto
 - `alertmanager-config.yaml`: P0/P1 Discord alert routing.
 - `grafana-dashboard-codeplace.yaml`: CodePlace overview dashboard. `namespace` 변수로 `code-place-dev`와 `code-place-prod`를 분리해서 조회합니다.
 - `grafana-dashboard-ai-inference.yaml`: prod vLLM readiness, queue/cache/latency/token throughput, HF cache PVC dashboard.
+- `grafana-dashboard-kubernetes-events.yaml`: image pull, CrashLoopBackOff, OOMKilled, Pending/Unschedulable 상태와 Kubernetes Warning event log dashboard.
 - `grafana-dashboard-monitoring-stack.yaml`: Prometheus, Alertmanager, Grafana, Prometheus Operator readiness와 rule/notification 상태 dashboard.
 - `grafana-dashboard-public-endpoints.yaml`: 공개 URL availability, HTTP status, latency, TLS expiry dashboard.
+- `kubernetes-event-exporter.yaml`: Kubernetes Warning event를 stdout JSON으로 export해서 Alloy/Loki가 수집하도록 하는 exporter, ServiceMonitor, 최소 event read RBAC.
 - `kube-prometheus-stack-values.yaml`: Prometheus/Alertmanager selector, evaluation interval, shared Grafana ingress와 dashboard sidecar 설정.
 - `logs/loki-values.yaml`: Loki Monolithic, Longhorn PVC, dev/prod retention 설정.
 - `logs/alloy-values.yaml`: Alloy DaemonSet 기반 Kubernetes Pod log collection 설정.
@@ -231,6 +233,7 @@ P1은 `group_wait=30s`, `repeat_interval=1h`로 전달합니다.
 - `PublicEndpointTLSExpiringSoon`: 공개 HTTPS 인증서 만료 14일 이내.
 - `FrontendRuntimeErrorsSpike`: browser runtime error report 10개 초과/5분, 5분 지속.
 - `BlackboxExporterUnavailable`: synthetic probe exporter Pod not ready 2분 지속.
+- `KubernetesEventExporterUnavailable`: Kubernetes event exporter Pod not ready 2분 지속.
 - `GrafanaUnavailable`: Grafana Pod not ready 2분 지속.
 - `PrometheusOperatorUnavailable`: Prometheus Operator Pod not ready 2분 지속.
 - `PrometheusRuleEvaluationFailures`: Prometheus rule evaluation failure 5분 지속.
@@ -243,6 +246,10 @@ P1은 `group_wait=30s`, `repeat_interval=1h`로 전달합니다.
 - `CeleryTaskRuntimeHigh`: task p95 runtime 120초 초과 10분 지속.
 - `PodCrashLooping`: 주요 Pod restart 증가 5분 지속.
 - `CodePlacePodNotReady`: 주요 앱/DB/Redis Pod not ready 5분 지속.
+- `KubernetesPodImagePullBackOff`: image pull 실패 2분 지속.
+- `KubernetesPodCrashLoopBackOff`: CrashLoopBackOff 5분 지속.
+- `KubernetesPodOOMKilled`: OOMKilled 종료가 최근 10분 내 발생하고 2분 지속.
+- `KubernetesPodUnschedulable`: Pending 또는 Unschedulable 상태 10분 지속.
 - `CodePlaceContainerCPUHigh`: 주요 컨테이너 CPU limit 사용률 80% 초과 10분 지속.
 - `CodePlaceContainerMemoryHigh`: 주요 컨테이너 memory limit 사용률 85% 초과 10분 지속.
 - `PostgresCollectorError`: CNPG PostgreSQL metrics collection error 5분 지속.
@@ -282,18 +289,20 @@ P1은 `group_wait=30s`, `repeat_interval=1h`로 전달합니다.
    - prod: `kubectl apply -k kubernetes/overlays/prod`
 5. CodePlace monitoring 리소스는 기존 kube-prometheus-stack이 있는 클러스터에 별도로 적용합니다.
    - `kubectl apply -k kubernetes/monitoring`
-6. Prometheus target에서 `backend`, `longhorn`, `vllm`, `blackbox-exporter`, `codeplace-public-http-dev`, `codeplace-public-http-prod`가 healthy인지 확인합니다.
-8. Grafana의 `CodePlace Public Endpoints` dashboard에서 prod/dev availability, HTTP status, latency, TLS expiry panel이 비어 있지 않은지 확인합니다.
-9. Grafana의 `CodePlace Overview` dashboard에서 request rate, 5xx, latency, frontend runtime error, submission status, waiting queue, judge heartbeat, Celery task throughput/runtime, Pod readiness/restart, CPU/memory, PVC, PostgreSQL/Redis readiness panel을 확인합니다.
-10. Grafana의 `CodePlace Logs` dashboard에서 Loki ready, Alloy node coverage, Loki PVC usage, ingress/frontend 4xx/5xx, 최근 backend error, frontend runtime error, judge/celery log panel을 확인합니다.
-11. Grafana의 `CodePlace Logs` dashboard에서 `request_id` 변수에 실제 응답 header 또는 JSON log의 request ID를 넣고 해당 요청 로그가 좁혀지는지 확인합니다.
+6. Prometheus target에서 `backend`, `longhorn`, `vllm`, `blackbox-exporter`, `kubernetes-event-exporter`, `codeplace-public-http-dev`, `codeplace-public-http-prod`가 healthy인지 확인합니다.
+7. Grafana의 `CodePlace Public Endpoints` dashboard에서 prod/dev availability, HTTP status, latency, TLS expiry panel이 비어 있지 않은지 확인합니다.
+8. Grafana의 `CodePlace Overview` dashboard에서 request rate, 5xx, latency, frontend runtime error, submission status, waiting queue, judge heartbeat, Celery task throughput/runtime, Pod readiness/restart, CPU/memory, PVC, PostgreSQL/Redis readiness panel을 확인합니다.
+9. Grafana의 `CodePlace Logs` dashboard에서 Loki ready, Alloy node coverage, Loki PVC usage, ingress/frontend 4xx/5xx, 최근 backend error, frontend runtime error, judge/celery log panel을 확인합니다.
+10. Grafana의 `CodePlace Logs` dashboard에서 `request_id` 변수에 실제 응답 header 또는 JSON log의 request ID를 넣고 해당 요청 로그가 좁혀지는지 확인합니다.
+11. Grafana의 `CodePlace Kubernetes Events` dashboard에서 event exporter ready, image pull, CrashLoopBackOff, OOMKilled, Pending/Unschedulable, Kubernetes Warning event panel을 확인합니다.
 12. Grafana의 `CodePlace Monitoring Stack` dashboard에서 Prometheus, Alertmanager, Grafana, operator readiness, target scrape failure, rule evaluation failure, notification failure panel을 확인합니다.
 13. Grafana의 `CodePlace Traces` dashboard에서 Tempo ready, OTel Collector ready, trace receive/export rate, Tempo PVC usage를 확인합니다.
 14. Grafana의 `CodePlace Storage` dashboard에서 Longhorn manager, volume robustness, node/disk usage panel이 비어 있지 않은지 확인합니다.
 15. Grafana의 `CodePlace AI Inference` dashboard에서 vLLM scrape, pod ready, waiting/running requests, KV cache, p95 latency, token throughput, HF cache PVC, GPU utilization/memory/temperature/XID panel이 비어 있지 않은지 확인합니다.
 16. Grafana Explore에서 `Loki` datasource를 선택하고 `{namespace="code-place-dev"}` 쿼리가 로그를 반환하는지 확인합니다.
-17. Grafana Explore에서 `Tempo` datasource를 선택하고 `service.name=codeplace-backend` 또는 `service.name=codeplace-celery` trace가 조회되는지 확인합니다.
-18. test alert 또는 임시 rule로 P0 webhook 수신 시간이 1분 이내인지 확인합니다.
+17. Grafana Explore에서 `Loki` datasource를 선택하고 `{namespace="monitoring", app_kubernetes_io_name="kubernetes-event-exporter"}` 쿼리가 Kubernetes Warning event를 반환하는지 확인합니다.
+18. Grafana Explore에서 `Tempo` datasource를 선택하고 `service.name=codeplace-backend` 또는 `service.name=codeplace-celery` trace가 조회되는지 확인합니다.
+19. test alert 또는 임시 rule로 P0 webhook 수신 시간이 1분 이내인지 확인합니다.
 
 운영 적용 전제는 다음과 같습니다.
 
@@ -304,6 +313,7 @@ P1은 `group_wait=30s`, `repeat_interval=1h`로 전달합니다.
 - OpenTelemetry는 base/prod `OTEL_ENABLED=0` 기본값을 유지하고 dev overlay에서 먼저 활성화합니다.
 - P0/P1 알림 라우팅은 AlertmanagerConfig로 관리하며 Grafana UI 수동 설정에 의존하지 않습니다.
 - 로그 수집은 Grafana Alloy와 Loki로 관리하며 Promtail은 신규 도입하지 않습니다.
+- Kubernetes event는 Kubernetes Event Exporter가 Warning event만 stdout JSON으로 내보내고, Alloy가 일반 Pod log와 같은 경로로 Loki에 적재합니다.
 - PostgreSQL은 CNPG instance exporter와 PodMonitor로 `cnpg_collector_*` 지표를 수집합니다. Redis는 Opstree Redis exporter sidecar와 PodMonitor로 `redis_*` 지표를 수집합니다.
 - Sentry backend SDK는 기본 PII 자동 전송을 비활성화하고 전송 직전 `authorization`, `cookie`, `password`, `token`, `secret`, 제출 source code 계열 필드를 redaction합니다. 사용자 영향 분석은 Sentry event와 request_id 기반 backend JSON log를 함께 사용합니다.
 - Frontend는 axios 요청마다 `X-Request-ID`를 전파하고 마지막 request ID를 `window.__CODEPLACE_LAST_REQUEST_ID__`와 Sentry request context 및 `/api/client_error` report에 저장합니다.

@@ -17,13 +17,14 @@ weight: 6
 bash kubernetes/monitoring/validate.sh
 kubectl get ns
 kubectl -n monitoring get prometheusrule,alertmanagerconfig,servicemonitor
-kubectl -n monitoring get pod | grep -E 'prometheus|alertmanager|grafana|loki|alloy|otel|tempo|blackbox'
+kubectl -n monitoring get pod | grep -E 'prometheus|alertmanager|grafana|loki|alloy|otel|tempo|blackbox|event-exporter'
 kubectl -n longhorn-system get pod,svc
 ```
 
 Grafana에서는 `CodePlace Overview` dashboard에서 `namespace`를 알림의 namespace로 맞춥니다.
 공개 URL 장애는 `CodePlace Public Endpoints` dashboard에서 먼저 봅니다.
 로그 수집이나 로그 기반 확인이 필요하면 `CodePlace Logs` dashboard를 함께 봅니다.
+Pod 배포/스케줄링/이미지 pull 실패는 `CodePlace Kubernetes Events` dashboard에서 Kubernetes Warning event와 kube-state-metrics 상태를 같이 봅니다.
 Prometheus, Alertmanager, Grafana 자체 이상은 `CodePlace Monitoring Stack` dashboard에서 봅니다.
 PVC/volume 문제가 의심되면 `CodePlace Storage` dashboard에서 Longhorn 상태를 먼저 확인합니다.
 
@@ -36,6 +37,7 @@ Status -> Targets -> redis
 Status -> Targets -> longhorn
 Status -> Targets -> vllm
 Status -> Targets -> dcgm-exporter
+Status -> Targets -> kubernetes-event-exporter
 Status -> Targets -> codeplace-public-http-dev
 Status -> Targets -> codeplace-public-http-prod
 ```
@@ -68,6 +70,8 @@ Loki 로그 확인:
 
 ```logql
 {namespace="<namespace>"}
+{namespace="monitoring", app_kubernetes_io_name="kubernetes-event-exporter"}
+{namespace="monitoring", app_kubernetes_io_name="kubernetes-event-exporter"} |~ "FailedScheduling|ImagePullBackOff|ErrImagePull|BackOff|OOMKilling|Unhealthy|FailedMount|FailedAttachVolume"
 {namespace="kube-system", app_kubernetes_io_name="traefik"} | json
 {namespace="<namespace>", app="frontend"} | json
 {namespace="<namespace>", app="backend"} | json
@@ -673,9 +677,68 @@ Grafana Explore:
 
 ```logql
 {namespace="<namespace>", pod="<pod>"}
+{namespace="monitoring", app_kubernetes_io_name="kubernetes-event-exporter"} |= "<pod>"
 ```
 
 이미지 pull, secret mount, readiness, resource limit, node scheduling을 확인합니다.
+
+### KubernetesEventExporterUnavailable
+
+확인:
+
+```sh
+kubectl -n monitoring get pod,svc,servicemonitor | grep event-exporter
+kubectl -n monitoring describe pod -l app.kubernetes.io/name=kubernetes-event-exporter
+kubectl -n monitoring logs deploy/kubernetes-event-exporter --tail=200
+```
+
+PromQL:
+
+```promql
+kube_pod_status_ready{namespace="monitoring", pod=~"kubernetes-event-exporter-.*", condition="true"}
+up{job="kubernetes-event-exporter", namespace="monitoring"}
+```
+
+판단:
+
+- exporter가 down이면 `CodePlace Kubernetes Events` dashboard의 Warning event 로그가 비어 있을 수 있습니다.
+- kube-state-metrics 기반 `ImagePullBackOff`, `CrashLoopBackOff`, `OOMKilled`, `Pending` 알림은 exporter와 별개로 계속 동작합니다.
+- event exporter 로그에 throttling 또는 discarded event가 보이면 `maxEventAgeSeconds`, API server 부하, 이벤트 폭주 원인을 확인합니다.
+
+### KubernetesPodImagePullBackOff / KubernetesPodCrashLoopBackOff / KubernetesPodOOMKilled / KubernetesPodUnschedulable
+
+확인:
+
+```sh
+kubectl -n <namespace> get pod
+kubectl -n <namespace> describe pod <pod>
+kubectl -n <namespace> logs <pod> --previous --tail=200
+kubectl describe node <node>
+```
+
+PromQL:
+
+```promql
+kube_pod_container_status_waiting_reason{namespace="<namespace>", reason=~"ImagePullBackOff|ErrImagePull|CrashLoopBackOff|CreateContainerConfigError|CreateContainerError"}
+max_over_time(kube_pod_container_status_last_terminated_reason{namespace="<namespace>", reason="OOMKilled"}[10m])
+kube_pod_status_unschedulable{namespace="<namespace>"}
+kube_pod_status_phase{namespace="<namespace>", phase="Pending"}
+```
+
+Grafana Explore:
+
+```logql
+{namespace="monitoring", app_kubernetes_io_name="kubernetes-event-exporter"} |= "<pod>"
+{namespace="monitoring", app_kubernetes_io_name="kubernetes-event-exporter"} |~ "FailedScheduling|ImagePullBackOff|ErrImagePull|BackOff|OOMKilling|Unhealthy|FailedMount|FailedAttachVolume"
+{namespace="<namespace>", pod="<pod>"}
+```
+
+판단:
+
+- `ImagePullBackOff`/`ErrImagePull`은 image tag, registry 접근, image pull secret, node DNS/egress를 먼저 봅니다.
+- `CrashLoopBackOff`는 `--previous` 로그와 직전 Warning event를 같이 봅니다. readiness 실패만으로 재시작되는지, 프로세스가 종료되는지 구분합니다.
+- `OOMKilled`는 memory limit, 최근 트래픽, 캐시/큐 증가, JVM/Python heap 설정을 확인합니다.
+- `Pending`/`Unschedulable`은 node capacity, taint/toleration, nodeSelector/affinity, PVC binding, Longhorn volume attach event를 확인합니다.
 
 ### CodePlaceContainerCPUHigh / CodePlaceContainerMemoryHigh
 

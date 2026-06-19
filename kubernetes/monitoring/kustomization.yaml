@@ -11,10 +11,12 @@ resources:
   - ./grafana-dashboard-codeplace.yaml
   - ./grafana-dashboard-ai-inference.yaml
   - ./grafana-dashboard-logs.yaml
+  - ./grafana-dashboard-kubernetes-events.yaml
   - ./grafana-dashboard-monitoring-stack.yaml
   - ./grafana-dashboard-public-endpoints.yaml
   - ./grafana-dashboard-storage.yaml
   - ./grafana-dashboard-traces.yaml
+  - ./kubernetes-event-exporter.yaml
   - ./longhorn-service-monitor.yaml
   - ./otel-collector.yaml
   - ./prometheus-rules.yaml
