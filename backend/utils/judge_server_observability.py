@@ -8,6 +8,8 @@ from utils.constants import CacheKey
 
 logger = logging.getLogger(__name__)
 
+JUDGE_SERVER_SNAPSHOT_RETENTION_SECONDS = 24 * 60 * 60
+
 
 def sync_judge_server_snapshot(server, is_disabled=None, task_number=None):
     hostname = getattr(server, "hostname", None)
@@ -72,6 +74,9 @@ def load_judge_server_snapshots():
         payload = _loads_snapshot(raw_payload)
         last_heartbeat_timestamp = _float_or_zero(payload.get("last_heartbeat_timestamp"))
         heartbeat_age = max(now_timestamp - last_heartbeat_timestamp, 0) if last_heartbeat_timestamp else float("inf")
+        if heartbeat_age > JUDGE_SERVER_SNAPSHOT_RETENTION_SECONDS:
+            remove_judge_server_snapshot(hostname)
+            continue
         snapshots.append({
             "hostname": hostname,
             "heartbeat_age": heartbeat_age,

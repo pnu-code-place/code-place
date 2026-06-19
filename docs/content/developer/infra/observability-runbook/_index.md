@@ -318,6 +318,7 @@ kubectl -n <namespace> logs deploy/celery-worker --tail=200
 - judge Pod가 not ready이면 platform/deploy 문제입니다.
 - Pod는 ready인데 heartbeat가 stale이면 judge-server와 backend 통신 또는 token 문제입니다.
 - waiting queue가 같이 증가하면 사용자 제출 영향이 있습니다.
+- backend `/metrics`는 judge DB row를 직접 조회하지 않고 Redis heartbeat snapshot만 노출합니다. 의도적으로 retire한 judge는 disable/delete API로 snapshot을 제거합니다.
 
 ### JudgeHeartbeatCritical
 
@@ -338,7 +339,8 @@ kubectl -n <namespace> describe pod -l app=judge-server
 판단:
 
 - 특정 judge만 stale이면 해당 Pod/Node 문제입니다.
-- 전체 judge가 stale이면 backend DB row, heartbeat endpoint, token 설정을 확인합니다.
+- 전체 judge가 stale이면 judge-server Pod, heartbeat endpoint, token 설정을 확인합니다.
+- 24시간 이상 heartbeat가 없는 Redis snapshot은 retired 상태로 보고 collector가 제거합니다. 그 이후에도 전체 judge가 없으면 `JudgeAllUnavailable`이 계속 장애를 잡습니다.
 
 ### PostgresUnavailable
 

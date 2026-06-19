@@ -12,7 +12,10 @@ from utils import celery_observability
 from utils.json_logging import CodePlaceJsonFormatter
 from utils.observability_context import get_request_id, reset_request_id, set_request_id
 from utils.constants import CacheKey
-from utils.judge_server_observability import increment_judge_server_task_snapshot
+from utils.judge_server_observability import (
+    JUDGE_SERVER_SNAPSHOT_RETENTION_SECONDS,
+    increment_judge_server_task_snapshot,
+)
 from utils.observability_metrics import CodePlaceCollector
 from utils.observability_tracing import get_tracer
 from utils.testcase_cache import TestCaseCacheManager
@@ -62,6 +65,24 @@ class CodePlaceCollectorTest(SimpleTestCase):
             list(CodePlaceCollector()._judge_server_metrics())
 
         hgetall.assert_called_once_with(CacheKey.judge_server_observability)
+
+    def test_judge_server_metrics_prune_retired_snapshot(self):
+        retired_heartbeat = timezone.now() - timedelta(seconds=JUDGE_SERVER_SNAPSHOT_RETENTION_SECONDS + 1)
+        snapshots = {
+            b"retired-judge": json.dumps({
+                "last_heartbeat_timestamp": retired_heartbeat.timestamp(),
+                "task_number": 0,
+            }).encode(),
+        }
+
+        with patch("utils.judge_server_observability.cache.hgetall", return_value=snapshots), \
+                patch("utils.judge_server_observability.cache.hdel") as hdel:
+            samples = self._samples_by_metric(list(CodePlaceCollector()._judge_server_metrics()))
+
+        for metric_samples in samples.values():
+            hostnames = {sample.labels["hostname"] for sample in metric_samples}
+            self.assertNotIn("retired-judge", hostnames)
+        hdel.assert_called_once_with(CacheKey.judge_server_observability, "retired-judge")
 
     def test_judge_server_task_increment_does_not_create_snapshot_without_heartbeat(self):
         with patch("utils.judge_server_observability.cache.hget", return_value=None), \
