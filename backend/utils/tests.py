@@ -1,7 +1,7 @@
 import json
 import logging
 import os
-from unittest.mock import patch, mock_open
+from unittest.mock import patch, mock_open, MagicMock
 from django.test import SimpleTestCase, TestCase, override_settings
 from django.core.cache import cache
 from prometheus_client.core import GaugeMetricFamily
@@ -18,11 +18,33 @@ class CodePlaceCollectorTest(SimpleTestCase):
         return {metric.name: metric.samples for metric in metrics}
 
     def test_celery_broker_queue_length_is_collected_from_redis(self):
-        with patch("utils.observability_metrics.cache.llen", return_value=7) as llen:
+        broker_client = MagicMock()
+        broker_client.llen.return_value = 7
+        with patch.object(CodePlaceCollector, "_celery_broker_client", return_value=broker_client):
             samples = self._samples_by_metric([CodePlaceCollector()._celery_broker_queue_length()])
 
-        llen.assert_called_once_with("celery")
+        broker_client.llen.assert_called_once_with("celery")
         self.assertEqual(samples["codeplace_celery_broker_queue_length"][0].value, 7)
+
+    @override_settings(REDIS_USE_SENTINEL=False, CELERY_BROKER_URL="redis://127.0.0.1:6380/4")
+    def test_celery_broker_client_uses_celery_broker_url(self):
+        with patch("utils.observability_metrics.Redis.from_url") as from_url:
+            CodePlaceCollector._celery_broker_client()
+
+        from_url.assert_called_once_with("redis://127.0.0.1:6380/4")
+
+    @override_settings(
+        REDIS_USE_SENTINEL=True,
+        REDIS_SENTINEL_HOSTS=[("redis-sentinel", 26379)],
+        REDIS_SENTINEL_MASTER_NAME="mymaster",
+    )
+    def test_celery_broker_client_uses_sentinel_broker_db(self):
+        sentinel = MagicMock()
+        with patch("utils.observability_metrics.Sentinel", return_value=sentinel) as sentinel_cls:
+            CodePlaceCollector._celery_broker_client()
+
+        sentinel_cls.assert_called_once_with([("redis-sentinel", 26379)], socket_timeout=1)
+        sentinel.master_for.assert_called_once_with("mymaster", db=4, socket_timeout=1)
 
 
 class CodePlaceMetricsEndpointTest(SimpleTestCase):

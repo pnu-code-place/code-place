@@ -61,9 +61,20 @@ spec:
       labels:
         app: tempo
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        fsGroupChangePolicy: OnRootMismatch
       containers:
         - name: tempo
           image: grafana/tempo:2.8.1
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
           args:
             - -config.file=/etc/tempo/tempo.yaml
           ports:
