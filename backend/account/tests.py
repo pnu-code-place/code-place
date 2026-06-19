@@ -46,6 +46,24 @@ class RequestIDMiddlewareTest(SimpleTestCase):
         self.assertEqual(request.request_id, "a" * 128)
         self.assertEqual(response["X-Request-ID"], request.request_id)
 
+    def test_sanitizes_request_id_before_returning_response_header(self):
+        middleware = RequestIDMiddleware(lambda request: JsonResponse({"ok": True}))
+        request = self.factory.get("/", HTTP_X_REQUEST_ID="trace-1\nSet-Cookie:bad")
+
+        response = middleware(request)
+
+        self.assertEqual(request.request_id, "trace-1-Set-Cookie:bad")
+        self.assertEqual(response["X-Request-ID"], request.request_id)
+
+    def test_generates_request_id_when_header_has_no_safe_characters(self):
+        middleware = RequestIDMiddleware(lambda request: JsonResponse({"ok": True}))
+        request = self.factory.get("/", HTTP_X_REQUEST_ID="\n\t")
+
+        response = middleware(request)
+
+        self.assertEqual(len(request.request_id), 32)
+        self.assertEqual(response["X-Request-ID"], request.request_id)
+
 
 class PermissionDecoratorTest(APITestCase):
     """

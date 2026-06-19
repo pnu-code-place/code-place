@@ -1,4 +1,5 @@
 import logging
+import re
 import time
 import uuid
 
@@ -16,6 +17,7 @@ from account.models import User
 
 request_logger = logging.getLogger("codeplace.request")
 MAX_REQUEST_ID_LENGTH = 128
+REQUEST_ID_ALLOWED_CHARS = re.compile(r"[^A-Za-z0-9_.:-]+")
 
 
 class RequestIDMiddleware:
@@ -37,6 +39,9 @@ class RequestIDMiddleware:
     @staticmethod
     def _request_id(request):
         request_id = request.META.get("HTTP_X_REQUEST_ID")
+        if not request_id:
+            return uuid.uuid4().hex
+        request_id = REQUEST_ID_ALLOWED_CHARS.sub("-", request_id).strip("-")
         if not request_id:
             return uuid.uuid4().hex
         return request_id[:MAX_REQUEST_ID_LENGTH]
