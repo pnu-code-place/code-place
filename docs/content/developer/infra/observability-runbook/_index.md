@@ -33,6 +33,7 @@ Status -> Targets -> backend
 Status -> Targets -> postgres
 Status -> Targets -> redis
 Status -> Targets -> longhorn
+Status -> Targets -> vllm
 Status -> Targets -> codeplace-public-http-dev
 Status -> Targets -> codeplace-public-http-prod
 ```
@@ -53,7 +54,7 @@ Loki 로그 확인:
 {namespace="kube-system", app_kubernetes_io_name="traefik"} | json
 {namespace="<namespace>", app="frontend"} | json
 {namespace="<namespace>", app="backend"} | json
-{namespace="<namespace>", container=~"backend|celery-worker|judge-server"}
+{namespace="<namespace>", container=~"backend|celery-worker|judge-server|vllm"}
 ```
 
 Loki/Alloy 상태 확인:
@@ -107,6 +108,21 @@ longhorn_volume_robustness
 longhorn_volume_file_system_read_only
 (longhorn_node_storage_usage_bytes + longhorn_node_storage_reservation_bytes) / clamp_min(longhorn_node_storage_capacity_bytes, 1)
 (longhorn_disk_usage_bytes + longhorn_disk_reservation_bytes) / clamp_min(longhorn_disk_capacity_bytes, 1)
+```
+
+vLLM 상태 확인:
+
+```sh
+kubectl -n code-place-prod get pod,svc,pvc | grep vllm
+kubectl -n monitoring get servicemonitor vllm -o yaml
+```
+
+```promql
+up{job="vllm", namespace="code-place-prod"}
+{__name__="vllm:num_requests_running", namespace="code-place-prod"}
+{__name__="vllm:num_requests_waiting", namespace="code-place-prod"}
+{__name__="vllm:kv_cache_usage_perc", namespace="code-place-prod"}
+histogram_quantile(0.95, sum by (le) (rate({__name__="vllm:e2e_request_latency_seconds_bucket", namespace="code-place-prod"}[10m])))
 ```
 
 ## P0
@@ -366,6 +382,30 @@ longhorn_volume_capacity_bytes
 - volume faulted는 PVC-backed workload의 storage availability 문제입니다. affected `pvc_namespace`/`pvc`를 찾아 해당 workload 상태와 Longhorn replica 상태를 확인합니다.
 - read-only volume은 쓰기 실패로 바로 이어질 수 있습니다. Loki/Tempo/PostgreSQL/Redis PVC가 대상이면 해당 관측/데이터 경로 장애로 취급합니다.
 
+### VLLMUnavailable
+
+증상: prod vLLM `/metrics` scrape가 2분 이상 실패합니다. AI 힌트 기능이 실패하거나 장시간 지연될 수 있습니다.
+
+확인:
+
+```sh
+kubectl -n code-place-prod get pod,svc,endpoints,pvc | grep vllm
+kubectl -n code-place-prod describe pod -l app=vllm
+kubectl -n code-place-prod logs deploy/vllm --tail=200
+kubectl -n monitoring get servicemonitor vllm -o yaml
+```
+
+```promql
+up{job="vllm", namespace="code-place-prod"}
+kube_pod_status_ready{namespace="code-place-prod", pod=~"vllm-.*", condition="true"}
+```
+
+판단:
+
+- Pod가 pending이면 GPU node label, `runtimeClassName: nvidia`, GPU resource, Longhorn HF cache PVC attach 상태를 봅니다.
+- Pod는 ready인데 scrape만 실패하면 Service port/path, vLLM `/metrics`, NetworkPolicy 여부를 확인합니다.
+- backend AI hint API error가 같이 증가하면 사용자 영향이 있습니다.
+
 ## P1
 
 ### OTelCollectorUnavailable / TempoUnavailable / TempoPVCAlmostFull
@@ -565,6 +605,33 @@ longhorn_disk_status{condition="ready"}
 - node/disk not ready는 앱 Pod 장애보다 먼저 storage layer 문제로 봅니다.
 - storage usage가 85%를 넘으면 Loki/Tempo retention 축소, noisy 로그/trace 감소, Longhorn disk/PVC 증설 중 하나를 결정합니다.
   클라우드 object storage가 없는 현재 조건에서는 Longhorn 여유 용량이 로그/트레이스 retention의 상한입니다.
+
+### VLLMWaitingQueueHigh / VLLMKVCacheHigh / VLLMRequestLatencyHigh
+
+확인:
+
+```promql
+{__name__="vllm:num_requests_running", namespace="code-place-prod"}
+{__name__="vllm:num_requests_waiting", namespace="code-place-prod"}
+{__name__="vllm:kv_cache_usage_perc", namespace="code-place-prod"}
+histogram_quantile(0.95, sum by (le) (rate({__name__="vllm:e2e_request_latency_seconds_bucket", namespace="code-place-prod"}[10m])))
+histogram_quantile(0.95, sum by (le) (rate({__name__="vllm:request_queue_time_seconds_bucket", namespace="code-place-prod"}[10m])))
+histogram_quantile(0.95, sum by (le) (rate({__name__="vllm:time_to_first_token_seconds_bucket", namespace="code-place-prod"}[10m])))
+```
+
+```sh
+kubectl -n code-place-prod top pod -l app=vllm
+kubectl -n code-place-prod describe pod -l app=vllm
+kubectl -n code-place-prod logs deploy/vllm --tail=200
+kubectl -n code-place-prod describe pvc vllm-hf-cache
+```
+
+판단:
+
+- waiting queue와 queue p95가 같이 오르면 vLLM scheduling capacity 부족입니다. GPU saturation, `max-num-seqs`, KV cache pressure를 봅니다.
+- KV cache가 90%를 넘으면 max model length, 동시 요청 수, prompt 길이, GPU memory utilization을 함께 봅니다.
+- e2e latency만 증가하면 prompt/generation token 증가, backend streaming read timeout, vLLM 로그의 model/engine warning을 확인합니다.
+  현재 vLLM은 prod 전용입니다. dev에서 AI hint를 별도 검증하려면 dev vLLM 배포와 ServiceMonitor 확장이 먼저 필요합니다.
 
 ### LokiPVCAlmostFull
 

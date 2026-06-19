@@ -283,7 +283,7 @@ data:
           },
           "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
           "targets": [
-            {"expr": "min by (namespace, pod) (kube_pod_status_ready{namespace=~\"$namespace\", condition=\"true\", pod=~\"backend-.*|frontend-.*|celery-.*|judge-server-.*|postgres-.*|redis-.*\"})", "legendFormat": "{{namespace}} {{pod}}"}
+            {"expr": "min by (namespace, pod) (kube_pod_status_ready{namespace=~\"$namespace\", condition=\"true\", pod=~\"backend-.*|frontend-.*|celery-.*|judge-server-.*|postgres-.*|redis-.*|vllm-.*\"})", "legendFormat": "{{namespace}} {{pod}}"}
           ]
         },
         {
@@ -292,7 +292,7 @@ data:
           "gridPos": {"x": 6, "y": 29, "w": 6, "h": 5},
           "fieldConfig": {"defaults": {"unit": "short"}},
           "targets": [
-            {"expr": "sum by (namespace, pod) (increase(kube_pod_container_status_restarts_total{namespace=~\"$namespace\", pod=~\"backend-.*|frontend-.*|celery-.*|judge-server-.*|postgres-.*|redis-.*\"}[1h]))", "legendFormat": "{{namespace}} {{pod}}"}
+            {"expr": "sum by (namespace, pod) (increase(kube_pod_container_status_restarts_total{namespace=~\"$namespace\", pod=~\"backend-.*|frontend-.*|celery-.*|judge-server-.*|postgres-.*|redis-.*|vllm-.*\"}[1h]))", "legendFormat": "{{namespace}} {{pod}}"}
           ]
         },
         {
@@ -301,7 +301,7 @@ data:
           "gridPos": {"x": 12, "y": 29, "w": 6, "h": 5},
           "fieldConfig": {"defaults": {"unit": "cores"}},
           "targets": [
-            {"expr": "topk(10, sum by (namespace, pod, container) (rate(container_cpu_usage_seconds_total{namespace=~\"$namespace\", container!=\"\", pod=~\"backend-.*|frontend-.*|celery-.*|judge-server-.*|postgres-.*|redis-.*\"}[5m])))", "legendFormat": "{{namespace}} {{pod}} {{container}}"}
+            {"expr": "topk(10, sum by (namespace, pod, container) (rate(container_cpu_usage_seconds_total{namespace=~\"$namespace\", container!=\"\", pod=~\"backend-.*|frontend-.*|celery-.*|judge-server-.*|postgres-.*|redis-.*|vllm-.*\"}[5m])))", "legendFormat": "{{namespace}} {{pod}} {{container}}"}
           ]
         },
         {
@@ -310,7 +310,7 @@ data:
           "gridPos": {"x": 18, "y": 29, "w": 6, "h": 5},
           "fieldConfig": {"defaults": {"unit": "bytes"}},
           "targets": [
-            {"expr": "topk(10, container_memory_working_set_bytes{namespace=~\"$namespace\", container!=\"\", pod=~\"backend-.*|frontend-.*|celery-.*|judge-server-.*|postgres-.*|redis-.*\"})", "legendFormat": "{{namespace}} {{pod}} {{container}}"}
+            {"expr": "topk(10, container_memory_working_set_bytes{namespace=~\"$namespace\", container!=\"\", pod=~\"backend-.*|frontend-.*|celery-.*|judge-server-.*|postgres-.*|redis-.*|vllm-.*\"})", "legendFormat": "{{namespace}} {{pod}} {{container}}"}
           ]
         },
         {

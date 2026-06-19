@@ -182,6 +182,16 @@ spec:
           annotations:
             summary: "Longhorn volume is read-only"
             description: "A Longhorn volume filesystem is read-only for 1 minute. Writes from the attached workload may fail."
+        - alert: VLLMUnavailable
+          expr: (up{job="vllm", namespace="code-place-prod"} == 0) or absent(up{job="vllm", namespace="code-place-prod"})
+          for: 2m
+          labels:
+            severity: critical
+            priority: P0
+            namespace: code-place-prod
+          annotations:
+            summary: "vLLM metrics target is unavailable"
+            description: "Prometheus cannot scrape the vLLM /metrics endpoint for 2 minutes. AI hint serving may be unavailable."
     - name: codeplace.p1
       interval: 30s
       rules:
@@ -286,7 +296,7 @@ spec:
             summary: "Celery task runtime is high"
             description: "Celery task p95 runtime has been above 120 seconds for 10 minutes."
         - alert: PodCrashLooping
-          expr: sum by (namespace, pod) (increase(kube_pod_container_status_restarts_total{namespace=~"code-place-(dev|prod)", pod=~"backend-.*|frontend-.*|celery-.*|judge-server-.*"}[5m])) > 0
+          expr: sum by (namespace, pod) (increase(kube_pod_container_status_restarts_total{namespace=~"code-place-(dev|prod)", pod=~"backend-.*|frontend-.*|celery-.*|judge-server-.*|vllm-.*"}[5m])) > 0
           for: 5m
           labels:
             severity: warning
@@ -295,7 +305,7 @@ spec:
             summary: "CodePlace pod is restarting"
             description: "A CodePlace application pod has restarted within the last 5 minutes."
         - alert: CodePlacePodNotReady
-          expr: max by (namespace, pod) (kube_pod_status_ready{namespace=~"code-place-(dev|prod)", condition="true", pod=~"backend-.*|frontend-.*|celery-.*|judge-server-.*|postgres-.*|redis-.*"}) == 0
+          expr: max by (namespace, pod) (kube_pod_status_ready{namespace=~"code-place-(dev|prod)", condition="true", pod=~"backend-.*|frontend-.*|celery-.*|judge-server-.*|postgres-.*|redis-.*|vllm-.*"}) == 0
           for: 5m
           labels:
             severity: warning
@@ -304,7 +314,7 @@ spec:
             summary: "CodePlace pod is not ready"
             description: "A CodePlace application or datastore pod has not been ready for 5 minutes."
         - alert: CodePlaceContainerCPUHigh
-          expr: sum by (namespace, pod, container) (rate(container_cpu_usage_seconds_total{namespace=~"code-place-(dev|prod)", container!="", pod=~"backend-.*|frontend-.*|celery-.*|judge-server-.*|postgres-.*|redis-.*"}[5m])) / clamp_min(sum by (namespace, pod, container) (kube_pod_container_resource_limits{namespace=~"code-place-(dev|prod)", resource="cpu", unit="core", pod=~"backend-.*|frontend-.*|celery-.*|judge-server-.*|postgres-.*|redis-.*"}), 0.001) > 0.8
+          expr: sum by (namespace, pod, container) (rate(container_cpu_usage_seconds_total{namespace=~"code-place-(dev|prod)", container!="", pod=~"backend-.*|frontend-.*|celery-.*|judge-server-.*|postgres-.*|redis-.*|vllm-.*"}[5m])) / clamp_min(sum by (namespace, pod, container) (kube_pod_container_resource_limits{namespace=~"code-place-(dev|prod)", resource="cpu", unit="core", pod=~"backend-.*|frontend-.*|celery-.*|judge-server-.*|postgres-.*|redis-.*|vllm-.*"}), 0.001) > 0.8
           for: 10m
           labels:
             severity: warning
@@ -313,7 +323,7 @@ spec:
             summary: "CodePlace container CPU usage is high"
             description: "A CodePlace container has used more than 80% of its CPU limit for 10 minutes."
         - alert: CodePlaceContainerMemoryHigh
-          expr: max by (namespace, pod, container) (container_memory_working_set_bytes{namespace=~"code-place-(dev|prod)", container!="", pod=~"backend-.*|frontend-.*|celery-.*|judge-server-.*|postgres-.*|redis-.*"}) / clamp_min(sum by (namespace, pod, container) (kube_pod_container_resource_limits{namespace=~"code-place-(dev|prod)", resource="memory", unit="byte", pod=~"backend-.*|frontend-.*|celery-.*|judge-server-.*|postgres-.*|redis-.*"}), 1) > 0.85
+          expr: max by (namespace, pod, container) (container_memory_working_set_bytes{namespace=~"code-place-(dev|prod)", container!="", pod=~"backend-.*|frontend-.*|celery-.*|judge-server-.*|postgres-.*|redis-.*|vllm-.*"}) / clamp_min(sum by (namespace, pod, container) (kube_pod_container_resource_limits{namespace=~"code-place-(dev|prod)", resource="memory", unit="byte", pod=~"backend-.*|frontend-.*|celery-.*|judge-server-.*|postgres-.*|redis-.*|vllm-.*"}), 1) > 0.85
           for: 10m
           labels:
             severity: warning
@@ -467,6 +477,36 @@ spec:
           annotations:
             summary: "Longhorn disk usage is high"
             description: "A Longhorn disk has used or reserved more than 85% of capacity for 10 minutes."
+        - alert: VLLMWaitingQueueHigh
+          expr: max({__name__="vllm:num_requests_waiting", namespace="code-place-prod"}) > 5
+          for: 5m
+          labels:
+            severity: warning
+            priority: P1
+            namespace: code-place-prod
+          annotations:
+            summary: "vLLM request waiting queue is high"
+            description: "More than 5 vLLM requests have been waiting for 5 minutes. AI hint latency may be elevated."
+        - alert: VLLMKVCacheHigh
+          expr: max({__name__="vllm:kv_cache_usage_perc", namespace="code-place-prod"}) > 0.9
+          for: 10m
+          labels:
+            severity: warning
+            priority: P1
+            namespace: code-place-prod
+          annotations:
+            summary: "vLLM KV cache usage is high"
+            description: "vLLM KV cache usage has been above 90% for 10 minutes."
+        - alert: VLLMRequestLatencyHigh
+          expr: histogram_quantile(0.95, sum by (le) (rate({__name__="vllm:e2e_request_latency_seconds_bucket", namespace="code-place-prod"}[10m]))) > 60
+          for: 10m
+          labels:
+            severity: warning
+            priority: P1
+            namespace: code-place-prod
+          annotations:
+            summary: "vLLM request latency is high"
+            description: "vLLM p95 end-to-end request latency has been above 60 seconds for 10 minutes."
         - alert: CodePlaceNodePressure
           expr: kube_node_status_condition{condition=~"MemoryPressure|DiskPressure|PIDPressure", status="true"} == 1
           for: 5m

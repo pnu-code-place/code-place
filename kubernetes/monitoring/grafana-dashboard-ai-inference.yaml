@@ -1,0 +1,212 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-codeplace-ai-inference
+  labels:
+    grafana_dashboard: "1"
+data:
+  codeplace-ai-inference.json: |
+    {
+      "uid": "codeplace-ai-inference",
+      "title": "CodePlace AI Inference",
+      "schemaVersion": 39,
+      "version": 1,
+      "refresh": "30s",
+      "tags": ["codeplace", "ai", "vllm"],
+      "editable": true,
+      "time": {
+        "from": "now-1h",
+        "to": "now"
+      },
+      "panels": [
+        {
+          "type": "stat",
+          "title": "vLLM Scrape Up",
+          "gridPos": {"x": 0, "y": 0, "w": 4, "h": 4},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "red", "value": null},
+                  {"color": "green", "value": 1}
+                ]
+              }
+            }
+          },
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "up{job=\"vllm\", namespace=\"code-place-prod\"}", "legendFormat": "vllm"}
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "vLLM Pod Ready",
+          "gridPos": {"x": 4, "y": 0, "w": 4, "h": 4},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "red", "value": null},
+                  {"color": "green", "value": 1}
+                ]
+              }
+            }
+          },
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "max(kube_pod_status_ready{namespace=\"code-place-prod\", condition=\"true\", pod=~\"vllm-.*\"})", "legendFormat": "ready"}
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "Running Requests",
+          "gridPos": {"x": 8, "y": 0, "w": 4, "h": 4},
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "short"}},
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "max({__name__=\"vllm:num_requests_running\", namespace=\"code-place-prod\"})", "legendFormat": "running"}
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "Waiting Requests",
+          "gridPos": {"x": 12, "y": 0, "w": 4, "h": 4},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "orange", "value": 1},
+                  {"color": "red", "value": 5}
+                ]
+              }
+            }
+          },
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "max({__name__=\"vllm:num_requests_waiting\", namespace=\"code-place-prod\"})", "legendFormat": "waiting"}
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "KV Cache Usage",
+          "gridPos": {"x": 16, "y": 0, "w": 4, "h": 4},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percentunit",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "orange", "value": 0.75},
+                  {"color": "red", "value": 0.9}
+                ]
+              }
+            }
+          },
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "max({__name__=\"vllm:kv_cache_usage_perc\", namespace=\"code-place-prod\"})", "legendFormat": "kv-cache"}
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "HF Cache PVC",
+          "gridPos": {"x": 20, "y": 0, "w": 4, "h": 4},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percentunit",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "orange", "value": 0.75},
+                  {"color": "red", "value": 0.85}
+                ]
+              }
+            }
+          },
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "max(kubelet_volume_stats_used_bytes{namespace=\"code-place-prod\", persistentvolumeclaim=\"vllm-hf-cache\"}) / clamp_min(max(kubelet_volume_stats_capacity_bytes{namespace=\"code-place-prod\", persistentvolumeclaim=\"vllm-hf-cache\"}), 1)", "legendFormat": "usage"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "vLLM Requests",
+          "gridPos": {"x": 0, "y": 4, "w": 8, "h": 8},
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "short"}},
+          "targets": [
+            {"expr": "{__name__=\"vllm:num_requests_running\", namespace=\"code-place-prod\"}", "legendFormat": "running"},
+            {"expr": "{__name__=\"vllm:num_requests_waiting\", namespace=\"code-place-prod\"}", "legendFormat": "waiting"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "vLLM Request Success Rate",
+          "gridPos": {"x": 8, "y": 4, "w": 8, "h": 8},
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "ops"}},
+          "targets": [
+            {"expr": "sum by (finished_reason) (rate({__name__=\"vllm:request_success_total\", namespace=\"code-place-prod\"}[5m]))", "legendFormat": "{{finished_reason}}"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "vLLM p95 Latency",
+          "gridPos": {"x": 16, "y": 4, "w": 8, "h": 8},
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "s"}},
+          "targets": [
+            {"expr": "histogram_quantile(0.95, sum by (le) (rate({__name__=\"vllm:e2e_request_latency_seconds_bucket\", namespace=\"code-place-prod\"}[10m])))", "legendFormat": "e2e p95"},
+            {"expr": "histogram_quantile(0.95, sum by (le) (rate({__name__=\"vllm:request_queue_time_seconds_bucket\", namespace=\"code-place-prod\"}[10m])))", "legendFormat": "queue p95"},
+            {"expr": "histogram_quantile(0.95, sum by (le) (rate({__name__=\"vllm:time_to_first_token_seconds_bucket\", namespace=\"code-place-prod\"}[10m])))", "legendFormat": "ttft p95"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "vLLM Token Throughput",
+          "gridPos": {"x": 0, "y": 12, "w": 8, "h": 8},
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "ops"}},
+          "targets": [
+            {"expr": "sum(rate({__name__=\"vllm:prompt_tokens_total\", namespace=\"code-place-prod\"}[5m]))", "legendFormat": "prompt tokens/s"},
+            {"expr": "sum(rate({__name__=\"vllm:generation_tokens_total\", namespace=\"code-place-prod\"}[5m]))", "legendFormat": "generation tokens/s"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "vLLM Pod Resources",
+          "gridPos": {"x": 8, "y": 12, "w": 8, "h": 8},
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "short"}},
+          "targets": [
+            {"expr": "sum by (pod) (rate(container_cpu_usage_seconds_total{namespace=\"code-place-prod\", pod=~\"vllm-.*\", container=\"vllm\"}[5m]))", "legendFormat": "{{pod}} cpu cores"},
+            {"expr": "max by (pod) (container_memory_working_set_bytes{namespace=\"code-place-prod\", pod=~\"vllm-.*\", container=\"vllm\"})", "legendFormat": "{{pod}} memory bytes"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "vLLM HF Cache PVC",
+          "gridPos": {"x": 16, "y": 12, "w": 8, "h": 8},
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "percentunit"}},
+          "targets": [
+            {"expr": "max(kubelet_volume_stats_used_bytes{namespace=\"code-place-prod\", persistentvolumeclaim=\"vllm-hf-cache\"}) / clamp_min(max(kubelet_volume_stats_capacity_bytes{namespace=\"code-place-prod\", persistentvolumeclaim=\"vllm-hf-cache\"}), 1)", "legendFormat": "usage"}
+          ]
+        }
+      ]
+    }

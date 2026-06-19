@@ -8,6 +8,7 @@ resources:
   - ./blackbox-exporter.yaml
   - ./datastore-pod-monitors.yaml
   - ./grafana-dashboard-codeplace.yaml
+  - ./grafana-dashboard-ai-inference.yaml
   - ./grafana-dashboard-logs.yaml
   - ./grafana-dashboard-public-endpoints.yaml
   - ./grafana-dashboard-storage.yaml
@@ -17,3 +18,4 @@ resources:
   - ./prometheus-rules.yaml
   - ./public-endpoint-probes.yaml
   - ./tempo.yaml
+  - ./vllm-service-monitor.yaml
