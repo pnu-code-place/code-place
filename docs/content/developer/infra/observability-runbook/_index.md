@@ -66,6 +66,12 @@ kubectl -n code-place-dev get deploy backend celery-worker celery-beat -o yaml |
 ```
 
 Grafana에서는 `CodePlace Traces` dashboard와 `Tempo` datasource Explore를 확인합니다. dev에서 먼저 `service.name=codeplace-backend`와 `service.name=codeplace-celery` trace가 조회되어야 합니다.
+Tempo에서 trace를 선택한 뒤 같은 `trace_id`를 Loki에서 조회합니다.
+
+```logql
+{namespace="<namespace>", app="backend"} | json | trace_id="<trace_id>"
+{namespace="<namespace>", container=~"celery-worker|celery-beat"} | json | trace_id="<trace_id>"
+```
 
 ## P0
 

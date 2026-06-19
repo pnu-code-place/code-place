@@ -119,6 +119,19 @@ class ObservabilityTracingTest(SimpleTestCase):
         with tracer.start_as_current_span("span") as span:
             self.assertIsNone(span.set_attribute("key", "value"))
 
+    def test_get_current_trace_context_returns_empty_when_opentelemetry_is_unavailable(self):
+        from utils.observability_tracing import get_current_trace_context
+
+        real_import = __import__
+
+        def fake_import(name, *args, **kwargs):
+            if name == "opentelemetry":
+                raise ImportError("missing opentelemetry")
+            return real_import(name, *args, **kwargs)
+
+        with patch("builtins.__import__", side_effect=fake_import):
+            self.assertEqual(get_current_trace_context(), {})
+
 
 class CodePlaceJsonFormatterTest(SimpleTestCase):
 
@@ -143,6 +156,26 @@ class CodePlaceJsonFormatterTest(SimpleTestCase):
         self.assertEqual(payload["request_id"], "request-1")
         self.assertNotIn("token", payload)
         self.assertNotIn("source_code", payload)
+
+    def test_includes_trace_context_when_available(self):
+        record = logging.LogRecord(
+            name="codeplace.request",
+            level=logging.INFO,
+            pathname=__file__,
+            lineno=1,
+            msg="request completed",
+            args=(),
+            exc_info=None,
+        )
+
+        with patch("utils.json_logging.get_current_trace_context", return_value={
+            "trace_id": "0" * 31 + "1",
+            "span_id": "0" * 15 + "2",
+        }):
+            payload = json.loads(CodePlaceJsonFormatter().format(record))
+
+        self.assertEqual(payload["trace_id"], "0" * 31 + "1")
+        self.assertEqual(payload["span_id"], "0" * 15 + "2")
 
     def test_redacts_nested_sensitive_fields(self):
         formatter = CodePlaceJsonFormatter()

@@ -26,6 +26,24 @@ def get_tracer(name):
     return trace.get_tracer(name)
 
 
+def get_current_trace_context():
+    try:
+        from opentelemetry import trace
+    except Exception:
+        return {}
+
+    try:
+        span_context = trace.get_current_span().get_span_context()
+    except Exception:
+        return {}
+    if not getattr(span_context, "is_valid", False):
+        return {}
+    return {
+        "trace_id": format(span_context.trace_id, "032x"),
+        "span_id": format(span_context.span_id, "016x"),
+    }
+
+
 def configure_opentelemetry(service_name):
     if get_env("OTEL_ENABLED", "0").lower() not in ("1", "true", "yes", "on"):
         return
