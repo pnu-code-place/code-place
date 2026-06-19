@@ -119,6 +119,51 @@ for receiver_name in ("p0-discord", "p1-discord"):
         raise SystemExit(f"{receiver_name} must use alertmanager-contact-points/webhook-url")
 print("ALERTMANAGER SHAPE OK")
 
+stack_values = yaml.safe_load((root / "kube-prometheus-stack-values.yaml").read_text())
+prometheus_spec = stack_values.get("prometheus", {}).get("prometheusSpec", {})
+for key in (
+    "serviceMonitorSelectorNilUsesHelmValues",
+    "podMonitorSelectorNilUsesHelmValues",
+    "ruleSelectorNilUsesHelmValues",
+):
+    if prometheus_spec.get(key) is not False:
+        raise SystemExit(f"kube-prometheus-stack prometheusSpec.{key} must be false")
+alertmanager_selector = (
+    stack_values.get("alertmanager", {})
+    .get("alertmanagerSpec", {})
+    .get("alertmanagerConfigSelector", {})
+    .get("matchLabels", {})
+)
+if alertmanager_selector.get("alertmanagerConfig") != "codeplace":
+    raise SystemExit("AlertmanagerConfig selector must match alertmanagerConfig=codeplace")
+grafana_values = stack_values.get("grafana", {})
+datasources = grafana_values.get("additionalDataSources") or []
+if not any(ds.get("name") == "Loki" and ds.get("type") == "loki" for ds in datasources):
+    raise SystemExit("Grafana values must provision Loki datasource")
+dashboard_sidecar = grafana_values.get("sidecar", {}).get("dashboards", {})
+if dashboard_sidecar.get("label") != "grafana_dashboard":
+    raise SystemExit("Grafana dashboard sidecar must select grafana_dashboard label")
+print("KUBE-PROMETHEUS-STACK VALUES SHAPE OK")
+
+backend_sm = yaml.safe_load((root / "backend-service-monitor.yaml").read_text())
+if backend_sm.get("metadata", {}).get("labels", {}).get("release") != "kube-prometheus-stack":
+    raise SystemExit("backend ServiceMonitor must keep release=kube-prometheus-stack label")
+endpoint = (backend_sm.get("spec", {}).get("endpoints") or [{}])[0]
+if endpoint.get("port") != "api" or endpoint.get("path") != "/metrics" or endpoint.get("interval") != "15s":
+    raise SystemExit("backend ServiceMonitor must scrape api /metrics every 15s")
+if backend_sm.get("spec", {}).get("selector", {}).get("matchLabels", {}).get("app") != "backend":
+    raise SystemExit("backend ServiceMonitor must select app=backend")
+
+pod_monitors = list(yaml.safe_load_all((root / "datastore-pod-monitors.yaml").read_text()))
+for monitor in pod_monitors:
+    name = monitor.get("metadata", {}).get("name")
+    if monitor.get("metadata", {}).get("labels", {}).get("release") != "kube-prometheus-stack":
+        raise SystemExit(f"{name} PodMonitor must keep release=kube-prometheus-stack label")
+    endpoint = (monitor.get("spec", {}).get("podMetricsEndpoints") or [{}])[0]
+    if endpoint.get("interval") != "30s":
+        raise SystemExit(f"{name} PodMonitor must scrape every 30s")
+print("SCRAPE RESOURCE SHAPE OK")
+
 kustomization = yaml.safe_load((root / "kustomization.yaml").read_text())
 if "./alertmanager-config-email.example.yaml" in kustomization.get("resources", []):
     raise SystemExit("email fallback example must not be included in default kustomization")

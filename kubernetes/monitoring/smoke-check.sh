@@ -21,6 +21,22 @@ resource_exists() {
   kubectl -n "$1" get "$2" "$3" >/dev/null 2>&1
 }
 
+resource_count() {
+  kubectl -n "$1" get "$2" -l "$3" -o jsonpath='{.items[*].metadata.name}' 2>/dev/null | wc -w | tr -d ' '
+}
+
+require_label() {
+  local namespace="$1"
+  local resource="$2"
+  local name="$3"
+  local key="$4"
+  local expected="$5"
+  local actual
+  actual="$(kubectl -n "$namespace" get "$resource" "$name" -o "jsonpath={.metadata.labels['${key//./\\.}']}")"
+  [ "$actual" = "$expected" ] || fail "$resource/$name label $key expected=$expected actual=$actual"
+  ok "$resource/$name label $key=$expected"
+}
+
 require_cmd kubectl
 
 echo "==> checking Prometheus Operator CRDs"
@@ -49,6 +65,14 @@ for resource in \
   ok "$resource"
 done
 
+require_label "$NAMESPACE" prometheusrule codeplace-fast-alerts release kube-prometheus-stack
+require_label "$NAMESPACE" servicemonitor backend release kube-prometheus-stack
+require_label "$NAMESPACE" podmonitor postgres release kube-prometheus-stack
+require_label "$NAMESPACE" podmonitor redis release kube-prometheus-stack
+require_label "$NAMESPACE" alertmanagerconfig codeplace-alert-routing alertmanagerConfig codeplace
+require_label "$NAMESPACE" configmap grafana-dashboard-codeplace grafana_dashboard 1
+require_label "$NAMESPACE" configmap grafana-dashboard-codeplace-logs grafana_dashboard 1
+
 if resource_exists "$NAMESPACE" secret alertmanager-contact-points; then
   kubectl -n "$NAMESPACE" get secret alertmanager-contact-points \
     -o jsonpath='{.data.webhook-url}' | grep -q . \
@@ -69,7 +93,7 @@ for selector in \
 done
 
 echo "==> checking optional logs stack"
-if kubectl -n "$NAMESPACE" get pod -l app.kubernetes.io/name=loki >/dev/null 2>&1; then
+if [ "$(resource_count "$NAMESPACE" pod app.kubernetes.io/name=loki)" -gt 0 ]; then
   kubectl -n "$NAMESPACE" wait --for=condition=Ready pod -l app.kubernetes.io/name=loki --timeout=30s
   ok "loki pods ready"
 else
@@ -91,6 +115,9 @@ for app_namespace in $APP_NAMESPACES; do
   ok "namespace $app_namespace"
   kubectl -n "$app_namespace" get svc backend >/dev/null
   ok "$app_namespace service/backend"
+  kubectl -n "$app_namespace" get svc backend -o jsonpath='{.spec.ports[*].name}' | grep -qw api \
+    || fail "$app_namespace service/backend missing api port"
+  ok "$app_namespace service/backend api port"
   kubectl -n "$app_namespace" wait --for=condition=Ready pod -l app=backend --timeout=30s
   ok "$app_namespace backend pods ready"
 done
