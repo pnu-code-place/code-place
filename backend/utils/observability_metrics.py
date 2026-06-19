@@ -68,6 +68,11 @@ AI_HINT_API_OUTCOME_TOTAL = Counter(
     "Total user-facing AI hint API outcomes.",
     ["status", "scope"],
 )
+SUBMISSION_CREATE_OUTCOME_TOTAL = Counter(
+    "codeplace_submission_create_outcome_total",
+    "Total user-facing submission create API outcomes.",
+    ["status", "scope"],
+)
 
 
 class CodePlaceCollector:

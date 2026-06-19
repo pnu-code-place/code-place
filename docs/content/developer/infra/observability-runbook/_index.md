@@ -643,6 +643,25 @@ kubectl -n <namespace> get pod -l app=judge-server
 - judging age가 증가하면 judge-server 실행, judge-server `/judge` 호출, result save path, worker 로그의 `judge.tasks.judge_task`를 봅니다.
 - pending/judging count는 낮지만 oldest age만 높으면 특정 제출이 고립된 상태입니다. 사용자 영향은 제한적일 수 있으나 결과 저장/상태 전환 실패를 확인합니다.
 
+### SubmissionCreateSystemFailures
+
+확인:
+
+```promql
+sum by (namespace, scope, status) (increase(codeplace_submission_create_outcome_total{namespace="<namespace>"}[5m]))
+```
+
+```sh
+kubectl -n <namespace> logs deploy/backend --tail=200
+kubectl -n <namespace> logs deploy/celery-worker --tail=200
+```
+
+판단:
+
+- `db_error`는 Submission row 생성이 실패한 상태입니다. PostgreSQL readiness, connection usage, lock wait, backend exception log를 봅니다.
+- `enqueue_error`는 Submission row는 생성됐지만 judge task queue 등록이 실패한 상태입니다. Redis/Celery broker, worker readiness, queue metric을 먼저 봅니다.
+- `throttled`, `invalid_captcha`, `problem_not_found`, `language_not_allowed`, `contest_permission_denied`는 사용자 입력/권한/문제 상태로 보고 시스템 장애 알림 대상에서 제외합니다.
+
 ### CeleryWorkerRestarting / CeleryBeatDown
 
 확인:
