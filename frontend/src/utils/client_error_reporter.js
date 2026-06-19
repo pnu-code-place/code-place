@@ -20,37 +20,33 @@ function currentRoute(router) {
 }
 
 function reportClientError(payload) {
-  try {
-    const requestId = currentRequestId()
-    const body = JSON.stringify({
-      ...payload,
-      request_id: requestId,
-      release: process.env.VERSION,
-    })
-    const headers = {
-      "Content-Type": "application/json",
-    }
-    if (requestId) {
-      headers["X-Request-ID"] = requestId
-    }
-
-    if (navigator.sendBeacon) {
-      const blob = new Blob([body], { type: "application/json" })
-      if (navigator.sendBeacon(CLIENT_ERROR_ENDPOINT, blob)) {
-        return
-      }
-    }
-
-    window.fetch(CLIENT_ERROR_ENDPOINT, {
-      method: "POST",
-      headers,
-      body,
-      credentials: "same-origin",
-      keepalive: true,
-    }).catch(() => {})
-  } catch (error) {
-    console.error(error)
+  const requestId = currentRequestId()
+  const body = JSON.stringify({
+    ...payload,
+    request_id: requestId,
+    release: process.env.VERSION,
+  })
+  const headers = {
+    "Content-Type": "application/json",
   }
+  if (requestId) {
+    headers["X-Request-ID"] = requestId
+  }
+
+  if (navigator.sendBeacon) {
+    const blob = new Blob([body], { type: "application/json" })
+    if (navigator.sendBeacon(CLIENT_ERROR_ENDPOINT, blob)) {
+      return
+    }
+  }
+
+  window.fetch(CLIENT_ERROR_ENDPOINT, {
+    method: "POST",
+    headers,
+    body,
+    credentials: "same-origin",
+    keepalive: true,
+  }).catch(() => {})
 }
 
 function errorMessage(error) {

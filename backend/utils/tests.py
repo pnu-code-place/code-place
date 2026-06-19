@@ -18,7 +18,6 @@ from utils.judge_server_observability import (
 )
 from utils.observability_metrics import CodePlaceCollector
 from utils import observability_tracing
-from utils.observability_tracing import get_tracer
 from utils.testcase_cache import TestCaseCacheManager
 
 
@@ -404,33 +403,6 @@ class ObservabilityTracingTest(SimpleTestCase):
 
     def tearDown(self):
         observability_tracing._OTEL_CONFIGURED = False
-
-    def test_get_tracer_returns_noop_tracer_when_opentelemetry_is_unavailable(self):
-        real_import = __import__
-
-        def fake_import(name, *args, **kwargs):
-            if name == "opentelemetry":
-                raise ImportError("missing opentelemetry")
-            return real_import(name, *args, **kwargs)
-
-        with patch("builtins.__import__", side_effect=fake_import):
-            tracer = get_tracer("test")
-
-        with tracer.start_as_current_span("span") as span:
-            self.assertIsNone(span.set_attribute("key", "value"))
-
-    def test_get_current_trace_context_returns_empty_when_opentelemetry_is_unavailable(self):
-        from utils.observability_tracing import get_current_trace_context
-
-        real_import = __import__
-
-        def fake_import(name, *args, **kwargs):
-            if name == "opentelemetry":
-                raise ImportError("missing opentelemetry")
-            return real_import(name, *args, **kwargs)
-
-        with patch("builtins.__import__", side_effect=fake_import):
-            self.assertEqual(get_current_trace_context(), {})
 
     def test_configure_opentelemetry_is_idempotent(self):
         observability_tracing._OTEL_CONFIGURED = True

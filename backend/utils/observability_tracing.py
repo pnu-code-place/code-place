@@ -1,5 +1,6 @@
 import logging
-from contextlib import nullcontext
+
+from opentelemetry import trace
 
 from utils.shortcuts import get_env
 
@@ -7,32 +8,11 @@ logger = logging.getLogger(__name__)
 _OTEL_CONFIGURED = False
 
 
-class _NoOpSpan:
-
-    def set_attribute(self, key, value):
-        return None
-
-
-class _NoOpTracer:
-
-    def start_as_current_span(self, name):
-        return nullcontext(_NoOpSpan())
-
-
 def get_tracer(name):
-    try:
-        from opentelemetry import trace
-    except Exception:
-        return _NoOpTracer()
     return trace.get_tracer(name)
 
 
 def get_current_trace_context():
-    try:
-        from opentelemetry import trace
-    except Exception:
-        return {}
-
     try:
         span_context = trace.get_current_span().get_span_context()
     except Exception:
@@ -52,21 +32,16 @@ def configure_opentelemetry(service_name):
     if _OTEL_CONFIGURED:
         return
 
-    try:
-        from opentelemetry import trace
-        from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
-        from opentelemetry.instrumentation.celery import CeleryInstrumentor
-        from opentelemetry.instrumentation.django import DjangoInstrumentor
-        from opentelemetry.instrumentation.psycopg2 import Psycopg2Instrumentor
-        from opentelemetry.instrumentation.redis import RedisInstrumentor
-        from opentelemetry.instrumentation.requests import RequestsInstrumentor
-        from opentelemetry.sdk.resources import Resource
-        from opentelemetry.sdk.trace import TracerProvider
-        from opentelemetry.sdk.trace.export import BatchSpanProcessor
-        from opentelemetry.sdk.trace.sampling import ParentBased, TraceIdRatioBased
-    except Exception:
-        logger.exception("OpenTelemetry packages are unavailable")
-        return
+    from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+    from opentelemetry.instrumentation.celery import CeleryInstrumentor
+    from opentelemetry.instrumentation.django import DjangoInstrumentor
+    from opentelemetry.instrumentation.psycopg2 import Psycopg2Instrumentor
+    from opentelemetry.instrumentation.redis import RedisInstrumentor
+    from opentelemetry.instrumentation.requests import RequestsInstrumentor
+    from opentelemetry.sdk.resources import Resource
+    from opentelemetry.sdk.trace import TracerProvider
+    from opentelemetry.sdk.trace.export import BatchSpanProcessor
+    from opentelemetry.sdk.trace.sampling import ParentBased, TraceIdRatioBased
 
     try:
         sampler_ratio = float(get_env("OTEL_TRACES_SAMPLER_ARG", "0.05"))
