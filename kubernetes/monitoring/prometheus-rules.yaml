@@ -92,7 +92,7 @@ spec:
             summary: "Ingress 5xx rate is high in prod"
             description: "Traefik 5xx responses for code-place-prod are above 5% for 2 minutes."
         - alert: PublicEndpointDown
-          expr: probe_success{environment="prod", probe_type="public-http"} == 0
+          expr: (probe_success{environment="prod", probe_type="public-http"} == 0) or absent(probe_success{environment="prod", service="frontend", probe_type="public-http"}) or absent(probe_success{environment="prod", service="hub-auth", probe_type="public-http"})
           for: 1m
           labels:
             severity: critical
@@ -311,7 +311,7 @@ spec:
             summary: "Backend API p95 latency is high"
             description: "Backend API p95 latency is above 2 seconds for 5 minutes."
         - alert: PublicEndpointDown
-          expr: probe_success{environment="dev", probe_type="public-http"} == 0
+          expr: (probe_success{environment="dev", probe_type="public-http"} == 0) or absent(probe_success{environment="dev", service="frontend", probe_type="public-http"}) or absent(probe_success{environment="dev", service="hub-auth", probe_type="public-http"})
           for: 2m
           labels:
             severity: warning
@@ -368,7 +368,7 @@ spec:
             summary: "Blackbox exporter replica is unavailable"
             description: "At least one synthetic public endpoint probe exporter replica is unavailable for 5 minutes. Public endpoint probing is degraded."
         - alert: GrafanaPublicEndpointDown
-          expr: probe_success{environment="monitoring", service="grafana", probe_type="public-http"} == 0
+          expr: (probe_success{environment="monitoring", service="grafana", probe_type="public-http"} == 0) or absent(probe_success{environment="monitoring", service="grafana", probe_type="public-http"})
           for: 2m
           labels:
             severity: warning
