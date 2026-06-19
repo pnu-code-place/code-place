@@ -13,7 +13,7 @@ This is the selected baseline while cloud object storage is unavailable. Longhor
 Pinned chart versions:
 
 - `prometheus-community/kube-prometheus-stack`: `86.3.1`
-- `grafana-community/loki`: `17.4.7`
+- `grafana/loki`: `6.55.0`
 - `grafana/alloy`: `1.10.0`
 
 ## Install or Upgrade
@@ -22,7 +22,6 @@ Install or upgrade kube-prometheus-stack first so the Prometheus Operator CRDs a
 The kube-prometheus-stack values set `alertmanager.alertmanagerSpec.alertmanagerConfigMatcherStrategy.type=None` so the `monitoring` namespace AlertmanagerConfig can route CodePlace alerts whose `namespace` labels are `code-place-dev` or `code-place-prod`.
 
 ```sh
-helm repo add grafana-community https://grafana-community.github.io/helm-charts
 helm repo add grafana https://grafana.github.io/helm-charts
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo update
@@ -32,9 +31,9 @@ helm upgrade --install kube-prometheus-stack prometheus-community/kube-prometheu
   --version 86.3.1 \
   --values kubernetes/monitoring/kube-prometheus-stack-values.yaml
 
-helm upgrade --install loki grafana-community/loki \
+helm upgrade --install loki grafana/loki \
   --namespace monitoring \
-  --version 17.4.7 \
+  --version 6.55.0 \
   --values kubernetes/monitoring/logs/loki-values.yaml
 
 helm upgrade --install alloy grafana/alloy \
@@ -99,8 +98,8 @@ This is not a horizontally scalable Loki design. It is the selected cloud-free b
 
 Keep these invariants unless the storage design changes intentionally:
 
-- Loki stays in `Monolithic` deployment mode.
-- Loki is installed from `grafana-community/loki` chart `17.4.7`. Do not switch it to the latest `grafana/loki` chart without revalidating rendered workloads and values compatibility.
+- Loki stays in `SingleBinary` deployment mode.
+- Loki is installed from `grafana/loki` chart `6.55.0`. Do not upgrade the chart without revalidating rendered workloads and values compatibility.
 - Loki uses filesystem storage on a Longhorn PVC.
 - Alloy keeps `alloy.mounts.varlog=true`; otherwise the `/var/log/pods` targets are discovered but cannot be read.
 - The PVC size is explicit at `50Gi`, and `LokiPVCAlmostFull` alerts at 85%.

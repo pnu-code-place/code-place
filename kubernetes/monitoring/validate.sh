@@ -161,6 +161,7 @@ prometheus_spec = stack_values.get("prometheus", {}).get("prometheusSpec", {})
 for key in (
     "serviceMonitorSelectorNilUsesHelmValues",
     "podMonitorSelectorNilUsesHelmValues",
+    "probeSelectorNilUsesHelmValues",
     "ruleSelectorNilUsesHelmValues",
 ):
     if prometheus_spec.get(key) is not False:
@@ -207,8 +208,8 @@ print("TRAEFIK METRICS SHAPE OK")
 
 loki_values = yaml.safe_load((root / "logs" / "loki-values.yaml").read_text())
 loki_config = loki_values.get("loki", {})
-if loki_values.get("deploymentMode") != "Monolithic":
-    raise SystemExit("Loki must stay in Monolithic mode for the on-prem baseline")
+if loki_values.get("deploymentMode") != "SingleBinary":
+    raise SystemExit("Loki must stay in SingleBinary mode for the on-prem baseline")
 if loki_config.get("storage", {}).get("type") != "filesystem":
     raise SystemExit("Loki must use filesystem storage while cloud object storage is unavailable")
 if loki_config.get("commonConfig", {}).get("replication_factor") != 1:
@@ -523,9 +524,9 @@ if optional_cmd helm; then
     >/tmp/codeplace-kube-prometheus-stack-render.yaml
   echo "HELM OK kube-prometheus-stack"
 
-  helm template loki grafana-community/loki \
+  helm template loki grafana/loki \
     --namespace monitoring \
-    --version 17.4.7 \
+    --version 6.55.0 \
     --values "${MONITORING_DIR}/logs/loki-values.yaml" \
     >/tmp/codeplace-loki-render.yaml
   echo "HELM OK loki"

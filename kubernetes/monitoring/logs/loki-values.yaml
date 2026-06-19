@@ -1,6 +1,6 @@
-# Helm values for grafana-community/loki.
+# Helm values for grafana/loki.
 # This is an on-premises, cloud-free Loki deployment. It intentionally uses
-# Monolithic mode with a Longhorn-backed filesystem PVC instead of object storage.
+# SingleBinary mode with a Longhorn-backed filesystem PVC instead of object storage.
 
 loki:
   auth_enabled: false
@@ -45,7 +45,7 @@ loki:
   ruler:
     enable_api: true
 
-deploymentMode: Monolithic
+deploymentMode: SingleBinary
 
 singleBinary:
   replicas: 1
