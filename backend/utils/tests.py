@@ -134,6 +134,37 @@ class CodePlaceCollectorTest(SimpleTestCase):
         last_runtime = samples["codeplace_celery_task_last_runtime_seconds"][0]
         self.assertEqual(last_runtime.value, 1.5)
 
+    def test_celery_task_metrics_tolerate_malformed_redis_values(self):
+        hashes = {
+            celery_observability.CELERY_TASK_TOTAL_KEY: {
+                b"judge.tasks.judge_task|success": b"bad-count",
+            },
+            celery_observability.CELERY_TASK_RUNTIME_BUCKET_KEY: {
+                b"judge.tasks.judge_task|1": b"bad-bucket",
+            },
+            celery_observability.CELERY_TASK_RUNTIME_COUNT_KEY: {
+                b"judge.tasks.judge_task": b"bad-count",
+            },
+            celery_observability.CELERY_TASK_RUNTIME_SUM_KEY: {
+                b"judge.tasks.judge_task": b"bad-sum",
+            },
+            celery_observability.CELERY_TASK_RUNTIME_LAST_KEY: {
+                b"judge.tasks.judge_task|success": b"bad-runtime",
+            },
+            celery_observability.CELERY_TASK_LAST_SEEN_AT_KEY: {
+                b"judge.tasks.judge_task|success": b"bad-timestamp",
+            },
+        }
+
+        with patch("utils.observability_metrics.cache.hgetall", side_effect=lambda key: hashes.get(key, {})):
+            samples = self._samples_by_metric(list(CodePlaceCollector()._celery_task_metrics()))
+
+        total_sample = samples["codeplace_celery_task_count"][0]
+        self.assertEqual(total_sample.value, 0)
+        last_runtime_sample = samples["codeplace_celery_task_last_runtime_seconds"][0]
+        self.assertEqual(last_runtime_sample.value, 0)
+        self.assertEqual(samples["codeplace_celery_task_last_seen_age_seconds"], [])
+
     def test_postgres_health_metrics_are_collected(self):
         class FakeCursor:
             def __init__(self):

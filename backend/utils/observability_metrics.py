@@ -342,7 +342,7 @@ class CodePlaceCollector:
 
         for field, value in task_totals.items():
             task_name, status = self._split_field(field, 2)
-            total_metric.add_metric([task_name, status], float(value))
+            total_metric.add_metric([task_name, status], self._float_or_zero(value))
 
         task_names = set(runtime_counts) | set(runtime_sums)
         for field in runtime_buckets:
@@ -352,22 +352,26 @@ class CodePlaceCollector:
             cumulative_buckets = []
             for bucket in CELERY_TASK_RUNTIME_BUCKETS:
                 bucket_label = "+Inf" if bucket == float("inf") else str(bucket)
-                value = float(runtime_buckets.get(self._join_field(task_name, bucket_label), 0))
+                value = self._float_or_zero(runtime_buckets.get(self._join_field(task_name, bucket_label), 0))
                 cumulative_buckets.append((bucket_label, value))
             runtime_metric.add_metric(
                 [task_name],
                 cumulative_buckets,
-                float(runtime_sums.get(task_name, 0)),
+                self._float_or_zero(runtime_sums.get(task_name, 0)),
             )
 
         for field, value in last_runtimes.items():
             task_name, status = self._split_field(field, 2)
-            last_runtime_metric.add_metric([task_name, status], float(value))
+            last_runtime_metric.add_metric([task_name, status], self._float_or_zero(value))
 
         now_timestamp = timezone.now().timestamp()
         for field, value in last_seen_at.items():
             task_name, status = self._split_field(field, 2)
-            age_seconds = max(now_timestamp - float(value), 0)
+            seen_timestamp = self._float_or_none(value)
+            if seen_timestamp is None:
+                logger.warning("Skipping invalid Celery task last_seen_at metric: %s=%s", field, value)
+                continue
+            age_seconds = max(now_timestamp - seen_timestamp, 0)
             last_seen_age_metric.add_metric([task_name, status], age_seconds)
             if status == "success":
                 last_success_age_metric.add_metric([task_name], age_seconds)
@@ -486,6 +490,18 @@ class CodePlaceCollector:
     @staticmethod
     def _join_field(*parts):
         return "|".join(str(part) for part in parts)
+
+    @staticmethod
+    def _float_or_zero(value):
+        parsed = CodePlaceCollector._float_or_none(value)
+        return parsed if parsed is not None else 0.0
+
+    @staticmethod
+    def _float_or_none(value):
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            return None
 
 
 def register_codeplace_metrics():
