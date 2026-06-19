@@ -742,6 +742,7 @@ Grafana Explore:
 - `judge.tasks.judge_task` 실패와 `JudgeWaitingQueueBacklog`가 같이 발생하면 judge-server availability와 Redis `waiting_queue`를 우선 확인합니다.
 - scheduled task stale은 beat가 task를 발행하지 못했거나 worker가 성공 종료하지 못한 상태입니다.
   `calculate_user_score_fluctuation`은 1분 주기라 10분 stale이면 빠르게 확인하고, `calculate_user_score_basis`는 일간, `update_weekly_stats`와 `update_bonus_problem`은 주간 기준으로 봅니다.
+- `codeplace_celery_task_last_success_age_seconds` series가 아예 없으면 해당 task 성공이 한 번도 관측되지 않은 상태입니다. 배포 직후라면 beat schedule 등록, worker task autodiscovery, Redis metric write, backend `/metrics` collector를 순서대로 확인합니다.
 - task metric은 worker가 Redis에 누적하고 backend `/metrics` collector가 노출합니다. worker 로그에는 `task_id`, `task_name`, `task_status`, `duration_ms`, `trace_id`가 포함됩니다.
 
 ### PodCrashLooping / CodePlacePodNotReady
