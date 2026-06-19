@@ -29,16 +29,19 @@ helm repo update
 
 helm upgrade --install kube-prometheus-stack prometheus-community/kube-prometheus-stack \
   --namespace monitoring \
+  --create-namespace \
   --version 86.3.1 \
   --values kubernetes/monitoring/kube-prometheus-stack-values.yaml
 
 helm upgrade --install loki grafana/loki \
   --namespace monitoring \
+  --create-namespace \
   --version 6.55.0 \
   --values kubernetes/monitoring/logs/loki-values.yaml
 
 helm upgrade --install alloy grafana/alloy \
   --namespace monitoring \
+  --create-namespace \
   --version 1.10.0 \
   --values kubernetes/monitoring/logs/alloy-values.yaml
 ```

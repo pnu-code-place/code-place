@@ -338,13 +338,13 @@ P1은 `group_wait=30s`, `repeat_interval=1h`로 전달합니다. `code-place-dev
 ## 5. 운영 확인 절차
 
 1. kube-prometheus-stack을 `monitoring` namespace에 설치하거나 업그레이드할 때 `kubernetes/monitoring/kube-prometheus-stack-values.yaml`을 함께 적용합니다. 이 값 파일이 Prometheus 2 replicas, Alertmanager 2 replicas, `monitoring.code-place-dev.site` Grafana ingress와 dashboard sidecar 설정까지 관리합니다. Prometheus Operator CRD가 `AlertmanagerConfig.discordConfigs`를 지원하는 버전인지 확인합니다.
-   - `helm upgrade --install kube-prometheus-stack prometheus-community/kube-prometheus-stack --namespace monitoring --version 86.3.1 --values kubernetes/monitoring/kube-prometheus-stack-values.yaml`
+   - `helm upgrade --install kube-prometheus-stack prometheus-community/kube-prometheus-stack --namespace monitoring --create-namespace --version 86.3.1 --values kubernetes/monitoring/kube-prometheus-stack-values.yaml`
    - values는 `alertmanager.alertmanagerSpec.alertmanagerConfigMatcherStrategy.type=None`을 설정합니다. AlertmanagerConfig는 `monitoring` namespace에 있지만 CodePlace alert의 `namespace` label은 `code-place-dev`/`code-place-prod`이므로, 기본 `OnNamespace` matcher를 쓰면 외부 namespace alert가 Discord receiver까지 도달하지 않을 수 있습니다.
 2. `alertmanager-contact-points` Secret을 운영 클러스터의 `monitoring` namespace에 SealedSecret으로 생성합니다. 이 값은 Kubernetes Secret으로 참조되며, Pod 파일로 mount하지 않습니다.
    Email fallback을 켤 경우 SMTP 정보를 별도로 정한 뒤 `alertmanager-email` Secret과 email AlertmanagerConfig를 추가 적용합니다.
 3. Loki와 Alloy를 설치합니다.
-   - `helm upgrade --install loki grafana/loki --namespace monitoring --version 6.55.0 --values kubernetes/monitoring/logs/loki-values.yaml`
-   - `helm upgrade --install alloy grafana/alloy --namespace monitoring --version 1.10.0 --values kubernetes/monitoring/logs/alloy-values.yaml`
+   - `helm upgrade --install loki grafana/loki --namespace monitoring --create-namespace --version 6.55.0 --values kubernetes/monitoring/logs/loki-values.yaml`
+   - `helm upgrade --install alloy grafana/alloy --namespace monitoring --create-namespace --version 1.10.0 --values kubernetes/monitoring/logs/alloy-values.yaml`
 4. 애플리케이션은 환경별 overlay로 적용합니다.
    - dev: `kubectl apply -k kubernetes/overlays/dev`
    - prod: `kubectl apply -k kubernetes/overlays/prod`
