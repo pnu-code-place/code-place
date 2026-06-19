@@ -8,6 +8,7 @@ from django.core.cache import cache
 from django.utils import timezone
 from prometheus_client.core import GaugeMetricFamily, HistogramMetricFamily
 
+from utils import celery_observability
 from utils.json_logging import CodePlaceJsonFormatter
 from utils.observability_metrics import CodePlaceCollector
 from utils.observability_tracing import get_tracer
@@ -62,6 +63,74 @@ class CodePlaceCollectorTest(SimpleTestCase):
         self.assertEqual(available.value, 0)
         self.assertGreaterEqual(heartbeat_age.value, 599)
 
+    def test_celery_task_metrics_are_collected_from_redis(self):
+        hashes = {
+            celery_observability.CELERY_TASK_TOTAL_KEY: {
+                b"judge.tasks.judge_task|success": b"3",
+                b"judge.tasks.judge_task|failure": b"1",
+            },
+            celery_observability.CELERY_TASK_RUNTIME_BUCKET_KEY: {
+                b"judge.tasks.judge_task|1": b"2",
+                b"judge.tasks.judge_task|3": b"3",
+                b"judge.tasks.judge_task|+Inf": b"3",
+            },
+            celery_observability.CELERY_TASK_RUNTIME_COUNT_KEY: {
+                b"judge.tasks.judge_task": b"3",
+            },
+            celery_observability.CELERY_TASK_RUNTIME_SUM_KEY: {
+                b"judge.tasks.judge_task": b"4.5",
+            },
+            celery_observability.CELERY_TASK_RUNTIME_LAST_KEY: {
+                b"judge.tasks.judge_task|success": b"1.5",
+            },
+        }
+
+        with patch("utils.observability_metrics.cache.hgetall", side_effect=lambda key: hashes.get(key, {})):
+            samples = self._samples_by_metric(list(CodePlaceCollector()._celery_task_metrics()))
+
+        total_samples = samples["codeplace_celery_task_count"]
+        self.assertEqual(total_samples[0].labels, {
+            "task_name": "judge.tasks.judge_task",
+            "status": "success",
+        })
+        self.assertEqual(total_samples[0].value, 3)
+        runtime_samples = samples["codeplace_celery_task_runtime_seconds"]
+        bucket_samples = [sample for sample in runtime_samples if sample.name.endswith("_bucket")]
+        self.assertTrue(any(sample.labels["le"] == "+Inf" and sample.value == 3 for sample in bucket_samples))
+        self.assertTrue(any(sample.name.endswith("_sum") and sample.value == 4.5 for sample in runtime_samples))
+        last_runtime = samples["codeplace_celery_task_last_runtime_seconds"][0]
+        self.assertEqual(last_runtime.value, 1.5)
+
+
+class CeleryObservabilityTest(SimpleTestCase):
+
+    def test_record_task_writes_total_and_runtime_hashes(self):
+        redis_client = MagicMock()
+        with patch("utils.celery_observability.cache.hincrby") as hincrby, \
+                patch("utils.celery_observability.cache.client.get_client", return_value=redis_client):
+            celery_observability._record_task("judge.tasks.judge_task", "success", 2.5)
+
+        hincrby.assert_any_call(
+            celery_observability.CELERY_TASK_TOTAL_KEY,
+            "judge.tasks.judge_task|success",
+            1,
+        )
+        hincrby.assert_any_call(
+            celery_observability.CELERY_TASK_RUNTIME_COUNT_KEY,
+            "judge.tasks.judge_task",
+            1,
+        )
+        redis_client.hincrbyfloat.assert_any_call(
+            celery_observability.CELERY_TASK_RUNTIME_SUM_KEY,
+            "judge.tasks.judge_task",
+            2.5,
+        )
+        redis_client.hset.assert_any_call(
+            celery_observability.CELERY_TASK_RUNTIME_LAST_KEY,
+            "judge.tasks.judge_task|success",
+            2.5,
+        )
+
 
 class CodePlaceMetricsEndpointTest(SimpleTestCase):
 
@@ -92,7 +161,8 @@ class CodePlaceMetricsEndpointTest(SimpleTestCase):
         with patch.object(CodePlaceCollector, "_submission_status_count", return_value=[submission_metric]), \
                 patch.object(CodePlaceCollector, "_waiting_queue_length", return_value=waiting_queue_metric), \
                 patch.object(CodePlaceCollector, "_judge_server_metrics", return_value=[judge_metric]), \
-                patch.object(CodePlaceCollector, "_judge_duration_histogram", return_value=judge_duration_metric):
+                patch.object(CodePlaceCollector, "_judge_duration_histogram", return_value=judge_duration_metric), \
+                patch.object(CodePlaceCollector, "_celery_task_metrics", return_value=[]):
             response = self.client.get("/metrics")
 
         self.assertEqual(response.status_code, 200)

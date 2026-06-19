@@ -185,9 +185,44 @@ data:
           ]
         },
         {
+          "type": "row",
+          "title": "Async Jobs",
+          "gridPos": {"x": 0, "y": 12, "w": 24, "h": 1},
+          "collapsed": false,
+          "panels": []
+        },
+        {
+          "type": "timeseries",
+          "title": "Celery Task Throughput",
+          "gridPos": {"x": 0, "y": 13, "w": 8, "h": 7},
+          "fieldConfig": {"defaults": {"unit": "ops"}},
+          "targets": [
+            {"expr": "sum by (namespace, task_name, status) (rate(codeplace_celery_task_count{namespace=~\"$namespace\"}[5m]))", "legendFormat": "{{namespace}} {{task_name}} {{status}}"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Celery Task Runtime p95",
+          "gridPos": {"x": 8, "y": 13, "w": 8, "h": 7},
+          "fieldConfig": {"defaults": {"unit": "s"}},
+          "targets": [
+            {"expr": "histogram_quantile(0.95, sum by (namespace, task_name, le) (rate(codeplace_celery_task_runtime_seconds_bucket{namespace=~\"$namespace\"}[10m])))", "legendFormat": "{{namespace}} {{task_name}} p95"}
+          ]
+        },
+        {
+          "type": "bargauge",
+          "title": "Celery Last Runtime",
+          "gridPos": {"x": 16, "y": 13, "w": 8, "h": 7},
+          "fieldConfig": {"defaults": {"unit": "s"}},
+          "options": {"displayMode": "gradient", "orientation": "horizontal", "reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "codeplace_celery_task_last_runtime_seconds{namespace=~\"$namespace\"}", "legendFormat": "{{namespace}} {{task_name}} {{status}}"}
+          ]
+        },
+        {
           "type": "timeseries",
           "title": "Judge Duration p95",
-          "gridPos": {"x": 0, "y": 12, "w": 8, "h": 8},
+          "gridPos": {"x": 0, "y": 20, "w": 8, "h": 8},
           "fieldConfig": {"defaults": {"unit": "s"}},
           "targets": [
             {"expr": "histogram_quantile(0.95, sum by (namespace, le) (rate(codeplace_submission_judge_duration_seconds_bucket{namespace=~\"$namespace\"}[10m])))", "legendFormat": "{{namespace}} judge p95"}
@@ -196,7 +231,7 @@ data:
         {
           "type": "timeseries",
           "title": "Judge Heartbeat Max Age",
-          "gridPos": {"x": 8, "y": 12, "w": 8, "h": 8},
+          "gridPos": {"x": 8, "y": 20, "w": 8, "h": 8},
           "fieldConfig": {
             "defaults": {
               "unit": "s",
@@ -217,7 +252,7 @@ data:
         {
           "type": "timeseries",
           "title": "Judge Server Load",
-          "gridPos": {"x": 16, "y": 12, "w": 8, "h": 8},
+          "gridPos": {"x": 16, "y": 20, "w": 8, "h": 8},
           "fieldConfig": {"defaults": {"unit": "short"}},
           "targets": [
             {"expr": "topk(10, codeplace_judge_server_task_number{namespace=~\"$namespace\"})", "legendFormat": "{{namespace}} {{hostname}} tasks"}
@@ -226,14 +261,14 @@ data:
         {
           "type": "row",
           "title": "Platform",
-          "gridPos": {"x": 0, "y": 20, "w": 24, "h": 1},
+          "gridPos": {"x": 0, "y": 28, "w": 24, "h": 1},
           "collapsed": false,
           "panels": []
         },
         {
           "type": "stat",
           "title": "Pod Ready",
-          "gridPos": {"x": 0, "y": 21, "w": 6, "h": 5},
+          "gridPos": {"x": 0, "y": 29, "w": 6, "h": 5},
           "fieldConfig": {
             "defaults": {
               "unit": "short",
@@ -254,7 +289,7 @@ data:
         {
           "type": "timeseries",
           "title": "Pod Restarts",
-          "gridPos": {"x": 6, "y": 21, "w": 6, "h": 5},
+          "gridPos": {"x": 6, "y": 29, "w": 6, "h": 5},
           "fieldConfig": {"defaults": {"unit": "short"}},
           "targets": [
             {"expr": "sum by (namespace, pod) (increase(kube_pod_container_status_restarts_total{namespace=~\"$namespace\", pod=~\"backend-.*|frontend-.*|celery-.*|judge-server-.*|postgres-.*|redis-.*\"}[1h]))", "legendFormat": "{{namespace}} {{pod}}"}
@@ -263,7 +298,7 @@ data:
         {
           "type": "timeseries",
           "title": "Container CPU Usage",
-          "gridPos": {"x": 12, "y": 21, "w": 6, "h": 5},
+          "gridPos": {"x": 12, "y": 29, "w": 6, "h": 5},
           "fieldConfig": {"defaults": {"unit": "cores"}},
           "targets": [
             {"expr": "topk(10, sum by (namespace, pod, container) (rate(container_cpu_usage_seconds_total{namespace=~\"$namespace\", container!=\"\", pod=~\"backend-.*|frontend-.*|celery-.*|judge-server-.*|postgres-.*|redis-.*\"}[5m])))", "legendFormat": "{{namespace}} {{pod}} {{container}}"}
@@ -272,7 +307,7 @@ data:
         {
           "type": "timeseries",
           "title": "Container Memory Usage",
-          "gridPos": {"x": 18, "y": 21, "w": 6, "h": 5},
+          "gridPos": {"x": 18, "y": 29, "w": 6, "h": 5},
           "fieldConfig": {"defaults": {"unit": "bytes"}},
           "targets": [
             {"expr": "topk(10, container_memory_working_set_bytes{namespace=~\"$namespace\", container!=\"\", pod=~\"backend-.*|frontend-.*|celery-.*|judge-server-.*|postgres-.*|redis-.*\"})", "legendFormat": "{{namespace}} {{pod}} {{container}}"}
@@ -281,7 +316,7 @@ data:
         {
           "type": "timeseries",
           "title": "PVC Usage",
-          "gridPos": {"x": 0, "y": 26, "w": 12, "h": 6},
+          "gridPos": {"x": 0, "y": 34, "w": 12, "h": 6},
           "fieldConfig": {
             "defaults": {
               "unit": "percentunit",
@@ -302,7 +337,7 @@ data:
         {
           "type": "timeseries",
           "title": "Node Pressure",
-          "gridPos": {"x": 12, "y": 26, "w": 12, "h": 6},
+          "gridPos": {"x": 12, "y": 34, "w": 12, "h": 6},
           "fieldConfig": {"defaults": {"unit": "short"}},
           "targets": [
             {"expr": "kube_node_status_condition{condition=~\"MemoryPressure|DiskPressure|PIDPressure\", status=\"true\"}", "legendFormat": "{{node}} {{condition}}"}
@@ -311,14 +346,14 @@ data:
         {
           "type": "row",
           "title": "Data Stores",
-          "gridPos": {"x": 0, "y": 32, "w": 24, "h": 1},
+          "gridPos": {"x": 0, "y": 40, "w": 24, "h": 1},
           "collapsed": false,
           "panels": []
         },
         {
           "type": "stat",
           "title": "PostgreSQL Ready",
-          "gridPos": {"x": 0, "y": 33, "w": 6, "h": 5},
+          "gridPos": {"x": 0, "y": 41, "w": 6, "h": 5},
           "fieldConfig": {
             "defaults": {
               "unit": "short",
@@ -339,7 +374,7 @@ data:
         {
           "type": "stat",
           "title": "Redis Ready",
-          "gridPos": {"x": 6, "y": 33, "w": 6, "h": 5},
+          "gridPos": {"x": 6, "y": 41, "w": 6, "h": 5},
           "fieldConfig": {
             "defaults": {
               "unit": "short",
@@ -360,7 +395,7 @@ data:
         {
           "type": "stat",
           "title": "PostgreSQL Exporter Up",
-          "gridPos": {"x": 12, "y": 33, "w": 6, "h": 5},
+          "gridPos": {"x": 12, "y": 41, "w": 6, "h": 5},
           "fieldConfig": {
             "defaults": {
               "unit": "short",
@@ -381,7 +416,7 @@ data:
         {
           "type": "stat",
           "title": "Redis Exporter Up",
-          "gridPos": {"x": 18, "y": 33, "w": 6, "h": 5},
+          "gridPos": {"x": 18, "y": 41, "w": 6, "h": 5},
           "fieldConfig": {
             "defaults": {
               "unit": "short",
@@ -402,7 +437,7 @@ data:
         {
           "type": "timeseries",
           "title": "PostgreSQL Restarts",
-          "gridPos": {"x": 0, "y": 38, "w": 6, "h": 5},
+          "gridPos": {"x": 0, "y": 46, "w": 6, "h": 5},
           "fieldConfig": {"defaults": {"unit": "short"}},
           "targets": [
             {"expr": "sum by (namespace, pod) (increase(kube_pod_container_status_restarts_total{namespace=~\"$namespace\", pod=~\"postgres-.*\"}[1h]))", "legendFormat": "{{namespace}} {{pod}}"}
@@ -411,7 +446,7 @@ data:
         {
           "type": "timeseries",
           "title": "Redis Restarts",
-          "gridPos": {"x": 6, "y": 38, "w": 6, "h": 5},
+          "gridPos": {"x": 6, "y": 46, "w": 6, "h": 5},
           "fieldConfig": {"defaults": {"unit": "short"}},
           "targets": [
             {"expr": "sum by (namespace, pod) (increase(kube_pod_container_status_restarts_total{namespace=~\"$namespace\", pod=~\"redis-.*|redis-replication-.*\"}[1h]))", "legendFormat": "{{namespace}} {{pod}}"}
@@ -420,7 +455,7 @@ data:
         {
           "type": "timeseries",
           "title": "PostgreSQL WAL Bytes",
-          "gridPos": {"x": 12, "y": 38, "w": 6, "h": 5},
+          "gridPos": {"x": 12, "y": 46, "w": 6, "h": 5},
           "fieldConfig": {"defaults": {"unit": "Bps"}},
           "targets": [
             {"expr": "sum by (namespace) (rate(cnpg_collector_wal_bytes{namespace=~\"$namespace\", cluster=\"postgres\"}[5m]))", "legendFormat": "{{namespace}}"}
@@ -429,7 +464,7 @@ data:
         {
           "type": "timeseries",
           "title": "Redis Memory Usage",
-          "gridPos": {"x": 18, "y": 38, "w": 6, "h": 5},
+          "gridPos": {"x": 18, "y": 46, "w": 6, "h": 5},
           "fieldConfig": {"defaults": {"unit": "bytes"}},
           "targets": [
             {"expr": "max by (namespace, pod) (redis_memory_used_bytes{namespace=~\"$namespace\"})", "legendFormat": "{{namespace}} {{pod}} used"},

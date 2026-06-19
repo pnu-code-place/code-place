@@ -47,7 +47,10 @@ class CodePlaceJsonFormatter(logging.Formatter):
                 "user_id",
                 "remote_addr",
                 "task_id",
+                "task_name",
+                "task_status",
                 "submission_id",
+                "retry_reason",
         ):
             value = getattr(record, key, None)
             if value is not None:

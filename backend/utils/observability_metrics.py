@@ -8,6 +8,14 @@ from prometheus_client.core import GaugeMetricFamily, HistogramMetricFamily
 
 from submission.models import JudgeStatus, Submission
 from utils.cache import cache
+from utils.celery_observability import (
+    CELERY_TASK_RUNTIME_BUCKET_KEY,
+    CELERY_TASK_RUNTIME_BUCKETS,
+    CELERY_TASK_RUNTIME_COUNT_KEY,
+    CELERY_TASK_RUNTIME_LAST_KEY,
+    CELERY_TASK_RUNTIME_SUM_KEY,
+    CELERY_TASK_TOTAL_KEY,
+)
 from utils.constants import CacheKey
 
 logger = logging.getLogger(__name__)
@@ -71,12 +79,28 @@ class CodePlaceCollector:
             "codeplace_submission_judge_duration_seconds",
             "Judge duration for submissions completed in the last 10 minutes.",
         )
+        yield GaugeMetricFamily(
+            "codeplace_celery_task_count",
+            "Total Celery tasks grouped by task name and status.",
+            labels=["task_name", "status"],
+        )
+        yield HistogramMetricFamily(
+            "codeplace_celery_task_runtime_seconds",
+            "Celery task runtime grouped by task name.",
+            labels=["task_name"],
+        )
+        yield GaugeMetricFamily(
+            "codeplace_celery_task_last_runtime_seconds",
+            "Latest observed Celery task runtime grouped by task name and status.",
+            labels=["task_name", "status"],
+        )
 
     def collect(self):
         yield from self._submission_status_count()
         yield self._waiting_queue_length()
         yield from self._judge_server_metrics()
         yield self._judge_duration_histogram()
+        yield from self._celery_task_metrics()
 
     def _submission_status_count(self):
         metric = GaugeMetricFamily(
@@ -166,6 +190,88 @@ class CodePlaceCollector:
             cumulative_buckets.append((label, sum(1 for duration in durations if duration <= bucket)))
         metric.add_metric([], cumulative_buckets, sum(durations))
         return metric
+
+    def _celery_task_metrics(self):
+        total_metric = GaugeMetricFamily(
+            "codeplace_celery_task_count",
+            "Total Celery tasks grouped by task name and status.",
+            labels=["task_name", "status"],
+        )
+        runtime_metric = HistogramMetricFamily(
+            "codeplace_celery_task_runtime_seconds",
+            "Celery task runtime grouped by task name.",
+            labels=["task_name"],
+        )
+        last_runtime_metric = GaugeMetricFamily(
+            "codeplace_celery_task_last_runtime_seconds",
+            "Latest observed Celery task runtime grouped by task name and status.",
+            labels=["task_name", "status"],
+        )
+        try:
+            task_totals = self._redis_hash(CELERY_TASK_TOTAL_KEY)
+            runtime_buckets = self._redis_hash(CELERY_TASK_RUNTIME_BUCKET_KEY)
+            runtime_counts = self._redis_hash(CELERY_TASK_RUNTIME_COUNT_KEY)
+            runtime_sums = self._redis_hash(CELERY_TASK_RUNTIME_SUM_KEY)
+            last_runtimes = self._redis_hash(CELERY_TASK_RUNTIME_LAST_KEY)
+        except Exception as e:
+            logger.warning("Failed to collect Celery task metrics: %s", e)
+            yield total_metric
+            yield runtime_metric
+            yield last_runtime_metric
+            return
+
+        for field, value in task_totals.items():
+            task_name, status = self._split_field(field, 2)
+            total_metric.add_metric([task_name, status], float(value))
+
+        task_names = set(runtime_counts) | set(runtime_sums)
+        for field in runtime_buckets:
+            task_name, _ = self._split_field(field, 2)
+            task_names.add(task_name)
+        for task_name in sorted(task_names):
+            cumulative_buckets = []
+            for bucket in CELERY_TASK_RUNTIME_BUCKETS:
+                bucket_label = "+Inf" if bucket == float("inf") else str(bucket)
+                value = float(runtime_buckets.get(self._join_field(task_name, bucket_label), 0))
+                cumulative_buckets.append((bucket_label, value))
+            runtime_metric.add_metric(
+                [task_name],
+                cumulative_buckets,
+                float(runtime_sums.get(task_name, 0)),
+            )
+
+        for field, value in last_runtimes.items():
+            task_name, status = self._split_field(field, 2)
+            last_runtime_metric.add_metric([task_name, status], float(value))
+
+        yield total_metric
+        yield runtime_metric
+        yield last_runtime_metric
+
+    @staticmethod
+    def _redis_hash(key):
+        values = cache.hgetall(key) or {}
+        return {
+            CodePlaceCollector._decode(field): CodePlaceCollector._decode(value)
+            for field, value in values.items()
+        }
+
+    @staticmethod
+    def _decode(value):
+        if isinstance(value, bytes):
+            return value.decode()
+        return str(value)
+
+    @staticmethod
+    def _split_field(field, expected_parts):
+        parts = field.split("|", expected_parts - 1)
+        if len(parts) != expected_parts:
+            return tuple(parts + ["unknown"] * (expected_parts - len(parts)))
+        return tuple(parts)
+
+    @staticmethod
+    def _join_field(*parts):
+        return "|".join(str(part) for part in parts)
 
 
 def register_codeplace_metrics():

@@ -339,6 +339,30 @@ Grafana Explore:
 {namespace="<namespace>", container=~"celery-worker|celery-beat"}
 ```
 
+### CeleryTaskFailures / CeleryTaskRetries / CeleryTaskRuntimeHigh
+
+확인:
+
+```promql
+sum by (task_name, status) (increase(codeplace_celery_task_count{namespace="<namespace>"}[10m]))
+histogram_quantile(0.95, sum by (task_name, le) (rate(codeplace_celery_task_runtime_seconds_bucket{namespace="<namespace>"}[10m])))
+codeplace_celery_task_last_runtime_seconds{namespace="<namespace>"}
+```
+
+Grafana Explore:
+
+```logql
+{namespace="<namespace>", container=~"celery-worker|celery-beat"} | json | task_status=~"failure|retry"
+{namespace="<namespace>", container=~"celery-worker|celery-beat"} | json | task_name="<task_name>"
+```
+
+판단:
+
+- 특정 task만 실패하면 최근 코드 변경, 입력 데이터, 외부 의존성을 우선 확인합니다.
+- runtime만 증가하면 DB/Redis 지연, lock, worker CPU/memory, queue backlog를 같이 봅니다.
+- `judge.tasks.judge_task` 실패와 `JudgeWaitingQueueBacklog`가 같이 발생하면 judge-server availability와 Redis `waiting_queue`를 우선 확인합니다.
+- task metric은 worker가 Redis에 누적하고 backend `/metrics` collector가 노출합니다. worker 로그에는 `task_id`, `task_name`, `task_status`, `duration_ms`, `trace_id`가 포함됩니다.
+
 ### PodCrashLooping / CodePlacePodNotReady
 
 확인:
