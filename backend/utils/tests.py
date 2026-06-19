@@ -1,10 +1,57 @@
 import json
+import logging
 import os
 from unittest.mock import patch, mock_open, MagicMock
-from django.test import TestCase, override_settings
+from django.test import SimpleTestCase, TestCase, override_settings
 from django.core.cache import cache
 
+from utils.json_logging import CodePlaceJsonFormatter
 from utils.testcase_cache import TestCaseCacheManager
+
+
+class CodePlaceJsonFormatterTest(SimpleTestCase):
+
+    def test_preserves_status_code_and_redacts_sensitive_fields(self):
+        record = logging.LogRecord(
+            name="codeplace.request",
+            level=logging.INFO,
+            pathname=__file__,
+            lineno=1,
+            msg="request completed",
+            args=(),
+            exc_info=None,
+        )
+        record.status_code = 500
+        record.request_id = "request-1"
+        record.token = "secret-token"
+        record.source_code = "print('secret')"
+
+        payload = json.loads(CodePlaceJsonFormatter().format(record))
+
+        self.assertEqual(payload["status_code"], 500)
+        self.assertEqual(payload["request_id"], "request-1")
+        self.assertNotIn("token", payload)
+        self.assertNotIn("source_code", payload)
+
+    def test_redacts_nested_sensitive_fields(self):
+        formatter = CodePlaceJsonFormatter()
+        payload = {
+            "status_code": 200,
+            "data": {
+                "password": "secret",
+                "submission": {
+                    "code": "print('secret')",
+                    "language": "Python3",
+                },
+            },
+        }
+
+        redacted = formatter._redact(payload)
+
+        self.assertEqual(redacted["status_code"], 200)
+        self.assertEqual(redacted["data"]["password"], "[REDACTED]")
+        self.assertEqual(redacted["data"]["submission"]["code"], "[REDACTED]")
+        self.assertEqual(redacted["data"]["submission"]["language"], "Python3")
 
 
 class TestTestCaseCacheManager(TestCase):

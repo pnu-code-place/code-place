@@ -8,7 +8,7 @@ from copy import deepcopy
 from django.contrib import auth
 from django.db import DatabaseError
 from django.http.response import JsonResponse
-from django.test import RequestFactory, TestCase
+from django.test import RequestFactory, SimpleTestCase, TestCase
 from django.utils import decorators
 from django.utils.timezone import now
 from utils.api.tests import APIClient, APITestCase
@@ -18,7 +18,33 @@ from options.options import SysOptions
 
 from .models import AdminType, ProblemPermission, User
 from .decorators import scheduler_only
+from .middleware import RequestIDMiddleware
 from .tasks import calculate_user_score_basis, calculate_user_score_fluctuation
+
+
+class RequestIDMiddlewareTest(SimpleTestCase):
+
+    def setUp(self):
+        self.factory = RequestFactory()
+
+    def test_generates_request_id_when_header_is_missing(self):
+        middleware = RequestIDMiddleware(lambda request: JsonResponse({"ok": True}))
+        request = self.factory.get("/")
+
+        response = middleware(request)
+
+        self.assertEqual(len(request.request_id), 32)
+        self.assertEqual(response["X-Request-ID"], request.request_id)
+
+    def test_accepts_existing_request_id_and_truncates_it(self):
+        request_id = "a" * 150
+        middleware = RequestIDMiddleware(lambda request: JsonResponse({"ok": True}))
+        request = self.factory.get("/", HTTP_X_REQUEST_ID=request_id)
+
+        response = middleware(request)
+
+        self.assertEqual(request.request_id, "a" * 128)
+        self.assertEqual(response["X-Request-ID"], request.request_id)
 
 
 class PermissionDecoratorTest(APITestCase):
