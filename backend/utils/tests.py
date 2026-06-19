@@ -6,6 +6,7 @@ from unittest.mock import patch, mock_open, MagicMock
 from django.test import SimpleTestCase, TestCase, override_settings
 from django.core.cache import cache
 from django.utils import timezone
+from prometheus_client.core import GaugeMetricFamily, HistogramMetricFamily
 
 from utils.json_logging import CodePlaceJsonFormatter
 from utils.observability_metrics import CodePlaceCollector
@@ -60,6 +61,46 @@ class CodePlaceCollectorTest(SimpleTestCase):
         self.assertEqual(available.labels["hostname"], "stale-judge")
         self.assertEqual(available.value, 0)
         self.assertGreaterEqual(heartbeat_age.value, 599)
+
+
+class CodePlaceMetricsEndpointTest(SimpleTestCase):
+
+    def test_metrics_endpoint_exposes_django_and_codeplace_metrics(self):
+        submission_metric = GaugeMetricFamily(
+            "codeplace_submission_status_count",
+            "Current number of submissions grouped by judge status.",
+            labels=["status"],
+        )
+        submission_metric.add_metric(["accepted"], 0)
+        waiting_queue_metric = GaugeMetricFamily(
+            "codeplace_waiting_queue_length",
+            "Number of submissions waiting because no judge-server was available.",
+        )
+        waiting_queue_metric.add_metric([], 0)
+        judge_metric = GaugeMetricFamily(
+            "codeplace_judge_server_available",
+            "Whether each judge-server is enabled and has a fresh heartbeat.",
+            labels=["hostname"],
+        )
+        judge_metric.add_metric(["judge-1"], 1)
+        judge_duration_metric = HistogramMetricFamily(
+            "codeplace_submission_judge_duration_seconds",
+            "Judge duration for submissions completed in the last 10 minutes.",
+        )
+        judge_duration_metric.add_metric([], [("+Inf", 0)], 0)
+
+        with patch.object(CodePlaceCollector, "_submission_status_count", return_value=[submission_metric]), \
+                patch.object(CodePlaceCollector, "_waiting_queue_length", return_value=waiting_queue_metric), \
+                patch.object(CodePlaceCollector, "_judge_server_metrics", return_value=[judge_metric]), \
+                patch.object(CodePlaceCollector, "_judge_duration_histogram", return_value=judge_duration_metric):
+            response = self.client.get("/metrics")
+
+        self.assertEqual(response.status_code, 200)
+        body = response.content.decode()
+        self.assertIn("django_http_requests_total_by_method_total", body)
+        self.assertIn("codeplace_submission_status_count", body)
+        self.assertIn("codeplace_waiting_queue_length", body)
+        self.assertIn("codeplace_judge_server_available", body)
 
 
 class ObservabilityTracingTest(SimpleTestCase):
