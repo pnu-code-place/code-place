@@ -256,6 +256,49 @@ data:
           "targets": [
             {"expr": "{namespace=~\"$namespace\", app=\"backend\"} | json | logger=\"frontend.error\""}
           ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Loki Ingestion Rate",
+          "gridPos": {"x": 0, "y": 39, "w": 8, "h": 7},
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "logs/sec"}},
+          "targets": [
+            {"expr": "sum(rate(loki_distributor_lines_received_total{namespace=\"monitoring\"}[5m])) or vector(0)", "legendFormat": "lines received"},
+            {"expr": "sum(rate(loki_distributor_bytes_received_total{namespace=\"monitoring\"}[5m])) or vector(0)", "legendFormat": "bytes received"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Loki Request Errors",
+          "gridPos": {"x": 8, "y": 39, "w": 8, "h": 7},
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "reqps"}},
+          "targets": [
+            {"expr": "sum by (route, status_code) (rate(loki_request_duration_seconds_count{namespace=\"monitoring\", status_code=~\"5..\"}[5m])) or vector(0)", "legendFormat": "{{route}} {{status_code}}"},
+            {"expr": "sum by (route, status_code) (rate(loki_request_duration_seconds_count{namespace=\"monitoring\", status_code=~\"4..\"}[5m])) or vector(0)", "legendFormat": "{{route}} {{status_code}}"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Alloy Loki Write Backpressure",
+          "gridPos": {"x": 16, "y": 39, "w": 8, "h": 7},
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "short"}},
+          "targets": [
+            {"expr": "sum(rate(loki_write_batch_retries_total{namespace=\"monitoring\"}[5m])) or vector(0)", "legendFormat": "batch retries/s"},
+            {"expr": "sum(rate(loki_write_dropped_entries_total{namespace=\"monitoring\"}[5m])) or vector(0)", "legendFormat": "dropped entries/s"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Loki Canary Missing Entries",
+          "gridPos": {"x": 0, "y": 46, "w": 8, "h": 6},
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "short"}},
+          "targets": [
+            {"expr": "sum(increase(loki_canary_missing_entries_total{namespace=\"monitoring\"}[5m])) or vector(0)", "legendFormat": "missing entries"}
+          ]
         }
       ]
     }

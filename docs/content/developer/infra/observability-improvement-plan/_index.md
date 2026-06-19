@@ -190,7 +190,7 @@ prod tracing은 dev에서 trace ingest, query, traces-to-logs 동작과 Collecto
 - `kube-prometheus-stack-values.yaml`: Prometheus/Alertmanager selector, evaluation interval, shared Grafana ingress와 dashboard sidecar 설정.
 - `logs/loki-values.yaml`: Loki Monolithic, Longhorn PVC, dev/prod retention 설정.
 - `logs/alloy-values.yaml`: Alloy DaemonSet 기반 Kubernetes Pod log collection 설정.
-- `grafana-dashboard-logs.yaml`: Loki/Alloy health, Loki PVC, 최근 backend error, judge/celery log 조회 dashboard.
+- `grafana-dashboard-logs.yaml`: Loki/Alloy health, Loki PVC, Loki ingest/error/canary, Alloy write backpressure, 최근 backend error, judge/celery log 조회 dashboard.
 - `otel-collector.yaml`: backend/celery OTLP trace를 받아 Tempo로 전송하는 OpenTelemetry Collector.
 - `tempo.yaml`: Tempo single binary, Longhorn PVC 기반 trace 저장소.
 - `grafana-dashboard-traces.yaml`: Collector/Tempo readiness, span ingest/export, Tempo PVC usage dashboard.
@@ -277,6 +277,11 @@ P1은 `group_wait=30s`, `repeat_interval=1h`로 전달합니다.
 - `LokiPVCAlmostFull`: Loki Longhorn PVC 사용률 85% 초과 10분 지속.
 - `AlloyDaemonSetUnavailable`: Alloy log collector가 모든 node에서 available하지 않음 5분 지속.
 - `LokiGatewayUnavailable`: Loki gateway Pod not ready 2분 지속.
+- `LokiIngestionStalled`: Loki log line 수신량 0이 10분 지속.
+- `LokiRequestErrors`: Loki 5xx response 발생 5분 지속.
+- `LokiCanaryMissingEntries`: Loki canary write/readback 누락 발생 5분 지속.
+- `AlloyLokiWriteDrops`: Alloy가 Loki write 전 log entry drop 2분 지속.
+- `AlloyLokiWriteRetries`: Alloy Loki write batch retry 5분 지속.
 - `OTelCollectorUnavailable`: OpenTelemetry Collector Pod not ready 2분 지속.
 - `OTelCollectorRefusedSpans`: Collector span 수신 거부 발생 2분 지속.
 - `OTelCollectorExportFailures`: Collector span export 실패 발생 2분 지속.

@@ -949,7 +949,7 @@ kubectl -n monitoring describe pvc <loki-pvc>
 - 당장 여유가 없으면 Longhorn PVC size를 증설합니다.
 - 반복되면 retention 기간을 줄이거나 prod 로그 저장 방식을 내부 S3 호환 object storage로 분리합니다.
 
-### AlloyDaemonSetUnavailable / LokiGatewayUnavailable
+### AlloyDaemonSetUnavailable / LokiGatewayUnavailable / LokiIngestionStalled / LokiRequestErrors / LokiCanaryMissingEntries / AlloyLokiWriteDrops / AlloyLokiWriteRetries
 
 확인:
 
@@ -959,12 +959,27 @@ kubectl -n monitoring describe daemonset alloy
 kubectl -n monitoring logs daemonset/alloy --tail=200
 kubectl -n monitoring get pod -l app.kubernetes.io/component=gateway
 kubectl -n monitoring logs deploy/loki-gateway --tail=200
+kubectl -n monitoring logs loki-0 --tail=200
+```
+
+PromQL:
+
+```promql
+sum(rate(loki_distributor_lines_received_total{namespace="monitoring"}[5m]))
+sum(rate(loki_request_duration_seconds_count{namespace="monitoring", status_code=~"5.."}[5m]))
+sum(increase(loki_canary_missing_entries_total{namespace="monitoring"}[5m]))
+sum(increase(loki_write_dropped_entries_total{namespace="monitoring"}[5m]))
+sum(increase(loki_write_batch_retries_total{namespace="monitoring"}[5m]))
 ```
 
 판단:
 
 - Alloy가 특정 node에서만 비면 해당 node의 scheduling, taint, resource pressure를 봅니다.
 - Loki gateway가 비면 Alloy write와 Grafana query가 실패할 수 있습니다.
+- Loki가 ready인데 ingest rate가 0이면 Alloy discovery/relabel, node별 container log path, gateway write path를 먼저 확인합니다.
+- Loki 5xx가 있으면 gateway와 `loki-0` 로그를 같이 보고, PVC full/Longhorn degraded/compactor error를 확인합니다.
+- Loki canary missing entry는 write 성공 후 readback 또는 storage/query path가 깨진 상태일 수 있습니다.
+- Alloy write drop/retry가 있으면 Loki gateway 응답, network, Loki backpressure, Alloy resource limit을 확인합니다.
 
 ### CodePlaceNodePressure
 

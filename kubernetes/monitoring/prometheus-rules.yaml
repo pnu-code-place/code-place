@@ -613,6 +613,56 @@ spec:
           annotations:
             summary: "Loki gateway is not ready"
             description: "The Loki gateway has not been ready for 2 minutes. Alloy writes and Grafana Loki queries may fail."
+        - alert: LokiIngestionStalled
+          expr: (sum(rate(loki_distributor_lines_received_total{namespace="monitoring"}[5m])) == 0) or absent(loki_distributor_lines_received_total{namespace="monitoring"})
+          for: 10m
+          labels:
+            severity: warning
+            priority: P1
+            namespace: monitoring
+          annotations:
+            summary: "Loki is receiving no log lines"
+            description: "Loki has received zero log lines for 10 minutes. Check Alloy discovery, Loki gateway writes, and Loki ingestion health."
+        - alert: LokiRequestErrors
+          expr: sum(rate(loki_request_duration_seconds_count{namespace="monitoring", status_code=~"5.."}[5m])) > 0
+          for: 5m
+          labels:
+            severity: warning
+            priority: P1
+            namespace: monitoring
+          annotations:
+            summary: "Loki is returning 5xx responses"
+            description: "Loki has returned 5xx responses for 5 minutes. Log writes or Grafana log queries may be failing."
+        - alert: LokiCanaryMissingEntries
+          expr: sum(increase(loki_canary_missing_entries_total{namespace="monitoring"}[5m])) > 0
+          for: 5m
+          labels:
+            severity: warning
+            priority: P1
+            namespace: monitoring
+          annotations:
+            summary: "Loki canary cannot read back written logs"
+            description: "Loki canary reports missing entries. Loki may be accepting writes while queries or storage are unhealthy."
+        - alert: AlloyLokiWriteDrops
+          expr: sum(increase(loki_write_dropped_entries_total{namespace="monitoring"}[5m])) > 0
+          for: 2m
+          labels:
+            severity: warning
+            priority: P1
+            namespace: monitoring
+          annotations:
+            summary: "Alloy is dropping log entries"
+            description: "Alloy dropped log entries before writing to Loki. Check Alloy limits, Loki gateway errors, and backpressure."
+        - alert: AlloyLokiWriteRetries
+          expr: sum(increase(loki_write_batch_retries_total{namespace="monitoring"}[5m])) > 0
+          for: 5m
+          labels:
+            severity: warning
+            priority: P1
+            namespace: monitoring
+          annotations:
+            summary: "Alloy is retrying Loki writes"
+            description: "Alloy has retried Loki write batches for 5 minutes. Loki writes may be slow or intermittently failing."
         - alert: OTelCollectorUnavailable
           expr: (max by (namespace, pod) (kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"otel-collector-.*"}) == 0) or absent(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"otel-collector-.*"})
           for: 2m
