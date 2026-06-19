@@ -41,7 +41,13 @@ yaml_paths = [
     root / "logs" / "loki-values.yaml",
     root / "logs" / "alloy-values.yaml",
     root / "grafana-dashboard-codeplace.yaml",
+    root / "grafana-dashboard-ai-inference.yaml",
+    root / "grafana-dashboard-kubernetes-events.yaml",
     root / "grafana-dashboard-logs.yaml",
+    root / "grafana-dashboard-monitoring-stack.yaml",
+    root / "grafana-dashboard-public-endpoints.yaml",
+    root / "grafana-dashboard-storage.yaml",
+    root / "grafana-dashboard-traces.yaml",
 ]
 
 for path in yaml_paths:
@@ -104,6 +110,19 @@ for group in rules["spec"]["groups"]:
 for alert_name, labels_list in alert_instances.items():
     if len(labels_list) > 1 and any("namespace" not in labels for labels in labels_list):
         raise SystemExit(f"duplicate alert {alert_name} must include static namespace labels")
+required_alerts = {
+    "SubmissionCreateSystemFailures",
+    "JudgeTaskFailures",
+    "CeleryMinuteScheduledTaskStale",
+    "CeleryDailyScheduledTaskStale",
+    "CeleryWeeklyScheduledTaskStale",
+    "AIHintAPIFailures",
+    "AIHintBackendErrors",
+    "AIHintBackendLatencyHigh",
+}
+missing_alerts = required_alerts - set(alert_instances)
+if missing_alerts:
+    raise SystemExit(f"missing required observability alerts: {sorted(missing_alerts)}")
 print("PROMETHEUS RULE SHAPE OK")
 
 alertmanager = list(yaml.safe_load_all((root / "alertmanager-config.yaml").read_text()))[0]
@@ -203,7 +222,8 @@ if "./alertmanager-config-email.example.yaml" in kustomization.get("resources", 
     raise SystemExit("email fallback example must not be included in default kustomization")
 print("MONITORING KUSTOMIZATION SHAPE OK")
 
-for dashboard_path in (root / "grafana-dashboard-codeplace.yaml", root / "grafana-dashboard-logs.yaml"):
+all_dashboard_paths = sorted(root.glob("grafana-dashboard-*.yaml"))
+for dashboard_path in all_dashboard_paths:
     dashboard_map = yaml.safe_load(dashboard_path.read_text())
     for key, value in dashboard_map.get("data", {}).items():
         dashboard = json.loads(value)
@@ -220,6 +240,42 @@ for dashboard_path in (root / "grafana-dashboard-codeplace.yaml", root / "grafan
             for target in panel.get("targets", []):
                 if not target.get("expr"):
                     raise SystemExit(f"{dashboard_path}:{key}:{panel.get('title')} has target missing expr")
+
+dashboard_requirements = {
+    "grafana-dashboard-codeplace.yaml": {
+        "Submission / Judge Outcomes": [
+            "codeplace_submission_create_outcome_total",
+            "codeplace_judge_task_outcome_total",
+        ],
+        "Celery Task Runtime / Freshness": [
+            "codeplace_celery_task_last_success_age_seconds",
+        ],
+    },
+    "grafana-dashboard-ai-inference.yaml": {
+        "AI Hint API Outcomes": ["codeplace_ai_hint_api_outcome_total"],
+        "Backend AI Hint Streams": ["codeplace_ai_hint_requests_total"],
+        "Backend AI Hint Duration": ["codeplace_ai_hint_duration_seconds_bucket"],
+    },
+}
+dashboard_by_name = {path.name: yaml.safe_load(path.read_text()) for path in all_dashboard_paths}
+for dashboard_name, panel_requirements in dashboard_requirements.items():
+    dashboard_map = dashboard_by_name.get(dashboard_name)
+    if not dashboard_map:
+        raise SystemExit(f"missing dashboard {dashboard_name}")
+    dashboards = [json.loads(value) for value in dashboard_map.get("data", {}).values()]
+    panels = {
+        panel.get("title"): panel
+        for dashboard in dashboards
+        for panel in dashboard.get("panels", [])
+    }
+    for title, required_expr_parts in panel_requirements.items():
+        panel = panels.get(title)
+        if not panel:
+            raise SystemExit(f"{dashboard_name} missing panel {title}")
+        exprs = "\n".join(target.get("expr", "") for target in panel.get("targets", []))
+        for expr_part in required_expr_parts:
+            if expr_part not in exprs:
+                raise SystemExit(f"{dashboard_name}:{title} missing expr containing {expr_part}")
 print("GRAFANA DASHBOARD SHAPE OK")
 PY
 
