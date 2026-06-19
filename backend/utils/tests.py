@@ -1,13 +1,65 @@
 import json
 import logging
 import os
+from datetime import timedelta
 from unittest.mock import patch, mock_open, MagicMock
 from django.test import SimpleTestCase, TestCase, override_settings
 from django.core.cache import cache
+from django.utils import timezone
 
 from utils.json_logging import CodePlaceJsonFormatter
+from utils.observability_metrics import CodePlaceCollector
 from utils.observability_tracing import get_tracer
 from utils.testcase_cache import TestCaseCacheManager
+
+
+class CodePlaceCollectorTest(SimpleTestCase):
+
+    def _samples_by_metric(self, metrics):
+        return {metric.name: metric.samples for metric in metrics}
+
+    def test_judge_server_metrics_skip_disabled_servers(self):
+        now = timezone.now()
+        enabled = MagicMock(
+            hostname="enabled-judge",
+            is_disabled=False,
+            last_heartbeat=now,
+            status="normal",
+            task_number=2,
+        )
+        disabled = MagicMock(
+            hostname="disabled-judge",
+            is_disabled=True,
+            last_heartbeat=now - timedelta(days=30),
+            status="abnormal",
+            task_number=99,
+        )
+
+        with patch("conf.models.JudgeServer.objects.all", return_value=[enabled, disabled]):
+            samples = self._samples_by_metric(list(CodePlaceCollector()._judge_server_metrics()))
+
+        for metric_samples in samples.values():
+            hostnames = {sample.labels["hostname"] for sample in metric_samples}
+            self.assertIn("enabled-judge", hostnames)
+            self.assertNotIn("disabled-judge", hostnames)
+
+    def test_judge_server_metrics_mark_stale_enabled_server_unavailable(self):
+        stale = MagicMock(
+            hostname="stale-judge",
+            is_disabled=False,
+            last_heartbeat=timezone.now() - timedelta(minutes=10),
+            status="abnormal",
+            task_number=1,
+        )
+
+        with patch("conf.models.JudgeServer.objects.all", return_value=[stale]):
+            samples = self._samples_by_metric(list(CodePlaceCollector()._judge_server_metrics()))
+
+        available = samples["codeplace_judge_server_available"][0]
+        heartbeat_age = samples["codeplace_judge_server_last_heartbeat_age_seconds"][0]
+        self.assertEqual(available.labels["hostname"], "stale-judge")
+        self.assertEqual(available.value, 0)
+        self.assertGreaterEqual(heartbeat_age.value, 599)
 
 
 class ObservabilityTracingTest(SimpleTestCase):
