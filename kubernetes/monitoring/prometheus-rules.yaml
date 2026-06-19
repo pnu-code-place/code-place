@@ -101,16 +101,6 @@ spec:
           annotations:
             summary: "Public endpoint is down in prod"
             description: "A production synthetic HTTPS probe has failed for 1 minute."
-        - alert: PublicEndpointTLSCritical
-          expr: (probe_ssl_earliest_cert_expiry{probe_type="public-http", environment="prod"} - time()) < 259200
-          for: 15m
-          labels:
-            severity: critical
-            priority: P0
-            namespace: code-place-prod
-          annotations:
-            summary: "Public endpoint TLS certificate expires within 3 days"
-            description: "The production CodePlace public HTTPS certificate expires within 3 days."
         - alert: JudgeAllUnavailable
           expr: (sum by (namespace) (codeplace_judge_server_available{namespace=~"code-place-(dev|prod)"}) == 0) or (max by (namespace) (up{job="backend", namespace=~"code-place-(dev|prod)"}) unless on (namespace) codeplace_judge_server_available{namespace=~"code-place-(dev|prod)"})
           for: 1m
@@ -169,46 +159,6 @@ spec:
           annotations:
             summary: "Redis pod is not ready in prod"
             description: "No prod Redis/Sentinel pod has been ready, or Redis pod readiness metrics are missing, for 1 minute."
-        - alert: PostgresExporterDown
-          expr: (min(cnpg_collector_up{namespace="code-place-dev", cluster="postgres"}) == 0) or absent(cnpg_collector_up{namespace="code-place-dev", cluster="postgres"})
-          for: 2m
-          labels:
-            severity: critical
-            priority: P0
-            namespace: code-place-dev
-          annotations:
-            summary: "PostgreSQL metrics exporter is down"
-            description: "Prometheus cannot collect CNPG PostgreSQL metrics for code-place-dev for 2 minutes."
-        - alert: PostgresExporterDown
-          expr: (min(cnpg_collector_up{namespace="code-place-prod", cluster="postgres"}) == 0) or absent(cnpg_collector_up{namespace="code-place-prod", cluster="postgres"})
-          for: 2m
-          labels:
-            severity: critical
-            priority: P0
-            namespace: code-place-prod
-          annotations:
-            summary: "PostgreSQL metrics exporter is down"
-            description: "Prometheus cannot collect CNPG PostgreSQL metrics for code-place-prod for 2 minutes."
-        - alert: RedisExporterDown
-          expr: (min(redis_up{namespace="code-place-dev"}) == 0) or absent(redis_up{namespace="code-place-dev"})
-          for: 2m
-          labels:
-            severity: critical
-            priority: P0
-            namespace: code-place-dev
-          annotations:
-            summary: "Redis metrics exporter is down"
-            description: "Prometheus cannot collect Redis exporter metrics for code-place-dev for 2 minutes."
-        - alert: RedisExporterDown
-          expr: (min(redis_up{namespace="code-place-prod"}) == 0) or absent(redis_up{namespace="code-place-prod"})
-          for: 2m
-          labels:
-            severity: critical
-            priority: P0
-            namespace: code-place-prod
-          annotations:
-            summary: "Redis metrics exporter is down"
-            description: "Prometheus cannot collect Redis exporter metrics for code-place-prod for 2 minutes."
         - alert: LokiUnavailable
           expr: (sum(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"loki-[0-9]+"}) == 0) or absent(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"loki-[0-9]+"})
           for: 1m
@@ -219,26 +169,6 @@ spec:
           annotations:
             summary: "Loki is not ready"
             description: "No Loki single-binary pod has been ready for 1 minute. Log ingestion and log queries may be unavailable."
-        - alert: LonghornManagerDown
-          expr: (sum(kube_pod_status_ready{namespace="longhorn-system", condition="true", pod=~"longhorn-manager-.*"}) == 0) or absent(kube_pod_status_ready{namespace="longhorn-system", condition="true", pod=~"longhorn-manager-.*"})
-          for: 2m
-          labels:
-            severity: critical
-            priority: P0
-            namespace: longhorn-system
-          annotations:
-            summary: "Longhorn managers are not ready"
-            description: "No Longhorn manager pod has been ready for 2 minutes. PVC health and Longhorn metrics may be unavailable."
-        - alert: LonghornManagerReplicaUnavailable
-          expr: kube_daemonset_status_number_available{namespace="longhorn-system", daemonset="longhorn-manager"} < kube_daemonset_status_desired_number_scheduled{namespace="longhorn-system", daemonset="longhorn-manager"}
-          for: 5m
-          labels:
-            severity: warning
-            priority: P1
-            namespace: longhorn-system
-          annotations:
-            summary: "Longhorn manager replica is unavailable"
-            description: "At least one Longhorn manager replica is unavailable for 5 minutes. Storage health visibility and volume operations are degraded."
         - alert: LonghornVolumeFaulted
           expr: longhorn_volume_robustness == 3
           for: 1m
@@ -279,36 +209,6 @@ spec:
           annotations:
             summary: "GPU driver reported an XID error"
             description: "DCGM reports a non-zero NVIDIA XID error for 1 minute. vLLM GPU health and node driver state should be checked."
-        - alert: PrometheusUnavailable
-          expr: (max(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"prometheus-kube-prometheus-stack-prometheus-.*"}) == 0) or absent(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"prometheus-kube-prometheus-stack-prometheus-.*"})
-          for: 1m
-          labels:
-            severity: critical
-            priority: P0
-            namespace: monitoring
-          annotations:
-            summary: "Prometheus is not ready"
-            description: "The kube-prometheus-stack Prometheus pod has not been ready for 1 minute. Metric collection, rule evaluation, and alert delivery may be unavailable."
-        - alert: AlertmanagerUnavailable
-          expr: (max(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"alertmanager-kube-prometheus-stack-alertmanager-.*"}) == 0) or absent(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"alertmanager-kube-prometheus-stack-alertmanager-.*"})
-          for: 1m
-          labels:
-            severity: critical
-            priority: P0
-            namespace: monitoring
-          annotations:
-            summary: "Alertmanager is not ready"
-            description: "The kube-prometheus-stack Alertmanager pod has not been ready for 1 minute. Fast alert delivery may be unavailable."
-        - alert: AlertmanagerWebhookSecretMissing
-          expr: absent(kube_secret_info{namespace="monitoring", secret="alertmanager-contact-points"})
-          for: 1m
-          labels:
-            severity: critical
-            priority: P0
-            namespace: monitoring
-          annotations:
-            summary: "Alertmanager Discord webhook secret is missing"
-            description: "The monitoring namespace does not expose the alertmanager-contact-points Secret through kube-state-metrics. Discord notifications cannot work until the SealedSecret is decrypted into this Secret."
     - name: codeplace.p1
       interval: 30s
       rules:
@@ -332,7 +232,7 @@ spec:
             summary: "Public endpoint is down in dev"
             description: "A dev synthetic HTTPS probe has failed for 2 minutes."
         - alert: PublicEndpointLatencyHigh
-          expr: probe_duration_seconds{probe_type="public-http", namespace=~"code-place-(dev|prod)|monitoring"} > 2
+          expr: probe_duration_seconds{probe_type="public-http", namespace=~"code-place-(dev|prod)"} > 2
           for: 5m
           labels:
             severity: warning
@@ -340,15 +240,6 @@ spec:
           annotations:
             summary: "Public frontend endpoint latency is high"
             description: "A synthetic HTTPS probe has taken more than 2 seconds for 5 minutes."
-        - alert: PublicEndpointTLSExpiringSoon
-          expr: (probe_ssl_earliest_cert_expiry{probe_type="public-http", namespace=~"code-place-(dev|prod)|monitoring"} - time()) < 1209600
-          for: 1h
-          labels:
-            severity: warning
-            priority: P1
-          annotations:
-            summary: "Public endpoint TLS certificate expires within 14 days"
-            description: "A CodePlace public HTTPS certificate expires within 14 days."
         - alert: FrontendRuntimeErrorsSpike
           expr: sum by (namespace, surface) (increase(codeplace_frontend_error_total{namespace=~"code-place-(dev|prod)"}[5m])) > 10
           for: 5m
@@ -358,156 +249,6 @@ spec:
           annotations:
             summary: "Frontend runtime errors increased"
             description: "Browser clients reported more than 10 frontend runtime errors in 5 minutes. Check recent deploys, Sentry events, and frontend.error logs."
-        - alert: BlackboxExporterUnavailable
-          expr: (max(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"blackbox-exporter-.*"}) == 0) or absent(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"blackbox-exporter-.*"})
-          for: 2m
-          labels:
-            severity: warning
-            priority: P1
-            namespace: monitoring
-          annotations:
-            summary: "Blackbox exporter is not ready"
-            description: "The synthetic public endpoint probe exporter has not been ready for 2 minutes."
-        - alert: BlackboxExporterReplicaUnavailable
-          expr: kube_deployment_status_replicas_available{namespace="monitoring", deployment="blackbox-exporter"} < kube_deployment_spec_replicas{namespace="monitoring", deployment="blackbox-exporter"}
-          for: 5m
-          labels:
-            severity: warning
-            priority: P1
-            namespace: monitoring
-          annotations:
-            summary: "Blackbox exporter replica is unavailable"
-            description: "At least one synthetic public endpoint probe exporter replica is unavailable for 5 minutes. Public endpoint probing is degraded."
-        - alert: GrafanaPublicEndpointDown
-          expr: (probe_success{environment="monitoring", service="grafana", probe_type="public-http"} == 0) or absent(probe_success{environment="monitoring", service="grafana", probe_type="public-http"})
-          for: 2m
-          labels:
-            severity: warning
-            priority: P1
-            namespace: monitoring
-          annotations:
-            summary: "Grafana public endpoint is down"
-            description: "The public Grafana monitoring endpoint synthetic HTTPS probe has failed for 2 minutes. Dashboards may be unavailable even if the Grafana pod is ready."
-        - alert: KubernetesEventExporterUnavailable
-          expr: (max(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"kubernetes-event-exporter-.*"}) == 0) or absent(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"kubernetes-event-exporter-.*"})
-          for: 2m
-          labels:
-            severity: warning
-            priority: P1
-            namespace: monitoring
-          annotations:
-            summary: "Kubernetes event exporter is not ready"
-            description: "Kubernetes Warning events may not be available in Loki for deployment and scheduling failure triage."
-        - alert: GrafanaUnavailable
-          expr: (max(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"kube-prometheus-stack-grafana-.*"}) == 0) or absent(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"kube-prometheus-stack-grafana-.*"})
-          for: 2m
-          labels:
-            severity: warning
-            priority: P1
-            namespace: monitoring
-          annotations:
-            summary: "Grafana is not ready"
-            description: "No kube-prometheus-stack Grafana pod in the monitoring namespace has been ready for 2 minutes. Dashboards and Explore may be unavailable."
-        - alert: GrafanaMetricsTargetDown
-          expr: (up{namespace="monitoring", service="kube-prometheus-stack-grafana"} == 0) or absent(up{namespace="monitoring", service="kube-prometheus-stack-grafana"})
-          for: 2m
-          labels:
-            severity: warning
-            priority: P1
-            namespace: monitoring
-          annotations:
-            summary: "Grafana metrics target is down"
-            description: "Prometheus cannot scrape Grafana /metrics for 2 minutes. Grafana may still serve UI, but dashboard/datasource/provisioning health visibility is degraded."
-        - alert: MonitoringServiceMetricsTargetDown
-          expr: (up{namespace="monitoring", service=~"blackbox-exporter|kubernetes-event-exporter|otel-collector|tempo|kube-prometheus-stack-grafana|loki|loki-canary|alloy"} == 0) or (kube_service_info{namespace="monitoring", service=~"blackbox-exporter|kubernetes-event-exporter|otel-collector|tempo|kube-prometheus-stack-grafana|loki|loki-canary|alloy"} unless on (namespace, service) up{namespace="monitoring", service=~"blackbox-exporter|kubernetes-event-exporter|otel-collector|tempo|kube-prometheus-stack-grafana|loki|loki-canary|alloy"})
-          for: 2m
-          labels:
-            severity: warning
-            priority: P1
-            namespace: monitoring
-          annotations:
-            summary: "A monitoring service metrics target is down"
-            description: "A monitoring Service exists but Prometheus cannot scrape its metrics target for 2 minutes, or the target series is missing. Check ServiceMonitor selection, Service port names, Pod readiness, and generated Prometheus config."
-        - alert: PrometheusOperatorUnavailable
-          expr: (max(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"kube-prometheus-stack-operator-.*"}) == 0) or absent(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"kube-prometheus-stack-operator-.*"})
-          for: 2m
-          labels:
-            severity: warning
-            priority: P1
-            namespace: monitoring
-          annotations:
-            summary: "Prometheus Operator is not ready"
-            description: "The kube-prometheus-stack operator has not been ready for 2 minutes. ServiceMonitor, PodMonitor, PrometheusRule, and AlertmanagerConfig reconciliation may be stalled."
-        - alert: PrometheusRuleEvaluationFailures
-          expr: sum(increase(prometheus_rule_evaluation_failures_total[5m])) > 0
-          for: 5m
-          labels:
-            severity: warning
-            priority: P1
-            namespace: monitoring
-          annotations:
-            summary: "Prometheus rule evaluation is failing"
-            description: "Prometheus has reported rule evaluation failures for 5 minutes. Alert and recording rule expressions should be checked."
-        - alert: PrometheusConfigReloadFailed
-          expr: (max(prometheus_config_last_reload_successful{namespace="monitoring"}) == 0) or absent(prometheus_config_last_reload_successful{namespace="monitoring"})
-          for: 2m
-          labels:
-            severity: warning
-            priority: P1
-            namespace: monitoring
-          annotations:
-            summary: "Prometheus config reload is failing"
-            description: "Prometheus has not successfully reloaded its generated configuration for 2 minutes, or the reload metric is missing. ServiceMonitor, Probe, and rule changes may not be active."
-        - alert: PrometheusAlertmanagerDiscoveryFailed
-          expr: (max(prometheus_notifications_alertmanagers_discovered) < 1) or absent(prometheus_notifications_alertmanagers_discovered)
-          for: 2m
-          labels:
-            severity: warning
-            priority: P1
-            namespace: monitoring
-          annotations:
-            summary: "Prometheus has not discovered Alertmanager"
-            description: "Prometheus has discovered zero Alertmanager targets for 2 minutes. Alert delivery may be broken even if alert rules are firing."
-        - alert: PrometheusReplicaUnavailable
-          expr: sum(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"prometheus-kube-prometheus-stack-prometheus-.*"}) < 2
-          for: 5m
-          labels:
-            severity: warning
-            priority: P1
-            namespace: monitoring
-          annotations:
-            summary: "Prometheus replica count is degraded"
-            description: "Fewer than 2 Prometheus replicas have been ready for 5 minutes. Metric collection and alert evaluation still work, but the monitoring path has lost HA."
-        - alert: AlertmanagerReplicaUnavailable
-          expr: sum(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"alertmanager-kube-prometheus-stack-alertmanager-.*"}) < 2
-          for: 5m
-          labels:
-            severity: warning
-            priority: P1
-            namespace: monitoring
-          annotations:
-            summary: "Alertmanager replica count is degraded"
-            description: "Fewer than 2 Alertmanager replicas have been ready for 5 minutes. Alert delivery still works, but the notification path has lost HA."
-        - alert: AlertmanagerConfigReloadFailed
-          expr: (max(alertmanager_config_last_reload_successful{namespace="monitoring"}) == 0) or absent(alertmanager_config_last_reload_successful{namespace="monitoring"})
-          for: 2m
-          labels:
-            severity: warning
-            priority: P1
-            namespace: monitoring
-          annotations:
-            summary: "Alertmanager config reload is failing"
-            description: "Alertmanager has not successfully reloaded its generated configuration for 2 minutes, or the reload metric is missing. Check AlertmanagerConfig, webhook Secret references, and operator reconciliation."
-        - alert: AlertmanagerNotificationFailures
-          expr: sum(increase(alertmanager_notifications_failed_total[5m])) > 0
-          for: 2m
-          labels:
-            severity: warning
-            priority: P1
-            namespace: monitoring
-          annotations:
-            summary: "Alertmanager notification delivery is failing"
-            description: "Alertmanager has failed to send one or more notifications in the last 5 minutes. Check Discord webhook secret, receiver config, outbound network, and Alertmanager logs."
         - alert: JudgeWaitingQueueBacklog
           expr: codeplace_waiting_queue_length{namespace=~"code-place-(dev|prod)"} > 5
           for: 3m
@@ -598,10 +339,7 @@ spec:
             summary: "Celery task runtime is high"
             description: "Celery task p95 runtime has been above 120 seconds for 10 minutes."
         - alert: CeleryMinuteScheduledTaskStale
-          expr: >-
-            (codeplace_celery_task_last_success_age_seconds{namespace=~"code-place-(dev|prod)", task_name="account.tasks.calculate_user_score_fluctuation"} > 600)
-            or absent(codeplace_celery_task_last_success_age_seconds{namespace="code-place-dev", task_name="account.tasks.calculate_user_score_fluctuation"})
-            or absent(codeplace_celery_task_last_success_age_seconds{namespace="code-place-prod", task_name="account.tasks.calculate_user_score_fluctuation"})
+          expr: codeplace_celery_task_last_success_age_seconds{namespace=~"code-place-(dev|prod)", task_name="account.tasks.calculate_user_score_fluctuation"} > 600
           for: 5m
           labels:
             severity: warning
@@ -610,10 +348,7 @@ spec:
             summary: "Minute scheduled Celery task is stale"
             description: "calculate_user_score_fluctuation has not completed successfully for more than 10 minutes, or no success metric has ever been observed. Check celery-beat, celery-worker, Redis broker, and task logs."
         - alert: CeleryDailyScheduledTaskStale
-          expr: >-
-            (codeplace_celery_task_last_success_age_seconds{namespace=~"code-place-(dev|prod)", task_name="account.tasks.calculate_user_score_basis"} > 93600)
-            or absent(codeplace_celery_task_last_success_age_seconds{namespace="code-place-dev", task_name="account.tasks.calculate_user_score_basis"})
-            or absent(codeplace_celery_task_last_success_age_seconds{namespace="code-place-prod", task_name="account.tasks.calculate_user_score_basis"})
+          expr: codeplace_celery_task_last_success_age_seconds{namespace=~"code-place-(dev|prod)", task_name="account.tasks.calculate_user_score_basis"} > 93600
           for: 30m
           labels:
             severity: warning
@@ -622,12 +357,7 @@ spec:
             summary: "Daily scheduled Celery task is stale"
             description: "calculate_user_score_basis has not completed successfully for more than 26 hours, or no success metric has ever been observed. Check celery-beat, celery-worker, Redis broker, and task logs."
         - alert: CeleryWeeklyScheduledTaskStale
-          expr: >-
-            (codeplace_celery_task_last_success_age_seconds{namespace=~"code-place-(dev|prod)", task_name=~"problem.tasks.update_weekly_stats|problem.tasks.update_bonus_problem"} > 691200)
-            or absent(codeplace_celery_task_last_success_age_seconds{namespace="code-place-dev", task_name="problem.tasks.update_weekly_stats"})
-            or absent(codeplace_celery_task_last_success_age_seconds{namespace="code-place-prod", task_name="problem.tasks.update_weekly_stats"})
-            or absent(codeplace_celery_task_last_success_age_seconds{namespace="code-place-dev", task_name="problem.tasks.update_bonus_problem"})
-            or absent(codeplace_celery_task_last_success_age_seconds{namespace="code-place-prod", task_name="problem.tasks.update_bonus_problem"})
+          expr: codeplace_celery_task_last_success_age_seconds{namespace=~"code-place-(dev|prod)", task_name=~"problem.tasks.update_weekly_stats|problem.tasks.update_bonus_problem"} > 691200
           for: 1h
           labels:
             severity: warning
@@ -654,7 +384,7 @@ spec:
             summary: "CodePlace pod is not ready"
             description: "A CodePlace application or datastore pod has not been ready for 5 minutes."
         - alert: KubernetesPodImagePullBackOff
-          expr: max by (namespace, pod, container, reason) (kube_pod_container_status_waiting_reason{namespace=~"code-place-(dev|prod)|monitoring", reason=~"ImagePullBackOff|ErrImagePull"}) == 1
+          expr: max by (namespace, pod, container, reason) (kube_pod_container_status_waiting_reason{namespace=~"code-place-(dev|prod)", reason=~"ImagePullBackOff|ErrImagePull"}) == 1
           for: 2m
           labels:
             severity: warning
@@ -663,7 +393,7 @@ spec:
             summary: "A Kubernetes pod cannot pull its image"
             description: "A pod has been waiting with ImagePullBackOff or ErrImagePull for 2 minutes. Check image tag, registry access, and image pull secret."
         - alert: KubernetesPodCrashLoopBackOff
-          expr: max by (namespace, pod, container) (kube_pod_container_status_waiting_reason{namespace=~"code-place-(dev|prod)|monitoring", reason="CrashLoopBackOff"}) == 1
+          expr: max by (namespace, pod, container) (kube_pod_container_status_waiting_reason{namespace=~"code-place-(dev|prod)", reason="CrashLoopBackOff"}) == 1
           for: 5m
           labels:
             severity: warning
@@ -672,7 +402,7 @@ spec:
             summary: "A Kubernetes pod is in CrashLoopBackOff"
             description: "A pod has been waiting with CrashLoopBackOff for 5 minutes. Check the previous container logs and Kubernetes Warning events."
         - alert: KubernetesPodOOMKilled
-          expr: max by (namespace, pod, container) (max_over_time(kube_pod_container_status_last_terminated_reason{namespace=~"code-place-(dev|prod)|monitoring", reason="OOMKilled"}[10m])) == 1
+          expr: max by (namespace, pod, container) (max_over_time(kube_pod_container_status_last_terminated_reason{namespace=~"code-place-(dev|prod)", reason="OOMKilled"}[10m])) == 1
           for: 2m
           labels:
             severity: warning
@@ -681,7 +411,7 @@ spec:
             summary: "A Kubernetes container was OOMKilled"
             description: "A container was terminated by OOMKilled within the last 10 minutes. Check memory limits, recent traffic, and heap/cache growth."
         - alert: KubernetesPodUnschedulable
-          expr: (max by (namespace, pod) (kube_pod_status_unschedulable{namespace=~"code-place-(dev|prod)|monitoring"}) == 1) or (max by (namespace, pod) (kube_pod_status_phase{namespace=~"code-place-(dev|prod)|monitoring", phase="Pending"}) == 1)
+          expr: (max by (namespace, pod) (kube_pod_status_unschedulable{namespace=~"code-place-(dev|prod)"}) == 1) or (max by (namespace, pod) (kube_pod_status_phase{namespace=~"code-place-(dev|prod)", phase="Pending"}) == 1)
           for: 10m
           labels:
             severity: warning
@@ -698,24 +428,6 @@ spec:
           annotations:
             summary: "CodePlace deployment has unavailable replicas"
             description: "A CodePlace deployment has had unavailable replicas for 5 minutes. Check rollout status, pod events, readiness probes, image pulls, and resource pressure."
-        - alert: CodePlaceDeploymentRolloutStuck
-          expr: max by (namespace, deployment) (kube_deployment_status_observed_generation{namespace=~"code-place-(dev|prod)", deployment=~"backend|frontend|hub-auth|celery-worker|celery-beat|judge-server|vllm"} != on (namespace, deployment) kube_deployment_metadata_generation{namespace=~"code-place-(dev|prod)", deployment=~"backend|frontend|hub-auth|celery-worker|celery-beat|judge-server|vllm"}) > 0
-          for: 10m
-          labels:
-            severity: warning
-            priority: P1
-          annotations:
-            summary: "CodePlace deployment rollout is stuck"
-            description: "A CodePlace deployment observed generation has not caught up with metadata generation for 10 minutes. Check deployment events, ReplicaSet state, and rollout history."
-        - alert: CodePlacePDBAtRisk
-          expr: kube_poddisruptionbudget_status_current_healthy{namespace=~"code-place-(dev|prod)", poddisruptionbudget=~"backend|frontend"} <= kube_poddisruptionbudget_status_desired_healthy{namespace=~"code-place-(dev|prod)", poddisruptionbudget=~"backend|frontend"}
-          for: 10m
-          labels:
-            severity: warning
-            priority: P1
-          annotations:
-            summary: "CodePlace PDB has no disruption headroom"
-            description: "A backend or frontend PodDisruptionBudget has been at or below its desired healthy count for 10 minutes. Node drain or voluntary disruption may reduce user-path availability."
         - alert: CodePlaceServiceNoReadyEndpoints
           expr: (sum by (namespace, endpoint) (kube_endpoint_address{namespace=~"code-place-(dev|prod)", endpoint=~"backend|frontend|hub-auth|judge-server", ready="true"}) < 1) or (label_replace(kube_service_info{namespace=~"code-place-(dev|prod)", service=~"backend|frontend|hub-auth|judge-server"}, "endpoint", "$1", "service", "(.*)") unless on (namespace, endpoint) kube_endpoint_address{namespace=~"code-place-(dev|prod)", endpoint=~"backend|frontend|hub-auth|judge-server", ready="true"})
           for: 2m
@@ -835,16 +547,6 @@ spec:
           annotations:
             summary: "Loki PVC usage is above 85%"
             description: "The Loki Longhorn PVC has been above 85% usage for 10 minutes. Log retention or PVC size must be adjusted before ingestion stops."
-        - alert: MonitoringPVCAlmostFull
-          expr: max by (namespace, persistentvolumeclaim) (kubelet_volume_stats_used_bytes{namespace="monitoring", persistentvolumeclaim!~".*loki.*|tempo-data"}) / clamp_min(max by (namespace, persistentvolumeclaim) (kubelet_volume_stats_capacity_bytes{namespace="monitoring", persistentvolumeclaim!~".*loki.*|tempo-data"}), 1) > 0.85
-          for: 10m
-          labels:
-            severity: warning
-            priority: P1
-            namespace: monitoring
-          annotations:
-            summary: "Monitoring PVC usage is above 85%"
-            description: "A Prometheus, Alertmanager, Grafana, or monitoring support PVC has been above 85% usage for 10 minutes. Check retention, WAL growth, and Longhorn capacity."
         - alert: AlloyDaemonSetUnavailable
           expr: (kube_daemonset_status_number_available{namespace="monitoring", daemonset="alloy"} < kube_daemonset_status_desired_number_scheduled{namespace="monitoring", daemonset="alloy"}) or absent(kube_daemonset_status_desired_number_scheduled{namespace="monitoring", daemonset="alloy"})
           for: 5m
@@ -865,26 +567,6 @@ spec:
           annotations:
             summary: "Loki gateway is not ready"
             description: "No Loki gateway replica has been ready for 2 minutes. Alloy writes and Grafana Loki queries may fail."
-        - alert: LokiGatewayReplicaUnavailable
-          expr: sum(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"loki-gateway-.*"}) < 2
-          for: 5m
-          labels:
-            severity: warning
-            priority: P1
-            namespace: monitoring
-          annotations:
-            summary: "Loki gateway replica count is degraded"
-            description: "Fewer than 2 Loki gateway replicas have been ready for 5 minutes. Loki writes and queries still work, but the gateway path has lost HA."
-        - alert: LokiIngestionStalled
-          expr: (sum(rate(loki_distributor_lines_received_total{namespace="monitoring"}[5m])) == 0) or absent(loki_distributor_lines_received_total{namespace="monitoring"})
-          for: 10m
-          labels:
-            severity: warning
-            priority: P1
-            namespace: monitoring
-          annotations:
-            summary: "Loki is receiving no log lines"
-            description: "Loki has received zero log lines for 10 minutes. Check Alloy discovery, Loki gateway writes, and Loki ingestion health."
         - alert: LokiRequestErrors
           expr: sum(rate(loki_request_duration_seconds_count{namespace="monitoring", status_code=~"5.."}[5m])) > 0
           for: 5m
@@ -895,96 +577,6 @@ spec:
           annotations:
             summary: "Loki is returning 5xx responses"
             description: "Loki has returned 5xx responses for 5 minutes. Log writes or Grafana log queries may be failing."
-        - alert: LokiCanaryMissingEntries
-          expr: sum(increase(loki_canary_missing_entries_total{namespace="monitoring"}[5m])) > 0
-          for: 5m
-          labels:
-            severity: warning
-            priority: P1
-            namespace: monitoring
-          annotations:
-            summary: "Loki canary cannot read back written logs"
-            description: "Loki canary reports missing entries. Loki may be accepting writes while queries or storage are unhealthy."
-        - alert: AlloyLokiWriteDrops
-          expr: sum(increase(loki_write_dropped_entries_total{namespace="monitoring"}[5m])) > 0
-          for: 2m
-          labels:
-            severity: warning
-            priority: P1
-            namespace: monitoring
-          annotations:
-            summary: "Alloy is dropping log entries"
-            description: "Alloy dropped log entries before writing to Loki. Check Alloy limits, Loki gateway errors, and backpressure."
-        - alert: AlloyLokiWriteRetries
-          expr: sum(increase(loki_write_batch_retries_total{namespace="monitoring"}[5m])) > 0
-          for: 5m
-          labels:
-            severity: warning
-            priority: P1
-            namespace: monitoring
-          annotations:
-            summary: "Alloy is retrying Loki writes"
-            description: "Alloy has retried Loki write batches for 5 minutes. Loki writes may be slow or intermittently failing."
-        - alert: OTelCollectorUnavailable
-          expr: (sum(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"otel-collector-.*"}) == 0) or absent(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"otel-collector-.*"})
-          for: 2m
-          labels:
-            severity: warning
-            priority: P1
-            namespace: monitoring
-          annotations:
-            summary: "OpenTelemetry Collector is not ready"
-            description: "No OpenTelemetry Collector replica has been ready for 2 minutes. Enabled services cannot export traces."
-        - alert: OTelCollectorReplicaUnavailable
-          expr: kube_deployment_status_replicas_available{namespace="monitoring", deployment="otel-collector"} < kube_deployment_spec_replicas{namespace="monitoring", deployment="otel-collector"}
-          for: 5m
-          labels:
-            severity: warning
-            priority: P1
-            namespace: monitoring
-          annotations:
-            summary: "OpenTelemetry Collector replica is unavailable"
-            description: "At least one OpenTelemetry Collector replica is unavailable for 5 minutes. Trace ingestion is still degraded even if another replica is serving traffic."
-        - alert: OTelCollectorRefusedSpans
-          expr: sum(increase(otelcol_receiver_refused_spans_total{namespace="monitoring"}[5m])) > 0
-          for: 2m
-          labels:
-            severity: warning
-            priority: P1
-            namespace: monitoring
-          annotations:
-            summary: "OpenTelemetry Collector is refusing spans"
-            description: "The OpenTelemetry Collector has refused incoming spans in the last 5 minutes. Check collector limits, receiver errors, and backend/celery OTLP client logs."
-        - alert: OTelCollectorExportFailures
-          expr: sum(increase(otelcol_exporter_send_failed_spans_total{namespace="monitoring"}[5m])) > 0
-          for: 2m
-          labels:
-            severity: warning
-            priority: P1
-            namespace: monitoring
-          annotations:
-            summary: "OpenTelemetry Collector cannot export spans"
-            description: "The OpenTelemetry Collector has failed to export spans to Tempo in the last 5 minutes. Check Tempo readiness, collector exporter logs, and network path."
-        - alert: TempoUnavailable
-          expr: (sum(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"tempo-.*"}) == 0) or absent(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"tempo-.*"})
-          for: 2m
-          labels:
-            severity: warning
-            priority: P1
-            namespace: monitoring
-          annotations:
-            summary: "Tempo is not ready"
-            description: "No Tempo pod has been ready for 2 minutes. Trace queries and trace ingestion may fail."
-        - alert: TempoPVCAlmostFull
-          expr: max(kubelet_volume_stats_used_bytes{namespace="monitoring", persistentvolumeclaim="tempo-data"}) / clamp_min(max(kubelet_volume_stats_capacity_bytes{namespace="monitoring", persistentvolumeclaim="tempo-data"}), 1) > 0.85
-          for: 10m
-          labels:
-            severity: warning
-            priority: P1
-            namespace: monitoring
-          annotations:
-            summary: "Tempo PVC usage is above 85%"
-            description: "The Tempo Longhorn PVC has been above 85% usage for 10 minutes. Trace retention or PVC size must be adjusted."
         - alert: LonghornVolumeDegraded
           expr: longhorn_volume_robustness == 2
           for: 5m
@@ -1092,16 +684,6 @@ spec:
           annotations:
             summary: "User-facing AI hint API failures detected"
             description: "AI hint API returned LLM errors, unexpected errors, or empty responses in the last 5 minutes. Compare API outcome status with backend stream and vLLM panels."
-        - alert: DCGMExporterUnavailable
-          expr: (kube_daemonset_status_desired_number_scheduled{namespace="monitoring", daemonset="dcgm-exporter"} == 0) or (kube_daemonset_status_number_available{namespace="monitoring", daemonset="dcgm-exporter"} < kube_daemonset_status_desired_number_scheduled{namespace="monitoring", daemonset="dcgm-exporter"}) or absent(kube_daemonset_status_desired_number_scheduled{namespace="monitoring", daemonset="dcgm-exporter"})
-          for: 2m
-          labels:
-            severity: warning
-            priority: P1
-            namespace: monitoring
-          annotations:
-            summary: "DCGM exporter is not running on the GPU node"
-            description: "The NVIDIA DCGM exporter DaemonSet is unavailable for 2 minutes. GPU utilization, memory, temperature, and XID metrics may be missing."
         - alert: GPUUtilizationHigh
           expr: max by (Hostname, gpu, UUID) (DCGM_FI_DEV_GPU_UTIL{namespace="monitoring"}) > 95
           for: 15m
