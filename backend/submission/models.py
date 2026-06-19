@@ -58,6 +58,9 @@ class Submission(models.Model):
     class Meta:
         db_table = "submission"
         ordering = ("-create_time",)
+        indexes = [
+            models.Index(fields=["result", "create_time"], name="sub_result_ctime_idx"),
+        ]
 
     def __str__(self):
         return self.id
