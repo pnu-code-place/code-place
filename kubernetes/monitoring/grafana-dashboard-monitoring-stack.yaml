@@ -245,6 +245,28 @@ data:
             {"expr": "sum by (pod) (rate(container_cpu_usage_seconds_total{namespace=\"monitoring\", pod=~\"kube-prometheus-stack-grafana-.*|grafana-.*\", container!=\"\"}[5m]))", "legendFormat": "{{pod}} cpu cores"},
             {"expr": "max by (pod) (container_memory_working_set_bytes{namespace=\"monitoring\", pod=~\"kube-prometheus-stack-grafana-.*|grafana-.*\", container!=\"\"})", "legendFormat": "{{pod}} memory bytes"}
           ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Monitoring PVC Usage",
+          "gridPos": {"x": 0, "y": 28, "w": 24, "h": 8},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percentunit",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "orange", "value": 0.75},
+                  {"color": "red", "value": 0.85}
+                ]
+              }
+            }
+          },
+          "targets": [
+            {"expr": "max by (persistentvolumeclaim) (kubelet_volume_stats_used_bytes{namespace=\"monitoring\", persistentvolumeclaim!~\".*loki.*|tempo-data\"}) / clamp_min(max by (persistentvolumeclaim) (kubelet_volume_stats_capacity_bytes{namespace=\"monitoring\", persistentvolumeclaim!~\".*loki.*|tempo-data\"}), 1) or vector(0)", "legendFormat": "{{persistentvolumeclaim}}"}
+          ]
         }
       ]
     }
