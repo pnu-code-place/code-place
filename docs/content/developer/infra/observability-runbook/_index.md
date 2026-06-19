@@ -34,6 +34,7 @@ Status -> Targets -> postgres
 Status -> Targets -> redis
 Status -> Targets -> longhorn
 Status -> Targets -> vllm
+Status -> Targets -> dcgm-exporter
 Status -> Targets -> codeplace-public-http-dev
 Status -> Targets -> codeplace-public-http-prod
 ```
@@ -125,6 +126,21 @@ up{job="vllm", namespace="code-place-prod"}
 {__name__="vllm:num_requests_waiting", namespace="code-place-prod"}
 {__name__="vllm:kv_cache_usage_perc", namespace="code-place-prod"}
 histogram_quantile(0.95, sum by (le) (rate({__name__="vllm:e2e_request_latency_seconds_bucket", namespace="code-place-prod"}[10m])))
+```
+
+GPU 상태 확인:
+
+```sh
+kubectl -n monitoring get ds,svc,servicemonitor dcgm-exporter
+kubectl -n monitoring logs daemonset/dcgm-exporter --tail=100
+kubectl -n code-place-prod get pod -l app=vllm -o wide
+```
+
+```promql
+DCGM_FI_DEV_GPU_UTIL{namespace="monitoring"}
+DCGM_FI_DEV_FB_USED{namespace="monitoring"} / clamp_min(DCGM_FI_DEV_FB_USED{namespace="monitoring"} + DCGM_FI_DEV_FB_FREE{namespace="monitoring"}, 1)
+DCGM_FI_DEV_GPU_TEMP{namespace="monitoring"}
+DCGM_FI_DEV_XID_ERRORS{namespace="monitoring"}
 ```
 
 ## P0
@@ -409,6 +425,31 @@ kube_pod_status_ready{namespace="code-place-prod", pod=~"vllm-.*", condition="tr
 - Pod는 ready인데 scrape만 실패하면 Service port/path, vLLM `/metrics`, NetworkPolicy 여부를 확인합니다.
 - backend AI hint API error가 같이 증가하면 사용자 영향이 있습니다.
 
+### GPUXIDError
+
+증상: NVIDIA DCGM이 GPU XID error를 1분 이상 보고합니다. vLLM이 ready여도 GPU driver, ECC, PCIe, memory, thermal 문제로 추론 장애가 날 수 있습니다.
+
+확인:
+
+```sh
+kubectl -n monitoring logs daemonset/dcgm-exporter --tail=200
+kubectl -n code-place-prod get pod -l app=vllm -o wide
+kubectl -n code-place-prod logs deploy/vllm --tail=200
+kubectl describe node -l workload.code-place.ai/vllm=true
+```
+
+```promql
+DCGM_FI_DEV_XID_ERRORS{namespace="monitoring"}
+DCGM_FI_DEV_GPU_TEMP{namespace="monitoring"}
+DCGM_FI_DEV_GPU_UTIL{namespace="monitoring"}
+```
+
+판단:
+
+- XID가 증가하고 vLLM latency/5xx가 같이 증가하면 AI hint 사용자 영향으로 봅니다.
+- 같은 node에서 temperature나 utilization도 높으면 cooling, sustained load, `max-num-seqs`, KV cache 설정을 함께 낮춰 봅니다.
+- XID가 반복되면 Pod 재시작만으로 닫지 말고 node driver/runtime 상태와 GPU hardware 상태를 확인합니다.
+
 ## P1
 
 ### OTelCollectorUnavailable / TempoUnavailable / TempoPVCAlmostFull
@@ -635,6 +676,36 @@ kubectl -n code-place-prod describe pvc vllm-hf-cache
 - KV cache가 90%를 넘으면 max model length, 동시 요청 수, prompt 길이, GPU memory utilization을 함께 봅니다.
 - e2e latency만 증가하면 prompt/generation token 증가, backend streaming read timeout, vLLM 로그의 model/engine warning을 확인합니다.
   현재 vLLM은 prod 전용입니다. dev에서 AI hint를 별도 검증하려면 dev vLLM 배포와 ServiceMonitor 확장이 먼저 필요합니다.
+
+### DCGMExporterUnavailable / GPUUtilizationHigh / GPUMemoryHigh / GPUTemperatureHigh
+
+확인:
+
+```sh
+kubectl -n monitoring get daemonset,pod,svc,servicemonitor dcgm-exporter -o wide
+kubectl -n monitoring describe daemonset dcgm-exporter
+kubectl -n monitoring logs daemonset/dcgm-exporter --tail=200
+kubectl get node -l workload.code-place.ai/vllm=true
+```
+
+PromQL:
+
+```promql
+kube_daemonset_status_number_available{namespace="monitoring", daemonset="dcgm-exporter"}
+kube_daemonset_status_desired_number_scheduled{namespace="monitoring", daemonset="dcgm-exporter"}
+DCGM_FI_DEV_GPU_UTIL{namespace="monitoring"}
+DCGM_FI_DEV_FB_USED{namespace="monitoring"} / clamp_min(DCGM_FI_DEV_FB_USED{namespace="monitoring"} + DCGM_FI_DEV_FB_FREE{namespace="monitoring"}, 1)
+DCGM_FI_DEV_GPU_TEMP{namespace="monitoring"}
+DCGM_FI_PROF_PIPE_TENSOR_ACTIVE{namespace="monitoring"}
+DCGM_FI_PROF_DRAM_ACTIVE{namespace="monitoring"}
+```
+
+판단:
+
+- exporter가 unavailable이면 GPU 상태를 볼 수 없습니다. vLLM node label, `runtimeClassName: nvidia`, NVIDIA device plugin/runtime, pod scheduling event를 확인합니다.
+- GPU utilization만 높고 memory 여유가 있으면 request concurrency와 vLLM scheduling capacity 문제일 가능성이 큽니다.
+- framebuffer memory usage가 높으면 KV cache pressure, `max-num-seqs`, `max-model-len`, model load 상태를 우선 봅니다.
+- temperature가 높으면 AI latency보다 node cooling/thermal throttling을 먼저 의심합니다.
 
 ### LokiPVCAlmostFull
 

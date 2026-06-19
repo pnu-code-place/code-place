@@ -192,6 +192,16 @@ spec:
           annotations:
             summary: "vLLM metrics target is unavailable"
             description: "Prometheus cannot scrape the vLLM /metrics endpoint for 2 minutes. AI hint serving may be unavailable."
+        - alert: GPUXIDError
+          expr: max by (Hostname, gpu, UUID) (DCGM_FI_DEV_XID_ERRORS{namespace="monitoring"}) > 0
+          for: 1m
+          labels:
+            severity: critical
+            priority: P0
+            namespace: monitoring
+          annotations:
+            summary: "GPU driver reported an XID error"
+            description: "DCGM reports a non-zero NVIDIA XID error for 1 minute. vLLM GPU health and node driver state should be checked."
     - name: codeplace.p1
       interval: 30s
       rules:
@@ -507,6 +517,46 @@ spec:
           annotations:
             summary: "vLLM request latency is high"
             description: "vLLM p95 end-to-end request latency has been above 60 seconds for 10 minutes."
+        - alert: DCGMExporterUnavailable
+          expr: (kube_daemonset_status_desired_number_scheduled{namespace="monitoring", daemonset="dcgm-exporter"} == 0) or (kube_daemonset_status_number_available{namespace="monitoring", daemonset="dcgm-exporter"} < kube_daemonset_status_desired_number_scheduled{namespace="monitoring", daemonset="dcgm-exporter"}) or absent(kube_daemonset_status_desired_number_scheduled{namespace="monitoring", daemonset="dcgm-exporter"})
+          for: 2m
+          labels:
+            severity: warning
+            priority: P1
+            namespace: monitoring
+          annotations:
+            summary: "DCGM exporter is not running on the GPU node"
+            description: "The NVIDIA DCGM exporter DaemonSet is unavailable for 2 minutes. GPU utilization, memory, temperature, and XID metrics may be missing."
+        - alert: GPUUtilizationHigh
+          expr: max by (Hostname, gpu, UUID) (DCGM_FI_DEV_GPU_UTIL{namespace="monitoring"}) > 95
+          for: 15m
+          labels:
+            severity: warning
+            priority: P1
+            namespace: monitoring
+          annotations:
+            summary: "GPU utilization is high"
+            description: "DCGM reports GPU utilization above 95% for 15 minutes. vLLM AI hint latency may rise under sustained load."
+        - alert: GPUMemoryHigh
+          expr: max by (Hostname, gpu, UUID) (DCGM_FI_DEV_FB_USED{namespace="monitoring"} / clamp_min(DCGM_FI_DEV_FB_USED{namespace="monitoring"} + DCGM_FI_DEV_FB_FREE{namespace="monitoring"}, 1)) > 0.9
+          for: 10m
+          labels:
+            severity: warning
+            priority: P1
+            namespace: monitoring
+          annotations:
+            summary: "GPU framebuffer memory usage is high"
+            description: "DCGM reports GPU framebuffer memory usage above 90% for 10 minutes. vLLM KV cache and max sequence settings should be checked."
+        - alert: GPUTemperatureHigh
+          expr: max by (Hostname, gpu, UUID) (DCGM_FI_DEV_GPU_TEMP{namespace="monitoring"}) > 85
+          for: 10m
+          labels:
+            severity: warning
+            priority: P1
+            namespace: monitoring
+          annotations:
+            summary: "GPU temperature is high"
+            description: "DCGM reports GPU temperature above 85C for 10 minutes. Node cooling and sustained vLLM load should be checked."
         - alert: CodePlaceNodePressure
           expr: kube_node_status_condition{condition=~"MemoryPressure|DiskPressure|PIDPressure", status="true"} == 1
           for: 5m

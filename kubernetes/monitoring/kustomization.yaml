@@ -6,6 +6,7 @@ resources:
   - ./alertmanager-config.yaml
   - ./backend-service-monitor.yaml
   - ./blackbox-exporter.yaml
+  - ./dcgm-exporter.yaml
   - ./datastore-pod-monitors.yaml
   - ./grafana-dashboard-codeplace.yaml
   - ./grafana-dashboard-ai-inference.yaml

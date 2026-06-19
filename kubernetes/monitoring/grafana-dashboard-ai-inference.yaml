@@ -207,6 +207,115 @@ data:
           "targets": [
             {"expr": "max(kubelet_volume_stats_used_bytes{namespace=\"code-place-prod\", persistentvolumeclaim=\"vllm-hf-cache\"}) / clamp_min(max(kubelet_volume_stats_capacity_bytes{namespace=\"code-place-prod\", persistentvolumeclaim=\"vllm-hf-cache\"}), 1)", "legendFormat": "usage"}
           ]
+        },
+        {
+          "type": "timeseries",
+          "title": "GPU Utilization",
+          "gridPos": {"x": 0, "y": 20, "w": 6, "h": 8},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percent",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "orange", "value": 80},
+                  {"color": "red", "value": 95}
+                ]
+              }
+            }
+          },
+          "targets": [
+            {"expr": "DCGM_FI_DEV_GPU_UTIL{namespace=\"monitoring\"}", "legendFormat": "{{Hostname}} gpu{{gpu}}"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "GPU FB Memory Usage",
+          "gridPos": {"x": 6, "y": 20, "w": 6, "h": 8},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percentunit",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "orange", "value": 0.8},
+                  {"color": "red", "value": 0.9}
+                ]
+              }
+            }
+          },
+          "targets": [
+            {"expr": "DCGM_FI_DEV_FB_USED{namespace=\"monitoring\"} / clamp_min(DCGM_FI_DEV_FB_USED{namespace=\"monitoring\"} + DCGM_FI_DEV_FB_FREE{namespace=\"monitoring\"}, 1)", "legendFormat": "{{Hostname}} gpu{{gpu}}"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "GPU Temperature",
+          "gridPos": {"x": 12, "y": 20, "w": 6, "h": 8},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "celsius",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "orange", "value": 75},
+                  {"color": "red", "value": 85}
+                ]
+              }
+            }
+          },
+          "targets": [
+            {"expr": "DCGM_FI_DEV_GPU_TEMP{namespace=\"monitoring\"}", "legendFormat": "{{Hostname}} gpu{{gpu}}"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "GPU XID Errors",
+          "gridPos": {"x": 18, "y": 20, "w": 6, "h": 8},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "red", "value": 1}
+                ]
+              }
+            }
+          },
+          "targets": [
+            {"expr": "DCGM_FI_DEV_XID_ERRORS{namespace=\"monitoring\"}", "legendFormat": "{{Hostname}} gpu{{gpu}}"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "GPU Tensor / DRAM Activity",
+          "gridPos": {"x": 0, "y": 28, "w": 12, "h": 8},
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "percentunit"}},
+          "targets": [
+            {"expr": "DCGM_FI_PROF_PIPE_TENSOR_ACTIVE{namespace=\"monitoring\"}", "legendFormat": "{{Hostname}} gpu{{gpu}} tensor"},
+            {"expr": "DCGM_FI_PROF_DRAM_ACTIVE{namespace=\"monitoring\"}", "legendFormat": "{{Hostname}} gpu{{gpu}} dram"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "GPU FB Memory Bytes",
+          "gridPos": {"x": 12, "y": 28, "w": 12, "h": 8},
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "bytes"}},
+          "targets": [
+            {"expr": "DCGM_FI_DEV_FB_USED{namespace=\"monitoring\"} * 1024 * 1024", "legendFormat": "{{Hostname}} gpu{{gpu}} used"},
+            {"expr": "DCGM_FI_DEV_FB_FREE{namespace=\"monitoring\"} * 1024 * 1024", "legendFormat": "{{Hostname}} gpu{{gpu}} free"}
+          ]
         }
       ]
     }
