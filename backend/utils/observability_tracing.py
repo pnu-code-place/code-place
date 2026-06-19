@@ -1,8 +1,29 @@
 import logging
+from contextlib import nullcontext
 
 from utils.shortcuts import get_env
 
 logger = logging.getLogger(__name__)
+
+
+class _NoOpSpan:
+
+    def set_attribute(self, key, value):
+        return None
+
+
+class _NoOpTracer:
+
+    def start_as_current_span(self, name):
+        return nullcontext(_NoOpSpan())
+
+
+def get_tracer(name):
+    try:
+        from opentelemetry import trace
+    except Exception:
+        return _NoOpTracer()
+    return trace.get_tracer(name)
 
 
 def configure_opentelemetry(service_name):

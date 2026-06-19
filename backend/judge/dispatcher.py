@@ -10,7 +10,6 @@ import requests
 from django.db import transaction, IntegrityError
 from django.db.models import F
 from django.http import HttpResponseNotFound
-from opentelemetry import trace
 
 from account.models import User, UserScore, UserSolved
 from conf.models import JudgeServer
@@ -21,9 +20,10 @@ from problem.utils import parse_problem_template
 from submission.models import JudgeStatus, Submission
 from utils.cache import cache
 from utils.constants import CacheKey, ProblemScore, ProblemField, Tier
+from utils.observability_tracing import get_tracer
 
 logger = logging.getLogger(__name__)
-tracer = trace.get_tracer(__name__)
+tracer = get_tracer(__name__)
 
 
 # 继续处理在队列中的问题

@@ -1,12 +1,12 @@
 import celery
-from opentelemetry import trace
 
 from account.models import User
 from utils.shortcuts import CELERY_TASK_ARGS
+from utils.observability_tracing import get_tracer
 from submission.models import Submission
 from judge.dispatcher import JudgeDispatcher
 
-tracer = trace.get_tracer(__name__)
+tracer = get_tracer(__name__)
 
 
 @celery.shared_task(**CELERY_TASK_ARGS())

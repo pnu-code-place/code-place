@@ -6,7 +6,25 @@ from django.test import SimpleTestCase, TestCase, override_settings
 from django.core.cache import cache
 
 from utils.json_logging import CodePlaceJsonFormatter
+from utils.observability_tracing import get_tracer
 from utils.testcase_cache import TestCaseCacheManager
+
+
+class ObservabilityTracingTest(SimpleTestCase):
+
+    def test_get_tracer_returns_noop_tracer_when_opentelemetry_is_unavailable(self):
+        real_import = __import__
+
+        def fake_import(name, *args, **kwargs):
+            if name == "opentelemetry":
+                raise ImportError("missing opentelemetry")
+            return real_import(name, *args, **kwargs)
+
+        with patch("builtins.__import__", side_effect=fake_import):
+            tracer = get_tracer("test")
+
+        with tracer.start_as_current_span("span") as span:
+            self.assertIsNone(span.set_attribute("key", "value"))
 
 
 class CodePlaceJsonFormatterTest(SimpleTestCase):
