@@ -15,6 +15,8 @@ from utils.shortcuts import get_env
 
 import celery.schedules
 import sentry_sdk
+from sentry_sdk.integrations.celery import CeleryIntegration
+from sentry_sdk.integrations.django import DjangoIntegration
 
 production_env = get_env("OJ_ENV", "dev") == "production"
 if production_env:
@@ -82,6 +84,10 @@ if SENTRY_DSN:
         "send_default_pii": False,
         "environment": get_env("SENTRY_ENVIRONMENT", get_env("OJ_ENV", "dev")),
         "before_send": _before_send_sentry,
+        "integrations": [
+            DjangoIntegration(),
+            CeleryIntegration(),
+        ],
     }
     SENTRY_RELEASE = get_env("SENTRY_RELEASE", "")
     if SENTRY_RELEASE:

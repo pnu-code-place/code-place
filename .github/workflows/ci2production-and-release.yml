@@ -113,8 +113,10 @@ jobs:
           provenance: false
           build-args: |
             SERVER_NAME=${{ secrets.PROD_SERVER_NAME }}
-            APP_VERSION=${{ github.sha }}
+            APP_VERSION=${{ github.sha }}-prod
             SENTRY_ENVIRONMENT=production
+            SENTRY_DSN=${{ secrets.SENTRY_DSN }}
+            USE_SENTRY=1
 
   ci-hub-auth:
     needs: [detect-changes-by-component]
