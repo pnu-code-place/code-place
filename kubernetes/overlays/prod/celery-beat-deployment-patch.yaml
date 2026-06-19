@@ -12,6 +12,9 @@ spec:
     spec:
       containers:
         - name: celery-beat
+          envFrom:
+            - configMapRef:
+                name: sentry-release
           env:
             - name: SENTRY_DSN
               valueFrom:
@@ -20,5 +23,3 @@ spec:
                   key: SENTRY_DSN
             - name: SENTRY_ENVIRONMENT
               value: "prod"
-            - name: SENTRY_RELEASE
-              value: "3a65dc653fc6fb3050a04e373bbf58e7d391c762-prod"

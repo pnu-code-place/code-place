@@ -7,6 +7,12 @@ resources:
   - ./secrets/common-credentials.yaml
   - ./secrets/sentry-secret.yaml
 namespace: code-place-dev
+configMapGenerator:
+  - name: sentry-release
+    literals:
+      - SENTRY_RELEASE=82d1bcd221199cd9ad9beb930239a58b38340cba-dev
+generatorOptions:
+  disableNameSuffixHash: true
 patches:
   - path: backend-deployment-patch.yaml
   - path: frontend-deployment-patch.yaml

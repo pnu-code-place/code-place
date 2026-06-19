@@ -7,6 +7,9 @@ spec:
     spec:
       containers:
         - name: backend
+          envFrom:
+            - configMapRef:
+                name: sentry-release
           env:
             - name: CSRF_TRUSTED_ORIGINS
               value: "https://k3s.code-place-dev.site"
@@ -17,7 +20,5 @@ spec:
                   key: SENTRY_DSN
             - name: SENTRY_ENVIRONMENT
               value: "dev"
-            - name: SENTRY_RELEASE
-              value: "82d1bcd221199cd9ad9beb930239a58b38340cba-dev"
             - name: OTEL_ENABLED
               value: "1"

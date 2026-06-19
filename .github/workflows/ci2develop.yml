@@ -142,19 +142,7 @@ jobs:
         if: needs.ci-backend-dev.result == 'success'
         uses: mikefarah/yq@master
         with:
-          cmd: yq -i '(.spec.template.spec.containers[] | select(.name == "backend").env[] | select(.name == "SENTRY_RELEASE").value) = "${{ github.sha }}-dev"' kubernetes/overlays/dev/backend-deployment-patch.yaml
-
-      - name: Update Celery Worker Sentry Release
-        if: needs.ci-backend-dev.result == 'success'
-        uses: mikefarah/yq@master
-        with:
-          cmd: yq -i '(.spec.template.spec.containers[] | select(.name == "celery-worker").env[] | select(.name == "SENTRY_RELEASE").value) = "${{ github.sha }}-dev"' kubernetes/overlays/dev/celery-worker-deployment-patch.yaml
-
-      - name: Update Celery Beat Sentry Release
-        if: needs.ci-backend-dev.result == 'success'
-        uses: mikefarah/yq@master
-        with:
-          cmd: yq -i '(.spec.template.spec.containers[] | select(.name == "celery-beat").env[] | select(.name == "SENTRY_RELEASE").value) = "${{ github.sha }}-dev"' kubernetes/overlays/dev/celery-beat-deployment-patch.yaml
+          cmd: yq -i '(.configMapGenerator[] | select(.name == "sentry-release").literals[] | select(test("^SENTRY_RELEASE="))) = "SENTRY_RELEASE=${{ github.sha }}-dev"' kubernetes/overlays/dev/kustomization.yaml
 
       - name: Update Frontend Image Tag
         if: needs.ci-frontend-dev.result == 'success'
@@ -173,9 +161,6 @@ jobs:
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add kubernetes/overlays/dev/kustomization.yaml
-          git add kubernetes/overlays/dev/backend-deployment-patch.yaml
-          git add kubernetes/overlays/dev/celery-worker-deployment-patch.yaml
-          git add kubernetes/overlays/dev/celery-beat-deployment-patch.yaml
 
           # 변경사항이 없으면 종료
           if git diff-index --quiet HEAD; then
