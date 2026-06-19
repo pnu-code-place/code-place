@@ -378,7 +378,16 @@ PY
 
 if optional_cmd promtool; then
   echo "==> checking Prometheus rules with promtool"
-  promtool check rules "${MONITORING_DIR}/prometheus-rules.yaml"
+  python3 - <<'PY'
+from pathlib import Path
+import yaml
+
+prometheus_rule = yaml.safe_load(Path("kubernetes/monitoring/prometheus-rules.yaml").read_text())
+Path("/tmp/codeplace-prometheus-rules-groups.yaml").write_text(
+    yaml.safe_dump({"groups": prometheus_rule["spec"]["groups"]}, sort_keys=False)
+)
+PY
+  promtool check rules /tmp/codeplace-prometheus-rules-groups.yaml
 else
   echo "SKIP promtool check: promtool not found"
 fi
