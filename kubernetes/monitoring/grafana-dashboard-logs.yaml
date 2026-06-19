@@ -26,7 +26,7 @@ data:
             "query": "code-place-dev,code-place-prod,monitoring",
             "multi": true,
             "includeAll": true,
-            "allValue": "code-place-dev|code-place-prod",
+            "allValue": "code-place-dev|code-place-prod|monitoring",
             "current": {
               "text": "code-place-dev",
               "value": "code-place-dev"

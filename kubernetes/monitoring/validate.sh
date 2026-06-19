@@ -372,6 +372,19 @@ dashboard_requirements = {
     },
 }
 dashboard_by_name = {path.name: yaml.safe_load(path.read_text()) for path in all_dashboard_paths}
+logs_dashboard = [
+    json.loads(value)
+    for value in dashboard_by_name["grafana-dashboard-logs.yaml"].get("data", {}).values()
+][0]
+logs_namespace_variables = [
+    variable
+    for variable in logs_dashboard.get("templating", {}).get("list", [])
+    if variable.get("name") == "namespace"
+]
+if len(logs_namespace_variables) != 1:
+    raise SystemExit("grafana-dashboard-logs.yaml must define exactly one namespace variable")
+if logs_namespace_variables[0].get("allValue") != "code-place-dev|code-place-prod|monitoring":
+    raise SystemExit("CodePlace Logs dashboard namespace All value must include monitoring logs")
 for dashboard_name, panel_requirements in dashboard_requirements.items():
     dashboard_map = dashboard_by_name.get(dashboard_name)
     if not dashboard_map:
