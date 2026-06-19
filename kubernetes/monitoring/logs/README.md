@@ -44,37 +44,12 @@ helm upgrade --install alloy grafana/alloy \
 
 ## Verify
 
-Run the repository validation first:
-
-```sh
-bash kubernetes/monitoring/validate.sh
-```
-
-If `helm` is installed and the chart repos are already added, the script also renders kube-prometheus-stack, Loki, and Alloy. Without `helm`, it still validates YAML, Grafana dashboard JSON, and kustomize output.
-
-After applying the monitoring resources to a live cluster, run the read-only smoke check:
-
-```sh
-bash kubernetes/monitoring/smoke-check.sh
-```
-
-Use `MONITORING_NAMESPACE` and `CODEPLACE_NAMESPACES` to override the defaults:
-
-```sh
-MONITORING_NAMESPACE=monitoring CODEPLACE_NAMESPACES="code-place-dev" \
-  bash kubernetes/monitoring/smoke-check.sh
-```
-
-The smoke check treats Loki and Alloy as required by default. During the first
-bootstrap before installing the logs stack, explicitly opt out:
-
-```sh
-REQUIRE_LOGS_STACK=0 bash kubernetes/monitoring/smoke-check.sh
-```
+After applying the monitoring resources, check the live resources directly:
 
 ```sh
 kubectl -n monitoring get pod | grep -E 'loki|alloy|grafana'
 kubectl -n monitoring get pvc | grep loki
+kubectl -n monitoring get servicemonitor loki alloy
 ```
 
 Grafana should show a `Loki` datasource. Useful Explore queries:
@@ -101,6 +76,7 @@ Keep these invariants unless the storage design changes intentionally:
 - Loki stays in `SingleBinary` deployment mode.
 - Loki is installed from `grafana/loki` chart `6.55.0`. Do not upgrade the chart without revalidating rendered workloads and values compatibility.
 - Loki uses filesystem storage on a Longhorn PVC.
+- In the current three-node cluster, Alloy runs on every node. Loki and Tempo remain single-writer services on Longhorn PVCs, while stateless collectors can be replicated across nodes.
 - Alloy keeps namespace-based collection for `code-place-dev`, `code-place-prod`, and `monitoring`; do not depend on `app.kubernetes.io/name` for CodePlace app logs because the application manifests primarily use `app`.
 - Alloy keeps `alloy.mounts.varlog=true`; otherwise the `/var/log/pods` targets are discovered but cannot be read.
 - The PVC size is explicit at `50Gi`, and `LokiPVCAlmostFull` alerts at 85%.

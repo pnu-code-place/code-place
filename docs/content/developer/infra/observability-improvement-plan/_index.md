@@ -221,8 +221,6 @@ prod tracing은 dev에서 trace ingest, query, traces-to-logs 동작과 Collecto
 - `grafana-dashboard-storage.yaml`: Longhorn volume/node/disk 상태와 storage capacity dashboard.
 - `vllm-service-monitor.yaml`: prod vLLM `/metrics` scrape, interval 30s.
 - `dcgm-exporter.yaml`: vLLM GPU node용 NVIDIA DCGM exporter DaemonSet/Service/ServiceMonitor.
-- `validate.sh`: monitoring YAML, Grafana dashboard JSON, monitoring/app kustomize render, app observability env/Service wiring, 선택적 promtool/Helm render 검증 스크립트.
-- `smoke-check.sh`: 운영 클러스터 적용 후 CRD, 핵심 monitoring 리소스, dashboard ConfigMap, Probe, Traefik metrics scrape 설정, OTel/Tempo/Event exporter, Service endpoint, Loki/Alloy, optional DCGM 상태를 확인하는 smoke 검증 스크립트. 첫 bootstrap에서 logs stack 설치 전만 `REQUIRE_LOGS_STACK=0`으로 건너뜁니다.
 - `kustomization.yaml`: 기존 `monitoring` namespace의 kube-prometheus-stack/Grafana/Alertmanager에 붙일 CodePlace monitoring 리소스 묶음.
 
 `alertmanager-contact-points` Secret은 repo에 평문으로 저장하지 않습니다. backend의 `/data/config/secret.key`와 같은 비밀값이지만, 자동으로 파일이 생기는 구조는 아닙니다. 운영자는 SealedSecrets로 `alertmanager-contact-points` Secret을 생성합니다. AlertmanagerConfig는 generic webhook이 아니라 Prometheus Operator의 native `discordConfigs`를 사용합니다.
@@ -397,20 +395,9 @@ P1은 `group_wait=30s`, `repeat_interval=1h`로 전달합니다.
 - Kubernetes monitoring render: `kubectl kustomize kubernetes/monitoring`
 - Logs values YAML parse: `kubernetes/monitoring/logs/loki-values.yaml`, `kubernetes/monitoring/logs/alloy-values.yaml`
 - Grafana dashboard JSON parse: `grafana-dashboard-codeplace.yaml`, `grafana-dashboard-logs.yaml`
-- Monitoring bundle validation: `bash kubernetes/monitoring/validate.sh`
-  - YAML parse: kube-prometheus-stack values, PrometheusRule, AlertmanagerConfig, ServiceMonitor, PodMonitor, Loki/Alloy values.
-  - Grafana dashboard JSON parse와 dashboard shape check: uid/title/refresh/panel/target expr.
-  - PrometheusRule shape check: P0/P1 interval, alert priority/severity, summary/description, duplicate alert namespace label.
-  - AlertmanagerConfig shape check: groupBy, P0/P1 Discord receivers, webhook Secret reference.
-  - kube-prometheus-stack values shape check: Prometheus selector policy, AlertmanagerConfig selector, Loki datasource, dashboard sidecar label.
-  - Loki storage shape check: SingleBinary mode, filesystem storage, Longhorn PVC, 50Gi size, dev/prod retention, MinIO disabled.
-  - scrape resource shape check: ServiceMonitor/PodMonitor selector label, scrape path/port/interval.
-  - Monitoring kustomization shape check: email fallback example이 기본 적용에 섞이지 않는지 확인.
-- Live cluster smoke check: `bash kubernetes/monitoring/smoke-check.sh`
-  - Prometheus Operator CRD, monitoring namespace resource, selector label, webhook Secret, kube-prometheus-stack Pod readiness, Loki/Alloy, app namespace backend service/port/readiness를 읽기 전용으로 확인합니다.
-
-`promtool`이 있는 환경에서는 `validate.sh`가 `PrometheusRule.spec.groups`를 임시 rule file로 추출한 뒤 `promtool check rules`를 실행합니다.
-`helm`이 있는 환경에서는 Loki/Alloy values를 `helm template`로 렌더링 검증합니다.
+- Prometheus rule syntax: `promtool check rules`에 `PrometheusRule.spec.groups`를 추출해서 확인
+- Helm render: kube-prometheus-stack, Loki, Alloy chart를 pinned version과 values로 렌더링
+- Live cluster check: CRD, monitoring namespace resource, dashboard ConfigMap, webhook Secret, kube-prometheus-stack Pod readiness, Loki/Alloy, app namespace backend service/port/readiness를 `kubectl`로 확인
 
 ### Discord Webhook Secret
 

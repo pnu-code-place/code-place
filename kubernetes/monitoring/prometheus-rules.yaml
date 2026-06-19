@@ -813,6 +813,16 @@ spec:
           annotations:
             summary: "OpenTelemetry Collector is not ready"
             description: "The OpenTelemetry Collector has not been ready for 2 minutes. Enabled services cannot export traces."
+        - alert: OTelCollectorReplicaUnavailable
+          expr: kube_deployment_status_replicas_available{namespace="monitoring", deployment="otel-collector"} < kube_deployment_spec_replicas{namespace="monitoring", deployment="otel-collector"}
+          for: 5m
+          labels:
+            severity: warning
+            priority: P1
+            namespace: monitoring
+          annotations:
+            summary: "OpenTelemetry Collector replica is unavailable"
+            description: "At least one OpenTelemetry Collector replica is unavailable for 5 minutes. Trace ingestion is still degraded even if another replica is serving traffic."
         - alert: OTelCollectorRefusedSpans
           expr: sum(increase(otelcol_receiver_refused_spans_total{namespace="monitoring"}[5m])) > 0
           for: 2m

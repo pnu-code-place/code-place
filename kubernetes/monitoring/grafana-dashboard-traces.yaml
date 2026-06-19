@@ -43,7 +43,7 @@ data:
         },
         {
           "type": "stat",
-          "title": "OTel Collector Ready",
+          "title": "OTel Collector Replicas",
           "gridPos": {"x": 4, "y": 0, "w": 4, "h": 4},
           "datasource": "Prometheus",
           "fieldConfig": {
@@ -53,14 +53,16 @@ data:
                 "mode": "absolute",
                 "steps": [
                   {"color": "red", "value": null},
-                  {"color": "green", "value": 1}
+                  {"color": "orange", "value": 1},
+                  {"color": "green", "value": 2}
                 ]
               }
             }
           },
           "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
           "targets": [
-            {"expr": "min(kube_pod_status_ready{namespace=\"monitoring\", condition=\"true\", pod=~\"otel-collector-.*\"}) or vector(0)", "legendFormat": "otel-collector"}
+            {"expr": "kube_deployment_status_replicas_available{namespace=\"monitoring\", deployment=\"otel-collector\"} or vector(0)", "legendFormat": "available"},
+            {"expr": "kube_deployment_spec_replicas{namespace=\"monitoring\", deployment=\"otel-collector\"} or vector(0)", "legendFormat": "desired"}
           ]
         },
         {

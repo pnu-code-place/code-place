@@ -101,7 +101,7 @@ metadata:
   labels:
     app: otel-collector
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: otel-collector
@@ -111,6 +111,13 @@ spec:
         app: otel-collector
     spec:
       serviceAccountName: otel-collector
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: otel-collector
       containers:
         - name: otel-collector
           image: otel/opentelemetry-collector-contrib:0.128.0
@@ -153,6 +160,16 @@ spec:
         - name: config
           configMap:
             name: otel-collector-config
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: otel-collector
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: otel-collector
 ---
 apiVersion: v1
 kind: Service
