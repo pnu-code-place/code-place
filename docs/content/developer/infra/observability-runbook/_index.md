@@ -248,7 +248,7 @@ Grafana Explore:
 - backend 5xx도 같이 증가하면 app/backend 문제입니다.
 - ingress 5xx만 증가하면 Traefik route, Service endpoint, upstream connection 문제를 의심합니다.
 
-### PublicEndpointDown / PublicEndpointTLSCritical
+### PublicEndpointDown / GrafanaPublicEndpointDown / PublicEndpointTLSCritical
 
 증상: 공개 HTTPS endpoint synthetic probe가 실패하거나 인증서 만료가 3일 이내입니다.
 
@@ -262,7 +262,7 @@ probe_http_duration_seconds{probe_type="public-http"}
 ```
 
 ```sh
-kubectl -n monitoring get pod,svc,probe | grep -E 'blackbox|codeplace-public|hub-auth'
+kubectl -n monitoring get pod,svc,probe | grep -E 'blackbox|codeplace-public|hub-auth|grafana'
 kubectl -n monitoring logs deploy/blackbox-exporter --tail=200
 kubectl -n <namespace> get ingress,svc,endpoints frontend hub-auth
 kubectl -n kube-system logs deploy/traefik --tail=200
@@ -272,6 +272,7 @@ kubectl -n kube-system logs deploy/traefik --tail=200
 
 - `probe_success=0`이고 ingress/backend 지표는 정상이면 DNS, TLS, Traefik public route, frontend nginx 기본 경로 문제를 먼저 봅니다.
 - `service="hub-auth"` probe가 실패하면 OAuth helper Pod, Service, Ingress, GitHub OAuth secret 설정을 우선 확인합니다.
+- `service="grafana"` probe가 실패하면 Grafana Pod readiness와 별개로 Grafana ingress, Traefik route, TLS resolver, public DNS를 확인합니다.
 - `probe_http_status_code`가 0이면 DNS/TCP/TLS 연결 실패 가능성이 큽니다.
 - 5xx이면 Traefik/frontend/backend 로그와 같은 시간대를 대조합니다.
 - TLS 만료 알림은 Traefik ACME resolver와 인증서 저장소를 확인합니다.

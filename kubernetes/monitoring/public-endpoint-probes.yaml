@@ -47,6 +47,29 @@ spec:
 apiVersion: monitoring.coreos.com/v1
 kind: Probe
 metadata:
+  name: codeplace-grafana-http
+  labels:
+    release: kube-prometheus-stack
+spec:
+  jobName: codeplace-grafana-http
+  interval: 30s
+  scrapeTimeout: 15s
+  module: http_2xx
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:9115
+  targets:
+    staticConfig:
+      static:
+        - https://monitoring.code-place-dev.site/
+      labels:
+        environment: monitoring
+        namespace: monitoring
+        service: grafana
+        probe_type: public-http
+---
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
   name: codeplace-hub-auth-dev-http
   labels:
     release: kube-prometheus-stack

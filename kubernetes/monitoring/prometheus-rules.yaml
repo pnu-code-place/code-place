@@ -281,6 +281,16 @@ spec:
           annotations:
             summary: "Blackbox exporter is not ready"
             description: "The synthetic public endpoint probe exporter has not been ready for 2 minutes."
+        - alert: GrafanaPublicEndpointDown
+          expr: probe_success{environment="monitoring", service="grafana", probe_type="public-http"} == 0
+          for: 2m
+          labels:
+            severity: warning
+            priority: P1
+            namespace: monitoring
+          annotations:
+            summary: "Grafana public endpoint is down"
+            description: "The public Grafana monitoring endpoint synthetic HTTPS probe has failed for 2 minutes. Dashboards may be unavailable even if the Grafana pod is ready."
         - alert: KubernetesEventExporterUnavailable
           expr: (max(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"kubernetes-event-exporter-.*"}) == 0) or absent(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"kubernetes-event-exporter-.*"})
           for: 2m
