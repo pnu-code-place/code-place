@@ -1,7 +1,6 @@
 import json
 import logging
 import os
-from datetime import timedelta
 from unittest.mock import patch, mock_open, MagicMock
 from django.test import SimpleTestCase, TestCase, override_settings
 from django.core.cache import cache
@@ -12,10 +11,6 @@ from utils import celery_observability
 from utils.json_logging import CodePlaceJsonFormatter
 from utils.observability_context import get_request_id, reset_request_id, set_request_id
 from utils.constants import CacheKey
-from utils.judge_server_observability import (
-    JUDGE_SERVER_SNAPSHOT_RETENTION_SECONDS,
-    increment_judge_server_task_snapshot,
-)
 from utils.observability_metrics import CodePlaceCollector
 from utils import observability_tracing
 from utils.testcase_cache import TestCaseCacheManager
@@ -25,71 +20,6 @@ class CodePlaceCollectorTest(SimpleTestCase):
 
     def _samples_by_metric(self, metrics):
         return {metric.name: metric.samples for metric in metrics}
-
-    def test_judge_server_metrics_emit_snapshot_servers(self):
-        now = timezone.now()
-        snapshots = {
-            b"enabled-judge": json.dumps({
-                "last_heartbeat_timestamp": now.timestamp(),
-                "task_number": 2,
-            }).encode(),
-        }
-
-        with patch("utils.judge_server_observability.cache.hgetall", return_value=snapshots):
-            samples = self._samples_by_metric(list(CodePlaceCollector()._judge_server_metrics()))
-
-        for metric_samples in samples.values():
-            hostnames = {sample.labels["hostname"] for sample in metric_samples}
-            self.assertIn("enabled-judge", hostnames)
-            self.assertNotIn("disabled-judge", hostnames)
-
-    def test_judge_server_metrics_mark_stale_enabled_server_unavailable(self):
-        snapshots = {
-            b"stale-judge": json.dumps({
-                "last_heartbeat_timestamp": (timezone.now() - timedelta(minutes=10)).timestamp(),
-                "task_number": 1,
-            }).encode(),
-        }
-
-        with patch("utils.judge_server_observability.cache.hgetall", return_value=snapshots):
-            samples = self._samples_by_metric(list(CodePlaceCollector()._judge_server_metrics()))
-
-        available = samples["codeplace_judge_server_available"][0]
-        heartbeat_age = samples["codeplace_judge_server_last_heartbeat_age_seconds"][0]
-        self.assertEqual(available.labels["hostname"], "stale-judge")
-        self.assertEqual(available.value, 0)
-        self.assertGreaterEqual(heartbeat_age.value, 599)
-
-    def test_judge_server_metrics_are_loaded_from_redis_snapshot(self):
-        with patch("utils.judge_server_observability.cache.hgetall", return_value={}) as hgetall:
-            list(CodePlaceCollector()._judge_server_metrics())
-
-        hgetall.assert_called_once_with(CacheKey.judge_server_observability)
-
-    def test_judge_server_metrics_prune_retired_snapshot(self):
-        retired_heartbeat = timezone.now() - timedelta(seconds=JUDGE_SERVER_SNAPSHOT_RETENTION_SECONDS + 1)
-        snapshots = {
-            b"retired-judge": json.dumps({
-                "last_heartbeat_timestamp": retired_heartbeat.timestamp(),
-                "task_number": 0,
-            }).encode(),
-        }
-
-        with patch("utils.judge_server_observability.cache.hgetall", return_value=snapshots), \
-                patch("utils.judge_server_observability.cache.hdel") as hdel:
-            samples = self._samples_by_metric(list(CodePlaceCollector()._judge_server_metrics()))
-
-        for metric_samples in samples.values():
-            hostnames = {sample.labels["hostname"] for sample in metric_samples}
-            self.assertNotIn("retired-judge", hostnames)
-        hdel.assert_called_once_with(CacheKey.judge_server_observability, "retired-judge")
-
-    def test_judge_server_task_increment_does_not_create_snapshot_without_heartbeat(self):
-        with patch("utils.judge_server_observability.cache.hget", return_value=None), \
-                patch("utils.judge_server_observability.cache.hset") as hset:
-            increment_judge_server_task_snapshot("judge-1", 1)
-
-        hset.assert_not_called()
 
     def test_celery_broker_queue_length_is_collected_from_redis(self):
         with patch("utils.observability_metrics.cache.llen", return_value=7) as llen:
@@ -318,12 +248,6 @@ class CodePlaceMetricsEndpointTest(SimpleTestCase):
             "Number of Celery tasks waiting in the Redis broker default queue.",
         )
         broker_queue_metric.add_metric([], 0)
-        judge_metric = GaugeMetricFamily(
-            "codeplace_judge_server_available",
-            "Whether each judge-server is enabled and has a fresh heartbeat.",
-            labels=["hostname"],
-        )
-        judge_metric.add_metric(["judge-1"], 1)
         judge_duration_metric = HistogramMetricFamily(
             "codeplace_submission_judge_duration_seconds",
             "Judge duration for submissions completed in the last 10 minutes.",
@@ -332,7 +256,6 @@ class CodePlaceMetricsEndpointTest(SimpleTestCase):
 
         with patch.object(CodePlaceCollector, "_waiting_queue_length", return_value=waiting_queue_metric), \
                 patch.object(CodePlaceCollector, "_celery_broker_queue_length", return_value=broker_queue_metric), \
-                patch.object(CodePlaceCollector, "_judge_server_metrics", return_value=[judge_metric]), \
                 patch.object(CodePlaceCollector, "_judge_duration_histogram", return_value=judge_duration_metric), \
                 patch.object(CodePlaceCollector, "_celery_task_metrics", return_value=[]), \
                 patch.object(CodePlaceCollector, "_redis_health_metrics", return_value=[]):
@@ -343,7 +266,6 @@ class CodePlaceMetricsEndpointTest(SimpleTestCase):
         self.assertIn("django_http_requests_total_by_method_total", body)
         self.assertIn("codeplace_waiting_queue_length", body)
         self.assertIn("codeplace_celery_broker_queue_length", body)
-        self.assertIn("codeplace_judge_server_available", body)
 
 
 class ClientErrorReportAPITest(SimpleTestCase):

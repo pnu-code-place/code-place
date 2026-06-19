@@ -20,7 +20,6 @@ from problem.utils import parse_problem_template
 from submission.models import JudgeStatus, Submission
 from utils.cache import cache
 from utils.constants import CacheKey, ProblemScore, ProblemField, Tier
-from utils.judge_server_observability import increment_judge_server_task_snapshot, sync_judge_server_snapshot
 from utils.observability_metrics import record_judge_duration
 from utils.observability_tracing import get_tracer
 
@@ -53,10 +52,8 @@ class ChooseJudgeServer:
                 span.set_attribute("codeplace.judge_server.candidates", len(servers))
                 for server in servers:
                     if server.task_number <= server.cpu_core * 2:
-                        selected_task_number = server.task_number + 1
                         server.task_number = F("task_number") + 1
                         server.save(update_fields=["task_number"])
-                        sync_judge_server_snapshot(server, task_number=selected_task_number)
                         self.server = server
                         span.set_attribute("codeplace.judge_server.selected", True)
                         span.set_attribute("codeplace.judge_server.hostname", server.hostname)
@@ -67,7 +64,6 @@ class ChooseJudgeServer:
     def __exit__(self, exc_type, exc_val, exc_tb):
         if self.server:
             JudgeServer.objects.filter(id=self.server.id).update(task_number=F("task_number") - 1)
-            increment_judge_server_task_snapshot(self.server.hostname, -1)
 
 
 class DispatcherBase(object):

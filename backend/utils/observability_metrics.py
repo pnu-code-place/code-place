@@ -16,7 +16,6 @@ from utils.celery_observability import (
     CELERY_TASK_TOTAL_KEY,
 )
 from utils.constants import CacheKey
-from utils.judge_server_observability import load_judge_server_snapshots
 
 logger = logging.getLogger(__name__)
 
@@ -81,21 +80,6 @@ class CodePlaceCollector:
             "codeplace_celery_broker_queue_length",
             "Number of Celery tasks waiting in the Redis broker default queue.",
         )
-        yield GaugeMetricFamily(
-            "codeplace_judge_server_available",
-            "Whether each judge-server is enabled and has a fresh heartbeat.",
-            labels=["hostname"],
-        )
-        yield GaugeMetricFamily(
-            "codeplace_judge_server_last_heartbeat_age_seconds",
-            "Seconds since the latest judge-server heartbeat.",
-            labels=["hostname"],
-        )
-        yield GaugeMetricFamily(
-            "codeplace_judge_server_task_number",
-            "Current task_number recorded for each judge-server.",
-            labels=["hostname"],
-        )
         yield HistogramMetricFamily(
             "codeplace_submission_judge_duration_seconds",
             "Judge duration for submissions completed in the last 10 minutes.",
@@ -142,7 +126,6 @@ class CodePlaceCollector:
         self._collector_success = {}
         yield self._waiting_queue_length()
         yield self._celery_broker_queue_length()
-        yield from self._judge_server_metrics()
         yield self._judge_duration_histogram()
         yield from self._celery_task_metrics()
         yield from self._redis_health_metrics()
@@ -177,36 +160,6 @@ class CodePlaceCollector:
         else:
             self._mark_collector_success("celery_broker_queue", True)
         return metric
-
-    def _judge_server_metrics(self):
-        available_metric = GaugeMetricFamily(
-            "codeplace_judge_server_available",
-            "Whether each judge-server is enabled and has a fresh heartbeat.",
-            labels=["hostname"],
-        )
-        heartbeat_metric = GaugeMetricFamily(
-            "codeplace_judge_server_last_heartbeat_age_seconds",
-            "Seconds since the latest judge-server heartbeat.",
-            labels=["hostname"],
-        )
-        task_metric = GaugeMetricFamily(
-            "codeplace_judge_server_task_number",
-            "Current task_number recorded for each judge-server.",
-            labels=["hostname"],
-        )
-        snapshots = load_judge_server_snapshots()
-        if snapshots is None:
-            self._mark_collector_success("judge_server", False)
-        else:
-            self._mark_collector_success("judge_server", True)
-        for snapshot in snapshots or []:
-            hostname = snapshot["hostname"] or "unknown"
-            available_metric.add_metric([hostname], snapshot["available"])
-            heartbeat_metric.add_metric([hostname], snapshot["heartbeat_age"])
-            task_metric.add_metric([hostname], snapshot["task_number"])
-        yield available_metric
-        yield heartbeat_metric
-        yield task_metric
 
     def _judge_duration_histogram(self):
         metric = HistogramMetricFamily(
@@ -363,7 +316,6 @@ class CodePlaceCollector:
         collectors = (
             "waiting_queue",
             "celery_broker_queue",
-            "judge_server",
             "judge_duration",
             "celery_task",
             "redis",

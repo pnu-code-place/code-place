@@ -22,7 +22,6 @@ from options.options import SysOptions
 from problem.models import Problem
 from submission.models import Submission
 from utils.api import APIView, CSRFExemptAPIView, validate_serializer
-from utils.judge_server_observability import remove_judge_server_snapshot, sync_judge_server_snapshot
 from utils.shortcuts import send_email, get_env
 from utils.xss_filter import XSSHtml
 from .models import JudgeServer
@@ -134,18 +133,13 @@ class JudgeServerAPI(APIView):
         hostname = request.GET.get("hostname")
         if hostname:
             JudgeServer.objects.filter(hostname=hostname).delete()
-            remove_judge_server_snapshot(hostname)
         return self.success()
 
     @validate_serializer(EditJudgeServerSerializer)
     @super_admin_required
     def put(self, request):
         is_disabled = request.data.get("is_disabled", False)
-        server = JudgeServer.objects.filter(id=request.data["id"]).first()
-        if server:
-            server.is_disabled = is_disabled
-            server.save(update_fields=["is_disabled"])
-            sync_judge_server_snapshot(server)
+        JudgeServer.objects.filter(id=request.data["id"]).update(is_disabled=is_disabled)
         if not is_disabled:
             process_pending_task()
         return self.success()
@@ -171,9 +165,8 @@ class JudgeServerHeartbeatAPI(CSRFExemptAPIView):
             server.last_heartbeat = timezone.now()
             server.save(
                 update_fields=["judger_version", "cpu_core", "memory_usage", "service_url", "ip", "last_heartbeat"])
-            sync_judge_server_snapshot(server)
         except JudgeServer.DoesNotExist:
-            server = JudgeServer.objects.create(
+            JudgeServer.objects.create(
                 hostname=data["hostname"],
                 judger_version=data["judger_version"],
                 cpu_core=data["cpu_core"],
@@ -183,7 +176,6 @@ class JudgeServerHeartbeatAPI(CSRFExemptAPIView):
                 service_url=data["service_url"],
                 last_heartbeat=timezone.now(),
             )
-            sync_judge_server_snapshot(server)
         # 新server上线 处理队列中的，防止没有新的提交而导致一直waiting
         process_pending_task()
 

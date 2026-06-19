@@ -8,7 +8,7 @@ from copy import deepcopy
 from django.contrib import auth
 from django.db import DatabaseError
 from django.http.response import JsonResponse
-from django.test import RequestFactory, SimpleTestCase, TestCase
+from django.test import RequestFactory, SimpleTestCase
 from django.utils import decorators
 from django.utils.timezone import now
 from utils.api.tests import APIClient, APITestCase

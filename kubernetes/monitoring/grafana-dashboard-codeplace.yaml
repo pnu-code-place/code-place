@@ -142,28 +142,6 @@ data:
           ]
         },
         {
-          "type": "stat",
-          "title": "Judge Available",
-          "gridPos": {"x": 20, "y": 0, "w": 4, "h": 4},
-          "datasource": "Prometheus",
-          "fieldConfig": {
-            "defaults": {
-              "unit": "short",
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {"color": "red", "value": null},
-                  {"color": "green", "value": 1}
-                ]
-              }
-            }
-          },
-          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
-          "targets": [
-            {"expr": "codeplace:judge_available_total{namespace=~\"$namespace\"}", "legendFormat": "{{namespace}}"}
-          ]
-        },
-        {
           "type": "timeseries",
           "title": "Backend Requests by Status",
           "gridPos": {"x": 0, "y": 4, "w": 8, "h": 8},
@@ -265,38 +243,6 @@ data:
           "fieldConfig": {"defaults": {"unit": "s"}},
           "targets": [
             {"expr": "histogram_quantile(0.95, sum by (namespace, le) (rate(codeplace_submission_judge_duration_seconds_bucket{namespace=~\"$namespace\"}[10m])))", "legendFormat": "{{namespace}} judge p95"}
-          ]
-        },
-        {
-          "type": "timeseries",
-          "title": "Judge Heartbeat Max Age",
-          "gridPos": {"x": 8, "y": 20, "w": 8, "h": 8},
-          "datasource": "Prometheus",
-          "fieldConfig": {
-            "defaults": {
-              "unit": "s",
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {"color": "green", "value": null},
-                  {"color": "orange", "value": 120},
-                  {"color": "red", "value": 180}
-                ]
-              }
-            }
-          },
-          "targets": [
-            {"expr": "max by (namespace) (codeplace_judge_server_last_heartbeat_age_seconds{namespace=~\"$namespace\"})", "legendFormat": "{{namespace}} max age"}
-          ]
-        },
-        {
-          "type": "timeseries",
-          "title": "Judge Server Load",
-          "gridPos": {"x": 16, "y": 20, "w": 8, "h": 8},
-          "datasource": "Prometheus",
-          "fieldConfig": {"defaults": {"unit": "short"}},
-          "targets": [
-            {"expr": "topk(10, codeplace_judge_server_task_number{namespace=~\"$namespace\"})", "legendFormat": "{{namespace}} {{hostname}} tasks"}
           ]
         },
         {

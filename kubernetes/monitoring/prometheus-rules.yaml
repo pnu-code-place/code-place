@@ -35,8 +35,6 @@ spec:
             namespace: code-place-prod
         - record: codeplace:public_endpoint_availability5m
           expr: avg by (environment, namespace, service, instance) (avg_over_time(probe_success{probe_type="public-http"}[5m]))
-        - record: codeplace:judge_available_total
-          expr: sum by (namespace) (codeplace_judge_server_available{namespace=~"code-place-(dev|prod)"})
         - record: codeplace:judge_waiting_queue_length
           expr: max by (namespace) (codeplace_waiting_queue_length{namespace=~"code-place-(dev|prod)"})
     - name: codeplace.p0
@@ -101,24 +99,6 @@ spec:
           annotations:
             summary: "Public endpoint is down in prod"
             description: "A production synthetic HTTPS probe has failed for 1 minute."
-        - alert: JudgeAllUnavailable
-          expr: (sum by (namespace) (codeplace_judge_server_available{namespace=~"code-place-(dev|prod)"}) == 0) or (max by (namespace) (up{job="backend", namespace=~"code-place-(dev|prod)"}) unless on (namespace) codeplace_judge_server_available{namespace=~"code-place-(dev|prod)"})
-          for: 1m
-          labels:
-            severity: critical
-            priority: P0
-          annotations:
-            summary: "No judge-server is available"
-            description: "No enabled judge-server has a fresh heartbeat."
-        - alert: JudgeHeartbeatCritical
-          expr: max by (namespace) (codeplace_judge_server_last_heartbeat_age_seconds{namespace=~"code-place-(dev|prod)"}) > 180
-          for: 1m
-          labels:
-            severity: critical
-            priority: P0
-          annotations:
-            summary: "Judge-server heartbeat is stale"
-            description: "A judge-server heartbeat is older than 180 seconds."
         - alert: PostgresUnavailable
           expr: (sum(kube_pod_status_ready{namespace="code-place-dev", condition="true", pod=~"postgres-[0-9]+"}) == 0) or absent(kube_pod_status_ready{namespace="code-place-dev", condition="true", pod=~"postgres-[0-9]+"})
           for: 1m
