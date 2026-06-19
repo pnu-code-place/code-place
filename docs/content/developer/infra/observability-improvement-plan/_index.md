@@ -47,6 +47,13 @@ backend는 `django-prometheus` 기반 `/metrics` 엔드포인트를 제공합니
 - `codeplace_celery_task_count{task_name,status}`
 - `codeplace_celery_task_runtime_seconds{task_name}`
 - `codeplace_celery_task_last_runtime_seconds{task_name,status}`
+- `codeplace_postgres_connections`
+- `codeplace_postgres_max_connections`
+- `codeplace_postgres_long_transactions`
+- `codeplace_postgres_lock_waits`
+- `codeplace_redis_connected_clients`
+- `codeplace_redis_max_clients`
+- `codeplace_redis_rejected_connections_total`
 - `codeplace_frontend_error_total{surface,error_type}`
 
 prod AI 힌트용 vLLM은 OpenAI-compatible server의 `/metrics`를 ServiceMonitor로 scrape합니다. vLLM production metrics 기준으로 다음 항목을 봅니다.
@@ -256,6 +263,11 @@ P1은 `group_wait=30s`, `repeat_interval=1h`로 전달합니다.
 - `PostgresCollectorError`: CNPG PostgreSQL metrics collection error 5분 지속.
 - `PostgresHADegraded`: PostgreSQL instance가 3개 node에 분산되지 않음 10분 지속.
 - `RedisMemoryHigh`: Redis memory 사용률 85% 초과 10분 지속.
+- `PostgresConnectionUsageHigh`: backend 기준 PostgreSQL connection/max_connections 80% 초과 10분 지속.
+- `PostgresLongTransactions`: 5분 초과 transaction이 10분 지속.
+- `PostgresLockWaits`: lock wait가 5분 지속.
+- `RedisConnectedClientsHigh`: backend 기준 Redis connected_clients/maxclients 80% 초과 10분 지속.
+- `RedisRejectedConnections`: Redis rejected connection 증가 2분 지속.
 - `PVCAlmostFull`: PVC 사용률 85% 초과 10분 지속.
 - `LokiPVCAlmostFull`: Loki Longhorn PVC 사용률 85% 초과 10분 지속.
 - `AlloyDaemonSetUnavailable`: Alloy log collector가 모든 node에서 available하지 않음 5분 지속.
@@ -294,7 +306,7 @@ P1은 `group_wait=30s`, `repeat_interval=1h`로 전달합니다.
    - `kubectl apply -k kubernetes/monitoring`
 6. Prometheus target에서 `backend`, `longhorn`, `vllm`, `blackbox-exporter`, `kubernetes-event-exporter`, `codeplace-public-http-dev`, `codeplace-public-http-prod`가 healthy인지 확인합니다.
 7. Grafana의 `CodePlace Public Endpoints` dashboard에서 prod/dev availability, HTTP status, latency, TLS expiry panel이 비어 있지 않은지 확인합니다.
-8. Grafana의 `CodePlace Overview` dashboard에서 request rate, 5xx, latency, frontend runtime error, submission status, waiting queue, judge heartbeat, Celery task throughput/runtime, Pod readiness/restart, CPU/memory, PVC, PostgreSQL/Redis readiness panel을 확인합니다.
+8. Grafana의 `CodePlace Overview` dashboard에서 request rate, 5xx, latency, frontend runtime error, submission status, waiting queue, judge heartbeat, Celery task throughput/runtime, Pod readiness/restart, CPU/memory, PVC, PostgreSQL/Redis readiness/connection/lock/client panel을 확인합니다.
 9. Grafana의 `CodePlace Logs` dashboard에서 Loki ready, Alloy node coverage, Loki PVC usage, ingress/frontend 4xx/5xx, 최근 backend error, frontend runtime error, judge/celery log panel을 확인합니다.
 10. Grafana의 `CodePlace Logs` dashboard에서 `request_id` 변수에 실제 응답 header 또는 JSON log의 request ID를 넣고 해당 요청 로그가 좁혀지는지 확인합니다.
 11. Grafana의 `CodePlace Kubernetes Events` dashboard에서 event exporter ready, image pull, CrashLoopBackOff, OOMKilled, Pending/Unschedulable, Kubernetes Warning event panel을 확인합니다.

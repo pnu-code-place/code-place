@@ -758,7 +758,7 @@ topk(10, container_memory_working_set_bytes{namespace="<namespace>", container!=
 
 CPU/memory가 지속적으로 높으면 replica 조정, limit 조정, 최근 배포 변경을 확인합니다.
 
-### PostgresCollectorError / PostgresHADegraded / RedisMemoryHigh
+### PostgresCollectorError / PostgresHADegraded / RedisMemoryHigh / PostgresConnectionUsageHigh / PostgresLongTransactions / PostgresLockWaits / RedisConnectedClientsHigh / RedisRejectedConnections
 
 확인:
 
@@ -767,13 +767,31 @@ cnpg_collector_last_collection_error{namespace="<namespace>", cluster="postgres"
 cnpg_collector_nodes_used{namespace="<namespace>", cluster="postgres"}
 redis_memory_used_bytes{namespace="<namespace>"}
 redis_memory_max_bytes{namespace="<namespace>"}
+codeplace_postgres_connections{namespace="<namespace>"}
+codeplace_postgres_max_connections{namespace="<namespace>"}
+codeplace_postgres_long_transactions{namespace="<namespace>"}
+codeplace_postgres_lock_waits{namespace="<namespace>"}
+codeplace_redis_connected_clients{namespace="<namespace>"}
+codeplace_redis_max_clients{namespace="<namespace>"}
+increase(codeplace_redis_rejected_connections_total{namespace="<namespace>"}[5m])
+```
+
+```sh
+kubectl -n <namespace> logs deploy/backend --tail=200
+kubectl -n <namespace> get pod -l cnpg.io/cluster=postgres -o wide
+kubectl -n <namespace> get pod -l app=redis-replication -o wide
 ```
 
 판단:
 
 - `PostgresCollectorError`는 metrics query 실패이므로 CNPG exporter 로그와 PostgreSQL 권한/상태를 확인합니다.
 - `PostgresHADegraded`는 3개 instance가 서로 다른 node에 분산되지 않은 상태입니다. node 수, taint, Longhorn volume attach 상태를 확인합니다.
+- `PostgresConnectionUsageHigh`는 backend connection leak, worker 동시성 증가, DB max_connections 부족, slow query 누적으로 구분합니다. API latency와 동시에 오르면 DB 병목 후보가 강합니다.
+- `PostgresLongTransactions`는 transaction 범위가 긴 view/task, idle-in-transaction, migration/admin 작업을 확인합니다.
+- `PostgresLockWaits`는 쓰기 contention이나 DDL/migration lock 가능성이 큽니다. 같은 시간대 backend error와 Celery runtime 증가를 같이 봅니다.
 - `RedisMemoryHigh`는 Redis `maxmemory`가 0보다 클 때만 동작합니다. `maxmemory=0`이면 Redis 자체 제한이 없으므로 container memory alert를 기준으로 보고, 제한을 둘지 별도로 결정합니다.
+- `RedisConnectedClientsHigh`는 connection pool 설정, worker replica/concurrency, client leak를 확인합니다.
+- `RedisRejectedConnections`는 Redis `maxclients`에 실제로 걸린 상태입니다. API/cache와 Celery queue가 동시에 영향을 받을 수 있습니다.
 - Redis memory가 높으면 eviction 정책, queue/backlog, cache key 증가를 확인합니다.
 
 ### PVCAlmostFull

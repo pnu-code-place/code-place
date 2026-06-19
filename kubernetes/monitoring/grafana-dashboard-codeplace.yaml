@@ -473,8 +473,39 @@ data:
         },
         {
           "type": "timeseries",
+          "title": "PostgreSQL Connections",
+          "gridPos": {"x": 0, "y": 51, "w": 8, "h": 6},
+          "fieldConfig": {"defaults": {"unit": "short"}},
+          "targets": [
+            {"expr": "codeplace_postgres_connections{namespace=~\"$namespace\"}", "legendFormat": "{{namespace}} connections"},
+            {"expr": "codeplace_postgres_max_connections{namespace=~\"$namespace\"}", "legendFormat": "{{namespace}} max"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "PostgreSQL Long Tx and Lock Waits",
+          "gridPos": {"x": 8, "y": 51, "w": 8, "h": 6},
+          "fieldConfig": {"defaults": {"unit": "short"}},
+          "targets": [
+            {"expr": "codeplace_postgres_long_transactions{namespace=~\"$namespace\"}", "legendFormat": "{{namespace}} long tx"},
+            {"expr": "codeplace_postgres_lock_waits{namespace=~\"$namespace\"}", "legendFormat": "{{namespace}} lock waits"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Redis Clients and Rejections",
+          "gridPos": {"x": 16, "y": 51, "w": 8, "h": 6},
+          "fieldConfig": {"defaults": {"unit": "short"}},
+          "targets": [
+            {"expr": "codeplace_redis_connected_clients{namespace=~\"$namespace\"}", "legendFormat": "{{namespace}} clients"},
+            {"expr": "codeplace_redis_max_clients{namespace=~\"$namespace\"}", "legendFormat": "{{namespace}} maxclients"},
+            {"expr": "increase(codeplace_redis_rejected_connections_total{namespace=~\"$namespace\"}[5m])", "legendFormat": "{{namespace}} rejected/5m"}
+          ]
+        },
+        {
+          "type": "timeseries",
           "title": "Frontend Runtime Errors",
-          "gridPos": {"x": 0, "y": 51, "w": 12, "h": 6},
+          "gridPos": {"x": 0, "y": 57, "w": 12, "h": 6},
           "fieldConfig": {
             "defaults": {
               "unit": "ops",
