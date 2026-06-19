@@ -143,6 +143,34 @@ data:
             {"expr": "sum(rate(otelcol_receiver_refused_spans_total{namespace=\"monitoring\"}[5m])) or vector(0)", "legendFormat": "refused"},
             {"expr": "sum(rate(otelcol_exporter_send_failed_spans_total{namespace=\"monitoring\"}[5m])) or vector(0)", "legendFormat": "failed"}
           ]
+        },
+        {
+          "type": "table",
+          "title": "Recent Backend/Celery Traces",
+          "gridPos": {"x": 0, "y": 12, "w": 12, "h": 8},
+          "datasource": "Tempo",
+          "targets": [
+            {
+              "refId": "A",
+              "queryType": "traceql",
+              "query": "{ resource.service.name =~ \"codeplace-(backend|celery)\" }",
+              "limit": 20
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "title": "Submission/Judge Trace Search",
+          "gridPos": {"x": 12, "y": 12, "w": 12, "h": 8},
+          "datasource": "Tempo",
+          "targets": [
+            {
+              "refId": "A",
+              "queryType": "traceql",
+              "query": "{ name =~ \"judge_task|submission.judge|judge_server.select|judge_server.request|submission.result_save\" }",
+              "limit": 20
+            }
+          ]
         }
       ]
     }
