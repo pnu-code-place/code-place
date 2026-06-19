@@ -204,6 +204,8 @@ P1은 `group_wait=30s`, `repeat_interval=1h`로 전달합니다.
   - PrometheusRule shape check: P0/P1 interval, alert priority/severity, summary/description, duplicate alert namespace label.
   - AlertmanagerConfig shape check: groupBy, P0/P1 Discord receivers, webhook Secret reference.
   - Monitoring kustomization shape check: email fallback example이 기본 적용에 섞이지 않는지 확인.
+- Live cluster smoke check: `bash kubernetes/monitoring/smoke-check.sh`
+  - Prometheus Operator CRD, monitoring namespace resource, webhook Secret, kube-prometheus-stack Pod readiness, optional Loki/Alloy, app namespace backend readiness를 읽기 전용으로 확인합니다.
 
 `promtool`이 있는 환경에서는 `promtool check rules kubernetes/monitoring/prometheus-rules.yaml`도 실행합니다.
 `helm`이 있는 환경에서는 Loki/Alloy values를 `helm template`로 렌더링 검증합니다.

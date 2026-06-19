@@ -40,6 +40,19 @@ bash kubernetes/monitoring/validate.sh
 
 If `helm` is installed and the chart repos are already added, the script also renders kube-prometheus-stack, Loki, and Alloy. Without `helm`, it still validates YAML, Grafana dashboard JSON, and kustomize output.
 
+After applying the monitoring resources to a live cluster, run the read-only smoke check:
+
+```sh
+bash kubernetes/monitoring/smoke-check.sh
+```
+
+Use `MONITORING_NAMESPACE` and `CODEPLACE_NAMESPACES` to override the defaults:
+
+```sh
+MONITORING_NAMESPACE=monitoring CODEPLACE_NAMESPACES="code-place-dev" \
+  bash kubernetes/monitoring/smoke-check.sh
+```
+
 ```sh
 kubectl -n monitoring get pod | grep -E 'loki|alloy|grafana'
 kubectl -n monitoring get pvc | grep loki
