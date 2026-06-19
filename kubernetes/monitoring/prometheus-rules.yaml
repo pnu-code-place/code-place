@@ -228,6 +228,16 @@ spec:
           annotations:
             summary: "Longhorn managers are not ready"
             description: "No Longhorn manager pod has been ready for 2 minutes. PVC health and Longhorn metrics may be unavailable."
+        - alert: LonghornManagerReplicaUnavailable
+          expr: kube_daemonset_status_number_available{namespace="longhorn-system", daemonset="longhorn-manager"} < kube_daemonset_status_desired_number_scheduled{namespace="longhorn-system", daemonset="longhorn-manager"}
+          for: 5m
+          labels:
+            severity: warning
+            priority: P1
+            namespace: longhorn-system
+          annotations:
+            summary: "Longhorn manager replica is unavailable"
+            description: "At least one Longhorn manager replica is unavailable for 5 minutes. Storage health visibility and volume operations are degraded."
         - alert: LonghornVolumeFaulted
           expr: longhorn_volume_robustness == 3
           for: 1m

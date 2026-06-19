@@ -21,7 +21,7 @@ data:
       "panels": [
         {
           "type": "stat",
-          "title": "Longhorn Managers Ready",
+          "title": "Longhorn Manager Replicas",
           "gridPos": {"x": 0, "y": 0, "w": 4, "h": 4},
           "datasource": "Prometheus",
           "fieldConfig": {
@@ -31,14 +31,16 @@ data:
                 "mode": "absolute",
                 "steps": [
                   {"color": "red", "value": null},
-                  {"color": "green", "value": 1}
+                  {"color": "orange", "value": 1},
+                  {"color": "green", "value": 3}
                 ]
               }
             }
           },
           "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
           "targets": [
-            {"expr": "sum(kube_pod_status_ready{namespace=\"longhorn-system\", condition=\"true\", pod=~\"longhorn-manager-.*\"})", "legendFormat": "ready"}
+            {"expr": "kube_daemonset_status_number_available{namespace=\"longhorn-system\", daemonset=\"longhorn-manager\"} or vector(0)", "legendFormat": "available"},
+            {"expr": "kube_daemonset_status_desired_number_scheduled{namespace=\"longhorn-system\", daemonset=\"longhorn-manager\"} or vector(0)", "legendFormat": "desired"}
           ]
         },
         {
