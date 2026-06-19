@@ -54,7 +54,7 @@ Loki 로그 확인:
 {namespace="kube-system", app_kubernetes_io_name="traefik"} | json
 {namespace="<namespace>", app="frontend"} | json
 {namespace="<namespace>", app="backend"} | json
-{namespace="<namespace>", container=~"backend|celery-worker|judge-server|vllm"}
+{namespace="<namespace>", container=~"backend|hub-auth|celery-worker|judge-server|vllm"}
 ```
 
 Loki/Alloy 상태 확인:
@@ -95,6 +95,8 @@ probe_http_status_code{probe_type="public-http"}
 probe_duration_seconds{probe_type="public-http"}
 (probe_ssl_earliest_cert_expiry{probe_type="public-http"} - time()) / 86400
 ```
+
+probe 대상은 frontend와 hub-auth를 모두 포함합니다. `service` label로 어느 endpoint인지 구분합니다.
 
 Longhorn 상태 확인:
 
@@ -221,15 +223,16 @@ probe_http_duration_seconds{probe_type="public-http"}
 ```
 
 ```sh
-kubectl -n monitoring get pod,svc,probe | grep -E 'blackbox|codeplace-public'
+kubectl -n monitoring get pod,svc,probe | grep -E 'blackbox|codeplace-public|hub-auth'
 kubectl -n monitoring logs deploy/blackbox-exporter --tail=200
-kubectl -n <namespace> get ingress,svc,endpoints frontend
+kubectl -n <namespace> get ingress,svc,endpoints frontend hub-auth
 kubectl -n kube-system logs deploy/traefik --tail=200
 ```
 
 판단:
 
 - `probe_success=0`이고 ingress/backend 지표는 정상이면 DNS, TLS, Traefik public route, frontend nginx 기본 경로 문제를 먼저 봅니다.
+- `service="hub-auth"` probe가 실패하면 OAuth helper Pod, Service, Ingress, GitHub OAuth secret 설정을 우선 확인합니다.
 - `probe_http_status_code`가 0이면 DNS/TCP/TLS 연결 실패 가능성이 큽니다.
 - 5xx이면 Traefik/frontend/backend 로그와 같은 시간대를 대조합니다.
 - TLS 만료 알림은 Traefik ACME resolver와 인증서 저장소를 확인합니다.

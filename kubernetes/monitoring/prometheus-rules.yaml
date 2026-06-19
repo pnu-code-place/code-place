@@ -48,15 +48,15 @@ spec:
             summary: "Ingress 5xx rate is high in prod"
             description: "Traefik 5xx responses for code-place-prod are above 5% for 2 minutes."
         - alert: PublicEndpointDown
-          expr: probe_success{job="codeplace-public-http-prod", environment="prod"} == 0
+          expr: probe_success{environment="prod", probe_type="public-http"} == 0
           for: 1m
           labels:
             severity: critical
             priority: P0
             namespace: code-place-prod
           annotations:
-            summary: "Public frontend endpoint is down in prod"
-            description: "The synthetic HTTPS probe for code.pusan.ac.kr has failed for 1 minute."
+            summary: "Public endpoint is down in prod"
+            description: "A production synthetic HTTPS probe has failed for 1 minute."
         - alert: PublicEndpointTLSCritical
           expr: (probe_ssl_earliest_cert_expiry{probe_type="public-http", environment="prod"} - time()) < 259200
           for: 15m
@@ -205,15 +205,15 @@ spec:
             summary: "Backend API p95 latency is high"
             description: "Backend API p95 latency is above 2 seconds for 5 minutes."
         - alert: PublicEndpointDown
-          expr: probe_success{job="codeplace-public-http-dev", environment="dev"} == 0
+          expr: probe_success{environment="dev", probe_type="public-http"} == 0
           for: 2m
           labels:
             severity: warning
             priority: P1
             namespace: code-place-dev
           annotations:
-            summary: "Public frontend endpoint is down in dev"
-            description: "The synthetic HTTPS probe for k3s.code-place-dev.site has failed for 2 minutes."
+            summary: "Public endpoint is down in dev"
+            description: "A dev synthetic HTTPS probe has failed for 2 minutes."
         - alert: PublicEndpointLatencyHigh
           expr: probe_duration_seconds{probe_type="public-http"} > 2
           for: 5m
@@ -296,7 +296,7 @@ spec:
             summary: "Celery task runtime is high"
             description: "Celery task p95 runtime has been above 120 seconds for 10 minutes."
         - alert: PodCrashLooping
-          expr: sum by (namespace, pod) (increase(kube_pod_container_status_restarts_total{namespace=~"code-place-(dev|prod)", pod=~"backend-.*|frontend-.*|celery-.*|judge-server-.*|vllm-.*"}[5m])) > 0
+          expr: sum by (namespace, pod) (increase(kube_pod_container_status_restarts_total{namespace=~"code-place-(dev|prod)", pod=~"backend-.*|frontend-.*|hub-auth-.*|celery-.*|judge-server-.*|vllm-.*"}[5m])) > 0
           for: 5m
           labels:
             severity: warning
@@ -305,7 +305,7 @@ spec:
             summary: "CodePlace pod is restarting"
             description: "A CodePlace application pod has restarted within the last 5 minutes."
         - alert: CodePlacePodNotReady
-          expr: max by (namespace, pod) (kube_pod_status_ready{namespace=~"code-place-(dev|prod)", condition="true", pod=~"backend-.*|frontend-.*|celery-.*|judge-server-.*|postgres-.*|redis-.*|vllm-.*"}) == 0
+          expr: max by (namespace, pod) (kube_pod_status_ready{namespace=~"code-place-(dev|prod)", condition="true", pod=~"backend-.*|frontend-.*|hub-auth-.*|celery-.*|judge-server-.*|postgres-.*|redis-.*|vllm-.*"}) == 0
           for: 5m
           labels:
             severity: warning
@@ -314,7 +314,7 @@ spec:
             summary: "CodePlace pod is not ready"
             description: "A CodePlace application or datastore pod has not been ready for 5 minutes."
         - alert: CodePlaceContainerCPUHigh
-          expr: sum by (namespace, pod, container) (rate(container_cpu_usage_seconds_total{namespace=~"code-place-(dev|prod)", container!="", pod=~"backend-.*|frontend-.*|celery-.*|judge-server-.*|postgres-.*|redis-.*|vllm-.*"}[5m])) / clamp_min(sum by (namespace, pod, container) (kube_pod_container_resource_limits{namespace=~"code-place-(dev|prod)", resource="cpu", unit="core", pod=~"backend-.*|frontend-.*|celery-.*|judge-server-.*|postgres-.*|redis-.*|vllm-.*"}), 0.001) > 0.8
+          expr: sum by (namespace, pod, container) (rate(container_cpu_usage_seconds_total{namespace=~"code-place-(dev|prod)", container!="", pod=~"backend-.*|frontend-.*|hub-auth-.*|celery-.*|judge-server-.*|postgres-.*|redis-.*|vllm-.*"}[5m])) / clamp_min(sum by (namespace, pod, container) (kube_pod_container_resource_limits{namespace=~"code-place-(dev|prod)", resource="cpu", unit="core", pod=~"backend-.*|frontend-.*|hub-auth-.*|celery-.*|judge-server-.*|postgres-.*|redis-.*|vllm-.*"}), 0.001) > 0.8
           for: 10m
           labels:
             severity: warning
@@ -323,7 +323,7 @@ spec:
             summary: "CodePlace container CPU usage is high"
             description: "A CodePlace container has used more than 80% of its CPU limit for 10 minutes."
         - alert: CodePlaceContainerMemoryHigh
-          expr: max by (namespace, pod, container) (container_memory_working_set_bytes{namespace=~"code-place-(dev|prod)", container!="", pod=~"backend-.*|frontend-.*|celery-.*|judge-server-.*|postgres-.*|redis-.*|vllm-.*"}) / clamp_min(sum by (namespace, pod, container) (kube_pod_container_resource_limits{namespace=~"code-place-(dev|prod)", resource="memory", unit="byte", pod=~"backend-.*|frontend-.*|celery-.*|judge-server-.*|postgres-.*|redis-.*|vllm-.*"}), 1) > 0.85
+          expr: max by (namespace, pod, container) (container_memory_working_set_bytes{namespace=~"code-place-(dev|prod)", container!="", pod=~"backend-.*|frontend-.*|hub-auth-.*|celery-.*|judge-server-.*|postgres-.*|redis-.*|vllm-.*"}) / clamp_min(sum by (namespace, pod, container) (kube_pod_container_resource_limits{namespace=~"code-place-(dev|prod)", resource="memory", unit="byte", pod=~"backend-.*|frontend-.*|hub-auth-.*|celery-.*|judge-server-.*|postgres-.*|redis-.*|vllm-.*"}), 1) > 0.85
           for: 10m
           labels:
             severity: warning

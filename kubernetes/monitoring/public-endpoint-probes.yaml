@@ -43,3 +43,49 @@ spec:
         namespace: code-place-prod
         service: frontend
         probe_type: public-http
+---
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: codeplace-hub-auth-dev-http
+  labels:
+    release: kube-prometheus-stack
+spec:
+  jobName: codeplace-hub-auth-http-dev
+  interval: 30s
+  scrapeTimeout: 15s
+  module: http_2xx
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:9115
+  targets:
+    staticConfig:
+      static:
+        - https://hub-auth-dev.code-place-dev.site/
+      labels:
+        environment: dev
+        namespace: code-place-dev
+        service: hub-auth
+        probe_type: public-http
+---
+apiVersion: monitoring.coreos.com/v1
+kind: Probe
+metadata:
+  name: codeplace-hub-auth-prod-http
+  labels:
+    release: kube-prometheus-stack
+spec:
+  jobName: codeplace-hub-auth-http-prod
+  interval: 30s
+  scrapeTimeout: 15s
+  module: http_2xx
+  prober:
+    url: blackbox-exporter.monitoring.svc.cluster.local:9115
+  targets:
+    staticConfig:
+      static:
+        - https://hub-auth.code-place-dev.site/
+      labels:
+        environment: prod
+        namespace: code-place-prod
+        service: hub-auth
+        probe_type: public-http

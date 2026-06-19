@@ -198,7 +198,7 @@ data:
         },
         {
           "type": "logs",
-          "title": "Judge, Celery, and vLLM Logs",
+          "title": "Auth, Judge, Celery, and vLLM Logs",
           "gridPos": {"x": 14, "y": 4, "w": 10, "h": 10},
           "datasource": "Loki",
           "options": {
@@ -208,7 +208,7 @@ data:
             "dedupStrategy": "none"
           },
           "targets": [
-            {"expr": "{namespace=~\"$namespace\", container=~\"celery-worker|celery-beat|judge-server|vllm\"}"}
+            {"expr": "{namespace=~\"$namespace\", container=~\"hub-auth|celery-worker|celery-beat|judge-server|vllm\"}"}
           ]
         },
         {

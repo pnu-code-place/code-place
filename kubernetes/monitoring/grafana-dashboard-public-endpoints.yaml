@@ -21,7 +21,7 @@ data:
       "panels": [
         {
           "type": "stat",
-          "title": "Prod Endpoint Up",
+          "title": "Prod Endpoints Up",
           "gridPos": {"x": 0, "y": 0, "w": 4, "h": 4},
           "datasource": "Prometheus",
           "fieldConfig": {
@@ -38,12 +38,12 @@ data:
           },
           "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
           "targets": [
-            {"expr": "probe_success{job=\"codeplace-public-http-prod\", environment=\"prod\"}", "legendFormat": "{{instance}}"}
+            {"expr": "probe_success{environment=\"prod\", probe_type=\"public-http\"}", "legendFormat": "{{service}} {{instance}}"}
           ]
         },
         {
           "type": "stat",
-          "title": "Dev Endpoint Up",
+          "title": "Dev Endpoints Up",
           "gridPos": {"x": 4, "y": 0, "w": 4, "h": 4},
           "datasource": "Prometheus",
           "fieldConfig": {
@@ -60,7 +60,7 @@ data:
           },
           "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
           "targets": [
-            {"expr": "probe_success{job=\"codeplace-public-http-dev\", environment=\"dev\"}", "legendFormat": "{{instance}}"}
+            {"expr": "probe_success{environment=\"dev\", probe_type=\"public-http\"}", "legendFormat": "{{service}} {{instance}}"}
           ]
         },
         {
