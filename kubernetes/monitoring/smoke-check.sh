@@ -206,6 +206,12 @@ fi
 
 echo "==> checking logs stack"
 if [ "$(resource_count "$NAMESPACE" pod app.kubernetes.io/name=loki)" -gt 0 ]; then
+  kubectl -n "$NAMESPACE" get statefulset loki >/dev/null
+  ok "statefulset/loki"
+  require_jsonpath_value "$NAMESPACE" statefulset loki \
+    '{.spec.volumeClaimTemplates[?(@.metadata.name=="storage")].spec.storageClassName}' longhorn
+  require_jsonpath_value "$NAMESPACE" statefulset loki \
+    '{.spec.volumeClaimTemplates[?(@.metadata.name=="storage")].spec.resources.requests.storage}' 50Gi
   kubectl -n "$NAMESPACE" wait --for=condition=Ready pod -l app.kubernetes.io/name=loki --timeout=30s
   ok "loki pods ready"
   if resource_exists "$NAMESPACE" service loki-gateway; then
@@ -213,6 +219,9 @@ if [ "$(resource_count "$NAMESPACE" pod app.kubernetes.io/name=loki)" -gt 0 ]; t
   else
     fail "$NAMESPACE service/loki-gateway is missing"
   fi
+  kubectl -n "$NAMESPACE" get persistentvolumeclaim storage-loki-0 >/dev/null
+  ok "persistentvolumeclaim/storage-loki-0"
+  require_label "$NAMESPACE" servicemonitor loki release kube-prometheus-stack
 elif [ "$REQUIRE_LOGS_STACK" = "1" ]; then
   fail "loki pods are missing; set REQUIRE_LOGS_STACK=0 only for pre-Loki bootstrap checks"
 else
@@ -228,6 +237,8 @@ if kubectl -n "$NAMESPACE" get daemonset alloy >/dev/null 2>&1; then
     '{.spec.template.spec.volumes[?(@.name=="varlog")].hostPath.path}' /var/log
   require_jsonpath_value "$NAMESPACE" daemonset alloy \
     '{.spec.template.spec.containers[?(@.name=="alloy")].volumeMounts[?(@.name=="varlog")].mountPath}' /var/log
+  require_label "$NAMESPACE" servicemonitor alloy release kube-prometheus-stack
+  require_configmap_data_contains "$NAMESPACE" alloy config.alloy 'regex = "(code-place-dev|code-place-prod|monitoring)/.*|kube-system/.*/traefik"'
 elif [ "$REQUIRE_LOGS_STACK" = "1" ]; then
   fail "daemonset/alloy is missing; set REQUIRE_LOGS_STACK=0 only for pre-Alloy bootstrap checks"
 else
