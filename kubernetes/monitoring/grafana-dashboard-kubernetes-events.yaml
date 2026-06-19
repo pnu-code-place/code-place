@@ -191,7 +191,7 @@ data:
           "type": "logs",
           "title": "Kubernetes Warning Events",
           "gridPos": {"x": 0, "y": 12, "w": 24, "h": 9},
-          "datasource": "Loki",
+          "datasource": {"type": "loki", "uid": "Loki"},
           "options": {
             "showLabels": false,
             "showTime": true,
@@ -206,7 +206,7 @@ data:
           "type": "logs",
           "title": "Scheduling, Pull, Restart, and Probe Events",
           "gridPos": {"x": 0, "y": 21, "w": 24, "h": 9},
-          "datasource": "Loki",
+          "datasource": {"type": "loki", "uid": "Loki"},
           "options": {
             "showLabels": false,
             "showTime": true,
