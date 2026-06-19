@@ -37,6 +37,7 @@ yaml_paths = [
     root / "alertmanager-config.yaml",
     root / "alertmanager-config-email.example.yaml",
     root / "backend-service-monitor.yaml",
+    root / "traefik-service-monitor.yaml",
     root / "datastore-pod-monitors.yaml",
     root / "logs" / "loki-values.yaml",
     root / "logs" / "alloy-values.yaml",
@@ -168,6 +169,15 @@ if dashboard_sidecar.get("label") != "grafana_dashboard":
     raise SystemExit("Grafana dashboard sidecar must select grafana_dashboard label")
 print("KUBE-PROMETHEUS-STACK VALUES SHAPE OK")
 
+traefik_config = yaml.safe_load((Path("kubernetes/setup/traefik/traefik-config.yaml")).read_text())
+traefik_values = yaml.safe_load(traefik_config.get("spec", {}).get("valuesContent", ""))
+traefik_prometheus = traefik_values.get("metrics", {}).get("prometheus", {})
+if traefik_prometheus.get("addServicesLabels") is not True:
+    raise SystemExit("Traefik Prometheus metrics must include service labels for ingress 5xx alerts")
+if traefik_prometheus.get("service", {}).get("enabled") is not True:
+    raise SystemExit("Traefik Prometheus metrics service must be enabled for ServiceMonitor scraping")
+print("TRAEFIK METRICS SHAPE OK")
+
 loki_values = yaml.safe_load((root / "logs" / "loki-values.yaml").read_text())
 loki_config = loki_values.get("loki", {})
 if loki_values.get("deploymentMode") != "Monolithic":
@@ -206,6 +216,18 @@ if endpoint.get("port") != "api" or endpoint.get("path") != "/metrics" or endpoi
     raise SystemExit("backend ServiceMonitor must scrape api /metrics every 15s")
 if backend_sm.get("spec", {}).get("selector", {}).get("matchLabels", {}).get("app") != "backend":
     raise SystemExit("backend ServiceMonitor must select app=backend")
+
+traefik_sm = yaml.safe_load((root / "traefik-service-monitor.yaml").read_text())
+if traefik_sm.get("metadata", {}).get("labels", {}).get("release") != "kube-prometheus-stack":
+    raise SystemExit("traefik ServiceMonitor must keep release=kube-prometheus-stack label")
+traefik_namespaces = traefik_sm.get("spec", {}).get("namespaceSelector", {}).get("matchNames", [])
+if "kube-system" not in traefik_namespaces:
+    raise SystemExit("traefik ServiceMonitor must scrape kube-system")
+traefik_endpoint = (traefik_sm.get("spec", {}).get("endpoints") or [{}])[0]
+if traefik_endpoint.get("port") != "metrics" or traefik_endpoint.get("path") != "/metrics" or traefik_endpoint.get("interval") != "15s":
+    raise SystemExit("traefik ServiceMonitor must scrape metrics /metrics every 15s")
+if traefik_sm.get("spec", {}).get("selector", {}).get("matchLabels", {}).get("app.kubernetes.io/name") != "traefik":
+    raise SystemExit("traefik ServiceMonitor must select app.kubernetes.io/name=traefik")
 
 pod_monitors = list(yaml.safe_load_all((root / "datastore-pod-monitors.yaml").read_text()))
 for monitor in pod_monitors:

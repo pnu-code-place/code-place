@@ -77,6 +77,7 @@ for resource in \
   "servicemonitor/longhorn" \
   "servicemonitor/otel-collector" \
   "servicemonitor/tempo" \
+  "servicemonitor/traefik" \
   "servicemonitor/vllm" \
   "podmonitor/postgres" \
   "podmonitor/redis" \
@@ -112,6 +113,7 @@ done
 
 require_label "$NAMESPACE" prometheusrule codeplace-fast-alerts release kube-prometheus-stack
 require_label "$NAMESPACE" servicemonitor backend release kube-prometheus-stack
+require_label "$NAMESPACE" servicemonitor traefik release kube-prometheus-stack
 require_label "$NAMESPACE" podmonitor postgres release kube-prometheus-stack
 require_label "$NAMESPACE" podmonitor redis release kube-prometheus-stack
 require_label "$NAMESPACE" alertmanagerconfig codeplace-alert-routing alertmanagerConfig codeplace

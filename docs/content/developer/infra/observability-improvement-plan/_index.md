@@ -199,6 +199,7 @@ prod tracing은 dev에서 trace ingest, query, traces-to-logs 동작과 Collecto
 신규 monitoring 리소스는 `kubernetes/monitoring` 아래에 두고, 애플리케이션 `dev/prod` overlay에 포함하지 않습니다.
 
 - `backend-service-monitor.yaml`: backend `/metrics` scrape, interval 15s.
+- `traefik-service-monitor.yaml`: kube-system Traefik Prometheus metrics scrape, interval 15s. `Ingress5xxSpike`의 `traefik_service_requests_total` 원천입니다.
 - `blackbox-exporter.yaml`: public endpoint synthetic probe용 Blackbox exporter.
 - `public-endpoint-probes.yaml`: dev/prod frontend, hub-auth, Grafana 공개 HTTPS URL Probe, interval 30s.
 - `prometheus-rules.yaml`: P0/P1 fast alert rules와 운영 요약 recording rules.
@@ -221,7 +222,7 @@ prod tracing은 dev에서 trace ingest, query, traces-to-logs 동작과 Collecto
 - `vllm-service-monitor.yaml`: prod vLLM `/metrics` scrape, interval 30s.
 - `dcgm-exporter.yaml`: vLLM GPU node용 NVIDIA DCGM exporter DaemonSet/Service/ServiceMonitor.
 - `validate.sh`: monitoring YAML, Grafana dashboard JSON, monitoring/app kustomize render, app observability env/Service wiring, 선택적 promtool/Helm render 검증 스크립트.
-- `smoke-check.sh`: 운영 클러스터 적용 후 CRD, 핵심 monitoring 리소스, dashboard ConfigMap, Probe, OTel/Tempo/Event exporter, Service endpoint, optional Loki/Alloy/DCGM 상태를 확인하는 smoke 검증 스크립트.
+- `smoke-check.sh`: 운영 클러스터 적용 후 CRD, 핵심 monitoring 리소스, dashboard ConfigMap, Probe, Traefik metrics scrape 설정, OTel/Tempo/Event exporter, Service endpoint, optional Loki/Alloy/DCGM 상태를 확인하는 smoke 검증 스크립트.
 - `kustomization.yaml`: 기존 `monitoring` namespace의 kube-prometheus-stack/Grafana/Alertmanager에 붙일 CodePlace monitoring 리소스 묶음.
 
 `alertmanager-contact-points` Secret은 repo에 저장하지 않습니다. backend의 `/data/config/secret.key`와 같은 비밀값이지만, 자동으로 파일이 생기는 구조는 아닙니다. 운영자가 `kubectl create secret`으로 만들거나 ExternalSecrets/SealedSecrets 같은 Secret 주입 도구로 생성해야 합니다. AlertmanagerConfig는 generic webhook이 아니라 Prometheus Operator의 native `discordConfigs`를 사용합니다.

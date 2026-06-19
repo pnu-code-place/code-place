@@ -16,6 +16,14 @@ spec:
       - "--accesslog.fields.headers.names.X-Request-ID=keep"
       - "--accesslog.fields.headers.names.X-Forwarded-For=keep"
 
+    metrics:
+      prometheus:
+        addEntryPointsLabels: true
+        addRoutersLabels: true
+        addServicesLabels: true
+        service:
+          enabled: true
+
     service:
       enabled: true
       type: LoadBalancer

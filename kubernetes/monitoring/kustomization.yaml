@@ -22,4 +22,5 @@ resources:
   - ./prometheus-rules.yaml
   - ./public-endpoint-probes.yaml
   - ./tempo.yaml
+  - ./traefik-service-monitor.yaml
   - ./vllm-service-monitor.yaml
