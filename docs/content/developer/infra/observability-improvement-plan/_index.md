@@ -44,7 +44,7 @@ backend는 `django-prometheus` 기반 `/metrics` 엔드포인트를 제공합니
 
 ### Logs
 
-backend는 `X-Request-ID`를 수용하고, 없으면 request ID를 생성한 뒤 응답 header로 반환합니다. Frontend axios 요청은 `X-Request-ID`를 생성해 backend로 전달하고, backend가 반환한 request ID를 axios response/error와 Sentry request context에 보존합니다.
+backend는 `X-Request-ID`를 수용하고, 없으면 request ID를 생성한 뒤 응답 header로 반환합니다. Frontend axios 요청은 `X-Request-ID`를 생성해 backend로 전달하고, backend가 반환한 request ID를 axios response/error와 Sentry request context에 보존합니다. API 요청에서 Celery task를 enqueue할 때 request ID를 Celery header로 전파하고, worker 실행 중 같은 request ID를 JSON log context에 복원합니다.
 
 Kubernetes backend/celery 환경에서는 `JSON_LOGGING=1`을 기본으로 설정합니다. JSON 로그 필드는 다음을 기준으로 합니다.
 

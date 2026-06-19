@@ -354,6 +354,7 @@ Grafana Explore:
 ```logql
 {namespace="<namespace>", container=~"celery-worker|celery-beat"} | json | task_status=~"failure|retry"
 {namespace="<namespace>", container=~"celery-worker|celery-beat"} | json | task_name="<task_name>"
+{namespace="<namespace>", container=~"celery-worker|celery-beat"} | json | request_id="<request_id>"
 ```
 
 판단:

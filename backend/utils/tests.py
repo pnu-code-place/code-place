@@ -10,6 +10,7 @@ from prometheus_client.core import GaugeMetricFamily, HistogramMetricFamily
 
 from utils import celery_observability
 from utils.json_logging import CodePlaceJsonFormatter
+from utils.observability_context import get_request_id, reset_request_id, set_request_id
 from utils.observability_metrics import CodePlaceCollector
 from utils.observability_tracing import get_tracer
 from utils.testcase_cache import TestCaseCacheManager
@@ -104,6 +105,10 @@ class CodePlaceCollectorTest(SimpleTestCase):
 
 class CeleryObservabilityTest(SimpleTestCase):
 
+    def tearDown(self):
+        celery_observability._task_start_times.clear()
+        celery_observability._request_id_tokens.clear()
+
     def test_record_task_writes_total_and_runtime_hashes(self):
         redis_client = MagicMock()
         with patch("utils.celery_observability.cache.hincrby") as hincrby, \
@@ -130,6 +135,29 @@ class CeleryObservabilityTest(SimpleTestCase):
             "judge.tasks.judge_task|success",
             2.5,
         )
+
+    def test_before_task_publish_propagates_current_request_id(self):
+        token = set_request_id("request-123")
+        headers = {}
+        try:
+            celery_observability._on_before_task_publish(headers=headers)
+        finally:
+            reset_request_id(token)
+
+        self.assertEqual(headers["x-request-id"], "request-123")
+
+    def test_task_prerun_and_postrun_restore_request_id_context(self):
+        task = MagicMock()
+        task.name = "judge.tasks.judge_task"
+        task.request.headers = {"x-request-id": "request-456"}
+
+        with patch("utils.celery_observability._record_task"), \
+                patch("utils.celery_observability.logger"):
+            celery_observability._on_task_prerun(task_id="task-1", task=task)
+            self.assertEqual(get_request_id(), "request-456")
+            celery_observability._on_task_postrun(task_id="task-1", task=task, state="SUCCESS")
+
+        self.assertIsNone(get_request_id())
 
 
 class CodePlaceMetricsEndpointTest(SimpleTestCase):

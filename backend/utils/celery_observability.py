@@ -4,6 +4,7 @@ import time
 from celery import signals
 
 from utils.cache import cache
+from utils.observability_context import get_request_id, reset_request_id, set_request_id
 
 logger = logging.getLogger("codeplace.celery_task")
 
@@ -15,6 +16,7 @@ CELERY_TASK_RUNTIME_LAST_KEY = "observability:celery:task_runtime_last"
 CELERY_TASK_RUNTIME_BUCKETS = (1, 3, 5, 10, 30, 60, 120, 300, 600, float("inf"))
 
 _task_start_times = {}
+_request_id_tokens = {}
 _configured = False
 
 
@@ -22,6 +24,7 @@ def configure_celery_observability():
     global _configured
     if _configured:
         return
+    signals.before_task_publish.connect(_on_before_task_publish, weak=False)
     signals.task_prerun.connect(_on_task_prerun, weak=False)
     signals.task_postrun.connect(_on_task_postrun, weak=False)
     signals.task_retry.connect(_on_task_retry, weak=False)
@@ -65,9 +68,24 @@ def _record_task(task_name, status, duration_seconds=None):
         })
 
 
+def _on_before_task_publish(headers=None, **kwargs):
+    request_id = get_request_id()
+    if request_id and headers is not None:
+        headers["x-request-id"] = request_id
+
+
+def _request_headers(task):
+    request = getattr(task, "request", None)
+    headers = getattr(request, "headers", None) or {}
+    return headers if isinstance(headers, dict) else {}
+
+
 def _on_task_prerun(task_id=None, task=None, **kwargs):
     if task_id:
         _task_start_times[task_id] = time.monotonic()
+    request_id = _request_headers(task).get("x-request-id")
+    if request_id and task_id:
+        _request_id_tokens[task_id] = set_request_id(request_id)
 
 
 def _on_task_postrun(task_id=None, task=None, state=None, **kwargs):
@@ -83,6 +101,9 @@ def _on_task_postrun(task_id=None, task=None, state=None, **kwargs):
         "task_status": (state or "unknown").lower(),
         "duration_ms": round(duration_seconds * 1000, 2) if duration_seconds is not None else None,
     })
+    token = _request_id_tokens.pop(task_id, None)
+    if token is not None:
+        reset_request_id(token)
 
 
 def _on_task_retry(request=None, reason=None, **kwargs):
