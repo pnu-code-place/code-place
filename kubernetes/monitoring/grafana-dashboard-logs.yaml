@@ -46,7 +46,7 @@ data:
       "panels": [
         {
           "type": "stat",
-          "title": "Loki Ready",
+          "title": "Loki Ready Replicas",
           "gridPos": {"x": 0, "y": 0, "w": 4, "h": 4},
           "datasource": "Prometheus",
           "fieldConfig": {
@@ -63,7 +63,8 @@ data:
           },
           "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
           "targets": [
-            {"expr": "min(kube_pod_status_ready{namespace=\"monitoring\", condition=\"true\", pod=~\"loki-[0-9]+\"}) or vector(0)", "legendFormat": "loki"}
+            {"expr": "sum(kube_pod_status_ready{namespace=\"monitoring\", condition=\"true\", pod=~\"loki-[0-9]+\"}) or vector(0)", "legendFormat": "single-binary"},
+            {"expr": "sum(kube_pod_status_ready{namespace=\"monitoring\", condition=\"true\", pod=~\"loki-gateway-.*\"}) or vector(0)", "legendFormat": "gateway"}
           ]
         },
         {

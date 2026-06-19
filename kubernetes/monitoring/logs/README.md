@@ -3,6 +3,7 @@
 This directory contains Helm values for the Kubernetes logs stack.
 
 - Loki: SingleBinary mode, filesystem storage, Longhorn PVC.
+- Loki gateway: 2 replicas for the stateless write/query entrypoint.
 - Alloy: DaemonSet log collector for every pod in `code-place-dev`, `code-place-prod`, and `monitoring`, plus Traefik pods in `kube-system`. It mounts host `/var/log` so `/var/log/pods` is readable from the Alloy container.
 - Kubernetes Event Exporter: Warning events are written to stdout as JSON and collected by Alloy from the `monitoring` namespace.
 - Retention: `code-place-dev` 3 days, `code-place-prod` 7 days.
@@ -76,7 +77,7 @@ Keep these invariants unless the storage design changes intentionally:
 - Loki stays in `SingleBinary` deployment mode.
 - Loki is installed from `grafana/loki` chart `6.55.0`. Do not upgrade the chart without revalidating rendered workloads and values compatibility.
 - Loki uses filesystem storage on a Longhorn PVC.
-- In the current three-node cluster, Alloy runs on every node. Loki and Tempo remain single-writer services on Longhorn PVCs, while stateless collectors and probe exporters can be replicated across nodes.
+- In the current three-node cluster, Alloy runs on every node. Loki and Tempo remain single-writer services on Longhorn PVCs, while stateless collectors, Loki gateway, and probe exporters can be replicated across nodes.
 - kube-prometheus-stack Prometheus, Alertmanager, and Grafana also use Longhorn PVCs so metric data, silences, and UI state survive pod rescheduling.
 - Alloy keeps namespace-based collection for `code-place-dev`, `code-place-prod`, and `monitoring`; do not depend on `app.kubernetes.io/name` for CodePlace app logs because the application manifests primarily use `app`.
 - Alloy keeps `alloy.mounts.varlog=true`; otherwise the `/var/log/pods` targets are discovered but cannot be read.

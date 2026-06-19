@@ -210,8 +210,8 @@ prod tracing은 dev에서 trace ingest, query, traces-to-logs 동작과 Collecto
 - `grafana-dashboard-monitoring-stack.yaml`: Prometheus, Alertmanager, Grafana, Prometheus Operator readiness와 rule/notification 상태 dashboard.
 - `grafana-dashboard-public-endpoints.yaml`: 공개 URL availability, HTTP status, latency, TLS expiry dashboard.
 - `kubernetes-event-exporter.yaml`: Kubernetes Warning event를 stdout JSON으로 export해서 Alloy/Loki가 수집하도록 하는 exporter, ServiceMonitor, 최소 event read RBAC.
-- `kube-prometheus-stack-values.yaml`: Prometheus/Alertmanager selector, evaluation interval, shared Grafana ingress와 dashboard sidecar 설정.
-- `logs/loki-values.yaml`: Loki SingleBinary, Longhorn PVC, dev/prod retention 설정.
+- `kube-prometheus-stack-values.yaml`: Prometheus/Alertmanager selector, Alertmanager 2 replicas, evaluation interval, shared Grafana ingress와 dashboard sidecar 설정.
+- `logs/loki-values.yaml`: Loki SingleBinary, Longhorn PVC, dev/prod retention, Loki gateway 2 replicas 설정.
 - `logs/alloy-values.yaml`: Alloy DaemonSet 기반 Kubernetes Pod log collection 설정.
 - `grafana-dashboard-logs.yaml`: Loki/Alloy health, Loki PVC, Loki ingest/error/canary, Alloy write backpressure, 최근 backend error, judge/celery log 조회 dashboard.
 - `otel-collector.yaml`: backend/celery OTLP trace를 받아 Tempo로 전송하는 OpenTelemetry Collector.
@@ -269,6 +269,7 @@ P1은 `group_wait=30s`, `repeat_interval=1h`로 전달합니다.
 - `PrometheusOperatorUnavailable`: Prometheus Operator Pod not ready 2분 지속.
 - `PrometheusRuleEvaluationFailures`: Prometheus rule evaluation failure 5분 지속.
 - `PrometheusAlertmanagerDiscoveryFailed`: Prometheus가 Alertmanager target을 0개 discovery 2분 지속.
+- `AlertmanagerReplicaUnavailable`: Alertmanager ready replica 2개 미만 5분 지속.
 - `AlertmanagerNotificationFailures`: Alertmanager notification delivery failure 2분 지속.
 - `JudgeWaitingQueueBacklog`: `waiting_queue` 5 초과 3분 지속.
 - `SubmissionCreateSystemFailures`: 제출 생성 API에서 DB 또는 judge enqueue 실패 발생 2분 지속.
@@ -307,6 +308,7 @@ P1은 `group_wait=30s`, `repeat_interval=1h`로 전달합니다.
 - `LokiPVCAlmostFull`: Loki Longhorn PVC 사용률 85% 초과 10분 지속.
 - `AlloyDaemonSetUnavailable`: Alloy log collector가 모든 node에서 available하지 않음 5분 지속.
 - `LokiGatewayUnavailable`: Loki gateway Pod not ready 2분 지속.
+- `LokiGatewayReplicaUnavailable`: Loki gateway ready replica 2개 미만 5분 지속.
 - `LokiIngestionStalled`: Loki log line 수신량 0이 10분 지속.
 - `LokiRequestErrors`: Loki 5xx response 발생 5분 지속.
 - `LokiCanaryMissingEntries`: Loki canary write/readback 누락 발생 5분 지속.
@@ -336,7 +338,7 @@ P1은 `group_wait=30s`, `repeat_interval=1h`로 전달합니다.
 
 ## 5. 운영 확인 절차
 
-1. kube-prometheus-stack을 `monitoring` namespace에 설치하거나 업그레이드할 때 `kubernetes/monitoring/kube-prometheus-stack-values.yaml`을 함께 적용합니다. 이 값 파일이 `monitoring.code-place-dev.site` Grafana ingress와 dashboard sidecar 설정까지 관리합니다. Prometheus Operator CRD가 `AlertmanagerConfig.discordConfigs`를 지원하는 버전인지 확인합니다.
+1. kube-prometheus-stack을 `monitoring` namespace에 설치하거나 업그레이드할 때 `kubernetes/monitoring/kube-prometheus-stack-values.yaml`을 함께 적용합니다. 이 값 파일이 Alertmanager 2 replicas, `monitoring.code-place-dev.site` Grafana ingress와 dashboard sidecar 설정까지 관리합니다. Prometheus Operator CRD가 `AlertmanagerConfig.discordConfigs`를 지원하는 버전인지 확인합니다.
    - `helm upgrade --install kube-prometheus-stack prometheus-community/kube-prometheus-stack --namespace monitoring --version 86.3.1 --values kubernetes/monitoring/kube-prometheus-stack-values.yaml`
    - values는 `alertmanager.alertmanagerSpec.alertmanagerConfigMatcherStrategy.type=None`을 설정합니다. AlertmanagerConfig는 `monitoring` namespace에 있지만 CodePlace alert의 `namespace` label은 `code-place-dev`/`code-place-prod`이므로, 기본 `OnNamespace` matcher를 쓰면 외부 namespace alert가 Discord receiver까지 도달하지 않을 수 있습니다.
 2. `alertmanager-contact-points` Secret을 운영 클러스터의 `monitoring` namespace에 SealedSecret으로 생성합니다. 이 값은 Kubernetes Secret으로 참조되며, Pod 파일로 mount하지 않습니다.

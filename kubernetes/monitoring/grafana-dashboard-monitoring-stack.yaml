@@ -43,7 +43,7 @@ data:
         },
         {
           "type": "stat",
-          "title": "Alertmanager Ready",
+          "title": "Alertmanager Ready Replicas",
           "gridPos": {"x": 4, "y": 0, "w": 4, "h": 4},
           "datasource": "Prometheus",
           "fieldConfig": {
@@ -53,14 +53,15 @@ data:
                 "mode": "absolute",
                 "steps": [
                   {"color": "red", "value": null},
-                  {"color": "green", "value": 1}
+                  {"color": "orange", "value": 1},
+                  {"color": "green", "value": 2}
                 ]
               }
             }
           },
           "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
           "targets": [
-            {"expr": "max(kube_pod_status_ready{namespace=\"monitoring\", condition=\"true\", pod=~\"alertmanager-kube-prometheus-stack-alertmanager-.*\"}) or vector(0)", "legendFormat": "alertmanager"}
+            {"expr": "sum(kube_pod_status_ready{namespace=\"monitoring\", condition=\"true\", pod=~\"alertmanager-kube-prometheus-stack-alertmanager-.*\"}) or vector(0)", "legendFormat": "alertmanager ready"}
           ]
         },
         {

@@ -64,7 +64,15 @@ singleBinary:
 
 gateway:
   enabled: true
-  replicas: 1
+  replicas: 2
+  topologySpreadConstraints:
+    - maxSkew: 1
+      topologyKey: kubernetes.io/hostname
+      whenUnsatisfiable: ScheduleAnyway
+      labelSelector:
+        matchLabels:
+          app.kubernetes.io/component: gateway
+          app.kubernetes.io/instance: loki
 
 lokiCanary:
   enabled: true

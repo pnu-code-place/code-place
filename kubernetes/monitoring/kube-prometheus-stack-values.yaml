@@ -20,6 +20,9 @@ prometheus:
 
 alertmanager:
   alertmanagerSpec:
+    replicas: 2
+    podAntiAffinity: soft
+    podAntiAffinityTopologyKey: kubernetes.io/hostname
     alertmanagerConfigMatcherStrategy:
       type: None
     alertmanagerConfigSelector:

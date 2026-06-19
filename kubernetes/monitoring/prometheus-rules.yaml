@@ -427,6 +427,16 @@ spec:
           annotations:
             summary: "Prometheus has not discovered Alertmanager"
             description: "Prometheus has discovered zero Alertmanager targets for 2 minutes. Alert delivery may be broken even if alert rules are firing."
+        - alert: AlertmanagerReplicaUnavailable
+          expr: sum(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"alertmanager-kube-prometheus-stack-alertmanager-.*"}) < 2
+          for: 5m
+          labels:
+            severity: warning
+            priority: P1
+            namespace: monitoring
+          annotations:
+            summary: "Alertmanager replica count is degraded"
+            description: "Fewer than 2 Alertmanager replicas have been ready for 5 minutes. Alert delivery still works, but the notification path has lost HA."
         - alert: AlertmanagerNotificationFailures
           expr: sum(increase(alertmanager_notifications_failed_total[5m])) > 0
           for: 2m
@@ -801,6 +811,16 @@ spec:
           annotations:
             summary: "Loki gateway is not ready"
             description: "The Loki gateway has not been ready for 2 minutes. Alloy writes and Grafana Loki queries may fail."
+        - alert: LokiGatewayReplicaUnavailable
+          expr: sum(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"loki-gateway-.*"}) < 2
+          for: 5m
+          labels:
+            severity: warning
+            priority: P1
+            namespace: monitoring
+          annotations:
+            summary: "Loki gateway replica count is degraded"
+            description: "Fewer than 2 Loki gateway replicas have been ready for 5 minutes. Loki writes and queries still work, but the gateway path has lost HA."
         - alert: LokiIngestionStalled
           expr: (sum(rate(loki_distributor_lines_received_total{namespace="monitoring"}[5m])) == 0) or absent(loki_distributor_lines_received_total{namespace="monitoring"})
           for: 10m
