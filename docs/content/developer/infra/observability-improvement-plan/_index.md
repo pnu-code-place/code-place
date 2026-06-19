@@ -56,10 +56,6 @@ backend는 `django-prometheus` 기반 `/metrics` 엔드포인트를 제공합니
 - `codeplace_ai_hint_api_outcome_total{status,scope}`
 - `codeplace_ai_hint_requests_total{status}`
 - `codeplace_ai_hint_duration_seconds{status}`
-- `codeplace_postgres_connections`
-- `codeplace_postgres_max_connections`
-- `codeplace_postgres_long_transactions`
-- `codeplace_postgres_lock_waits`
 - `codeplace_redis_connected_clients`
 - `codeplace_redis_max_clients`
 - `codeplace_redis_rejected_connections_total`
@@ -304,9 +300,6 @@ P1은 `group_wait=30s`, `repeat_interval=1h`로 전달합니다. `code-place-dev
 - `PostgresCollectorError`: CNPG PostgreSQL metrics collection error 5분 지속.
 - `PostgresHADegraded`: PostgreSQL instance가 3개 node에 분산되지 않음 10분 지속.
 - `RedisMemoryHigh`: Redis memory 사용률 85% 초과 10분 지속.
-- `PostgresConnectionUsageHigh`: backend 기준 PostgreSQL connection/max_connections 80% 초과 10분 지속.
-- `PostgresLongTransactions`: 5분 초과 transaction이 10분 지속.
-- `PostgresLockWaits`: lock wait가 5분 지속.
 - `RedisConnectedClientsHigh`: backend 기준 Redis connected_clients/maxclients 80% 초과 10분 지속.
 - `RedisRejectedConnections`: Redis rejected connection 증가 2분 지속.
 - `PVCAlmostFull`: PVC 사용률 85% 초과 10분 지속.
@@ -358,7 +351,7 @@ P1은 `group_wait=30s`, `repeat_interval=1h`로 전달합니다. `code-place-dev
    - `kubectl apply -k kubernetes/monitoring`
 6. Prometheus target에서 `backend`, `longhorn`, `vllm`, `blackbox-exporter`, `kubernetes-event-exporter`, `codeplace-public-http-dev`, `codeplace-public-http-prod`, `codeplace-grafana-http`가 healthy인지 확인합니다.
 7. Grafana의 `CodePlace Public Endpoints` dashboard에서 prod/dev/Grafana availability, HTTP status, latency, TLS expiry panel이 비어 있지 않은지 확인합니다.
-8. Grafana의 `CodePlace Overview` dashboard에서 recording rule 기반 request rate, 5xx ratio, p95 latency, judge availability, waiting queue와 frontend runtime error, submission status, submission/judge outcome, oldest in-flight submission age, judge heartbeat, Celery task throughput/runtime, Pod readiness/restart, CPU/memory, PVC, Deployment unavailable/rollout, Service ready endpoint, PostgreSQL/Redis readiness/connection/lock/client panel을 확인합니다.
+8. Grafana의 `CodePlace Overview` dashboard에서 recording rule 기반 request rate, 5xx ratio, p95 latency, judge availability, waiting queue와 frontend runtime error, submission/judge outcome, judge heartbeat, Celery task throughput/runtime, Pod readiness/restart, CPU/memory, PVC, Deployment unavailable/rollout, Service ready endpoint, PostgreSQL CNPG collector/HA 상태, Redis readiness/memory/client panel을 확인합니다.
 9. Grafana의 `CodePlace Logs` dashboard에서 Loki ready, Alloy node coverage, Loki PVC usage, ingress/frontend 4xx/5xx, 최근 backend error, frontend runtime error, judge/celery log panel을 확인합니다.
 10. Grafana의 `CodePlace Logs` dashboard에서 `request_id` 변수에 실제 응답 header 또는 JSON log의 request ID를 넣고 해당 요청 로그가 좁혀지는지 확인합니다.
 11. Grafana의 `CodePlace Kubernetes Events` dashboard에서 event exporter ready, image pull, CrashLoopBackOff, OOMKilled, Pending/Unschedulable, Kubernetes Warning event panel을 확인합니다.
@@ -382,7 +375,7 @@ P1은 `group_wait=30s`, `repeat_interval=1h`로 전달합니다. `code-place-dev
 - Metrics backend는 kube-prometheus-stack의 Prometheus입니다. Mimir는 현재 온프렘 단기 운영 기준선에 포함하지 않습니다.
 - 로그 수집은 Grafana Alloy와 Loki로 관리하며 Promtail은 신규 도입하지 않습니다.
 - Kubernetes event는 Kubernetes Event Exporter가 Warning event만 stdout JSON으로 내보내고, Alloy가 일반 Pod log와 같은 경로로 Loki에 적재합니다.
-- PostgreSQL은 CNPG instance exporter와 PodMonitor로 `cnpg_collector_*` 지표를 수집합니다. Redis는 Opstree Redis exporter sidecar와 PodMonitor로 `redis_*` 지표를 수집합니다.
+- PostgreSQL은 backend `/metrics`에서 직접 조회하지 않고 CNPG instance exporter와 PodMonitor의 `cnpg_collector_*` 지표를 수집합니다. Redis는 Opstree Redis exporter sidecar와 PodMonitor의 `redis_*` 지표를 기본으로 보고, backend custom collector는 queue length와 client/rejection 같은 O(1) Redis 상태만 수집합니다.
 - Sentry backend SDK는 기본 PII 자동 전송을 비활성화하고 전송 직전 `authorization`, `cookie`, `password`, `token`, `secret`, 제출 source code 계열 필드를 redaction합니다. 사용자 영향 분석은 Sentry event와 request_id 기반 backend JSON log를 함께 사용합니다.
 - Frontend는 axios 요청마다 `X-Request-ID`를 전파하고 마지막 request ID를 `window.__CODEPLACE_LAST_REQUEST_ID__`와 Sentry request context 및 `/api/client_error` report에 저장합니다.
 - Frontend Sentry 설정은 빌드 시점 값입니다. `APP_VERSION`, `SENTRY_ENVIRONMENT`, `SENTRY_DSN`, `USE_SENTRY`는 frontend image build-arg로 주입하며, Kubernetes Deployment의 런타임 env만 변경해도 이미 빌드된 JS bundle에는 반영되지 않습니다. DSN이 없으면 Sentry는 비활성화되지만 `/api/client_error` 기반 metric/log는 계속 동작합니다.

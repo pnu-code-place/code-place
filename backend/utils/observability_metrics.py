@@ -1,7 +1,6 @@
 import logging
 from datetime import timedelta
 
-from django.db import connection
 from django.utils import timezone
 from prometheus_client import Counter, Histogram, REGISTRY
 from prometheus_client.core import CounterMetricFamily, GaugeMetricFamily, HistogramMetricFamily
@@ -116,22 +115,6 @@ class CodePlaceCollector:
             labels=["task_name", "status"],
         )
         yield GaugeMetricFamily(
-            "codeplace_postgres_connections",
-            "Current PostgreSQL connections for the active database.",
-        )
-        yield GaugeMetricFamily(
-            "codeplace_postgres_max_connections",
-            "Configured PostgreSQL max_connections.",
-        )
-        yield GaugeMetricFamily(
-            "codeplace_postgres_long_transactions",
-            "Current PostgreSQL transactions older than five minutes.",
-        )
-        yield GaugeMetricFamily(
-            "codeplace_postgres_lock_waits",
-            "Current PostgreSQL locks waiting to be granted.",
-        )
-        yield GaugeMetricFamily(
             "codeplace_redis_connected_clients",
             "Current Redis connected clients from INFO clients.",
         )
@@ -166,7 +149,6 @@ class CodePlaceCollector:
         yield from self._judge_server_metrics()
         yield self._judge_duration_histogram()
         yield from self._celery_task_metrics()
-        yield from self._postgres_metrics()
         yield from self._redis_health_metrics()
         yield self._collector_success_metric()
 
@@ -350,58 +332,6 @@ class CodePlaceCollector:
         yield last_seen_age_metric
         yield last_success_age_metric
 
-    def _postgres_metrics(self):
-        connections_metric = GaugeMetricFamily(
-            "codeplace_postgres_connections",
-            "Current PostgreSQL connections for the active database.",
-        )
-        max_connections_metric = GaugeMetricFamily(
-            "codeplace_postgres_max_connections",
-            "Configured PostgreSQL max_connections.",
-        )
-        long_transactions_metric = GaugeMetricFamily(
-            "codeplace_postgres_long_transactions",
-            "Current PostgreSQL transactions older than five minutes.",
-        )
-        lock_waits_metric = GaugeMetricFamily(
-            "codeplace_postgres_lock_waits",
-            "Current PostgreSQL locks waiting to be granted.",
-        )
-        try:
-            with connection.cursor() as cursor:
-                cursor.execute("SELECT count(*) FROM pg_stat_activity WHERE datname = current_database()")
-                connections = cursor.fetchone()[0]
-                cursor.execute("SELECT setting::float FROM pg_settings WHERE name = 'max_connections'")
-                max_connections = cursor.fetchone()[0]
-                cursor.execute(
-                    """
-                    SELECT count(*)
-                    FROM pg_stat_activity
-                    WHERE datname = current_database()
-                      AND xact_start IS NOT NULL
-                      AND now() - xact_start > interval '5 minutes'
-                      AND state <> 'idle'
-                    """
-                )
-                long_transactions = cursor.fetchone()[0]
-                cursor.execute("SELECT count(*) FROM pg_locks WHERE NOT granted")
-                lock_waits = cursor.fetchone()[0]
-        except Exception as e:
-            logger.warning("Failed to collect PostgreSQL health metrics: %s", e)
-            connections = max_connections = long_transactions = lock_waits = 0
-            self._mark_collector_success("postgres", False)
-        else:
-            self._mark_collector_success("postgres", True)
-
-        connections_metric.add_metric([], float(connections or 0))
-        max_connections_metric.add_metric([], float(max_connections or 0))
-        long_transactions_metric.add_metric([], float(long_transactions or 0))
-        lock_waits_metric.add_metric([], float(lock_waits or 0))
-        yield connections_metric
-        yield max_connections_metric
-        yield long_transactions_metric
-        yield lock_waits_metric
-
     def _redis_health_metrics(self):
         connected_clients_metric = GaugeMetricFamily(
             "codeplace_redis_connected_clients",
@@ -454,7 +384,6 @@ class CodePlaceCollector:
             "judge_server",
             "judge_duration",
             "celery_task",
-            "postgres",
             "redis",
         )
         for collector in collectors:

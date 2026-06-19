@@ -174,33 +174,6 @@ class CodePlaceCollectorTest(SimpleTestCase):
         self.assertEqual(last_runtime_sample.value, 0)
         self.assertEqual(samples["codeplace_celery_task_last_seen_age_seconds"], [])
 
-    def test_postgres_health_metrics_are_collected(self):
-        class FakeCursor:
-            def __init__(self):
-                self.values = iter([(12,), (100,), (2,), (1,)])
-
-            def __enter__(self):
-                return self
-
-            def __exit__(self, exc_type, exc, tb):
-                return False
-
-            def execute(self, _query):
-                return None
-
-            def fetchone(self):
-                return next(self.values)
-
-        fake_connection = MagicMock()
-        fake_connection.cursor.return_value = FakeCursor()
-        with patch("utils.observability_metrics.connection", fake_connection):
-            samples = self._samples_by_metric(list(CodePlaceCollector()._postgres_metrics()))
-
-        self.assertEqual(samples["codeplace_postgres_connections"][0].value, 12)
-        self.assertEqual(samples["codeplace_postgres_max_connections"][0].value, 100)
-        self.assertEqual(samples["codeplace_postgres_long_transactions"][0].value, 2)
-        self.assertEqual(samples["codeplace_postgres_lock_waits"][0].value, 1)
-
     def test_redis_health_metrics_are_collected(self):
         redis_client = MagicMock()
         redis_client.info.return_value = {
@@ -306,7 +279,6 @@ class CodePlaceMetricsEndpointTest(SimpleTestCase):
                 patch.object(CodePlaceCollector, "_judge_server_metrics", return_value=[judge_metric]), \
                 patch.object(CodePlaceCollector, "_judge_duration_histogram", return_value=judge_duration_metric), \
                 patch.object(CodePlaceCollector, "_celery_task_metrics", return_value=[]), \
-                patch.object(CodePlaceCollector, "_postgres_metrics", return_value=[]), \
                 patch.object(CodePlaceCollector, "_redis_health_metrics", return_value=[]):
             response = self.client.get("/metrics")
 

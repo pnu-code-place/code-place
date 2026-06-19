@@ -550,22 +550,20 @@ data:
         },
         {
           "type": "timeseries",
-          "title": "PostgreSQL Connections",
+          "title": "PostgreSQL Collector Errors",
           "gridPos": {"x": 0, "y": 65, "w": 8, "h": 6},
           "fieldConfig": {"defaults": {"unit": "short"}},
           "targets": [
-            {"expr": "codeplace_postgres_connections{namespace=~\"$namespace\"}", "legendFormat": "{{namespace}} connections"},
-            {"expr": "codeplace_postgres_max_connections{namespace=~\"$namespace\"}", "legendFormat": "{{namespace}} max"}
+            {"expr": "max by (namespace, pod) (cnpg_collector_last_collection_error{namespace=~\"$namespace\", cluster=\"postgres\"})", "legendFormat": "{{namespace}} {{pod}}"}
           ]
         },
         {
           "type": "timeseries",
-          "title": "PostgreSQL Long Tx and Lock Waits",
+          "title": "PostgreSQL Nodes Used",
           "gridPos": {"x": 8, "y": 65, "w": 8, "h": 6},
           "fieldConfig": {"defaults": {"unit": "short"}},
           "targets": [
-            {"expr": "codeplace_postgres_long_transactions{namespace=~\"$namespace\"}", "legendFormat": "{{namespace}} long tx"},
-            {"expr": "codeplace_postgres_lock_waits{namespace=~\"$namespace\"}", "legendFormat": "{{namespace}} lock waits"}
+            {"expr": "min by (namespace) (cnpg_collector_nodes_used{namespace=~\"$namespace\", cluster=\"postgres\"})", "legendFormat": "{{namespace}} nodes"}
           ]
         },
         {
