@@ -416,7 +416,7 @@ kubectl -n monitoring describe pvc -l app.kubernetes.io/name=loki
 - readiness만 실패하면 Loki config, retention, disk full, compactor error를 확인합니다.
 - Loki가 내려가도 앱 요청 처리는 계속되지만 로그 수집/조회가 끊기므로 빠르게 복구합니다.
 
-### PrometheusUnavailable / PrometheusReplicaUnavailable / AlertmanagerUnavailable
+### PrometheusUnavailable / PrometheusReplicaUnavailable / AlertmanagerUnavailable / AlertmanagerReplicaUnavailable
 
 증상: Prometheus 또는 Alertmanager Pod가 ready가 아니거나, Prometheus ready replica가 2개 미만입니다.
 
@@ -433,6 +433,7 @@ kubectl -n monitoring logs alertmanager-kube-prometheus-stack-alertmanager-0 -c 
 
 ```promql
 kube_pod_status_ready{namespace="monitoring", pod=~"prometheus-kube-prometheus-stack-prometheus-.*|alertmanager-kube-prometheus-stack-alertmanager-.*", condition="true"}
+sum(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"alertmanager-kube-prometheus-stack-alertmanager-.*"})
 prometheus_notifications_alertmanagers_discovered
 prometheus_rule_evaluation_failures_total
 ```
@@ -444,7 +445,7 @@ prometheus_rule_evaluation_failures_total
 - Alertmanager가 down이면 firing alert가 있어도 Discord/email 전달이 실패합니다. P0 수신 지연 원인으로 먼저 봅니다.
 - PVC, config reload, rule syntax, resource pressure, operator reconciliation event를 함께 확인합니다.
 
-### LonghornManagerDown / LonghornVolumeFaulted / LonghornVolumeReadOnly
+### LonghornManagerDown / LonghornManagerReplicaUnavailable / LonghornVolumeFaulted / LonghornVolumeReadOnly
 
 증상: Longhorn manager가 전부 ready가 아니거나, volume이 faulted/read-only 상태입니다.
 
@@ -458,6 +459,8 @@ kubectl -n longhorn-system logs -l app=longhorn-manager --tail=200
 
 ```promql
 sum(kube_pod_status_ready{namespace="longhorn-system", condition="true", pod=~"longhorn-manager-.*"})
+kube_daemonset_status_number_available{namespace="longhorn-system", daemonset="longhorn-manager"}
+kube_daemonset_status_desired_number_scheduled{namespace="longhorn-system", daemonset="longhorn-manager"}
 longhorn_volume_robustness
 longhorn_volume_file_system_read_only
 longhorn_volume_actual_size_bytes
@@ -521,7 +524,7 @@ DCGM_FI_DEV_GPU_UTIL{namespace="monitoring"}
 
 ## P1
 
-### OTelCollectorUnavailable / OTelCollectorRefusedSpans / OTelCollectorExportFailures / TempoUnavailable / TempoPVCAlmostFull
+### OTelCollectorUnavailable / OTelCollectorReplicaUnavailable / OTelCollectorRefusedSpans / OTelCollectorExportFailures / TempoUnavailable / TempoPVCAlmostFull
 
 확인:
 
@@ -538,6 +541,8 @@ PromQL:
 
 ```promql
 kube_pod_status_ready{namespace="monitoring", pod=~"otel-collector-.*|tempo-.*", condition="true"}
+kube_deployment_status_replicas_available{namespace="monitoring", deployment="otel-collector"}
+kube_deployment_spec_replicas{namespace="monitoring", deployment="otel-collector"}
 max(kubelet_volume_stats_used_bytes{namespace="monitoring", persistentvolumeclaim="tempo-data"}) /
 max(kubelet_volume_stats_capacity_bytes{namespace="monitoring", persistentvolumeclaim="tempo-data"})
 sum(rate(otelcol_receiver_accepted_spans_total{namespace="monitoring"}[5m]))
@@ -566,7 +571,7 @@ sum by (namespace) (codeplace_waiting_queue_length{namespace="<namespace>"})
 
 backend latency와 DB/Redis readiness, CPU/memory를 같이 봅니다.
 
-### PublicEndpointDown / PublicEndpointLatencyHigh / PublicEndpointTLSExpiringSoon / BlackboxExporterUnavailable
+### PublicEndpointDown / PublicEndpointLatencyHigh / PublicEndpointTLSExpiringSoon / BlackboxExporterUnavailable / BlackboxExporterReplicaUnavailable
 
 확인:
 
@@ -576,6 +581,8 @@ probe_duration_seconds{probe_type="public-http"}
 probe_http_duration_seconds{probe_type="public-http"}
 (probe_ssl_earliest_cert_expiry{probe_type="public-http"} - time()) / 86400
 kube_pod_status_ready{namespace="monitoring", pod=~"blackbox-exporter-.*", condition="true"}
+kube_deployment_status_replicas_available{namespace="monitoring", deployment="blackbox-exporter"}
+kube_deployment_spec_replicas{namespace="monitoring", deployment="blackbox-exporter"}
 ```
 
 판단:
@@ -584,7 +591,7 @@ kube_pod_status_ready{namespace="monitoring", pod=~"blackbox-exporter-.*", condi
 - latency가 synthetic probe에서만 높으면 public route/TLS/frontend nginx를 먼저 보고, backend latency도 높으면 API/DB/Redis 병목을 같이 봅니다.
 - `BlackboxExporterUnavailable`이면 probe 자체가 죽은 것이므로 공개 URL 상태를 판단할 수 없습니다.
 
-### GrafanaUnavailable / GrafanaMetricsTargetDown / MonitoringServiceMetricsTargetDown / PrometheusOperatorUnavailable / PrometheusRuleEvaluationFailures / PrometheusAlertmanagerDiscoveryFailed / AlertmanagerNotificationFailures
+### GrafanaUnavailable / GrafanaMetricsTargetDown / MonitoringServiceMetricsTargetDown / PrometheusOperatorUnavailable / PrometheusConfigReloadFailed / AlertmanagerConfigReloadFailed / PrometheusRuleEvaluationFailures / PrometheusAlertmanagerDiscoveryFailed / AlertmanagerNotificationFailures
 
 확인:
 
@@ -605,6 +612,8 @@ up{namespace="monitoring", service="kube-prometheus-stack-grafana"}
 up{namespace="monitoring", service=~"blackbox-exporter|kubernetes-event-exporter|otel-collector|tempo|kube-prometheus-stack-grafana|loki|loki-gateway|loki-canary|alloy"}
 sum by (rule_group) (increase(prometheus_rule_evaluation_failures_total[5m]))
 sum(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"prometheus-kube-prometheus-stack-prometheus-.*"})
+prometheus_config_last_reload_successful{namespace="monitoring"}
+alertmanager_config_last_reload_successful{namespace="monitoring"}
 prometheus_notifications_alertmanagers_discovered
 sum by (integration) (increase(alertmanager_notifications_failed_total[5m]))
 sum by (job, namespace) (up == 0)
@@ -876,13 +885,15 @@ topk(10, container_memory_working_set_bytes{namespace="<namespace>", container!=
 
 CPU/memory가 지속적으로 높으면 replica 조정, limit 조정, 최근 배포 변경을 확인합니다.
 
-### PostgresCollectorError / PostgresHADegraded / RedisMemoryHigh / PostgresConnectionUsageHigh / PostgresLongTransactions / PostgresLockWaits / RedisConnectedClientsHigh / RedisRejectedConnections
+### PostgresCollectorError / PostgresHADegraded / PostgresReplicaUnavailable / RedisReplicaUnavailable / RedisMemoryHigh / PostgresConnectionUsageHigh / PostgresLongTransactions / PostgresLockWaits / RedisConnectedClientsHigh / RedisRejectedConnections
 
 확인:
 
 ```promql
 cnpg_collector_last_collection_error{namespace="<namespace>", cluster="postgres"}
 cnpg_collector_nodes_used{namespace="<namespace>", cluster="postgres"}
+sum by (namespace) (kube_pod_status_ready{namespace="<namespace>", condition="true", pod=~"postgres-[0-9]+"})
+sum by (namespace) (kube_pod_status_ready{namespace="<namespace>", condition="true", pod=~"redis-.*|redis-replication-.*"})
 redis_memory_used_bytes{namespace="<namespace>"}
 redis_memory_max_bytes{namespace="<namespace>"}
 codeplace_postgres_connections{namespace="<namespace>"}
@@ -904,6 +915,7 @@ kubectl -n <namespace> get pod -l app=redis-replication -o wide
 
 - `PostgresCollectorError`는 metrics query 실패이므로 CNPG exporter 로그와 PostgreSQL 권한/상태를 확인합니다.
 - `PostgresHADegraded`는 3개 instance가 서로 다른 node에 분산되지 않은 상태입니다. node 수, taint, Longhorn volume attach 상태를 확인합니다.
+- `PostgresReplicaUnavailable` / `RedisReplicaUnavailable`은 3노드 분산 상태에서 남은 replica 수와 node placement를 같이 봅니다. 일부 replica만 down이면 failover 여지는 있지만 다음 장애에 취약합니다.
 - `PostgresConnectionUsageHigh`는 backend connection leak, worker 동시성 증가, DB max_connections 부족, slow query 누적으로 구분합니다. API latency와 동시에 오르면 DB 병목 후보가 강합니다.
 - `PostgresLongTransactions`는 transaction 범위가 긴 view/task, idle-in-transaction, migration/admin 작업을 확인합니다.
 - `PostgresLockWaits`는 쓰기 contention이나 DDL/migration lock 가능성이 큽니다. 같은 시간대 backend error와 Celery runtime 증가를 같이 봅니다.
@@ -912,13 +924,15 @@ kubectl -n <namespace> get pod -l app=redis-replication -o wide
 - `RedisRejectedConnections`는 Redis `maxclients`에 실제로 걸린 상태입니다. API/cache와 Celery queue가 동시에 영향을 받을 수 있습니다.
 - Redis memory가 높으면 eviction 정책, queue/backlog, cache key 증가를 확인합니다.
 
-### PVCAlmostFull
+### PVCAlmostFull / MonitoringPVCAlmostFull
 
 확인:
 
 ```promql
 max by (namespace, persistentvolumeclaim) (kubelet_volume_stats_used_bytes{namespace="<namespace>"}) /
 max by (namespace, persistentvolumeclaim) (kubelet_volume_stats_capacity_bytes{namespace="<namespace>"})
+max by (namespace, persistentvolumeclaim) (kubelet_volume_stats_used_bytes{namespace="monitoring", persistentvolumeclaim!~".*loki.*|tempo-data"}) /
+max by (namespace, persistentvolumeclaim) (kubelet_volume_stats_capacity_bytes{namespace="monitoring", persistentvolumeclaim!~".*loki.*|tempo-data"})
 ```
 
 ```sh
@@ -1055,7 +1069,7 @@ kubectl -n monitoring describe pvc <loki-pvc>
 - 당장 여유가 없으면 Longhorn PVC size를 증설합니다.
 - 반복되면 retention 기간을 줄이거나 prod 로그 저장 방식을 내부 S3 호환 object storage로 분리합니다.
 
-### AlloyDaemonSetUnavailable / LokiGatewayUnavailable / LokiIngestionStalled / LokiRequestErrors / LokiCanaryMissingEntries / AlloyLokiWriteDrops / AlloyLokiWriteRetries
+### AlloyDaemonSetUnavailable / LokiGatewayUnavailable / LokiGatewayReplicaUnavailable / LokiIngestionStalled / LokiRequestErrors / LokiCanaryMissingEntries / AlloyLokiWriteDrops / AlloyLokiWriteRetries
 
 확인:
 
@@ -1072,6 +1086,7 @@ PromQL:
 
 ```promql
 sum(rate(loki_distributor_lines_received_total{namespace="monitoring"}[5m]))
+sum(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"loki-gateway-.*"})
 sum(rate(loki_request_duration_seconds_count{namespace="monitoring", status_code=~"5.."}[5m]))
 sum(increase(loki_canary_missing_entries_total{namespace="monitoring"}[5m]))
 sum(increase(loki_write_dropped_entries_total{namespace="monitoring"}[5m]))
