@@ -4,7 +4,7 @@ This directory contains Helm values for the Kubernetes logs stack.
 
 - Loki: SingleBinary mode, filesystem storage, Longhorn PVC.
 - Loki gateway: 2 replicas for the stateless write/query entrypoint.
-- Alloy: DaemonSet log collector for every pod in `code-place-dev`, `code-place-prod`, and `monitoring`, plus Traefik pods in `kube-system`. It mounts host `/var/log` so `/var/log/pods` is readable from the Alloy container.
+- Alloy: DaemonSet log collector for every pod in `code-place-dev`, `code-place-prod`, and `monitoring`, plus Traefik pods in `kube-system`. It mounts host `/var/log` so `/var/log/pods` is readable from the Alloy container. It tolerates the standard `control-plane` and `master` NoSchedule taints so the current three-node cluster does not silently miss logs from a tainted control-plane node.
 - Kubernetes Event Exporter: Warning events are written to stdout as JSON and collected by Alloy from the `monitoring` namespace.
 - Retention: `code-place-dev` 3 days, `code-place-prod` 7 days.
 - Monitoring: Loki and Alloy ServiceMonitors are enabled for kube-prometheus-stack.
@@ -78,6 +78,7 @@ Keep these invariants unless the storage design changes intentionally:
 - Loki is installed from `grafana/loki` chart `6.55.0`. Do not upgrade the chart without revalidating rendered workloads and values compatibility.
 - Loki uses filesystem storage on a Longhorn PVC.
 - In the current three-node cluster, Alloy runs on every node. Loki and Tempo remain single-writer services on Longhorn PVCs, while stateless collectors, Loki gateway, and probe exporters can be replicated across nodes.
+- If a node uses a custom NoSchedule taint, add the matching Alloy toleration before relying on the `AlloyDaemonSetUnavailable` alert for full-node log coverage.
 - kube-prometheus-stack Prometheus and Alertmanager run with 2 replicas. Prometheus clears the replica external label so HA replicas do not create replica-labeled duplicate Alertmanager notifications. Prometheus, Alertmanager, and Grafana use Longhorn PVCs so metric data, silences, and UI state survive pod rescheduling.
 - Alloy keeps namespace-based collection for `code-place-dev`, `code-place-prod`, and `monitoring`; do not depend on `app.kubernetes.io/name` for CodePlace app logs because the application manifests primarily use `app`.
 - Alloy keeps `alloy.mounts.varlog=true`; otherwise the `/var/log/pods` targets are discovered but cannot be read.
