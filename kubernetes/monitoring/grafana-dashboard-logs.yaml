@@ -106,7 +106,7 @@ data:
           "type": "stat",
           "title": "Log Lines",
           "gridPos": {"x": 12, "y": 0, "w": 4, "h": 4},
-          "datasource": "Loki",
+          "datasource": {"type": "loki", "uid": "Loki"},
           "fieldConfig": {"defaults": {"unit": "short"}},
           "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
           "targets": [
@@ -117,7 +117,7 @@ data:
           "type": "stat",
           "title": "Backend Errors",
           "gridPos": {"x": 16, "y": 0, "w": 4, "h": 4},
-          "datasource": "Loki",
+          "datasource": {"type": "loki", "uid": "Loki"},
           "fieldConfig": {
             "defaults": {
               "unit": "short",
@@ -140,7 +140,7 @@ data:
           "type": "stat",
           "title": "Frontend 5xx",
           "gridPos": {"x": 20, "y": 0, "w": 4, "h": 4},
-          "datasource": "Loki",
+          "datasource": {"type": "loki", "uid": "Loki"},
           "fieldConfig": {
             "defaults": {
               "unit": "short",
@@ -163,7 +163,7 @@ data:
           "type": "timeseries",
           "title": "Log Lines by Namespace",
           "gridPos": {"x": 0, "y": 4, "w": 8, "h": 7},
-          "datasource": "Loki",
+          "datasource": {"type": "loki", "uid": "Loki"},
           "fieldConfig": {"defaults": {"unit": "logs/sec"}},
           "targets": [
             {"expr": "sum by (namespace) (rate({namespace=~\"code-place-dev|code-place-prod|monitoring|kube-system\"}[5m]))", "legendFormat": "{{namespace}}"}
@@ -173,7 +173,7 @@ data:
           "type": "timeseries",
           "title": "Application Log Lines by App",
           "gridPos": {"x": 8, "y": 4, "w": 8, "h": 7},
-          "datasource": "Loki",
+          "datasource": {"type": "loki", "uid": "Loki"},
           "fieldConfig": {"defaults": {"unit": "logs/sec"}},
           "targets": [
             {"expr": "sum by (namespace, app) (rate({namespace=~\"code-place-dev|code-place-prod\", app=~\"backend|frontend\"}[5m]))", "legendFormat": "{{namespace}} {{app}}"},
@@ -184,7 +184,7 @@ data:
           "type": "timeseries",
           "title": "Structured Error Logs by Component",
           "gridPos": {"x": 16, "y": 4, "w": 8, "h": 7},
-          "datasource": "Loki",
+          "datasource": {"type": "loki", "uid": "Loki"},
           "fieldConfig": {"defaults": {"unit": "logs/sec"}},
           "targets": [
             {"expr": "sum by (namespace, app) (rate({namespace=~\"code-place-dev|code-place-prod\", app=~\"backend|frontend\"} | json | level=~\"ERROR|CRITICAL\" [5m]))", "legendFormat": "{{namespace}} {{app}}"},
@@ -195,7 +195,7 @@ data:
           "type": "stat",
           "title": "Ingress 5xx",
           "gridPos": {"x": 0, "y": 11, "w": 4, "h": 4},
-          "datasource": "Loki",
+          "datasource": {"type": "loki", "uid": "Loki"},
           "fieldConfig": {
             "defaults": {
               "unit": "short",
@@ -218,7 +218,7 @@ data:
           "type": "timeseries",
           "title": "Log Lines by Node",
           "gridPos": {"x": 0, "y": 15, "w": 4, "h": 6},
-          "datasource": "Loki",
+          "datasource": {"type": "loki", "uid": "Loki"},
           "fieldConfig": {"defaults": {"unit": "logs/sec"}},
           "targets": [
             {"expr": "sum by (node) (rate({namespace=~\"code-place-dev|code-place-prod|monitoring|kube-system\"}[5m]))", "legendFormat": "{{node}}"}
@@ -228,7 +228,7 @@ data:
           "type": "logs",
           "title": "Recent Backend Errors",
           "gridPos": {"x": 4, "y": 11, "w": 10, "h": 10},
-          "datasource": "Loki",
+          "datasource": {"type": "loki", "uid": "Loki"},
           "options": {
             "showLabels": false,
             "showTime": true,
@@ -243,7 +243,7 @@ data:
           "type": "logs",
           "title": "Auth, Judge, Celery, and vLLM Logs",
           "gridPos": {"x": 14, "y": 11, "w": 10, "h": 10},
-          "datasource": "Loki",
+          "datasource": {"type": "loki", "uid": "Loki"},
           "options": {
             "showLabels": false,
             "showTime": true,
@@ -258,7 +258,7 @@ data:
           "type": "logs",
           "title": "Ingress and Frontend 4xx/5xx Logs",
           "gridPos": {"x": 0, "y": 21, "w": 24, "h": 8},
-          "datasource": "Loki",
+          "datasource": {"type": "loki", "uid": "Loki"},
           "options": {
             "showLabels": false,
             "showTime": true,
@@ -274,7 +274,7 @@ data:
           "type": "logs",
           "title": "Request ID Lookup",
           "gridPos": {"x": 0, "y": 29, "w": 24, "h": 9},
-          "datasource": "Loki",
+          "datasource": {"type": "loki", "uid": "Loki"},
           "options": {
             "showLabels": false,
             "showTime": true,
@@ -289,7 +289,7 @@ data:
           "type": "logs",
           "title": "Frontend Runtime Error Reports",
           "gridPos": {"x": 0, "y": 38, "w": 24, "h": 8},
-          "datasource": "Loki",
+          "datasource": {"type": "loki", "uid": "Loki"},
           "options": {
             "showLabels": false,
             "showTime": true,
