@@ -55,7 +55,8 @@ REDIS_SENTINEL_HOSTS=redis-sentinel:26379
 
 ## 운영 메모
 
-Redis와 Sentinel Pod는 `kubernetes.io/hostname` 기준으로 서로 다른 노드에 분산되도록 설정되어 있습니다. 이 구성은 최소 3개 이상의 스케줄 가능한 Kubernetes 노드를 전제로 합니다. 노드가 3개 미만이면 HA를 만족할 수 없으므로 Pod가 pending 상태로 남을 수 있습니다.
+Redis와 Sentinel Pod는 `kubernetes.io/hostname` 기준으로 분산되도록 설정되어 있습니다. 2노드 클러스터에서는 3개 Pod가 2/1 형태로 배치될 수 있으므로 `clusterSize: 3`, Sentinel `quorum: 2`, PDB `minAvailable: 2`를 유지합니다.
+다만 2노드에서는 3개 failure domain 기반의 완전한 HA가 아니며, 특정 노드 장애 시 Sentinel quorum 또는 failover 여력이 줄어들 수 있습니다.
 
 Sentinel failover는 Redis master 장애 시 자동 승격을 수행하지만, failover 중에는 짧은 연결 재시도 구간이 생길 수 있습니다. 완전한 무중단에 가깝게 운영하려면 Longhorn replica와 Kubernetes 노드 장애 조건이 맞는지, 애플리케이션 retry 정책이 충분한지 함께 점검해야 합니다.
 
