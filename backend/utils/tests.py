@@ -3,11 +3,12 @@ import logging
 import os
 import pickle
 from unittest.mock import patch, mock_open, MagicMock
-from django.test import SimpleTestCase, TestCase, override_settings
+from django.test import RequestFactory, SimpleTestCase, TestCase, override_settings
 from django.core.cache import cache
 from prometheus_client.core import GaugeMetricFamily
 
 from utils.json_logging import CodePlaceJsonFormatter
+from utils.api import APIView
 from utils.observability_metrics import CodePlaceCollector
 from utils import observability_tracing
 from utils.testcase_cache import TestCaseCacheManager
@@ -31,6 +32,36 @@ class TokenBucketTest(SimpleTestCase):
         bucket = TokenBucket("1", capacity=10, fill_rate=1, default_capacity=10, redis_conn=redis_conn)
 
         self.assertEqual(bucket._last_capacity, 7.0)
+
+
+class APIViewStatusCodeTest(SimpleTestCase):
+
+    def setUp(self):
+        self.factory = RequestFactory()
+
+    def test_server_exception_returns_http_500_with_existing_json_body(self):
+
+        class BrokenAPIView(APIView):
+
+            def get(self, request):
+                raise RuntimeError("boom")
+
+        response = BrokenAPIView.as_view()(self.factory.get("/"))
+
+        self.assertEqual(response.status_code, 500)
+        self.assertEqual(response.data, {"error": "server-error", "data": "server error"})
+
+    def test_business_error_returns_http_400(self):
+
+        class BusinessErrorAPIView(APIView):
+
+            def get(self, request):
+                return self.error(err="problem-not-found", msg="Problem not exist")
+
+        response = BusinessErrorAPIView.as_view()(self.factory.get("/"))
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data, {"error": "problem-not-found", "data": "Problem not exist"})
 
 
 class CodePlaceCollectorTest(SimpleTestCase):

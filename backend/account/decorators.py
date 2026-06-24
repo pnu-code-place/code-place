@@ -18,18 +18,19 @@ class BasePermissionDecorator(object):
     def __get__(self, obj, obj_type):
         return functools.partial(self.__call__, obj)
 
-    def error(self, data):
-        return JSONResponse.response({"error": "permission-denied", "data": data})
+    def error(self, data, status=403):
+        return JSONResponse.response({"error": "permission-denied", "data": data}, status=status)
 
     def __call__(self, *args, **kwargs):
         self.request = args[1]
 
         if self.check_permission():
             if self.request.user.is_disabled:
-                return self.error("Your account is disabled")
+                return self.error("Your account is disabled", status=403)
             return self.func(*args, **kwargs)
         else:
-            return self.error("Please login first")
+            status = 401 if not self.request.user.is_authenticated else 403
+            return self.error("Please login first", status=status)
 
     def check_permission(self):
         raise NotImplementedError()
@@ -212,7 +213,7 @@ class SchedulerOnlyDecorator(object):
         return JSONResponse.response({
             "error": "permission-denied",
             "data": "Scheduler token is invalid or missing",
-        })
+        }, status=403)
 
 
 def scheduler_only(view_func):

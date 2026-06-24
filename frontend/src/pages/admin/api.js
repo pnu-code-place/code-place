@@ -467,10 +467,16 @@ function ajax(url, method, options) {
           }
         }
       },
-      (res) => {
+      (error) => {
         // API请求异常，一般为Server error 或 network error
-        reject(res)
-        Vue.prototype.$error(res.data.data)
+        const res = error.response || error
+        const data = res.data || {}
+        const message = data.data || error.message || "Server error"
+        Vue.prototype.$error(message)
+        reject(error)
+        if (typeof message === "string" && message.startsWith("Please login")) {
+          router.push({ name: "login" })
+        }
       },
     )
   })

@@ -17,8 +17,8 @@ from utils.shortcuts import rand_str
 from options.options import SysOptions
 
 from .models import AdminType, ProblemPermission, User
-from .decorators import scheduler_only
-from .middleware import RequestIDMiddleware
+from .decorators import login_required, scheduler_only
+from .middleware import AdminRoleRequiredMiddleware, RequestIDMiddleware
 from .tasks import calculate_user_score_basis, calculate_user_score_fluctuation
 
 
@@ -65,6 +65,35 @@ class RequestIDMiddlewareTest(SimpleTestCase):
         self.assertEqual(response["X-Request-ID"], request.request_id)
 
 
+class AdminRoleRequiredMiddlewareTest(SimpleTestCase):
+
+    def setUp(self):
+        self.factory = RequestFactory()
+
+    def test_admin_api_requires_login_with_http_401(self):
+        middleware = AdminRoleRequiredMiddleware(lambda request: JsonResponse({"ok": True}))
+        request = self.factory.get("/api/admin/problem")
+        request.user = mock.MagicMock()
+        request.user.is_authenticated = False
+
+        response = middleware(request)
+
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.data, {"error": "login-required", "data": "Please login in first"})
+
+    def test_admin_api_requires_admin_role_with_http_403(self):
+        middleware = AdminRoleRequiredMiddleware(lambda request: JsonResponse({"ok": True}))
+        request = self.factory.get("/api/admin/problem")
+        request.user = mock.MagicMock()
+        request.user.is_authenticated = True
+        request.user.is_admin_role.return_value = False
+
+        response = middleware(request)
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.data, {"error": "login-required", "data": "Please login in first"})
+
+
 class PermissionDecoratorTest(APITestCase):
     """
     데코레이터 테스트
@@ -78,7 +107,18 @@ class PermissionDecoratorTest(APITestCase):
         self.request.user.is_authenticated = mock.MagicMock()
 
     def test_login_required(self):
-        self.request.user.is_authenticated.return_value = False
+        class TestAPIView(APIView):
+
+            @login_required
+            def get(self, request):
+                return self.success("Success")
+
+        self.request.user.is_authenticated = False
+
+        response = TestAPIView().get(self.request)
+
+        self.assertEqual(response.status_code, 401)
+        self.assertFailed(response, "Please login first")
 
     def test_admin_required(self):
         pass
@@ -106,6 +146,7 @@ class SchedulerOnlyDecoratorTest(APITestCase):
         """ Test when SCHEDULER_TOKEN is not set in the environment."""
         request = self.factory.post("/", HTTP_X_SCHEDULER_TOKEN='secret')
         response = self.view.post(request)
+        self.assertEqual(response.status_code, 403)
         self.assertFailed(response)
 
     def test_missing_header_token(self):
@@ -113,6 +154,7 @@ class SchedulerOnlyDecoratorTest(APITestCase):
         with mock.patch('os.environ', {}):
             request = self.factory.post("/")
             response = self.view.post(request)
+        self.assertEqual(response.status_code, 403)
         self.assertFailed(response)
 
     def test_valid_token(self):
@@ -127,6 +169,7 @@ class SchedulerOnlyDecoratorTest(APITestCase):
         with mock.patch('os.environ', {'SCHEDULER_TOKEN': 'secret'}):
             request = self.factory.post("/", HTTP_X_SCHEDULER_TOKEN='wrong_secret')
             response = self.view.post(request)
+        self.assertEqual(response.status_code, 403)
         self.assertFailed(response)
 
 
