@@ -88,6 +88,8 @@ kubectl get pods -n longhorn-system -w
 물리 노드가 3대 미만인 경우(예: 2대), 복제본을 배치할 공간이 부족하여 볼륨 상태가 Degraded로 표시될 수 있습니다.
 
 이 경우 Longhorn UI(Settings > General > Default Replica Count)에서 기본 복제본 수를 2로 변경해야 합니다.
+이미 생성된 기존 volume도 Longhorn UI(Volume > 각 volume > Number of Replicas)에서 2로 맞춰야 합니다.
+2노드 기준에서도 replica count가 2로 맞으면 volume은 정상 상태여야 하며, `LonghornVolumeDegraded` alert는 storage 설정 불일치나 실제 replica 장애를 잡는 신호로 유지합니다.
 
 ### 5. Monitoring
 
