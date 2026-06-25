@@ -1,4 +1,4 @@
-from .models import Submission
+from .models import JudgeStatus, Submission
 from utils.api import serializers
 from utils.serializers import LanguageNameChoiceField
 
@@ -34,6 +34,8 @@ class SubmissionSafeModelSerializer(serializers.ModelSerializer):
 
 class SubmissionListSerializer(serializers.ModelSerializer):
     problem = serializers.SlugRelatedField(read_only=True, slug_field="_id")
+    problem_id = serializers.SerializerMethodField()
+    result_display = serializers.SerializerMethodField()
     show_link = serializers.SerializerMethodField()
     user_avatar = serializers.SerializerMethodField()
 
@@ -53,3 +55,21 @@ class SubmissionListSerializer(serializers.ModelSerializer):
 
     def get_user_avatar(self, obj):
         return obj.user_avatar
+
+    def get_problem_id(self, obj):
+        return obj.problem._id
+
+    def get_result_display(self, obj):
+        return {
+            JudgeStatus.COMPILE_ERROR: "컴파일 에러",
+            JudgeStatus.WRONG_ANSWER: "오답",
+            JudgeStatus.ACCEPTED: "정답",
+            JudgeStatus.CPU_TIME_LIMIT_EXCEEDED: "시간 초과",
+            JudgeStatus.REAL_TIME_LIMIT_EXCEEDED: "시간 초과",
+            JudgeStatus.MEMORY_LIMIT_EXCEEDED: "메모리 초과",
+            JudgeStatus.RUNTIME_ERROR: "런타임 에러",
+            JudgeStatus.SYSTEM_ERROR: "시스템 에러",
+            JudgeStatus.PENDING: "대기 중",
+            JudgeStatus.JUDGING: "채점 중",
+            JudgeStatus.PARTIALLY_ACCEPTED: "부분 정답",
+        }.get(obj.result, obj.result)
