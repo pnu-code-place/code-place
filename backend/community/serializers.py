@@ -1,6 +1,7 @@
 from account.models import User
 from community.models import Comment, Post
 from contest.models import Contest
+from django.utils.html import strip_tags
 from problem.models import Problem
 from rest_framework import serializers
 
@@ -78,8 +79,9 @@ class PostListSerializer(serializers.ModelSerializer):
         ]
 
     def get_content_preview(self, obj):
-        """게시글 내용의 미리보기(처음 100자)를 반환합니다."""
-        return obj.content[:100] + ("..." if len(obj.content) > 100 else "")
+        """게시글 내용의 미리보기(HTML 태그를 제거한 처음 100자)를 반환합니다."""
+        text = strip_tags(obj.content)
+        return text[:100] + ("..." if len(text) > 100 else "")
 
     def get_community_type(self, obj):
         """게시글이 속한 커뮤니티 유형을 반환합니다."""
