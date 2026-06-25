@@ -232,7 +232,7 @@ export default {
 <style scoped lang="less">
 .ongoing-section {
   width: 100%;
-  padding: 56px 0 0;
+  padding: 40px 0 0;
 }
 
 .ongoing-card {

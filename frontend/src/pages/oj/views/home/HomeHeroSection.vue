@@ -41,86 +41,6 @@
         </div>
       </div>
     </div>
-
-    <!-- 통계 카드 -->
-    <div class="stat-cards">
-      <div class="stat-card">
-        <div class="stat-card-left">
-          <div class="stat-num">{{ stats.totalProblems }}</div>
-          <div class="stat-label">
-            <span class="stat-line" />
-            전체 문제
-          </div>
-        </div>
-        <span class="stat-icon">
-          <svg
-            width="27"
-            height="27"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.8"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <rect x="5" y="4.5" width="14" height="16.5" rx="2.2" />
-            <rect x="8.5" y="2.5" width="7" height="4" rx="1.4" />
-            <path d="M8.7 11.5h6.6M8.7 15.5h4.4" />
-          </svg>
-        </span>
-      </div>
-      <div class="stat-card">
-        <div class="stat-card-left">
-          <div class="stat-num">{{ stats.acceptedProblems }}</div>
-          <div class="stat-label">
-            <span class="stat-line" />
-            해결된 문제
-          </div>
-        </div>
-        <span class="stat-icon">
-          <svg
-            width="27"
-            height="27"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.8"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <circle cx="12" cy="12" r="9" />
-            <path d="M8.3 12.4l2.6 2.6 4.8-5.4" />
-          </svg>
-        </span>
-      </div>
-      <div class="stat-card">
-        <div class="stat-card-left">
-          <div class="stat-num">{{ stats.totalContests }}</div>
-          <div class="stat-label">
-            <span class="stat-line" />
-            개최된 대회
-          </div>
-        </div>
-        <span class="stat-icon">
-          <svg
-            width="27"
-            height="27"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.8"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path d="M8 4h8v4.5a4 4 0 0 1-8 0V4z" />
-            <path d="M8 5.5H5V7a3 3 0 0 0 3 3" />
-            <path d="M16 5.5h3V7a3 3 0 0 1-3 3" />
-            <path d="M12 12.5v3.5" />
-            <path d="M9.2 20h5.6l-.7-3.2H9.9z" />
-          </svg>
-        </span>
-      </div>
-    </div>
   </div>
 </template>
 
@@ -350,8 +270,12 @@ export default {
   letter-spacing: -0.035em;
   color: #fff;
 
-  @media (max-width: 1024px) { font-size: 34px; }
-  @media (max-width: 768px)  { font-size: 26px; }
+  @media (max-width: 1024px) {
+    font-size: 34px;
+  }
+  @media (max-width: 768px) {
+    font-size: 26px;
+  }
 
   .accent {
     background-image: linear-gradient(100deg, #8fb4ff, #c4b5fd, #67e8f9);

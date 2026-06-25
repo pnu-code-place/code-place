@@ -61,13 +61,10 @@ export default {
   components: {
     PopUp,
     HomeHeroSection,
-    HomeQuickNavCards,
     HomeNoticeProblemRow,
     HomeRankingSidebar,
-    HomeActivitySidebar,
     HomeOngoingContests,
     HomeWeeklyServices,
-    HomeCTABanner,
     HomeFamilySite,
   },
   data() {
