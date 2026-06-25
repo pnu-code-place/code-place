@@ -38,6 +38,7 @@
                 :class="{ active: leftPainActiveTab === 'community' }"
                 @click="leftPainActiveTab = 'community'"
               >
+                <i class="fi fi-rr-map-marker-question"></i>
                 질문하기
               </div>
             </div>
@@ -772,6 +773,7 @@ export default {
 .tab-header {
   padding: 10px 20px;
   cursor: pointer;
+  font-size: 14px;
   border-radius: 7px 7px 0 0;
   border: 1px solid transparent;
 }
