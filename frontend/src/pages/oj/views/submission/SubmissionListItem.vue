@@ -30,9 +30,6 @@ export default {
       return this.item.problem_id || this.item.problem
     },
     resultDisplay() {
-      if (this.item.result_display) {
-        return this.item.result_display
-      }
       return this.$t(
         "m." + JUDGE_STATUS[this.item.result].name.replace(/ /g, "_"),
       )

@@ -236,7 +236,6 @@ class SubmissionListAPITest(SubmissionCreateTestBase):
             sub for sub in resp.data["data"]["results"] if sub["id"] == submission.id
         )
         self.assertEqual(result["problem_id"], self.problem._id)
-        self.assertEqual(result["result_display"], "대기 중")
 
     def test_get_submissions_filtered_by_problem(self):
         # 문제 필터링 테스트 (일반 문제만)
@@ -298,7 +297,6 @@ class SubmissionListAPITest(SubmissionCreateTestBase):
             s for s in resp.data["data"]["results"] if s["id"] == sub.id
         )
         self.assertEqual(result["problem_id"], self.contest_problem._id)
-        self.assertEqual(result["result_display"], "정답")
 
     def test_get_submissions_with_problem_not_exist(self):
         # problem_id 지정했으나 존재하지 않는 경우 에러 발생
