@@ -97,6 +97,56 @@
         </div>
       </template>
     </Menu>
+    <!-- 모바일 햄버거 버튼 -->
+    <button class="hamburger-btn" @click="mobileMenuOpen = true" aria-label="메뉴 열기">
+      <span class="hamburger-line" />
+      <span class="hamburger-line" />
+      <span class="hamburger-line" />
+    </button>
+
+    <!-- 모바일 드로어 오버레이 -->
+    <transition name="fade">
+      <div v-if="mobileMenuOpen" class="mobile-overlay" @click="mobileMenuOpen = false" />
+    </transition>
+    <transition name="slide-in">
+      <div v-if="mobileMenuOpen" class="mobile-drawer">
+        <div class="mobile-drawer-header">
+          <LogoButton @click.native="mobileMenuOpen = false" />
+          <button class="drawer-close-btn" @click="mobileMenuOpen = false" aria-label="메뉴 닫기">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+              <path d="M18 6L6 18M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+        <nav class="mobile-nav">
+          <a class="mobile-nav-item" :class="{ active: activeMenu === '/' }" @click="mobileNavigate('/')">홈</a>
+          <a class="mobile-nav-item" :class="{ active: activeMenu === '/problem' }" @click="mobileNavigate('/problem')">문제</a>
+          <a class="mobile-nav-item" :class="{ active: activeMenu === '/community' }" @click="mobileNavigate('/community')">커뮤니티</a>
+          <div class="mobile-nav-sub">
+            <a class="mobile-nav-subitem" @click="mobileNavigate('/community/free')">자유게시판</a>
+            <a class="mobile-nav-subitem" @click="mobileNavigate('/community/question')">질문게시판</a>
+          </div>
+          <a class="mobile-nav-item" :class="{ active: activeMenu === '/contest' }" @click="mobileNavigate('/contest')">대회</a>
+          <a class="mobile-nav-item" :class="{ active: activeMenu === '/acm-rank' }" @click="mobileNavigate('/acm-rank')">랭킹</a>
+          <a class="mobile-nav-item" :class="{ active: activeMenu === '/status' }" @click="mobileNavigate('/status')">제출 현황</a>
+        </nav>
+        <div class="mobile-drawer-footer">
+          <template v-if="isAuthenticated">
+            <a class="mobile-nav-item" @click="mobileNavigate(`/user-home/dashboard/${user.username}`)">마이페이지</a>
+            <a class="mobile-nav-item" @click="mobileNavigate('/user-setting')">설정</a>
+            <a v-if="isAdminRole" class="mobile-nav-item" @click="mobileNavigate('/admin')">관리자</a>
+            <a class="mobile-nav-item danger" @click="mobileNavigate('/logout')">로그아웃</a>
+          </template>
+          <template v-else>
+            <div class="mobile-auth-buttons">
+              <button class="btn-login" @click="mobileBtnClick('login')">로그인</button>
+              <button class="btn-register" @click="mobileBtnClick('register')">회원가입</button>
+            </div>
+          </template>
+        </div>
+      </div>
+    </transition>
+
     <span
       class="menu-hover-indicator"
       :class="{
@@ -149,6 +199,7 @@ export default {
   },
   data() {
     return {
+      mobileMenuOpen: false,
       communityDropdownVisible: false,
       communityDropdownTimer: null,
       indicator: {
@@ -185,12 +236,23 @@ export default {
         window.open("/admin/")
       }
     },
-    handleBtnClick(mode) {
-      console.log("setting complete!")
-      this.changeModalStatus({
-        visible: true,
-        mode: mode,
+    mobileNavigate(route) {
+      this.mobileMenuOpen = false
+      if (route === '/admin') {
+        window.open('/admin/')
+        return
+      }
+      if (this.$route.fullPath === route) return
+      this.$router.push(route).catch((err) => {
+        if (err && err.name !== 'NavigationDuplicated') throw err
       })
+    },
+    mobileBtnClick(mode) {
+      this.mobileMenuOpen = false
+      this.changeModalStatus({ visible: true, mode })
+    },
+    handleBtnClick(mode) {
+      this.changeModalStatus({ visible: true, mode })
     },
     initIndicator() {
       const menuEl = this.$refs.menuRef && this.$refs.menuRef.$el
@@ -642,8 +704,20 @@ export default {
     margin-right: 4px;
   }
   @media (max-width: 768px) {
-    font-size: 13px;
-    margin-right: 0;
+    display: none !important;
+  }
+}
+
+/* 모바일에서 auth/user 드롭다운 숨김 */
+/deep/ .header-menu > .ivu-dropdown.drop-menu {
+  @media (max-width: 768px) {
+    display: none !important;
+  }
+}
+
+.auth-buttons {
+  @media (max-width: 768px) {
+    display: none !important;
   }
 }
 
@@ -669,5 +743,212 @@ export default {
   border-radius: @avatar-radius;
   border: none;
   object-fit: cover;
+}
+
+/* 햄버거 버튼 (모바일 전용) */
+.hamburger-btn {
+  display: none;
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  width: 38px;
+  height: 38px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  z-index: 1000;
+
+  @media (max-width: 768px) {
+    display: flex;
+  }
+}
+
+.hamburger-line {
+  display: block;
+  width: 22px;
+  height: 2px;
+  border-radius: 2px;
+  background-color: #14141f;
+}
+
+/* 모바일 오버레이 */
+.mobile-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 1100;
+}
+
+/* 모바일 드로어 */
+.mobile-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 280px;
+  max-width: 90vw;
+  height: 100dvh;
+  background: #fff;
+  z-index: 1200;
+  display: flex;
+  flex-direction: column;
+  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.12);
+  overflow-y: auto;
+}
+
+.mobile-drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  height: var(--header-height);
+  border-bottom: 1px solid #f0f0f6;
+  flex-shrink: 0;
+}
+
+.drawer-close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: #f4f4f8;
+  border-radius: 10px;
+  color: #555;
+  cursor: pointer;
+  flex-shrink: 0;
+
+  &:hover {
+    background: #ebebf4;
+    color: #14141f;
+  }
+}
+
+.mobile-nav {
+  flex: 1;
+  padding: 12px 12px 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.mobile-nav-item {
+  display: block;
+  padding: 13px 14px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #14141f;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.15s;
+  text-decoration: none;
+
+  &:hover {
+    background-color: #f4f4f8;
+  }
+
+  &.active {
+    color: #5b64ed;
+    background-color: #eeeffe;
+  }
+
+  &.danger {
+    color: #e24b4a;
+
+    &:hover {
+      background-color: #fff0f0;
+    }
+  }
+}
+
+.mobile-nav-sub {
+  padding-left: 14px;
+  margin-bottom: 4px;
+}
+
+.mobile-nav-subitem {
+  display: block;
+  padding: 9px 14px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #59596b;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.15s;
+
+  &:hover {
+    background-color: #f4f4f8;
+    color: #5b64ed;
+  }
+}
+
+.mobile-drawer-footer {
+  padding: 12px 12px 24px;
+  border-top: 1px solid #f0f0f6;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mobile-auth-buttons {
+  display: flex;
+  gap: 8px;
+  padding: 4px 2px;
+
+  .btn-login,
+  .btn-register {
+    flex: 1;
+    height: 42px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .btn-login {
+    border: 1.5px solid rgba(91, 100, 237, 0.4);
+    background: transparent;
+    color: #5b64ed;
+
+    &:hover {
+      border-color: #5b64ed;
+      background: #eeeffe;
+    }
+  }
+
+  .btn-register {
+    border: none;
+    background: #5b64ed;
+    color: #fff;
+
+    &:hover {
+      background: #4a53d4;
+    }
+  }
+}
+
+/* 트랜지션 */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.22s ease;
+}
+.fade-enter,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.slide-in-enter-active,
+.slide-in-leave-active {
+  transition: transform 0.28s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.slide-in-enter,
+.slide-in-leave-to {
+  transform: translateX(100%);
 }
 </style>
