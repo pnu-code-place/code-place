@@ -155,8 +155,7 @@
                   <div
                     v-if="post.content_preview"
                     class="post-preview"
-                    v-html="post.content_preview"
-                  ></div>
+                  >{{ post.content_preview }}</div>
                 </div>
 
                 <div class="card-footer">
