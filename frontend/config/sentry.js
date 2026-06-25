@@ -6,7 +6,7 @@ function isSentryEnabled(nodeEnv = process.env.NODE_ENV) {
 }
 
 function getSentryDsn() {
-  return process.env.SENTRY_DSN || ""
+  return process.env.SENTRY_DSN_FRONTEND || ""
 }
 
 function getSentryEnvironment(nodeEnv = process.env.NODE_ENV) {
