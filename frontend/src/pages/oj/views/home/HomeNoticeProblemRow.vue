@@ -104,7 +104,7 @@ export default {
   methods: {
     loadCPAnnouncements() {
       this.loading = true
-      api.getAnnouncementList(0, 3).then(
+      api.getAnnouncementList(0, 5).then(
         (res) => {
           this.cpAnnouncements = res.data.data.results || []
           this.loading = false
