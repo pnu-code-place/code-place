@@ -84,7 +84,7 @@ footer {
   position: absolute;
   bottom: 0;
   width: 100%;
-  min-width: var(--global-width);
+  min-width: unset;
   height: var(--footer-height);
   background-color: var(--box-background-color);
   color: var(--footer-text-color);
@@ -97,8 +97,11 @@ footer {
   --footer-text-color: #ababab;
 
   .footer-contents {
-    width: var(--global-width);
+    width: 100%;
+    max-width: var(--global-width);
     margin: auto;
+    padding: 0 30px;
+    box-sizing: border-box;
     .row1 {
       display: flex;
       justify-content: space-between;

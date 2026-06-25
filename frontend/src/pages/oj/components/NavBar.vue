@@ -354,7 +354,7 @@ export default {
 
 <style lang="less" scoped>
 #header {
-  min-width: var(--global-width);
+  min-width: unset;
   position: fixed;
   top: 0;
   left: 0;
@@ -368,9 +368,18 @@ export default {
   box-shadow: var(--header-glass-shadow);
 
   .header-menu {
-    width: var(--global-width);
+    width: 100%;
+    max-width: var(--global-width);
     margin: 0 auto;
     background: transparent;
+    padding: 0 30px;
+
+    @media (max-width: 1024px) {
+      padding: 0 20px;
+    }
+    @media (max-width: 768px) {
+      padding: 0 14px;
+    }
   }
 
   /deep/ .header-menu.ivu-menu-horizontal,
@@ -627,10 +636,23 @@ export default {
   line-height: 70px;
   margin-right: 12px;
   color: rgb(15, 19, 23);
+
+  @media (max-width: 1024px) {
+    font-size: 15px;
+    margin-right: 4px;
+  }
+  @media (max-width: 768px) {
+    font-size: 13px;
+    margin-right: 0;
+  }
 }
 
 .first {
   margin-left: 48px;
+
+  @media (max-width: 768px) {
+    margin-left: 0;
+  }
 }
 
 .menuItemText:hover,

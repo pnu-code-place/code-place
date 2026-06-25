@@ -240,6 +240,10 @@ export default {
   border: 1px solid #e5e5ed;
   border-radius: 20px;
   padding: 20px 28px 20px;
+
+  @media (max-width: 768px) {
+    padding: 16px 16px;
+  }
 }
 
 .section-header {
@@ -271,6 +275,10 @@ export default {
   display: flex;
   flex-direction: row;
   gap: 12px;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
 }
 
 .contest-card {
@@ -415,6 +423,14 @@ export default {
   display: flex;
   align-items: center;
   gap: 28px;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 28px 20px;
+    gap: 16px;
+  }
 }
 
 .empty-illust {

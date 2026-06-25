@@ -213,6 +213,10 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 22px;
+
+  @media (max-width: 768px) {
+    gap: 12px;
+  }
 }
 
 .banner {
@@ -223,6 +227,12 @@ export default {
   position: relative;
   background: #0a0a1f;
   box-shadow: 0 8px 20px rgba(20, 14, 60, 0.2);
+
+  @media (max-width: 768px) {
+    height: auto;
+    min-height: 240px;
+    border-radius: 16px;
+  }
 }
 
 /* 글로우 오브 */
@@ -280,6 +290,11 @@ export default {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+
+  @media (max-width: 768px) {
+    padding: 24px 20px;
+    gap: 20px;
+  }
 }
 
 /* 상단 */
@@ -316,6 +331,10 @@ export default {
   letter-spacing: 0.2em;
   color: rgba(160, 165, 220, 0.42);
   font-family: "JetBrains Mono", "Fira Code", monospace;
+
+  @media (max-width: 768px) {
+    display: none;
+  }
 }
 
 /* 중앙 타이틀 */
@@ -330,6 +349,9 @@ export default {
   line-height: 1.15;
   letter-spacing: -0.035em;
   color: #fff;
+
+  @media (max-width: 1024px) { font-size: 34px; }
+  @media (max-width: 768px)  { font-size: 26px; }
 
   .accent {
     background-image: linear-gradient(100deg, #8fb4ff, #c4b5fd, #67e8f9);
@@ -349,6 +371,12 @@ export default {
   align-items: flex-end;
   gap: 28px;
   animation: fadeUp 0.6s ease 0.4s both;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
 }
 
 .banner-desc {
@@ -358,6 +386,10 @@ export default {
   line-height: 1.7;
   font-weight: 400;
   color: rgba(208, 212, 242, 0.72);
+
+  @media (max-width: 768px) {
+    font-size: 13px;
+  }
 }
 
 .banner-cta {
@@ -382,6 +414,12 @@ export default {
     transform: translateY(-2px);
     filter: brightness(1.05);
   }
+
+  @media (max-width: 768px) {
+    width: 100%;
+    justify-content: center;
+    padding: 12px 20px;
+  }
 }
 
 .arrow {
@@ -392,6 +430,11 @@ export default {
 .stat-cards {
   display: flex;
   gap: 22px;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 12px;
+  }
 }
 
 .stat-card {
@@ -404,6 +447,10 @@ export default {
   background: #fff;
   border: 1px solid rgba(22, 24, 60, 0.07);
   box-shadow: 0 12px 30px rgba(40, 42, 95, 0.08);
+
+  @media (max-width: 768px) {
+    padding: 20px 22px;
+  }
 }
 
 .stat-card-left {
@@ -417,6 +464,10 @@ export default {
   letter-spacing: -0.025em;
   color: #171a3c;
   line-height: 1;
+
+  @media (max-width: 768px) {
+    font-size: 32px;
+  }
 }
 
 .stat-label {

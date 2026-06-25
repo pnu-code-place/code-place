@@ -108,10 +108,19 @@ export default {
 
 <style lang="less" scoped>
 .home-wrapper {
-  width: var(--global-width);
+  width: 100%;
+  max-width: var(--global-width);
   background-color: #f8f8fc;
   min-height: 100vh;
   padding: 0 30px;
+
+  @media (max-width: 1024px) {
+    padding: 0 20px;
+  }
+  @media (max-width: 768px) {
+    padding: 0 14px;
+    width: 100%;
+  }
 }
 
 .notice-rank-row {
@@ -123,6 +132,11 @@ export default {
     flex: 2;
     min-width: 0;
   }
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 0;
+  }
 }
 
 .sidebar-col {
@@ -130,5 +144,13 @@ export default {
   min-width: 0;
   display: flex;
   flex-direction: column;
+
+  @media (max-width: 768px) {
+    flex-direction: row;
+    gap: 12px;
+  }
+  @media (max-width: 480px) {
+    flex-direction: column;
+  }
 }
 </style>
