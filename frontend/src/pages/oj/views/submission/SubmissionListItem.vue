@@ -96,7 +96,7 @@ export default {
     goUser() {
       this.$router.push({
         name: "user-home",
-        query: { username: this.item.username },
+        params: { username: this.item.username },
       })
     },
     getMemory(memory_cost) {
