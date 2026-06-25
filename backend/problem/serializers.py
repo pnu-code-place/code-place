@@ -292,7 +292,7 @@ class ImportProblemSerializer(serializers.Serializer):
     spj = SPJSerializer(allow_null=True)
     rule_type = serializers.ChoiceField(choices=ProblemRuleType.choices())
     source = serializers.CharField(max_length=200, allow_blank=True, allow_null=True)
-    field = serializers.IntegerField(min_value=0, max_value=4)
+    field = serializers.IntegerField(min_value=0, max_value=5)
     difficulty = serializers.ChoiceField(choices=Difficulty.choices())
     answers = serializers.ListField(child=AnswerSerializer())
     tags = serializers.ListField(child=serializers.CharField())
