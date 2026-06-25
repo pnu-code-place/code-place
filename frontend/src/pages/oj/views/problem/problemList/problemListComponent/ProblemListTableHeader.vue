@@ -1,7 +1,7 @@
 <template>
   <div class="problemListTableHeader">
     <h1 class="main-title">{{ $t("m.Problem_List") }}</h1>
-    <div style="display: flex; align-items: center; justify-content: center">
+    <div class="filter-row">
       <li style="list-style-type: none; margin-left: 3px">
         <Input
           v-model="localKeyword"
@@ -166,6 +166,14 @@ export default {
   margin-bottom: 25px;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+    padding-left: 0;
+  }
 
   p {
     font-weight: bold;
@@ -201,18 +209,29 @@ export default {
   /deep/ .ivu-select-dropdown {
     margin-top: 12px;
   }
+}
 
-  .categoryDropdown /deep/ .ivu-select-dropdown {
-    max-height: 320px;
-    max-width: 260px;
-    overflow-y: auto;
-  }
+.filter-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
 
-  .categoryDropdown /deep/ .problem-dropdown-menu .ivu-dropdown-item {
-    max-width: 260px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  @media (max-width: 768px) {
+    width: 100%;
   }
+}
+
+.categoryDropdown /deep/ .ivu-select-dropdown {
+  max-height: 320px;
+  max-width: 260px;
+  overflow-y: auto;
+}
+
+.categoryDropdown /deep/ .problem-dropdown-menu .ivu-dropdown-item {
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 </style>

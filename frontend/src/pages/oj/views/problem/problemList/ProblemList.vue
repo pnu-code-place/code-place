@@ -189,22 +189,43 @@ export default {
 
 <style scoped lang="less">
 main {
-  width: var(--global-width);
+  width: 100%;
+  max-width: var(--global-width);
+  padding: 0 30px;
+  box-sizing: border-box;
   overflow-x: hidden;
+
+  @media (max-width: 1024px) {
+    padding: 0 20px;
+  }
+  @media (max-width: 768px) {
+    padding: 0 14px;
+  }
 }
 
 .boxWrapper {
   display: flex;
   justify-content: space-between;
+  gap: 20px;
+
+  @media (max-width: 1024px) {
+    flex-direction: column;
+  }
 }
 
 .left-container {
-  width: 72%;
+  flex: 1;
+  min-width: 0;
   height: 100%;
 }
 
 .right-container {
-  width: 26%;
+  width: 280px;
+  flex-shrink: 0;
   height: auto;
+
+  @media (max-width: 1024px) {
+    width: 100%;
+  }
 }
 </style>
