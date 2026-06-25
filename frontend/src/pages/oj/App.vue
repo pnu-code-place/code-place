@@ -6,13 +6,19 @@
     <template v-else>
       <NavBar></NavBar>
     </template>
-    <div class="content-app" :class="{ ps: isProblemSolving }">
+    <div
+      class="content-app"
+      :class="{ ps: isProblemSolving, 'submission-list-app': isSubmissionList }"
+    >
       <transition name="fadeInUp" mode="out-in">
         <router-view></router-view>
       </transition>
     </div>
     <template v-if="!isProblemSolving">
-      <div class="footer-dummy"></div>
+      <div
+        class="footer-dummy"
+        :class="{ 'submission-list-footer-dummy': isSubmissionList }"
+      ></div>
       <CSEPFooter></CSEPFooter>
     </template>
     <BackTop></BackTop>
@@ -41,20 +47,47 @@ export default {
   },
   mounted() {
     this.getWebsiteConfig()
+    this.syncSubmissionListChrome()
+  },
+  updated() {
+    this.syncSubmissionListChrome()
+  },
+  beforeDestroy() {
+    this.syncSubmissionListChrome(false)
   },
   methods: {
     ...mapActions(["getWebsiteConfig", "changeDomTitle"]),
+    syncSubmissionListChrome(force) {
+      const enabled =
+        typeof force === "boolean" ? force : this.isSubmissionList
+      document.documentElement.classList.toggle(
+        "submission-list-page",
+        enabled,
+      )
+      document.body.classList.toggle("submission-list-page", enabled)
+    },
   },
   computed: {
     ...mapState(["website"]),
     ...mapGetters(["isProblemSolving", "removedPopupId"]),
+    isSubmissionList() {
+      return (
+        this.$route.name === "submission-list" || this.$route.path === "/status"
+      )
+    },
   },
   watch: {
     website() {
       this.changeDomTitle()
     },
-    $route() {
-      this.changeDomTitle()
+    $route: {
+      immediate: true,
+      handler() {
+        this.changeDomTitle()
+        this.$nextTick(() => {
+          this.syncSubmissionListChrome()
+        })
+      },
     },
   },
 }
@@ -251,6 +284,50 @@ a {
   justify-content: center;
   width: 100%;
   background-color: var(--site-background-color);
+}
+
+.submission-list-app,
+.submission-list-footer-dummy {
+  background-color: #ffffff;
+}
+
+.submission-list-app {
+  margin-top: calc(var(--header-height) + 28px);
+}
+
+.submission-list-page .submission-list-app > .flex-container {
+  transform: none !important;
+}
+
+html.submission-list-page,
+body.submission-list-page,
+html.submission-list-page #app,
+html.submission-list-page #wrapper {
+  background-color: #ffffff;
+}
+
+html:has(.content-app.submission-list-app),
+body:has(.content-app.submission-list-app) {
+  background-color: #ffffff;
+}
+
+html.submission-list-page {
+  --header-glass-bg: #ffffff;
+  --header-glass-border-color: #eef1f5;
+  --header-glass-shadow: none;
+}
+
+html.submission-list-page #header .header-menu {
+  padding-right: 32px;
+  padding-left: 32px;
+}
+
+html.submission-list-page #header .logo {
+  margin-left: 0;
+}
+
+html.submission-list-page #header .header-menu > .drop-menu {
+  padding-right: 0 !important;
 }
 
 .ps {
