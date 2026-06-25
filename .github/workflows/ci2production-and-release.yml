@@ -117,7 +117,7 @@ jobs:
             SERVER_NAME=${{ secrets.PROD_SERVER_NAME }}
             APP_VERSION=${{ github.sha }}-prod
             SENTRY_ENVIRONMENT=production
-            SENTRY_DSN=${{ secrets.SENTRY_DSN }}
+            SENTRY_DSN_FRONTEND=${{ secrets.SENTRY_DSN_FRONTEND }}
             USE_SENTRY=1
 
   ci-hub-auth:

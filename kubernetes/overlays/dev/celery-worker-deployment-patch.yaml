@@ -16,11 +16,11 @@ spec:
       containers:
         - name: celery-worker
           env:
-            - name: SENTRY_DSN
+            - name: SENTRY_DSN_BACKEND
               valueFrom:
                 secretKeyRef:
                   name: sentry-secret
-                  key: SENTRY_DSN
+                  key: SENTRY_DSN_BACKEND
             - name: SENTRY_ENVIRONMENT
               value: "dev"
             - name: OTEL_ENABLED

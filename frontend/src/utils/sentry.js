@@ -67,13 +67,13 @@ const options = {
 }
 
 export function initSentry(Vue) {
-  if (process.env.USE_SENTRY !== "1" || !process.env.SENTRY_DSN) {
+  if (process.env.USE_SENTRY !== "1" || !process.env.SENTRY_DSN_FRONTEND) {
     return
   }
 
   init({
     Vue,
-    dsn: process.env.SENTRY_DSN,
+    dsn: process.env.SENTRY_DSN_FRONTEND,
     ...options,
   })
 

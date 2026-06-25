@@ -14,6 +14,6 @@ module.exports = {
   NODE_ENV: '"development"',
   VERSION: version,
   USE_SENTRY: useSentry,
-  SENTRY_DSN: sentryDsn,
+  SENTRY_DSN_FRONTEND: sentryDsn,
   SENTRY_ENVIRONMENT: sentryEnvironment,
 }

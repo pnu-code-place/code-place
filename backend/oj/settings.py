@@ -74,13 +74,13 @@ def _before_send_sentry(event, hint):
     return event
 
 
-SENTRY_DSN = get_env(
-    "SENTRY_DSN",
+SENTRY_DSN_BACKEND = get_env(
+    "SENTRY_DSN_BACKEND",
     "",
 )
-if SENTRY_DSN:
+if SENTRY_DSN_BACKEND:
     SENTRY_OPTIONS = {
-        "dsn": SENTRY_DSN,
+        "dsn": SENTRY_DSN_BACKEND,
         "send_default_pii": False,
         "environment": get_env("SENTRY_ENVIRONMENT", get_env("OJ_ENV", "dev")),
         "before_send": _before_send_sentry,
