@@ -1,38 +1,47 @@
 <template>
   <div class="weekly-wrap">
-    <div class="section-header">
-      <span class="section-title">이주의 추천 문제</span>
-      <div class="section-line"></div>
-    </div>
-
-    <div class="cards">
-      <div
-        v-for="(problem, index) in problems"
-        :key="problem._id"
-        class="card"
-        :class="CARD_COLORS[index % 3].cardClass"
-        @click="enterProblem(problem._id)"
-      >
-        <div class="card-meta">
-          <span class="badge b-cat">{{ FIELD_MAP[problem.field].value }}</span>
-          <span class="badge" :class="difficultyBadgeClass(problem.difficulty)">
-            {{ DIFFICULTY_MAP[problem.difficulty].value }}
-          </span>
-        </div>
-        <div class="card-row">
-          <p class="card-title">{{ problem.title }}</p>
-          <span class="num">{{ String(index + 1).padStart(2, "0") }}</span>
-        </div>
-        <div class="card-tags">
-          <span v-for="tag in problem.tags.slice(0, 2)" :key="tag" class="tag"
-            >#{{ tag }}</span
-          >
-        </div>
-        <div class="go-link">풀러가기 <span class="arrow">→</span></div>
+    <div class="outer-card">
+      <div class="section-header">
+        <span class="section-title">이주의 보너스 문제</span>
+        <span class="double-badge">
+          이주의 보너스 문제를 해결하면 점수의 2배를 줘요
+        </span>
       </div>
 
-      <div v-if="problems.length === 0" class="empty-state">
-        이번 주 추천 문제가 아직 없어요.
+      <div class="cards">
+        <div
+          v-for="(problem, index) in problems"
+          :key="problem._id"
+          class="card"
+          :class="CARD_COLORS[index % 3].cardClass"
+          @click="enterProblem(problem._id)"
+        >
+          <div class="card-top">
+            <div class="card-meta">
+              <span class="badge b-cat">{{
+                FIELD_MAP[problem.field].value
+              }}</span>
+              <span
+                class="badge"
+                :class="difficultyBadgeClass(problem.difficulty)"
+              >
+                {{ DIFFICULTY_MAP[problem.difficulty].value }}
+              </span>
+            </div>
+            <span class="num">{{ String(index + 1).padStart(2, "0") }}</span>
+          </div>
+          <p class="card-title">{{ problem.title }}</p>
+          <div class="card-tags">
+            <span v-for="tag in problem.tags.slice(0, 2)" :key="tag" class="tag"
+              >#{{ tag }}</span
+            >
+          </div>
+          <div class="go-link">풀러가기 <span class="arrow">→</span></div>
+        </div>
+
+        <div v-if="problems.length === 0" class="empty-state">
+          이번 주 추천 문제가 아직 없어요.
+        </div>
       </div>
     </div>
   </div>
@@ -81,6 +90,9 @@ export default {
         params: { problemID: problemId },
       })
     },
+    goMoreProblems() {
+      this.$router.push({ name: "problem-list" })
+    },
     difficultyBadgeClass(difficulty) {
       const map = {
         VeryLow: "b-easy",
@@ -98,73 +110,109 @@ export default {
 <style scoped lang="less">
 .weekly-wrap {
   width: 100%;
-  padding: 40px 0 40px;
+  padding: 40px 0;
+}
+
+.outer-card {
+  background: #ffffff;
+  border: 1px solid #e5e5ed;
+  border-radius: 20px;
+  padding: 20px 28px;
   display: flex;
   flex-direction: column;
-  gap: 1.1rem;
+  gap: 4px;
+
+  @media (max-width: 768px) {
+    padding: 16px 16px;
+  }
 }
 
 .section-header {
   display: flex;
   align-items: center;
   gap: 10px;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
 }
 
 .section-title {
   font-size: 20px;
   font-weight: 700;
   color: #14141f;
+  flex: 1;
+}
+
+.double-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #aaa;
+  padding: 4px 12px;
   white-space: nowrap;
 }
 
-.section-line {
-  flex: 1;
-  height: 0.5px;
-  background: #e0e0e0;
+.more-link {
+  font-size: 13px;
+  font-weight: 500;
+  color: #5b64ed;
+  cursor: pointer;
+  white-space: nowrap;
+
+  &:hover {
+    text-decoration: underline;
+  }
 }
 
 .cards {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
+  gap: 12px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
 }
 
 .card {
-  border-radius: 14px;
-  padding: 1.1rem 1.1rem 1rem;
+  border-radius: 16px;
+  padding: 20px 20px 18px;
   display: flex;
   flex-direction: column;
-  gap: 9px;
+  gap: 10px;
   cursor: pointer;
   background: #ffffff;
-  border: 0.5px solid #e0e0e0;
-  border-top-width: 3px;
+  border: 1px solid #ebebf0;
+  border-top-width: 4px;
   transition:
     transform 0.16s,
-    border-color 0.16s;
+    box-shadow 0.16s;
 
   &:hover {
     transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.07);
   }
 
   &.c1 {
-    border-top-color: #7f77dd;
-    &:hover {
-      border-color: #7f77dd;
-    }
+    border-top-color: #e24b4a;
   }
   &.c2 {
-    border-top-color: #e24b4a;
-    &:hover {
-      border-color: #e24b4a;
-    }
+    border-top-color: #f5a623;
   }
   &.c3 {
     border-top-color: #1d9e75;
-    &:hover {
-      border-color: #1d9e75;
-    }
   }
+}
+
+.card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
 }
 
 .card-meta {
@@ -175,10 +223,10 @@ export default {
 }
 
 .badge {
-  font-size: 10.5px;
+  font-size: 11px;
   font-weight: 500;
-  padding: 3px 9px;
-  border-radius: 20px;
+  padding: 3px 10px;
+  border-radius: 99px;
 
   &.b-cat {
     background: #eeedfe;
@@ -198,15 +246,19 @@ export default {
   }
 }
 
-.card-row {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
+.num {
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 1;
+  color: #14141f;
+  opacity: 0.07;
+  flex-shrink: 0;
+  letter-spacing: -0.02em;
 }
 
 .card-title {
-  font-size: 15px;
-  font-weight: 500;
+  font-size: 18px;
+  font-weight: 700;
   color: #14141f;
   margin: 0;
   overflow: hidden;
@@ -214,37 +266,28 @@ export default {
   white-space: nowrap;
 }
 
-.num {
-  font-size: 26px;
-  font-weight: 500;
-  line-height: 1;
-  opacity: 0.07;
-  color: #14141f;
-  flex-shrink: 0;
-}
-
 .card-tags {
   display: flex;
-  gap: 5px;
+  gap: 6px;
   flex-wrap: wrap;
 }
 
 .tag {
   font-size: 11px;
-  color: #888;
-  background: #f4f4f8;
-  padding: 2px 7px;
-  border-radius: 4px;
+  color: #6b6b80;
+  background: #f2f2f8;
+  padding: 3px 9px;
+  border-radius: 99px;
 }
 
 .go-link {
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 12.5px;
-  font-weight: 500;
-  color: #888;
-  margin-top: 2px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #5b64ed;
+  margin-top: 4px;
 
   .arrow {
     transition: transform 0.14s;

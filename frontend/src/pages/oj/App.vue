@@ -249,7 +249,7 @@ a {
   margin-top: calc(var(--header-height) + var(--header-margin));
   display: flex;
   justify-content: center;
-  min-width: var(--global-width);
+  width: 100%;
   background-color: var(--site-background-color);
 }
 
