@@ -295,10 +295,6 @@ a {
   margin-top: calc(var(--header-height) + 28px);
 }
 
-.submission-list-page .submission-list-app > .flex-container {
-  transform: none !important;
-}
-
 html.submission-list-page,
 body.submission-list-page,
 html.submission-list-page #app,
