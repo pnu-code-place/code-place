@@ -2,10 +2,10 @@
   <div class="login-panel">
     <Form ref="formLogin" class="login-form" :model="formLogin" :rules="ruleLogin">
       <FormItem prop="username">
-        <div class="login-id-input">
+        <div class="login-email-field">
           <Input
             type="text"
-            class="customLoginInput"
+            class="customLoginInput login-id-input"
             v-model="formLogin.username"
             placeholder="아이디"
             size="large"
@@ -13,9 +13,7 @@
             @on-enter="handleLogin"
           >
           </Input>
-          <span v-if="showEmailSuffix" class="login-domain-suffix"
-            >@pusan.ac.kr</span
-          >
+          <span class="login-email-domain">@pusan.ac.kr</span>
         </div>
       </FormItem>
       <FormItem prop="password">
@@ -144,18 +142,15 @@ export default {
     },
     normalizeLoginUsername(username) {
       const value = (username || "").trim()
-      if (!value || value.indexOf("@") !== -1) {
+      if (!value) {
         return value
       }
-      return `${value}@pusan.ac.kr`
+      const loginId = value.split("@")[0].trim()
+      return `${loginId}@pusan.ac.kr`
     },
   },
   computed: {
     ...mapGetters(["website", "modalStatus"]),
-    showEmailSuffix() {
-      const username = (this.formLogin.username || "").trim()
-      return username.indexOf("@") === -1
-    },
     visible: {
       get() {
         return this.modalStatus.visible
@@ -189,15 +184,35 @@ export default {
   height: 45px;
   border: none;
   background-color: #5b64ed;
+  color: #fff;
   font-weight: 700;
   font-size: 14px;
   border-radius: 8px;
-  box-shadow: 0 8px 18px rgba(74, 83, 212, 0.14);
+  box-shadow: 0 4px 10px rgba(74, 83, 212, 0.12);
+  transition: background-color 0.18s ease, box-shadow 0.18s ease,
+    transform 0.18s ease;
+
+  &:hover,
+  &:focus {
+    border: none;
+    background-color: #6971ff;
+    color: #fff;
+    box-shadow: 0 5px 12px rgba(91, 100, 237, 0.16);
+  }
+
+  &:active {
+    background-color: #5159df;
+    color: #fff;
+    box-shadow: 0 3px 8px rgba(74, 83, 212, 0.12);
+    transform: translateY(1px);
+  }
 }
 .customLoginInput {
   //outline: 2px solid #255aa4 !important;
 }
 .login-form {
+  @login-input-height: 44px;
+
   /deep/ .ivu-form-item {
     margin-bottom: 16px;
   }
@@ -214,7 +229,7 @@ export default {
   }
 
   /deep/ .ivu-input {
-    height: 42px;
+    height: @login-input-height;
     border-color: #d8dbe4;
     border-radius: 8px;
     color: #31364a;
@@ -234,30 +249,49 @@ export default {
     box-shadow: 0 0 0 2px rgba(91, 100, 237, 0.1);
   }
 }
+.login-email-field {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 10px;
+  width: 100%;
+  align-items: stretch;
+}
 .login-id-input {
-  position: relative;
+  min-width: 0;
+
+  /deep/ .ivu-input-wrapper {
+    width: 100%;
+  }
 
   /deep/ .ivu-input {
-    padding-right: 118px;
+    height: 44px;
+    border: 1px solid #d8dbe4;
+    border-radius: 8px;
+    background: #fff;
+    padding-right: 12px;
+  }
+
+  /deep/ .ivu-input:focus {
+    border-color: #6b72ee;
+    box-shadow: 0 0 0 2px rgba(91, 100, 237, 0.1);
   }
 }
-.login-domain-suffix {
-  position: absolute;
-  top: 1px;
-  right: 1px;
-  bottom: 1px;
-  z-index: 2;
-  display: flex;
+.login-email-domain {
+  min-width: 132px;
+  height: 44px;
+  box-sizing: border-box;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: #5b64ed;
-  background: #f8f9ff;
-  border-left: 1px solid #d8dbe4;
-  border-radius: 0 7px 7px 0;
-  padding: 0 10px;
-  font-size: 13px;
-  font-weight: 700;
+  border: 1px solid #d8dbe4;
+  border-radius: 8px;
+  color: #565d70;
+  background: #fafbfe;
+  font-size: 14px;
+  font-weight: 500;
   line-height: 1;
+  padding: 0 12px;
+  white-space: nowrap;
   pointer-events: none;
 }
 .login-links {
@@ -314,15 +348,16 @@ export default {
     }
   }
 
-  .login-id-input {
-    /deep/ .ivu-input {
-      padding-right: 112px;
-    }
+  .login-email-field {
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 8px;
   }
 
-  .login-domain-suffix {
-    padding: 0 8px;
+  .login-email-domain {
+    height: 42px;
     font-size: 13px;
+    min-width: 118px;
+    padding: 0 10px;
   }
 
   .login-links {
