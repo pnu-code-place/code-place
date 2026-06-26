@@ -228,20 +228,18 @@ td {
   line-height: 1;
   letter-spacing: 0;
   cursor: pointer;
-  border: 1px solid var(--status-line);
+  border: 0;
   border-radius: 4px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   background: var(--status-bg);
   transition:
-    border-color 0.15s ease,
     background-color 0.15s ease,
     color 0.15s ease;
 }
 
 .status-badge:hover {
-  border-color: var(--status-line-strong);
   background: var(--status-bg-hover);
 }
 
@@ -254,8 +252,6 @@ td {
   --status-ink: #216e4e;
   --status-bg: #eef8f1;
   --status-bg-hover: #e4f3e9;
-  --status-line: #d8eadf;
-  --status-line-strong: #bcdcc8;
   --status-focus: rgba(33, 110, 78, 0.2);
 }
 
@@ -263,8 +259,6 @@ td {
   --status-ink: #7f5f01;
   --status-bg: #fff7e0;
   --status-bg-hover: #fff2c7;
-  --status-line: #f0dfb1;
-  --status-line-strong: #dec984;
   --status-focus: rgba(127, 95, 1, 0.2);
 }
 
@@ -274,8 +268,6 @@ td {
   --status-ink: #9e4c00;
   --status-bg: #fff3e8;
   --status-bg-hover: #ffe9d3;
-  --status-line: #f2d2b5;
-  --status-line-strong: #e4b98d;
   --status-focus: rgba(158, 76, 0, 0.2);
 }
 
@@ -284,8 +276,6 @@ td {
   --status-ink: #ae2e24;
   --status-bg: #fff1f0;
   --status-bg-hover: #ffe7e5;
-  --status-line: #efcbc7;
-  --status-line-strong: #e5ada7;
   --status-focus: rgba(174, 46, 36, 0.2);
 }
 
@@ -293,8 +283,6 @@ td {
   --status-ink: #5d1f1a;
   --status-bg: #f8eeee;
   --status-bg-hover: #f3e3e3;
-  --status-line: #e7caca;
-  --status-line-strong: #d8aeae;
   --status-focus: rgba(93, 31, 26, 0.2);
 }
 
@@ -304,8 +292,6 @@ td {
   --status-ink: #1558bc;
   --status-bg: #f0f6ff;
   --status-bg-hover: #e6f0ff;
-  --status-line: #d1e0f7;
-  --status-line-strong: #b3caec;
   --status-focus: rgba(21, 88, 188, 0.2);
 }
 
@@ -313,8 +299,6 @@ td {
   --status-ink: #4f5b6f;
   --status-bg: #f8fafc;
   --status-bg-hover: #f1f5f9;
-  --status-line: #d8dee8;
-  --status-line-strong: #bdc7d5;
   --status-focus: rgba(105, 115, 134, 0.2);
 }
 
