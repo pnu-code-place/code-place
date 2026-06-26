@@ -108,6 +108,9 @@ export default {
     onCmReady() {},
     onCmCodeChange(newCode) {
       this.$emit("update:value", newCode)
+      this.emitCursorPos()
+    },
+    emitCursorPos() {
       this.$emit("update:cursorPos", {
         ln: this.codemirror.doc.getCursor().line,
         ch: this.codemirror.doc.getCursor().ch,
@@ -172,6 +175,7 @@ export default {
     this.codemirror.setOption("theme", customTheme)
 
     this.code = this.value
+    this.codemirror.on("cursorActivity", this.emitCursorPos)
 
     utils.getLanguages().then((languages) => {
       let mode = {}
@@ -186,10 +190,12 @@ export default {
     if (checkContest) {
       this.blockPasteFromExternalSource()
     }
-    this.$emit("update:cursorPos", {
-      ln: this.codemirror.doc.getCursor().line,
-      ch: this.codemirror.doc.getCursor().ch,
-    })
+    this.emitCursorPos()
+  },
+  beforeDestroy() {
+    if (this.codemirror) {
+      this.codemirror.off("cursorActivity", this.emitCursorPos)
+    }
   },
   watch: {
     isDarkMode(value) {
