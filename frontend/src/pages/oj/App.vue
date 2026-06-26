@@ -8,7 +8,11 @@
     </template>
     <div
       class="content-app"
-      :class="{ ps: isProblemSolving, 'submission-list-app': isSubmissionList }"
+      :class="{
+        ps: isProblemSolving,
+        'submission-list-app': isSubmissionList,
+        'flat-white-app': isFlatWhitePage,
+      }"
     >
       <transition name="fadeInUp" mode="out-in">
         <router-view></router-view>
@@ -17,7 +21,10 @@
     <template v-if="!isProblemSolving">
       <div
         class="footer-dummy"
-        :class="{ 'submission-list-footer-dummy': isSubmissionList }"
+        :class="{
+          'submission-list-footer-dummy': isSubmissionList,
+          'flat-white-footer-dummy': isFlatWhitePage,
+        }"
       ></div>
       <CSEPFooter></CSEPFooter>
     </template>
@@ -47,19 +54,19 @@ export default {
   },
   mounted() {
     this.getWebsiteConfig()
-    this.syncSubmissionListChrome()
+    this.syncFlatWhiteChrome()
   },
   updated() {
-    this.syncSubmissionListChrome()
+    this.syncFlatWhiteChrome()
   },
   beforeDestroy() {
-    this.syncSubmissionListChrome(false)
+    this.syncFlatWhiteChrome(false)
   },
   methods: {
     ...mapActions(["getWebsiteConfig", "changeDomTitle"]),
-    syncSubmissionListChrome(force) {
+    syncFlatWhiteChrome(force) {
       const enabled =
-        typeof force === "boolean" ? force : this.isSubmissionList
+        typeof force === "boolean" ? force : this.isFlatWhitePage
       document.documentElement.classList.toggle(
         "submission-list-page",
         enabled,
@@ -75,6 +82,12 @@ export default {
         this.$route.name === "submission-list" || this.$route.path === "/status"
       )
     },
+    isNotFoundPage() {
+      return this.$route.meta && this.$route.meta.title === "404"
+    },
+    isFlatWhitePage() {
+      return this.isSubmissionList || this.isNotFoundPage
+    },
   },
   watch: {
     website() {
@@ -85,7 +98,7 @@ export default {
       handler() {
         this.changeDomTitle()
         this.$nextTick(() => {
-          this.syncSubmissionListChrome()
+          this.syncFlatWhiteChrome()
         })
       },
     },
@@ -287,11 +300,14 @@ a {
 }
 
 .submission-list-app,
-.submission-list-footer-dummy {
+.submission-list-footer-dummy,
+.flat-white-app,
+.flat-white-footer-dummy {
   background-color: #ffffff;
 }
 
-.submission-list-app {
+.submission-list-app,
+.flat-white-app {
   margin-top: calc(var(--header-height) + 28px);
 }
 
