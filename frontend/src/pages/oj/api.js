@@ -105,6 +105,14 @@ export default {
       },
     })
   },
+  getUserActivity(username, days = 365) {
+    return ajax("profile/activity", "get", {
+      params: {
+        username,
+        days,
+      },
+    })
+  },
   getUserProblemInfo(username, query) {
     return ajax("profile/problem", "get", {
       params: {

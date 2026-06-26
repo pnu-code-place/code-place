@@ -1,10 +1,10 @@
 <script>
-import OjSummary from "../../OJSummary.vue"
 import FieldSummary from "./FieldSummary.vue"
 import DifficultySummary from "./DifficultySummary.vue"
 import api from "@oj/api"
 import DashboardSkeleton from "./DashboardSkeleton.vue"
 import ErrorSign from "../../../../general/ErrorSign.vue"
+import ActivityGrass from "./ActivityGrass.vue"
 
 export default {
   name: "dashboard-section",
@@ -13,10 +13,10 @@ export default {
       isLoading: true,
       error: 0,
       dashboardInfo: {},
-      myData: 0,
     }
   },
   components: {
+    ActivityGrass,
     ErrorSign,
     DashboardSkeleton,
     DifficultySummary,
@@ -32,11 +32,8 @@ export default {
         })
         .catch((err) => {
           this.isLoading = false
-          this.error = err.response.status
+          this.error = err.response ? err.response.status : 500
         })
-    },
-    test() {
-      this.myData += 1
     },
   },
   mounted() {
@@ -75,6 +72,8 @@ export default {
   <section>
     <ErrorSign v-if="error !== 0" :code="this.error"></ErrorSign>
     <div v-else>
+      <ActivityGrass></ActivityGrass>
+      <hr />
       <h2>{{ $t("m.Field_Based_Distribution") }}</h2>
       <FieldSummary
         v-if="this.dashboardInfo.fieldInfo"

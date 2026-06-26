@@ -53,16 +53,23 @@ export default {
       return LanguageImageSrc
     },
     languageImageSrc() {
-      if (this.profile.language) {
-        return LanguageImageSrc[this.profile.language]
+      if (this.safeProfile.language) {
+        return LanguageImageSrc[this.safeProfile.language]
       }
       return LanguageImageSrc["undefined"]
     },
     TierImageSrc() {
       return TierImageSrc
     },
+    user() {
+      return this.safeProfile.user || {}
+    },
+    safeProfile() {
+      return this.profile || {}
+    },
     isMyProfile() {
-      return this.$store.getters.user.username === this.profile.user.username
+      const storeUser = (this.$store.getters && this.$store.getters.user) || {}
+      return storeUser.username === this.user.username
     },
     gaugeWidth() {
       return (
@@ -90,13 +97,13 @@ export default {
     goSubmission() {
       this.$router.push({
         name: "submission-list",
-        query: { username: this.profile.user.username },
+        query: { username: this.user.username },
       })
     },
     goSolved() {
       this.$router.push({
         name: "user-problems",
-        params: { username: this.profile.user.username },
+        params: { username: this.user.username },
         query: { status: "Solved" },
       })
       window.location.reload()
@@ -120,21 +127,23 @@ export default {
         <img
           v-if="!this.loading"
           class="avatar"
-          :src="profile.avatar"
+          :src="safeProfile.avatar"
           alt="user avatar image"
         />
         <div v-else class="avatar skeleton" />
       </div>
       <div class="info-column">
         <div class="info-column__top">
-          <div class="user-name">
-            {{ profile.user.username }}
+          <div class="user-name" v-if="!this.loading">
+            {{ user.username }}
           </div>
-          <div class="user-description">
-            {{ profile.school || "대학" }} {{ profile.major || "전공" }}
+          <div v-else class="skeleton user-name-skeleton"></div>
+          <div class="user-description" v-if="!this.loading">
+            {{ safeProfile.school || "대학" }} {{ safeProfile.major || "전공" }}
           </div>
-          <div v-if="profile.mood" class="user-mood">
-            {{ profile.mood || "" }}
+          <div v-else class="skeleton user-description-skeleton"></div>
+          <div v-if="!this.loading && safeProfile.mood" class="user-mood">
+            {{ safeProfile.mood || "" }}
           </div>
         </div>
         <div class="info-column__bottom">
@@ -156,7 +165,7 @@ export default {
               :src="this.languageImageSrc"
               alt="user language"
             />
-            <a :href="profile.github">
+            <a :href="safeProfile.github">
               <img
                 class="icon__github icon"
                 :src="this.githubIcon"
@@ -290,10 +299,21 @@ export default {
           font-weight: 600;
         }
 
+        .user-name-skeleton {
+          width: 110px;
+          height: 24px;
+          margin-bottom: 6px;
+        }
+
         .user-description {
           font-size: 14px;
           font-weight: 600;
           color: var(--ps-content-text-color);
+        }
+
+        .user-description-skeleton {
+          width: 150px;
+          height: 18px;
         }
 
         .user-mood {
