@@ -306,7 +306,9 @@ export default {
   },
   methods: {
     fetchActivity() {
-      if (!this.username) {
+      const requestedUsername = this.username
+
+      if (!requestedUsername) {
         this.isLoading = false
         return
       }
@@ -314,13 +316,19 @@ export default {
       this.isLoading = true
       this.error = 0
       api
-        .getUserActivity(this.username, ACTIVITY_DAYS)
+        .getUserActivity(requestedUsername, ACTIVITY_DAYS)
         .then((res) => {
+          if (requestedUsername !== this.username) {
+            return
+          }
           this.activity = res.data.data
           this.isLoading = false
           this.$nextTick(this.updateCellSize)
         })
         .catch((err) => {
+          if (requestedUsername !== this.username) {
+            return
+          }
           this.isLoading = false
           this.error = err.response ? err.response.status : 500
         })
