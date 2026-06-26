@@ -248,10 +248,21 @@ export default {
     onMouseMove(e) {
       if (!this.isDragging) return
       const parentRect = this.$el.parentElement.getBoundingClientRect()
+      const editorArea = this.$el.parentElement.querySelector(".code-editor-area")
+      const editorAreaTop = editorArea
+        ? editorArea.getBoundingClientRect().top
+        : parentRect.top
+      const minPanelHeight = 120
+      const minEditorHeight = 220
       const newHeight = parentRect.bottom - e.clientY
-      if (newHeight > 120 && newHeight < parentRect.height - 60) {
-        this.$el.style.height = `${newHeight}px`
-      }
+      const maxPanelHeight = parentRect.bottom - editorAreaTop - minEditorHeight
+      if (maxPanelHeight < minPanelHeight) return
+
+      const nextHeight = Math.min(
+        Math.max(newHeight, minPanelHeight),
+        maxPanelHeight,
+      )
+      this.$el.style.height = `${nextHeight}px`
     },
     onMouseUp() {
       this.isDragging = false
@@ -291,13 +302,11 @@ export default {
 <style scoped>
 /* 기존 스타일 그대로 유지 (생략 없이 사용하세요) */
 .editor-container {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  position: relative;
   height: 260px;
   display: flex;
   flex-direction: column;
+  flex: 0 0 auto;
   z-index: 10;
 }
 
