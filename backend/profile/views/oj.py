@@ -195,16 +195,19 @@ class UserProfileActivityAPI(APIView):
             count_by_date[activity_date] = count_by_date.get(activity_date, 0) + 1
 
         current_streak, longest_streak = calculate_activity_streaks(start_date, end_date, count_by_date)
-        activity_days = [
-            {"date": activity_date.isoformat(), "count": count}
-            for activity_date, count in sorted(count_by_date.items())
-        ]
+        activity_days = []
+        total_count = 0
+        max_count = 0
+        for activity_date, count in sorted(count_by_date.items()):
+            activity_days.append({"date": activity_date.isoformat(), "count": count})
+            total_count += count
+            max_count = max(max_count, count)
 
         return self.success({
             "start_date": start_date.isoformat(),
             "end_date": end_date.isoformat(),
-            "total": sum(day["count"] for day in activity_days),
-            "max_count": max([day["count"] for day in activity_days], default=0),
+            "total": total_count,
+            "max_count": max_count,
             "current_streak": current_streak,
             "longest_streak": longest_streak,
             "day_boundary": ACTIVITY_DAY_BOUNDARY,

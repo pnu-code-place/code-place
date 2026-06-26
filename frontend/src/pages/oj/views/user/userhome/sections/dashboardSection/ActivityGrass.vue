@@ -1,18 +1,16 @@
 <template>
   <div class="activity-grass" :style="{ '--activity-cell-size': `${cellSize}px` }">
     <div class="activity-heading">
-      <div class="activity-title-group">
-        <div class="activity-title-copy">
-          <h2>연속 해결 {{ currentStreak }}일째</h2>
-          <span>
-            <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
-              <path
-                d="M7 4h10v2h3v2.5c0 2.6-1.8 4.9-4.3 5.5-.7 1.2-1.8 2-3.2 2.3V19H16v2H8v-2h3.5v-2.7c-1.4-.3-2.5-1.1-3.2-2.3C5.8 13.4 4 11.1 4 8.5V6h3V4Zm0 4H6v.5c0 1.3.7 2.5 1.8 3.2C7.3 10.6 7 9.4 7 8Zm10 0c0 1.4-.3 2.6-.8 3.7 1.1-.7 1.8-1.9 1.8-3.2V8h-1Z"
-              />
-            </svg>
-            최장 {{ longestStreak }}일 연속 문제 해결
-          </span>
-        </div>
+      <div class="activity-title-copy">
+        <h2>연속 해결 {{ currentStreak }}일째</h2>
+        <span>
+          <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+            <path
+              d="M7 4h10v2h3v2.5c0 2.6-1.8 4.9-4.3 5.5-.7 1.2-1.8 2-3.2 2.3V19H16v2H8v-2h3.5v-2.7c-1.4-.3-2.5-1.1-3.2-2.3C5.8 13.4 4 11.1 4 8.5V6h3V4Zm0 4H6v.5c0 1.3.7 2.5 1.8 3.2C7.3 10.6 7 9.4 7 8Zm10 0c0 1.4-.3 2.6-.8 3.7 1.1-.7 1.8-1.9 1.8-3.2V8h-1Z"
+            />
+          </svg>
+          최장 {{ longestStreak }}일 연속 문제 해결
+        </span>
       </div>
       <div class="activity-summary">
         <span class="summary-icon" aria-hidden="true">
@@ -309,6 +307,7 @@ export default {
   methods: {
     fetchActivity() {
       if (!this.username) {
+        this.isLoading = false
         return
       }
 
@@ -396,12 +395,6 @@ export default {
   align-items: flex-start;
   gap: 20px;
   padding: 0 10px;
-}
-
-.activity-title-group {
-  display: flex;
-  align-items: center;
-  min-width: 0;
 }
 
 .activity-title-copy {

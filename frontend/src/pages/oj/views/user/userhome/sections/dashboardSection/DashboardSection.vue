@@ -13,7 +13,6 @@ export default {
       isLoading: true,
       error: 0,
       dashboardInfo: {},
-      myData: 0,
     }
   },
   components: {
@@ -35,9 +34,6 @@ export default {
           this.isLoading = false
           this.error = err.response ? err.response.status : 500
         })
-    },
-    test() {
-      this.myData += 1
     },
   },
   mounted() {
