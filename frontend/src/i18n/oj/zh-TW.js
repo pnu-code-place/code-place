@@ -255,6 +255,7 @@ export const m = {
   Option: "選項",
   Mine: "我的",
   Search_Author: "搜尋作者",
+  Search_Submitter: "搜尋提交者",
   Accepted: "答案正確",
   Time_Limit_Exceeded: "超出時間限制",
   Memory_Limit_Exceeded: "超出記憶體空間限制",
