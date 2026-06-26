@@ -82,14 +82,17 @@
             :submissionId="submissionId"
             :isSubmitting="submitting"
           />
-          <CodeEditor
-            :value.sync="code"
-            :languages="problem.languages"
-            :language="language"
-            :cursorPos.sync="cursorPos"
-            :allowPaste="allowPaste"
-            ref="myCm"
-          />
+          <div class="code-editor-area">
+            <CodeEditor
+              :value.sync="code"
+              :languages="problem.languages"
+              :language="language"
+              :cursorPos.sync="cursorPos"
+              :allowPaste="allowPaste"
+              ref="myCm"
+            />
+            <StickyLnCol :cursorPos="cursorPos" />
+          </div>
           <BottomDrag
             ref="bottomDrag"
             :result="result"
@@ -97,7 +100,6 @@
             :contestID="contestID"
             :code="code"
           />
-          <StickyLnCol :cursorPos="cursorPos" />
         </div>
       </pane>
     </splitpanes>
@@ -763,6 +765,20 @@ export default {
 .editor-pane-wrapper {
   position: relative;
   height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.editor-pane-wrapper > .container-header {
+  flex: 0 0 auto;
+}
+
+.code-editor-area {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 .tab-headers {
