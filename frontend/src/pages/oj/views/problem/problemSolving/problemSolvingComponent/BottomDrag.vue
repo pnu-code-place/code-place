@@ -248,15 +248,21 @@ export default {
     onMouseMove(e) {
       if (!this.isDragging) return
       const parentRect = this.$el.parentElement.getBoundingClientRect()
+      const editorArea = this.$el.parentElement.querySelector(".code-editor-area")
+      const editorAreaTop = editorArea
+        ? editorArea.getBoundingClientRect().top
+        : parentRect.top
       const minPanelHeight = 120
       const minEditorHeight = 220
       const newHeight = parentRect.bottom - e.clientY
-      if (
-        newHeight > minPanelHeight &&
-        newHeight < parentRect.height - minEditorHeight
-      ) {
-        this.$el.style.height = `${newHeight}px`
-      }
+      const maxPanelHeight = parentRect.bottom - editorAreaTop - minEditorHeight
+      if (maxPanelHeight < minPanelHeight) return
+
+      const nextHeight = Math.min(
+        Math.max(newHeight, minPanelHeight),
+        maxPanelHeight,
+      )
+      this.$el.style.height = `${nextHeight}px`
     },
     onMouseUp() {
       this.isDragging = false
