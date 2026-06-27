@@ -215,6 +215,7 @@ th {
   color: inherit;
   font: inherit;
   font-weight: bold;
+  white-space: nowrap;
   background: transparent;
   border: 0;
   cursor: pointer;
