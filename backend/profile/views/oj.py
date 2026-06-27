@@ -24,11 +24,16 @@ DEFAULT_ACTIVITY_DAYS = 365
 MAX_ACTIVITY_DAYS = 366
 ACTIVITY_DAY_START_HOUR = 6
 ACTIVITY_DAY_BOUNDARY = "6:00 UTC+9"
+KST = datetime.timezone(datetime.timedelta(hours=9))
 
 
 def get_activity_service_date(dt, current_timezone):
     local_dt = timezone.localtime(dt, current_timezone)
     return (local_dt - datetime.timedelta(hours=ACTIVITY_DAY_START_HOUR)).date()
+
+
+def format_service_month(service_date):
+    return f"{service_date.year}-{service_date.month:02d}"
 
 
 def get_activity_day_bounds(days, current_timezone):
@@ -316,11 +321,14 @@ class ProfileProblemAPIView(APIView):
 
         result = []
         for submission in submissions:
+            service_date = get_activity_service_date(submission.create_time, KST)
             result.append({
                 'submissionId': submission.id,
                 'id': submission.problem._id,
                 'title': submission.problem.title,
                 'submitTime': submission.create_time,
+                'serviceDate': service_date,
+                'serviceMonth': format_service_month(service_date),
                 'difficulty': submission.problem.difficulty,
                 'field': ProblemField.intToStr[submission.problem.field],
                 'status': submission.result,

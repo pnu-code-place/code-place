@@ -268,26 +268,20 @@ import utils from "../../../../../../../utils/utils"
 
 library.add(faChevronLeft, faChevronRight)
 
+const SERVICE_DAY_UTC_OFFSET_HOURS = 3
+const HOUR_IN_MS = 60 * 60 * 1000
+
 export default {
   name: "problem-section-list",
   components: { CustomDropdown, ErrorSign, ProblemSkeleton, FontAwesomeIcon },
   data() {
-    const now = new Date()
-    const today = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate(),
-      now.getHours() - 6,
-      now.getMinutes(),
-      now.getSeconds(),
-      now.getMilliseconds()
-    )
+    const today = new Date(Date.now() + SERVICE_DAY_UTC_OFFSET_HOURS * HOUR_IN_MS)
     return {
       isLoading: true,
       isTotalCountLoading: true,
       error: 0,
       totalCountError: 0,
-      calendarDate: new Date(today.getFullYear(), today.getMonth(), 1),
+      calendarDate: new Date(today.getUTCFullYear(), today.getUTCMonth(), 1),
       maxProblemsPerDay: 2,
       activeView: "calendar",
       query: {
@@ -394,7 +388,7 @@ export default {
       )
     },
     moveToToday() {
-      const today = this.getServiceDate(new Date())
+      const today = this.parseDateKey(this.getCurrentServiceDateKey())
       this.calendarDate = new Date(today.getFullYear(), today.getMonth(), 1)
     },
     visibleProblems(problems) {
@@ -417,7 +411,9 @@ export default {
     },
     syncCalendarToResult() {
       if (this.problem_list.length > 0) {
-        const latestDate = this.getProblemServiceDate(this.problem_list[0])
+        const latestDate = this.parseDateKey(
+          this.createDisplayProblem(this.problem_list[0]).serviceDateKey
+        )
         this.calendarDate = new Date(
           latestDate.getFullYear(),
           latestDate.getMonth(),
@@ -425,19 +421,32 @@ export default {
         )
       }
     },
-    getProblemServiceDate(problem) {
-      return this.getServiceDate(new Date(problem.submitTime))
-    },
-    getServiceDate(date) {
-      return new Date(
-        date.getFullYear(),
-        date.getMonth(),
-        date.getDate(),
-        date.getHours() - 6,
-        date.getMinutes(),
-        date.getSeconds(),
-        date.getMilliseconds()
+    getCurrentServiceDateKey() {
+      return this.formatUtcDateKey(
+        new Date(Date.now() + SERVICE_DAY_UTC_OFFSET_HOURS * HOUR_IN_MS)
       )
+    },
+    getSubmitTimeServiceDateKey(submitTime) {
+      return this.formatUtcDateKey(
+        new Date(
+          new Date(submitTime).getTime() +
+            SERVICE_DAY_UTC_OFFSET_HOURS * HOUR_IN_MS
+        )
+      )
+    },
+    parseDateKey(dateKey) {
+      const [year, month, day] = dateKey.split("-").map(Number)
+      return new Date(year, month - 1, day)
+    },
+    parseMonthKey(monthKey) {
+      const [year, month] = monthKey.split("-").map(Number)
+      return { year, month }
+    },
+    formatUtcDateKey(date) {
+      const year = date.getUTCFullYear()
+      const month = `${date.getUTCMonth() + 1}`.padStart(2, "0")
+      const day = `${date.getUTCDate()}`.padStart(2, "0")
+      return `${year}-${month}-${day}`
     },
     formatMonthKey(date) {
       return `${date.getFullYear()}-${`${date.getMonth() + 1}`.padStart(2, "0")}`
@@ -449,12 +458,15 @@ export default {
       return `${year}-${month}-${day}`
     },
     createDisplayProblem(problem) {
-      const serviceDate = this.getProblemServiceDate(problem)
+      const serviceDateKey =
+        problem.serviceDate || this.getSubmitTimeServiceDateKey(problem.submitTime)
+      const serviceMonthKey = problem.serviceMonth || serviceDateKey.slice(0, 7)
+      const serviceDate = this.parseDateKey(serviceDateKey)
       return {
         ...problem,
         serviceDate,
-        serviceDateKey: this.formatDateKey(serviceDate),
-        serviceMonthKey: this.formatMonthKey(serviceDate),
+        serviceDateKey,
+        serviceMonthKey,
       }
     },
     getProblemIdentity(problem) {
@@ -533,14 +545,10 @@ export default {
       }, {})
     },
     currentCalendarMonthProblems() {
-      const year = this.calendarDate.getFullYear()
-      const month = this.calendarDate.getMonth()
-      return this.uniqueDailyProblems.filter((problem) => {
-        const submitDate = problem.serviceDate
-        return (
-          submitDate.getFullYear() === year && submitDate.getMonth() === month
-        )
-      })
+      const monthKey = this.formatMonthKey(this.calendarDate)
+      return this.uniqueDailyProblems.filter(
+        (problem) => problem.serviceMonthKey === monthKey
+      )
     },
     sortedProblems() {
       return this.problem_list
@@ -562,14 +570,14 @@ export default {
       const groups = []
       const groupMap = {}
       this.uniqueMonthlyProblems.forEach((problem) => {
-        const submitDate = problem.serviceDate
         const key = problem.serviceMonthKey
         if (!groupMap[key]) {
+          const monthDate = this.parseMonthKey(key)
           groupMap[key] = {
             key,
             title: this.$t("m.Calendar_Month_Title", {
-              year: submitDate.getFullYear(),
-              month: submitDate.getMonth() + 1,
+              year: monthDate.year,
+              month: monthDate.month,
             }),
             problems: [],
           }
@@ -586,7 +594,7 @@ export default {
       const startDate = new Date(firstDay)
       startDate.setDate(firstDay.getDate() - firstDay.getDay())
 
-      const todayKey = this.formatDateKey(this.getServiceDate(new Date()))
+      const todayKey = this.getCurrentServiceDateKey()
       const days = []
       for (let index = 0; index < 42; index += 1) {
         const date = new Date(startDate)

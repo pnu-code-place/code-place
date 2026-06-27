@@ -38,6 +38,8 @@ class ProfileProblemSerializer(serializers.Serializer):
     id = serializers.CharField()
     title = serializers.CharField()
     submitTime = serializers.DateTimeField()
+    serviceDate = serializers.DateField()
+    serviceMonth = serializers.CharField()
     difficulty = serializers.CharField()
     field = serializers.CharField()
     status = serializers.IntegerField()

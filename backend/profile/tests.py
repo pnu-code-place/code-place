@@ -170,10 +170,27 @@ class ProfileProblemAPITest(APITestCase):
         self.assertEqual(len(data), 2)
         self.assertEqual(data[0]["submissionId"], latest_submission.id)
         self.assertEqual(data[0]["id"], self.problem._id)
+        self.assertEqual(data[0]["serviceDate"], base_time.date().isoformat())
+        self.assertEqual(data[0]["serviceMonth"], "2026-06")
         self.assertEqual(data[0]["status"], JudgeStatus.ACCEPTED)
         self.assertEqual(data[1]["submissionId"], older_submission.id)
         self.assertEqual(data[1]["id"], self.problem._id)
         self.assertEqual(data[1]["status"], JudgeStatus.WRONG_ANSWER)
+
+    def test_returns_service_date_by_six_am_kst_boundary(self):
+        before_boundary = datetime.datetime(2026, 6, 26, 20, 59, tzinfo=datetime.timezone.utc)
+        after_boundary = datetime.datetime(2026, 6, 26, 21, 0, tzinfo=datetime.timezone.utc)
+        self.create_submission(JudgeStatus.ACCEPTED, before_boundary)
+        self.create_submission(JudgeStatus.ACCEPTED, after_boundary)
+
+        response = self.client.get(self.url, {"username": self.user.username})
+
+        self.assertSuccess(response)
+        data = response.data["data"]
+        self.assertEqual(data[0]["serviceDate"], "2026-06-27")
+        self.assertEqual(data[0]["serviceMonth"], "2026-06")
+        self.assertEqual(data[1]["serviceDate"], "2026-06-26")
+        self.assertEqual(data[1]["serviceMonth"], "2026-06")
 
     def test_filters_problem_field_by_numeric_or_string_value(self):
         current_timezone = timezone.get_current_timezone()
