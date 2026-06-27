@@ -35,6 +35,7 @@
           v-for="recommend_problem in recommendation.recommend_problems"
           :key="recommend_problem._id"
           :recommend_problem="recommend_problem"
+          :showTags="showTags"
         />
       </template>
     </template>
@@ -51,6 +52,12 @@ import InSufficientData from "./InSufficientData.vue"
 export default {
   name: "PersonalRecommendationBox",
   components: { InSufficientData, RecommendProblem },
+  props: {
+    showTags: {
+      type: Boolean,
+      default: true,
+    },
+  },
   data() {
     return {
       recommendation: null,

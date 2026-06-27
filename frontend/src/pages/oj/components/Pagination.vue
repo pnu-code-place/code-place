@@ -6,7 +6,7 @@
       @on-change="onChange"
       @on-page-size-change="onPageSizeChange"
       :show-sizer="showSizer"
-      :page-size-opts="[10, 30, 50, 100, 200]"
+      :page-size-opts="pageSizeOpts"
       :current="current"
     ></Page>
   </div>
@@ -32,6 +32,11 @@ export default {
     current: {
       required: false,
       type: Number,
+    },
+    pageSizeOpts: {
+      required: false,
+      type: Array,
+      default: () => [10, 30, 50, 100, 200],
     },
   },
   methods: {

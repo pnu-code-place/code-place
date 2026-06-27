@@ -211,6 +211,8 @@ export const m = {
   All: "全部",
   Reset: "重置",
   Pick_One: "选择",
+  Hide_Tags: "隐藏标签",
+  Show_Tags: "显示标签",
   Difficulty: "难度",
   Total: "总数",
   AC_Rate: "通过率",
