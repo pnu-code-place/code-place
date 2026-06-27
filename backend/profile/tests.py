@@ -133,3 +133,108 @@ class UserProfileActivityAPITest(APITestCase):
             {"date": yesterday.isoformat(), "count": 1},
             {"date": today.isoformat(), "count": 1},
         ])
+
+
+class ProfileProblemAPITest(APITestCase):
+
+    def setUp(self):
+        self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
+        self.user = self.create_user(email="problem@test.com", username="problem", password="test1234!")
+        problem_data = copy.deepcopy(DEFAULT_PROBLEM_DATA)
+        problem_data["_id"] = "PROFILE-PROBLEM-1"
+        self.problem = ProblemCreateTestBase.add_problem(problem_data, self.user)
+        self.url = self.reverse("profile_problem_api")
+
+    def create_submission(self, result, created_at):
+        submission = Submission.objects.create(
+            user_id=self.user.id,
+            username=self.user.username,
+            problem=self.problem,
+            code="print(1)",
+            language="Python3",
+            result=result,
+        )
+        Submission.objects.filter(id=submission.id).update(create_time=created_at)
+        return submission
+
+    def test_returns_all_problem_submissions_in_latest_order(self):
+        current_timezone = timezone.get_current_timezone()
+        base_time = timezone.make_aware(datetime.datetime(2026, 6, 25, 12, 0), current_timezone)
+        older_submission = self.create_submission(JudgeStatus.WRONG_ANSWER, base_time)
+        latest_submission = self.create_submission(JudgeStatus.ACCEPTED, base_time + datetime.timedelta(minutes=5))
+
+        response = self.client.get(self.url, {"username": self.user.username})
+
+        self.assertSuccess(response)
+        data = response.data["data"]
+        self.assertEqual(len(data), 2)
+        self.assertEqual(data[0]["submissionId"], latest_submission.id)
+        self.assertEqual(data[0]["id"], self.problem._id)
+        self.assertEqual(data[0]["serviceDate"], base_time.date().isoformat())
+        self.assertEqual(data[0]["serviceMonth"], "2026-06")
+        self.assertEqual(data[0]["status"], JudgeStatus.ACCEPTED)
+        self.assertEqual(data[1]["submissionId"], older_submission.id)
+        self.assertEqual(data[1]["id"], self.problem._id)
+        self.assertEqual(data[1]["status"], JudgeStatus.WRONG_ANSWER)
+
+    def test_returns_service_date_by_six_am_kst_boundary(self):
+        before_boundary = datetime.datetime(2026, 6, 26, 20, 59, tzinfo=datetime.timezone.utc)
+        after_boundary = datetime.datetime(2026, 6, 26, 21, 0, tzinfo=datetime.timezone.utc)
+        self.create_submission(JudgeStatus.ACCEPTED, before_boundary)
+        self.create_submission(JudgeStatus.ACCEPTED, after_boundary)
+
+        response = self.client.get(self.url, {"username": self.user.username})
+
+        self.assertSuccess(response)
+        data = response.data["data"]
+        self.assertEqual(data[0]["serviceDate"], "2026-06-27")
+        self.assertEqual(data[0]["serviceMonth"], "2026-06")
+        self.assertEqual(data[1]["serviceDate"], "2026-06-26")
+        self.assertEqual(data[1]["serviceMonth"], "2026-06")
+
+    def test_filters_problem_field_by_numeric_or_string_value(self):
+        current_timezone = timezone.get_current_timezone()
+        created_at = timezone.make_aware(datetime.datetime(2026, 6, 25, 12, 0), current_timezone)
+        self.create_submission(JudgeStatus.ACCEPTED, created_at)
+
+        numeric_response = self.client.get(self.url, {"username": self.user.username, "field": "0"})
+        string_response = self.client.get(self.url, {"username": self.user.username, "field": "implementation"})
+
+        self.assertSuccess(numeric_response)
+        self.assertSuccess(string_response)
+        self.assertEqual(numeric_response.data["data"], string_response.data["data"])
+        self.assertEqual(len(string_response.data["data"]), 1)
+
+    def test_invalid_problem_field_filter_returns_api_error(self):
+        response = self.client.get(self.url, {"username": self.user.username, "field": "unknown"})
+
+        self.assertFailed(response, "Invalid field")
+
+    def test_missing_username_returns_api_error(self):
+        response = self.client.get(self.url)
+
+        self.assertFailed(response, "username is required")
+
+    def test_unknown_username_returns_api_error(self):
+        response = self.client.get(self.url, {"username": "missing"})
+
+        self.assertFailed(response, "User does not exist")
+
+    def test_invalid_problem_status_filter_returns_api_error(self):
+        response = self.client.get(self.url, {"username": self.user.username, "status": "unknown"})
+
+        self.assertFailed(response, "Invalid status")
+
+    def test_failed_status_filter_excludes_pending_submissions(self):
+        current_timezone = timezone.get_current_timezone()
+        base_time = timezone.make_aware(datetime.datetime(2026, 6, 25, 12, 0), current_timezone)
+        self.create_submission(JudgeStatus.WRONG_ANSWER, base_time)
+        self.create_submission(JudgeStatus.PENDING, base_time + datetime.timedelta(minutes=1))
+        self.create_submission(JudgeStatus.JUDGING, base_time + datetime.timedelta(minutes=2))
+
+        response = self.client.get(self.url, {"username": self.user.username, "status": "Failed"})
+
+        self.assertSuccess(response)
+        data = response.data["data"]
+        self.assertEqual(len(data), 1)
+        self.assertEqual(data[0]["status"], JudgeStatus.WRONG_ANSWER)

@@ -1,7 +1,7 @@
 import os
 import datetime
 
-from django.db.models import OuterRef, Subquery, Q, Count, F
+from django.db.models import Q, Count, F
 from django.http import HttpResponseNotFound
 from django.utils.decorators import method_decorator
 from django.utils import timezone
@@ -24,11 +24,21 @@ DEFAULT_ACTIVITY_DAYS = 365
 MAX_ACTIVITY_DAYS = 366
 ACTIVITY_DAY_START_HOUR = 6
 ACTIVITY_DAY_BOUNDARY = "6:00 UTC+9"
+KST = datetime.timezone(datetime.timedelta(hours=9))
+NON_FAILED_JUDGE_STATUSES = [
+    JudgeStatus.ACCEPTED,
+    JudgeStatus.PENDING,
+    JudgeStatus.JUDGING,
+]
 
 
 def get_activity_service_date(dt, current_timezone):
     local_dt = timezone.localtime(dt, current_timezone)
     return (local_dt - datetime.timedelta(hours=ACTIVITY_DAY_START_HOUR)).date()
+
+
+def format_service_month(service_date):
+    return f"{service_date.year}-{service_date.month:02d}"
 
 
 def get_activity_day_bounds(days, current_timezone):
@@ -245,9 +255,9 @@ class AvatarUploadAPI(APIView):
 class ProfileProblemAPIView(APIView):
 
     def get(self, request):
-        """Get the latest submission for each problem of a user.
+        """Get submissions of a user.
 
-        This API retrieves the latest submission for each problem of a user and returns the details.
+        This API retrieves submissions of a user and returns the details.
         Submissions can be filtered by various parameters like below.
 
         Query Parameters:
@@ -259,11 +269,11 @@ class ProfileProblemAPIView(APIView):
             endDate (Optional[str]): End date for filtering (YYYY-MM-DD)
         
         Returns:
-            ProfileProblemSerializer.data: List of latest submissions for each problem.
+            ProfileProblemSerializer.data: List of submissions.
         """
         username = request.GET.get('username')
         if not username:
-            self.error("username is required")
+            return self.error("username is required")
 
         field = request.GET.get('field')
         difficulty = request.GET.get('difficulty')
@@ -271,26 +281,33 @@ class ProfileProblemAPIView(APIView):
         start_date_str = request.GET.get('startDate')
         end_date_str = request.GET.get('endDate')
 
-        user_id = User.objects.get(username=username).id
+        user = User.objects.filter(username=username).first()
+        if not user:
+            return self.error("User does not exist")
 
-        # 각 문제별 최신 제출을 찾는 서브쿼리
-        latest_submissions = Submission.objects.filter(
-            user_id=user_id, problem=OuterRef('problem')).order_by('-create_time').values('id')[:1]
-
-        # 메인 쿼리
-        submissions = Submission.objects.filter(
-            id__in=Subquery(latest_submissions)).select_related('problem').order_by('-create_time')
+        submissions = Submission.objects.filter(user_id=user.id).select_related('problem').order_by('-create_time')
 
         # Filtering
         if field and field != 'All':
+            if field in ProblemField.strToInt:
+                field = ProblemField.strToInt[field]
+            else:
+                try:
+                    field = int(field)
+                except (TypeError, ValueError):
+                    return self.error("Invalid field")
+                if field not in ProblemField.intToStr:
+                    return self.error("Invalid field")
             submissions = submissions.filter(problem__field=field)
         if difficulty and difficulty != 'All':
             submissions = submissions.filter(problem__difficulty=difficulty)
         if status and status != 'All':
             if status == "Solved":
-                submissions = submissions.filter(result=0)
+                submissions = submissions.filter(result=JudgeStatus.ACCEPTED)
+            elif status == "Failed":
+                submissions = submissions.exclude(result__in=NON_FAILED_JUDGE_STATUSES)
             else:
-                submissions = submissions.filter(~Q(result=0))
+                return self.error("Invalid status")
 
         # Date Filtering
         try:
@@ -309,12 +326,17 @@ class ProfileProblemAPIView(APIView):
 
         result = []
         for submission in submissions:
+            service_date = get_activity_service_date(submission.create_time, KST)
             result.append({
+                'submissionId': submission.id,
                 'id': submission.problem._id,
                 'title': submission.problem.title,
                 'submitTime': submission.create_time,
+                'serviceDate': service_date,
+                'serviceMonth': format_service_month(service_date),
                 'difficulty': submission.problem.difficulty,
                 'field': ProblemField.intToStr[submission.problem.field],
+                'status': submission.result,
             })
 
         serializer = ProfileProblemSerializer(data=result, many=True)
