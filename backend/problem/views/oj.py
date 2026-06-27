@@ -3,7 +3,7 @@ import random
 import json
 
 from django.db import transaction
-from django.db.models import Count, F, Q
+from django.db.models import Case, Count, ExpressionWrapper, F, FloatField, IntegerField, Q, Value, When
 from django.http import HttpResponseBadRequest, HttpResponseNotFound, StreamingHttpResponse
 from django.contrib.auth import get_user_model
 
@@ -83,6 +83,22 @@ class BonusProblemAPI(APIView):
 
 
 class ProblemAPI(APIView):
+    DIFFICULTY_ORDER = {
+        Difficulty.VERYLOW: 1,
+        Difficulty.LOW: 2,
+        Difficulty.MID: 3,
+        Difficulty.HIGH: 4,
+        Difficulty.VERYHIGH: 5,
+    }
+
+    SORT_FIELDS = {
+        "difficulty_asc": ("difficulty_order", "_id"),
+        "difficulty_desc": ("-difficulty_order", "_id"),
+        "accepted_desc": ("-accepted_number", "_id"),
+        "accepted_asc": ("accepted_number", "_id"),
+        "ac_rate_desc": ("-ac_rate", "_id"),
+        "ac_rate_asc": ("ac_rate", "_id"),
+    }
 
     @staticmethod
     def _add_problem_status(request, queryset_values):
@@ -142,6 +158,27 @@ class ProblemAPI(APIView):
         field = request.GET.get("field")
         if field:
             problems = problems.filter(field=field)
+
+        sort = request.GET.get("sort")
+        if sort in self.SORT_FIELDS:
+            problems = problems.annotate(
+                difficulty_order=Case(
+                    *[
+                        When(difficulty=difficulty, then=Value(order))
+                        for difficulty, order in self.DIFFICULTY_ORDER.items()
+                    ],
+                    default=Value(0),
+                    output_field=IntegerField(),
+                ),
+                ac_rate=Case(
+                    When(submission_number=0, then=Value(0.0)),
+                    default=ExpressionWrapper(
+                        F("accepted_number") * 1.0 / F("submission_number"),
+                        output_field=FloatField(),
+                    ),
+                    output_field=FloatField(),
+                ),
+            ).order_by(*self.SORT_FIELDS[sort])
 
         # 根据profile 为做过的题目添加标记
         data = self.paginate_data(request, problems, ProblemSerializer)

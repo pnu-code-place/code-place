@@ -241,6 +241,90 @@ class ProblemAPITest(ProblemCreateTestBase):
         resp = self.client.get(f"{self.url}?limit=10")
         self.assertSuccess(resp)
 
+    def test_get_problem_list_sort_by_accepted_number(self):
+        self.problem.accepted_number = 2
+        self.problem.submission_number = 10
+        self.problem.save(update_fields=["accepted_number", "submission_number"])
+        more_accepted_problem = self.create_problem_with_custom_field(
+            self.problem.created_by,
+            _id="A-111",
+            title="accepted sort target",
+            accepted_number=5,
+            submission_number=8,
+        )
+
+        resp = self.client.get(f"{self.url}?limit=10&sort=accepted_desc")
+
+        self.assertSuccess(resp)
+        results = resp.data["data"]["results"]
+        self.assertEqual(results[0]["_id"], more_accepted_problem._id)
+
+        resp = self.client.get(f"{self.url}?limit=10&sort=accepted_asc")
+
+        self.assertSuccess(resp)
+        results = resp.data["data"]["results"]
+        self.assertEqual(results[0]["_id"], self.problem._id)
+
+    def test_get_problem_list_sort_by_ac_rate(self):
+        self.problem.accepted_number = 0
+        self.problem.submission_number = 0
+        self.problem.save(update_fields=["accepted_number", "submission_number"])
+        higher_rate_problem = self.create_problem_with_custom_field(
+            self.problem.created_by,
+            _id="A-112",
+            title="rate sort target",
+            accepted_number=3,
+            submission_number=4,
+        )
+        lower_rate_problem = self.create_problem_with_custom_field(
+            self.problem.created_by,
+            _id="A-113",
+            title="lower rate sort target",
+            accepted_number=1,
+            submission_number=10,
+        )
+
+        resp = self.client.get(f"{self.url}?limit=10&sort=ac_rate_desc")
+
+        self.assertSuccess(resp)
+        results = resp.data["data"]["results"]
+        self.assertEqual(results[0]["_id"], higher_rate_problem._id)
+
+        resp = self.client.get(f"{self.url}?limit=10&sort=ac_rate_asc")
+
+        self.assertSuccess(resp)
+        results = resp.data["data"]["results"]
+        self.assertEqual(results[0]["_id"], self.problem._id)
+        self.assertEqual(results[1]["_id"], lower_rate_problem._id)
+
+    def test_get_problem_list_sort_by_difficulty(self):
+        self.problem.difficulty = Difficulty.MID
+        self.problem.save(update_fields=["difficulty"])
+        low_problem = self.create_problem_with_custom_field(
+            self.problem.created_by,
+            _id="A-114",
+            title="low difficulty sort target",
+            difficulty=Difficulty.LOW,
+        )
+        very_high_problem = self.create_problem_with_custom_field(
+            self.problem.created_by,
+            _id="A-115",
+            title="very high difficulty sort target",
+            difficulty=Difficulty.VERYHIGH,
+        )
+
+        resp = self.client.get(f"{self.url}?limit=10&sort=difficulty_asc")
+
+        self.assertSuccess(resp)
+        results = resp.data["data"]["results"]
+        self.assertEqual(results[0]["_id"], low_problem._id)
+
+        resp = self.client.get(f"{self.url}?limit=10&sort=difficulty_desc")
+
+        self.assertSuccess(resp)
+        results = resp.data["data"]["results"]
+        self.assertEqual(results[0]["_id"], very_high_problem._id)
+
     def test_get_one_problem(self):
         resp = self.client.get(self.url + "?problem_id=" + self.problem._id)
         self.assertSuccess(resp)
