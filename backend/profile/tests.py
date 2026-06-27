@@ -224,3 +224,17 @@ class ProfileProblemAPITest(APITestCase):
         response = self.client.get(self.url, {"username": self.user.username, "status": "unknown"})
 
         self.assertFailed(response, "Invalid status")
+
+    def test_failed_status_filter_excludes_pending_submissions(self):
+        current_timezone = timezone.get_current_timezone()
+        base_time = timezone.make_aware(datetime.datetime(2026, 6, 25, 12, 0), current_timezone)
+        self.create_submission(JudgeStatus.WRONG_ANSWER, base_time)
+        self.create_submission(JudgeStatus.PENDING, base_time + datetime.timedelta(minutes=1))
+        self.create_submission(JudgeStatus.JUDGING, base_time + datetime.timedelta(minutes=2))
+
+        response = self.client.get(self.url, {"username": self.user.username, "status": "Failed"})
+
+        self.assertSuccess(response)
+        data = response.data["data"]
+        self.assertEqual(len(data), 1)
+        self.assertEqual(data[0]["status"], JudgeStatus.WRONG_ANSWER)

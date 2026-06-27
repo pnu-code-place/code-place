@@ -270,6 +270,10 @@ library.add(faChevronLeft, faChevronRight)
 
 const SERVICE_DAY_UTC_OFFSET_HOURS = 3
 const HOUR_IN_MS = 60 * 60 * 1000
+const ACCEPTED_STATUS = 0
+const PENDING_STATUS = 6
+const JUDGING_STATUS = 7
+const NON_FAILED_STATUSES = [PENDING_STATUS, JUDGING_STATUS]
 
 export default {
   name: "problem-section-list",
@@ -395,8 +399,11 @@ export default {
       return problems.slice(0, this.maxProblemsPerDay)
     },
     problemStatusClass(problem, blockName) {
-      if (problem.status === 0) {
+      if (problem.status === ACCEPTED_STATUS) {
         return `${blockName}--accepted`
+      }
+      if (NON_FAILED_STATUSES.includes(problem.status)) {
+        return `${blockName}--unknown`
       }
       if (problem.status !== undefined && problem.status !== null) {
         return `${blockName}--failed`

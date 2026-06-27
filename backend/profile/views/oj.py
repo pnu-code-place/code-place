@@ -25,6 +25,11 @@ MAX_ACTIVITY_DAYS = 366
 ACTIVITY_DAY_START_HOUR = 6
 ACTIVITY_DAY_BOUNDARY = "6:00 UTC+9"
 KST = datetime.timezone(datetime.timedelta(hours=9))
+NON_FAILED_JUDGE_STATUSES = [
+    JudgeStatus.ACCEPTED,
+    JudgeStatus.PENDING,
+    JudgeStatus.JUDGING,
+]
 
 
 def get_activity_service_date(dt, current_timezone):
@@ -298,9 +303,9 @@ class ProfileProblemAPIView(APIView):
             submissions = submissions.filter(problem__difficulty=difficulty)
         if status and status != 'All':
             if status == "Solved":
-                submissions = submissions.filter(result=0)
+                submissions = submissions.filter(result=JudgeStatus.ACCEPTED)
             elif status == "Failed":
-                submissions = submissions.filter(~Q(result=0))
+                submissions = submissions.exclude(result__in=NON_FAILED_JUDGE_STATUSES)
             else:
                 return self.error("Invalid status")
 
