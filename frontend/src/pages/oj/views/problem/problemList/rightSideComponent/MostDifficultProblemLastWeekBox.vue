@@ -8,7 +8,7 @@
     </div>
     <div class="hardProblemRecommendationBoxBody">
       <template v-if="problem">
-        <div class="hardProblemFieldCategory">
+        <div v-if="showTags" class="hardProblemFieldCategory">
           <FieldCategoryBox
             :boxType="true"
             :value="FIELD_MAP[problem.field].value"
@@ -113,6 +113,12 @@ import { DIFFICULTY_MAP, FIELD_MAP } from "../../../../../../utils/constants"
 export default {
   name: "MostDifficultProblemLastWeekBox",
   components: { FieldCategoryBox },
+  props: {
+    showTags: {
+      type: Boolean,
+      default: true,
+    },
+  },
   data() {
     return {
       problem: null,

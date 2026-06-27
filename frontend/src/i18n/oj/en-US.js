@@ -293,6 +293,8 @@ export const m = {
   Reset: "새로고침",
   Pick_One: "문제 랜덤 선택",
   Search_Problem: "문제 제목 / 번호 검색",
+  Hide_Tags: "태그 숨김",
+  Show_Tags: "태그 표시",
   // ProblemListTable.vue
   noProblemList: "찾으시는 문제가 존재하지 않습니다.",
   Th_Problem_Id: "문제번호",

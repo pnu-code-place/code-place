@@ -8,11 +8,18 @@
           @update-query="updateQuery"
           @pick-one="pickOne"
         />
-        <ProblemListTable :problemList="problemList" @select-tag="filterByTag" />
+        <ProblemListTable
+          :problemList="problemList"
+          :showTags="!isTagHidden"
+          :sort="query.sort"
+          @sort-change="sortProblems"
+          @select-tag="filterByTag"
+        />
         <Pagination
           :total="total"
           :page-size.sync="query.limit"
           :current.sync="query.page"
+          :page-size-opts="[15, 30, 50, 100, 200]"
           @on-change="pushRouter"
           @on-page-size-change="pushRouter"
           :show-sizer="true"
@@ -21,8 +28,8 @@
       </div>
       <keep-alive>
         <div class="right-container">
-          <MostDifficultProblemLastWeekBox />
-          <PersonalRecommendationBox />
+          <MostDifficultProblemLastWeekBox :showTags="!isTagHidden" />
+          <PersonalRecommendationBox :showTags="!isTagHidden" />
         </div>
       </keep-alive>
     </div>
@@ -83,8 +90,10 @@ export default {
         field: "",
         category: "",
         tag: "",
+        hideTag: "",
+        sort: "",
         page: 1,
-        limit: 10,
+        limit: 15,
       },
     }
   },
@@ -100,11 +109,13 @@ export default {
       this.query.keyword = query.keyword || ""
       this.query.field = query.field || ""
       this.query.tag = query.tag || ""
+      this.query.hideTag = query.hideTag === "1" ? "1" : ""
+      this.query.sort = query.sort || ""
       this.query.page = parseInt(query.page) || 1
       if (this.query.page < 1) {
         this.query.page = 1
       }
-      this.query.limit = parseInt(query.limit) || 10
+      this.query.limit = parseInt(query.limit) || 15
       if (!simulate) {
         this.getTagList()
       }
@@ -126,7 +137,7 @@ export default {
     async getProblemList() {
       let offset = (this.query.page - 1) * this.query.limit
       this.loadings.table = true
-      await api.getProblemList(offset, this.limit, this.query).then(
+      await api.getProblemList(offset, this.query.limit, this.query).then(
         (res) => {
           this.loadings.table = false
           this.total = res.data.data.total
@@ -162,6 +173,9 @@ export default {
     filterByTag(tag) {
       this.updateQuery({ tag, page: 1 })
     },
+    sortProblems(sort) {
+      this.updateQuery({ sort, page: 1 })
+    },
   },
   computed: {
     ...mapGetters([
@@ -171,6 +185,9 @@ export default {
       "isAuthenticated",
       "isAdminRole",
     ]),
+    isTagHidden() {
+      return this.query.hideTag === "1"
+    },
   },
   watch: {
     $route(newVal, oldVal) {
