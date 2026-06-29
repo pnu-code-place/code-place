@@ -8,10 +8,20 @@
       :active-name="activeMenu"
     >
       <LogoButton />
-      <Menu-item class="menuItemText first" :class="{ 'nav-active': activeMenu === '/' }" name="/" data-menu-key="/">
+      <Menu-item
+        class="menuItemText first"
+        :class="{ 'nav-active': activeMenu === '/' }"
+        name="/"
+        data-menu-key="/"
+      >
         {{ $t("m.Home") }}
       </Menu-item>
-      <Menu-item class="menuItemText" :class="{ 'nav-active': activeMenu === '/problem' }" name="/problem" data-menu-key="/problem">
+      <Menu-item
+        class="menuItemText"
+        :class="{ 'nav-active': activeMenu === '/problem' }"
+        name="/problem"
+        data-menu-key="/problem"
+      >
         {{ $t("m.NavProblems") }}
       </Menu-item>
       <Dropdown
@@ -37,7 +47,12 @@
           }}</Dropdown-item>
         </Dropdown-menu>
       </Dropdown>
-      <Menu-item class="menuItemText" :class="{ 'nav-active': activeMenu === '/contest' }" name="/contest" data-menu-key="/contest">
+      <Menu-item
+        class="menuItemText"
+        :class="{ 'nav-active': activeMenu === '/contest' }"
+        name="/contest"
+        data-menu-key="/contest"
+      >
         {{ $t("m.Contests") }}
       </Menu-item>
       <Menu-item
@@ -48,7 +63,12 @@
       >
         {{ $t("m.Rank") }}
       </Menu-item>
-      <Menu-item class="menuItemText" :class="{ 'nav-active': activeMenu === '/status' }" name="/status" data-menu-key="/status">
+      <Menu-item
+        class="menuItemText"
+        :class="{ 'nav-active': activeMenu === '/status' }"
+        name="/status"
+        data-menu-key="/status"
+      >
         {{ $t("m.NavStatus") }}
       </Menu-item>
 
@@ -98,7 +118,11 @@
       </template>
     </Menu>
     <!-- 모바일 햄버거 버튼 -->
-    <button class="hamburger-btn" @click="mobileMenuOpen = true" aria-label="메뉴 열기">
+    <button
+      class="hamburger-btn"
+      @click="mobileMenuOpen = true"
+      aria-label="메뉴 열기"
+    >
       <span class="hamburger-line" />
       <span class="hamburger-line" />
       <span class="hamburger-line" />
@@ -106,41 +130,112 @@
 
     <!-- 모바일 드로어 오버레이 -->
     <transition name="fade">
-      <div v-if="mobileMenuOpen" class="mobile-overlay" @click="mobileMenuOpen = false" />
+      <div
+        v-if="mobileMenuOpen"
+        class="mobile-overlay"
+        @click="mobileMenuOpen = false"
+      />
     </transition>
     <transition name="slide-in">
       <div v-if="mobileMenuOpen" class="mobile-drawer">
         <div class="mobile-drawer-header">
           <LogoButton @click.native="mobileMenuOpen = false" />
-          <button class="drawer-close-btn" @click="mobileMenuOpen = false" aria-label="메뉴 닫기">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
-              <path d="M18 6L6 18M6 6l12 12"/>
+          <button
+            class="drawer-close-btn"
+            @click="mobileMenuOpen = false"
+            aria-label="메뉴 닫기"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.2"
+              stroke-linecap="round"
+            >
+              <path d="M18 6L6 18M6 6l12 12" />
             </svg>
           </button>
         </div>
         <nav class="mobile-nav">
-          <a class="mobile-nav-item" :class="{ active: activeMenu === '/' }" @click="mobileNavigate('/')">홈</a>
-          <a class="mobile-nav-item" :class="{ active: activeMenu === '/problem' }" @click="mobileNavigate('/problem')">문제</a>
-          <a class="mobile-nav-item" :class="{ active: activeMenu === '/community' }" @click="mobileNavigate('/community')">커뮤니티</a>
+          <a
+            class="mobile-nav-item"
+            :class="{ active: activeMenu === '/' }"
+            @click="mobileNavigate('/')"
+            >홈</a
+          >
+          <a
+            class="mobile-nav-item"
+            :class="{ active: activeMenu === '/problem' }"
+            @click="mobileNavigate('/problem')"
+            >문제</a
+          >
+          <a
+            class="mobile-nav-item"
+            :class="{ active: activeMenu === '/community' }"
+            @click="mobileNavigate('/community')"
+            >커뮤니티</a
+          >
           <div class="mobile-nav-sub">
-            <a class="mobile-nav-subitem" @click="mobileNavigate('/community/free')">자유게시판</a>
-            <a class="mobile-nav-subitem" @click="mobileNavigate('/community/question')">질문게시판</a>
+            <a
+              class="mobile-nav-subitem"
+              @click="mobileNavigate('/community/free')"
+              >자유게시판</a
+            >
+            <a
+              class="mobile-nav-subitem"
+              @click="mobileNavigate('/community/question')"
+              >질문게시판</a
+            >
           </div>
-          <a class="mobile-nav-item" :class="{ active: activeMenu === '/contest' }" @click="mobileNavigate('/contest')">대회</a>
-          <a class="mobile-nav-item" :class="{ active: activeMenu === '/acm-rank' }" @click="mobileNavigate('/acm-rank')">랭킹</a>
-          <a class="mobile-nav-item" :class="{ active: activeMenu === '/status' }" @click="mobileNavigate('/status')">제출 현황</a>
+          <a
+            class="mobile-nav-item"
+            :class="{ active: activeMenu === '/contest' }"
+            @click="mobileNavigate('/contest')"
+            >대회</a
+          >
+          <a
+            class="mobile-nav-item"
+            :class="{ active: activeMenu === '/acm-rank' }"
+            @click="mobileNavigate('/acm-rank')"
+            >랭킹</a
+          >
+          <a
+            class="mobile-nav-item"
+            :class="{ active: activeMenu === '/status' }"
+            @click="mobileNavigate('/status')"
+            >제출 현황</a
+          >
         </nav>
         <div class="mobile-drawer-footer">
           <template v-if="isAuthenticated">
-            <a class="mobile-nav-item" @click="mobileNavigate(`/user-home/dashboard/${user.username}`)">마이페이지</a>
-            <a class="mobile-nav-item" @click="mobileNavigate('/user-setting')">설정</a>
-            <a v-if="isAdminRole" class="mobile-nav-item" @click="mobileNavigate('/admin')">관리자</a>
-            <a class="mobile-nav-item danger" @click="mobileNavigate('/logout')">로그아웃</a>
+            <a
+              class="mobile-nav-item"
+              @click="mobileNavigate(`/user-home/dashboard/${user.username}`)"
+              >마이페이지</a
+            >
+            <a class="mobile-nav-item" @click="mobileNavigate('/user-setting')"
+              >설정</a
+            >
+            <a
+              v-if="isAdminRole"
+              class="mobile-nav-item"
+              @click="mobileNavigate('/admin')"
+              >관리자</a
+            >
+            <a class="mobile-nav-item danger" @click="mobileNavigate('/logout')"
+              >로그아웃</a
+            >
           </template>
           <template v-else>
             <div class="mobile-auth-buttons">
-              <button class="btn-login" @click="mobileBtnClick('login')">로그인</button>
-              <button class="btn-register" @click="mobileBtnClick('register')">회원가입</button>
+              <button class="btn-login" @click="mobileBtnClick('login')">
+                로그인
+              </button>
+              <button class="btn-register" @click="mobileBtnClick('register')">
+                회원가입
+              </button>
             </div>
           </template>
         </div>
@@ -192,7 +287,9 @@ export default {
     this.getProfile()
     this.$nextTick(this.initIndicator)
     this.syncHeaderScroll()
-    window.addEventListener("scroll", this.handleWindowScroll, { passive: true })
+    window.addEventListener("scroll", this.handleWindowScroll, {
+      passive: true,
+    })
   },
   beforeDestroy() {
     if (this.communityDropdownTimer) {
@@ -247,13 +344,13 @@ export default {
     },
     mobileNavigate(route) {
       this.mobileMenuOpen = false
-      if (route === '/admin') {
-        window.open('/admin/')
+      if (route === "/admin") {
+        window.open("/admin/")
         return
       }
       if (this.$route.fullPath === route) return
       this.$router.push(route).catch((err) => {
-        if (err && err.name !== 'NavigationDuplicated') throw err
+        if (err && err.name !== "NavigationDuplicated") throw err
       })
     },
     mobileBtnClick(mode) {
@@ -262,6 +359,7 @@ export default {
     },
     handleBtnClick(mode) {
       this.changeModalStatus({ visible: true, mode })
+    },
     handleWindowScroll() {
       if (this._headerScrollFrame) return
       this._headerScrollFrame = requestAnimationFrame(() => {
@@ -527,18 +625,30 @@ export default {
     color: rgb(15, 19, 23);
   }
 
-  /deep/ .header-menu.ivu-menu-light.ivu-menu-horizontal .ivu-menu-item.ivu-menu-item-active,
-  /deep/ .header-menu.ivu-menu-light.ivu-menu-horizontal .ivu-menu-item.ivu-menu-item-selected {
+  /deep/
+    .header-menu.ivu-menu-light.ivu-menu-horizontal
+    .ivu-menu-item.ivu-menu-item-active,
+  /deep/
+    .header-menu.ivu-menu-light.ivu-menu-horizontal
+    .ivu-menu-item.ivu-menu-item-selected {
     color: rgb(15, 19, 23);
   }
 
   /deep/ .header-menu.ivu-menu-light.ivu-menu-horizontal .ivu-menu-item:hover,
-  /deep/ .header-menu.ivu-menu-light.ivu-menu-horizontal .ivu-menu-item.nav-active {
+  /deep/
+    .header-menu.ivu-menu-light.ivu-menu-horizontal
+    .ivu-menu-item.nav-active {
     color: #5b64ed;
   }
 
-  /deep/ .header-menu.ivu-menu-light.ivu-menu-horizontal .ivu-dropdown:hover .menuItemText_community,
-  /deep/ .header-menu.ivu-menu-light.ivu-menu-horizontal .ivu-dropdown.nav-active .menuItemText_community {
+  /deep/
+    .header-menu.ivu-menu-light.ivu-menu-horizontal
+    .ivu-dropdown:hover
+    .menuItemText_community,
+  /deep/
+    .header-menu.ivu-menu-light.ivu-menu-horizontal
+    .ivu-dropdown.nav-active
+    .menuItemText_community {
     color: #5b64ed;
   }
 
