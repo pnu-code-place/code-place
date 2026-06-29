@@ -48,7 +48,7 @@ export default {
   created() {
     try {
       document.body.removeChild(document.getElementById("app-loader"))
-    } catch (e) {
+    } catch {
       // ignore when loader is already removed
     }
   },
@@ -79,7 +79,10 @@ export default {
     ...mapGetters(["isProblemSolving", "removedPopupId"]),
     isSubmissionList() {
       return (
-        this.$route.name === "submission-list" || this.$route.path === "/status"
+        this.$route.name === "submission-list" ||
+        this.$route.name === "submission-details" ||
+        this.$route.path === "/status" ||
+        this.$route.path.startsWith("/status/")
       )
     },
     isNotFoundPage() {
@@ -327,6 +330,18 @@ html.submission-list-page {
   --header-glass-bg: #ffffff;
   --header-glass-border-color: #eef1f5;
   --header-glass-shadow: none;
+}
+
+html.submission-list-page body,
+html.submission-list-page #app,
+html.submission-list-page #wrapper,
+html.submission-list-page .content-app {
+  background-color: #ffffff !important;
+}
+
+html.submission-list-page #header {
+  background-color: #ffffff !important;
+  box-shadow: none !important;
 }
 
 html.submission-list-page #header .header-menu {
