@@ -31,7 +31,26 @@
       </div>
 
       <!-- 대회 목록 (진행중 + 개최 예정 가로 나열) -->
-      <div class="contest-list" v-else>
+      <div class="contest-list-wrap" v-else>
+        <!-- 좌측 화살표 -->
+        <div v-if="totalContests >= 3" class="scroll-arrow arrow-left" :class="{ visible: !scrolledToStart }">
+          <svg width="16" height="28" viewBox="0 0 16 28" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 4L4 14l7 10"/>
+          </svg>
+        </div>
+        <!-- 우측 화살표 -->
+        <div v-if="totalContests >= 3" class="scroll-arrow arrow-right" :class="{ visible: !scrolledToEnd }">
+          <svg width="16" height="28" viewBox="0 0 16 28" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 4l7 10-7 10"/>
+          </svg>
+        </div>
+        <div
+          class="contest-list"
+          :class="{ 'is-scrollable': totalContests >= 3 }"
+          ref="contestList"
+          @mousedown="onDragStart"
+          @scroll="onScroll"
+        >
         <div
           class="contest-card"
           v-for="contest in contests"
@@ -121,6 +140,7 @@
             </div>
           </div>
         </div>
+        </div>
       </div>
     </div>
   </div>
@@ -140,12 +160,29 @@ export default {
       loading: true,
       now: Date.now(),
       timer: null,
+      scrolledToStart: true,
+      scrolledToEnd: false,
+      drag: {
+        active: false,
+        startX: 0,
+        scrollLeft: 0,
+        moved: false,
+        lastX: 0,
+        velocity: 0,
+        lastTime: 0,
+        rafId: null,
+      },
     }
+  },
+  computed: {
+    totalContests() {
+      return this.contests.length + this.upcomingContests.length
+    },
   },
   mounted() {
     api.getUnderwayContestList().then(
       (res) => {
-        this.contests = (res.data.data || []).slice(0, 3)
+        this.contests = (res.data.data || []).slice(0, 6)
         this.loading = false
       },
       () => {
@@ -168,6 +205,8 @@ export default {
   },
   beforeDestroy() {
     clearInterval(this.timer)
+    document.removeEventListener("mousemove", this._onDragMove)
+    document.removeEventListener("mouseup", this._onDragEnd)
   },
   methods: {
     formatDate(dateStr) {
@@ -220,10 +259,65 @@ export default {
       this.$router.push({ name: "problem-list" })
     },
     goContest(contest) {
+      if (this.drag.moved) return
       this.$router.push({
         name: "contest-overview",
         params: { contestID: contest.id },
       })
+    },
+    onScroll() {
+      const el = this.$refs.contestList
+      if (!el) return
+      const max = el.scrollWidth - el.clientWidth
+      this.scrolledToStart = el.scrollLeft <= 4
+      this.scrolledToEnd = el.scrollLeft >= max - 4
+    },
+    onDragStart(e) {
+      if (this.totalContests < 3) return
+      const el = this.$refs.contestList
+      if (this.drag.rafId) cancelAnimationFrame(this.drag.rafId)
+      this.drag.active = true
+      this.drag.moved = false
+      this.drag.startX = e.clientX
+      this.drag.lastX = e.clientX
+      this.drag.scrollLeft = el.scrollLeft
+      this.drag.velocity = 0
+      this.drag.lastTime = performance.now()
+      el.style.cursor = "grabbing"
+      el.style.userSelect = "none"
+
+      this._onDragMove = (ev) => {
+        if (!this.drag.active) return
+        const now = performance.now()
+        const dt = now - this.drag.lastTime
+        const dist = ev.clientX - this.drag.startX
+        if (Math.abs(dist) > 4) this.drag.moved = true
+        this.drag.velocity = (ev.clientX - this.drag.lastX) / (dt || 1)
+        this.drag.lastX = ev.clientX
+        this.drag.lastTime = now
+        el.scrollLeft = this.drag.scrollLeft - dist
+      }
+      this._onDragEnd = () => {
+        this.drag.active = false
+        el.style.cursor = ""
+        el.style.userSelect = ""
+        document.removeEventListener("mousemove", this._onDragMove)
+        document.removeEventListener("mouseup", this._onDragEnd)
+        // 관성 스크롤
+        let velocity = -this.drag.velocity * 15
+        const inertia = () => {
+          if (Math.abs(velocity) < 0.3) {
+            setTimeout(() => { this.drag.moved = false }, 0)
+            return
+          }
+          el.scrollLeft += velocity
+          velocity *= 0.88
+          this.drag.rafId = requestAnimationFrame(inertia)
+        }
+        this.drag.rafId = requestAnimationFrame(inertia)
+      }
+      document.addEventListener("mousemove", this._onDragMove)
+      document.addEventListener("mouseup", this._onDragEnd)
     },
   },
 }
@@ -240,6 +334,7 @@ export default {
   border: 1px solid #e5e5ed;
   border-radius: 20px;
   padding: 20px 28px 20px;
+  overflow: visible;
 
   @media (max-width: 768px) {
     padding: 16px 16px;
@@ -270,14 +365,68 @@ export default {
   }
 }
 
+/* 대회 목록 래퍼 */
+.contest-list-wrap {
+  position: relative;
+}
+
 /* 대회 목록 */
 .contest-list {
   display: flex;
   flex-direction: row;
   gap: 12px;
 
+  &.is-scrollable {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    cursor: grab;
+    user-select: none;
+    scrollbar-width: none;
+    &::-webkit-scrollbar { display: none; }
+
+    .contest-card {
+      flex: 0 0 320px;
+
+      @media (max-width: 768px) {
+        flex: 0 0 280px;
+      }
+    }
+  }
+
   @media (max-width: 768px) {
-    flex-direction: column;
+    &:not(.is-scrollable) {
+      flex-direction: column;
+    }
+  }
+}
+
+/* 드래그 방향 유도 화살표 */
+.scroll-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s;
+  color: #c8c8de;
+
+  svg {
+    filter: drop-shadow(0 0 4px rgba(255, 255, 255, 1));
+  }
+
+  &.visible {
+    opacity: 1;
+  }
+
+  &.arrow-left {
+    left: -20px;
+  }
+
+  &.arrow-right {
+    right: -20px;
   }
 }
 
@@ -422,6 +571,7 @@ export default {
   padding: 32px 36px;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 28px;
 
   @media (max-width: 768px) {
