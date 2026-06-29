@@ -40,7 +40,7 @@
         </div>
 
         <div v-if="problems.length === 0" class="empty-state">
-          이번 주 추천 문제가 아직 없어요.
+          이번 주 추천 문제가 없습니다.
         </div>
       </div>
     </div>
