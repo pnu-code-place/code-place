@@ -239,18 +239,16 @@ export default {
   /deep/ .ivu-select-dropdown {
     margin-top: 12px;
   }
+}
 
-  .categoryDropdown /deep/ .ivu-select-dropdown {
-    max-height: 320px;
-    max-width: 260px;
-    overflow-y: auto;
-  }
+.filter-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
 
-  .categoryDropdown /deep/ .problem-dropdown-menu .ivu-dropdown-item {
-    max-width: 260px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  @media (max-width: 768px) {
+    width: 100%;
   }
 
   .tag-visibility-toggle {
@@ -277,5 +275,18 @@ export default {
     color: #344360;
   }
 
+}
+
+.categoryDropdown /deep/ .ivu-select-dropdown {
+  max-height: 320px;
+  max-width: 260px;
+  overflow-y: auto;
+}
+
+.categoryDropdown /deep/ .problem-dropdown-menu .ivu-dropdown-item {
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 </style>

@@ -179,6 +179,12 @@ export default {
   padding-right: 30px;
   margin-bottom: 20px;
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  overflow-x: auto;
+
+  @media (max-width: 768px) {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
 }
 
 .noProblemListBox {

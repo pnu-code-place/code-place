@@ -27,9 +27,17 @@
         </template>
       </div>
       <div v-if="isContestProblemHeader && countdown" class="contest-context">
-        <div class="contest-timer" :class="'contest-timer--' + (countdownParts ? countdownParts.status : 'ended')">
+        <div
+          class="contest-timer"
+          :class="
+            'contest-timer--' +
+            (countdownParts ? countdownParts.status : 'ended')
+          "
+        >
           <template v-if="countdownParts && countdownParts.status !== 'ended'">
-            <span class="contest-timer__label">{{ countdownParts.status === 'running' ? '남은 시간' : '시작까지' }}</span>
+            <span class="contest-timer__label">{{
+              countdownParts.status === "running" ? "남은 시간" : "시작까지"
+            }}</span>
             <span class="contest-timer__text">{{ formattedTime }}</span>
           </template>
           <template v-else>
@@ -141,12 +149,12 @@ export default {
       return (this.$store.state.contest.contest || {}).title || ""
     },
     formattedTime() {
-      if (!this.countdownParts || this.countdownParts.status === 'ended') {
-        return ''
+      if (!this.countdownParts || this.countdownParts.status === "ended") {
+        return ""
       }
-      const pad = (num) => String(num).padStart(2, '0')
+      const pad = (num) => String(num).padStart(2, "0")
       const { days, hours, minutes, seconds } = this.countdownParts
-      
+
       let timeStr = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`
       if (days > 0) {
         timeStr = `${days}일 ${timeStr}`
@@ -214,8 +222,8 @@ export default {
     height: 50px;
     .pnuName {
       margin: 0 0 0 10px;
-      font-size: 16px;
-      font-weight: bold;
+      font-size: 18px;
+      font-weight: 600;
       line-height: 20px;
       white-space: nowrap;
     }
@@ -293,7 +301,6 @@ export default {
     border-color: rgba(50, 48, 107, 0.28);
     background-color: rgba(255, 255, 255, 0.9);
   }
-
 }
 
 :root.dark.problem #header {
@@ -313,7 +320,6 @@ export default {
     border-color: rgba(170, 179, 203, 0.34);
     background-color: rgba(170, 179, 203, 0.22);
   }
-
 }
 
 /* ── Contest Timer ── */

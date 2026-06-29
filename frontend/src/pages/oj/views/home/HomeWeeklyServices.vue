@@ -40,7 +40,7 @@
         </div>
 
         <div v-if="problems.length === 0" class="empty-state">
-          이번 주 추천 문제가 아직 없어요.
+          이번 주 보너스 문제가 없습니다.
         </div>
       </div>
     </div>
@@ -299,7 +299,10 @@ export default {
 }
 
 .empty-state {
-  grid-column: 1 / -1;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
   color: #aaa;
   font-size: 14px;
