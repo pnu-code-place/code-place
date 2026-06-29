@@ -299,7 +299,10 @@ export default {
 }
 
 .empty-state {
-  grid-column: 1 / -1;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
   color: #aaa;
   font-size: 14px;
