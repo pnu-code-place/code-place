@@ -6,11 +6,12 @@
         <label
           v-if="submission.can_unshare"
           class="share-toggle"
-          :class="{ active: submission.shared }"
+          :class="{ active: submission.shared, loading: shareUpdating }"
         >
           <span class="share-toggle__label">제출 공개</span>
           <input
             :checked="submission.shared"
+            :disabled="shareUpdating"
             type="checkbox"
             @change="shareSubmission($event.target.checked)"
           />
@@ -148,6 +149,7 @@ export default {
         },
       },
       loading: false,
+      shareUpdating: false,
     }
   },
   mounted() {
@@ -156,7 +158,7 @@ export default {
   methods: {
     getSubmission() {
       this.loading = true
-      api.getSubmission(this.$route.params.id).then(
+      return api.getSubmission(this.$route.params.id).then(
         (res) => {
           this.loading = false
           this.submission = res.data.data
@@ -167,13 +169,25 @@ export default {
       )
     },
     shareSubmission(shared) {
+      if (this.shareUpdating || shared === this.submission.shared) {
+        return
+      }
+      const previousShared = this.submission.shared
+      this.shareUpdating = true
       let data = { id: this.submission.id, shared: shared }
       api.updateSubmission(data).then(
         () => {
-          this.getSubmission()
-          this.$success(this.$i18n.t("m.Succeeded"))
+          this.submission.shared = shared
+          this.getSubmission().then(() => {
+            this.shareUpdating = false
+            this.$success(this.$i18n.t("m.Succeeded"))
+          })
         },
-        () => {},
+        () => {
+          this.shareUpdating = false
+          this.submission.shared = previousShared
+          this.$error("제출 공개 상태 변경에 실패했습니다.")
+        },
       )
     },
     onCopy() {
@@ -286,6 +300,11 @@ export default {
   &.active {
     color: #5661f6;
     background: #eef1ff;
+  }
+
+  &.loading {
+    cursor: wait;
+    opacity: 0.72;
   }
 
   input {
