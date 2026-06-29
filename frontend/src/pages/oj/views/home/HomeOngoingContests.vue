@@ -7,7 +7,12 @@
       </div>
 
       <!-- 빈 상태 -->
-      <div v-if="!loading && contests.length === 0 && upcomingContests.length === 0" class="empty-state">
+      <div
+        v-if="
+          !loading && contests.length === 0 && upcomingContests.length === 0
+        "
+        class="empty-state"
+      >
         <img
           class="empty-illust"
           src="@/assets/images/contest-empty-calendar.svg"
@@ -33,15 +38,41 @@
       <!-- 대회 목록 (진행중 + 개최 예정 가로 나열) -->
       <div class="contest-list-wrap" v-else>
         <!-- 좌측 화살표 -->
-        <div v-if="totalContests >= 3" class="scroll-arrow arrow-left" :class="{ visible: !scrolledToStart }">
-          <svg width="16" height="28" viewBox="0 0 16 28" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M11 4L4 14l7 10"/>
+        <div
+          v-if="totalContests >= 3"
+          class="scroll-arrow arrow-left"
+          :class="{ visible: !scrolledToStart }"
+        >
+          <svg
+            width="16"
+            height="28"
+            viewBox="0 0 16 28"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M11 4L4 14l7 10" />
           </svg>
         </div>
         <!-- 우측 화살표 -->
-        <div v-if="totalContests >= 3" class="scroll-arrow arrow-right" :class="{ visible: !scrolledToEnd }">
-          <svg width="16" height="28" viewBox="0 0 16 28" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M5 4l7 10-7 10"/>
+        <div
+          v-if="totalContests >= 3"
+          class="scroll-arrow arrow-right"
+          :class="{ visible: !scrolledToEnd }"
+        >
+          <svg
+            width="16"
+            height="28"
+            viewBox="0 0 16 28"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M5 4l7 10-7 10" />
           </svg>
         </div>
         <div
@@ -51,95 +82,106 @@
           @mousedown="onDragStart"
           @scroll="onScroll"
         >
-        <div
-          class="contest-card"
-          v-for="contest in contests"
-          :key="contest.id"
-          @click="goContest(contest)"
-        >
-          <div class="card-main">
-            <div class="card-icon">
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="#fff"
-                stroke-width="1.8"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="M8 4h8v4.5a4 4 0 0 1-8 0V4z" />
-                <path d="M8 5.5H5V7a3 3 0 0 0 3 3" />
-                <path d="M16 5.5h3V7a3 3 0 0 1-3 3" />
-                <path d="M12 12.5v3.5" />
-                <path d="M9.2 20h5.6l-.7-3.2H9.9z" />
-              </svg>
-            </div>
-            <div class="card-info">
-              <div class="badge-row">
-                <span class="badge-underway">● 진행중</span>
-                <span class="badge-dday">{{ ddayShort(contest) }}</span>
+          <div
+            class="contest-card"
+            v-for="contest in contests"
+            :key="contest.id"
+            @click="goContest(contest)"
+          >
+            <div class="card-main">
+              <div class="card-icon">
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#fff"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M8 4h8v4.5a4 4 0 0 1-8 0V4z" />
+                  <path d="M8 5.5H5V7a3 3 0 0 0 3 3" />
+                  <path d="M16 5.5h3V7a3 3 0 0 1-3 3" />
+                  <path d="M12 12.5v3.5" />
+                  <path d="M9.2 20h5.6l-.7-3.2H9.9z" />
+                </svg>
               </div>
-              <p class="card-title">{{ contest.title }}</p>
-              <p class="card-date">
-                {{ formatDate(contest.start_time) }} ~
-                {{ formatDate(contest.end_time) }}
-              </p>
-            </div>
-          </div>
-          <div class="card-bottom">
-            <div class="progress-bar">
-              <div
-                class="progress-fill"
-                :style="{ width: progressWidth(contest) + '%' }"
-              />
-            </div>
-            <span class="timer-badge">
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <circle cx="12" cy="12" r="9" />
-                <path d="M12 7v5l3 3" />
-              </svg>
-              {{ timerLabel(contest) }}
-            </span>
-          </div>
-        </div>
-        <div
-          class="contest-card upcoming"
-          v-for="contest in upcomingContests"
-          :key="'upcoming-' + contest.id"
-          @click="goContest(contest)"
-        >
-          <div class="card-main">
-            <div class="card-icon upcoming-icon">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="4" width="18" height="18" rx="3"/>
-                <path d="M16 2v4M8 2v4M3 10h18"/>
-                <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/>
-              </svg>
-            </div>
-            <div class="card-info">
-              <div class="badge-row">
-                <span class="badge-upcoming">● 개최 예정</span>
-                <span class="badge-dday">D-{{ daysUntilStart(contest) }}</span>
+              <div class="card-info">
+                <div class="badge-row">
+                  <span class="badge-underway">● 진행중</span>
+                  <span class="badge-dday">{{ ddayShort(contest) }}</span>
+                </div>
+                <p class="card-title">{{ contest.title }}</p>
+                <p class="card-date">
+                  {{ formatDate(contest.start_time) }} -
+                  {{ formatDate(contest.end_time) }}
+                </p>
               </div>
-              <p class="card-title">{{ contest.title }}</p>
-              <p class="card-date">
-                {{ formatDate(contest.start_time) }} ~
-                {{ formatDate(contest.end_time) }}
-              </p>
+            </div>
+            <div class="card-bottom">
+              <div class="progress-bar">
+                <div
+                  class="progress-fill"
+                  :style="{ width: progressWidth(contest) + '%' }"
+                />
+              </div>
+              <span class="timer-badge">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <circle cx="12" cy="12" r="9" />
+                  <path d="M12 7v5l3 3" />
+                </svg>
+                {{ timerLabel(contest) }}
+              </span>
             </div>
           </div>
-        </div>
+          <div
+            class="contest-card upcoming"
+            v-for="contest in upcomingContests"
+            :key="'upcoming-' + contest.id"
+            @click="goContest(contest)"
+          >
+            <div class="card-main">
+              <div class="card-icon upcoming-icon">
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#fff"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <rect x="3" y="4" width="18" height="18" rx="3" />
+                  <path d="M16 2v4M8 2v4M3 10h18" />
+                  <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01" />
+                </svg>
+              </div>
+              <div class="card-info">
+                <div class="badge-row">
+                  <span class="badge-upcoming">● 개최 예정</span>
+                  <span class="badge-dday"
+                    >D-{{ daysUntilStart(contest) }}</span
+                  >
+                </div>
+                <p class="card-title">{{ contest.title }}</p>
+                <p class="card-date">
+                  {{ formatDate(contest.start_time) }} ~
+                  {{ formatDate(contest.end_time) }}
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -189,16 +231,19 @@ export default {
         this.loading = false
       },
     )
-    api.getNotStartedContestList().then((res) => {
-      const now = Date.now()
-      const sevenDays = 7 * 24 * 60 * 60 * 1000
-      this.upcomingContests = (res.data.data || [])
-        .filter((c) => {
-          const start = new Date(c.start_time).getTime()
-          return start - now <= sevenDays
-        })
-        .slice(0, 3)
-    }).catch(() => {})
+    api
+      .getNotStartedContestList()
+      .then((res) => {
+        const now = Date.now()
+        const sevenDays = 7 * 24 * 60 * 60 * 1000
+        this.upcomingContests = (res.data.data || [])
+          .filter((c) => {
+            const start = new Date(c.start_time).getTime()
+            return start - now <= sevenDays
+          })
+          .slice(0, 3)
+      })
+      .catch(() => {})
     this.timer = setInterval(() => {
       this.now = Date.now()
     }, 1000)
@@ -213,7 +258,7 @@ export default {
       if (!dateStr) return ""
       const d = new Date(dateStr)
       const day = DAY_NAMES[d.getDay()]
-      return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")} (${day}) ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`
+      return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}(${day}) ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`
     },
     progressWidth(contest) {
       const start = new Date(contest.start_time).getTime()
@@ -307,7 +352,9 @@ export default {
         let velocity = -this.drag.velocity * 15
         const inertia = () => {
           if (Math.abs(velocity) < 0.3) {
-            setTimeout(() => { this.drag.moved = false }, 0)
+            setTimeout(() => {
+              this.drag.moved = false
+            }, 0)
             return
           }
           el.scrollLeft += velocity
@@ -382,20 +429,18 @@ export default {
     cursor: grab;
     user-select: none;
     scrollbar-width: none;
-    &::-webkit-scrollbar { display: none; }
-
-    .contest-card {
-      flex: 0 0 320px;
-
-      @media (max-width: 768px) {
-        flex: 0 0 280px;
-      }
+    &::-webkit-scrollbar {
+      display: none;
     }
   }
 
   @media (max-width: 768px) {
     &:not(.is-scrollable) {
       flex-direction: column;
+      .contest-card {
+        flex: unset;
+        width: 100%;
+      }
     }
   }
 }
@@ -431,6 +476,8 @@ export default {
 }
 
 .contest-card {
+  flex: 0 0 360px;
+  width: 360px;
   background: #ffffff;
   border: 1px solid #ebebf6;
   border-radius: 16px;
@@ -442,6 +489,11 @@ export default {
   transition:
     box-shadow 0.2s,
     transform 0.2s;
+
+  @media (max-width: 768px) {
+    flex: 0 0 300px;
+    width: 300px;
+  }
 
   &:hover {
     transform: translateY(-1px);
