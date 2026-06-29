@@ -34,6 +34,7 @@ class SubmissionSafeModelSerializer(serializers.ModelSerializer):
 
 class SubmissionListSerializer(serializers.ModelSerializer):
     problem = serializers.SlugRelatedField(read_only=True, slug_field="_id")
+    problem_id = serializers.SerializerMethodField()
     show_link = serializers.SerializerMethodField()
     user_avatar = serializers.SerializerMethodField()
 
@@ -53,3 +54,6 @@ class SubmissionListSerializer(serializers.ModelSerializer):
 
     def get_user_avatar(self, obj):
         return obj.user_avatar
+
+    def get_problem_id(self, obj):
+        return obj.problem._id

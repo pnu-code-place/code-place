@@ -1,7 +1,21 @@
 <template>
   <div class="problemListTableHeader">
-    <h1 class="main-title">{{ $t("m.Problem_List") }}</h1>
-    <div class="filter-row">
+    <div class="header-title-row">
+      <h1 class="main-title">{{ $t("m.Problem_List") }}</h1>
+      <button
+        type="button"
+        class="tag-visibility-toggle"
+        :class="{ active: isTagHidden }"
+        :aria-pressed="isTagHidden ? 'true' : 'false'"
+        @click="toggleTagVisibility"
+      >
+        <i :class="isTagHidden ? 'fas fa-eye' : 'fas fa-eye-slash'"></i>
+        <span>{{
+          isTagHidden ? $t("m.Show_Tags") : $t("m.Hide_Tags")
+        }}</span>
+      </button>
+    </div>
+    <div class="header-controls">
       <li style="list-style-type: none; margin-left: 3px">
         <Input
           v-model="localKeyword"
@@ -140,6 +154,11 @@ export default {
     pickOne() {
       this.$emit("pick-one")
     },
+    toggleTagVisibility() {
+      this.$emit("update-query", {
+        hideTag: this.isTagHidden ? "" : "1",
+      })
+    },
   },
   computed: {
     DIFFICULTY_MAP() {
@@ -155,6 +174,9 @@ export default {
         .filter(Boolean)
       return Array.from(new Set(tags)).sort((a, b) => a.localeCompare(b))
     },
+    isTagHidden() {
+      return this.query.hideTag === "1"
+    },
   },
 }
 </script>
@@ -166,13 +188,25 @@ export default {
   margin-bottom: 25px;
   align-items: center;
   justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 10px;
+  gap: 16px;
 
-  @media (max-width: 768px) {
-    flex-direction: column;
-    align-items: flex-start;
-    padding-left: 0;
+  .header-title-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+
+  .main-title {
+    margin: 0;
+  }
+
+  .header-controls {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 5px;
   }
 
   p {
@@ -191,10 +225,6 @@ export default {
     border: 1px solid #dedede;
     display: flex;
     align-items: center;
-  }
-
-  .dropdown:not(:first-child) {
-    margin-left: 5px;
   }
 
   .difficultyDropdown {
@@ -220,6 +250,31 @@ export default {
   @media (max-width: 768px) {
     width: 100%;
   }
+
+  .tag-visibility-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #8a93a5;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  .tag-visibility-toggle i {
+    font-size: 12px;
+  }
+
+  .tag-visibility-toggle:hover,
+  .tag-visibility-toggle.active {
+    color: #344360;
+  }
+
 }
 
 .categoryDropdown /deep/ .ivu-select-dropdown {

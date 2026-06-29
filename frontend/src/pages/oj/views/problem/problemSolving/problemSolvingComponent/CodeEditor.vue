@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="code-editor-wrapper">
     <codemirror
       ref="myCm"
       :value="value"
@@ -108,6 +108,9 @@ export default {
     onCmReady() {},
     onCmCodeChange(newCode) {
       this.$emit("update:value", newCode)
+      this.emitCursorPos()
+    },
+    emitCursorPos() {
       this.$emit("update:cursorPos", {
         ln: this.codemirror.doc.getCursor().line,
         ch: this.codemirror.doc.getCursor().ch,
@@ -172,6 +175,7 @@ export default {
     this.codemirror.setOption("theme", customTheme)
 
     this.code = this.value
+    this.codemirror.on("cursorActivity", this.emitCursorPos)
 
     utils.getLanguages().then((languages) => {
       let mode = {}
@@ -186,10 +190,12 @@ export default {
     if (checkContest) {
       this.blockPasteFromExternalSource()
     }
-    this.$emit("update:cursorPos", {
-      ln: this.codemirror.doc.getCursor().line,
-      ch: this.codemirror.doc.getCursor().ch,
-    })
+    this.emitCursorPos()
+  },
+  beforeDestroy() {
+    if (this.codemirror) {
+      this.codemirror.off("cursorActivity", this.emitCursorPos)
+    }
   },
   watch: {
     isDarkMode(value) {
@@ -204,10 +210,19 @@ export default {
 </script>
 
 <style>
-.CodeMirror {
-  height: calc(100vh - 132px) !important;
+.code-editor-wrapper .CodeMirror {
+  height: 100% !important;
   border-radius: 7px;
   border: 1px solid var(--border-color);
+}
+
+.code-editor-wrapper {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.code-editor-wrapper .vue-codemirror {
+  height: 100%;
 }
 
 .cm-s-ayu-mirage .CodeMirror-matchingbracket {

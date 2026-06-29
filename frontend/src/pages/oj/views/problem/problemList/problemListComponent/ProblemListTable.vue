@@ -4,9 +4,36 @@
       <tr>
         <th class="th-first">{{ $t("m.Th_Problem_Id") }}</th>
         <th class="th-second">{{ $t("m.Th_Problem_Title") }}</th>
-        <th class="th-third">{{ $t("m.Th_Problem_Difficulty") }}</th>
-        <th class="th-fourth">{{ $t("m.Th_Problem_Num_Success") }}</th>
-        <th class="th-fifth">{{ $t("m.Th_Problem_AC_Rate") }}</th>
+        <th class="th-third">
+          <button
+            type="button"
+            class="sort-header-button"
+            @click="changeSort('difficulty')"
+          >
+            {{ $t("m.Th_Problem_Difficulty") }}
+            <i :class="sortIconClass('difficulty')"></i>
+          </button>
+        </th>
+        <th class="th-fourth">
+          <button
+            type="button"
+            class="sort-header-button"
+            @click="changeSort('accepted')"
+          >
+            {{ $t("m.Th_Problem_Num_Success") }}
+            <i :class="sortIconClass('accepted')"></i>
+          </button>
+        </th>
+        <th class="th-fifth">
+          <button
+            type="button"
+            class="sort-header-button"
+            @click="changeSort('ac_rate')"
+          >
+            {{ $t("m.Th_Problem_AC_Rate") }}
+            <i :class="sortIconClass('ac_rate')"></i>
+          </button>
+        </th>
       </tr>
     </thead>
     <template v-if="this.problemList.length !== 0">
@@ -21,7 +48,7 @@
               {{ problem.title }}
             </span>
             <br />
-            <div class="problem-meta-row">
+            <div v-if="showTags" class="problem-meta-row">
               <FieldCategoryBox
                 :boxType="true"
                 :value="FIELD_MAP[problem.field].value"
@@ -83,6 +110,14 @@ export default {
       type: Array,
       default: () => [],
     },
+    showTags: {
+      type: Boolean,
+      default: true,
+    },
+    sort: {
+      type: String,
+      default: "",
+    },
   },
   methods: {
     ...mapActions(["changeProblemSolvingState"]),
@@ -98,6 +133,29 @@ export default {
     },
     getProblemTags(problem) {
       return Array.isArray(problem.tags) ? problem.tags : []
+    },
+    changeSort(field) {
+      const defaultDirection = field === "difficulty" ? "asc" : "desc"
+      const ascSort = `${field}_asc`
+      const descSort = `${field}_desc`
+      const defaultSort = `${field}_${defaultDirection}`
+      const reverseSort = defaultDirection === "asc" ? descSort : ascSort
+      const nextSort =
+        this.sort === defaultSort
+          ? reverseSort
+          : this.sort === reverseSort
+            ? ""
+            : defaultSort
+      this.$emit("sort-change", nextSort)
+    },
+    sortIconClass(field) {
+      if (this.sort === `${field}_asc`) {
+        return "fas fa-sort-up active"
+      }
+      if (this.sort === `${field}_desc`) {
+        return "fas fa-sort-down active"
+      }
+      return "fas fa-sort"
     },
   },
   computed: {
@@ -152,6 +210,31 @@ table:hover {
 
 th {
   font-size: 1.3em;
+}
+
+.sort-header-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 0;
+  color: inherit;
+  font: inherit;
+  font-weight: bold;
+  white-space: nowrap;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.sort-header-button i {
+  color: #a5adba;
+  font-size: 11px;
+}
+
+.sort-header-button i.active,
+.sort-header-button:hover i {
+  color: #4a86c0;
 }
 
 th:first-child {
@@ -236,8 +319,7 @@ td:nth-child(2) {
   cursor: pointer;
 }
 
-//.difficulty-badge {
-//  border-radius: 5px;
-//  border: 2px solid #dedede;
-//}
+.difficulty-badge {
+  white-space: nowrap;
+}
 </style>

@@ -12,7 +12,7 @@
           $t("m.Try_Personal_Recommendation_Problem")
         }}</span>
       </div>
-      <div class="problem-extra">
+      <div v-if="showTags" class="problem-extra">
         <FieldCategoryBox
           :boxType="true"
           :value="FIELD_MAP[recommend_problem.field].value"
@@ -44,6 +44,10 @@ export default defineComponent({
   },
   props: {
     recommend_problem: Object,
+    showTags: {
+      type: Boolean,
+      default: true,
+    },
   },
   components: {
     FieldCategoryBox,

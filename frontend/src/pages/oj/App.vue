@@ -6,13 +6,26 @@
     <template v-else>
       <NavBar></NavBar>
     </template>
-    <div class="content-app" :class="{ ps: isProblemSolving }">
+    <div
+      class="content-app"
+      :class="{
+        ps: isProblemSolving,
+        'submission-list-app': isSubmissionList,
+        'flat-white-app': isFlatWhitePage,
+      }"
+    >
       <transition name="fadeInUp" mode="out-in">
         <router-view></router-view>
       </transition>
     </div>
     <template v-if="!isProblemSolving">
-      <div class="footer-dummy"></div>
+      <div
+        class="footer-dummy"
+        :class="{
+          'submission-list-footer-dummy': isSubmissionList,
+          'flat-white-footer-dummy': isFlatWhitePage,
+        }"
+      ></div>
       <CSEPFooter></CSEPFooter>
     </template>
     <BackTop></BackTop>
@@ -35,26 +48,62 @@ export default {
   created() {
     try {
       document.body.removeChild(document.getElementById("app-loader"))
-    } catch (e) {
+    } catch {
       // ignore when loader is already removed
     }
   },
   mounted() {
     this.getWebsiteConfig()
+    this.syncFlatWhiteChrome()
+  },
+  updated() {
+    this.syncFlatWhiteChrome()
+  },
+  beforeDestroy() {
+    this.syncFlatWhiteChrome(false)
   },
   methods: {
     ...mapActions(["getWebsiteConfig", "changeDomTitle"]),
+    syncFlatWhiteChrome(force) {
+      const enabled =
+        typeof force === "boolean" ? force : this.isFlatWhitePage
+      document.documentElement.classList.toggle(
+        "submission-list-page",
+        enabled,
+      )
+      document.body.classList.toggle("submission-list-page", enabled)
+    },
   },
   computed: {
     ...mapState(["website"]),
     ...mapGetters(["isProblemSolving", "removedPopupId"]),
+    isSubmissionList() {
+      return (
+        this.$route.name === "submission-list" ||
+        this.$route.name === "submission-details" ||
+        this.$route.path === "/status" ||
+        this.$route.path.startsWith("/status/")
+      )
+    },
+    isNotFoundPage() {
+      return this.$route.meta && this.$route.meta.title === "404"
+    },
+    isFlatWhitePage() {
+      return this.isSubmissionList || this.isNotFoundPage
+    },
   },
   watch: {
     website() {
       this.changeDomTitle()
     },
-    $route() {
-      this.changeDomTitle()
+    $route: {
+      immediate: true,
+      handler() {
+        this.changeDomTitle()
+        this.$nextTick(() => {
+          this.syncFlatWhiteChrome()
+        })
+      },
     },
   },
 }
@@ -251,6 +300,61 @@ a {
   justify-content: center;
   width: 100%;
   background-color: var(--site-background-color);
+}
+
+.submission-list-app,
+.submission-list-footer-dummy,
+.flat-white-app,
+.flat-white-footer-dummy {
+  background-color: #ffffff;
+}
+
+.submission-list-app,
+.flat-white-app {
+  margin-top: calc(var(--header-height) + 28px);
+}
+
+html.submission-list-page,
+body.submission-list-page,
+html.submission-list-page #app,
+html.submission-list-page #wrapper {
+  background-color: #ffffff;
+}
+
+html:has(.content-app.submission-list-app),
+body:has(.content-app.submission-list-app) {
+  background-color: #ffffff;
+}
+
+html.submission-list-page {
+  --header-glass-bg: #ffffff;
+  --header-glass-border-color: #eef1f5;
+  --header-glass-shadow: none;
+}
+
+html.submission-list-page body,
+html.submission-list-page #app,
+html.submission-list-page #wrapper,
+html.submission-list-page .content-app {
+  background-color: #ffffff !important;
+}
+
+html.submission-list-page #header {
+  background-color: #ffffff !important;
+  box-shadow: none !important;
+}
+
+html.submission-list-page #header .header-menu {
+  padding-right: 32px;
+  padding-left: 32px;
+}
+
+html.submission-list-page #header .logo {
+  margin-left: 0;
+}
+
+html.submission-list-page #header .header-menu > .drop-menu {
+  padding-right: 0 !important;
 }
 
 .ps {
