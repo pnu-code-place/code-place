@@ -43,6 +43,9 @@ const mutations = {
     }
     storage.set(STORAGE_KEY.AUTHED, !!profile.user)
   },
+  resolveProfile(state) {
+    state.profileResolved = true
+  },
   [types.CHANGE_PROBLEM_SOLVING_STATE](state, payload) {
     state.isProblemSolving = payload
   },
@@ -59,10 +62,15 @@ const actions = {
           profile: res.data.data || {},
         })
       },
-      () => {
-        commit(types.CHANGE_PROFILE, {
-          profile: {},
-        })
+      (error) => {
+        const message = getProfileErrorMessage(error)
+        if (message.startsWith("Please login")) {
+          commit(types.CHANGE_PROFILE, {
+            profile: {},
+          })
+          return
+        }
+        commit("resolveProfile")
       },
     )
   },
@@ -78,6 +86,14 @@ const actions = {
   changeProblemSolvingTheme({ commit }, payload) {
     commit(types.CHANGE_PROBLEM_SOLVING_THEME, payload)
   },
+}
+
+function getProfileErrorMessage(error) {
+  const data =
+    (error && error.data) ||
+    (error && error.response && error.response.data) ||
+    {}
+  return typeof data.data === "string" ? data.data : ""
 }
 
 export default {

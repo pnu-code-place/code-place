@@ -562,6 +562,7 @@ export default {
           }
           this.$Loading.finish()
           this.problemLoading = false
+          this.registerBeforeUnload()
           let problem = res.data.data
           this.changeDomTitle({ title: problem.title })
           api.submissionExists(problem.id).then((res) => {
