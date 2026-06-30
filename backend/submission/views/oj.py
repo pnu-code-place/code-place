@@ -49,7 +49,7 @@ class SubmissionAPI(APIView):
     def check_contest_permission(self, request):
         contest = self.contest
         if contest.status == ContestStatus.CONTEST_ENDED:
-            return self.error("The contest have ended")
+            return self.error("대회가 종료되었습니다.")
         if not request.user.is_contest_admin(contest):
             user_ip = ipaddress.ip_address(request.session.get("ip"))
             if contest.allowed_ip_ranges:
