@@ -10,21 +10,33 @@
         />
         <ProblemListTable
           :problemList="problemList"
+          :loading="loadings.table"
+          :skeletonCount="query.limit"
           :showTags="!isTagHidden"
           :sort="query.sort"
           @sort-change="sortProblems"
           @select-tag="filterByTag"
         />
-        <Pagination
-          :total="total"
-          :page-size.sync="query.limit"
-          :current.sync="query.page"
-          :page-size-opts="[15, 30, 50, 100, 200]"
-          @on-change="pushRouter"
-          @on-page-size-change="pushRouter"
-          :show-sizer="true"
-        >
-        </Pagination>
+        <div class="problem-list-pagination">
+          <Pagination
+            v-if="!loadings.table"
+            :total="total"
+            :page-size.sync="query.limit"
+            :current.sync="query.page"
+            :page-size-opts="[15, 30, 50, 100, 200]"
+            @on-change="pushRouter"
+            @on-page-size-change="pushRouter"
+            :show-sizer="true"
+          >
+          </Pagination>
+          <div v-else class="pagination-skeleton" aria-hidden="true">
+            <span class="pagination-skeleton-button"></span>
+            <span class="pagination-skeleton-page"></span>
+            <span class="pagination-skeleton-page"></span>
+            <span class="pagination-skeleton-page"></span>
+            <span class="pagination-skeleton-button"></span>
+          </div>
+        </div>
       </div>
       <keep-alive>
         <div class="right-container">
@@ -143,7 +155,7 @@ export default {
           this.total = res.data.data.total
           this.problemList = res.data.data.results
         },
-        (res) => {
+        () => {
           this.loadings.table = false
         },
       )
@@ -154,7 +166,7 @@ export default {
           this.tagList = Array.isArray(res.data.data) ? res.data.data : []
           this.loadings.tag = false
         },
-        (res) => {
+        () => {
           this.loadings.tag = false
         },
       )
@@ -234,6 +246,35 @@ main {
   flex: 1;
   min-width: 0;
   height: 100%;
+}
+
+.problem-list-pagination {
+  min-height: 42px;
+}
+
+.pagination-skeleton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 42px;
+}
+
+.pagination-skeleton-button,
+.pagination-skeleton-page {
+  display: inline-block;
+  border-radius: 6px;
+  background: #f1f3f5;
+}
+
+.pagination-skeleton-button {
+  width: 58px;
+  height: 30px;
+}
+
+.pagination-skeleton-page {
+  width: 30px;
+  height: 30px;
 }
 
 .right-container {

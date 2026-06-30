@@ -2,21 +2,20 @@
   <div class="insufficient-data-wrapper">
     <img src="@/assets/icon_thinking.png" width="60" />
     <template v-if="type">
-      <div style="margin-top: 15px">
-        <span style="font-size: 15px; font-weight: bold; margin-bottom: 5px">
-          데이터가 부족해서 통계를 볼 수 없어요</span
-        >
-        <br />
-        <span style="font-size: medium; font-weight: bold"
-          >문제를 더 많이 풀어주세요</span
-        >
+      <div class="insufficient-data-message">
+        <span class="insufficient-data-line insufficient-data-line-primary">
+          데이터가 부족해서 통계를 볼 수 없어요
+        </span>
+        <span class="insufficient-data-line insufficient-data-line-secondary">
+          문제를 더 많이 풀어주세요
+        </span>
       </div>
     </template>
     <template v-else>
-      <div style="margin-top: 15px">
-        <span style="font-size: 15px; font-weight: bold; margin-bottom: 5px">
-          문제 데이터가 부족해요</span
-        >
+      <div class="insufficient-data-message">
+        <span class="insufficient-data-line insufficient-data-line-primary">
+          문제 데이터가 부족해요
+        </span>
       </div>
     </template>
   </div>
@@ -43,8 +42,29 @@ export default defineComponent({
   margin-bottom: 20px;
   justify-content: center;
   align-items: center;
-  span {
-    color: #5c6773;
-  }
+}
+
+.insufficient-data-message {
+  margin-top: 15px;
+  padding: 0 12px;
+  color: #5c6773;
+  font-weight: 700;
+  text-align: center;
+  word-break: keep-all;
+  overflow-wrap: normal;
+}
+
+.insufficient-data-line {
+  display: block;
+  line-height: 1.45;
+}
+
+.insufficient-data-line-primary {
+  font-size: 15px;
+}
+
+.insufficient-data-line-secondary {
+  margin-top: 5px;
+  font-size: 14px;
 }
 </style>
