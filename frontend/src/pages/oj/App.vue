@@ -14,7 +14,7 @@
         'flat-white-app': isFlatWhitePage,
       }"
     >
-      <transition name="fadeInUp" mode="out-in">
+      <transition :name="routeTransitionName" mode="out-in">
         <router-view></router-view>
       </transition>
     </div>
@@ -76,7 +76,19 @@ export default {
   },
   computed: {
     ...mapState(["website"]),
-    ...mapGetters(["isProblemSolving", "removedPopupId"]),
+    ...mapGetters(["removedPopupId"]),
+    isProblemSolvingRoute() {
+      return (
+        this.$route.name === "problem-details" ||
+        this.$route.name === "contest-problem-details"
+      )
+    },
+    isProblemSolving() {
+      return this.isProblemSolvingRoute
+    },
+    routeTransitionName() {
+      return this.isProblemSolvingRoute ? "" : "fadeInUp"
+    },
     isSubmissionList() {
       return (
         this.$route.name === "submission-list" ||
@@ -359,7 +371,8 @@ html.submission-list-page #header .header-menu > .drop-menu {
 
 .ps {
   margin-top: 50px;
-  background-color: var(--bg-color);
+  min-height: calc(100vh - 50px);
+  background-color: var(--ps-background-color);
 }
 
 .fadeInUp-enter-active {

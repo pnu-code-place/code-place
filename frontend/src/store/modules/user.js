@@ -6,6 +6,7 @@ import { STORAGE_KEY, USER_TYPE, PROBLEM_PERMISSION } from "@/utils/constants"
 
 const state = {
   profile: {},
+  profileResolved: false,
   isProblemSolving: false,
   isDarkMode: false,
 }
@@ -13,6 +14,7 @@ const state = {
 const getters = {
   user: (state) => state.profile.user || {},
   profile: (state) => state.profile,
+  profileResolved: (state) => state.profileResolved,
   isProblemSolving: (state) => state.isProblemSolving,
   isAuthenticated: (state, getters) => {
     return !!getters.user.id
@@ -35,6 +37,7 @@ const getters = {
 const mutations = {
   [types.CHANGE_PROFILE](state, { profile }) {
     state.profile = profile
+    state.profileResolved = true
     if (profile.language) {
       i18n.locale = profile.language
     }
@@ -50,11 +53,18 @@ const mutations = {
 
 const actions = {
   getProfile({ commit }) {
-    api.getUserInfo().then((res) => {
-      commit(types.CHANGE_PROFILE, {
-        profile: res.data.data || {},
-      })
-    })
+    return api.getUserInfo().then(
+      (res) => {
+        commit(types.CHANGE_PROFILE, {
+          profile: res.data.data || {},
+        })
+      },
+      () => {
+        commit(types.CHANGE_PROFILE, {
+          profile: {},
+        })
+      },
+    )
   },
   clearProfile({ commit }) {
     commit(types.CHANGE_PROFILE, {
