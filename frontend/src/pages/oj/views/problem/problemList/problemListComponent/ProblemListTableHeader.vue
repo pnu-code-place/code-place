@@ -10,9 +10,7 @@
         @click="toggleTagVisibility"
       >
         <i :class="isTagHidden ? 'fas fa-eye' : 'fas fa-eye-slash'"></i>
-        <span>{{
-          isTagHidden ? $t("m.Show_Tags") : $t("m.Hide_Tags")
-        }}</span>
+        <span>{{ isTagHidden ? $t("m.Show_Tags") : $t("m.Hide_Tags") }}</span>
       </button>
     </div>
     <div class="header-controls">
@@ -84,21 +82,14 @@
         <span
           class="dropdown-label"
           style="font-weight: bold; font-size: 15px; padding-right: 10px"
-          >{{
-            query.tag === ""
-              ? this.$i18n.t("m.Category")
-              : query.tag
-          }}
+          >{{ query.tag === "" ? this.$i18n.t("m.Category") : query.tag }}
         </span>
         <Icon type="arrow-down-b"></Icon>
         <Dropdown-menu slot="list" class="problem-dropdown-menu">
           <Dropdown-item name="">{{ $t("m.All") }}</Dropdown-item>
-          <Dropdown-item
-            v-for="tag in tagOptions"
-            :key="tag"
-            :name="tag"
-            >{{ tag }}</Dropdown-item
-          >
+          <Dropdown-item v-for="tag in tagOptions" :key="tag" :name="tag">{{
+            tag
+          }}</Dropdown-item>
         </Dropdown-menu>
       </Dropdown>
       <Tooltip
@@ -199,6 +190,8 @@ export default {
 
   .main-title {
     margin: 0;
+    display: flex;
+    align-items: center;
   }
 
   .header-controls {
@@ -250,31 +243,38 @@ export default {
   @media (max-width: 768px) {
     width: 100%;
   }
+}
 
-  .tag-visibility-toggle {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 0;
-    border: 0;
-    background: transparent;
-    color: #8a93a5;
-    cursor: pointer;
+.tag-visibility-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 4px;
+  border: 1px solid #e2e5ed;
+  border-radius: 8px;
+  background: #f7f8fa;
+  color: #78797d;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    color 0.15s;
+
+  i {
     font-size: 12px;
-    font-weight: 600;
-    line-height: 1;
-    white-space: nowrap;
+    opacity: 0.8;
   }
 
-  .tag-visibility-toggle i {
-    font-size: 12px;
+  &:hover {
+    background: #eef0f5;
+    border-color: #c8ccd6;
+    color: #717070;
   }
-
-  .tag-visibility-toggle:hover,
-  .tag-visibility-toggle.active {
-    color: #344360;
-  }
-
 }
 
 .categoryDropdown /deep/ .ivu-select-dropdown {
