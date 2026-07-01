@@ -831,14 +831,10 @@ export default {
   background-color: var(--bg-color);
 }
 
-/* 질문하기 탭: 무채색 탭들 사이에서 눈에 띄도록 브랜드 강조색 부여 */
+/* 질문하기 탭: 배경은 다른 탭과 동일하게 두고 글자색만 브랜드 강조색 */
 .tab-header--ask {
   color: #5b64ed;
   font-weight: 700;
-}
-
-.tab-header--ask:not(.active) {
-  background-color: rgba(91, 100, 237, 0.07);
 }
 
 /* 오답 후 질문 유도 넛지 */
