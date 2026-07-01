@@ -141,7 +141,7 @@ export default {
 
 .banner {
   width: 100%;
-  height: 340px;
+  min-height: 200px;
   border-radius: 22px;
   overflow: hidden;
   position: relative;
@@ -205,11 +205,11 @@ export default {
   position: relative;
   z-index: 5;
   box-sizing: border-box;
-  padding: 36px 52px;
-  height: 100%;
+  padding: 30px 52px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: center;
+  gap: 16px;
 
   @media (max-width: 768px) {
     padding: 24px 20px;
