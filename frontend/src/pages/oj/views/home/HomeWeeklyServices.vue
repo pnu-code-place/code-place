@@ -2,9 +2,9 @@
   <div class="weekly-wrap">
     <div class="outer-card">
       <div class="section-header">
-        <span class="section-title">이주의 보너스 문제</span>
+        <span class="section-title">이번주의 보너스 문제</span>
         <span class="double-badge">
-          이주의 보너스 문제를 해결하면 점수의 2배를 줘요
+          해결하면 점수를 2배로 받을 수 있어요
         </span>
       </div>
 
@@ -13,26 +13,29 @@
           v-for="(problem, index) in problems"
           :key="problem._id"
           class="card"
-          :class="CARD_COLORS[index % 3].cardClass"
           @click="enterProblem(problem._id)"
         >
           <div class="card-top">
             <div class="card-meta">
+              <span class="badge b-bonus">점수 2배</span>
               <span class="badge b-cat">{{
-                FIELD_MAP[problem.field].value
+                (FIELD_MAP[problem.field] || {}).value
               }}</span>
               <span
                 class="badge"
                 :class="difficultyBadgeClass(problem.difficulty)"
               >
-                {{ DIFFICULTY_MAP[problem.difficulty].value }}
+                {{ (DIFFICULTY_MAP[problem.difficulty] || {}).value }}
               </span>
             </div>
             <span class="num">{{ String(index + 1).padStart(2, "0") }}</span>
           </div>
           <p class="card-title">{{ problem.title }}</p>
           <div class="card-tags">
-            <span v-for="tag in problem.tags.slice(0, 2)" :key="tag" class="tag"
+            <span
+              v-for="tag in (problem.tags || []).slice(0, 2)"
+              :key="tag"
+              class="tag"
               >#{{ tag }}</span
             >
           </div>
@@ -52,12 +55,6 @@ import api from "@oj/api"
 import { mapActions } from "vuex"
 import { FIELD_MAP, DIFFICULTY_MAP } from "../../../../utils/constants"
 
-const CARD_COLORS = [
-  { cardClass: "c1" },
-  { cardClass: "c2" },
-  { cardClass: "c3" },
-]
-
 export default {
   name: "HomeWeeklyServices",
   computed: {
@@ -67,9 +64,6 @@ export default {
     DIFFICULTY_MAP() {
       return DIFFICULTY_MAP
     },
-    CARD_COLORS() {
-      return CARD_COLORS
-    },
   },
   data() {
     return {
@@ -77,9 +71,12 @@ export default {
     }
   },
   mounted() {
-    api.getHomeBonusProblem().then((res) => {
-      this.problems = res.data.data.slice(0, 3)
-    })
+    api
+      .getHomeBonusProblem()
+      .then((res) => {
+        this.problems = (res.data.data || []).slice(0, 3)
+      })
+      .catch(() => {})
   },
   methods: {
     ...mapActions(["changeProblemSolvingState"]),
@@ -187,25 +184,14 @@ export default {
   gap: 10px;
   cursor: pointer;
   background: #ffffff;
-  border: 1px solid #ebebf0;
-  border-top-width: 4px;
+  border: 1px solid #f2e2bb;
   transition:
     transform 0.16s,
     box-shadow 0.16s;
 
   &:hover {
     transform: translateY(-3px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.07);
-  }
-
-  &.c1 {
-    border-top-color: #e24b4a;
-  }
-  &.c2 {
-    border-top-color: #f5a623;
-  }
-  &.c3 {
-    border-top-color: #1d9e75;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
   }
 }
 
@@ -228,6 +214,11 @@ export default {
   padding: 3px 10px;
   border-radius: 99px;
 
+  &.b-bonus {
+    background: #f59e0b;
+    color: #fff;
+    font-weight: 700;
+  }
   &.b-cat {
     background: #eeedfe;
     color: #3c3489;
