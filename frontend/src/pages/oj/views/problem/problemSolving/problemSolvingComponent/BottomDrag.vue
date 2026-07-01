@@ -49,7 +49,33 @@
 
       <div ref="terminalBody" class="terminal-body">
         <div v-if="tab === 'ai'" class="ai-chat">
-          <div v-for="(msg, i) in messages" :key="i" class="chat-row">
+          <!-- 단계 진행 스테퍼 -->
+          <div v-if="!isAdminRole" class="hint-stepper">
+            <div class="step-track">
+              <span
+                v-for="n in 5"
+                :key="n"
+                class="step-dot"
+                :class="{ done: n <= problemHintsUsed }"
+              ></span>
+            </div>
+            <span class="step-label">{{ problemHintsUsed }}/5 단계</span>
+          </div>
+
+          <!-- 첫 진입 온보딩 -->
+          <div v-if="messages.length === 0 && !isLoading" class="ai-empty">
+            <div class="ai-empty-avatar">
+              <img src="@/assets/images/AIAssistant.svg" alt="AI" />
+            </div>
+            <p class="ai-empty-title">아직 받은 힌트가 없어요</p>
+            <p class="ai-empty-sub">
+              막히는 부분이 있으면 아래 'AI조교 힌트받기'를 눌러보세요. 1단계부터
+              시작해 단계가 올라갈수록 더 구체적으로 도와드립니다.
+            </p>
+          </div>
+
+          <!-- 메시지 -->
+          <div v-for="(msg, i) in renderMessages" :key="i" class="chat-row">
             <div class="avatar" :class="{ thinking: msg.thinking }">
               <img src="@/assets/images/AIAssistant.svg" alt="AI" />
             </div>
@@ -58,12 +84,26 @@
               생각 중...
             </div>
 
-            <div
-              v-else
-              class="bubble"
-              :class="{ error: msg.error }"
-              v-text="msg.text"
-            ></div>
+            <div v-else-if="msg.error" class="bubble error">{{ msg.text }}</div>
+
+            <div v-else class="bubble hint-bubble">
+              <div v-if="msg.parsed.level" class="hint-level-badge">
+                {{ msg.parsed.level }}단계
+              </div>
+
+              <template v-if="msg.parsed.sections.length">
+                <div
+                  v-for="(sec, si) in msg.parsed.sections"
+                  :key="si"
+                  class="hint-section"
+                  :class="sectionClass(sec.label)"
+                >
+                  <div class="hint-section-label">{{ sec.label }}</div>
+                  <div class="hint-section-text">{{ sec.text }}</div>
+                </div>
+              </template>
+              <div v-else class="hint-body">{{ msg.parsed.body }}</div>
+            </div>
           </div>
         </div>
 
@@ -113,6 +153,14 @@ export default {
     hintsExhausted() {
       if (this.isAdminRole) return false // 관리자는 소진 개념이 없음
       return this.problemHintsRemaining <= 0
+    },
+
+    // 각 메시지 텍스트를 단계 배지 + 섹션(진단/힌트/점검) 구조로 파싱
+    renderMessages() {
+      return this.messages.map((m) => ({
+        ...m,
+        parsed: m.thinking || m.error ? null : this.parseHint(m.text),
+      }))
     },
   },
 
@@ -240,6 +288,44 @@ export default {
       if (!this.eventSource) return
       this.eventSource.close()
       this.eventSource = null
+    },
+
+    // "[N단계]" + "▸ 라벨\n본문" 형식을 구조로 파싱 (스트리밍 중 부분 텍스트도 안전)
+    parseHint(text) {
+      const result = { level: null, sections: [], body: "" }
+      if (!text) return result
+      let rest = text
+      const lv = rest.match(/^\s*\[(\d+)단계\]\s*/)
+      if (lv) {
+        result.level = Number(lv[1])
+        rest = rest.slice(lv[0].length)
+      }
+      if (rest.indexOf("▸") !== -1) {
+        rest
+          .split("▸")
+          .map((s) => s.trim())
+          .filter((s) => s)
+          .forEach((part) => {
+            const nl = part.indexOf("\n")
+            if (nl === -1) {
+              result.sections.push({ label: part.trim(), text: "" })
+            } else {
+              result.sections.push({
+                label: part.slice(0, nl).trim(),
+                text: part.slice(nl + 1).trim(),
+              })
+            }
+          })
+      } else {
+        result.body = rest.trim()
+      }
+      return result
+    },
+
+    sectionClass(label) {
+      if (label.indexOf("진단") !== -1) return "sec-diagnosis"
+      if (label.indexOf("점검") !== -1) return "sec-check"
+      return "sec-hint"
     },
 
     startDrag() {
@@ -436,7 +522,7 @@ export default {
 .ai-chat {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
 }
 
 .chat-row {
@@ -446,15 +532,15 @@ export default {
 }
 
 .avatar {
-  width: 52px;
-  height: 52px;
+  width: 38px;
+  height: 38px;
   flex-shrink: 0;
   background-color: var(--ai-assistant-avatar-bg);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 10px;
+  padding: 8px;
 }
 
 .avatar img {
@@ -484,12 +570,148 @@ export default {
   font-style: italic;
 }
 
-.result-message {
-  color: var(--ai-assistant-muted-text-color);
-  font-size: 14px;
+/* 단계 진행 스테퍼 */
+.hint-stepper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 2px;
 }
 
-.empty-message {
+.step-track {
+  display: flex;
+  gap: 4px;
+  flex: 1;
+}
+
+.step-dot {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--ai-assistant-header-border-color);
+}
+
+.step-dot.done {
+  background: #5b64ed;
+}
+
+.step-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ai-assistant-subtle-text-color);
+  white-space: nowrap;
+}
+
+/* 첫 진입 온보딩 */
+.ai-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 6px;
+  padding: 16px 24px 8px;
+}
+
+.ai-empty-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: var(--ai-assistant-avatar-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 11px;
+  margin-bottom: 2px;
+}
+
+.ai-empty-avatar img {
+  width: 100%;
+  height: 100%;
+  filter: var(--ai-assistant-avatar-icon-filter);
+}
+
+.ai-empty-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ai-assistant-bubble-text-color);
+}
+
+.ai-empty-sub {
+  margin: 0;
+  max-width: 340px;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--ai-assistant-subtle-text-color);
+}
+
+/* 힌트 말풍선: 구조 요소 사이 여백이 pre-wrap으로 빈 줄처럼 보이지 않도록 normal */
+.hint-bubble {
+  white-space: normal;
+}
+
+/* 단계 배지 */
+.hint-level-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  background: #5b64ed;
+  padding: 2px 10px;
+  border-radius: 99px;
+  margin-bottom: 10px;
+}
+
+/* 힌트 섹션 (진단 / 힌트 / 점검 포인트) */
+.hint-section {
+  margin-bottom: 12px;
+}
+
+.hint-section:last-child {
+  margin-bottom: 0;
+}
+
+.hint-section-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  margin-bottom: 4px;
+  color: var(--ai-assistant-subtle-text-color);
+}
+
+.hint-section-text {
+  font-size: 14px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.sec-diagnosis .hint-section-label {
+  color: #c2751a;
+}
+
+.sec-hint .hint-section-label {
+  color: #5b64ed;
+}
+
+/* 점검 포인트 = 강조 콜아웃 */
+.sec-check {
+  background: rgba(91, 100, 237, 0.07);
+  border-left: 3px solid #5b64ed;
+  padding: 8px 12px;
+  border-radius: 0 8px 8px 0;
+}
+
+.sec-check .hint-section-label {
+  color: #5b64ed;
+}
+
+.hint-body {
+  font-size: 14px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.result-message {
   color: var(--ai-assistant-muted-text-color);
   font-size: 14px;
 }
