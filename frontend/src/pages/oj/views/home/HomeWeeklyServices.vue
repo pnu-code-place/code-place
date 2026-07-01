@@ -191,7 +191,7 @@ export default {
 
   &:hover {
     transform: translateY(-3px);
-    box-shadow: 0 8px 24px rgba(245, 158, 11, 0.18);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
   }
 }
 
