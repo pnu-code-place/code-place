@@ -11,50 +11,64 @@
       </div>
       <div class="filter-bar">
         <div class="search-bar">
-          <Input
+          <input
             v-model="query.keyword"
+            class="search-input"
+            type="search"
             placeholder="검색어를 입력하세요"
-            icon="ios-search-strong"
-            @on-enter="applySearch"
+            @keyup.enter="applySearch"
+          />
+          <button
+            type="button"
+            class="search-btn"
+            aria-label="검색"
+            @click="applySearch"
           >
-          </Input>
+            <i class="fas fa-search"></i>
+          </button>
         </div>
-        <div class="question-status-bar">
-          <Dropdown
-            @on-click="filterByQuestionStatus"
-            trigger="click"
-            class="dropdown"
+        <div class="question-status-bar" v-click-outside="closeStatusMenu">
+          <button
+            type="button"
+            class="status-trigger"
+            :aria-expanded="String(statusMenuOpen)"
+            @click="statusMenuOpen = !statusMenuOpen"
           >
-            <span
-              style="font-weight: bold; font-size: 15px; padding-right: 10px"
-            >
-              {{
-                query.question_status === "ALL"
-                  ? "전체"
-                  : QUESTION_STATUS[query.question_status].name
-              }}
-            </span>
-            <Icon type="arrow-down-b"></Icon>
-            <Dropdown-menu slot="list">
-              <Dropdown-item name="ALL">전체</Dropdown-item>
-              <Dropdown-item
+            <span>{{ currentQuestionStatusLabel }}</span>
+            <i class="fas fa-chevron-down"></i>
+          </button>
+          <transition name="menu-fade">
+            <div v-if="statusMenuOpen" class="status-menu" role="menu">
+              <button
+                type="button"
+                class="status-option"
+                :class="{ selected: query.question_status === 'ALL' }"
+                role="menuitem"
+                @click="filterByQuestionStatus('ALL')"
+              >
+                전체
+              </button>
+              <button
                 v-for="(val, k) in QUESTION_STATUS"
                 :key="k"
-                :name="k"
+                type="button"
+                class="status-option"
+                :class="{ selected: query.question_status === k }"
+                role="menuitem"
+                @click="filterByQuestionStatus(k)"
               >
                 {{ val.name }}
-              </Dropdown-item>
-            </Dropdown-menu>
-          </Dropdown>
+              </button>
+            </div>
+          </transition>
         </div>
-        <Button
-          type="primary"
-          size="default"
-          @click="openCreateModal"
+        <button
+          type="button"
           class="create-btn"
+          @click="openCreateModal"
         >
           {{ $t("m.Problem_Community_Create_Question") }}
-        </Button>
+        </button>
       </div>
     </div>
 
@@ -135,7 +149,7 @@
       v-model="showCreateModal"
       :footer-hide="true"
       :closable="true"
-      :mask-closable="false"
+      :mask-closable="true"
       width="800"
       class-name="create-question-modal"
     >
@@ -242,6 +256,7 @@ export default {
       isLoading: false,
       error: null,
       showCreateModal: false,
+      statusMenuOpen: false,
       isCreating: false,
       newPost: {
         title: "",
@@ -254,6 +269,25 @@ export default {
         question_status: "ALL",
       },
     }
+  },
+  directives: {
+    clickOutside: {
+      bind(el, binding) {
+        el.__problemCommunityClickOutside__ = (event) => {
+          if (!(el === event.target || el.contains(event.target))) {
+            binding.value(event)
+          }
+        }
+        document.addEventListener("click", el.__problemCommunityClickOutside__)
+      },
+      unbind(el) {
+        document.removeEventListener(
+          "click",
+          el.__problemCommunityClickOutside__,
+        )
+        delete el.__problemCommunityClickOutside__
+      },
+    },
   },
   mounted() {
     // problem.id가 로드 된 후 fetchPosts 호출
@@ -271,6 +305,16 @@ export default {
     },
     defaultAvatar() {
       return DEFAULT_AVATAR
+    },
+    currentQuestionStatusLabel() {
+      if (this.query.question_status === "ALL") {
+        return "전체"
+      }
+      const status = QUESTION_STATUS[this.query.question_status]
+      return status ? status.name : "전체"
+    },
+    totalPages() {
+      return Math.max(1, Math.ceil(this.total / this.query.limit))
     },
   },
   watch: {
@@ -325,8 +369,14 @@ export default {
       }
     },
     handlePageChange(page) {
+      if (page < 1 || page > this.totalPages || page === this.query.page) {
+        return
+      }
       this.query.page = page
       this.fetchPosts()
+    },
+    closeStatusMenu() {
+      this.statusMenuOpen = false
     },
     goToPost(postId) {
       this.$router.push({ name: "community-detail", params: { postId } })
@@ -373,6 +423,7 @@ export default {
     },
     filterByQuestionStatus(questionStatus) {
       this.query.question_status = questionStatus
+      this.statusMenuOpen = false
       this.query.page = 1
       this.fetchPosts()
     },
@@ -397,28 +448,6 @@ export default {
   --input-bg: #fff;
   --input-border: #dcdee2;
   --input-text: #515a6e;
-}
-
-.dropdown {
-  cursor: pointer;
-  padding-top: 4px;
-  padding-bottom: 4px;
-  padding-left: 15px;
-  padding-right: 15px;
-
-  background-color: var(--input-bg);
-  border: 1px solid var(--input-border);
-  color: var(--input-text);
-
-  border-radius: 7px;
-  display: flex;
-  align-items: center;
-
-  transition: border 0.3s;
-
-  &:hover {
-    border-color: var(--point-color);
-  }
 }
 
 .dark-theme {
@@ -483,6 +512,9 @@ export default {
     gap: 8px;
 
     .create-btn {
+      border: 0;
+      min-height: 34px;
+      padding: 0 14px;
       display: flex;
       align-items: center;
       gap: 6px;
@@ -491,51 +523,28 @@ export default {
       background: var(--point-color);
       border-color: var(--point-color);
       box-shadow: 0 2px 8px rgba(50, 48, 107, 0.25);
+      color: #ffffff;
+      cursor: pointer;
       transition: all 0.3s ease;
 
       &:hover {
         background: #4a4890;
         border-color: #4a4890;
+        color: #ffffff;
         box-shadow: 0 4px 12px rgba(50, 48, 107, 0.35);
         transform: translateY(-1px);
       }
     }
 
     .search-bar {
-      width: 190;
-
-      /deep/ .ivu-input {
-        background: var(--input-bg);
-        color: var(--input-text);
-        border: 1px solid var(--input-border);
-
-        &::placeholder {
-          color: var(--input-text);
-          opacity: 0.4;
-        }
-
-        &:focus {
-          border-color: var(--point-color);
-          box-shadow: 0 0 0 3px rgba(50, 48, 107, 0.25);
-        }
-      }
+      width: 220px;
+      position: relative;
+      display: flex;
+      align-items: center;
     }
 
     .question-status-bar {
-      /deep/ .ivu-select-dropdown {
-        background: var(--input-bg);
-        border: 1px solid var(--input-border);
-      }
-
-      /deep/ .ivu-dropdown-item {
-        color: var(--input-text);
-        transition: background 0.2s;
-
-        &:hover {
-          background: var(--hover-bg);
-          color: var(--input-text);
-        }
-      }
+      position: relative;
     }
 
     .search_icon {
@@ -547,6 +556,120 @@ export default {
       color: #2d8cf0;
     }
   }
+}
+
+.search-input {
+  width: 100%;
+  height: 34px;
+  padding: 0 36px 0 12px;
+  border: 1px solid var(--input-border);
+  border-radius: 8px;
+  background: var(--input-bg);
+  color: var(--input-text);
+  font-size: 13px;
+  outline: none;
+
+  &::placeholder {
+    color: var(--input-text);
+    opacity: 0.42;
+  }
+
+  &:focus {
+    border-color: var(--point-color);
+    box-shadow: 0 0 0 3px rgba(50, 48, 107, 0.15);
+  }
+}
+
+.search-btn {
+  position: absolute;
+  right: 4px;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--input-text);
+  cursor: pointer;
+}
+
+.search-btn:hover {
+  background: var(--hover-bg);
+  color: var(--point-color);
+}
+
+.status-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: space-between;
+  min-width: 104px;
+  height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--input-border);
+  border-radius: 8px;
+  background: var(--input-bg);
+  color: var(--input-text);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.status-trigger i {
+  flex: 0 0 auto;
+  margin-left: 8px;
+  font-size: 12px;
+  opacity: 0.78;
+}
+
+.status-trigger:hover {
+  border-color: var(--point-color);
+  background: var(--hover-bg);
+}
+
+.status-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 20;
+  min-width: 132px;
+  padding: 6px;
+  border: 1px solid var(--input-border);
+  border-radius: 8px;
+  background: var(--input-bg);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.16);
+}
+
+.status-option {
+  display: block;
+  width: 100%;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--input-text);
+  cursor: pointer;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.status-option:hover,
+.status-option.selected {
+  background: var(--hover-bg);
+  color: var(--point-color);
+}
+
+.menu-fade-enter-active,
+.menu-fade-leave-active {
+  transition:
+    opacity 0.12s ease,
+    transform 0.12s ease;
+}
+
+.menu-fade-enter,
+.menu-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
 }
 
 .loading-state,

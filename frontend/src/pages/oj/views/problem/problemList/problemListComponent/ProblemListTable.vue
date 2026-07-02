@@ -36,7 +36,35 @@
         </th>
       </tr>
     </thead>
-    <template v-if="this.problemList.length !== 0">
+    <tbody v-if="loading">
+      <tr
+        v-for="index in skeletonRowCount"
+        :key="`problem-list-skeleton-${index}`"
+        class="skeleton-row"
+      >
+        <td class="td-first">
+          <span class="skeleton-block skeleton-id"></span>
+        </td>
+        <td class="td-second">
+          <span class="skeleton-block skeleton-title"></span>
+          <div v-if="showTags" class="skeleton-meta-row">
+            <span class="skeleton-block skeleton-chip"></span>
+            <span class="skeleton-block skeleton-chip skeleton-chip-short"></span>
+            <span class="skeleton-block skeleton-chip skeleton-chip-short"></span>
+          </div>
+        </td>
+        <td class="td-third">
+          <span class="skeleton-block skeleton-difficulty"></span>
+        </td>
+        <td class="td-fourth">
+          <span class="skeleton-block skeleton-number"></span>
+        </td>
+        <td class="td-fifth">
+          <span class="skeleton-block skeleton-rate"></span>
+        </td>
+      </tr>
+    </tbody>
+    <template v-else-if="this.problemList.length !== 0">
       <tbody>
         <tr v-for="problem in this.problemList" :key="problem._id">
           <td class="td-first">{{ problem._id }}</td>
@@ -118,6 +146,14 @@ export default {
       type: String,
       default: "",
     },
+    loading: {
+      type: Boolean,
+      default: false,
+    },
+    skeletonCount: {
+      type: Number,
+      default: 15,
+    },
   },
   methods: {
     ...mapActions(["changeProblemSolvingState"]),
@@ -164,6 +200,9 @@ export default {
     },
     FIELD_MAP() {
       return FIELD_MAP
+    },
+    skeletonRowCount() {
+      return Math.min(Math.max(this.skeletonCount || 15, 5), 20)
     },
   },
 }
@@ -249,6 +288,12 @@ thead {
   font-weight: bold;
   color: #7e7e7e;
 
+  .th-first {
+    white-space: normal;
+    word-break: normal;
+    overflow-wrap: break-word;
+  }
+
   .th-second {
     width: 400px;
   }
@@ -261,6 +306,12 @@ tbody {
       font-size: 1.2em;
       text-align: center;
       font-weight: bold;
+    }
+
+    .td-first {
+      white-space: normal;
+      word-break: normal;
+      overflow-wrap: break-word;
     }
 
     td:nth-child(2) {
@@ -321,5 +372,55 @@ td:nth-child(2) {
 
 .difficulty-badge {
   white-space: nowrap;
+}
+
+.skeleton-row td {
+  cursor: default;
+}
+
+.skeleton-block {
+  display: inline-block;
+  height: 14px;
+  border-radius: 6px;
+  background: #f1f3f5;
+}
+
+.skeleton-id {
+  width: 48px;
+}
+
+.skeleton-title {
+  width: ~"min(360px, 72%)";
+  height: 18px;
+}
+
+.skeleton-meta-row {
+  display: flex;
+  gap: 5px;
+  margin-top: 11px;
+}
+
+.skeleton-chip {
+  width: 78px;
+  height: 24px;
+  border-radius: 999px;
+}
+
+.skeleton-chip-short {
+  width: 56px;
+}
+
+.skeleton-difficulty {
+  width: 74px;
+  height: 28px;
+  border-radius: 999px;
+}
+
+.skeleton-number {
+  width: 44px;
+}
+
+.skeleton-rate {
+  width: 36px;
 }
 </style>

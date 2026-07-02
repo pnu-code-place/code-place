@@ -5,7 +5,30 @@
         $t("m.PersonalRecommendation")
       }}</span>
     </header>
-    <div v-if="!this.isAuthenticated" class="no-auth">
+    <template v-if="shouldShowSkeleton">
+      <div class="recommendation-skeleton" aria-hidden="true">
+        <div class="skeleton-chart">
+          <span class="skeleton-chart-ring"></span>
+        </div>
+        <div class="skeleton-copy"></div>
+        <div
+          v-for="index in 3"
+          :key="`recommendation-skeleton-${index}`"
+          class="skeleton-problem-card"
+        >
+          <div class="skeleton-problem-title-row">
+            <span class="skeleton-block skeleton-title"></span>
+            <span class="skeleton-block skeleton-link"></span>
+          </div>
+          <div v-if="showTags" class="skeleton-tag-row">
+            <span class="skeleton-block skeleton-chip"></span>
+            <span class="skeleton-block skeleton-chip skeleton-chip-short"></span>
+            <span class="skeleton-block skeleton-chip skeleton-chip-short"></span>
+          </div>
+        </div>
+      </div>
+    </template>
+    <div v-else-if="!this.isAuthenticated" class="no-auth">
       <span style="font-size: medium; font-weight: bold">{{
         $t("m.PersonalRecommendation_No_Auth")
       }}</span>
@@ -43,7 +66,7 @@
 </template>
 
 <script>
-import { mapActions, mapGetters } from "vuex"
+import { mapGetters } from "vuex"
 import api from "../../../../api"
 import { FIELD_MAP } from "../../../../../../utils/constants"
 import RecommendProblem from "./RecommendProblem.vue"
@@ -61,7 +84,7 @@ export default {
   data() {
     return {
       recommendation: null,
-      noProblemData: false,
+      loading: false,
     }
   },
   mounted() {
@@ -69,20 +92,29 @@ export default {
   },
   methods: {
     init() {
+      if (!this.isAuthenticated) {
+        this.loading = false
+        return
+      }
+      this.loading = true
       api
         .getPersonalRecommendProblem()
         .then((res) => {
           this.recommendation = res.data.data
+          this.loading = false
         })
-        .catch((e) => {
-          console.log(e)
+        .catch(() => {
+          this.loading = false
         })
     },
   },
   computed: {
-    ...mapGetters(["user", "isAuthenticated", "isAdminRole"]),
+    ...mapGetters(["user", "isAuthenticated", "profileResolved"]),
     FIELD_MAP() {
       return FIELD_MAP
+    },
+    shouldShowSkeleton() {
+      return !this.profileResolved || this.loading
     },
     getGraphColor() {
       return Object.values(this.FIELD_MAP).map((field) => field.boxColor)
@@ -102,19 +134,20 @@ export default {
       // 각 영역별로 점수를 배열로 만들어서 반환
       let fieldList = this.getFieldName
       let scoreList = this.getScoreList
+      let colorList = this.getGraphColor
 
       return fieldList.map((field, index) => ({
         value: scoreList[index],
         name: field,
+        label: {
+          color: colorList[index],
+        },
+        labelLine: {
+          lineStyle: {
+            color: colorList[index],
+          },
+        },
       }))
-    },
-    getRecommendedField() {
-      if (this.recommendation == null) {
-        return
-      }
-      return Object.values(this.recommendation.recommend_problems).map(
-        (problem) => problem.field,
-      )
     },
     isScoreDataInSufficient() {
       if (this.recommendation == null) {
@@ -132,23 +165,21 @@ export default {
           borderRadius: 10,
         },
         legend: {
-          top: "5%",
-          left: "center",
+          show: false,
         },
         series: [
           {
             type: "pie",
             radius: ["30%", "65%"],
             avoidLabelOverlap: false,
-            padAngle: 10,
+            padAngle: 0,
             itemStyle: {
-              borderRadius: 10,
-              borderWidth: 1,
-              borderJoin: "round",
+              borderRadius: 0,
+              borderWidth: 0,
             },
             label: {
-              show: false,
-              position: "center",
+              show: true,
+              position: "outside",
             },
             emptyCircleStyle: {
               color: "lightgray",
@@ -161,12 +192,19 @@ export default {
               },
             },
             labelLine: {
-              show: false,
+              show: true,
             },
             color: this.getGraphColor,
             data: this.getGraphData,
           },
         ],
+      }
+    },
+  },
+  watch: {
+    isAuthenticated(newVal) {
+      if (newVal) {
+        this.init()
       }
     },
   },
@@ -232,5 +270,80 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.recommendation-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.skeleton-block,
+.skeleton-copy {
+  display: inline-block;
+  border-radius: 6px;
+  background: #f1f3f5;
+}
+
+.skeleton-chart {
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.skeleton-chart-ring {
+  width: 118px;
+  height: 118px;
+  border-radius: 50%;
+  border: 24px solid #f1f3f5;
+  box-sizing: border-box;
+}
+
+.skeleton-copy {
+  width: 78%;
+  height: 16px;
+  align-self: center;
+  margin: 5px 0 4px;
+}
+
+.skeleton-problem-card {
+  border-radius: 7px;
+  background-color: rgba(244, 248, 250, 0.69);
+  padding: 10px 20px;
+}
+
+.skeleton-problem-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 9px;
+}
+
+.skeleton-title {
+  width: 132px;
+  height: 17px;
+}
+
+.skeleton-link {
+  width: 58px;
+  height: 13px;
+}
+
+.skeleton-tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.skeleton-chip {
+  width: 72px;
+  height: 24px;
+  border-radius: 999px;
+}
+
+.skeleton-chip-short {
+  width: 54px;
 }
 </style>

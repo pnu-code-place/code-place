@@ -2,7 +2,22 @@
   <div class="contest-problem-navigator">
     <div class="navigator-panel">
       <div class="navigator-problems" :aria-busy="loading">
+        <div
+          v-if="loading && problems.length === 0"
+          class="navigator-skeleton-list"
+          aria-hidden="true"
+        >
+          <div
+            v-for="index in skeletonCount"
+            :key="`contest-problem-nav-skeleton-${index}`"
+            class="navigator-skeleton-item"
+          >
+            <span class="navigator-skeleton-number"></span>
+            <span class="navigator-skeleton-dot"></span>
+          </div>
+        </div>
         <button
+          v-else
           v-for="(problem, index) in problems"
           :key="`contest-problem-nav-${problem._id}`"
           type="button"
@@ -25,7 +40,6 @@
             aria-hidden="true"
           ></span>
         </button>
-        <div v-if="loading" class="navigator-loading">...</div>
       </div>
     </div>
     <div
@@ -68,6 +82,7 @@ export default {
       hoveredProblem: null,
       hoveredIndex: -1,
       tooltipTop: 0,
+      skeletonCount: 8,
     }
   },
   computed: {
@@ -265,6 +280,37 @@ export default {
     color 0.16s ease;
 }
 
+.navigator-skeleton-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.navigator-skeleton-item {
+  flex: 0 0 34px;
+  display: grid;
+  grid-template-columns: 38px 7px;
+  align-items: center;
+  gap: 2px;
+  width: 48px;
+}
+
+.navigator-skeleton-number {
+  width: 28px;
+  height: 28px;
+  justify-self: center;
+  border-radius: 999px;
+  background: var(--navigator-number-bg);
+}
+
+.navigator-skeleton-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--navigator-muted);
+  opacity: 0.45;
+}
+
 .navigator-problem-button:disabled {
   cursor: not-allowed;
   opacity: 0.55;
@@ -330,13 +376,6 @@ export default {
 
 .navigator-problem-button.status-failed .problem-status-dot {
   background: var(--navigator-failed);
-}
-
-.navigator-loading {
-  color: var(--navigator-muted);
-  font-size: 12px;
-  line-height: 34px;
-  text-align: center;
 }
 
 .navigator-tooltip {
