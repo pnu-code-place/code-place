@@ -8,4 +8,4 @@ fi
 
 cd /app
 
-exec celery -A oj worker --loglevel=info --pool=solo --concurrency=1
+exec celery -A oj worker --loglevel=info --concurrency=1 --max-tasks-per-child=100
