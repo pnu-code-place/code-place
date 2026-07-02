@@ -163,7 +163,7 @@ import Simditor from "../../components/Simditor.vue"
 import api from "../../api.js"
 
 export default {
-  name: "Announcement",
+  name: "AdminAnnouncementPage",
   components: {
     Simditor,
   },
@@ -246,7 +246,7 @@ export default {
     // 提交编辑
     // 默认传入MouseEvent
     submitAnnouncement(data = undefined) {
-      let funcName = ""
+      let funcName
       if (!data.title) {
         data = {
           id: this.currentAnnouncementId,

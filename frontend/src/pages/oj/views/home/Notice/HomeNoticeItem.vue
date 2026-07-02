@@ -38,6 +38,7 @@ export default defineComponent({
       } else if (this.isSW) {
         return this.announcement.pubDate.split(" ")[0]
       }
+      return ""
     },
     isNew() {
       if (this.isCSEP) {
@@ -48,8 +49,9 @@ export default defineComponent({
         const oneDayInMilliseconds = 24 * 60 * 60 * 1000 * this.DAYS_TO_BE_NEW
         return currentTime - createTimestamp <= oneDayInMilliseconds
       } else if (this.isSW) {
-        this.dateStr === new Date().toISOString().split("T")[0]
+        return this.dateStr === new Date().toISOString().split("T")[0]
       }
+      return false
     },
     csepClass() {
       return this.isCSEP ? "csep" : ""
@@ -147,7 +149,7 @@ li {
         text-align: left;
         text-decoration: none;
         font-size: 14px;
-        font-weight: 600;
+        font-weight: 700;
         color: var(--ps-content-text-color);
         overflow: hidden;
         white-space: nowrap;

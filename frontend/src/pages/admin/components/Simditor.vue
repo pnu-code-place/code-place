@@ -10,7 +10,7 @@ import "tar-simditor-markdown/styles/simditor-markdown.css"
 import "./simditor-file-upload"
 
 export default {
-  name: "Simditor",
+  name: "AdminSimditor",
   props: {
     toolbar: {
       type: Array,

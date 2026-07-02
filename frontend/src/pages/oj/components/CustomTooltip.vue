@@ -12,7 +12,10 @@
 export default {
   name: "custom-tooltip",
   props: {
-    content: HTMLElement,
+    content: {
+      type: [String, Number],
+      default: "",
+    },
     placement: {
       type: String,
       default: "top",

@@ -165,7 +165,7 @@ export default {
 <template>
   <div class="category-summary">
     <div class="graph-column">
-      <ECharts :options="chartOption" style="width: 100%; height: 100%" />
+      <ECharts :option="chartOption" style="width: 100%; height: 100%" />
     </div>
 
     <div class="table-wrapper">
@@ -187,6 +187,7 @@ export default {
           <tr
             class="part-row"
             v-for="(category, category_name) in fieldInfo"
+            :key="category_name"
             @click="goField(category_name)"
           >
             <td class="part-name-wrapper">

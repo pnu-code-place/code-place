@@ -22,10 +22,9 @@ import SideNavBar from "./SideNavBar.vue"
 import UserCard from "./UserCard.vue"
 import router from "../../../router"
 import Error404 from "../../general/404.vue"
-import OjSummary from "./OJSummary.vue"
 
 export default {
-  components: { OjSummary, Error404, UserCard, SideNavBar },
+  components: { Error404, UserCard, SideNavBar },
   name: "user-home",
   data() {
     return {

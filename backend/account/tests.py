@@ -8,19 +8,90 @@ from copy import deepcopy
 from django.contrib import auth
 from django.db import DatabaseError
 from django.http.response import JsonResponse
-from django.test import RequestFactory, TestCase
+from django.test import RequestFactory, SimpleTestCase
 from django.utils import decorators
 from django.utils.timezone import now
-from otpauth import OtpAuth
-
 from utils.api.tests import APIClient, APITestCase
 from utils.api import APIView
 from utils.shortcuts import rand_str
 from options.options import SysOptions
 
 from .models import AdminType, ProblemPermission, User
-from .decorators import scheduler_only
+from .decorators import login_required, scheduler_only
+from .middleware import AdminRoleRequiredMiddleware, RequestIDMiddleware
 from .tasks import calculate_user_score_basis, calculate_user_score_fluctuation
+
+
+class RequestIDMiddlewareTest(SimpleTestCase):
+
+    def setUp(self):
+        self.factory = RequestFactory()
+
+    def test_generates_request_id_when_header_is_missing(self):
+        middleware = RequestIDMiddleware(lambda request: JsonResponse({"ok": True}))
+        request = self.factory.get("/")
+
+        response = middleware(request)
+
+        self.assertEqual(len(request.request_id), 32)
+        self.assertEqual(response["X-Request-ID"], request.request_id)
+
+    def test_accepts_existing_request_id_and_truncates_it(self):
+        request_id = "a" * 150
+        middleware = RequestIDMiddleware(lambda request: JsonResponse({"ok": True}))
+        request = self.factory.get("/", HTTP_X_REQUEST_ID=request_id)
+
+        response = middleware(request)
+
+        self.assertEqual(request.request_id, "a" * 128)
+        self.assertEqual(response["X-Request-ID"], request.request_id)
+
+    def test_sanitizes_request_id_before_returning_response_header(self):
+        middleware = RequestIDMiddleware(lambda request: JsonResponse({"ok": True}))
+        request = self.factory.get("/", HTTP_X_REQUEST_ID="trace-1\nSet-Cookie:bad")
+
+        response = middleware(request)
+
+        self.assertEqual(request.request_id, "trace-1-Set-Cookie:bad")
+        self.assertEqual(response["X-Request-ID"], request.request_id)
+
+    def test_generates_request_id_when_header_has_no_safe_characters(self):
+        middleware = RequestIDMiddleware(lambda request: JsonResponse({"ok": True}))
+        request = self.factory.get("/", HTTP_X_REQUEST_ID="\n\t")
+
+        response = middleware(request)
+
+        self.assertEqual(len(request.request_id), 32)
+        self.assertEqual(response["X-Request-ID"], request.request_id)
+
+
+class AdminRoleRequiredMiddlewareTest(SimpleTestCase):
+
+    def setUp(self):
+        self.factory = RequestFactory()
+
+    def test_admin_api_requires_login_with_http_401(self):
+        middleware = AdminRoleRequiredMiddleware(lambda request: JsonResponse({"ok": True}))
+        request = self.factory.get("/api/admin/problem")
+        request.user = mock.MagicMock()
+        request.user.is_authenticated = False
+
+        response = middleware(request)
+
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.data, {"error": "login-required", "data": "Please login in first"})
+
+    def test_admin_api_requires_admin_role_with_http_403(self):
+        middleware = AdminRoleRequiredMiddleware(lambda request: JsonResponse({"ok": True}))
+        request = self.factory.get("/api/admin/problem")
+        request.user = mock.MagicMock()
+        request.user.is_authenticated = True
+        request.user.is_admin_role.return_value = False
+
+        response = middleware(request)
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.data, {"error": "login-required", "data": "Please login in first"})
 
 
 class PermissionDecoratorTest(APITestCase):
@@ -36,7 +107,18 @@ class PermissionDecoratorTest(APITestCase):
         self.request.user.is_authenticated = mock.MagicMock()
 
     def test_login_required(self):
-        self.request.user.is_authenticated.return_value = False
+        class TestAPIView(APIView):
+
+            @login_required
+            def get(self, request):
+                return self.success("Success")
+
+        self.request.user.is_authenticated = False
+
+        response = TestAPIView().get(self.request)
+
+        self.assertEqual(response.status_code, 401)
+        self.assertFailed(response, "Please login first")
 
     def test_admin_required(self):
         pass
@@ -64,6 +146,7 @@ class SchedulerOnlyDecoratorTest(APITestCase):
         """ Test when SCHEDULER_TOKEN is not set in the environment."""
         request = self.factory.post("/", HTTP_X_SCHEDULER_TOKEN='secret')
         response = self.view.post(request)
+        self.assertEqual(response.status_code, 403)
         self.assertFailed(response)
 
     def test_missing_header_token(self):
@@ -71,6 +154,7 @@ class SchedulerOnlyDecoratorTest(APITestCase):
         with mock.patch('os.environ', {}):
             request = self.factory.post("/")
             response = self.view.post(request)
+        self.assertEqual(response.status_code, 403)
         self.assertFailed(response)
 
     def test_valid_token(self):
@@ -85,6 +169,7 @@ class SchedulerOnlyDecoratorTest(APITestCase):
         with mock.patch('os.environ', {'SCHEDULER_TOKEN': 'secret'}):
             request = self.factory.post("/", HTTP_X_SCHEDULER_TOKEN='wrong_secret')
             response = self.view.post(request)
+        self.assertEqual(response.status_code, 403)
         self.assertFailed(response)
 
 
@@ -264,7 +349,7 @@ class SessionManagementAPITest(APITestCase):
 #         self.assertEqual(data["language"], "en-US")
 
 
-@mock.patch("account.views.oj.send_email_async.send")
+@mock.patch("account.views.oj.send_email_async.apply_async")
 class ApplyResetPasswordAPITest(CaptchaTest):
     """
     비밀번호 재설정 (로그인 전) 이메일 발송 API 테스트
@@ -282,20 +367,20 @@ class ApplyResetPasswordAPITest(CaptchaTest):
     def _refresh_captcha(self):
         self.data["captcha"] = self._set_captcha(self.client.session)
 
-    def test_apply_reset_password(self, send_email_send):
+    def test_apply_reset_password(self, send_email_apply_async):
         resp = self.client.post(self.url, data=self.data)
         self.assertSuccess(resp)
-        send_email_send.assert_called()
+        send_email_apply_async.assert_called()
 
-    def test_apply_reset_password_twice_in_20_mins(self, send_email_send):
+    def test_apply_reset_password_twice_in_20_mins(self, send_email_apply_async):
         self.test_apply_reset_password()
-        send_email_send.reset_mock()
+        send_email_apply_async.reset_mock()
         self._refresh_captcha()
         resp = self.client.post(self.url, data=self.data)
         self.assertDictEqual(resp.data, {"error": "error", "data": "You can only reset password once per 20 minutes"})
-        send_email_send.assert_not_called()
+        send_email_apply_async.assert_not_called()
 
-    def test_apply_reset_password_again_after_20_mins(self, send_email_send):
+    def test_apply_reset_password_again_after_20_mins(self, send_email_apply_async):
         self.test_apply_reset_password()
         user = User.objects.first()
         user.reset_password_token_expire_time = now() - timedelta(minutes=21)

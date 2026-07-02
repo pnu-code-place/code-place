@@ -1,10 +1,57 @@
-import Vue from "vue"
-import Raven from "raven-js"
-import RavenVue from "raven-js/plugins/vue"
+import { init, setContext } from "@sentry/vue"
+
+const SENSITIVE_EXACT_FIELDS = [
+  "authorization",
+  "cookie",
+  "password",
+  "token",
+  "secret",
+  "code",
+  "src",
+]
+
+const SENSITIVE_SUBSTRINGS = [
+  "authorization",
+  "cookie",
+  "password",
+  "token",
+  "secret",
+  "source_code",
+  "sourcecode",
+  "spj_code",
+  "src",
+]
+
+function isSensitiveKey(key) {
+  const normalized = String(key).toLowerCase()
+  return (
+    SENSITIVE_EXACT_FIELDS.indexOf(normalized) !== -1 ||
+    SENSITIVE_SUBSTRINGS.some((field) => normalized.indexOf(field) !== -1)
+  )
+}
+
+function redact(value) {
+  if (Array.isArray(value)) {
+    return value.map((item) => redact(item))
+  }
+
+  if (value && typeof value === "object") {
+    return Object.keys(value).reduce((result, key) => {
+      result[key] = isSensitiveKey(key) ? "[REDACTED]" : redact(value[key])
+      return result
+    }, {})
+  }
+
+  return value
+}
 
 const options = {
   release: process.env.VERSION,
-  ignoreUrls: [
+  environment: process.env.SENTRY_ENVIRONMENT,
+  beforeSend(event) {
+    return redact(event)
+  },
+  denyUrls: [
     // Chrome extensions
     /extensions\//i,
     /^chrome:\/\//i,
@@ -13,16 +60,31 @@ const options = {
     // Ignore Google flakiness
     /\/(gtm|ga|analytics)\.js/i,
   ],
+  dataCollection: {
+    userInfo: false,
+    httpBodies: [],
+  },
 }
 
-Raven.config(
-  "https://6234a51e61a743b089ed64c51d2f6ea9@sentry.io/258234",
-  options,
-)
-  .addPlugin(RavenVue, Vue)
-  .install()
+export function initSentry(Vue) {
+  if (process.env.USE_SENTRY !== "1" || !process.env.SENTRY_DSN_FRONTEND) {
+    return
+  }
 
-Raven.setUserContext({
-  version: process.env.VERSION,
-  location: window.location,
-})
+  init({
+    Vue,
+    dsn: process.env.SENTRY_DSN_FRONTEND,
+    ...options,
+  })
+
+  setContext("app", {
+    version: process.env.VERSION,
+    location: window.location.href,
+  })
+}
+
+export function setRequestIdContext(requestId) {
+  setContext("request", {
+    request_id: requestId,
+  })
+}

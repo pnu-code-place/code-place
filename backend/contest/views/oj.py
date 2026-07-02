@@ -1,4 +1,5 @@
-from django.db.models import OuterRef, Count, Subquery, F, Max
+from django.conf import settings
+from django.db.models import OuterRef, Count, Subquery
 from django.http import HttpResponse
 from django.utils.timezone import now
 from django.core.cache import cache
@@ -8,7 +9,7 @@ from utils.constants import CacheKey, CONTEST_PASSWORD_SESSION_KEY
 from utils.contest_ranking_writer import ContestRankingWriter
 from utils.shortcuts import datetime2str, check_is_id
 from account.models import AdminType, User, UserProfile
-from account.decorators import login_required, check_contest_permission, check_contest_password
+from account.decorators import login_required, check_contest_permission, check_contest_password, ensure_created_by
 
 from utils.constants import ContestRuleType, ContestStatus
 from ..models import ContestAnnouncement, Contest, OIContestRank, ACMContestRank
@@ -154,11 +155,22 @@ class ContestParticipantsAPI(APIView):
     @login_required
     def get(self, request):
         contest_id = request.GET.get("contest_id")
+        if not contest_id or not check_is_id(contest_id):
+            return self.error("Invalid parameter, contest_id is required")
+
+        try:
+            contest = Contest.objects.get(id=contest_id)
+            ensure_created_by(contest, request.user)
+        except Contest.DoesNotExist:
+            return self.error("Contest does not exist")
 
         submissions = Submission.objects.filter(contest_id=contest_id)
+        latest_submission = submissions.filter(user_id=OuterRef('user_id')).order_by('-create_time', '-id')
 
-        user_submissions = submissions.values('user_id', 'username').annotate(
-            submission_count=Count('id'), last_submission_ip=Max('ip')).order_by('user_id')
+        user_submissions = submissions.values('user_id').annotate(
+            submission_count=Count('id'),
+            last_submission_ip=Subquery(latest_submission.values('ip')[:1]),
+            fallback_username=Subquery(latest_submission.values('username')[:1])).order_by('user_id')
 
         # UserProfile 정보 가져오기
         user_profiles = UserProfile.objects.filter(user_id__in=[sub['user_id'] for sub in user_submissions])
@@ -172,15 +184,20 @@ class ContestParticipantsAPI(APIView):
         for submission in user_submissions:
             user = user_dict.get(submission['user_id'])
             profile = user_profile_dict.get(submission['user_id'])
+            username = user.username if user else (submission['fallback_username'] or "")
+            email = user.email if user and user.email else ""
+            avatar = profile.avatar if profile else f"{settings.AVATAR_URI_PREFIX}/default.png"
+            school = profile.school if profile and profile.school else ""
+            major = profile.major if profile and profile.major else ""
             result.append({
                 'user_id': submission['user_id'],
-                'username': submission['username'],
-                'email': user.email if user else None,
-                'avatar': profile.avatar if profile else None,
-                'school': profile.school if profile else None,
-                'major': profile.major if profile else None,
+                'username': username,
+                'email': email,
+                'avatar': avatar,
+                'school': school,
+                'major': major,
                 'submission_count': submission['submission_count'],
-                'last_submission_ip': submission['last_submission_ip']
+                'last_submission_ip': submission['last_submission_ip'] or ""
             })
 
         serializer = ContestUserSubmissionSummarySerializer(result, many=True)

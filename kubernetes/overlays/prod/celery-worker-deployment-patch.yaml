@@ -5,9 +5,21 @@ metadata:
   labels:
     app: celery-worker
 spec:
-  replicas: 4
+  replicas: 10
   strategy:
     type: RollingUpdate
     rollingUpdate:
       maxUnavailable: 1
       maxSurge: 1
+  template:
+    spec:
+      containers:
+        - name: celery-worker
+          env:
+            - name: SENTRY_DSN_BACKEND
+              valueFrom:
+                secretKeyRef:
+                  name: sentry-secret
+                  key: SENTRY_DSN_BACKEND
+            - name: SENTRY_ENVIRONMENT
+              value: "prod"

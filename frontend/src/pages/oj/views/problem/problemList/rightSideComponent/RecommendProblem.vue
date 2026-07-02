@@ -12,19 +12,19 @@
           $t("m.Try_Personal_Recommendation_Problem")
         }}</span>
       </div>
-      <div class="problem-extra">
+      <div v-if="showTags" class="problem-extra">
         <FieldCategoryBox
           :boxType="true"
           :value="FIELD_MAP[recommend_problem.field].value"
           :boxColor="FIELD_MAP[recommend_problem.field].boxColor"
         />
-        <template v-for="(category, idx) in recommend_problem.tags">
-          <FieldCategoryBox
-            :boxType="false"
-            :value="'#' + category"
-            :boxColor="'#ffffff'"
-          />
-        </template>
+        <FieldCategoryBox
+          v-for="category in recommend_problem.tags"
+          :key="category"
+          :boxType="false"
+          :value="'#' + category"
+          :boxColor="'#ffffff'"
+        />
       </div>
     </div>
   </div>
@@ -44,6 +44,10 @@ export default defineComponent({
   },
   props: {
     recommend_problem: Object,
+    showTags: {
+      type: Boolean,
+      default: true,
+    },
   },
   components: {
     FieldCategoryBox,
@@ -98,8 +102,27 @@ export default defineComponent({
 
   .problem-extra {
     display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
     justify-content: left;
-    overflow-x: hidden;
+    overflow: hidden;
+
+    ::v-deep .fieldCategoryBox {
+      min-width: 0;
+    }
+
+    ::v-deep .box {
+      max-width: 140px;
+      margin-top: 0;
+      margin-right: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    ::v-deep .box span {
+      white-space: nowrap;
+    }
   }
 }
 

@@ -2,8 +2,8 @@
   <div class="logo" @click="handleRoute('/')">
     <div>
       <img
-        src="@/assets/code-place-logo.svg"
-        width="30"
+        src="@/assets/code-place-logo.png"
+        width="32"
         style="vertical-align: middle; margin-right: 10px"
       />
     </div>
@@ -33,24 +33,28 @@ export default {
 .logo {
   cursor: pointer;
   float: left;
-  margin-left: 4%;
-  height: 60px;
+  margin: 0 12px;
+  height: var(--header-height);
   display: flex;
   justify-content: space-between;
   align-items: center;
 
   .headerIcon {
-    line-height: normal;
+    line-height: 1.15;
     width: auto;
     text-align: left;
+    p {
+      margin: 0;
+    }
     .pnuName {
-      font-size: 14px;
+      font-size: 14.5px;
       font-weight: normal;
+      color: #555560;
     }
     .systemTitle {
-      font-size: 18px;
+      font-size: 19px;
       font-weight: bold;
-      color: #32306b;
+      color: #5b64ed;
     }
   }
 }

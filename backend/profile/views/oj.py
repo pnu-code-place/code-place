@@ -1,9 +1,10 @@
 import os
 import datetime
 
-from django.db.models import OuterRef, Subquery, Q, Count, F
+from django.db.models import Q, Count, F
 from django.http import HttpResponseNotFound
 from django.utils.decorators import method_decorator
+from django.utils import timezone
 from django.views.decorators.csrf import ensure_csrf_cookie
 
 from account.decorators import login_required
@@ -13,10 +14,68 @@ from profile.serializers import ProfileProblemSerializer, UserProfileSerializer,
     DashboardSubmissionSerializer, DashboardRankSerializer, DashboardFieldInfoSerializer, \
     DashboardDifficultyInfoSerializer, ImageUploadForm
 from school.models import Department, College
-from submission.models import Submission
+from submission.models import JudgeStatus, Submission
 from utils.api import APIView, validate_serializer
 from utils.constants import ProblemField
 from utils.shortcuts import rand_str
+
+
+DEFAULT_ACTIVITY_DAYS = 365
+MAX_ACTIVITY_DAYS = 366
+ACTIVITY_DAY_START_HOUR = 6
+ACTIVITY_DAY_BOUNDARY = "6:00 UTC+9"
+KST = datetime.timezone(datetime.timedelta(hours=9))
+NON_FAILED_JUDGE_STATUSES = [
+    JudgeStatus.ACCEPTED,
+    JudgeStatus.PENDING,
+    JudgeStatus.JUDGING,
+]
+
+
+def get_activity_service_date(dt, current_timezone):
+    local_dt = timezone.localtime(dt, current_timezone)
+    return (local_dt - datetime.timedelta(hours=ACTIVITY_DAY_START_HOUR)).date()
+
+
+def format_service_month(service_date):
+    return f"{service_date.year}-{service_date.month:02d}"
+
+
+def get_activity_day_bounds(days, current_timezone):
+    end_date = (timezone.localtime(timezone.now(), current_timezone) -
+                datetime.timedelta(hours=ACTIVITY_DAY_START_HOUR)).date()
+    start_date = end_date - datetime.timedelta(days=days - 1)
+    start_datetime = timezone.make_aware(
+        datetime.datetime.combine(start_date, datetime.time(hour=ACTIVITY_DAY_START_HOUR)),
+        current_timezone,
+    )
+    end_datetime = timezone.make_aware(
+        datetime.datetime.combine(end_date + datetime.timedelta(days=1),
+                                  datetime.time(hour=ACTIVITY_DAY_START_HOUR)),
+        current_timezone,
+    )
+    return start_date, end_date, start_datetime, end_datetime
+
+
+def calculate_activity_streaks(start_date, end_date, count_by_date):
+    current_streak = 0
+    current_date = end_date
+    while current_date >= start_date and count_by_date.get(current_date, 0) > 0:
+        current_streak += 1
+        current_date -= datetime.timedelta(days=1)
+
+    longest_streak = 0
+    running_streak = 0
+    current_date = start_date
+    while current_date <= end_date:
+        if count_by_date.get(current_date, 0) > 0:
+            running_streak += 1
+            longest_streak = max(longest_streak, running_streak)
+        else:
+            running_streak = 0
+        current_date += datetime.timedelta(days=1)
+
+    return current_streak, longest_streak
 
 
 class UserProfileAPI(APIView):
@@ -105,6 +164,67 @@ class UserProfileDashBoardAPI(APIView):
         return self.success(response_data)
 
 
+class UserProfileActivityAPI(APIView):
+
+    @login_required
+    def get(self, request):
+        username = request.GET.get("username")
+        if not username:
+            return self.error("username is required")
+
+        days_param = request.GET.get("days", DEFAULT_ACTIVITY_DAYS)
+        try:
+            days = int(days_param)
+        except (TypeError, ValueError):
+            return self.error("days must be an integer")
+        if days < 1 or days > MAX_ACTIVITY_DAYS:
+            return self.error(f"days must be between 1 and {MAX_ACTIVITY_DAYS}")
+
+        try:
+            user = User.objects.get(username=username, is_disabled=False)
+        except User.DoesNotExist:
+            return self.error("User does not exist")
+
+        current_timezone = timezone.get_current_timezone()
+        start_date, end_date, start_datetime, end_datetime = get_activity_day_bounds(days, current_timezone)
+
+        submissions = (
+            Submission.objects
+            .filter(
+                user_id=user.id,
+                result=JudgeStatus.ACCEPTED,
+                create_time__gte=start_datetime,
+                create_time__lt=end_datetime,
+            )
+            .order_by("create_time")
+            .values_list("create_time", flat=True)
+        )
+        count_by_date = {}
+        for create_time in submissions:
+            activity_date = get_activity_service_date(create_time, current_timezone)
+            count_by_date[activity_date] = count_by_date.get(activity_date, 0) + 1
+
+        current_streak, longest_streak = calculate_activity_streaks(start_date, end_date, count_by_date)
+        activity_days = []
+        total_count = 0
+        max_count = 0
+        for activity_date, count in sorted(count_by_date.items()):
+            activity_days.append({"date": activity_date.isoformat(), "count": count})
+            total_count += count
+            max_count = max(max_count, count)
+
+        return self.success({
+            "start_date": start_date.isoformat(),
+            "end_date": end_date.isoformat(),
+            "total": total_count,
+            "max_count": max_count,
+            "current_streak": current_streak,
+            "longest_streak": longest_streak,
+            "day_boundary": ACTIVITY_DAY_BOUNDARY,
+            "days": activity_days,
+        })
+
+
 class AvatarUploadAPI(APIView):
     request_parsers = ()
 
@@ -135,9 +255,9 @@ class AvatarUploadAPI(APIView):
 class ProfileProblemAPIView(APIView):
 
     def get(self, request):
-        """Get the latest submission for each problem of a user.
+        """Get submissions of a user.
 
-        This API retrieves the latest submission for each problem of a user and returns the details.
+        This API retrieves submissions of a user and returns the details.
         Submissions can be filtered by various parameters like below.
 
         Query Parameters:
@@ -149,11 +269,11 @@ class ProfileProblemAPIView(APIView):
             endDate (Optional[str]): End date for filtering (YYYY-MM-DD)
         
         Returns:
-            ProfileProblemSerializer.data: List of latest submissions for each problem.
+            ProfileProblemSerializer.data: List of submissions.
         """
         username = request.GET.get('username')
         if not username:
-            self.error("username is required")
+            return self.error("username is required")
 
         field = request.GET.get('field')
         difficulty = request.GET.get('difficulty')
@@ -161,26 +281,33 @@ class ProfileProblemAPIView(APIView):
         start_date_str = request.GET.get('startDate')
         end_date_str = request.GET.get('endDate')
 
-        user_id = User.objects.get(username=username).id
+        user = User.objects.filter(username=username).first()
+        if not user:
+            return self.error("User does not exist")
 
-        # 각 문제별 최신 제출을 찾는 서브쿼리
-        latest_submissions = Submission.objects.filter(
-            user_id=user_id, problem=OuterRef('problem')).order_by('-create_time').values('id')[:1]
-
-        # 메인 쿼리
-        submissions = Submission.objects.filter(
-            id__in=Subquery(latest_submissions)).select_related('problem').order_by('-create_time')
+        submissions = Submission.objects.filter(user_id=user.id).select_related('problem').order_by('-create_time')
 
         # Filtering
         if field and field != 'All':
+            if field in ProblemField.strToInt:
+                field = ProblemField.strToInt[field]
+            else:
+                try:
+                    field = int(field)
+                except (TypeError, ValueError):
+                    return self.error("Invalid field")
+                if field not in ProblemField.intToStr:
+                    return self.error("Invalid field")
             submissions = submissions.filter(problem__field=field)
         if difficulty and difficulty != 'All':
             submissions = submissions.filter(problem__difficulty=difficulty)
         if status and status != 'All':
             if status == "Solved":
-                submissions = submissions.filter(result=0)
+                submissions = submissions.filter(result=JudgeStatus.ACCEPTED)
+            elif status == "Failed":
+                submissions = submissions.exclude(result__in=NON_FAILED_JUDGE_STATUSES)
             else:
-                submissions = submissions.filter(~Q(result=0))
+                return self.error("Invalid status")
 
         # Date Filtering
         try:
@@ -199,12 +326,17 @@ class ProfileProblemAPIView(APIView):
 
         result = []
         for submission in submissions:
+            service_date = get_activity_service_date(submission.create_time, KST)
             result.append({
+                'submissionId': submission.id,
                 'id': submission.problem._id,
                 'title': submission.problem.title,
                 'submitTime': submission.create_time,
+                'serviceDate': service_date,
+                'serviceMonth': format_service_month(service_date),
                 'difficulty': submission.problem.difficulty,
                 'field': ProblemField.intToStr[submission.problem.field],
+                'status': submission.result,
             })
 
         serializer = ProfileProblemSerializer(data=result, many=True)

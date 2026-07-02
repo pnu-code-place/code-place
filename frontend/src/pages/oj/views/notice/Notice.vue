@@ -57,7 +57,7 @@ import { CONTEST_STATUS } from "@/utils/constants"
 import announcement from "../../../admin/views/general/Announcement.vue"
 
 export default {
-  name: "notice",
+  name: "OjNoticePage",
   components: {
     Announcements,
   },

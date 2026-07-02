@@ -13,6 +13,7 @@ spec:
     spec:
       containers:
         - name: frontend
+          imagePullPolicy: IfNotPresent
           env:
             - name: FORCE_HTTPS
               value: "0"

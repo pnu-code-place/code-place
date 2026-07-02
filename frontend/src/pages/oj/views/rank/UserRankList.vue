@@ -7,7 +7,7 @@ export default {
   props: {
     userList: {
       type: Array,
-      default: [],
+      default: () => [],
     },
     isLoading: {
       type: Boolean,
@@ -36,16 +36,21 @@ export default {
       </tr>
     </thead>
     <tbody>
-      <tr
-        v-if="isLoading"
-        v-for="index in limit"
-        :key="index"
-        class="skeleton-row"
-      >
-        <td class="skeleton-wrapper" v-for="index in 6">
-          <div class="skeleton"></div>
-        </td>
-      </tr>
+      <template v-if="isLoading">
+        <tr
+          v-for="rowIndex in limit"
+          :key="rowIndex"
+          class="skeleton-row"
+        >
+          <td
+            class="skeleton-wrapper"
+            v-for="columnIndex in 6"
+            :key="columnIndex"
+          >
+            <div class="skeleton"></div>
+          </td>
+        </tr>
+      </template>
       <UserItem
         v-for="user in userList"
         :key="user.username"

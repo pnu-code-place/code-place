@@ -9,3 +9,18 @@ spec:
     rollingUpdate:
       maxUnavailable: 2
       maxSurge: 2
+  template:
+    spec:
+      containers:
+        - name: backend
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: CSRF_TRUSTED_ORIGINS
+              value: "https://code.pusan.ac.kr"
+            - name: SENTRY_DSN_BACKEND
+              valueFrom:
+                secretKeyRef:
+                  name: sentry-secret
+                  key: SENTRY_DSN_BACKEND
+            - name: SENTRY_ENVIRONMENT
+              value: "prod"

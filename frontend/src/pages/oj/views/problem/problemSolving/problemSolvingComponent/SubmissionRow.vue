@@ -8,9 +8,9 @@
     <td class="status-cell">
       <span
         class="status-dot"
-        :style="{ backgroundColor: judgeStatus[submission.result].color }"
+        :style="{ backgroundColor: resultColor }"
       />
-      <span class="status">{{ judgeStatus[submission.result].name }}</span>
+      <span class="status">{{ resultDisplay }}</span>
     </td>
     <td>
       <span
@@ -28,7 +28,7 @@
       <Icon type="ios-pulse" />
       {{ formatMemoryCost(submission.statistic_info.memory_cost) }}
     </td>
-    <td>{{ formatTime(submission.create_time) }}</td>
+    <td class="submitted-at">{{ formatTime(submission.create_time) }}</td>
     <td>
       <Icon
         :type="isSelected ? 'ios-arrow-up' : 'ios-arrow-down'"
@@ -39,6 +39,7 @@
 </template>
 
 <script>
+import moment from "moment"
 import { JUDGE_STATUS, LANGUAGE_COLOR } from "../../../../../../utils/constants"
 
 const BYTES_IN_KB = 1024
@@ -70,9 +71,46 @@ export default {
       judgeStatus: JUDGE_STATUS,
     }
   },
+  computed: {
+    resultDisplay() {
+      const judgeStatus = this.judgeStatus[this.submission.result]
+      if (!judgeStatus) {
+        return "--"
+      }
+      return this.$t("m." + judgeStatus.name.replace(/ /g, "_"))
+    },
+    resultColor() {
+      const judgeStatus = this.judgeStatus[this.submission.result]
+      return judgeStatus ? judgeStatus.color : "#9ca3af"
+    },
+  },
   methods: {
     formatTime(timestamp) {
-      return new Date(timestamp).toLocaleDateString()
+      if (!timestamp) {
+        return "--"
+      }
+      const submittedAt = moment.utc(timestamp).local()
+      if (!submittedAt.isValid()) {
+        return "--"
+      }
+
+      const now = moment()
+      const diffMinutes = now.diff(submittedAt, "minutes")
+      if (diffMinutes >= 0 && diffMinutes < 60) {
+        return `${Math.max(1, diffMinutes)}분 전`
+      }
+
+      const diffHours = now.diff(submittedAt, "hours")
+      if (diffHours >= 0 && diffHours < 24) {
+        return `${diffHours}시간 전`
+      }
+
+      const diffDays = now.diff(submittedAt, "days")
+      if (diffDays >= 0 && diffDays <= 7) {
+        return `${diffDays}일 전`
+      }
+
+      return submittedAt.format("YYYY-MM-DD")
     },
 
     formatTimeCost(time) {
@@ -159,5 +197,9 @@ export default {
   border-radius: 5px;
   font-size: 10.5px;
   font-weight: bold;
+}
+
+.submitted-at {
+  white-space: nowrap;
 }
 </style>

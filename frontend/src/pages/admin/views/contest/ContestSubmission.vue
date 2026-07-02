@@ -26,7 +26,7 @@
               <th>{{ $t("m.Submission_Table_Author") }}</th>
             </thead>
             <tbody>
-              <tr v-for="submission in submissions">
+              <tr v-for="submission in submissions" :key="submission.id">
                 <td
                   style="
                     cursor: default;
@@ -98,7 +98,7 @@
               <th>{{ $t("m.Major") }}</th>
             </thead>
             <tbody>
-              <tr v-for="(participant, idx) in participants">
+              <tr v-for="(participant, idx) in participants" :key="participant.username">
                 <td>{{ idx + 1 }}</td>
                 <td><img class="avatar" :src="participant.avatar" /></td>
                 <td>{{ participant.username }}</td>

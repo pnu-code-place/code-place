@@ -175,8 +175,11 @@ export const m = {
   PruneTestCase_Delete_All: "전체 삭제",
 
   // Problem.vue
+  Question_Creation: "문제 생성",
   Display_ID: "문제 번호",
+  Check_ID_Duplication: "중복 확인",
   Title: "제목",
+  Question_Title: "문제 제목",
   Description: "문제 설명",
   Input_Description: "입력 설명",
   Output_Description: "출력 설명",
@@ -186,8 +189,8 @@ export const m = {
   Visible: "공개 여부",
   ShareSubmission: "제출 공유 여부",
   Languages: "언어",
-  Input_Samples: "입력 예시",
-  Output_Samples: "출력 예시",
+  Input_Samples: "예제 입력",
+  Output_Samples: "예제 출력",
   Add_Sample: "예시 추가",
   Code_Template: "코드 템플릿",
   Special_Judge: "스페셜 저지",
@@ -272,6 +275,7 @@ export const m = {
   Allowed_IP_Ranges: "허용된 IP 범위",
   CIDR_Network: "CIDR 네트워크",
   Allow_Paste: "붙여넣기 허용",
+  AIAssistant_allow: "AI힌트 기능 허용",
 
   // ContestList.vue
   Contest_List_Page_Title: "대회 목록",

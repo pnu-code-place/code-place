@@ -2,8 +2,6 @@
 import TopRanker from "./TopRanker.vue"
 import UserList from "./UserRankList.vue"
 import Pagination from "../../components/Pagination.vue"
-import SurgeRankList from "./SurgeRank.vue"
-import MajorRankList from "./majorRank/MajorRank.vue"
 import { RULE_TYPE } from "../../../../utils/constants"
 import api from "../../api"
 import utils from "../../../../utils/utils"
@@ -15,8 +13,6 @@ export default {
     ErrorSign,
     Pagination,
     UserList,
-    SurgeRankList,
-    MajorRankList,
     TopRanker,
   },
   data() {

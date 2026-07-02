@@ -44,7 +44,7 @@ POPUP_VISIBLE_LIMIT = 3
 CONTENT_WIDTH_UPPER_BOUND = 1000
 CONTENT_WIDTH_LOWER_BOUND = 200
 
-RSS_FEED_URL = "https://swedu.pusan.ac.kr/bbs/swedu/6906/rssList.do?row=50"
+RSS_FEED_URL = "https://swedu.pusan.ac.kr/bbs/swedu/2265/rssList.do?row=50"
 
 GENERATE_MOCK_USERNAME_URL = "https://www.rivestsoft.com/nickname/getRandomNickname.ajax"
 

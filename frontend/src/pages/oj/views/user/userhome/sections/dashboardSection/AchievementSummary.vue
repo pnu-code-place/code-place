@@ -22,13 +22,16 @@ export default {
 
 <template>
   <div class="challenge-summary">
-    <div class="badge-wrapper" v-for="achievement in achievements">
+    <div
+      class="badge-wrapper"
+      v-for="achievement in achievements"
+      :key="achievement.id"
+    >
       <ChallengeBadge
         :image="achievement.image"
         :description="achievement.description"
         :title="achievement.title"
         :acquireTime="achievement.acquireTime"
-        :key="achievement.id"
       ></ChallengeBadge>
     </div>
   </div>

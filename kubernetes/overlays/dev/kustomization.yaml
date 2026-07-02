@@ -5,6 +5,7 @@ resources:
   - ./secrets/pg-credentials.yaml
   - ./secrets/regcred.yaml
   - ./secrets/common-credentials.yaml
+  - ./secrets/sentry-secret.yaml
 namespace: code-place-dev
 patches:
   - path: backend-deployment-patch.yaml
@@ -20,13 +21,13 @@ patches:
 images:
   - name: backend
     newName: harbor.code-place-dev.site/code-place-dev/backend
-    newTag: 99ea533d3c60cc21847c3f77bf6110f0a74bc278-dev
+    newTag: 721f778ec0584f199ef0dfca0b866ba7e4bb86a8-dev
   - name: frontend
     newName: harbor.code-place-dev.site/code-place-dev/frontend
-    newTag: 35dae587c7ba957bce3ebb46320424cdc7dd1ab3-dev
+    newTag: f76f57f30f878733b0989914b6d29b5b4ca7f1c4-dev
   - name: judge-server
     newName: harbor.code-place-dev.site/code-place-dev/judge-server
     newTag: 1.0.3
   - name: hub-auth
     newName: harbor.code-place-dev.site/code-place-dev/hub-auth
-    newTag: 1.0.0
+    newTag: e000ffc019bcf819f31b2009a813ab43002187d6-dev

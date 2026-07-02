@@ -1,5 +1,8 @@
 <template>
-  <div>
+  <div
+    class="code-editor-wrapper"
+    :style="{ '--code-editor-font-size': fontSize + 'px' }"
+  >
     <codemirror
       ref="myCm"
       :value="value"
@@ -7,7 +10,6 @@
       :options="cmOptions"
       @ready="onCmReady"
       @input="onCmCodeChange"
-      :style="{ 'font-size': fontSize + 'px' }"
     >
     </codemirror>
   </div>
@@ -67,19 +69,19 @@ export default {
     cursorPos: {
       type: Object,
     },
-    theme: {
-      type: Boolean,
-    },
     allowPaste: {
       type: Boolean,
       default: true,
+    },
+    fontSize: {
+      type: Number,
+      default: 14,
     },
   },
   data() {
     return {
       key: 0,
       code: "",
-      fontSize: 14,
       cmOptions: {
         tabSize: 4,
         mode: "text/x-csrc",
@@ -108,12 +110,12 @@ export default {
     }
   },
   methods: {
-    onCmReady(cm) {
-      console.log(this.theme)
-    },
+    onCmReady() {},
     onCmCodeChange(newCode) {
-      this.value = newCode
       this.$emit("update:value", newCode)
+      this.emitCursorPos()
+    },
+    emitCursorPos() {
       this.$emit("update:cursorPos", {
         ln: this.codemirror.doc.getCursor().line,
         ch: this.codemirror.doc.getCursor().ch,
@@ -123,12 +125,12 @@ export default {
       let lastInternalText = ""
 
       // 내부 복사 이벤트 감지
-      this.codemirror.on("copy", (cm, e) => {
+      this.codemirror.on("copy", (cm) => {
         lastInternalText = cm.getSelection()
       })
 
       // 잘라내기 이벤트 감지
-      this.codemirror.on("cut", (cm, e) => {
+      this.codemirror.on("cut", (cm) => {
         lastInternalText = cm.getSelection()
       })
 
@@ -160,14 +162,11 @@ export default {
       })
     },
     resetCM() {
-      this.value = ""
+      this.$emit("update:value", "")
     },
     onLangChange(newVal) {
       this.codemirror.setOption("mode", this.mode[newVal])
       this.$emit("changeLang", newVal)
-    },
-    toggleTheme(value) {
-      this.codemirror.setOption("theme", value)
     },
   },
   computed: {
@@ -179,9 +178,9 @@ export default {
   mounted() {
     let customTheme = this.isDarkMode ? "ayu-mirage" : "github-light"
     this.codemirror.setOption("theme", customTheme)
-    this.theme = customTheme
 
     this.code = this.value
+    this.codemirror.on("cursorActivity", this.emitCursorPos)
 
     utils.getLanguages().then((languages) => {
       let mode = {}
@@ -196,29 +195,47 @@ export default {
     if (checkContest) {
       this.blockPasteFromExternalSource()
     }
-    this.$emit("update:cursorPos", {
-      ln: this.codemirror.doc.getCursor().line,
-      ch: this.codemirror.doc.getCursor().ch,
-    })
+    this.emitCursorPos()
+  },
+  beforeDestroy() {
+    if (this.codemirror) {
+      this.codemirror.off("cursorActivity", this.emitCursorPos)
+    }
   },
   watch: {
     isDarkMode(value) {
       let customTheme = value ? "ayu-mirage" : "github-light"
-      this.toggleTheme(customTheme)
-      this.theme = value
+      this.codemirror.setOption("theme", customTheme)
     },
     language(value) {
       this.codemirror.setOption("mode", this.mode[value])
+    },
+    fontSize() {
+      this.$nextTick(() => {
+        if (this.$refs.myCm && this.$refs.myCm.codemirror) {
+          this.$refs.myCm.codemirror.refresh()
+        }
+      })
     },
   },
 }
 </script>
 
 <style>
-.CodeMirror {
-  height: calc(100vh - 132px) !important;
+.code-editor-wrapper .CodeMirror {
+  height: 100% !important;
+  font-size: var(--code-editor-font-size, 14px);
   border-radius: 7px;
   border: 1px solid var(--border-color);
+}
+
+.code-editor-wrapper {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.code-editor-wrapper .vue-codemirror {
+  height: 100%;
 }
 
 .cm-s-ayu-mirage .CodeMirror-matchingbracket {

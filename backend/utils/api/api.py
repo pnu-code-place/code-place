@@ -61,8 +61,8 @@ class JSONResponse(object):
     content_type = ContentType.json_response
 
     @classmethod
-    def response(cls, data):
-        resp = HttpResponse(json.dumps(data, indent=4), content_type=cls.content_type)
+    def response(cls, data, status=200):
+        resp = HttpResponse(json.dumps(data, indent=4), content_type=cls.content_type, status=status)
         resp.data = data
         return resp
 
@@ -116,14 +116,14 @@ class APIView(View):
 
         return request.data
 
-    def response(self, data):
-        return self.response_class.response(data)
+    def response(self, data, status=200):
+        return self.response_class.response(data, status=status)
 
     def success(self, data=None):
         return self.response({"error": None, "data": data})
 
-    def error(self, msg="error", err="error"):
-        return self.response({"error": err, "data": msg})
+    def error(self, msg="error", err="error", status=400):
+        return self.response({"error": err, "data": msg}, status=status)
 
     def extract_errors(self, errors, key="field"):
         if isinstance(errors, dict):
@@ -145,7 +145,7 @@ class APIView(View):
         return self.error(err=f"invalid-{key}", msg=msg)
 
     def server_error(self):
-        return self.error(err="server-error", msg="server error")
+        return self.error(err="server-error", msg="server error", status=500)
 
     def paginate_data(self, request, query_set, object_serializer=None):
         """

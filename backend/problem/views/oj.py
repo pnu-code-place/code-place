@@ -1,20 +1,25 @@
 import logging
 import random
+import json
 
 from django.db import transaction
-from django.db.models import Count, F, Q
-from django.http import HttpResponseBadRequest, HttpResponseNotFound
+from django.db.models import Case, Count, ExpressionWrapper, F, FloatField, IntegerField, Q, Value, When
+from django.http import HttpResponseBadRequest, HttpResponseNotFound, StreamingHttpResponse
+from django.contrib.auth import get_user_model
 
-from account.decorators import (check_contest_permission, login_required, scheduler_only)
+from account.decorators import (check_contest_permission, check_contest_password, scheduler_only)
+from utils.constants import CONTEST_PASSWORD_SESSION_KEY
 from account.models import UserProfile, UserScore
-from contest.models import ContestRuleType
+from contest.models import Contest, ContestRuleType, ContestStatus, ContestType
 from submission.models import JudgeStatus, Submission
 from utils.api import APIView
 from utils.constants import Difficulty, ProblemField, Tier
+from utils.observability_metrics import AI_HINT_API_OUTCOME_TOTAL
 
-from ..models import (Problem, ProblemRuleType, ProblemTag, get_default_week_info)
+from ..llm_hint import LLMHintError, MAX_USER_CODE_LENGTH, stream_problem_hint
+from ..models import (Problem, ProblemRuleType, ProblemTag, get_default_week_info, ProblemAIHintLog)
 from ..serializers import (MostDifficultProblemSerializer, ProblemSafeSerializer, ProblemSerializer,
-                           RecommendBonusProblemSerializer, TagSerializer)
+                           RecommendBonusProblemSerializer, TagSerializer, AIHintLogSerializer)
 
 logger = logging.getLogger(__name__)
 
@@ -40,6 +45,34 @@ class PickOneAPI(APIView):
         return self.success(problems[random.randint(0, count - 1)]._id)
 
 
+class WeeklyTopProblemsAPI(APIView):
+
+    def get(self, request):
+        problems = Problem.objects.filter(
+            contest_id__isnull=True,
+            visible=True,
+        ).values("_id", "title", "difficulty", "field", "curr_week_info")
+
+        sorted_problems = sorted(
+            problems,
+            key=lambda p: p["curr_week_info"].get("accepted", 0),
+            reverse=True,
+        )[:3]
+
+        data = [
+            {
+                "_id": p["_id"],
+                "title": p["title"],
+                "difficulty": p["difficulty"],
+                "field": p["field"],
+                "accepted": p["curr_week_info"].get("accepted", 0),
+                "submission": p["curr_week_info"].get("submission", 0),
+            }
+            for p in sorted_problems
+        ]
+        return self.success(data)
+
+
 class BonusProblemAPI(APIView):
 
     def get(self, request):
@@ -50,6 +83,22 @@ class BonusProblemAPI(APIView):
 
 
 class ProblemAPI(APIView):
+    DIFFICULTY_ORDER = {
+        Difficulty.VERYLOW: 1,
+        Difficulty.LOW: 2,
+        Difficulty.MID: 3,
+        Difficulty.HIGH: 4,
+        Difficulty.VERYHIGH: 5,
+    }
+
+    SORT_FIELDS = {
+        "difficulty_asc": ("difficulty_order", "_id"),
+        "difficulty_desc": ("-difficulty_order", "_id"),
+        "accepted_desc": ("-accepted_number", "_id"),
+        "accepted_asc": ("accepted_number", "_id"),
+        "ac_rate_desc": ("-ac_rate", "_id"),
+        "ac_rate_asc": ("ac_rate", "_id"),
+    }
 
     @staticmethod
     def _add_problem_status(request, queryset_values):
@@ -110,10 +159,227 @@ class ProblemAPI(APIView):
         if field:
             problems = problems.filter(field=field)
 
+        sort = request.GET.get("sort")
+        if sort in self.SORT_FIELDS:
+            problems = problems.annotate(
+                difficulty_order=Case(
+                    *[
+                        When(difficulty=difficulty, then=Value(order))
+                        for difficulty, order in self.DIFFICULTY_ORDER.items()
+                    ],
+                    default=Value(0),
+                    output_field=IntegerField(),
+                ),
+                ac_rate=Case(
+                    When(submission_number=0, then=Value(0.0)),
+                    default=ExpressionWrapper(
+                        F("accepted_number") * 1.0 / F("submission_number"),
+                        output_field=FloatField(),
+                    ),
+                    output_field=FloatField(),
+                ),
+            ).order_by(*self.SORT_FIELDS[sort])
+
         # 根据profile 为做过的题目添加标记
         data = self.paginate_data(request, problems, ProblemSerializer)
         self._add_problem_status(request, data)
         return self.success(data)
+
+
+class ProblemLLMHintAPI(APIView):
+
+    @staticmethod
+    def _format_sse_event(event, data):
+        return f"event: {event}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
+
+    def _streaming_response(self, generator):
+        response = StreamingHttpResponse(generator, content_type="text/event-stream")
+        response["Cache-Control"] = "no-cache"
+        response["X-Accel-Buffering"] = "no"
+        return response
+
+    def _error_events(self, message, err="llm-hint-unavailable"):
+        yield self._format_sse_event("app-error", {"error": err, "message": message})
+        yield self._format_sse_event("done", {"done": True})
+
+    def _record_outcome(self, status, scope):
+        AI_HINT_API_OUTCOME_TOTAL.labels(status=status, scope=scope).inc()
+
+    @staticmethod
+    def _persist_hint_log(hint_log, full_text_chunks):
+        full_text = "".join(full_text_chunks)
+        if full_text.strip():
+            if hint_log:
+                hint_log.hint_content = full_text
+                hint_log.save(update_fields=['hint_content'])
+            return True
+
+        if hint_log:
+            hint_log.delete()
+        return False
+
+    def _error_response(self, message, err="llm-hint-unavailable", metric_status=None, scope="practice"):
+        if metric_status:
+            self._record_outcome(metric_status, scope)
+        return self._streaming_response(self._error_events(message, err=err))
+
+    def get(self, request):
+        problem_id = request.GET.get("problem_id")
+        contest_id = request.GET.get("contest_id")
+        scope = "contest" if contest_id else "practice"
+        if not request.user.is_authenticated:
+            return self._error_response(
+                "로그인이 필요합니다.",
+                err="permission-denied",
+                metric_status="permission_denied",
+                scope=scope,
+            )
+
+        if not problem_id:
+            return self._error_response("문제 번호가 필요합니다.", metric_status="bad_request", scope=scope)
+
+        # 사용자가 현재 작성 중인 코드 (없으면 None)
+        # 서버에서 한 번 더 길이를 제한해 과도하게 큰 요청을 차단
+        raw_user_code = request.GET.get("user_code") or ""
+        user_code = raw_user_code[:MAX_USER_CODE_LENGTH] if raw_user_code else None
+      
+        if contest_id:
+            try:
+                contest = Contest.objects.select_related("created_by").get(id=contest_id, visible=True)
+            except Contest.DoesNotExist:
+                return self._error_response(
+                    "대회를 찾을 수 없습니다.",
+                    err="permission-denied",
+                    metric_status="permission_denied",
+                    scope=scope,
+                )
+
+            if not request.user.is_contest_admin(contest):
+                if contest.contest_type == ContestType.PASSWORD_PROTECTED_CONTEST:
+                    if not check_contest_password(
+                        request.session.get(CONTEST_PASSWORD_SESSION_KEY, {}).get(contest.id),
+                        contest.password,
+                    ):
+                        return self._error_response(
+                            "비밀번호가 올바르지 않거나 만료되었습니다.",
+                            err="permission-denied",
+                            metric_status="permission_denied",
+                            scope=scope,
+                        )
+
+                if contest.status == ContestStatus.CONTEST_NOT_START:
+                    return self._error_response(
+                        "아직 시작하지 않은 대회입니다.",
+                        err="permission-denied",
+                        metric_status="permission_denied",
+                        scope=scope,
+                    )
+
+            if not contest.ai_assistant_enabled:
+                return self._error_response(
+                    "이 대회에서는 AI 조교를 사용할 수 없습니다.",
+                    metric_status="disabled",
+                    scope=scope,
+                )
+            try:
+                problem = Problem.objects.get(_id=problem_id, contest_id=contest_id, visible=True)
+            except Problem.DoesNotExist:
+                return self._error_response("문제를 찾을 수 없습니다.", metric_status="problem_not_found", scope=scope)
+        else:
+            try:
+                problem = Problem.objects.get(_id=problem_id, contest_id__isnull=True, visible=True)
+            except Problem.DoesNotExist:
+                return self._error_response("문제를 찾을 수 없습니다.", metric_status="problem_not_found", scope=scope)
+
+        hint_log = None
+        previous_hints = []
+
+        if not (request.user.is_super_admin() or request.user.is_admin()):
+            # 트랜잭션을 묶어 체크와 생성이 최대한 원자적으로 이루어지도록 처리
+            with transaction.atomic():
+                User = get_user_model()
+                User.objects.select_for_update().get(pk=request.user.pk)
+
+                # 이전 힌트 로그들 조회 및 시간순 정렬
+                previous_logs = ProblemAIHintLog.objects.filter(user=request.user, problem=problem).order_by("created_at")
+                problem_hint_count = previous_logs.count()
+
+                if problem_hint_count >= 5:
+                    return self._error_response(
+                        "이 문제에 대한 AI 조교 사용 횟수(5회)를 모두 소진했습니다. 이전 답변을 복습해 보세요.",
+                        err="problem-limit-exceeded",
+                        metric_status="problem_limit_exceeded",
+                        scope=scope,
+                    )
+
+                # 이전 힌트 문자열 추출
+                previous_hints = [log.hint_content for log in previous_logs if log.hint_content.strip()]
+
+                # 제한 통과 시, 스트리밍 시작 전에 빈 내용으로 로그를 선제 생성하여 횟수 차감 처리
+                hint_log = ProblemAIHintLog.objects.create(user=request.user, problem=problem, hint_content="")
+        else:
+            # 어드민인 경우에도 이전 힌트 컨텍스트는 유지하도록 조회
+            previous_logs = ProblemAIHintLog.objects.filter(user=request.user, problem=problem).order_by("created_at")
+            previous_hints = [log.hint_content for log in previous_logs if log.hint_content.strip()]
+            hint_log = ProblemAIHintLog.objects.create(user=request.user, problem=problem, hint_content="")
+
+        def generator():
+            full_text_chunks = []
+            try:
+                for chunk in stream_problem_hint(problem, previous_hints=previous_hints, user_code=user_code):
+                    full_text_chunks.append(chunk)
+                    yield self._format_sse_event("chunk", {"text": chunk})
+                if self._persist_hint_log(hint_log, full_text_chunks):
+                    self._record_outcome("success", scope)
+                else:
+                    self._record_outcome("empty_response", scope)
+                yield self._format_sse_event("done", {"done": True})
+            except LLMHintError as exc:
+                logger.warning("Failed to stream LLM hint for problem %s: %s", problem_id, exc)
+
+                self._persist_hint_log(hint_log, full_text_chunks)
+
+                self._record_outcome("llm_error", scope)
+                yield from self._error_events("힌트를 생성하지 못했습니다.", err="llm-hint-unavailable")
+
+            except (GeneratorExit, BrokenPipeError, ConnectionResetError):
+                logger.info("LLM hint stream client disconnected for problem %s", problem_id)
+
+                self._persist_hint_log(hint_log, full_text_chunks)
+                self._record_outcome("client_disconnected", scope)
+                return
+
+            except Exception:
+                logger.exception("Unexpected error while streaming LLM hint for problem %s", problem_id)
+
+                self._persist_hint_log(hint_log, full_text_chunks)
+
+                self._record_outcome("unexpected_error", scope)
+                yield from self._error_events("힌트를 생성하지 못했습니다.", err="llm-hint-unavailable")
+
+        return self._streaming_response(generator())
+
+
+class AIHintHistoryAPI(APIView):
+
+    def get(self, request):
+        if not request.user.is_authenticated:
+            return self.error("로그인이 필요합니다.")
+
+        problem_id = request.GET.get("problem_id")
+        if not problem_id:
+            return self.error("problem_id는 필수입니다.")
+
+        # 1. 문제 조회 및 접근 가능 여부(공개 여부, 대회 여부) 검증
+        try:
+            problem = Problem.objects.get(_id=problem_id, contest_id__isnull=True, visible=True)
+        except Problem.DoesNotExist:
+            return self.error("문제를 찾을 수 없습니다.")
+
+        # 2. JOIN 없이 Foreign Key를 직접 활용하여 로그 조회
+        logs = ProblemAIHintLog.objects.filter(user=request.user, problem=problem).order_by("created_at")
+
+        return self.success({"logs": AIHintLogSerializer(logs, many=True).data})
 
 
 class ContestProblemAPI(APIView):

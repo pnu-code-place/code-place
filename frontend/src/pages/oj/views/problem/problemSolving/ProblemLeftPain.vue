@@ -1,3 +1,5 @@
+<!-- 사용되지 않고 있는 컴포넌트 / Problem.vue 사용 중 -->
+
 <template>
   <div class="left-pane-container">
     <div class="tab-headers">
@@ -33,11 +35,15 @@
 </template>
 
 <script>
-import ProblemDetailFlexibleContainer from './problemSolvingComponent/ProblemDetailFlexibleContainer.vue';
-import SubmissionList from './problemSolvingComponent/SubmissionList.vue';
+import ProblemDetailFlexibleContainer from "./problemSolvingComponent/ProblemDetailFlexibleContainer.vue"
+import SubmissionList from "./problemSolvingComponent/SubmissionList.vue"
 
 export default {
   name: "ProblemLeftPain",
+  components: {
+    ProblemDetailFlexibleContainer,
+    SubmissionList,
+  },
   props: {
     problemID: String,
     contestID: String,
@@ -45,32 +51,17 @@ export default {
   },
   data() {
     return {
-      problem: {
-        title: '',
-        description: '',
-        hint: '',
-        my_status: '',
-        template: {},
-        languages: [],
-        created_by: {
-          username: ''
-        },
-        difficulty: '',
-        tags: [],
-        io_mode: {'io_mode': 'Standard IO'}
-      },
-      activeTab: 'problem',
+      activeTab: "submissions",
     }
   },
   methods: {
-    init() {
-      this.activeTab = 'problem';
-      this.problem =
-    },
+    // init() {
+    //   this.activeTab = 'problem';
+    // },
     setActiveTab(tab) {
-      this.activeTab = tab;
-    }
-  }
+      this.activeTab = tab
+    },
+  },
 }
 </script>
 

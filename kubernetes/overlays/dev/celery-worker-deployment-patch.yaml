@@ -5,9 +5,23 @@ metadata:
   labels:
     app: celery-worker
 spec:
-  replicas: 1
+  replicas: 2
   strategy:
     type: RollingUpdate
     rollingUpdate:
       maxUnavailable: 0
       maxSurge: 1
+  template:
+    spec:
+      containers:
+        - name: celery-worker
+          env:
+            - name: SENTRY_DSN_BACKEND
+              valueFrom:
+                secretKeyRef:
+                  name: sentry-secret
+                  key: SENTRY_DSN_BACKEND
+            - name: SENTRY_ENVIRONMENT
+              value: "dev"
+            - name: OTEL_ENABLED
+              value: "1"

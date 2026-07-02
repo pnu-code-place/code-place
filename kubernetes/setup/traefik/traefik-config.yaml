@@ -9,6 +9,20 @@ spec:
       - "--certificatesresolvers.default.acme.email=<EMAIL_ADDRESS>"
       - "--certificatesresolvers.default.acme.storage=/data/acme.json"
       - "--certificatesresolvers.default.acme.tlschallenge=true" # 443 포트를 통해 인증
+      - "--accesslog=true"
+      - "--accesslog.format=json"
+      - "--accesslog.fields.defaultmode=keep"
+      - "--accesslog.fields.headers.defaultmode=drop"
+      - "--accesslog.fields.headers.names.X-Request-ID=keep"
+      - "--accesslog.fields.headers.names.X-Forwarded-For=keep"
+
+    metrics:
+      prometheus:
+        addEntryPointsLabels: true
+        addRoutersLabels: true
+        addServicesLabels: true
+        service:
+          enabled: true
 
     service:
       enabled: true

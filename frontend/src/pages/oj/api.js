@@ -1,11 +1,30 @@
 import Vue from "vue"
 import store from "@/store"
 import axios from "axios"
+import { configureAxiosRequestId } from "@/utils/request_id"
 
+// axios 전역 설정: baseURL, CSRF 헤더/쿠키, 요청 ID 부여
 Vue.prototype.$http = axios
 axios.defaults.baseURL = "/api"
 axios.defaults.xsrfHeaderName = "X-CSRFToken"
 axios.defaults.xsrfCookieName = "csrftoken"
+configureAxiosRequestId(axios)
+
+function translateApiMessage(message) {
+  if (typeof message !== "string") {
+    return message
+  }
+  const normalized = message.trim().replace(/\.$/, "")
+  const messageMap = {
+    "Problem does not exist": "문제를 찾을 수 없습니다.",
+    "Problem doesn't exist": "문제를 찾을 수 없습니다.",
+    "Problem does not exists": "문제를 찾을 수 없습니다.",
+    "Problem not exist": "문제를 찾을 수 없습니다.",
+    "Contest does not exist": "대회를 찾을 수 없습니다.",
+    "Contest doesn't exist": "대회를 찾을 수 없습니다.",
+  }
+  return messageMap[normalized] || message
+}
 
 export default {
   getPopup() {
@@ -103,6 +122,14 @@ export default {
       },
     })
   },
+  getUserActivity(username, days = 365) {
+    return ajax("profile/activity", "get", {
+      params: {
+        username,
+        days,
+      },
+    })
+  },
   getUserProblemInfo(username, query) {
     return ajax("profile/problem", "get", {
       params: {
@@ -125,6 +152,9 @@ export default {
   },
   getHomeBonusProblem() {
     return ajax("problem/bonus", "get")
+  },
+  getWeeklyTopProblems() {
+    return ajax("problem/weekly_top", "get")
   },
   getMostDifficultProblem() {
     return ajax("problem/most_difficult_problem", "get")
@@ -204,6 +234,24 @@ export default {
   },
   getProblem(problemID) {
     return ajax("problem", "get", {
+      params: {
+        problem_id: problemID,
+      },
+      silentError: true,
+    })
+  },
+  getProblemLLMHintUrl(problemID, userCode, contestID) {
+    let url = `/api/problem/llm_hint?problem_id=${encodeURIComponent(problemID)}`
+    if (contestID) url += `&contest_id=${encodeURIComponent(contestID)}`
+    if (userCode) {
+      // encodeURIComponent 후 최악 3배 팽창: 4000자 × 3 = ~12KB → nginx 기본 한도(8KB) 이내
+      const truncated = userCode.slice(0, 4000)
+      url += `&user_code=${encodeURIComponent(truncated)}`
+    }
+    return url
+  },
+  getAIHintHistory(problemID) {
+    return ajax("problem/ai_hint_history", "get", {
       params: {
         problem_id: problemID,
       },
@@ -304,6 +352,7 @@ export default {
         contest_id: contestID,
         problem_id: problemID,
       },
+      silentError: true,
     })
   },
   submitCode(data) {
@@ -462,9 +511,10 @@ export default {
  */
 function ajax(url, method, options) {
   if (options !== undefined) {
-    var { params = {}, data = {} } = options
+    var { params = {}, data = {}, silentError = false } = options
   } else {
     params = data = {}
+    silentError = false
   }
   return new Promise((resolve, reject) => {
     axios({
@@ -476,10 +526,15 @@ function ajax(url, method, options) {
       (res) => {
         // API正常返回(status=20x), 是否错误通过有无error判断
         if (res.data.error !== null) {
-          Vue.prototype.$error(res.data.data)
+          if (!silentError) {
+            Vue.prototype.$error(translateApiMessage(res.data.data))
+          }
           reject(res)
           // 若后端返回为登录，则为session失效，应退出当前登录用户
-          if (res.data.data.startsWith("Please login")) {
+          if (
+            typeof res.data.data === "string" &&
+            res.data.data.startsWith("Please login")
+          ) {
             store.dispatch("changeModalStatus", {
               mode: "login",
               visible: true,
@@ -492,10 +547,21 @@ function ajax(url, method, options) {
           // }
         }
       },
-      (res) => {
+      (error) => {
         // API请求异常，一般为Server error 或 network error
-        reject(res)
-        Vue.prototype.$error(res.data.data)
+        const res = error.response || error
+        const data = res.data || {}
+        const message = data.data || error.message || "Server error"
+        if (!silentError) {
+          Vue.prototype.$error(translateApiMessage(message))
+        }
+        reject(error)
+        if (typeof message === "string" && message.startsWith("Please login")) {
+          store.dispatch("changeModalStatus", {
+            mode: "login",
+            visible: true,
+          })
+        }
       },
     )
   })

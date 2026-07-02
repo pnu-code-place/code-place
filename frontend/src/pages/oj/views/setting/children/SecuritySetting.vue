@@ -3,7 +3,11 @@
     <p class="section-title">{{ $t("m.Sessions") }}</p>
     <div class="flex-container setting-content">
       <template v-for="session in sessions">
-        <Card :padding="20" class="flex-child">
+        <Card
+          :key="session.session_key"
+          :padding="20"
+          class="flex-child"
+        >
           <span slot="title" style="line-height: 20px">{{ session.ip }}</span>
           <div slot="extra">
             <Tag v-if="session.current_session" color="green">Current</Tag>
@@ -72,7 +76,7 @@ import browserDetector from "browser-detect"
 
 const browsers = {}
 const loadBrowser = (userAgent) => {
-  let browser = {}
+  let browser
   if (userAgent in Object.keys(browsers)) {
     browser = browsers[userAgent]
   } else {

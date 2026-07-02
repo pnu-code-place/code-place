@@ -17,7 +17,7 @@
 
 <script>
 export default {
-  name: "Accordion",
+  name: "AdminAccordion",
   props: {
     title: {
       type: String,

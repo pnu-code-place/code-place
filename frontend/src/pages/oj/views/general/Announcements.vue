@@ -67,7 +67,7 @@ import api from "@oj/api"
 import Pagination from "@oj/components/Pagination"
 
 export default {
-  name: "Announcement",
+  name: "GeneralAnnouncements",
   components: {
     Pagination,
   },

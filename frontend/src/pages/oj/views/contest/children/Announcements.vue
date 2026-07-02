@@ -29,7 +29,8 @@
         </thead>
         <tbody>
           <tr
-            v-for="(announcement, idx) in announcements"
+            v-for="announcement in announcements"
+            :key="announcement.id"
             @click="goAnnouncement(announcement)"
           >
             <td>{{ announcement.id }}</td>
@@ -54,7 +55,7 @@
 import api from "@oj/api"
 
 export default {
-  name: "Announcement",
+  name: "ContestAnnouncements",
   data() {
     return {
       limit: 10,

@@ -44,7 +44,7 @@ services:
   celery-worker:
     image: registry.code-place-dev.site/code-place-prod/backend:latest
     deploy:
-      replicas: 3 # NOTE: This should be adjusted based on the workloads
+      replicas: 6 # NOTE: Match judge-server replicas after switching to one worker process per container.
       update_config:
         parallelism: 1
         order: stop-first

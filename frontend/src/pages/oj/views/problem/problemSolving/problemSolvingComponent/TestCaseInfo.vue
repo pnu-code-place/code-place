@@ -6,7 +6,7 @@
         content="테스트케이스 중 최초로 실패한 케이스의 입력값과 기대값입니다."
         placement="right"
       >
-        <Icon type="ios-information" />
+        <i class="fas fa-info-circle info-icon"></i>
       </CustomTooltip>
     </div>
     <div class="testcase-content">
@@ -64,6 +64,11 @@ export default {
     .sub-title {
       font-size: 14px;
       font-weight: bold;
+    }
+
+    .info-icon {
+      color: var(--ps-content-title-color);
+      opacity: 0.72;
     }
   }
 

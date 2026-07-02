@@ -55,6 +55,9 @@ jobs:
           file: ./backend/Dockerfile
           push: true
           tags: ${{ secrets.HARBOR_REGISTRY }}/code-place-dev/backend:${{ github.sha }}-dev
+          provenance: false
+          build-args: |
+            APP_VERSION=${{ github.sha }}-dev
 
   ci-frontend-dev:
     needs: [detect-changes-by-component]
@@ -81,9 +84,13 @@ jobs:
           file: ./frontend/Dockerfile
           push: true
           tags: ${{ secrets.HARBOR_REGISTRY }}/code-place-dev/frontend:${{ github.sha }}-dev
+          provenance: false
           build-args: |
             SERVER_NAME=${{ secrets.DEV_SERVER_NAME }}
             APP_VERSION=${{ github.sha }}-dev
+            SENTRY_ENVIRONMENT=development
+            SENTRY_DSN_FRONTEND=${{ secrets.SENTRY_DSN_FRONTEND }}
+            USE_SENTRY=1
 
   ci-hub-auth-dev:
     needs: [detect-changes-by-component]
@@ -110,6 +117,7 @@ jobs:
           file: ./hub/auth_server/Dockerfile
           push: true
           tags: ${{ secrets.HARBOR_REGISTRY }}/code-place-dev/hub-auth:${{ github.sha }}-dev
+          provenance: false
 
   update-dev-manifest:
     needs: [ci-backend-dev, ci-frontend-dev, ci-hub-auth-dev]

@@ -57,12 +57,39 @@ class SubmissionAPITest(SubmissionCreateTestBase):
             self.assertSuccess(resp)
             self.assertIn("submission_id", resp.data["data"])
 
+    @mock.patch("submission.views.oj.SUBMISSION_CREATE_OUTCOME_TOTAL")
+    def test_create_submission_records_success_outcome(self, outcome_total):
+        data = copy.deepcopy(DEFAULT_SUBMISSION_DATA)
+        data["problem_id"] = self.problem.id
+        labels = mock.Mock()
+        outcome_total.labels.return_value = labels
+
+        with mock.patch('judge.tasks.judge_task.apply_async'):
+            resp = self.client.post(self.url, data=data)
+
+        self.assertSuccess(resp)
+        outcome_total.labels.assert_called_once_with(status="success", scope="practice")
+        labels.inc.assert_called_once()
+
     def test_create_submission_nonexistent_problem(self):
         data = copy.deepcopy(DEFAULT_SUBMISSION_DATA)
         data["problem_id"] = 99999
 
         resp = self.client.post(self.url, data=data)
         self.assertFailed(resp, "Problem not exist")
+
+    @mock.patch("submission.views.oj.SUBMISSION_CREATE_OUTCOME_TOTAL")
+    def test_create_submission_records_problem_not_found_outcome(self, outcome_total):
+        data = copy.deepcopy(DEFAULT_SUBMISSION_DATA)
+        data["problem_id"] = 99999
+        labels = mock.Mock()
+        outcome_total.labels.return_value = labels
+
+        resp = self.client.post(self.url, data=data)
+
+        self.assertFailed(resp, "Problem not exist")
+        outcome_total.labels.assert_called_once_with(status="problem_not_found", scope="practice")
+        labels.inc.assert_called_once()
 
     def test_create_submission_invalid_language(self):
         data = copy.deepcopy(DEFAULT_SUBMISSION_DATA)
@@ -161,7 +188,7 @@ class ContestSubmissionAPITest(SubmissionCreateTestBase):
         data["contest_id"] = self.contest["id"]
 
         resp = self.client.post(self.reverse("submission_api"), data=data)
-        self.assertFailed(resp, "The contest have ended")
+        self.assertFailed(resp, "대회가 종료되었습니다.")
 
     def test_get_contest_submission_list(self):
         submission = self.create_submission(self.user, self.contest_problem, contest_id=self.contest["id"])
@@ -205,6 +232,10 @@ class SubmissionListAPITest(SubmissionCreateTestBase):
         resp = self.client.get(f"{self.url}?limit=10")
         self.assertSuccess(resp)
         self.assertTrue("results" in resp.data["data"])
+        result = next(
+            sub for sub in resp.data["data"]["results"] if sub["id"] == submission.id
+        )
+        self.assertEqual(result["problem_id"], self.problem._id)
 
     def test_get_submissions_filtered_by_problem(self):
         # 문제 필터링 테스트 (일반 문제만)
@@ -254,10 +285,18 @@ class SubmissionListAPITest(SubmissionCreateTestBase):
 
     def test_get_submissions_contest_myself(self):
         # contest_id 지정, myself=1일때는 조회 성공
-        sub = self.create_submission(self.user, self.contest_problem, contest_id=self.contest["id"])
+        sub = self.create_submission(
+            self.user,
+            self.contest_problem,
+            contest_id=self.contest["id"],
+            result=JudgeStatus.ACCEPTED,
+        )
         resp = self.client.get(f"{self.url}?limit=10&contest_id={self.contest['id']}&myself=1")
         self.assertSuccess(resp)
-        self.assertTrue(any(s["id"] == sub.id for s in resp.data["data"]["results"]))
+        result = next(
+            s for s in resp.data["data"]["results"] if s["id"] == sub.id
+        )
+        self.assertEqual(result["problem_id"], self.contest_problem._id)
 
     def test_get_submissions_with_problem_not_exist(self):
         # problem_id 지정했으나 존재하지 않는 경우 에러 발생

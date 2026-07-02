@@ -10,7 +10,7 @@ class HomeRankingAPI(APIView):
 
     def get(self, request):
         # rank, avatar, tier, total_score, fluctuation
-        limit = request.GET.get('limit', 3)
+        limit = request.GET.get('limit', 5)
         try:
             ranking = UserScore.objects.all().order_by('-total_score')[:limit]
         except UserScore.DoesNotExist:

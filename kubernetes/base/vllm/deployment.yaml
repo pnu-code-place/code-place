@@ -1,0 +1,97 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vllm
+  labels:
+    app: vllm
+spec:
+  replicas: 1
+  revisionHistoryLimit: 2
+  progressDeadlineSeconds: 1800
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: vllm
+  template:
+    metadata:
+      labels:
+        app: vllm
+    spec:
+      runtimeClassName: nvidia
+      terminationGracePeriodSeconds: 180
+      nodeSelector:
+        workload.code-place.ai/vllm: "true"
+      securityContext:
+        fsGroup: 1000
+      containers:
+        - name: vllm
+          image: vllm/vllm-openai:v0.20.0
+          env:
+            - name: VLLM_PORT
+              value: "8000"
+          imagePullPolicy: IfNotPresent
+          args:
+            - --model
+            - Qwen/Qwen3.5-9B
+            - --port
+            - "8000"
+            - --host
+            - 0.0.0.0
+            - --dtype
+            - auto
+            - --gpu-memory-utilization
+            - "0.9"
+            - --max-model-len
+            - "4096"
+            - --kv-cache-dtype
+            - fp8
+            - --calculate-kv-scales
+            - --enable-prefix-caching
+            - --max-num-seqs
+            - "60"
+            - --enable-chunked-prefill
+          ports:
+            - containerPort: 8000
+              name: http
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: "16"
+              memory: 32Gi
+              nvidia.com/gpu: "1"
+            limits:
+              cpu: "16"
+              memory: 64Gi
+              nvidia.com/gpu: "1"
+          startupProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 10
+            failureThreshold: 180
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            failureThreshold: 6
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 20
+            failureThreshold: 6
+          volumeMounts:
+            - name: hf-cache
+              mountPath: /root/.cache/huggingface
+      volumes:
+        - name: hf-cache
+          persistentVolumeClaim:
+            claimName: vllm-hf-cache

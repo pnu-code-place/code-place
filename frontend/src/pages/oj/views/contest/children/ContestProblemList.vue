@@ -24,7 +24,13 @@
       />
     </div>
     <div
-      v-if="problems.length === 0"
+      v-if="problemLoadError"
+      style="text-align: center; font-size: 16px"
+    >
+      {{ $t("m.Unknown_Error") }}
+    </div>
+    <div
+      v-else-if="problems.length === 0"
       style="text-align: center; font-size: 16px"
     >
       {{ $t("m.No_Problems") }}
@@ -46,7 +52,11 @@
         <th>{{ $t("m.Th_Problem_Submission_State") }}</th>
       </thead>
       <tbody>
-        <tr v-for="problem in problems" @click="goContestProblem(problem._id)">
+        <tr
+          v-for="problem in problems"
+          :key="`contest-problem-row-${problem._id}`"
+          @click="goContestProblem(problem._id)"
+        >
           <td style="white-space: nowrap; text-align: left">
             {{ problem._id }}
           </td>
@@ -77,7 +87,11 @@
         <th>{{ $t("m.Th_Problem_Submission_State") }}</th>
       </thead>
       <tbody>
-        <tr v-for="problem in problems" @click="goContestProblem(problem._id)">
+        <tr
+          v-for="problem in problems"
+          :key="`contest-problem-row-compact-${problem._id}`"
+          @click="goContestProblem(problem._id)"
+        >
           <td>{{ problem._id }}</td>
           <td class="TableTitle">
             {{ problem.title }}
@@ -93,13 +107,11 @@
 import { mapState, mapGetters } from "vuex"
 import { ProblemMixin } from "@oj/components/mixins"
 import { DIFFICULTY_MAP, FIELD_MAP } from "../../../../../utils/constants"
-import FieldCategoryBox from "../../../components/FieldCategoryBox.vue"
 import CustomTooltip from "@oj/components/CustomTooltip"
-import Pagination from "@/pages/admin/components/Pagination"
 
 export default {
   name: "ContestProblemList",
-  components: { FieldCategoryBox, CustomTooltip, Pagination },
+  components: { CustomTooltip },
   mixins: [ProblemMixin],
   data() {
     return {
@@ -107,6 +119,7 @@ export default {
       totalProblems: 0,
       limit: 10,
       page: 1,
+      problemLoadError: false,
     }
   },
   mounted() {
@@ -118,15 +131,21 @@ export default {
       this.getContestProblems()
     },
     getContestProblems() {
-      this.$store.dispatch("getContestProblems", this.keyword).then((res) => {
-        if (this.isAuthenticated) {
-          if (this.contestRuleType === "ACM") {
-            this.addStatusColumn(this.ACMTableColumns, res.data.data)
-          } else if (this.OIContestRealTimePermission) {
-            this.addStatusColumn(this.ACMTableColumns, res.data.data)
+      this.problemLoadError = false
+      this.$store.dispatch("getContestProblems", this.keyword)
+        .then((res) => {
+          if (this.isAuthenticated) {
+            if (this.contestRuleType === "ACM") {
+              this.addStatusColumn(this.ACMTableColumns, res.data.data)
+            } else if (this.OIContestRealTimePermission) {
+              this.addStatusColumn(this.ACMTableColumns, res.data.data)
+            }
           }
-        }
-      })
+        })
+        .catch((err) => {
+          this.problemLoadError = true
+          console.error("Failed to fetch contest problems:", err)
+        })
     },
     goContestProblem(id) {
       this.$router.push({
@@ -208,6 +227,8 @@ export default {
 }
 .problemTable {
   text-align: center;
+  border-collapse: collapse;
+  border-spacing: 0;
   th {
     color: #7e7e7e;
     font-size: 1.3em;

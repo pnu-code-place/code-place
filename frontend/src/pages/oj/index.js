@@ -1,4 +1,5 @@
-import "babel-polyfill"
+import "core-js/stable"
+import "regenerator-runtime/runtime"
 import Vue from "vue"
 import App from "./App.vue"
 import router from "./router"
@@ -20,18 +21,11 @@ import highlight from "@/plugins/highlight"
 import katex from "@/plugins/katex"
 import filters from "@/utils/filters.js"
 
-import ECharts from "vue-echarts/components/ECharts.vue"
-import "echarts/lib/chart/bar"
-import "echarts/lib/chart/line"
-import "echarts/lib/chart/pie"
-import "echarts/lib/chart/radar"
-import "echarts/lib/component/title"
-import "echarts/lib/component/grid"
-import "echarts/lib/component/dataZoom"
-import "echarts/lib/component/legend"
-import "echarts/lib/component/tooltip"
-import "echarts/lib/component/toolbox"
-import "echarts/lib/component/markPoint"
+import ECharts from "vue-echarts"
+import "@/utils/echarts"
+import { initSentry } from "@/utils/sentry"
+
+const legacyPanelTag = "Panel"
 
 // register global utility filters.
 Object.keys(filters).forEach((key) => {
@@ -54,7 +48,7 @@ Vue.use(VueAnalytics, {
 Vue.component("ECharts", ECharts)
 Vue.component(VerticalMenu.name, VerticalMenu)
 Vue.component(VerticalMenuItem.name, VerticalMenuItem)
-Vue.component(Panel.name, Panel)
+Vue.component(legacyPanelTag, Panel)
 
 // 注册全局消息提示
 Vue.prototype.$Message.config({
@@ -64,4 +58,10 @@ Vue.prototype.$error = (s) => Vue.prototype.$Message.error(s)
 Vue.prototype.$info = (s) => Vue.prototype.$Message.info(s)
 Vue.prototype.$success = (s) => Vue.prototype.$Message.success(s)
 
-new Vue(Vue.util.extend({ router, store, i18n }, App)).$mount("#app")
+initSentry(Vue)
+
+const app = new Vue(Vue.util.extend({ router, store, i18n }, App))
+
+router.onReady(() => {
+  app.$mount("#app")
+})

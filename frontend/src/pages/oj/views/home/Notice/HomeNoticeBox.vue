@@ -25,8 +25,7 @@
       </div>
       <ul class="announcements-container" key="list" v-else>
         <HomeNoticeItem
-          v-for="(announcement, idx) in csepAnnouncements"
-          v-if="idx < 3"
+          v-for="announcement in displayedCsepAnnouncements"
           :key="announcement.title"
           :announcement="announcement"
           :isCSEP="true"
@@ -57,8 +56,7 @@
       </div>
       <ul class="announcements-container" key="list" v-else>
         <HomeNoticeItem
-          v-for="(announcement, idx) in swAnnouncements"
-          v-if="idx < 5"
+          v-for="announcement in displayedSwAnnouncements"
           :key="announcement.title"
           :announcement="announcement"
           :isCSEP="false"
@@ -72,12 +70,11 @@
 
 <script>
 import api from "@oj/api"
-import ShineWrapper from "../../../components/ShineWrapper.vue"
 import HomeNoticeItem from "./HomeNoticeItem.vue"
 
 export default {
   name: "HomeNoticeBox",
-  components: { HomeNoticeItem, ShineWrapper },
+  components: { HomeNoticeItem },
   data() {
     return {
       limit: 10,
@@ -99,6 +96,14 @@ export default {
   mounted() {
     this.getAnnouncementList()
     this.getSWCenterList()
+  },
+  computed: {
+    displayedCsepAnnouncements() {
+      return this.csepAnnouncements.slice(0, 3)
+    },
+    displayedSwAnnouncements() {
+      return this.swAnnouncements.slice(0, 5)
+    },
   },
   methods: {
     getAnnouncementList(page = 1) {

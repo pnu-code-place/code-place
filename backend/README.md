@@ -63,7 +63,7 @@ pip3 install -r requirements.txt
 sh init_db.sh
 
 # md5sum secret key 초기화 및 django migrate 실행
-# super admin 생성(아이디 root, 비밀번호 rootroot로 자동생성됩니다.)
+# 초기 super admin 계정 생성(username: root, email: root@pusan.ac.kr, password: rootroot)
 sh init_db.sh --migrate
 
 # 프로젝트를 실행합니다. localhost:8080으로 접속할 수 있습니다.

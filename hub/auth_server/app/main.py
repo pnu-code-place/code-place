@@ -2,7 +2,7 @@
 GitHub OAuth authentication server.
 
 This module provides endpoints for retrieving GitHub personal access tokens
-through the OAuth flow.
+through the OAuth flow..
 """
 import json
 from typing import Dict, Any

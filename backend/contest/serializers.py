@@ -8,13 +8,13 @@ from .models import ACMContestRank, OIContestRank
 
 class ContestUserSubmissionSummarySerializer(serializers.Serializer):
     user_id = serializers.IntegerField()
-    username = serializers.CharField()
-    email = serializers.EmailField()
-    avatar = serializers.CharField()
-    school = serializers.CharField()
-    major = serializers.CharField()
+    username = serializers.CharField(allow_blank=True)
+    email = serializers.EmailField(allow_blank=True, required=False)
+    avatar = serializers.CharField(allow_blank=True)
+    school = serializers.CharField(allow_blank=True)
+    major = serializers.CharField(allow_blank=True)
     submission_count = serializers.IntegerField()
-    last_submission_ip = serializers.CharField()
+    last_submission_ip = serializers.CharField(allow_blank=True)
 
 
 class CreateConetestSeriaizer(serializers.Serializer):
@@ -28,6 +28,7 @@ class CreateConetestSeriaizer(serializers.Serializer):
     real_time_rank = serializers.BooleanField()
     allow_paste = serializers.BooleanField()
     allowed_ip_ranges = serializers.ListField(child=serializers.CharField(max_length=32), allow_empty=True)
+    ai_assistant_enabled = serializers.BooleanField(default=False)
 
 
 class EditConetestSeriaizer(serializers.Serializer):
@@ -41,6 +42,7 @@ class EditConetestSeriaizer(serializers.Serializer):
     real_time_rank = serializers.BooleanField()
     allow_paste = serializers.BooleanField()
     allowed_ip_ranges = serializers.ListField(child=serializers.CharField(max_length=32))
+    ai_assistant_enabled = serializers.BooleanField(required=False)
 
 
 class ContestAdminSerializer(serializers.ModelSerializer):
