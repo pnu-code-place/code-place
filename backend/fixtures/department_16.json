@@ -6,5 +6,13 @@
       "department_name": "교양교육원",
       "college_id": 16
     }
+  },
+  {
+    "model": "school.department",
+    "pk": 103,
+    "fields": {
+      "department_name": "AI융합교육원",
+      "college_id": 16
+    }
   }
 ]

@@ -23,8 +23,6 @@
     </PopUp>
 
     <HomeHeroSection />
-    <!-- 바로가기 카드: 상단 네비바와 메뉴가 중복되어 숨김 처리 (교수님 피드백). 컴포넌트 파일은 보존, 복구 시 아래 주석 해제. -->
-    <!-- <HomeQuickNavCards /> -->
     <div class="notice-rank-row">
       <HomeNoticeProblemRow />
       <div class="sidebar-col">
@@ -32,6 +30,7 @@
         <HomeActivitySidebar />
       </div>
     </div>
+    <HomeNewFeatureBanner />
     <HomeOngoingContests />
     <HomeWeeklyServices />
     <HomeCTABanner />
@@ -47,6 +46,7 @@ import PopUp from "../../components/modal/PopUp.vue"
 import storage from "../../../../utils/storage"
 
 import HomeHeroSection from "../home/HomeHeroSection.vue"
+import HomeNewFeatureBanner from "../home/HomeNewFeatureBanner.vue"
 import HomeQuickNavCards from "../home/HomeQuickNavCards.vue"
 import HomeNoticeProblemRow from "../home/HomeNoticeProblemRow.vue"
 import HomeRankingSidebar from "../home/HomeRankingSidebar.vue"
@@ -61,6 +61,7 @@ export default {
   components: {
     PopUp,
     HomeHeroSection,
+    HomeNewFeatureBanner,
     HomeNoticeProblemRow,
     HomeRankingSidebar,
     HomeOngoingContests,
