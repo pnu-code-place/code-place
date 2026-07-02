@@ -3,6 +3,7 @@ import store from "@/store"
 import axios from "axios"
 import { configureAxiosRequestId } from "@/utils/request_id"
 
+// axios 전역 설정: baseURL, CSRF 헤더/쿠키, 요청 ID 부여
 Vue.prototype.$http = axios
 axios.defaults.baseURL = "/api"
 axios.defaults.xsrfHeaderName = "X-CSRFToken"

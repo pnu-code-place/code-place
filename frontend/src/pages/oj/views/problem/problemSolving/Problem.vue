@@ -135,12 +135,27 @@
               </div>
               <div
                 v-if="!isContestProblem"
-                class="tab-header"
+                class="tab-header tab-header--ask"
                 :class="{ active: leftPainActiveTab === 'community' }"
                 @click="leftPainActiveTab = 'community'"
               >
                 <i class="fi fi-rr-map-marker-question"></i>
                 질문하기
+              </div>
+            </div>
+            <div v-if="showAskNudge" class="ask-nudge">
+              <span class="ask-nudge-text">
+                이 문제에서 막혔나요? 다른 사람에게 질문해보세요.
+              </span>
+              <div class="ask-nudge-actions">
+                <button class="ask-nudge-go" @click="goAsk">질문하기 →</button>
+                <button
+                  class="ask-nudge-close"
+                  aria-label="닫기"
+                  @click="showAskNudge = false"
+                >
+                  ✕
+                </button>
               </div>
             </div>
             <div class="tab-content">
@@ -316,6 +331,7 @@ export default {
       },
       modalCheck: false,
       leftPainActiveTab: "problem",
+      showAskNudge: false,
       rightPainActiveTab: "editor",
       lastSubmissionId: null,
       isInitialized: false,
@@ -419,6 +435,7 @@ export default {
       this.lastSubmissionId = null
       this.problemLoading = false
       this.leftPainActiveTab = "problem"
+      this.showAskNudge = false
       this.modalCheck = false
       this.problemError = {
         visible: false,
@@ -736,6 +753,10 @@ export default {
     check() {
       alert(this.code)
     },
+    goAsk() {
+      this.leftPainActiveTab = "community"
+      this.showAskNudge = false
+    },
     checkSubmissionStatus() {
       // 使用setTimeout避免一些问题
       if (this.refreshStatus) {
@@ -753,6 +774,8 @@ export default {
 
               this.leftPainActiveTab = "submission"
               this.lastSubmissionId = id
+              // 통과(Accepted=0)하지 못한 결과면 질문 유도 넛지 표시
+              this.showAskNudge = this.result.result !== 0
 
               clearTimeout(this.refreshStatus)
               this.init({
@@ -778,6 +801,7 @@ export default {
       }
       this.submissionId = ""
       this.result = { result: 9 }
+      this.showAskNudge = false
       this.submitting = true
       let data = {
         problem_id: this.problem.id,
@@ -1263,6 +1287,59 @@ export default {
 
 .tab-header:hover:not(.active) {
   background-color: var(--bg-color);
+}
+
+/* 질문하기 탭: 배경은 다른 탭과 동일하게 두고 글자색만 브랜드 강조색 */
+.tab-header--ask {
+  color: #5b64ed;
+  font-weight: 700;
+}
+
+/* 오답 후 질문 유도 넛지 */
+.ask-nudge {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 8px 0;
+  padding: 9px 12px;
+  border: 1px solid rgba(91, 100, 237, 0.35);
+  background-color: rgba(91, 100, 237, 0.08);
+  border-radius: 8px;
+  font-size: 13px;
+  color: inherit;
+}
+
+.ask-nudge-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.ask-nudge-go {
+  border: none;
+  background-color: #5b64ed;
+  color: #fff;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.ask-nudge-go:hover {
+  filter: brightness(1.05);
+}
+
+.ask-nudge-close {
+  border: none;
+  background: transparent;
+  color: #9999a6;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
 }
 
 .tab-content {

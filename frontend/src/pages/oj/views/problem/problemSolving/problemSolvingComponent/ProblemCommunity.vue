@@ -427,9 +427,9 @@ export default {
       this.query.page = 1
       this.fetchPosts()
     },
-    // 문제 질문 작성 시, 문제 태그 prefix 추가
+    // 문제 질문 작성 시, "[문제 번호] 문제 제목" 형태로 제목 기본 채움
     openCreateModal() {
-      this.newPost.title = `[${this.problem._id}] `
+      this.newPost.title = `[${this.problem._id}] ${this.problem.title || ""}`
       this.showCreateModal = true
     },
   },
