@@ -188,7 +188,7 @@ class ContestSubmissionAPITest(SubmissionCreateTestBase):
         data["contest_id"] = self.contest["id"]
 
         resp = self.client.post(self.reverse("submission_api"), data=data)
-        self.assertFailed(resp, "The contest have ended")
+        self.assertFailed(resp, "대회가 종료되었습니다.")
 
     def test_get_contest_submission_list(self):
         submission = self.create_submission(self.user, self.contest_problem, contest_id=self.contest["id"])

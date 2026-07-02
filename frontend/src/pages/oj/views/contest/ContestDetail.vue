@@ -1,5 +1,5 @@
 <template>
-  <main v-if="route_name === 'contest-problem-details'" style="width: 100%">
+  <main v-if="isContestProblemDetails" style="width: 100%">
     <router-view></router-view>
   </main>
   <main v-else>
@@ -27,7 +27,6 @@ export default {
   data() {
     return {
       CONTEST_STATUS: CONTEST_STATUS,
-      route_name: "",
       btnLoading: false,
       contestID: "",
       contestPassword: "",
@@ -74,7 +73,6 @@ export default {
   },
   mounted() {
     this.contestID = this.$route.params.contestID
-    this.route_name = this.$route.name
     this.$store.dispatch("getContest").then((res) => {
       this.changeDomTitle({ title: res.data.data.title })
       let data = res.data.data
@@ -98,12 +96,12 @@ export default {
       }
       this.btnLoading = true
       api.checkContestPassword(this.contestID, this.contestPassword).then(
-        (res) => {
+        () => {
           this.$success("Succeeded")
           this.$store.commit(types.CONTEST_ACCESS, { access: true })
           this.btnLoading = false
         },
-        (res) => {
+        () => {
           this.btnLoading = false
         },
       )
@@ -134,10 +132,12 @@ export default {
     showAdminHelper() {
       return this.isContestAdmin && this.contestRuleType === "ACM"
     },
+    isContestProblemDetails() {
+      return this.$route.name === "contest-problem-details"
+    },
   },
   watch: {
     $route(newVal) {
-      this.route_name = newVal.name
       this.contestID = newVal.params.contestID
       this.changeDomTitle({ title: this.contest.title })
     },

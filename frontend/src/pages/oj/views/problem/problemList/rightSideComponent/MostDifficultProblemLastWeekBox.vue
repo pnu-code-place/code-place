@@ -7,7 +7,34 @@
       </span>
     </div>
     <div class="hardProblemRecommendationBoxBody">
-      <template v-if="problem">
+      <template v-if="loading">
+        <div class="hard-problem-skeleton" aria-hidden="true">
+          <div v-if="showTags" class="skeleton-tag-row">
+            <span class="skeleton-block skeleton-chip"></span>
+            <span class="skeleton-block skeleton-chip skeleton-chip-short"></span>
+            <span class="skeleton-block skeleton-chip skeleton-chip-short"></span>
+          </div>
+          <div class="skeleton-title-row">
+            <span class="skeleton-block skeleton-title"></span>
+            <span class="skeleton-block skeleton-link"></span>
+          </div>
+          <div class="skeleton-info-list">
+            <div class="skeleton-info-row">
+              <span class="skeleton-block skeleton-label"></span>
+              <span class="skeleton-block skeleton-value"></span>
+            </div>
+            <div class="skeleton-info-row">
+              <span class="skeleton-block skeleton-label"></span>
+              <span class="skeleton-block skeleton-value"></span>
+            </div>
+            <div class="skeleton-info-row">
+              <span class="skeleton-block skeleton-label"></span>
+              <span class="skeleton-block skeleton-value"></span>
+            </div>
+          </div>
+        </div>
+      </template>
+      <template v-else-if="problem">
         <div v-if="showTags" class="hardProblemFieldCategory">
           <FieldCategoryBox
             :boxType="true"
@@ -122,6 +149,7 @@ export default {
   data() {
     return {
       problem: null,
+      loading: true,
     }
   },
   mounted() {
@@ -141,9 +169,16 @@ export default {
       })
     },
     init() {
-      api.getMostDifficultProblem().then((res) => {
-        this.problem = res.data.data
-      })
+      this.loading = true
+      api.getMostDifficultProblem().then(
+        (res) => {
+          this.problem = res.data.data
+          this.loading = false
+        },
+        () => {
+          this.loading = false
+        },
+      )
     },
   },
   computed: {
@@ -251,5 +286,74 @@ export default {
       transform: scale(1);
     }
   }
+}
+
+.skeleton-block {
+  display: inline-block;
+  border-radius: 6px;
+  background: #f1f3f5;
+}
+
+.hard-problem-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.skeleton-tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.skeleton-chip {
+  width: 72px;
+  height: 24px;
+  border-radius: 999px;
+}
+
+.skeleton-chip-short {
+  width: 54px;
+}
+
+.skeleton-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.skeleton-title {
+  width: 118px;
+  height: 18px;
+}
+
+.skeleton-link {
+  width: 60px;
+  height: 13px;
+}
+
+.skeleton-info-list {
+  width: 52%;
+  margin-left: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+
+.skeleton-info-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.skeleton-label {
+  width: 54px;
+  height: 13px;
+}
+
+.skeleton-value {
+  width: 34px;
+  height: 13px;
 }
 </style>

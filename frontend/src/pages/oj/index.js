@@ -60,4 +60,8 @@ Vue.prototype.$success = (s) => Vue.prototype.$Message.success(s)
 
 initSentry(Vue)
 
-new Vue(Vue.util.extend({ router, store, i18n }, App)).$mount("#app")
+const app = new Vue(Vue.util.extend({ router, store, i18n }, App))
+
+router.onReady(() => {
+  app.$mount("#app")
+})

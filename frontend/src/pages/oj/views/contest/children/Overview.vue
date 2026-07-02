@@ -1,9 +1,14 @@
 <template>
   <div class="contestBox">
     <div class="contestTitle">
-      <p>{{ contest.title }}</p>
+      <p v-if="contestLoaded">{{ contest.title }}</p>
+      <p v-else class="contest-title-skeleton" aria-hidden="true"></p>
       <div slot="extra" style="flex-shrink: 0">
-        <div class="contest-timer" :class="'contest-timer--' + (countdownParts ? countdownParts.status : 'ended')" v-if="countdown">
+        <div
+          v-if="contestLoaded && countdown"
+          class="contest-timer"
+          :class="'contest-timer--' + (countdownParts ? countdownParts.status : 'ended')"
+        >
           <template v-if="countdownParts && countdownParts.status !== 'ended'">
             <span class="contest-timer__label">{{ countdownParts.status === 'running' ? '남은 시간' : '시작까지' }}</span>
             <span class="contest-timer__text">{{ formattedTime }}</span>
@@ -51,12 +56,10 @@
 </template>
 
 <script>
-import moment from "moment"
 import api from "@oj/api"
-import { mapState, mapGetters, mapActions } from "vuex"
+import { mapState, mapGetters } from "vuex"
 import { types } from "@/store"
-import { CONTEST_STATUS_REVERSE, CONTEST_STATUS } from "@/utils/constants"
-import time from "@/utils/time"
+import { CONTEST_STATUS_REVERSE } from "@/utils/constants"
 
 export default {
   name: "ContestDetail",
@@ -71,12 +74,12 @@ export default {
       }
       this.btnLoading = true
       api.checkContestPassword(this.contestID, this.contestPassword).then(
-        (res) => {
+        () => {
           this.$success("Succeeded")
           this.$store.commit(types.CONTEST_ACCESS, { access: true })
           this.btnLoading = false
         },
-        (res) => {
+        () => {
           this.btnLoading = false
         },
       )
@@ -86,7 +89,7 @@ export default {
     ...mapState({
       contest: (state) => state.contest.contest,
     }),
-    ...mapGetters(["contestStatus", "countdown", "countdownParts", "passwordFormVisible"]),
+    ...mapGetters(["contestLoaded", "contestStatus", "countdown", "countdownParts", "passwordFormVisible"]),
     countdownColor() {
       if (this.contestStatus) {
         return CONTEST_STATUS_REVERSE[this.contestStatus].color
@@ -132,6 +135,14 @@ export default {
     font-size: 16px;
   }
 }
+
+.contest-title-skeleton {
+  width: ~"min(420px, 56vw)";
+  height: 29px;
+  border-radius: 6px;
+  background: var(--ps-content-pre-background-color, #f1f3f5);
+}
+
 .contestContent {
   padding: 0px 10px;
   .contestPassword {
