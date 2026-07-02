@@ -19,6 +19,8 @@ if [ ! -f "$DATA/public/website/favicon.ico" ]; then
     cp data/public/website/favicon.ico $DATA/public/website
 fi
 
+: "${MAX_WORKER_NUM:=1}"
+
 cd /app
 
 n=0
@@ -49,8 +51,8 @@ exec gunicorn oj.wsgi \
     --user server \
     --group spj \
     --bind 0.0.0.0:8080 \
-    --workers 1 \
-    --threads 1 \
+    --workers "$MAX_WORKER_NUM" \
+    --threads 4 \
     --max-requests-jitter 10000 \
     --max-requests 1000000 \
     --keep-alive 32 \
