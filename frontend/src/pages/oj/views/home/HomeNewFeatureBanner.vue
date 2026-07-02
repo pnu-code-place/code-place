@@ -300,8 +300,9 @@ export default {
 
 /* ─── 우측 visual ─── */
 .visual {
-  width: 400px;
-  flex: none;
+  /* 상단 notice-rank-row(gap:20px, flex:2/1) 거터 중심과 정렬
+     rightWidth = W/3 + 10/3 = calc(33.333% + 3.333px) */
+  flex: 0 0 calc(33.333% + 3.333px);
   position: relative;
   background: linear-gradient(150deg, #f0eefc, #e7e3fa);
   display: flex;
@@ -310,8 +311,8 @@ export default {
   padding: 32px;
 
   @media (max-width: 768px) {
-    width: 100%;
-    min-height: 240px;
+    flex: 0 0 100%;
+    min-height: 200px;
   }
 }
 
