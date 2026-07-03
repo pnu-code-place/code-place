@@ -166,6 +166,9 @@
                 />
                 <span>{{ comment.author_name }}</span>
               </router-link>
+              <span v-if="comment.is_contest_host" class="contest-host-badge">
+                운영자
+              </span>
             </div>
             <div class="comment-date">
               <Icon type="ios-time-outline"></Icon>
@@ -257,6 +260,9 @@
                     />
                     <span>{{ reply.author_name }}</span>
                   </router-link>
+                  <span v-if="reply.is_contest_host" class="contest-host-badge">
+                    운영자
+                  </span>
                 </div>
                 <div class="comment-date">
                   <Icon type="ios-time-outline"></Icon>
@@ -933,6 +939,18 @@ main {
 .user-info a:hover .avatar {
   transform: scale(1.1);
   border-color: #3498db;
+}
+
+.contest-host-badge {
+  margin-left: 8px;
+  padding: 3px 8px;
+  border-radius: 10px;
+  background: #eef6ff;
+  color: #2f6fbd;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.3;
+  white-space: nowrap;
 }
 
 .avatar {

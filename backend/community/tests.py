@@ -217,6 +217,94 @@ class CommunityAPITest(APITestCase):
         response = self.client.get(self.post_list_url, {"contest_id": self.contest["id"]})
         self.assertSuccess(response)
         self.assertEqual(response.data["data"]["total"], 1)
+        self.assertTrue(response.data["data"]["results"][0]["is_mine"])
+        self.client.logout()
+
+        self.client.force_login(self.other_user)
+        response = self.client.get(self.post_list_url, {"contest_id": self.contest["id"]})
+        self.assertSuccess(response)
+        self.assertEqual(response.data["data"]["total"], 1)
+        self.assertFalse(response.data["data"]["results"][0]["is_mine"])
+
+    def test_get_contest_host_only_post_list_visibility(self):
+        """주최자 전용 대회 게시글은 목록에 노출되지만 열람 가능 여부가 표시된다."""
+        self.client.force_login(self.admin)
+        response = self.client.post(
+            self.post_list_url,
+            {
+                "title": "Host Only Contest Post",
+                "content": "Content",
+                "post_type": "QUESTION",
+                "contest_id": self.contest["id"],
+                "visibility": "CONTEST_HOSTS",
+            },
+        )
+        self.assertSuccess(response)
+        self.client.logout()
+
+        self.client.force_login(self.other_user)
+        response = self.client.get(self.post_list_url, {"contest_id": self.contest["id"]})
+        self.assertSuccess(response)
+        self.assertEqual(response.data["data"]["total"], 1)
+        self.assertEqual(response.data["data"]["results"][0]["visibility"], "CONTEST_HOSTS")
+        self.assertFalse(response.data["data"]["results"][0]["can_view"])
+        self.client.logout()
+
+        self.client.force_login(self.admin)
+        response = self.client.get(self.post_list_url, {"contest_id": self.contest["id"]})
+        self.assertSuccess(response)
+        self.assertEqual(response.data["data"]["total"], 1)
+        self.assertEqual(response.data["data"]["results"][0]["visibility"], "CONTEST_HOSTS")
+        self.assertTrue(response.data["data"]["results"][0]["can_view"])
+
+    def test_get_contest_host_only_post_detail_visibility(self):
+        """주최자 전용 대회 게시글 상세는 주최자만 조회할 수 있다."""
+        self.client.force_login(self.admin)
+        response = self.client.post(
+            self.post_list_url,
+            {
+                "title": "Host Only Contest Post",
+                "content": "Content",
+                "post_type": "QUESTION",
+                "contest_id": self.contest["id"],
+                "visibility": "CONTEST_HOSTS",
+            },
+        )
+        self.assertSuccess(response)
+        post_id = response.data["data"]["id"]
+        url = self.reverse("community_post_detail", kwargs={"post_id": post_id})
+        self.client.logout()
+
+        self.client.force_login(self.other_user)
+        response = self.client.get(url)
+        self.assertFailed(response, "Only contest hosts or the author can view this post")
+        self.client.logout()
+
+        self.client.force_login(self.admin)
+        response = self.client.get(url)
+        self.assertSuccess(response)
+        self.assertEqual(response.data["data"]["visibility"], "CONTEST_HOSTS")
+
+    def test_get_contest_host_only_post_detail_by_author(self):
+        """주최자 전용 대회 게시글은 작성자도 상세 조회할 수 있다."""
+        self.client.force_login(self.user)
+        response = self.client.post(
+            self.post_list_url,
+            {
+                "title": "Host Only Contest Post",
+                "content": "Content",
+                "post_type": "QUESTION",
+                "contest_id": self.contest["id"],
+                "visibility": "CONTEST_HOSTS",
+            },
+        )
+        self.assertSuccess(response)
+        post_id = response.data["data"]["id"]
+        url = self.reverse("community_post_detail", kwargs={"post_id": post_id})
+
+        response = self.client.get(url)
+        self.assertSuccess(response)
+        self.assertEqual(response.data["data"]["visibility"], "CONTEST_HOSTS")
 
     def test_get_contest_post_list_no_permission(self):
         """대회에 대한 접근 권한이 없는 사용자는 대회 게시글 목록을 조회할 수 없다."""
@@ -535,6 +623,43 @@ class CommunityAPITest(APITestCase):
         self.client.force_login(self.other_user)
         response = self.client.delete(self.post_detail_url)
         self.assertFailed(response, "No permission to delete this post")
+
+    def test_contest_host_badge_on_comments_in_post_detail(self):
+        """대회 운영자가 단 댓글과 대댓글은 상세 응답에서 운영자 표시를 포함한다."""
+        self.client.force_login(self.user)
+        post_response = self.client.post(
+            self.post_list_url,
+            {
+                "title": "Contest Question",
+                "content": "Content",
+                "post_type": "QUESTION",
+                "contest_id": self.contest["id"],
+            },
+        )
+        self.assertSuccess(post_response)
+        post_id = post_response.data["data"]["id"]
+        post = Post.objects.get(id=post_id)
+
+        host_comment = Comment.objects.create(post=post, author=self.admin, content="Host answer")
+        user_comment = Comment.objects.create(post=post, author=self.other_user, content="User answer")
+        host_reply = Comment.objects.create(
+            post=post,
+            author=self.admin,
+            content="Host reply",
+            parent_comment=user_comment,
+        )
+
+        detail_url = self.reverse("community_post_detail", kwargs={"post_id": post_id})
+        response = self.client.get(detail_url)
+        self.assertSuccess(response)
+        comments = response.data["data"]["comments"]
+        host_comment_data = next(comment for comment in comments if comment["id"] == host_comment.id)
+        user_comment_data = next(comment for comment in comments if comment["id"] == user_comment.id)
+
+        self.assertTrue(host_comment_data["is_contest_host"])
+        self.assertFalse(user_comment_data["is_contest_host"])
+        self.assertEqual(user_comment_data["replies"][0]["id"], host_reply.id)
+        self.assertTrue(user_comment_data["replies"][0]["is_contest_host"])
 
     def test_get_comment_list(self):
         """게시글의 댓글 목록을 조회할 수 있다."""

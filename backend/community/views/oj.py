@@ -1,4 +1,4 @@
-from django.db.models import Count, Q
+from django.db.models import BooleanField, Case, Count, Q, Value, When
 from account.decorators import check_contest_permission, login_required
 from contest.models import Contest
 from problem.models import Problem
@@ -37,6 +37,7 @@ class PostAPIView(APIView):
             "content": data["content"],
             "author": request.user,
             "post_type": data["post_type"],
+            "visibility": data.get("visibility", Post.Visibility.CONTEST_PARTICIPANTS),
         }
 
         # 질문 게시글인 경우 기본 상태를 'OPEN'으로 설정
@@ -53,6 +54,8 @@ class PostAPIView(APIView):
                 post_data["contest_id"] = contest_id
             except Contest.DoesNotExist:
                 return self.error("Contest does not exist")
+        else:
+            post_data["visibility"] = Post.Visibility.CONTEST_PARTICIPANTS
 
         # problem_id가 주어진 경우 문제 존재 여부 확인
         if problem_id:
@@ -74,8 +77,27 @@ class PostAPIView(APIView):
         keyword = request.GET.get("keyword", "").strip()
         sort_type = request.GET.get("sort_type")
 
-        posts = Post.objects.select_related("author__userprofile").annotate(
-            comment_count=Count('comments')).all().order_by("-created_at")
+        is_mine_condition = Q(author_id=request.user.id) if request.user.is_authenticated else Q(pk__isnull=True)
+        can_view_condition = Q(visibility=Post.Visibility.CONTEST_PARTICIPANTS) | Q(contest__isnull=True)
+        if request.user.is_authenticated:
+            can_view_condition |= Q(author_id=request.user.id)
+            can_view_condition |= Q(contest__created_by_id=request.user.id)
+        can_view_annotation = Value(True, output_field=BooleanField()) if (
+            request.user.is_authenticated and request.user.is_super_admin()
+        ) else Case(
+            When(can_view_condition, then=Value(True)),
+            default=Value(False),
+            output_field=BooleanField(),
+        )
+        posts = Post.objects.select_related("author__userprofile", "contest__created_by").annotate(
+            comment_count=Count('comments'),
+            is_mine=Case(
+                When(is_mine_condition, then=Value(True)),
+                default=Value(False),
+                output_field=BooleanField(),
+            ),
+            can_view=can_view_annotation,
+        ).all().order_by("-created_at")
         if contest_id:
             try:
                 self.contest = Contest.objects.get(id=contest_id, visible=True)
@@ -138,6 +160,10 @@ class PostDetailAPIView(APIView):
             error = self._check_contest_permission(request)
             if error:
                 return self.error("No permission to access this contest's community")
+            if (post.visibility == Post.Visibility.CONTEST_HOSTS and
+                    post.author != request.user and
+                    not request.user.is_contest_admin(post.contest)):
+                return self.error("Only contest hosts or the author can view this post")
 
         return self.success(PostDetailSerializer(post).data)
 

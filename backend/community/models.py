@@ -48,6 +48,12 @@ class Post(models.Model):
         OLDEST = "OLDEST", "오래된순"
         COMMENT = "COMMENT", "댓글많은순"
 
+    class Visibility(models.TextChoices):
+        """대회 게시글 열람 범위"""
+
+        CONTEST_PARTICIPANTS = "CONTEST_PARTICIPANTS", "대회 참여자 전체"
+        CONTEST_HOSTS = "CONTEST_HOSTS", "주최자만"
+
     title = models.CharField(max_length=200)
     content = RichTextField()
     author = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -66,6 +72,12 @@ class Post(models.Model):
         choices=QuestionStatus.choices,
         null=True,
         blank=True,
+    )
+
+    visibility = models.CharField(
+        max_length=30,
+        choices=Visibility.choices,
+        default=Visibility.CONTEST_PARTICIPANTS,
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
