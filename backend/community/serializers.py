@@ -11,6 +11,7 @@ class ReplySerializer(serializers.ModelSerializer):
 
     author_name = serializers.CharField(source="author.username", read_only=True)
     author_avatar = serializers.CharField(source="author.userprofile.avatar", read_only=True)
+    is_contest_host = serializers.SerializerMethodField()
 
     class Meta:
         model = Comment
@@ -19,11 +20,16 @@ class ReplySerializer(serializers.ModelSerializer):
             "author",
             "author_name",
             "author_avatar",
+            "is_contest_host",
             "content",
             "parent_comment",
             "created_at",
             "updated_at",
         ]
+
+    def get_is_contest_host(self, obj):
+        contest = self.context.get("contest")
+        return bool(contest and obj.author.is_contest_admin(contest))
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -32,6 +38,7 @@ class CommentSerializer(serializers.ModelSerializer):
     author_name = serializers.CharField(source="author.username", read_only=True)
     author_avatar = serializers.CharField(source="author.userprofile.avatar", read_only=True)
     replies = ReplySerializer(many=True, read_only=True)
+    is_contest_host = serializers.SerializerMethodField()
 
     class Meta:
         model = Comment
@@ -41,6 +48,7 @@ class CommentSerializer(serializers.ModelSerializer):
             "author",
             "author_name",
             "author_avatar",
+            "is_contest_host",
             "content",
             "parent_comment",
             "created_at",
@@ -48,6 +56,10 @@ class CommentSerializer(serializers.ModelSerializer):
             "replies",
         ]
         read_only_fields = ["post", "author"]
+
+    def get_is_contest_host(self, obj):
+        contest = self.context.get("contest")
+        return bool(contest and obj.author.is_contest_admin(contest))
 
 
 class PostListSerializer(serializers.ModelSerializer):
@@ -58,6 +70,8 @@ class PostListSerializer(serializers.ModelSerializer):
     author_avatar = serializers.CharField(source="author.userprofile.avatar", read_only=True)
     community_type = serializers.SerializerMethodField()
     comment_count = serializers.IntegerField(read_only=True)
+    is_mine = serializers.BooleanField(read_only=True)
+    can_view = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = Post
@@ -71,11 +85,14 @@ class PostListSerializer(serializers.ModelSerializer):
             "community_type",
             "post_type",
             "question_status",
+            "visibility",
             "created_at",
             "updated_at",
             "problem",
             "contest",
             "comment_count",
+            "is_mine",
+            "can_view",
         ]
 
     def get_content_preview(self, obj):
@@ -112,6 +129,7 @@ class PostDetailSerializer(serializers.ModelSerializer):
             "community_type",
             "post_type",
             "question_status",
+            "visibility",
             "created_at",
             "updated_at",
             "problem",
@@ -130,7 +148,7 @@ class PostDetailSerializer(serializers.ModelSerializer):
         """게시글에 달린 댓글 중 최상위 댓글(대댓글이 아닌)만 필터링하여 반환합니다."""
         # view에서 prefetch_related를 사용했기 때문에 추가 쿼리가 발생하지 않습니다.
         top_level_comments = [comment for comment in obj.comments.all() if comment.parent_comment_id is None]
-        serializer = CommentSerializer(top_level_comments, many=True)
+        serializer = CommentSerializer(top_level_comments, many=True, context={"contest": obj.contest})
         return serializer.data
 
 
@@ -142,6 +160,7 @@ class CreatePostSerializer(serializers.Serializer):
     problem_id = serializers.IntegerField(required=False, allow_null=True)
     contest_id = serializers.IntegerField(required=False, allow_null=True)
     post_type = serializers.ChoiceField(choices=Post.PostType.choices, default=Post.PostType.ARTICLE)
+    visibility = serializers.ChoiceField(choices=Post.Visibility.choices, required=False)
 
 
 class PostUpdateSerializer(serializers.Serializer):
@@ -151,3 +170,4 @@ class PostUpdateSerializer(serializers.Serializer):
     content = serializers.CharField(required=False)
     post_type = serializers.ChoiceField(choices=Post.PostType.choices, required=False)
     question_status = serializers.ChoiceField(choices=Post.QuestionStatus.choices, required=False)
+    visibility = serializers.ChoiceField(choices=Post.Visibility.choices, required=False)
