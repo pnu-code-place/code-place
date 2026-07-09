@@ -23,7 +23,7 @@ from contest.tests import DEFAULT_CONTEST_DATA
 from utils.constants import CONTEST_PASSWORD_SESSION_KEY
 from .llm_hint import (CLUSTER_VLLM_CHAT_COMPLETIONS_URL, LOCAL_VLLM_CHAT_COMPLETIONS_URL,
                        VLLM_CONNECT_TIMEOUT_SEC, VLLM_MODEL, VLLM_STREAM_READ_TIMEOUT_SEC,
-                       LLMHintError, get_vllm_chat_completions_url, stream_problem_hint)
+                       LLMHintError, get_vllm_chat_completions_url, get_vllm_model, stream_problem_hint)
 
 from .views.admin import TestCaseAPI
 from .utils import parse_problem_template
@@ -750,6 +750,10 @@ class ProblemLLMHintAPITest(ProblemCreateTestBase):
     def test_get_vllm_chat_completions_url_for_kubernetes(self):
         with mock.patch.dict(os.environ, {"KUBERNETES_SERVICE_HOST": "10.0.0.1"}, clear=False):
             self.assertEqual(get_vllm_chat_completions_url(), CLUSTER_VLLM_CHAT_COMPLETIONS_URL)
+
+    def test_get_vllm_model_uses_env_override(self):
+        with mock.patch.dict(os.environ, {"VLLM_MODEL": "test/model"}, clear=False):
+            self.assertEqual(get_vllm_model(), "test/model")
 
     # ------------------------------------------------------------------
     # 레거시 대회 (ai_assistant_enabled 필드 도입 이전 생성) 테스트
