@@ -11,7 +11,7 @@ from utils.observability_metrics import AI_HINT_DURATION_SECONDS, AI_HINT_REQUES
 
 LOCAL_VLLM_CHAT_COMPLETIONS_URL = "http://localhost:8000/v1/chat/completions"
 CLUSTER_VLLM_CHAT_COMPLETIONS_URL = "http://vllm.code-place-prod:8000/v1/chat/completions"
-VLLM_MODEL = "Qwen/Qwen3.5-9B"
+VLLM_MODEL = "nvidia/Qwen3.6-35B-A3B-NVFP4"
 VLLM_CONNECT_TIMEOUT_SEC = 10
 VLLM_STREAM_READ_TIMEOUT_SEC = 3600
 
@@ -135,6 +135,10 @@ def get_vllm_chat_completions_url():
     return LOCAL_VLLM_CHAT_COMPLETIONS_URL
 
 
+def get_vllm_model():
+    return os.getenv("VLLM_MODEL", VLLM_MODEL)
+
+
 def _normalize_html_to_text(value):
     if not value:
         return ""
@@ -228,7 +232,7 @@ def build_hint_payload(problem, previous_hints=None, user_code=None, stream=Fals
         messages.append({"role": "user", "content": user_code_prompt})
 
     return {
-        "model": VLLM_MODEL,
+        "model": get_vllm_model(),
         "messages": messages,
         "temperature": 0.2,
         "max_tokens": 512,
