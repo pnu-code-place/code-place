@@ -26,14 +26,16 @@ spec:
         fsGroup: 1000
       containers:
         - name: vllm
-          image: vllm/vllm-openai:v0.20.0
+          image: vllm/vllm-openai:v0.24.0
           env:
             - name: VLLM_PORT
               value: "8000"
+            - name: VLLM_MODEL
+              value: "nvidia/Qwen3.6-35B-A3B-NVFP4"
           imagePullPolicy: IfNotPresent
           args:
             - --model
-            - Qwen/Qwen3.5-9B
+            - $(VLLM_MODEL)
             - --port
             - "8000"
             - --host
