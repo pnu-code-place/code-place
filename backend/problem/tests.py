@@ -23,7 +23,7 @@ from contest.tests import DEFAULT_CONTEST_DATA
 from utils.constants import CONTEST_PASSWORD_SESSION_KEY
 from .llm_hint import (CLUSTER_VLLM_CHAT_COMPLETIONS_URL, LOCAL_VLLM_CHAT_COMPLETIONS_URL,
                        VLLM_CONNECT_TIMEOUT_SEC, VLLM_MODEL, VLLM_STREAM_READ_TIMEOUT_SEC,
-                       get_vllm_chat_completions_url, get_vllm_model)
+                       LLMHintError, get_vllm_chat_completions_url, get_vllm_model, stream_problem_hint)
 
 from .views.admin import TestCaseAPI
 from .utils import parse_problem_template
@@ -241,6 +241,90 @@ class ProblemAPITest(ProblemCreateTestBase):
         resp = self.client.get(f"{self.url}?limit=10")
         self.assertSuccess(resp)
 
+    def test_get_problem_list_sort_by_accepted_number(self):
+        self.problem.accepted_number = 2
+        self.problem.submission_number = 10
+        self.problem.save(update_fields=["accepted_number", "submission_number"])
+        more_accepted_problem = self.create_problem_with_custom_field(
+            self.problem.created_by,
+            _id="A-111",
+            title="accepted sort target",
+            accepted_number=5,
+            submission_number=8,
+        )
+
+        resp = self.client.get(f"{self.url}?limit=10&sort=accepted_desc")
+
+        self.assertSuccess(resp)
+        results = resp.data["data"]["results"]
+        self.assertEqual(results[0]["_id"], more_accepted_problem._id)
+
+        resp = self.client.get(f"{self.url}?limit=10&sort=accepted_asc")
+
+        self.assertSuccess(resp)
+        results = resp.data["data"]["results"]
+        self.assertEqual(results[0]["_id"], self.problem._id)
+
+    def test_get_problem_list_sort_by_ac_rate(self):
+        self.problem.accepted_number = 0
+        self.problem.submission_number = 0
+        self.problem.save(update_fields=["accepted_number", "submission_number"])
+        higher_rate_problem = self.create_problem_with_custom_field(
+            self.problem.created_by,
+            _id="A-112",
+            title="rate sort target",
+            accepted_number=3,
+            submission_number=4,
+        )
+        lower_rate_problem = self.create_problem_with_custom_field(
+            self.problem.created_by,
+            _id="A-113",
+            title="lower rate sort target",
+            accepted_number=1,
+            submission_number=10,
+        )
+
+        resp = self.client.get(f"{self.url}?limit=10&sort=ac_rate_desc")
+
+        self.assertSuccess(resp)
+        results = resp.data["data"]["results"]
+        self.assertEqual(results[0]["_id"], higher_rate_problem._id)
+
+        resp = self.client.get(f"{self.url}?limit=10&sort=ac_rate_asc")
+
+        self.assertSuccess(resp)
+        results = resp.data["data"]["results"]
+        self.assertEqual(results[0]["_id"], self.problem._id)
+        self.assertEqual(results[1]["_id"], lower_rate_problem._id)
+
+    def test_get_problem_list_sort_by_difficulty(self):
+        self.problem.difficulty = Difficulty.MID
+        self.problem.save(update_fields=["difficulty"])
+        low_problem = self.create_problem_with_custom_field(
+            self.problem.created_by,
+            _id="A-114",
+            title="low difficulty sort target",
+            difficulty=Difficulty.LOW,
+        )
+        very_high_problem = self.create_problem_with_custom_field(
+            self.problem.created_by,
+            _id="A-115",
+            title="very high difficulty sort target",
+            difficulty=Difficulty.VERYHIGH,
+        )
+
+        resp = self.client.get(f"{self.url}?limit=10&sort=difficulty_asc")
+
+        self.assertSuccess(resp)
+        results = resp.data["data"]["results"]
+        self.assertEqual(results[0]["_id"], low_problem._id)
+
+        resp = self.client.get(f"{self.url}?limit=10&sort=difficulty_desc")
+
+        self.assertSuccess(resp)
+        results = resp.data["data"]["results"]
+        self.assertEqual(results[0]["_id"], very_high_problem._id)
+
     def test_get_one_problem(self):
         resp = self.client.get(self.url + "?problem_id=" + self.problem._id)
         self.assertSuccess(resp)
@@ -299,11 +383,11 @@ class ProblemLLMHintAPITest(ProblemCreateTestBase):
         self.assertEqual(mocked_post.call_args.kwargs["json"]["model"], VLLM_MODEL)
 
         # messages[0]: 시스템 프롬프트
-        self.assertIn("Do not repeat the same hint.", msgs[0]["content"])
-        self.assertIn("Start from a specific condition, constraint, structure, or example from the problem.",
+        self.assertIn("Do not repeat or rephrase previous hints.", msgs[0]["content"])
+        self.assertIn("Start from a concrete condition, structure, or property of the problem.",
                       msgs[0]["content"])
-        self.assertIn("Hint levels:", msgs[0]["content"])
-        self.assertIn("현재 N단계 힌트를 제공해야 합니다", msgs[0]["content"])
+        self.assertIn("Level definitions:", msgs[0]["content"])
+        self.assertIn("There are exactly 5 levels.", msgs[0]["content"])
 
         # messages[1]: 문제 데이터 (HTML 태그 미포함, problem._id 포함)
         self.assertIn(self.problem._id, msgs[1]["content"])
@@ -313,12 +397,80 @@ class ProblemLLMHintAPITest(ProblemCreateTestBase):
         self.assertEqual(msgs[2]["role"], "user")
         self.assertIn("You must provide the Level 1 hint now.", msgs[2]["content"])
 
-        self.assertEqual(mocked_post.call_args.kwargs["json"]["temperature"], 0.3)
+        self.assertEqual(mocked_post.call_args.kwargs["json"]["temperature"], 0.2)
         self.assertEqual(mocked_post.call_args.kwargs["stream"], True)
         self.assertEqual(
             mocked_post.call_args.kwargs["timeout"],
             (VLLM_CONNECT_TIMEOUT_SEC, VLLM_STREAM_READ_TIMEOUT_SEC),
         )
+
+    @mock.patch("problem.views.oj.AI_HINT_API_OUTCOME_TOTAL")
+    @mock.patch("problem.llm_hint.requests.post")
+    def test_stream_llm_hint_records_api_success_outcome(self, mocked_post, outcome_total):
+        mocked_post.return_value = self._mock_streaming_response([
+            'data: {"choices":[{"delta":{"content":"힌트"}}]}',
+            "data: [DONE]",
+        ])
+        labels = mock.Mock()
+        outcome_total.labels.return_value = labels
+
+        resp = self.client.get(f"{self.url}?problem_id={self.problem._id}")
+        self._streaming_body(resp)
+
+        outcome_total.labels.assert_called_once_with(status="success", scope="practice")
+        labels.inc.assert_called_once()
+
+    @mock.patch("problem.llm_hint.AI_HINT_DURATION_SECONDS")
+    @mock.patch("problem.llm_hint.AI_HINT_REQUESTS_TOTAL")
+    @mock.patch("problem.llm_hint.requests.post")
+    def test_stream_llm_hint_records_success_metric(self, mocked_post, requests_total, duration_seconds):
+        mocked_post.return_value = self._mock_streaming_response([
+            'data: {"choices":[{"delta":{"content":"힌트"}}]}',
+            "data: [DONE]",
+        ])
+        request_labels = mock.Mock()
+        duration_labels = mock.Mock()
+        requests_total.labels.return_value = request_labels
+        duration_seconds.labels.return_value = duration_labels
+
+        self.assertEqual("".join(stream_problem_hint(self.problem)), "힌트")
+
+        requests_total.labels.assert_called_once_with(status="success")
+        request_labels.inc.assert_called_once()
+        duration_seconds.labels.assert_called_once_with(status="success")
+        duration_labels.observe.assert_called_once()
+
+    @mock.patch("problem.llm_hint.AI_HINT_DURATION_SECONDS")
+    @mock.patch("problem.llm_hint.AI_HINT_REQUESTS_TOTAL")
+    @mock.patch("problem.llm_hint.requests.post", side_effect=requests.Timeout)
+    def test_stream_llm_hint_records_request_error_metric(self, mocked_post, requests_total, duration_seconds):
+        request_labels = mock.Mock()
+        duration_labels = mock.Mock()
+        requests_total.labels.return_value = request_labels
+        duration_seconds.labels.return_value = duration_labels
+
+        with self.assertRaises(LLMHintError):
+            list(stream_problem_hint(self.problem))
+
+        requests_total.labels.assert_called_once_with(status="request_error")
+        request_labels.inc.assert_called_once()
+        duration_seconds.labels.assert_called_once_with(status="request_error")
+        duration_labels.observe.assert_called_once()
+
+    @mock.patch("problem.views.oj.AI_HINT_API_OUTCOME_TOTAL")
+    @mock.patch("problem.llm_hint.requests.post")
+    def test_stream_llm_hint_records_problem_limit_outcome(self, mocked_post, outcome_total):
+        for i in range(5):
+            ProblemAIHintLog.objects.create(user=self.user, problem=self.problem, hint_content=f"더미 {i}")
+        labels = mock.Mock()
+        outcome_total.labels.return_value = labels
+
+        resp = self.client.get(f"{self.url}?problem_id={self.problem._id}")
+        self._streaming_body(resp)
+
+        outcome_total.labels.assert_called_once_with(status="problem_limit_exceeded", scope="practice")
+        labels.inc.assert_called_once()
+        mocked_post.assert_not_called()
 
     @mock.patch("problem.llm_hint.requests.post")
     def test_stream_llm_hint_problem_limit(self, mocked_post):

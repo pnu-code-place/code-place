@@ -10,17 +10,89 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.8/ref/settings/
 """
 import os
-import raven
 from copy import deepcopy
 from utils.shortcuts import get_env
 
 import celery.schedules
+import sentry_sdk
+from sentry_sdk.integrations.celery import CeleryIntegration
+from sentry_sdk.integrations.django import DjangoIntegration
 
 production_env = get_env("OJ_ENV", "dev") == "production"
 if production_env:
     from .production_settings import *
 else:
     from .dev_settings import *
+
+SENTRY_SENSITIVE_EXACT_FIELDS = {
+    "authorization",
+    "cookie",
+    "password",
+    "token",
+    "secret",
+    "code",
+    "src",
+}
+SENTRY_SENSITIVE_SUBSTRINGS = {
+    "authorization",
+    "cookie",
+    "password",
+    "token",
+    "secret",
+    "source_code",
+    "sourcecode",
+    "spj_code",
+    "src",
+}
+
+
+def _is_sentry_sensitive_key(key):
+    normalized = str(key).lower()
+    return (
+        normalized in SENTRY_SENSITIVE_EXACT_FIELDS
+        or any(field in normalized for field in SENTRY_SENSITIVE_SUBSTRINGS)
+    )
+
+
+def _redact_sentry_value(value):
+    if isinstance(value, dict):
+        return {
+            key: "[REDACTED]" if _is_sentry_sensitive_key(key) else _redact_sentry_value(item)
+            for key, item in value.items()
+        }
+    if isinstance(value, list):
+        return [_redact_sentry_value(item) for item in value]
+    return value
+
+
+def _before_send_sentry(event, hint):
+    event = _redact_sentry_value(event)
+    request = event.get("request") or {}
+    request_id = (request.get("headers") or {}).get("X-Request-ID")
+    if request_id:
+        event.setdefault("tags", {})["request_id"] = request_id
+    return event
+
+
+SENTRY_DSN_BACKEND = get_env(
+    "SENTRY_DSN_BACKEND",
+    "",
+)
+if SENTRY_DSN_BACKEND:
+    SENTRY_OPTIONS = {
+        "dsn": SENTRY_DSN_BACKEND,
+        "send_default_pii": False,
+        "environment": get_env("SENTRY_ENVIRONMENT", get_env("OJ_ENV", "dev")),
+        "before_send": _before_send_sentry,
+        "integrations": [
+            DjangoIntegration(),
+            CeleryIntegration(),
+        ],
+    }
+    APP_VERSION = get_env("APP_VERSION", "")
+    if APP_VERSION:
+        SENTRY_OPTIONS["release"] = APP_VERSION
+    sentry_sdk.init(**SENTRY_OPTIONS)
 
 with open(os.path.join(DATA_DIR, "config", "secret.key"), "r") as f:
     SECRET_KEY = f.read()
@@ -29,6 +101,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Applications
 VENDOR_APPS = [
+    'django_prometheus',
     'django.contrib.auth',
     'django.contrib.sessions',
     'django.contrib.contenttypes',
@@ -38,9 +111,6 @@ VENDOR_APPS = [
     'django_dbconn_retry',
     'django_celery_beat',
 ]
-
-if production_env:
-    VENDOR_APPS.append('raven.contrib.django.raven_compat')
 
 LOCAL_APPS = [
     'account',
@@ -64,6 +134,8 @@ LOCAL_APPS = [
 INSTALLED_APPS = VENDOR_APPS + LOCAL_APPS
 
 MIDDLEWARE = (
+    'django_prometheus.middleware.PrometheusBeforeMiddleware',
+    'account.middleware.RequestIDMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -73,6 +145,8 @@ MIDDLEWARE = (
     'django.middleware.security.SecurityMiddleware',
     'account.middleware.AdminRoleRequiredMiddleware',
     'account.middleware.SessionRecordMiddleware',
+    'account.middleware.RequestLogMiddleware',
+    'django_prometheus.middleware.PrometheusAfterMiddleware',
     # 'account.middleware.LogSqlMiddleware',
 )
 
@@ -125,8 +199,6 @@ TIME_ZONE = 'Asia/Seoul'
 
 USE_I18N = True
 
-USE_L10N = True
-
 USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
@@ -152,7 +224,13 @@ POPUP_DIR = f"{DATA_DIR}{POPUP_URI_PREFIX}"
 
 STATICFILES_DIRS = [os.path.join(DATA_DIR, "public")]
 
-LOGGING_HANDLERS = ['console', 'sentry'] if production_env else ['console']
+
+def env_to_bool(name, default=False):
+    value = get_env(name, str(default)).lower()
+    return value in ("1", "true", "yes", "on")
+
+
+LOGGING_HANDLERS = ['console']
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -160,18 +238,16 @@ LOGGING = {
         'standard': {
             'format': '[%(asctime)s] - [%(levelname)s] - [%(name)s:%(lineno)d]  - %(message)s',
             'datefmt': '%Y-%m-%d %H:%M:%S'
+        },
+        'json': {
+            '()': 'utils.json_logging.CodePlaceJsonFormatter',
         }
     },
     'handlers': {
         'console': {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
-            'formatter': 'standard'
-        },
-        'sentry': {
-            'level': 'ERROR',
-            'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
-            'formatter': 'standard'
+            'formatter': 'json' if env_to_bool("JSON_LOGGING", production_env) else 'standard'
         }
     },
     'loggers': {
@@ -184,6 +260,11 @@ LOGGING = {
             'handlers': LOGGING_HANDLERS,
             'level': 'ERROR',
             'propagate': True,
+        },
+        'codeplace.request': {
+            'handlers': LOGGING_HANDLERS,
+            'level': 'INFO',
+            'propagate': False,
         },
         '': {
             'handlers': LOGGING_HANDLERS,
@@ -198,7 +279,27 @@ REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': ('rest_framework.renderers.JSONRenderer',)
 }
 
+def parse_host_port_list(value, default_port):
+    hosts = []
+    for item in value.split(","):
+        item = item.strip()
+        if not item:
+            continue
+        if ":" in item:
+            host, port = item.rsplit(":", 1)
+        else:
+            host, port = item, default_port
+        hosts.append((host, int(port)))
+    return hosts
+
+
+REDIS_USE_SENTINEL = env_to_bool("REDIS_USE_SENTINEL")
+REDIS_SENTINEL_MASTER_NAME = get_env("REDIS_SENTINEL_MASTER_NAME", "mymaster")
+REDIS_SENTINEL_HOSTS = parse_host_port_list(
+    get_env("REDIS_SENTINEL_HOSTS", "%s:%s" % (REDIS_CONF["host"], REDIS_CONF["port"])),
+    REDIS_CONF["port"])
 REDIS_URL = "redis://%s:%s" % (REDIS_CONF["host"], REDIS_CONF["port"])
+REDIS_SENTINEL_URLS = ";".join("sentinel://%s:%s/4" % (host, port) for host, port in REDIS_SENTINEL_HOSTS)
 
 
 def redis_config():
@@ -206,13 +307,22 @@ def redis_config():
     def make_key(key, key_prefix, version):
         return key
 
-    return {
+    config = {
         "BACKEND": "utils.cache.MyRedisCache",
         "LOCATION": f"{REDIS_URL}",
         "TIMEOUT": None,
         "KEY_PREFIX": "",
         "KEY_FUNCTION": make_key
     }
+    if REDIS_USE_SENTINEL:
+        config["LOCATION"] = "redis://%s/0" % REDIS_SENTINEL_MASTER_NAME
+        config["OPTIONS"] = {
+            "CLIENT_CLASS": "django_redis.client.SentinelClient",
+            "SENTINELS": REDIS_SENTINEL_HOSTS,
+            "CONNECTION_POOL_CLASS": "redis.sentinel.SentinelConnectionPool",
+            "CONNECTION_FACTORY": "django_redis.pool.SentinelConnectionFactory",
+        }
+    return config
 
 
 CACHES = {"default": redis_config()}
@@ -220,15 +330,26 @@ CACHES = {"default": redis_config()}
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "default"
 
-RAVEN_CONFIG = {'dsn': 'https://b200023b8aed4d708fb593c5e0a6ad3d:1fddaba168f84fcf97e0d549faaeaff0@sentry.io/263057'}
-
 IP_HEADER = "HTTP_X_REAL_IP"
+
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip()
+    for origin in get_env("CSRF_TRUSTED_ORIGINS", "").split(",")
+    if origin.strip()
+]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 
-CELERY_BROKER_URL = f"{REDIS_URL}/4"
-CELERY_RESULT_BACKEND = f"{REDIS_URL}/4"
+if REDIS_USE_SENTINEL:
+    DJANGO_REDIS_CONNECTION_FACTORY = "django_redis.pool.SentinelConnectionFactory"
+    CELERY_BROKER_URL = REDIS_SENTINEL_URLS
+    CELERY_RESULT_BACKEND = REDIS_SENTINEL_URLS
+    CELERY_BROKER_TRANSPORT_OPTIONS = {"master_name": REDIS_SENTINEL_MASTER_NAME}
+    CELERY_RESULT_BACKEND_TRANSPORT_OPTIONS = {"master_name": REDIS_SENTINEL_MASTER_NAME}
+else:
+    CELERY_BROKER_URL = f"{REDIS_URL}/4"
+    CELERY_RESULT_BACKEND = f"{REDIS_URL}/4"
 
 CELERY_TIMEZONE = TIME_ZONE
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'

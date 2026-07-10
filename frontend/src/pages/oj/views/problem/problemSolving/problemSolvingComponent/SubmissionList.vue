@@ -18,7 +18,7 @@
             <th>언어</th>
             <th>실행 시간</th>
             <th>메모리</th>
-            <th>제출 일자</th>
+            <th class="submitted-at">제출 일자</th>
             <th></th>
           </tr>
         </thead>
@@ -107,14 +107,13 @@ export default {
   methods: {
     async fetchSubmissions() {
       try {
-        console.log("Contest ID:", this.contestID)
         const params = {
           myself: "1",
           problem_id: this.problemID,
           ...(this.contestID && { contest_id: this.contestID }),
         }
         const res = await api.getSubmissionList(0, 100, params)
-        this.submissions = res.data.data.results
+        this.submissions = res.data.data.results || []
       } catch (error) {
         console.error("Failed to fetch submission list:", error)
       }
@@ -225,6 +224,10 @@ export default {
     &:first-child {
       min-width: 20px;
       max-width: 40px;
+    }
+
+    &.submitted-at {
+      white-space: nowrap;
     }
   }
 }

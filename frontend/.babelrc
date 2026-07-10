@@ -1,22 +1,23 @@
 {
   "presets": [
     [
-      "env",
+      "@babel/preset-env",
       {
         "modules": false,
         "targets": {
           "browsers": ["> 1%", "last 2 versions", "not ie <= 9"]
-        },
-        "useBuiltIns": true
+        }
+      }
+    ]
+  ],
+  "plugins": [
+    [
+      "polyfill-corejs3",
+      {
+        "method": "entry-global"
       }
     ],
-    "stage-2"
-  ],
-  "plugins": ["transform-runtime", "syntax-dynamic-import"],
-  "env": {
-    "test": {
-      "presets": ["env", "stage-2"],
-      "plugins": ["istanbul"]
-    }
-  }
+    "@babel/plugin-transform-object-rest-spread",
+    "@babel/plugin-transform-runtime"
+  ]
 }

@@ -1,6 +1,106 @@
 <template>
   <div class="flex-container problem-solving-root">
-    <splitpanes vertical style="height: calc(100vh - 50px)">
+    <transition name="popover-fade">
+      <section
+        v-if="settingsPopoverOpen"
+        ref="settingsPopover"
+        class="settings-popover"
+        :style="settingsPopoverStyle"
+        role="dialog"
+        @click.stop
+      >
+        <div class="settings-popover-body">
+          <div class="settings-row">
+            <div class="settings-label">
+              <i class="fas fa-search settings-label-icon"></i>
+              <span>문제 확대</span>
+            </div>
+            <div class="settings-controls">
+              <button
+                type="button"
+                class="settings-step-button"
+                :disabled="problemZoomPercent <= minProblemZoom"
+                aria-label="문제 확대 축소"
+                @click="setProblemZoom(problemZoomPercent - problemZoomStep)"
+              >
+                <Icon type="minus-round" />
+              </button>
+              <span class="settings-control-value">
+                {{ problemZoomPercent }}%
+              </span>
+              <button
+                type="button"
+                class="settings-step-button"
+                :disabled="problemZoomPercent >= maxProblemZoom"
+                aria-label="문제 확대 확대"
+                @click="setProblemZoom(problemZoomPercent + problemZoomStep)"
+              >
+                <Icon type="plus-round" />
+              </button>
+            </div>
+          </div>
+          <div class="settings-row">
+            <div class="settings-label">
+              <span class="settings-label-icon settings-label-icon--text">
+                Aa
+              </span>
+              <span>코드 크기</span>
+            </div>
+            <div class="settings-controls">
+              <button
+                type="button"
+                class="settings-step-button"
+                :disabled="codeFontSize <= minCodeFontSize"
+                aria-label="코드 글자 축소"
+                @click="setCodeFontSize(codeFontSize - codeFontSizeStep)"
+              >
+                <Icon type="minus-round" />
+              </button>
+              <span class="settings-control-value">
+                {{ codeFontSize }}px
+              </span>
+              <button
+                type="button"
+                class="settings-step-button"
+                :disabled="codeFontSize >= maxCodeFontSize"
+                aria-label="코드 글자 확대"
+                @click="setCodeFontSize(codeFontSize + codeFontSizeStep)"
+              >
+                <Icon type="plus-round" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </transition>
+    <section
+      v-if="problemError.visible"
+      class="problem-error-state"
+      role="alert"
+    >
+      <div class="problem-error-card">
+        <div class="problem-error-code">404</div>
+        <h2>{{ problemError.title }}</h2>
+        <p>{{ problemError.description }}</p>
+        <div class="problem-error-actions">
+          <button
+            type="button"
+            class="problem-error-button secondary"
+            @click="goBackFromError"
+          >
+            이전 페이지
+          </button>
+          <button
+            type="button"
+            class="problem-error-button primary"
+            @click="goProblemListFromError"
+          >
+            문제 목록
+          </button>
+        </div>
+      </div>
+    </section>
+    <splitpanes v-else vertical style="height: calc(100vh - 50px)">
       <pane
         :size="50"
         :class="{ 'problem-pane-with-navigator': isContestProblem }"
@@ -34,11 +134,28 @@
                 제출 현황
               </div>
               <div
-                class="tab-header"
+                v-if="!isContestProblem"
+                class="tab-header tab-header--ask"
                 :class="{ active: leftPainActiveTab === 'community' }"
                 @click="leftPainActiveTab = 'community'"
               >
+                <i class="fi fi-rr-map-marker-question"></i>
                 질문하기
+              </div>
+            </div>
+            <div v-if="showAskNudge" class="ask-nudge">
+              <span class="ask-nudge-text">
+                이 문제에서 막혔나요? 다른 사람에게 질문해보세요.
+              </span>
+              <div class="ask-nudge-actions">
+                <button class="ask-nudge-go" @click="goAsk">질문하기 →</button>
+                <button
+                  class="ask-nudge-close"
+                  aria-label="닫기"
+                  @click="showAskNudge = false"
+                >
+                  ✕
+                </button>
               </div>
             </div>
             <div class="tab-content">
@@ -46,9 +163,12 @@
                 v-show="leftPainActiveTab === 'problem'"
                 :problem="problem"
                 :contestID="contestID"
+                :loading="problemLoading"
+                :problemZoomPercent="problemZoomPercent"
+                @update:problemZoomPercent="problemZoomPercent = $event"
               />
               <SubmissionList
-                v-if="isInitialized"
+                v-if="isInitialized && !problemLoading && !problemError.visible"
                 :key="`submission-${contestID || 'public'}-${problemID}`"
                 v-show="leftPainActiveTab === 'submission'"
                 :problemID="problemID"
@@ -57,7 +177,12 @@
                 :isDarkMode="isDarkMode"
               />
               <ProblemCommunity
-                v-if="isInitialized"
+                v-if="
+                  isInitialized &&
+                  !problemLoading &&
+                  !problemError.visible &&
+                  !isContestProblem
+                "
                 :key="`community-${contestID || 'public'}-${problemID}`"
                 v-show="leftPainActiveTab === 'community'"
                 :problemID="problemID"
@@ -82,14 +207,18 @@
             :submissionId="submissionId"
             :isSubmitting="submitting"
           />
-          <CodeEditor
-            :value.sync="code"
-            :languages="problem.languages"
-            :language="language"
-            :cursorPos.sync="cursorPos"
-            :allowPaste="allowPaste"
-            ref="myCm"
-          />
+          <div class="code-editor-area">
+            <CodeEditor
+              :value.sync="code"
+              :languages="problem.languages"
+              :language="language"
+              :fontSize="codeFontSize"
+              :cursorPos.sync="cursorPos"
+              :allowPaste="allowPaste"
+              ref="myCm"
+            />
+            <StickyLnCol :cursorPos="cursorPos" />
+          </div>
           <BottomDrag
             ref="bottomDrag"
             :result="result"
@@ -97,7 +226,6 @@
             :contestID="contestID"
             :code="code"
           />
-          <StickyLnCol :cursorPos="cursorPos" />
         </div>
       </pane>
     </splitpanes>
@@ -203,12 +331,33 @@ export default {
       },
       modalCheck: false,
       leftPainActiveTab: "problem",
+      showAskNudge: false,
       rightPainActiveTab: "editor",
       lastSubmissionId: null,
       isInitialized: false,
+      problemLoading: false,
       contestProblemsLoading: false,
       loadedContestProblemNavigationFor: "",
       problemRequestSeq: 0,
+      problemZoomPercent: 100,
+      minProblemZoom: 80,
+      maxProblemZoom: 140,
+      problemZoomStep: 5,
+      codeFontSize: 14,
+      minCodeFontSize: 12,
+      maxCodeFontSize: 22,
+      codeFontSizeStep: 1,
+      settingsPopoverOpen: false,
+      settingsPopoverStyle: {
+        top: "58px",
+        left: "auto",
+        right: "16px",
+      },
+      problemError: {
+        visible: false,
+        title: "",
+        description: "",
+      },
     }
   },
   beforeRouteEnter(to, from, next) {
@@ -220,6 +369,10 @@ export default {
     this.$store.commit(types.CHANGE_CONTEST_ITEM_VISIBLE, { menu: false })
     this.init()
     this.registerBeforeUnload()
+    window.addEventListener("open-problem-settings", this.openSettingsModal)
+    window.addEventListener("resize", this.closeSettingsPopover)
+    window.addEventListener("keydown", this.handleSettingsKeydown)
+    document.addEventListener("click", this.handleSettingsOutsideClick)
     this.isInitialized = true
   },
   activated() {
@@ -229,6 +382,10 @@ export default {
     this.removeBeforeUnload()
   },
   destroyed() {
+    window.removeEventListener("open-problem-settings", this.openSettingsModal)
+    window.removeEventListener("resize", this.closeSettingsPopover)
+    window.removeEventListener("keydown", this.handleSettingsKeydown)
+    document.removeEventListener("click", this.handleSettingsOutsideClick)
     this.removeBeforeUnload()
     this.changeProblemSolvingState(false)
   },
@@ -276,9 +433,54 @@ export default {
       this.submitted = false
       this.result = { result: 9 }
       this.lastSubmissionId = null
+      this.problemLoading = false
       this.leftPainActiveTab = "problem"
+      this.showAskNudge = false
       this.modalCheck = false
+      this.problemError = {
+        visible: false,
+        title: "",
+        description: "",
+      }
       this.problem = this.getEmptyProblem()
+    },
+    getApiErrorMessage(error) {
+      const data =
+        (error && error.data) ||
+        (error && error.response && error.response.data) ||
+        {}
+      return data.data || ""
+    },
+    getProblemLoadErrorMessage(error) {
+      const message = String(this.getApiErrorMessage(error)).trim()
+      if (message.startsWith("Please login")) {
+        return "로그인이 필요합니다."
+      }
+      return message || "문제를 불러오지 못했습니다."
+    },
+    isProblemNotFoundError(error) {
+      const message = String(this.getApiErrorMessage(error)).trim()
+      return [
+        "Problem does not exist",
+        "Problem does not exist.",
+        "Problem doesn't exist",
+        "Problem does not exists",
+        "Problem not exist",
+      ].includes(message)
+    },
+    showProblemNotFoundError() {
+      this.problemError = {
+        visible: true,
+        title: "문제를 찾을 수 없습니다",
+        description: "입력하신 문제 번호가 올바르지 않거나 문제가 삭제되었습니다.",
+      }
+      this.problem = this.getEmptyProblem()
+      this.leftPainActiveTab = "problem"
+      this.statusVisible = false
+      this.submitting = false
+      this.clearSubmissionRefresh()
+      this.removeBeforeUnload()
+      this.changeDomTitle({ title: "문제를 찾을 수 없습니다" })
     },
     clearSubmissionRefresh() {
       if (this.refreshStatus) {
@@ -347,9 +549,12 @@ export default {
       } = options
       this.changeProblemSolvingState(true)
       this.$Loading.start()
+      this.problemLoading = true
+      this.problemError.visible = false
       this.setRouteParams()
       if (resetState) {
         this.resetProblemState()
+        this.problemLoading = true
       }
 
       const hasStoredCode = restoreCode && this.restoreCurrentCode()
@@ -373,6 +578,8 @@ export default {
             return
           }
           this.$Loading.finish()
+          this.problemLoading = false
+          this.registerBeforeUnload()
           let problem = res.data.data
           this.changeDomTitle({ title: problem.title })
           api.submissionExists(problem.id).then((res) => {
@@ -388,8 +595,17 @@ export default {
             this.applyProblemTemplate()
           }
         },
-        () => {
+        (error) => {
+          if (requestSeq !== this.problemRequestSeq) {
+            return
+          }
           this.$Loading.error()
+          this.problemLoading = false
+          if (this.isProblemNotFoundError(error)) {
+            this.showProblemNotFoundError()
+          } else {
+            this.$error(this.getProblemLoadErrorMessage(error))
+          }
         },
       )
     },
@@ -404,7 +620,7 @@ export default {
       this._beforeUnloadRegistered = false
     },
     unLoadEvent: function (event) {
-      if (this.isLeaveSite) return
+      if (this.isLeaveSite || this.problemError.visible) return
 
       this.saveCurrentCode(this.problemID || this.problem._id, this.contestID)
 
@@ -431,6 +647,70 @@ export default {
       this.language = newLang
       this.$refs.myCm.onLangChange(newLang)
     },
+    openSettingsModal(event = {}) {
+      if (this.settingsPopoverOpen) {
+        this.closeSettingsPopover()
+        return
+      }
+      this.updateSettingsPopoverPosition(event.detail && event.detail.anchorRect)
+      this.settingsPopoverOpen = true
+    },
+    closeSettingsPopover() {
+      this.settingsPopoverOpen = false
+    },
+    updateSettingsPopoverPosition(anchorRect) {
+      if (!anchorRect) {
+        this.settingsPopoverStyle = {
+          top: "58px",
+          left: "auto",
+          right: "16px",
+        }
+        return
+      }
+      const popoverWidth = 260
+      const viewportMargin = 12
+      const top = anchorRect.bottom + 8
+      const left = Math.min(
+        window.innerWidth - popoverWidth - viewportMargin,
+        Math.max(viewportMargin, anchorRect.right - popoverWidth),
+      )
+      this.settingsPopoverStyle = {
+        top: `${top}px`,
+        left: `${left}px`,
+        right: "auto",
+      }
+    },
+    handleSettingsOutsideClick(event) {
+      if (!this.settingsPopoverOpen) return
+      const popover = this.$refs.settingsPopover
+      if (popover && !popover.contains(event.target)) {
+        this.closeSettingsPopover()
+      }
+    },
+    handleSettingsKeydown(event) {
+      if (event.key === "Escape") {
+        this.closeSettingsPopover()
+      }
+    },
+    setProblemZoom(value) {
+      this.problemZoomPercent = this.clampNumber(
+        value,
+        this.minProblemZoom,
+        this.maxProblemZoom,
+      )
+    },
+    setCodeFontSize(value) {
+      this.codeFontSize = this.clampNumber(
+        value,
+        this.minCodeFontSize,
+        this.maxCodeFontSize,
+      )
+    },
+    clampNumber(value, min, max) {
+      const numericValue = Number(value)
+      if (Number.isNaN(numericValue)) return min
+      return Math.min(max, Math.max(min, numericValue))
+    },
     modalOpen() {
       this.modalCheck = !this.modalCheck
     },
@@ -441,7 +721,7 @@ export default {
       if (!this.contestID || String(problemID) === String(this.problemID)) {
         return
       }
-      this.$router.push({
+      this.$router.replace({
         name: "contest-problem-details",
         params: {
           contestID: this.contestID,
@@ -460,8 +740,22 @@ export default {
         },
       })
     },
+    goBackFromError() {
+      this.$router.go(-1)
+    },
+    goProblemListFromError() {
+      if (this.contestID) {
+        this.goContestProblemList()
+        return
+      }
+      this.$router.push({ name: "problem-list" })
+    },
     check() {
       alert(this.code)
+    },
+    goAsk() {
+      this.leftPainActiveTab = "community"
+      this.showAskNudge = false
     },
     checkSubmissionStatus() {
       // 使用setTimeout避免一些问题
@@ -480,6 +774,8 @@ export default {
 
               this.leftPainActiveTab = "submission"
               this.lastSubmissionId = id
+              // 통과(Accepted=0)하지 못한 결과면 질문 유도 넛지 표시
+              this.showAskNudge = this.result.result !== 0
 
               clearTimeout(this.refreshStatus)
               this.init({
@@ -505,6 +801,7 @@ export default {
       }
       this.submissionId = ""
       this.result = { result: 9 }
+      this.showAskNudge = false
       this.submitting = true
       let data = {
         problem_id: this.problem.id,
@@ -524,10 +821,7 @@ export default {
             this.submitting = false
             this.submissionExists = true
             if (!detailsVisible) {
-              this.$Modal.success({
-                title: this.$i18n.t("m.Success"),
-                content: this.$i18n.t("m.Submit_code_successfully"),
-              })
+              this.$success(this.$i18n.t("m.Submit_code_successfully"))
               return
             }
             this.submitted = true
@@ -546,24 +840,16 @@ export default {
 
       if (this.contestRuleType === "OI" && !this.OIContestRealTimePermission) {
         if (this.submissionExists) {
-          this.$Modal.confirm({
-            title: "",
-            content:
-              "<h3>" +
-              this.$i18n.t(
-                "m.You_have_submission_in_this_problem_sure_to_cover_it",
-              ) +
-              "<h3>",
-            onOk: () => {
-              // 暂时解决对话框与后面提示对话框冲突的问题(否则一闪而过）
-              setTimeout(() => {
-                submitFunc(data, false)
-              }, 1000)
-            },
-            onCancel: () => {
-              this.submitting = false
-            },
-          })
+          const confirmed = window.confirm(
+            this.$i18n.t(
+              "m.You_have_submission_in_this_problem_sure_to_cover_it",
+            ),
+          )
+          if (confirmed) {
+            submitFunc(data, false)
+          } else {
+            this.submitting = false
+          }
         } else {
           submitFunc(data, false)
         }
@@ -628,12 +914,14 @@ export default {
     this.clearSubmissionRefresh()
     this.removeBeforeUnload()
     this.$store.commit(types.CHANGE_CONTEST_ITEM_VISIBLE, { menu: true })
-    this.saveCurrentCode(from.params.problemID, from.params.contestID)
+    if (!this.problemError.visible) {
+      this.saveCurrentCode(from.params.problemID, from.params.contestID)
+    }
     next()
   },
   watch: {
     $route(to, from) {
-      if (from && from.params && from.params.problemID) {
+      if (!this.problemError.visible && from && from.params && from.params.problemID) {
         this.saveCurrentCode(from.params.problemID, from.params.contestID)
       }
       this.init({
@@ -649,9 +937,132 @@ export default {
 @code-font-family: "JetBrains Mono", "Noto Sans KR", "Apple SD Gothic Neo",
   "Menlo", "Monaco", "Consolas", monospace;
 
+.settings-popover {
+  position: fixed;
+  z-index: 1200;
+  width: 260px;
+  max-width: ~"calc(100vw - 24px)";
+  border: 1px solid var(--border-color);
+  border-radius: 9px;
+  background: var(--ps-content-color);
+  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.18);
+}
+
+.settings-popover-body {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+}
+
+.settings-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.settings-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--ps-content-text-color);
+  font-size: 13px;
+  font-weight: 650;
+  white-space: nowrap;
+
+  strong {
+    color: var(--ps-content-title-color);
+    font-size: 14px;
+    font-weight: 750;
+  }
+}
+
+.settings-label-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 16px;
+  width: 16px;
+  height: 16px;
+  color: var(--ps-content-title-color);
+  font-size: 12px;
+  line-height: 1;
+  opacity: 0.78;
+}
+
+.settings-label-icon--text {
+  font-family: "Inter", "Noto Sans KR", "Apple SD Gothic Neo", sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.settings-controls {
+  display: inline-grid;
+  grid-template-columns: 30px 58px 30px;
+  align-items: center;
+  justify-self: end;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  border-radius: 7px;
+  background: var(--bg-color);
+}
+
+.settings-step-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  background: transparent;
+  color: var(--ps-content-title-color);
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.settings-step-button:hover:not(:disabled) {
+  border-color: var(--custom-btn-hover-color);
+  background: var(--header-btn-color);
+}
+
+.settings-step-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.42;
+}
+
+.settings-control-value {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 30px;
+  border-left: 1px solid var(--border-color);
+  border-right: 1px solid var(--border-color);
+  color: var(--ps-content-title-color);
+  font-size: 12px;
+  font-weight: 750;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.popover-fade-enter-active,
+.popover-fade-leave-active {
+  transition:
+    opacity 0.12s ease,
+    transform 0.12s ease;
+}
+
+.popover-fade-enter,
+.popover-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
 .problem-solving-root {
   display: flex;
+  min-height: calc(100vh - 50px);
   overflow: hidden;
+  background: var(--ps-background-color);
 
   #problem-main {
     flex: auto;
@@ -692,6 +1103,80 @@ export default {
 
 .fl-right {
   float: right;
+}
+
+.problem-error-state {
+  min-height: calc(100vh - 50px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  background: var(--ps-background-color);
+  color: var(--text-color);
+}
+
+.problem-error-card {
+  width: ~"min(420px, 100%)";
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.problem-error-code {
+  margin-bottom: 12px;
+  color: #9ca3af;
+  font-size: 42px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.problem-error-card h2 {
+  margin: 0;
+  color: var(--ps-content-title-color);
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.problem-error-card p {
+  margin: 12px 0 0;
+  color: var(--ps-content-text-color);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.problem-error-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 24px;
+}
+
+.problem-error-button {
+  min-width: 92px;
+  height: 36px;
+  border: 0;
+  border-radius: 8px;
+  padding: 0 14px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.problem-error-button.primary {
+  background: var(--submission-primary-btn-bg);
+  color: var(--submission-primary-btn-text-color);
+}
+
+.problem-error-button.secondary {
+  border: 1px solid var(--ps-content-pre-border-color);
+  background: var(--ps-content-color);
+  color: #475569;
+}
+
+.problem-error-button.secondary:hover {
+  border-color: #cbd5e1;
+  background: #f8fafc;
 }
 
 .splitpanes {
@@ -763,6 +1248,20 @@ export default {
 .editor-pane-wrapper {
   position: relative;
   height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.editor-pane-wrapper > .container-header {
+  flex: 0 0 auto;
+}
+
+.code-editor-area {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 .tab-headers {
@@ -772,6 +1271,7 @@ export default {
 .tab-header {
   padding: 10px 20px;
   cursor: pointer;
+  font-size: 14px;
   border-radius: 7px 7px 0 0;
   border: 1px solid transparent;
 }
@@ -787,6 +1287,59 @@ export default {
 
 .tab-header:hover:not(.active) {
   background-color: var(--bg-color);
+}
+
+/* 질문하기 탭: 배경은 다른 탭과 동일하게 두고 글자색만 브랜드 강조색 */
+.tab-header--ask {
+  color: #5b64ed;
+  font-weight: 700;
+}
+
+/* 오답 후 질문 유도 넛지 */
+.ask-nudge {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 8px 0;
+  padding: 9px 12px;
+  border: 1px solid rgba(91, 100, 237, 0.35);
+  background-color: rgba(91, 100, 237, 0.08);
+  border-radius: 8px;
+  font-size: 13px;
+  color: inherit;
+}
+
+.ask-nudge-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.ask-nudge-go {
+  border: none;
+  background-color: #5b64ed;
+  color: #fff;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.ask-nudge-go:hover {
+  filter: brightness(1.05);
+}
+
+.ask-nudge-close {
+  border: none;
+  background: transparent;
+  color: #9999a6;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
 }
 
 .tab-content {

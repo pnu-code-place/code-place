@@ -7,7 +7,6 @@ import smtplib
 import time
 from datetime import datetime
 
-import pytz
 import requests
 from django.conf import settings
 from django.http import HttpResponse

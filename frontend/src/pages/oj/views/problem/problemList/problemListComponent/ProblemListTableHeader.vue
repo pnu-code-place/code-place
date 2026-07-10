@@ -1,10 +1,22 @@
 <template>
   <div class="problemListTableHeader">
-    <h1 class="main-title">{{ $t("m.Problem_List") }}</h1>
-    <div style="display: flex; align-items: center; justify-content: center">
+    <div class="header-title-row">
+      <h1 class="main-title">{{ $t("m.Problem_List") }}</h1>
+      <button
+        type="button"
+        class="tag-visibility-toggle"
+        :class="{ active: isTagHidden }"
+        :aria-pressed="isTagHidden ? 'true' : 'false'"
+        @click="toggleTagVisibility"
+      >
+        <i :class="isTagHidden ? 'fas fa-eye' : 'fas fa-eye-slash'"></i>
+        <span>{{ isTagHidden ? $t("m.Show_Tags") : $t("m.Hide_Tags") }}</span>
+      </button>
+    </div>
+    <div class="header-controls">
       <li style="list-style-type: none; margin-left: 3px">
         <Input
-          v-model="query.keyword"
+          v-model="localKeyword"
           @on-enter="filterByKeyword"
           @on-click="filterByKeyword"
           :placeholder="$t('m.Search_Problem')"
@@ -70,21 +82,14 @@
         <span
           class="dropdown-label"
           style="font-weight: bold; font-size: 15px; padding-right: 10px"
-          >{{
-            query.tag === ""
-              ? this.$i18n.t("m.Category")
-              : this.$i18n.t(query.tag)
-          }}
+          >{{ query.tag === "" ? this.$i18n.t("m.Category") : query.tag }}
         </span>
         <Icon type="arrow-down-b"></Icon>
         <Dropdown-menu slot="list" class="problem-dropdown-menu">
           <Dropdown-item name="">{{ $t("m.All") }}</Dropdown-item>
-          <Dropdown-item
-            v-for="tag in uniqueTags"
-            :key="tag"
-            :name="tag"
-            >{{ tag }}</Dropdown-item
-          >
+          <Dropdown-item v-for="tag in tagOptions" :key="tag" :name="tag">{{
+            tag
+          }}</Dropdown-item>
         </Dropdown-menu>
       </Dropdown>
       <Tooltip
@@ -99,46 +104,51 @@
 </template>
 
 <script>
-import FieldCategoryBox from "../../../../components/FieldCategoryBox.vue"
 import { DIFFICULTY_MAP, FIELD_MAP } from "../../../../../../utils/constants"
-import Pagination from "../../../../components/Pagination.vue"
 import CustomIconBtn from "../../../../components/buttons/CustomIconBtn.vue"
 
 export default {
   name: "ProblemListTableHeader",
-  components: { CustomIconBtn, Pagination, FieldCategoryBox },
+  components: { CustomIconBtn },
   props: {
     query: {
       type: Object,
     },
-    problemList: {
+    tagList: {
       type: Array,
       default: () => [],
     },
   },
+  data() {
+    return {
+      localKeyword: this.query.keyword || "",
+    }
+  },
+  watch: {
+    "query.keyword"(keyword) {
+      this.localKeyword = keyword || ""
+    },
+  },
   methods: {
     filterByCategory(categoryName) {
-      this.query.tag = categoryName
-      this.query.page = 1
-      this.$emit("on-change-header")
+      this.$emit("update-query", { tag: categoryName, page: 1 })
     },
     filterByDifficulty(difficulty) {
-      this.query.difficulty = difficulty
-      this.query.page = 1
-      this.$emit("on-change-header")
+      this.$emit("update-query", { difficulty, page: 1 })
     },
     filterByField(field) {
-      this.query.field = field
-      this.query.page = 1
-      this.$emit("on-change-header")
+      this.$emit("update-query", { field, page: 1 })
     },
-    filterByKeyword(keyword) {
-      // this.query.keyword = keyword
-      this.query.page = 1
-      this.$emit("on-change-header")
+    filterByKeyword() {
+      this.$emit("update-query", { keyword: this.localKeyword, page: 1 })
     },
     pickOne() {
       this.$emit("pick-one")
+    },
+    toggleTagVisibility() {
+      this.$emit("update-query", {
+        hideTag: this.isTagHidden ? "" : "1",
+      })
     },
   },
   computed: {
@@ -148,15 +158,15 @@ export default {
     FIELD_MAP() {
       return FIELD_MAP
     },
-    uniqueTags() {
-      const tags = new Set()
-      for (const problem of this.problemList) {
-        if (!problem || !Array.isArray(problem.tags)) continue
-        for (const tag of problem.tags) {
-          tags.add(tag)
-        }
-      }
-      return Array.from(tags)
+    tagOptions() {
+      const tagList = Array.isArray(this.tagList) ? this.tagList : []
+      const tags = tagList
+        .map((tag) => (typeof tag === "string" ? tag : tag.name))
+        .filter(Boolean)
+      return Array.from(new Set(tags)).sort((a, b) => a.localeCompare(b))
+    },
+    isTagHidden() {
+      return this.query.hideTag === "1"
     },
   },
 }
@@ -169,6 +179,28 @@ export default {
   margin-bottom: 25px;
   align-items: center;
   justify-content: space-between;
+  gap: 16px;
+
+  .header-title-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+
+  .main-title {
+    margin: 0;
+    display: flex;
+    align-items: center;
+  }
+
+  .header-controls {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
 
   p {
     font-weight: bold;
@@ -188,10 +220,6 @@ export default {
     align-items: center;
   }
 
-  .dropdown:not(:first-child) {
-    margin-left: 5px;
-  }
-
   .difficultyDropdown {
     cursor: pointer;
   }
@@ -204,5 +232,61 @@ export default {
   /deep/ .ivu-select-dropdown {
     margin-top: 12px;
   }
+}
+
+.filter-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+
+  @media (max-width: 768px) {
+    width: 100%;
+  }
+}
+
+.tag-visibility-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 4px;
+  border: 1px solid #e2e5ed;
+  border-radius: 8px;
+  background: #f7f8fa;
+  color: #78797d;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    color 0.15s;
+
+  i {
+    font-size: 12px;
+    opacity: 0.8;
+  }
+
+  &:hover {
+    background: #eef0f5;
+    border-color: #c8ccd6;
+    color: #717070;
+  }
+}
+
+.categoryDropdown /deep/ .ivu-select-dropdown {
+  max-height: 320px;
+  max-width: 260px;
+  overflow-y: auto;
+}
+
+.categoryDropdown /deep/ .problem-dropdown-menu .ivu-dropdown-item {
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 </style>

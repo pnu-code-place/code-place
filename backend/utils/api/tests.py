@@ -57,7 +57,7 @@ class APITestCase(TestCase):
             problem_permission=ProblemPermission.OWN,
             login=login)
 
-    def create_super_admin(self, email="root@root.com", username="root", password="root1234!", login=True):
+    def create_super_admin(self, email="root@pusan.ac.kr", username="root", password="root1234!", login=True):
         return self.create_user(
             email=email,
             username=username,

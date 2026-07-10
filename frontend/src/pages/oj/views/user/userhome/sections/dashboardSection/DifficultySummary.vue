@@ -133,7 +133,7 @@ export default {
 <template>
   <div class="difficulty-summary">
     <div class="graph-wrapper">
-      <ECharts :options="pieChartOption" style="width: 100%; height: 100%" />
+      <ECharts :option="pieChartOption" style="width: 100%; height: 100%" />
     </div>
     <div class="table-wrapper">
       <table>

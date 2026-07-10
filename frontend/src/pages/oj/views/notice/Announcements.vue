@@ -47,7 +47,7 @@ import Pagination from "@oj/components/Pagination"
 import AnnouncementItem from "./AnnouncementItem.vue"
 
 export default {
-  name: "Announcement",
+  name: "NoticeAnnouncements",
   components: {
     AnnouncementItem,
     Pagination,

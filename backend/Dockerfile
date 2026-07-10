@@ -1,8 +1,10 @@
 FROM python:3.11-alpine
 ARG TARGETARCH
 ARG TARGETVARIANT
+ARG APP_VERSION
 
 ENV OJ_ENV production
+ENV APP_VERSION=$APP_VERSION
 WORKDIR /app
 
 COPY ./deploy/requirements.txt /app/deploy/

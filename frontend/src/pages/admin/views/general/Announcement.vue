@@ -109,7 +109,7 @@ import Simditor from "../../components/Simditor.vue"
 import api from "../../api.js"
 
 export default {
-  name: "Announcement",
+  name: "AdminAnnouncementPage",
   components: {
     Simditor,
   },
@@ -192,7 +192,7 @@ export default {
     // 提交编辑
     // 默认传入MouseEvent
     submitAnnouncement(data = undefined) {
-      let funcName = ""
+      let funcName
       if (!data.title) {
         data = {
           id: this.currentAnnouncementId,
@@ -270,16 +270,6 @@ export default {
       }
     },
     handleVisibleSwitch(row) {
-      this.mode = "edit"
-      this.submitAnnouncement({
-        id: row.id,
-        title: row.title,
-        content: row.content,
-        visible: row.visible,
-        is_pinned: row.is_pinned,
-      })
-    },
-    handlePinSwitch(row) {
       this.mode = "edit"
       this.submitAnnouncement({
         id: row.id,

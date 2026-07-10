@@ -6,6 +6,7 @@ import { STORAGE_KEY, USER_TYPE, PROBLEM_PERMISSION } from "@/utils/constants"
 
 const state = {
   profile: {},
+  profileResolved: false,
   isProblemSolving: false,
   isDarkMode: false,
 }
@@ -13,6 +14,7 @@ const state = {
 const getters = {
   user: (state) => state.profile.user || {},
   profile: (state) => state.profile,
+  profileResolved: (state) => state.profileResolved,
   isProblemSolving: (state) => state.isProblemSolving,
   isAuthenticated: (state, getters) => {
     return !!getters.user.id
@@ -35,10 +37,14 @@ const getters = {
 const mutations = {
   [types.CHANGE_PROFILE](state, { profile }) {
     state.profile = profile
+    state.profileResolved = true
     if (profile.language) {
       i18n.locale = profile.language
     }
     storage.set(STORAGE_KEY.AUTHED, !!profile.user)
+  },
+  resolveProfile(state) {
+    state.profileResolved = true
   },
   [types.CHANGE_PROBLEM_SOLVING_STATE](state, payload) {
     state.isProblemSolving = payload
@@ -50,11 +56,23 @@ const mutations = {
 
 const actions = {
   getProfile({ commit }) {
-    api.getUserInfo().then((res) => {
-      commit(types.CHANGE_PROFILE, {
-        profile: res.data.data || {},
-      })
-    })
+    return api.getUserInfo().then(
+      (res) => {
+        commit(types.CHANGE_PROFILE, {
+          profile: res.data.data || {},
+        })
+      },
+      (error) => {
+        const message = getProfileErrorMessage(error)
+        if (message.startsWith("Please login")) {
+          commit(types.CHANGE_PROFILE, {
+            profile: {},
+          })
+          return
+        }
+        commit("resolveProfile")
+      },
+    )
   },
   clearProfile({ commit }) {
     commit(types.CHANGE_PROFILE, {
@@ -68,6 +86,14 @@ const actions = {
   changeProblemSolvingTheme({ commit }, payload) {
     commit(types.CHANGE_PROBLEM_SOLVING_THEME, payload)
   },
+}
+
+function getProfileErrorMessage(error) {
+  const data =
+    (error && error.data) ||
+    (error && error.response && error.response.data) ||
+    {}
+  return typeof data.data === "string" ? data.data : ""
 }
 
 export default {

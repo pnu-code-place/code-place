@@ -34,9 +34,10 @@
         statusVisible && this.contestID && !OIContestRealTimePermission
       "
     >
-      <Alert type="success" show-icon>{{
-        $t("m.Submitted_successfully")
-      }}</Alert>
+      <div class="submission-success">
+        <Icon type="ios-checkmark-circle" />
+        {{ $t("m.Submitted_successfully") }}
+      </div>
     </template>
   </div>
 </template>
@@ -101,5 +102,16 @@ export default defineComponent({
   font-size: 14px;
   justify-content: space-evenly;
   color: var(--ps-content-text-color);
+}
+
+.submission-success {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ps-content-text-color);
+
+  .ivu-icon {
+    color: #16a34a;
+  }
 }
 </style>

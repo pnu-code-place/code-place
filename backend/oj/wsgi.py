@@ -11,6 +11,9 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
+from utils.observability_tracing import configure_opentelemetry
+
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "oj.settings")
+configure_opentelemetry("codeplace-backend")
 
 application = get_wsgi_application()

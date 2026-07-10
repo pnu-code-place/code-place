@@ -5,6 +5,7 @@
 ### 핵심 파일
 
 - `postgres.yaml`: CNPG Operator를 통해 PostgreSQL 클러스터를 생성하기 위한 Custom Resource(CR) 정의 파일입니다.
+- CNPG instance manager는 각 PostgreSQL Pod의 `metrics` 포트에서 Prometheus metric을 제공합니다. CodePlace monitoring은 별도 PodMonitor로 이 endpoint를 scrape합니다.
 
 ---
 
@@ -60,3 +61,14 @@ kustomize build kubernetes/overlays/dev | kubectl apply -f -
 ```
 
 > **관련 문서:** 더 자세한 정보는 [CloudNativePG 공식 문서](https://cloudnative-pg.io/documentation/current/)를 참고하세요.
+
+## 3. Monitoring
+
+PostgreSQL exporter scrape는 `kubernetes/monitoring/datastore-pod-monitors.yaml`에서 관리합니다. kube-prometheus-stack 설치 후 Prometheus Targets에서 `postgres` target이 healthy인지 확인합니다.
+
+주요 지표:
+
+- `cnpg_collector_up`
+- `cnpg_collector_last_collection_error`
+- `cnpg_collector_nodes_used`
+- `cnpg_collector_wal_bytes`

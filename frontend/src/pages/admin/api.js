@@ -2,11 +2,13 @@ import Vue from "vue"
 import router from "./router"
 import axios from "axios"
 import utils from "@/utils/utils"
+import { configureAxiosRequestId } from "@/utils/request_id"
 
 Vue.prototype.$http = axios
 axios.defaults.baseURL = "/api"
 axios.defaults.xsrfHeaderName = "X-CSRFToken"
 axios.defaults.xsrfCookieName = "csrftoken"
+configureAxiosRequestId(axios)
 
 export default {
   // 登录
@@ -465,10 +467,16 @@ function ajax(url, method, options) {
           }
         }
       },
-      (res) => {
+      (error) => {
         // API请求异常，一般为Server error 或 network error
-        reject(res)
-        Vue.prototype.$error(res.data.data)
+        const res = error.response || error
+        const data = res.data || {}
+        const message = data.data || error.message || "Server error"
+        Vue.prototype.$error(message)
+        reject(error)
+        if (typeof message === "string" && message.startsWith("Please login")) {
+          router.push({ name: "login" })
+        }
       },
     )
   })

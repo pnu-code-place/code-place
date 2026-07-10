@@ -30,9 +30,8 @@
           </tr>
           <tbody>
             <tr
-              v-for="(user, index) in this.rankingItems"
-              :key="index"
-              v-if="index <= 2"
+              v-for="(user, index) in displayedRankingItems"
+              :key="user.username"
             >
               <td class="idx">
                 {{ index + 1 + "위" }}
@@ -105,6 +104,9 @@ export default {
   computed: {
     TierImageSrc() {
       return TierImageSrc
+    },
+    displayedRankingItems() {
+      return this.rankingItems.slice(0, 3)
     },
   },
 }

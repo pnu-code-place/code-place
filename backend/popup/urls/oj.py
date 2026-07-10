@@ -1,7 +1,7 @@
-from django.conf.urls import url
+from django.urls import re_path
 
 from popup.views.oj import PopupAPIView
 
 urlpatterns = [
-    url(r"^popup/?$", PopupAPIView.as_view(), name="popup_api"),
+    re_path(r"^popup/?$", PopupAPIView.as_view(), name="popup_api"),
 ]

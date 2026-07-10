@@ -1,4 +1,6 @@
-<template></template>
+<template>
+  <span style="display: none"></span>
+</template>
 
 <script></script>
 

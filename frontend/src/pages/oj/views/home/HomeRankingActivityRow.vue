@@ -43,7 +43,9 @@
     <div class="card activity-card">
       <div class="card-header">
         <span class="card-header-title">나의 활동</span>
-        <span class="card-header-more" v-if="isAuthenticated" @click="goMyHome">더보기 &gt;</span>
+        <span class="card-header-more" v-if="isAuthenticated" @click="goMyHome"
+          >더보기 &gt;</span
+        >
       </div>
 
       <template v-if="isAuthenticated">
@@ -75,7 +77,9 @@
             />
           </div>
           <div class="chart-labels">
-            <span v-for="(bar, i) in activityBars" :key="i">{{ bar.label }}</span>
+            <span v-for="(bar, i) in activityBars" :key="i">{{
+              bar.label
+            }}</span>
           </div>
         </div>
       </template>
@@ -83,7 +87,9 @@
       <template v-else>
         <div class="not-logged-in">
           <p class="not-logged-title">로그인이 필요합니다</p>
-          <p class="not-logged-desc">로그인하면 나의 활동을 확인할 수 있어요.</p>
+          <p class="not-logged-desc">
+            로그인하면 나의 활동을 확인할 수 있어요.
+          </p>
           <button class="login-btn" @click="openLogin">로그인하기</button>
         </div>
       </template>
@@ -153,7 +159,10 @@ export default {
       this.$router.push({ name: "user-home", params: { username } })
     },
     goMyHome() {
-      this.$router.push({ name: "user-home", params: { username: this.user.username } })
+      this.$router.push({
+        name: "user-home",
+        params: { username: this.user.username },
+      })
     },
     openLogin() {
       this.changeModalStatus({ visible: true, mode: "login" })
@@ -430,7 +439,11 @@ export default {
 }
 
 @keyframes shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 </style>

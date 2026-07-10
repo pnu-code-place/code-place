@@ -10,8 +10,9 @@
       </div>
     </header>
     <div class="problemRecommendationBoxBody">
-      <template v-for="(problem, index) in problems" v-if="index <= 2">
+      <template v-for="problem in displayedProblems">
         <div
+          :key="problem._id"
           @click="enterProblemDetail(problem._id)"
           class="bonusProblem"
           :style="{
@@ -25,13 +26,12 @@
             :value="FIELD_MAP[problem.field].value"
             :boxColor="FIELD_MAP[problem.field].boxColor"
           />
-          <template v-for="category in [problem.tags[0]]">
-            <FieldCategoryBox
-              :boxType="false"
-              :value="'#' + category"
-              :boxColor="'#ffffff'"
-            />
-          </template>
+          <FieldCategoryBox
+            v-if="problem.tags && problem.tags[0]"
+            :boxType="false"
+            :value="'#' + problem.tags[0]"
+            :boxColor="'#ffffff'"
+          />
         </div>
       </template>
     </div>
@@ -43,14 +43,16 @@ import api from "@oj/api"
 import { FIELD_MAP } from "../../../../utils/constants"
 import FieldCategoryBox from "../../components/FieldCategoryBox.vue"
 import { mapActions } from "vuex"
-import ShineWrapper from "../../components/ShineWrapper.vue"
 
 export default {
   name: "HomeProblemRecommendationBox",
-  components: { ShineWrapper, FieldCategoryBox },
+  components: { FieldCategoryBox },
   computed: {
     FIELD_MAP() {
       return FIELD_MAP
+    },
+    displayedProblems() {
+      return this.problems.slice(0, 3)
     },
   },
   data() {

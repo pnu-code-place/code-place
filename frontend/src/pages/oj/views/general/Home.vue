@@ -23,8 +23,6 @@
     </PopUp>
 
     <HomeHeroSection />
-    <!-- 바로가기 카드: 상단 네비바와 메뉴가 중복되어 숨김 처리 (교수님 피드백). 컴포넌트 파일은 보존, 복구 시 아래 주석 해제. -->
-    <!-- <HomeQuickNavCards /> -->
     <div class="notice-rank-row">
       <HomeNoticeProblemRow />
       <div class="sidebar-col">
@@ -32,6 +30,7 @@
         <HomeActivitySidebar />
       </div>
     </div>
+    <HomeNewFeatureBanner />
     <HomeOngoingContests />
     <HomeWeeklyServices />
     <HomeCTABanner />
@@ -47,6 +46,7 @@ import PopUp from "../../components/modal/PopUp.vue"
 import storage from "../../../../utils/storage"
 
 import HomeHeroSection from "../home/HomeHeroSection.vue"
+import HomeNewFeatureBanner from "../home/HomeNewFeatureBanner.vue"
 import HomeQuickNavCards from "../home/HomeQuickNavCards.vue"
 import HomeNoticeProblemRow from "../home/HomeNoticeProblemRow.vue"
 import HomeRankingSidebar from "../home/HomeRankingSidebar.vue"
@@ -61,13 +61,11 @@ export default {
   components: {
     PopUp,
     HomeHeroSection,
-    HomeQuickNavCards,
+    HomeNewFeatureBanner,
     HomeNoticeProblemRow,
     HomeRankingSidebar,
-    HomeActivitySidebar,
     HomeOngoingContests,
     HomeWeeklyServices,
-    HomeCTABanner,
     HomeFamilySite,
   },
   data() {
@@ -84,9 +82,12 @@ export default {
     ...mapActions(["getProfile"]),
     init() {
       api.getPopup().then((res) => {
-        this.popupData = res.data.data
+        this.popupData = Array.isArray(res.data.data) ? res.data.data : []
       })
-      this.removedPopups = storage.get("removedPopup").map((popup) => popup.id)
+      const removedPopup = storage.get("removedPopup")
+      this.removedPopups = Array.isArray(removedPopup)
+        ? removedPopup.map((popup) => popup.id)
+        : []
     },
     popupSelect(value) {
       this.topPopupId = value
@@ -105,10 +106,19 @@ export default {
 
 <style lang="less" scoped>
 .home-wrapper {
-  width: var(--global-width);
+  width: 100%;
+  max-width: var(--global-width);
   background-color: #f8f8fc;
   min-height: 100vh;
   padding: 0 30px;
+
+  @media (max-width: 1024px) {
+    padding: 0 20px;
+  }
+  @media (max-width: 768px) {
+    padding: 0 14px;
+    width: 100%;
+  }
 }
 
 .notice-rank-row {
@@ -120,6 +130,11 @@ export default {
     flex: 2;
     min-width: 0;
   }
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 0;
+  }
 }
 
 .sidebar-col {
@@ -127,5 +142,13 @@ export default {
   min-width: 0;
   display: flex;
   flex-direction: column;
+
+  @media (max-width: 768px) {
+    flex-direction: row;
+    gap: 12px;
+  }
+  @media (max-width: 480px) {
+    flex-direction: column;
+  }
 }
 </style>

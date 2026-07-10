@@ -4,14 +4,69 @@
       <tr>
         <th class="th-first">{{ $t("m.Th_Problem_Id") }}</th>
         <th class="th-second">{{ $t("m.Th_Problem_Title") }}</th>
-        <th class="th-third">{{ $t("m.Th_Problem_Difficulty") }}</th>
-        <th class="th-fourth">{{ $t("m.Th_Problem_Num_Success") }}</th>
-        <th class="th-fifth">{{ $t("m.Th_Problem_AC_Rate") }}</th>
+        <th class="th-third">
+          <button
+            type="button"
+            class="sort-header-button"
+            @click="changeSort('difficulty')"
+          >
+            {{ $t("m.Th_Problem_Difficulty") }}
+            <i :class="sortIconClass('difficulty')"></i>
+          </button>
+        </th>
+        <th class="th-fourth">
+          <button
+            type="button"
+            class="sort-header-button"
+            @click="changeSort('accepted')"
+          >
+            {{ $t("m.Th_Problem_Num_Success") }}
+            <i :class="sortIconClass('accepted')"></i>
+          </button>
+        </th>
+        <th class="th-fifth">
+          <button
+            type="button"
+            class="sort-header-button"
+            @click="changeSort('ac_rate')"
+          >
+            {{ $t("m.Th_Problem_AC_Rate") }}
+            <i :class="sortIconClass('ac_rate')"></i>
+          </button>
+        </th>
       </tr>
     </thead>
-    <template v-if="this.problemList.length !== 0">
+    <tbody v-if="loading">
+      <tr
+        v-for="index in skeletonRowCount"
+        :key="`problem-list-skeleton-${index}`"
+        class="skeleton-row"
+      >
+        <td class="td-first">
+          <span class="skeleton-block skeleton-id"></span>
+        </td>
+        <td class="td-second">
+          <span class="skeleton-block skeleton-title"></span>
+          <div v-if="showTags" class="skeleton-meta-row">
+            <span class="skeleton-block skeleton-chip"></span>
+            <span class="skeleton-block skeleton-chip skeleton-chip-short"></span>
+            <span class="skeleton-block skeleton-chip skeleton-chip-short"></span>
+          </div>
+        </td>
+        <td class="td-third">
+          <span class="skeleton-block skeleton-difficulty"></span>
+        </td>
+        <td class="td-fourth">
+          <span class="skeleton-block skeleton-number"></span>
+        </td>
+        <td class="td-fifth">
+          <span class="skeleton-block skeleton-rate"></span>
+        </td>
+      </tr>
+    </tbody>
+    <template v-else-if="this.problemList.length !== 0">
       <tbody>
-        <tr v-for="problem in this.problemList">
+        <tr v-for="problem in this.problemList" :key="problem._id">
           <td class="td-first">{{ problem._id }}</td>
           <td
             class="td-second"
@@ -21,19 +76,25 @@
               {{ problem.title }}
             </span>
             <br />
-            <div style="display: flex">
+            <div v-if="showTags" class="problem-meta-row">
               <FieldCategoryBox
                 :boxType="true"
                 :value="FIELD_MAP[problem.field].value"
                 :boxColor="FIELD_MAP[problem.field].boxColor"
               />
-              <template v-for="(category, idx) in problem.tags">
+              <button
+                v-for="category in getProblemTags(problem)"
+                :key="problem._id + '-' + category"
+                type="button"
+                class="tag-filter-button"
+                @click.stop="selectTag(category)"
+              >
                 <FieldCategoryBox
                   :boxType="false"
                   :value="'#' + category"
                   :boxColor="'#ffffff'"
                 />
-              </template>
+              </button>
             </div>
           </td>
           <td class="td-third" style="font-weight: bold; font-size: 14px">
@@ -68,15 +129,30 @@
 import { mapActions } from "vuex"
 import FieldCategoryBox from "../../../../components/FieldCategoryBox.vue"
 import { DIFFICULTY_MAP, FIELD_MAP } from "../../../../../../utils/constants"
-import Pagination from "../../../../components/Pagination.vue"
 
 export default {
   name: "ProblemListTable",
-  components: { Pagination, FieldCategoryBox },
+  components: { FieldCategoryBox },
   props: {
     problemList: {
       type: Array,
       default: () => [],
+    },
+    showTags: {
+      type: Boolean,
+      default: true,
+    },
+    sort: {
+      type: String,
+      default: "",
+    },
+    loading: {
+      type: Boolean,
+      default: false,
+    },
+    skeletonCount: {
+      type: Number,
+      default: 15,
     },
   },
   methods: {
@@ -88,6 +164,35 @@ export default {
         params: { problemID: problemId, problemTitle: problemTitle },
       })
     },
+    selectTag(category) {
+      this.$emit("select-tag", category)
+    },
+    getProblemTags(problem) {
+      return Array.isArray(problem.tags) ? problem.tags : []
+    },
+    changeSort(field) {
+      const defaultDirection = field === "difficulty" ? "asc" : "desc"
+      const ascSort = `${field}_asc`
+      const descSort = `${field}_desc`
+      const defaultSort = `${field}_${defaultDirection}`
+      const reverseSort = defaultDirection === "asc" ? descSort : ascSort
+      const nextSort =
+        this.sort === defaultSort
+          ? reverseSort
+          : this.sort === reverseSort
+            ? ""
+            : defaultSort
+      this.$emit("sort-change", nextSort)
+    },
+    sortIconClass(field) {
+      if (this.sort === `${field}_asc`) {
+        return "fas fa-sort-up active"
+      }
+      if (this.sort === `${field}_desc`) {
+        return "fas fa-sort-down active"
+      }
+      return "fas fa-sort"
+    },
   },
   computed: {
     DIFFICULTY_MAP() {
@@ -95,6 +200,9 @@ export default {
     },
     FIELD_MAP() {
       return FIELD_MAP
+    },
+    skeletonRowCount() {
+      return Math.min(Math.max(this.skeletonCount || 15, 5), 20)
     },
   },
 }
@@ -110,6 +218,12 @@ export default {
   padding-right: 30px;
   margin-bottom: 20px;
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  overflow-x: auto;
+
+  @media (max-width: 768px) {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
 }
 
 .noProblemListBox {
@@ -137,6 +251,31 @@ th {
   font-size: 1.3em;
 }
 
+.sort-header-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 0;
+  color: inherit;
+  font: inherit;
+  font-weight: bold;
+  white-space: nowrap;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.sort-header-button i {
+  color: #a5adba;
+  font-size: 11px;
+}
+
+.sort-header-button i.active,
+.sort-header-button:hover i {
+  color: #4a86c0;
+}
+
 th:first-child {
   text-align: center;
 }
@@ -148,6 +287,12 @@ th {
 thead {
   font-weight: bold;
   color: #7e7e7e;
+
+  .th-first {
+    white-space: normal;
+    word-break: normal;
+    overflow-wrap: break-word;
+  }
 
   .th-second {
     width: 400px;
@@ -161,6 +306,12 @@ tbody {
       font-size: 1.2em;
       text-align: center;
       font-weight: bold;
+    }
+
+    .td-first {
+      white-space: normal;
+      word-break: normal;
+      overflow-wrap: break-word;
     }
 
     td:nth-child(2) {
@@ -181,6 +332,26 @@ tbody {
     .problemTitle:hover {
       color: #4a86c0;
     }
+
+    .problem-meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px 3px;
+      align-items: center;
+    }
+
+    .problem-meta-row /deep/ .box {
+      margin: 0;
+    }
+
+    .tag-filter-button {
+      border: 0;
+      padding: 0;
+      margin: 0;
+      background: transparent;
+      cursor: pointer;
+      font: inherit;
+    }
   }
 }
 
@@ -199,8 +370,57 @@ td:nth-child(2) {
   cursor: pointer;
 }
 
-//.difficulty-badge {
-//  border-radius: 5px;
-//  border: 2px solid #dedede;
-//}
+.difficulty-badge {
+  white-space: nowrap;
+}
+
+.skeleton-row td {
+  cursor: default;
+}
+
+.skeleton-block {
+  display: inline-block;
+  height: 14px;
+  border-radius: 6px;
+  background: #f1f3f5;
+}
+
+.skeleton-id {
+  width: 48px;
+}
+
+.skeleton-title {
+  width: ~"min(360px, 72%)";
+  height: 18px;
+}
+
+.skeleton-meta-row {
+  display: flex;
+  gap: 5px;
+  margin-top: 11px;
+}
+
+.skeleton-chip {
+  width: 78px;
+  height: 24px;
+  border-radius: 999px;
+}
+
+.skeleton-chip-short {
+  width: 56px;
+}
+
+.skeleton-difficulty {
+  width: 74px;
+  height: 28px;
+  border-radius: 999px;
+}
+
+.skeleton-number {
+  width: 44px;
+}
+
+.skeleton-rate {
+  width: 36px;
+}
 </style>

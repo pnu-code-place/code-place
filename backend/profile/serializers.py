@@ -34,11 +34,15 @@ class EditUserProfileSerializer(serializers.Serializer):
 
 
 class ProfileProblemSerializer(serializers.Serializer):
+    submissionId = serializers.CharField()
     id = serializers.CharField()
     title = serializers.CharField()
     submitTime = serializers.DateTimeField()
+    serviceDate = serializers.DateField()
+    serviceMonth = serializers.CharField()
     difficulty = serializers.CharField()
     field = serializers.CharField()
+    status = serializers.IntegerField()
 
 
 class DashboardUserInfoSerializer(serializers.ModelSerializer):

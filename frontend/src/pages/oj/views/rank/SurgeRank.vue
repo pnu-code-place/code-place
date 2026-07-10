@@ -26,16 +26,14 @@
 
 <script>
 import api from "../../api"
-import SkeletonBox from "../../components/SkeletonBox.vue"
 import { comma } from "../../../../utils/utils"
-import RankList from "./UserRankList.vue"
 import Pagination from "../../components/Pagination.vue"
 import UserList from "./UserRankList.vue"
 import ErrorSign from "../general/ErrorSign.vue"
 
 export default {
   name: "SurgeRank",
-  components: { ErrorSign, UserList, Pagination, RankList, SkeletonBox },
+  components: { ErrorSign, UserList, Pagination },
   data() {
     return {
       isLoading: true,

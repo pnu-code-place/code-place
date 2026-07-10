@@ -41,6 +41,7 @@
 import api from "../../api"
 
 export default {
+  name: "AdminLoginPage",
   data() {
     return {
       logining: false,

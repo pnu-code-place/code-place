@@ -42,14 +42,33 @@ spec:
               value: "0"
             - name: SERVER_NAME
               value: "localhost"
+          startupProbe:
+            httpGet:
+              path: /
+              port: http
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 24
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 20
+            timeoutSeconds: 3
+            failureThreshold: 3
           volumeMounts:
-            - name: vol-log
-              mountPath: /data/log
             - name: vol-public
               mountPath: /data/public
       volumes:
-        - name: vol-log
-          emptyDir: {}
         - name: vol-public
           persistentVolumeClaim:
             claimName: pvc-public

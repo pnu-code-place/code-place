@@ -186,7 +186,7 @@ export const m = {
   AddProblem_Modal_Content: "Please input display id for the contest problem",
 
   // ImportAndExport.vue
-  ImportAndExport_Title: "Export Problems (beta)",
+  ImportAndExport_Export_Title: "Export Problems (beta)",
   ImportAndExport_ID: "ID",
   ImportAndExport_Display_ID: "DisplayId",
   ImportAndExport_Title: "Title",

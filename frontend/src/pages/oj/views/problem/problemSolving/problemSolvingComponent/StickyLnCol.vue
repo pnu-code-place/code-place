@@ -14,9 +14,10 @@ export default defineComponent({
 
 <style lang="less">
 .sticky_ln_col {
-  position: sticky;
-  float: right;
-  right: 10px;
-  bottom: 20px;
+  position: absolute;
+  right: 28px;
+  bottom: 14px;
+  z-index: 11;
+  pointer-events: none;
 }
 </style>

@@ -3,8 +3,8 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  # Monitoring
-  - ./monitoring/namespace.yaml
+  # Namespace
+  - ./namespace.yaml
 
   # Persistent Volume Claims
   - ./backend/pvc.yaml
@@ -19,6 +19,10 @@ resources:
   - ./judge-server/service.yaml
   - ./hub-auth/service.yaml
 
+  # Application Disruption Budgets
+  - ./backend/pdb.yaml
+  - ./frontend/pdb.yaml
+
   # Application Deployments
   - ./backend/deployment.yaml
   - ./frontend/deployment.yaml
@@ -31,5 +35,7 @@ resources:
   - ./frontend/ingress.yaml
   - ./hub-auth/ingress.yaml
 
-commonLabels:
-  app.kubernetes.io/managed-by: kustomize
+labels:
+  - pairs:
+      app.kubernetes.io/managed-by: kustomize
+    includeSelectors: true

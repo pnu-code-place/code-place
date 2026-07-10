@@ -6,22 +6,17 @@ const utils = require("./utils")
 const config = require("../config")
 const vueLoaderConfig = require("./vue-loader.conf")
 const HtmlWebpackIncludeAssetsPlugin = require("html-webpack-include-assets-plugin")
+const VueLoaderPlugin = require("vue-loader/lib/plugin")
 
 function resolve(dir) {
   return path.join(__dirname, "..", dir)
 }
 
 function getEntries() {
-  const base = {
+  return {
     oj: ["./src/pages/oj/index.js"],
     admin: ["./src/pages/admin/index.js"],
   }
-  if (process.env.USE_SENTRY === "1") {
-    Object.keys(base).forEach((entry) => {
-      base[entry].push("./src/utils/sentry.js")
-    })
-  }
-  return base
 }
 
 // get all entries
@@ -70,7 +65,10 @@ module.exports = {
       },
       {
         test: /\.js$/,
-        loader: "babel-loader?cacheDirectory=true",
+        loader: "babel-loader",
+        options: {
+          cacheDirectory: true,
+        },
         // include -> inclue 안에 있는 모듈 '만' babel이 로드 합니다.
         // exclude -> exclude 안에 있는 모듈 '만' babel 로드 시 제외 합니다.
         // 따라서 현재 include 안에 node_modules 가 없으므로, node_modules 안의 파일은 babel이 로드하지 않습니다.
@@ -88,6 +86,7 @@ module.exports = {
         loader: "url-loader",
         options: {
           limit: 10000,
+          esModule: false,
           name: utils.assetsPath("img/[name].[hash:7].[ext]"),
         },
       },
@@ -96,6 +95,7 @@ module.exports = {
         loader: "url-loader",
         options: {
           limit: 10000,
+          esModule: false,
           name: utils.assetsPath("media/[name].[hash:7].[ext]"),
         },
       },
@@ -104,12 +104,14 @@ module.exports = {
         loader: "url-loader",
         options: {
           limit: 10000,
+          esModule: false,
           name: utils.assetsPath("fonts/[name].[hash:7].[ext]"),
         },
       },
     ],
   },
   plugins: [
+    new VueLoaderPlugin(),
     new webpack.DllReferencePlugin({
       context: __dirname,
       manifest: require("./vendor-manifest.json"),

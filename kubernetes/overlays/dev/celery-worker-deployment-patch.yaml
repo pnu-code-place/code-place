@@ -11,3 +11,17 @@ spec:
     rollingUpdate:
       maxUnavailable: 0
       maxSurge: 1
+  template:
+    spec:
+      containers:
+        - name: celery-worker
+          env:
+            - name: SENTRY_DSN_BACKEND
+              valueFrom:
+                secretKeyRef:
+                  name: sentry-secret
+                  key: SENTRY_DSN_BACKEND
+            - name: SENTRY_ENVIRONMENT
+              value: "dev"
+            - name: OTEL_ENABLED
+              value: "1"

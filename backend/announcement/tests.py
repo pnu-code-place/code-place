@@ -148,5 +148,3 @@ class AnnouncementAPITest(APITestCase):
     def test_announcement_detail(self):
         response = self.client.get(self.url + f"?id={self.announcement.id}")
         self.assertSuccess(response)
-
-    

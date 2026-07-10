@@ -1,48 +1,108 @@
 <template>
   <div class="problemDetailFlexibleContainer">
-    <Panel :padding="45" class="detailCard" dis-hover style="transition: 0.3s">
-      <div
-        slot="title"
+    <section class="detailCard">
+      <header
         class="detailTitle"
         :id="`problem-title-${problem._id}`"
+        :style="problemZoomStyle"
       >
-        <div class="detailTitleText">{{ problemTitleText }}</div>
-        <div class="detailTitleMeta">
-          <div class="detailTitleMetaLeft">
-            <div
-              class="headerDetailBtn"
-              style="background-color: var(--difficulty-color)"
-              :id="`problem-difficulty-${problem._id}`"
-            >
-              {{ getDifficulty }}
+        <template v-if="loading">
+          <div class="skeleton-line skeleton-title"></div>
+          <div class="detailTitleMeta">
+            <div class="detailTitleMetaLeft">
+              <div class="skeleton-pill"></div>
+              <div class="skeleton-pill skeleton-pill-short"></div>
+              <div class="skeleton-pill skeleton-pill-short"></div>
             </div>
-            <div class="headerDetailBtn" @click="scrollField">
-              <Icon type="ios-pie" color="#F8B193" />
-              영역
-            </div>
-            <div class="headerDetailBtn" @click="scrollCategory">
-              <Icon type="ios-pricetag" color="#FF9F9F" />
-              태그
+            <div class="detailTitleMetaRight">
+              <div class="skeleton-zoom-control"></div>
             </div>
           </div>
-          <div class="detailTitleMetaRight">
-            <Tooltip
-              :content="'정답 시 점수를 2배로 획득해요!'"
-              placement="bottom"
-            >
+        </template>
+        <template v-else>
+          <div class="detailTitleText">{{ problemTitleText }}</div>
+          <div class="detailTitleMeta">
+            <div class="detailTitleMetaLeft">
+              <div
+                class="headerDetailBtn"
+                style="background-color: var(--difficulty-color)"
+                :id="`problem-difficulty-${problem._id}`"
+              >
+                {{ getDifficulty }}
+              </div>
+              <div class="headerDetailBtn" @click="scrollField">
+                <Icon type="ios-pie" color="#F8B193" />
+                영역
+              </div>
+              <div class="headerDetailBtn" @click="scrollCategory">
+                <Icon type="ios-pricetag" color="#FF9F9F" />
+                태그
+              </div>
+            </div>
+            <div class="detailTitleMetaRight">
+              <div class="zoom-control" aria-label="문제 설명 확대">
+                <button
+                  type="button"
+                  class="zoom-button"
+                  :disabled="problemZoomPercent <= minProblemZoom"
+                  aria-label="축소"
+                  @click.stop="decreaseProblemZoom"
+                >
+                  <Icon type="minus-round" />
+                </button>
+                <span class="zoom-value">{{ problemZoomPercent }}%</span>
+                <button
+                  type="button"
+                  class="zoom-button"
+                  :disabled="problemZoomPercent >= maxProblemZoom"
+                  aria-label="확대"
+                  @click.stop="increaseProblemZoom"
+                >
+                  <Icon type="plus-round" />
+                </button>
+              </div>
               <div
                 v-if="problem.is_bonus"
-                class="headerDetailBtn"
-                style="background-color: rgba(174, 161, 214, 0.25)"
+                class="headerDetailBtn bonusBadge"
+                title="정답 시 점수를 2배로 획득해요!"
               >
-                <i class="fas fa-award" style="color: #895edc"></i>
+                <i class="fas fa-award"></i>
                 Bonus x2
               </div>
-            </Tooltip>
+            </div>
           </div>
-        </div>
+        </template>
+      </header>
+      <div v-if="loading" class="problem-skeleton" aria-busy="true">
+        <section class="skeleton-section">
+          <div class="skeleton-heading"></div>
+          <div class="skeleton-line skeleton-wide"></div>
+          <div class="skeleton-line"></div>
+          <div class="skeleton-line skeleton-medium"></div>
+        </section>
+        <section class="skeleton-section">
+          <div class="skeleton-heading skeleton-heading-small"></div>
+          <div class="skeleton-line skeleton-wide"></div>
+          <div class="skeleton-line skeleton-short"></div>
+        </section>
+        <section class="skeleton-samples">
+          <div class="skeleton-sample-card"></div>
+          <div class="skeleton-sample-card"></div>
+        </section>
+        <section class="skeleton-section">
+          <div class="skeleton-heading skeleton-heading-small"></div>
+          <div class="skeleton-constraints">
+            <div class="skeleton-chip"></div>
+            <div class="skeleton-chip"></div>
+          </div>
+        </section>
       </div>
-      <div id="problem-content" class="markdown-body">
+      <div
+        v-else
+        id="problem-content"
+        class="markdown-body"
+        :style="problemZoomStyle"
+      >
         <p class="title firstTitle">{{ $t("m.Description") }}</p>
         <div
           class="content"
@@ -146,14 +206,14 @@
         </div>
         <div v-if="problem.hint">
           <p class="title">{{ $t("m.Hint") }}</p>
-          <Card dis-hover class="hintCard">
+          <section class="hintCard">
             <div
               class="hintContent"
               v-html="problem.hint"
               v-katex
               :id="`problem-hint-${problem._id}`"
             ></div>
-          </Card>
+          </section>
         </div>
 
         <template v-if="!contestID">
@@ -270,7 +330,7 @@
           </div>
         </template>
       </div>
-    </Panel>
+    </section>
   </div>
 </template>
 
@@ -282,9 +342,20 @@ export default defineComponent({
   props: {
     problem: Object,
     contestID: [Number, String],
+    loading: {
+      type: Boolean,
+      default: false,
+    },
+    problemZoomPercent: {
+      type: Number,
+      default: 100,
+    },
   },
   data() {
     return {
+      minProblemZoom: 80,
+      maxProblemZoom: 140,
+      problemZoomStep: 5,
       dropdown: {
         openFieldDropdown: false,
         openCategoryDropdown: false,
@@ -313,6 +384,21 @@ export default defineComponent({
     onCopyError() {
       this.$error("Failed to copy code")
     },
+    decreaseProblemZoom() {
+      this.updateProblemZoom(Math.max(
+        this.minProblemZoom,
+        this.problemZoomPercent - this.problemZoomStep,
+      ))
+    },
+    increaseProblemZoom() {
+      this.updateProblemZoom(Math.min(
+        this.maxProblemZoom,
+        this.problemZoomPercent + this.problemZoomStep,
+      ))
+    },
+    updateProblemZoom(value) {
+      this.$emit("update:problemZoomPercent", value)
+    },
   },
   computed: {
     FIELD_MAP() {
@@ -333,6 +419,19 @@ export default defineComponent({
       if (!this.problem || !this.problem._id) return "\u00A0"
       return `${this.problem._id}. ${this.problem.title}`
     },
+    problemZoomStyle() {
+      const scale = this.problemZoomPercent / 100
+      return {
+        "--problem-heading-font-size": `${20 * scale}px`,
+        "--problem-title-font-size": `${19 * scale}px`,
+        "--problem-content-font-size": `${15 * scale}px`,
+        "--problem-code-font-size": `${14 * scale}px`,
+        "--problem-constraint-font-size": `${13 * scale}px`,
+        "--problem-constraint-icon-size": `${14 * scale}px`,
+        "--problem-constraint-label-size": `${12 * scale}px`,
+        "--problem-constraint-unit-size": `${11 * scale}px`,
+      }
+    },
   },
 })
 </script>
@@ -341,9 +440,11 @@ export default defineComponent({
 .problemDetailFlexibleContainer {
   min-height: 0;
   height: 100%;
-  overflow-y: scroll;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
   display: flex;
   flex-direction: column;
+  background-color: var(--bg-color);
 
   &::-webkit-scrollbar {
     width: 8px;
@@ -360,32 +461,32 @@ export default defineComponent({
   }
 
   .detailCard {
-    border: none;
     flex: 1;
-    height: max-content;
+    min-height: 100%;
+    box-sizing: border-box;
     background-color: var(--bg-color);
-
-    /deep/ .ivu-card-body {
-      padding-top: 10px !important;
-    }
+    padding: 30px 36px 40px;
 
     .detailTitle {
       color: var(--ps-content-title-color);
       border-bottom: 1px solid var(--border-color);
-      padding-bottom: 14px;
-      padding-left: 18px;
+      padding-bottom: 16px;
       font-weight: bold;
       min-height: 1.5em;
       line-height: 1.5;
 
       .detailTitleText {
+        margin: 0;
         font-weight: bold;
+        font-size: var(--problem-heading-font-size, 20px);
+        letter-spacing: 0;
       }
 
       .detailTitleMeta {
         display: flex;
         justify-content: space-between;
         align-items: center;
+        gap: 16px;
         margin-top: 10px;
         font-size: 14px;
         font-weight: normal;
@@ -396,14 +497,35 @@ export default defineComponent({
       .detailTitleMetaRight {
         display: flex;
         align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .detailTitleMetaLeft {
+        flex: 1 1 auto;
+        min-width: 0;
+      }
+
+      .detailTitleMetaRight {
+        flex: 0 0 auto;
+        gap: 10px;
       }
     }
   }
 
-  #problem-content {
+#problem-content {
+  padding-top: 22px;
+
+    --problem-title-font-size: 19px;
+    --problem-content-font-size: 15px;
+    --problem-code-font-size: 14px;
+    --problem-constraint-font-size: 13px;
+    --problem-constraint-icon-size: 14px;
+    --problem-constraint-label-size: 12px;
+    --problem-constraint-unit-size: 11px;
 
     .title {
-      font-size: 19px;
+      font-size: var(--problem-title-font-size);
       font-weight: 600;
       margin: 25px 0 8px 0;
       color: var(--ps-content-title-color) !important;
@@ -418,7 +540,7 @@ export default defineComponent({
     }
 
     .content {
-      font-size: 15px;
+      font-size: var(--problem-content-font-size);
       font-weight: 400;
       line-height: 1.6;
       letter-spacing: 0.01em;
@@ -431,6 +553,8 @@ export default defineComponent({
     /deep/ li,
     /deep/ span {
       color: var(--ps-content-text-color) !important;
+      font-size: inherit;
+      line-height: inherit;
     }
 
     /deep/ img {
@@ -471,6 +595,7 @@ export default defineComponent({
     }
 
     /deep/ pre {
+      font-size: var(--problem-code-font-size);
       background: var(--ps-content-pre-background-color) !important;
       border: 1px solid var(--ps-content-pre-border-color) !important;
       border-radius: 7px;
@@ -478,6 +603,7 @@ export default defineComponent({
     }
 
     /deep/ code {
+      font-size: var(--problem-code-font-size);
       color: var(--ps-content-code-text-color) !important;
       background-color: var(--ps-content-code-background-color) !important;
     }
@@ -494,16 +620,71 @@ export default defineComponent({
   }
 }
 
+.zoom-control {
+  display: inline-grid;
+  grid-template-columns: 28px 48px 28px;
+  align-items: center;
+  height: 28px;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--bg-color);
+  color: var(--ps-content-title-color);
+}
+
+.zoom-button {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 28px;
+}
+
+.zoom-button i {
+  pointer-events: none;
+}
+
+.zoom-button:hover:not(:disabled) {
+  background: var(--header-btn-color);
+}
+
+.zoom-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.38;
+}
+
+.zoom-value {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 48px;
+  height: 28px;
+  border-left: 1px solid var(--border-color);
+  border-right: 1px solid var(--border-color);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+
 .headerDetailBtn {
   background-color: var(--header-btn-color);
   cursor: pointer;
-  font-weight: 550;
-  padding: 3px 8px;
-  margin-right: 10px;
-  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 28px;
+  font-weight: 650;
+  padding: 4px 10px;
+  border-radius: 999px;
 
   i {
-    margin-right: 5px;
+    margin-right: 0;
   }
 }
 
@@ -512,9 +693,32 @@ export default defineComponent({
   background-color: var(--custom-btn-hover-color);
 }
 
+.header-icon {
+  margin-right: 5px;
+}
+
+.field-icon {
+  color: #f59e0b;
+}
+
+.tag-icon {
+  color: #ef6461;
+}
+
+.author-icon {
+  color: #4f8edb;
+}
+
+.bonusBadge {
+  background-color: rgba(137, 94, 220, 0.13);
+  color: #895edc;
+}
+
 .hintCard {
   border: 1px solid var(--ps-content-pre-border-color);
+  border-radius: 8px;
   background-color: var(--ps-content-pre-background-color);
+  padding: 14px 16px;
 }
 
 .constraintList {
@@ -532,7 +736,7 @@ export default defineComponent({
   border-radius: 999px;
   border: 1px solid var(--ps-content-pre-border-color);
   background-color: var(--ps-content-pre-background-color);
-  font-size: 13px;
+  font-size: var(--problem-constraint-font-size);
   line-height: 1.4;
   color: var(--ps-content-title-color);
 }
@@ -541,7 +745,7 @@ export default defineComponent({
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+  font-size: var(--problem-constraint-icon-size);
 
   &--time {
     color: #f59e0b;
@@ -559,7 +763,7 @@ export default defineComponent({
 }
 
 .constraintLabel {
-  font-size: 12px;
+  font-size: var(--problem-constraint-label-size);
   font-weight: 500;
   opacity: 0.7;
 }
@@ -574,12 +778,12 @@ export default defineComponent({
   font-family: "JetBrains Mono", "Noto Sans KR", "Apple SD Gothic Neo", "Menlo",
     "Monaco", "Consolas", monospace;
   font-variant-ligatures: none;
-  font-size: 13px;
+  font-size: var(--problem-constraint-font-size);
   font-weight: 600;
 }
 
 .constraintUnit {
-  font-size: 11px;
+  font-size: var(--problem-constraint-unit-size);
   font-weight: 500;
   opacity: 0.7;
 }
@@ -637,6 +841,98 @@ export default defineComponent({
   }
 }
 
+.problem-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+  padding-top: 22px;
+}
+
+.skeleton-line,
+.skeleton-heading,
+.skeleton-pill,
+.skeleton-sample-card,
+.skeleton-chip,
+.skeleton-zoom-control {
+  border-radius: 6px;
+  background: var(--ps-content-pre-background-color);
+}
+
+.skeleton-title {
+  width: ~"min(280px, 64%)";
+  height: 24px;
+}
+
+.skeleton-pill {
+  width: 82px;
+  height: 27px;
+  margin-right: 10px;
+  border-radius: 8px;
+}
+
+.skeleton-pill-short {
+  width: 58px;
+}
+
+.skeleton-zoom-control {
+  width: 120px;
+  height: 31px;
+}
+
+.skeleton-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.skeleton-heading {
+  width: 130px;
+  height: 22px;
+}
+
+.skeleton-heading-small {
+  width: 86px;
+}
+
+.skeleton-line {
+  width: 86%;
+  height: 15px;
+}
+
+.skeleton-wide {
+  width: 96%;
+}
+
+.skeleton-medium {
+  width: 70%;
+}
+
+.skeleton-short {
+  width: 48%;
+}
+
+.skeleton-samples {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.skeleton-sample-card {
+  min-height: 92px;
+}
+
+.skeleton-constraints {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.skeleton-chip {
+  width: 118px;
+  height: 30px;
+  border-radius: 999px;
+}
+
 .slide-enter-active,
 .slide-leave-active {
   transition:
@@ -655,5 +951,15 @@ export default defineComponent({
 .slide-leave {
   max-height: 100px;
   opacity: 1;
+}
+
+@media (max-width: 720px) {
+  .problemDetailFlexibleContainer .detailCard {
+    padding: 22px 20px 30px;
+  }
+
+  .skeleton-samples {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

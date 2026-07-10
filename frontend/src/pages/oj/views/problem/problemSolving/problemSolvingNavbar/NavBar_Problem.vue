@@ -15,9 +15,9 @@
         <template v-else>
           <p class="pnuName contest-heading">
             <span>대회</span>
-            <span v-if="contestTitle" class="contest-heading-separator">-</span>
+            <span v-if="contestLoaded && contestTitle" class="contest-heading-separator">-</span>
             <span
-              v-if="contestTitle"
+              v-if="contestLoaded && contestTitle"
               class="contest-heading-title"
               :title="contestTitle"
             >
@@ -26,10 +26,21 @@
           </p>
         </template>
       </div>
-      <div v-if="isContestProblemHeader && countdown" class="contest-context">
-        <div class="contest-timer" :class="'contest-timer--' + (countdownParts ? countdownParts.status : 'ended')">
+      <div
+        v-if="isContestProblemHeader && contestLoaded && countdown"
+        class="contest-context"
+      >
+        <div
+          class="contest-timer"
+          :class="
+            'contest-timer--' +
+            (countdownParts ? countdownParts.status : 'ended')
+          "
+        >
           <template v-if="countdownParts && countdownParts.status !== 'ended'">
-            <span class="contest-timer__label">{{ countdownParts.status === 'running' ? '남은 시간' : '시작까지' }}</span>
+            <span class="contest-timer__label">{{
+              countdownParts.status === "running" ? "남은 시간" : "시작까지"
+            }}</span>
             <span class="contest-timer__text">{{ formattedTime }}</span>
           </template>
           <template v-else>
@@ -38,21 +49,37 @@
         </div>
       </div>
       <div class="header-actions">
-        <Tooltip
-          :content="this.themeTooltipContent"
-          placement="bottom"
-          class="theme-toggle"
+        <button
+          type="button"
+          class="header-action-button"
+          :aria-label="themeTooltipContent"
+          :title="themeTooltipContent"
+          @click="toggleProblemTheme"
         >
-          <CustomIconBtn
-            @click="toggleProblemTheme"
-            iconClass="fas fa-adjust"
+          <i class="fas fa-adjust"></i>
+        </button>
+        <button
+          v-if="isProblemSolvingHeader"
+          type="button"
+          class="header-action-button"
+          aria-label="설정"
+          title="설정"
+          @click.stop="openProblemSettings"
+        >
+          <i class="fas fa-cog"></i>
+        </button>
+        <div
+          v-if="isAuthenticated || !profileResolved"
+          class="userAvatarWrapper"
+          :class="{ 'userAvatarWrapper--loading': !isAuthenticated }"
+          @click="goUserHome"
+        >
+          <img
+            v-if="isAuthenticated && profile.avatar"
+            class="avatar"
+            :src="profile.avatar"
           />
-        </Tooltip>
-        <template v-if="isAuthenticated">
-          <div class="userAvatarWrapper" @click="goUserHome">
-            <img class="avatar" :src="profile.avatar" />
-          </div>
-        </template>
+        </div>
       </div>
     </Menu>
   </div>
@@ -60,13 +87,21 @@
 
 <script>
 import { mapGetters, mapActions } from "vuex"
-import CustomIconBtn from "../../../../components/buttons/CustomIconBtn.vue"
 export default {
-  components: {
-    CustomIconBtn,
-  },
   mounted() {
-    this.getProfile()
+    const profileRequest = this.getProfile()
+    if (profileRequest && typeof profileRequest.then === "function") {
+      profileRequest.then(
+        () => {
+          this.profileResolved = true
+        },
+        () => {
+          this.profileResolved = true
+        },
+      )
+    } else {
+      this.profileResolved = true
+    }
     const el = document.querySelector(":root")
     el.classList.add("problem")
   },
@@ -77,6 +112,7 @@ export default {
   data() {
     return {
       themeTooltipContent: "다크 테마",
+      profileResolved: false,
     }
   },
   methods: {
@@ -119,6 +155,23 @@ export default {
       if (this.$route.name === "problem-details") this.handleRoute("/problem")
       else this.handleRoute(`/contest/${this.$route.params.contestID}/problems`)
     },
+    openProblemSettings(event) {
+      const rect = event.currentTarget.getBoundingClientRect()
+      window.dispatchEvent(
+        new CustomEvent("open-problem-settings", {
+          detail: {
+            anchorRect: {
+              top: rect.top,
+              right: rect.right,
+              bottom: rect.bottom,
+              left: rect.left,
+              width: rect.width,
+              height: rect.height,
+            },
+          },
+        }),
+      )
+    },
   },
   computed: {
     ...mapGetters([
@@ -127,6 +180,7 @@ export default {
       "isAdminRole",
       "isAuthenticated",
       "user",
+      "contestLoaded",
       "countdown",
       "countdownParts",
     ]),
@@ -137,16 +191,22 @@ export default {
     isContestProblemHeader() {
       return this.$route.name === "contest-problem-details"
     },
+    isProblemSolvingHeader() {
+      return (
+        this.$route.name === "problem-details" ||
+        this.$route.name === "contest-problem-details"
+      )
+    },
     contestTitle() {
       return (this.$store.state.contest.contest || {}).title || ""
     },
     formattedTime() {
-      if (!this.countdownParts || this.countdownParts.status === 'ended') {
-        return ''
+      if (!this.countdownParts || this.countdownParts.status === "ended") {
+        return ""
       }
-      const pad = (num) => String(num).padStart(2, '0')
+      const pad = (num) => String(num).padStart(2, "0")
       const { days, hours, minutes, seconds } = this.countdownParts
-      
+
       let timeStr = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`
       if (days > 0) {
         timeStr = `${days}일 ${timeStr}`
@@ -214,8 +274,8 @@ export default {
     height: 50px;
     .pnuName {
       margin: 0 0 0 10px;
-      font-size: 16px;
-      font-weight: bold;
+      font-size: 18px;
+      font-weight: 600;
       line-height: 20px;
       white-space: nowrap;
     }
@@ -268,8 +328,30 @@ export default {
     height: 50px;
   }
 
-  .theme-toggle {
-    display: flex;
+  .header-action-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-color);
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    transition:
+      background-color 0.12s ease,
+      color 0.12s ease;
+  }
+
+  .header-action-button:hover {
+    background-color: rgba(100, 116, 139, 0.1);
+  }
+
+  .header-action-button:active {
+    background-color: rgba(100, 116, 139, 0.16);
   }
 
   .userAvatarWrapper {
@@ -294,9 +376,22 @@ export default {
     background-color: rgba(255, 255, 255, 0.9);
   }
 
+  .userAvatarWrapper--loading {
+    cursor: default;
+    pointer-events: none;
+  }
+
 }
 
 :root.dark.problem #header {
+  .header-action-button:hover {
+    background-color: rgba(203, 213, 225, 0.1);
+  }
+
+  .header-action-button:active {
+    background-color: rgba(203, 213, 225, 0.16);
+  }
+
   .contest-heading-separator {
     color: #64748b;
   }
@@ -313,7 +408,6 @@ export default {
     border-color: rgba(170, 179, 203, 0.34);
     background-color: rgba(170, 179, 203, 0.22);
   }
-
 }
 
 /* ── Contest Timer ── */

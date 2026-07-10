@@ -1,0 +1,41 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: postgres
+  labels:
+    release: kube-prometheus-stack
+spec:
+  namespaceSelector:
+    matchNames:
+      - code-place-dev
+      - code-place-prod
+  selector:
+    matchLabels:
+      cnpg.io/cluster: postgres
+  podMetricsEndpoints:
+    - port: metrics
+      interval: 30s
+      scrapeTimeout: 10s
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: redis
+  labels:
+    release: kube-prometheus-stack
+spec:
+  namespaceSelector:
+    matchNames:
+      - code-place-dev
+      - code-place-prod
+  selector:
+    matchExpressions:
+      - key: app
+        operator: In
+        values:
+          - redis-replication
+          - redis-sentinel
+  podMetricsEndpoints:
+    - portNumber: 9121
+      interval: 30s
+      scrapeTimeout: 10s

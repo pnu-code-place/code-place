@@ -1,91 +1,135 @@
 <template>
   <div class="flex-container">
-    <div id="main">
-      <Panel dis-hover style="border-radius: 20px">
-        <div slot="title">{{ title }}</div>
-        <div slot="extra">
-          <ul class="filter">
-            <li>
-              <Dropdown @on-click="handleResultChange" style="cursor: pointer">
-                <span
-                  >{{ status }}
-                  <Icon type="arrow-down-b"></Icon>
-                </span>
-                <Dropdown-menu slot="list">
-                  <Dropdown-item name="">{{ $t("m.All") }}</Dropdown-item>
-                  <Dropdown-item
-                    v-for="status in Object.keys(JUDGE_STATUS)"
-                    :key="status"
-                    :name="status"
-                  >
-                    {{
-                      $t("m." + JUDGE_STATUS[status].name.replace(/ /g, "_"))
-                    }}
-                  </Dropdown-item>
-                </Dropdown-menu>
-              </Dropdown>
-            </li>
+    <section id="main" class="submission-panel">
+      <div class="submission-content">
+        <header class="submission-toolbar">
+          <h1>{{ title }}</h1>
+          <div class="filter">
+            <details
+              ref="statusFilter"
+              class="status-filter"
+              :class="{ active: formFilter.result !== '' }"
+            >
+              <summary>
+                <span class="control-kicker">{{
+                  $t("m.Submission_State")
+                }}</span>
+                <strong>{{ selectedStatusLabel }}</strong>
+                <svg
+                  class="summary-caret"
+                  viewBox="0 0 16 16"
+                  aria-hidden="true"
+                >
+                  <path d="M4 6l4 4 4-4" />
+                </svg>
+              </summary>
+              <div class="status-popover">
+                <button
+                  class="status-option"
+                  :class="{ selected: formFilter.result === '' }"
+                  type="button"
+                  @click="selectResult('')"
+                >
+                  {{ $t("m.All") }}
+                </button>
+                <button
+                  v-for="status in Object.keys(JUDGE_STATUS)"
+                  :key="status"
+                  class="status-option"
+                  :class="{ selected: formFilter.result === status }"
+                  type="button"
+                  @click="selectResult(status)"
+                >
+                  {{ getJudgeStatusLabel(status) }}
+                </button>
+              </div>
+            </details>
 
-            <li>
-              <i-switch
-                size="large"
+            <label class="mine-toggle">
+              <input
                 v-model="formFilter.myself"
-                @on-change="handleQueryChange"
-              >
-                <span slot="open">{{ $t("m.Mine") }}</span>
-                <span slot="close">{{ $t("m.All") }}</span>
-              </i-switch>
-            </li>
-            <li>
-              <Input
-                v-model="formFilter.username"
-                :placeholder="$t('m.Search_Author')"
-                @on-enter="handleQueryChange"
+                type="checkbox"
+                @change="handleQueryChange"
               />
-            </li>
+              <span class="toggle-track"></span>
+              <span class="toggle-label">{{ $t("m.Mine") }}</span>
+            </label>
 
-            <li>
-              <Button
-                class="refresh-button"
-                icon="refresh"
-                @click="getSubmissions"
-                >{{ $t("m.Refresh") }}</Button
+            <label class="search-control">
+              <svg
+                class="search-icon"
+                viewBox="0 0 16 16"
+                aria-hidden="true"
               >
-            </li>
-          </ul>
+                <circle cx="7" cy="7" r="4" />
+                <path d="M10.5 10.5L13 13" />
+              </svg>
+              <input
+                v-model="formFilter.username"
+                :placeholder="$t('m.Search_Submitter')"
+                type="search"
+                @keydown.enter="handleQueryChange"
+              />
+            </label>
+          </div>
+        </header>
+
+        <div class="table-panel">
+          <SubmissionTable
+            :contest-id="contestID"
+            :data="submissions"
+            :loading="loadingTable"
+          ></SubmissionTable>
         </div>
 
-        <SubmissionTable
-          :columns="columns"
-          :data="submissions"
-          :loading="loadingTable"
-        ></SubmissionTable>
-        <!--        <Table stripe :disabled-hover="true" :columns="columns" :data="submissions" :loading="loadingTable"></Table>-->
-        <Pagination
-          :total="total"
-          :page-size="limit"
-          @on-change="changeRoute"
-          :current.sync="page"
-        ></Pagination>
-      </Panel>
-    </div>
+        <footer class="pagination-footer">
+          <span class="total-count">총 {{ total }}개 제출</span>
+          <nav class="pagination" aria-label="pagination">
+            <button
+              class="page-button"
+              type="button"
+              :disabled="page <= 1"
+              @click="goPage(page - 1)"
+            >
+              ‹
+            </button>
+            <button
+              v-for="pageItem in visiblePages"
+              :key="pageItem.key"
+              class="page-button"
+              :class="{ active: pageItem.page === page }"
+              type="button"
+              :disabled="pageItem.ellipsis"
+              @click="!pageItem.ellipsis && goPage(pageItem.page)"
+            >
+              {{ pageItem.label }}
+            </button>
+            <button
+              class="page-button"
+              type="button"
+              :disabled="page >= totalPages"
+              @click="goPage(page + 1)"
+            >
+              ›
+            </button>
+          </nav>
+        </footer>
+      </div>
+    </section>
   </div>
 </template>
 
 <script>
 import { mapGetters } from "vuex"
 import api from "@oj/api"
-import { JUDGE_STATUS, USER_TYPE } from "@/utils/constants"
+import { JUDGE_STATUS } from "@/utils/constants"
 import utils from "@/utils/utils"
-import time from "@/utils/time"
-import Pagination from "@/pages/oj/components/Pagination"
 import SubmissionTable from "./SubmissionTable.vue"
 
 export default {
   name: "submissionList",
   components: {
     SubmissionTable,
-    Pagination,
   },
   data() {
     return {
@@ -94,152 +138,15 @@ export default {
         result: "",
         username: "",
       },
-      columns: [
-        {
-          title: this.$i18n.t("m.When"),
-          align: "center",
-          render: (h, params) => {
-            return h("span", time.utcToLocal(params.row.create_time))
-          },
-        },
-        {
-          title: this.$i18n.t("m.ID"),
-          align: "center",
-          render: (h, params) => {
-            if (params.row.show_link) {
-              return h(
-                "span",
-                {
-                  style: {
-                    color: "#57a3f3",
-                    cursor: "pointer",
-                  },
-                  on: {
-                    click: () => {
-                      this.$router.push("/status/" + params.row.id)
-                    },
-                  },
-                },
-                params.row.id.slice(0, 12),
-              )
-            } else {
-              return h("span", params.row.id.slice(0, 12))
-            }
-          },
-        },
-        {
-          title: this.$i18n.t("m.Status"),
-          align: "center",
-          render: (h, params) => {
-            return h(
-              "Tag",
-              {
-                props: {
-                  color: JUDGE_STATUS[params.row.result].color,
-                },
-              },
-              this.$i18n.t(
-                "m." + JUDGE_STATUS[params.row.result].name.replace(/ /g, "_"),
-              ),
-            )
-          },
-        },
-        {
-          title: this.$i18n.t("m.Problem"),
-          align: "center",
-          render: (h, params) => {
-            return h(
-              "span",
-              {
-                style: {
-                  color: "#57a3f3",
-                  cursor: "pointer",
-                },
-                on: {
-                  click: () => {
-                    if (this.contestID) {
-                      this.$router.push({
-                        name: "contest-problem-details",
-                        params: {
-                          problemID: params.row.problem,
-                          contestID: this.contestID,
-                        },
-                      })
-                    } else {
-                      this.$router.push({
-                        name: "problem-details",
-                        params: { problemID: params.row.problem },
-                      })
-                    }
-                  },
-                },
-              },
-              params.row.problem,
-            )
-          },
-        },
-        {
-          title: this.$i18n.t("m.Time"),
-          align: "center",
-          render: (h, params) => {
-            return h(
-              "span",
-              utils.submissionTimeFormat(params.row.statistic_info.time_cost),
-            )
-          },
-        },
-        {
-          title: this.$i18n.t("m.Memory"),
-          align: "center",
-          render: (h, params) => {
-            return h(
-              "span",
-              utils.submissionMemoryFormat(
-                params.row.statistic_info.memory_cost,
-              ),
-            )
-          },
-        },
-        {
-          title: this.$i18n.t("m.Language"),
-          align: "center",
-          key: "language",
-        },
-        {
-          title: this.$i18n.t("m.Author"),
-          align: "center",
-          render: (h, params) => {
-            return h(
-              "a",
-              {
-                style: {
-                  display: "inline-block",
-                  "max-width": "150px",
-                },
-                on: {
-                  click: () => {
-                    this.$router.push({
-                      name: "user-home",
-                      query: { username: params.row.username },
-                    })
-                  },
-                },
-              },
-              params.row.username,
-            )
-          },
-        },
-      ],
       loadingTable: false,
       submissions: [],
       total: 30,
-      limit: 12,
+      limit: 18,
       page: 1,
       contestID: "",
       problemID: "",
       routeName: "",
-      JUDGE_STATUS: "",
-      rejudge_column: false,
+      JUDGE_STATUS: {},
     }
   },
   mounted() {
@@ -287,7 +194,6 @@ export default {
           for (let v of data.results) {
             v.loading = false
           }
-          this.adjustRejudgeColumn()
           this.loadingTable = false
           this.submissions = data.results
           this.total = data.total
@@ -312,62 +218,85 @@ export default {
     goRoute(route) {
       this.$router.push(route)
     },
-    adjustRejudgeColumn() {
-      if (!this.rejudgeColumnVisible || this.rejudge_column) {
-        return
-      }
-      const judgeColumn = {
-        title: this.$i18n.t("m.Option"),
-        fixed: "right",
-        align: "center",
-        width: 90,
-        render: (h, params) => {
-          return h(
-            "Button",
-            {
-              props: {
-                type: "primary",
-                size: "small",
-                loading: params.row.loading,
-              },
-              on: {
-                click: () => {
-                  this.handleRejudge(params.row.id, params.index)
-                },
-              },
-            },
-            this.$i18n.t("m.Rejudge"),
-          )
-        },
-      }
-      this.columns.push(judgeColumn)
-      this.rejudge_column = true
-    },
-    handleResultChange(status) {
+    selectResult(status) {
       this.page = 1
       this.formFilter.result = status
+      if (this.$refs.statusFilter) {
+        this.$refs.statusFilter.removeAttribute("open")
+      }
       this.changeRoute()
     },
     handleQueryChange() {
       this.page = 1
       this.changeRoute()
     },
-    handleRejudge(id, index) {
-      this.submissions[index].loading = true
-      api.submissionRejudge(id).then(
-        (res) => {
-          this.submissions[index].loading = false
-          this.$success("Succeeded")
-          this.getSubmissions()
-        },
-        () => {
-          this.submissions[index].loading = false
-        },
+    getJudgeStatusLabel(status) {
+      return this.$i18n.t(
+        "m." + JUDGE_STATUS[status].name.replace(/ /g, "_"),
       )
+    },
+    goPage(page) {
+      if (page < 1 || page > this.totalPages || page === this.page) {
+        return
+      }
+      this.page = page
+      this.changeRoute()
     },
   },
   computed: {
-    ...mapGetters(["isAuthenticated", "user"]),
+    ...mapGetters(["isAuthenticated"]),
+    totalPages() {
+      return Math.max(Math.ceil(this.total / this.limit), 1)
+    },
+    selectedStatusLabel() {
+      if (this.formFilter.result === "") {
+        return this.$i18n.t("m.All")
+      }
+      return this.getJudgeStatusLabel(this.formFilter.result)
+    },
+    visiblePages() {
+      const pages = []
+      const addPage = (page) => {
+        pages.push({
+          key: `page-${page}`,
+          label: page,
+          page,
+          ellipsis: false,
+        })
+      }
+      const addEllipsis = (key) => {
+        pages.push({
+          key,
+          label: "...",
+          page: null,
+          ellipsis: true,
+        })
+      }
+
+      if (this.totalPages <= 7) {
+        for (let page = 1; page <= this.totalPages; page++) {
+          addPage(page)
+        }
+        return pages
+      }
+
+      addPage(1)
+      if (this.page > 4) {
+        addEllipsis("start-ellipsis")
+      }
+
+      const start = Math.max(2, this.page - 1)
+      const end = Math.min(this.totalPages - 1, this.page + 1)
+      for (let page = start; page <= end; page++) {
+        addPage(page)
+      }
+
+      if (this.page < this.totalPages - 3) {
+        addEllipsis("end-ellipsis")
+      }
+      addPage(this.totalPages)
+      return pages
+    },
     title() {
       if (!this.contestID) {
         return this.$i18n.t("m.Status")
@@ -377,25 +306,12 @@ export default {
         return this.$i18n.t("m.Submissions")
       }
     },
-    status() {
-      return this.formFilter.result === ""
-        ? this.$i18n.t("m.Submission_State")
-        : this.$i18n.t(
-            "m." + JUDGE_STATUS[this.formFilter.result].name.replace(/ /g, "_"),
-          )
-    },
-    rejudgeColumnVisible() {
-      return !this.contestID && this.user.admin_type === USER_TYPE.SUPER_ADMIN
-    },
   },
   watch: {
     $route(newVal, oldVal) {
       if (newVal !== oldVal) {
         this.init()
       }
-    },
-    rejudgeColumnVisible() {
-      this.adjustRejudgeColumn()
     },
     isAuthenticated() {
       this.init()
@@ -405,31 +321,315 @@ export default {
 </script>
 
 <style scoped lang="less">
-.ivu-btn-text {
-  color: #57a3f3;
-}
-
 .flex-container {
-  width: var(--global-width);
+  width: 100%;
+  margin: 0;
+  background: #ffffff;
 
   #main {
     flex: auto;
-    margin-right: 18px;
-
-    .filter {
-      margin-right: -10px;
-    }
-  }
-
-  #contest-menu {
-    flex: none;
-    width: 210px;
   }
 }
 
-.refresh-button {
-  background-color: #495060;
-  color: white;
-  border-radius: 20px;
+.submission-panel {
+  overflow: visible;
+  background: #ffffff;
+  border: 0;
+  border-radius: 0;
+}
+
+.submission-content {
+  width: 100%;
+  max-width: var(--global-width);
+  margin: 0 auto;
+  padding: 0 32px;
+}
+
+.submission-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 16px 0;
+  border-bottom: 1px solid #eef1f5;
+
+  h1 {
+    margin: 0;
+    color: #303747;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.3;
+  }
+}
+
+.filter {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.status-filter {
+  position: relative;
+
+  summary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 36px;
+    padding: 0 12px;
+    color: #303747;
+    font-size: 14px;
+    list-style: none;
+    background: #f6f7fb;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    cursor: pointer;
+    user-select: none;
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+
+    &:hover {
+      background: #eef1ff;
+    }
+  }
+
+  &[open] summary,
+  &.active summary {
+    color: #5661f6;
+    background: #eef1ff;
+    border-color: rgba(86, 97, 246, 0.18);
+  }
+
+  &.active .control-kicker,
+  &.active .summary-caret,
+  &[open] .control-kicker,
+  &[open] .summary-caret {
+    color: #5661f6;
+  }
+
+  strong {
+    font-weight: 800;
+  }
+}
+
+.control-kicker {
+  color: #8a94a6;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.summary-caret {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  color: #8a94a6;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+}
+
+.status-popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(104px, 1fr));
+  gap: 6px;
+  width: 250px;
+  padding: 8px;
+  background: #ffffff;
+  border: 1px solid #e6e9f0;
+  border-radius: 10px;
+  box-shadow: 0 16px 40px rgba(30, 41, 59, 0.12);
+}
+
+.status-option {
+  height: 32px;
+  padding: 0 10px;
+  color: #596579;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-radius: 7px;
+  cursor: pointer;
+
+  &:hover,
+  &.selected {
+    color: #5661f6;
+    background: #f3f5ff;
+  }
+}
+
+.mine-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  height: 36px;
+  padding: 0 4px 0 10px;
+  color: #4f5b6f;
+  font-size: 14px;
+  font-weight: 700;
+  background: #f6f7fb;
+  border-radius: 999px;
+  cursor: pointer;
+
+  input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  input:checked + .toggle-track {
+    background: #5661f6;
+  }
+
+  input:checked + .toggle-track::after {
+    transform: translateX(14px);
+  }
+}
+
+.toggle-track {
+  position: relative;
+  width: 34px;
+  height: 20px;
+  background: #d8dde8;
+  border-radius: 999px;
+  transition: background-color 0.15s ease;
+}
+
+.toggle-track::after {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 14px;
+  height: 14px;
+  content: "";
+  background: #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.2);
+  transition: transform 0.15s ease;
+}
+
+.toggle-label {
+  padding-right: 8px;
+}
+
+.search-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  width: 198px;
+  height: 36px;
+  padding: 0 12px;
+  color: #8a94a6;
+  background: #f6f7fb;
+  border-radius: 999px;
+
+  &:focus-within {
+    color: #5661f6;
+    background: #eef1ff;
+    box-shadow: inset 0 0 0 1px rgba(86, 97, 246, 0.18);
+  }
+
+  input {
+    width: 100%;
+    min-width: 0;
+    color: #303747;
+    font-size: 14px;
+    background: transparent;
+    border: 0;
+    outline: none;
+  }
+}
+
+.search-icon {
+  flex: none;
+  width: 15px;
+  height: 15px;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+}
+
+.table-panel {
+  background: #ffffff;
+}
+
+.pagination-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 56px;
+  padding: 10px 0 12px;
+  background: #ffffff;
+}
+
+.total-count {
+  color: #8a94a6;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  background: #f6f7fb;
+  border-radius: 999px;
+}
+
+.page-button {
+  min-width: 30px;
+  height: 30px;
+  padding: 0 10px;
+  color: #697386;
+  font-size: 14px;
+  font-weight: 700;
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+
+  &:hover:not(:disabled),
+  &.active {
+    color: #ffffff;
+    background: #5661f6;
+    box-shadow: 0 6px 16px rgba(86, 97, 246, 0.22);
+  }
+
+  &:disabled {
+    color: #bdc4d0;
+    cursor: not-allowed;
+    background: transparent;
+  }
+}
+
+@media (max-width: 960px) {
+  .submission-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .filter {
+    justify-content: flex-start;
+  }
+
+  .pagination-footer {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
 }
 </style>

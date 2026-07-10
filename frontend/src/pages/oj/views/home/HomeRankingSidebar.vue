@@ -17,7 +17,9 @@
           :key="index"
           @click="goUser(user.username)"
         >
-          <span class="rank-num" :class="rankClass(index)">{{ index + 1 }}</span>
+          <span class="rank-num" :class="rankClass(index)">{{
+            index + 1
+          }}</span>
           <img class="rank-avatar" :src="user.avatar" :alt="user.username" />
           <span class="rank-name">{{ user.username }}</span>
           <span class="rank-score">{{ user.total_score }}</span>
@@ -70,7 +72,7 @@ export default {
 
 <style scoped lang="less">
 .sidebar-section {
-  padding: 56px 0 0;
+  padding: 40px 0 0;
   flex-shrink: 0;
 }
 
@@ -207,7 +209,11 @@ export default {
 }
 
 @keyframes shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 </style>

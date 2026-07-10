@@ -45,6 +45,14 @@ export default {
   display: flex;
   align-items: center;
   padding: 0 40px;
+
+  @media (max-width: 768px) {
+    height: auto;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 20px 20px;
+    gap: 14px;
+  }
 }
 
 .cta-left {
@@ -103,6 +111,11 @@ export default {
 
   &:hover {
     background-color: #7a74c4;
+  }
+
+  @media (max-width: 768px) {
+    width: 100%;
+    text-align: center;
   }
 }
 </style>
