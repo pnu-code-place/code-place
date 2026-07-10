@@ -179,11 +179,9 @@ li {
       }
 
       .sw-center-annotator {
-        background-image: linear-gradient(
-          45deg,
-          var(--pnu-blue),
-          var(--pnu-green)
-        );
+        background-image: linear-gradient(45deg,
+            var(--pnu-blue),
+            var(--pnu-green));
         border-radius: 4px;
         color: #ffffff;
         font-size: 10px;
@@ -212,11 +210,9 @@ li {
 
   &.sw-center {
     // duel background color divided by diagonal line
-    background-image: linear-gradient(
-      45deg,
-      var(--pale-pnu-blue),
-      var(--pale-pnu-green)
-    );
+    background-image: linear-gradient(45deg,
+        var(--pale-pnu-blue),
+        var(--pale-pnu-green));
   }
 
   &:hover {
