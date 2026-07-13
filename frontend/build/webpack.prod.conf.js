@@ -134,6 +134,7 @@ if (config.build.bundleAnalyzerReport) {
   webpackConfig.plugins.push(new BundleAnalyzerPlugin())
 }
 
+sentry.assertSentryUploadConfig("production")
 if (sentry.isSentryUploadEnabled("production")) {
   webpackConfig.plugins.push(
     sentryWebpackPlugin({
