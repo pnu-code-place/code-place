@@ -312,7 +312,7 @@ data:
             }
           },
           "targets": [
-            {"expr": "sum by (namespace, endpoint) (kube_endpoint_address{namespace=~\"$namespace\", endpoint=~\"backend|frontend|hub-auth|judge-server|vllm\", ready=\"true\"})", "legendFormat": "{{namespace}} {{endpoint}} ready endpoints"}
+            {"expr": "sum by (namespace, service) (label_replace(kube_endpointslice_endpoints{namespace=~\"$namespace\", endpointslice=~\"(backend|frontend|hub-auth|judge-server|vllm)-.*\", ready=\"true\"}, \"service\", \"$1\", \"endpointslice\", \"(backend|frontend|hub-auth|judge-server|vllm)-.*\"))", "legendFormat": "{{namespace}} {{service}} ready endpoints"}
           ]
         },
         {

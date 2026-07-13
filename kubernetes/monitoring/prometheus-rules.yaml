@@ -120,7 +120,7 @@ spec:
             summary: "prod PostgreSQL Pod가 ready 상태가 아닙니다"
             description: "prod PostgreSQL Pod가 1분 동안 ready 상태가 아니거나 readiness metric이 사라졌습니다."
         - alert: PostgresPrimaryUnavailable
-          expr: sum(kube_endpoint_address{namespace="code-place-dev", endpoint="postgres-rw", ready="true"}) == 0 or absent(kube_endpoint_address{namespace="code-place-dev", endpoint="postgres-rw", ready="true"})
+          expr: sum(kube_endpointslice_endpoints{namespace="code-place-dev", endpointslice=~"postgres-rw-.*", ready="true"}) == 0 or absent(kube_endpointslice_endpoints{namespace="code-place-dev", endpointslice=~"postgres-rw-.*", ready="true"})
           for: 1m
           labels:
             namespace: code-place-dev
@@ -130,7 +130,7 @@ spec:
             summary: "dev PostgreSQL primary endpoint가 없습니다"
             description: "dev postgres-rw Service에 1분 동안 ready primary endpoint가 없습니다. Replica Pod가 ready여도 쓰기 연결이 실패할 수 있습니다."
         - alert: PostgresPrimaryUnavailable
-          expr: sum(kube_endpoint_address{namespace="code-place-prod", endpoint="postgres-rw", ready="true"}) == 0 or absent(kube_endpoint_address{namespace="code-place-prod", endpoint="postgres-rw", ready="true"})
+          expr: sum(kube_endpointslice_endpoints{namespace="code-place-prod", endpointslice=~"postgres-rw-.*", ready="true"}) == 0 or absent(kube_endpointslice_endpoints{namespace="code-place-prod", endpointslice=~"postgres-rw-.*", ready="true"})
           for: 1m
           labels:
             namespace: code-place-prod
@@ -289,14 +289,25 @@ spec:
             summary: "Celery broker queue가 쌓이고 있습니다"
             description: "Celery broker default queue가 5분 동안 20개를 초과했습니다. Worker 처리량과 Redis 상태를 확인해야 합니다."
         - alert: CodePlaceCollectorFailed
-          expr: min by (namespace, collector) (codeplace_collector_success{namespace=~"code-place-(dev|prod)"}) == 0 or absent(codeplace_collector_success{namespace=~"code-place-(dev|prod)"})
+          expr: min by (collector) (codeplace_collector_success{namespace="code-place-dev"}) == 0 or absent(codeplace_collector_success{namespace="code-place-dev"})
           for: 5m
           labels:
+            namespace: code-place-dev
             severity: warning
             priority: P1
           annotations:
-            summary: "Backend custom metric collector가 실패했습니다"
-            description: "Backend custom metric collector가 5분 동안 Redis 기반 metric을 수집하지 못했습니다. 실패 collector label을 확인해야 합니다."
+            summary: "dev Backend custom metric collector가 실패했습니다"
+            description: "dev Backend custom metric collector가 5분 동안 Redis 기반 metric을 수집하지 못했거나 metric이 사라졌습니다. 실패 collector label을 확인해야 합니다."
+        - alert: CodePlaceCollectorFailed
+          expr: min by (collector) (codeplace_collector_success{namespace="code-place-prod"}) == 0 or absent(codeplace_collector_success{namespace="code-place-prod"})
+          for: 5m
+          labels:
+            namespace: code-place-prod
+            severity: warning
+            priority: P1
+          annotations:
+            summary: "prod Backend custom metric collector가 실패했습니다"
+            description: "prod Backend custom metric collector가 5분 동안 Redis 기반 metric을 수집하지 못했거나 metric이 사라졌습니다. 실패 collector label을 확인해야 합니다."
         - alert: SubmissionCreateSystemFailures
           expr: sum by (namespace, scope, status) (increase(codeplace_submission_create_outcome_total{namespace=~"code-place-(dev|prod)", status=~"db_error|enqueue_error"}[5m])) > 0
           for: 2m
@@ -396,7 +407,7 @@ spec:
             summary: "CodePlace Deployment에 unavailable replica가 있습니다"
             description: "CodePlace Deployment에 5분 동안 unavailable replica가 있습니다. rollout 상태, Pod event, readiness probe, image pull, resource pressure를 확인해야 합니다."
         - alert: CodePlaceServiceNoReadyEndpoints
-          expr: (sum by (namespace, endpoint) (kube_endpoint_address{namespace=~"code-place-(dev|prod)", endpoint=~"backend|frontend|hub-auth|judge-server", ready="true"}) < 1) or (label_replace(kube_service_info{namespace=~"code-place-(dev|prod)", service=~"backend|frontend|hub-auth|judge-server"}, "endpoint", "$1", "service", "(.*)") unless on (namespace, endpoint) kube_endpoint_address{namespace=~"code-place-(dev|prod)", endpoint=~"backend|frontend|hub-auth|judge-server", ready="true"})
+          expr: (sum by (namespace, service) (label_replace(kube_endpointslice_endpoints{namespace=~"code-place-(dev|prod)", endpointslice=~"(backend|frontend|hub-auth|judge-server)-.*", ready="true"}, "service", "$1", "endpointslice", "(backend|frontend|hub-auth|judge-server)-.*")) < 1) or (kube_service_info{namespace=~"code-place-(dev|prod)", service=~"backend|frontend|hub-auth|judge-server"} unless on (namespace, service) label_replace(kube_endpointslice_endpoints{namespace=~"code-place-(dev|prod)", endpointslice=~"(backend|frontend|hub-auth|judge-server)-.*", ready="true"}, "service", "$1", "endpointslice", "(backend|frontend|hub-auth|judge-server)-.*"))
           for: 2m
           labels:
             severity: warning
@@ -405,7 +416,7 @@ spec:
             summary: "CodePlace Service에 ready endpoint가 없습니다"
             description: "CodePlace Service에 2분 동안 ready endpoint가 없거나 Service는 있는데 endpoint availability metric이 사라졌습니다. Service selector label, Pod readiness, EndpointSlice 상태, rollout event를 확인해야 합니다."
         - alert: VLLMServiceNoReadyEndpoints
-          expr: (sum by (namespace, endpoint) (kube_endpoint_address{namespace="code-place-prod", endpoint="vllm", ready="true"}) < 1) or (label_replace(kube_service_info{namespace="code-place-prod", service="vllm"}, "endpoint", "$1", "service", "(.*)") unless on (namespace, endpoint) kube_endpoint_address{namespace="code-place-prod", endpoint="vllm", ready="true"})
+          expr: (sum by (namespace, service) (label_replace(kube_endpointslice_endpoints{namespace="code-place-prod", endpointslice=~"vllm-.*", ready="true"}, "service", "vllm", "endpointslice", ".*")) < 1) or (kube_service_info{namespace="code-place-prod", service="vllm"} unless on (namespace, service) label_replace(kube_endpointslice_endpoints{namespace="code-place-prod", endpointslice=~"vllm-.*", ready="true"}, "service", "vllm", "endpointslice", ".*"))
           for: 2m
           labels:
             severity: warning
@@ -442,14 +453,25 @@ spec:
             summary: "PostgreSQL metric 수집이 실패하고 있습니다"
             description: "CNPG PostgreSQL metric 수집 오류가 5분 동안 보고됐습니다."
         - alert: PostgresCollectorUnavailable
-          expr: min by (namespace) (cnpg_collector_up{namespace=~"code-place-(dev|prod)", cluster="postgres"}) == 0 or absent(cnpg_collector_up{namespace=~"code-place-(dev|prod)", cluster="postgres"})
+          expr: min(cnpg_collector_up{namespace="code-place-dev", cluster="postgres"}) == 0 or absent(cnpg_collector_up{namespace="code-place-dev", cluster="postgres"})
           for: 5m
           labels:
+            namespace: code-place-dev
             severity: warning
             priority: P1
           annotations:
-            summary: "PostgreSQL metric collector가 응답하지 않습니다"
-            description: "CNPG collector가 5분 동안 PostgreSQL에 접근하지 못했거나 collector metric이 사라졌습니다."
+            summary: "dev PostgreSQL metric collector가 응답하지 않습니다"
+            description: "dev CNPG collector가 5분 동안 PostgreSQL에 접근하지 못했거나 collector metric이 사라졌습니다."
+        - alert: PostgresCollectorUnavailable
+          expr: min(cnpg_collector_up{namespace="code-place-prod", cluster="postgres"}) == 0 or absent(cnpg_collector_up{namespace="code-place-prod", cluster="postgres"})
+          for: 5m
+          labels:
+            namespace: code-place-prod
+            severity: warning
+            priority: P1
+          annotations:
+            summary: "prod PostgreSQL metric collector가 응답하지 않습니다"
+            description: "prod CNPG collector가 5분 동안 PostgreSQL에 접근하지 못했거나 collector metric이 사라졌습니다."
         - alert: PostgresHADegraded
           expr: min by (namespace) (cnpg_collector_nodes_used{namespace=~"code-place-(dev|prod)", cluster="postgres"}) < 2
           for: 10m
