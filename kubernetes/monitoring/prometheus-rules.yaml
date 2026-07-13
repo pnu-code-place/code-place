@@ -318,7 +318,7 @@ spec:
             summary: "제출 생성 경로에서 시스템 오류가 발생했습니다"
             description: "제출 생성 중 DB 오류 또는 judge enqueue 오류가 보고됐습니다. backend 로그, PostgreSQL, Redis/Celery broker, judge task queue를 확인해야 합니다."
         - alert: JudgeTaskFailures
-          expr: sum by (namespace, scope, status) (increase(codeplace_judge_task_outcome_total{namespace=~"code-place-(dev|prod)", status=~"error|submission_missing|user_missing"}[5m])) > 0
+          expr: max by (namespace, scope, status) (increase(codeplace_judge_task_outcome_total{namespace=~"code-place-(dev|prod)", status=~"error|submission_missing|user_missing"}[5m])) > 0
           for: 2m
           labels:
             severity: warning

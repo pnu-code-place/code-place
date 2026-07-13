@@ -189,7 +189,7 @@ data:
           "fieldConfig": {"defaults": {"unit": "ops"}},
           "targets": [
             {"expr": "sum by (namespace, scope, status) (rate(codeplace_submission_create_outcome_total{namespace=~\"$namespace\"}[5m]))", "legendFormat": "{{namespace}} create {{scope}} {{status}}/s"},
-            {"expr": "sum by (namespace, scope, status) (rate(codeplace_judge_task_outcome_total{namespace=~\"$namespace\"}[5m]))", "legendFormat": "{{namespace}} judge {{scope}} {{status}}/s"}
+            {"expr": "avg by (namespace, scope, status) (rate(codeplace_judge_task_outcome_total{namespace=~\"$namespace\"}[5m]))", "legendFormat": "{{namespace}} judge {{scope}} {{status}}/s"}
           ]
         },
         {

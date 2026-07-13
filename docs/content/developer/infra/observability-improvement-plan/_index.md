@@ -37,7 +37,7 @@ backend는 `django-prometheus` 기반 `/metrics` 엔드포인트를 제공합니
 - `codeplace_collector_success{collector}`
 - `codeplace_redis_sentinel_health{check}`
 
-Celery worker에서 발생한 judge outcome은 worker 프로세스 메모리가 아니라 Redis hash에 누적하고 backend `/metrics` collector가 노출합니다. Collector가 Redis 값을 읽지 못하면 queue 값을 `0`으로 대체하지 않고 해당 시계열을 생략한 뒤 `codeplace_collector_success=0`을 노출합니다.
+Celery worker에서 발생한 judge outcome은 worker 프로세스 메모리가 아니라 Redis hash에 누적하고 backend `/metrics` collector가 노출합니다. 모든 backend replica가 동일한 공유 counter를 노출하므로 비율은 replica를 더하지 않고 `avg by (namespace, scope, status)`로 중복 제거하며, 실패 여부는 `max by (namespace, scope, status)`로 판정합니다. Collector가 Redis 값을 읽지 못하면 queue 값을 `0`으로 대체하지 않고 해당 시계열을 생략한 뒤 `codeplace_collector_success=0`을 노출합니다.
 
 `/metrics`와 `/api/health` 요청은 API request rate/latency metric과 request completion log에서 제외합니다.
 
