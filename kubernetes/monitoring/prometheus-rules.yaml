@@ -159,6 +159,26 @@ spec:
           annotations:
             summary: "prod Redis/Sentinel Pod가 ready 상태가 아닙니다"
             description: "prod Redis/Sentinel Pod가 1분 동안 ready 상태가 아니거나 readiness metric이 사라졌습니다."
+        - alert: RedisSentinelUnavailable
+          expr: min(codeplace_redis_sentinel_health{namespace="code-place-dev"}) == 0 or absent(codeplace_redis_sentinel_health{namespace="code-place-dev", check="master"}) or absent(codeplace_redis_sentinel_health{namespace="code-place-dev", check="quorum"})
+          for: 1m
+          labels:
+            namespace: code-place-dev
+            severity: critical
+            priority: P0
+          annotations:
+            summary: "dev Redis Sentinel master 또는 quorum을 확인할 수 없습니다"
+            description: "Redis/Sentinel Pod readiness와 별개로 mymaster 탐색 또는 CKQUORUM 검사가 1분 동안 실패했습니다."
+        - alert: RedisSentinelUnavailable
+          expr: min(codeplace_redis_sentinel_health{namespace="code-place-prod"}) == 0 or absent(codeplace_redis_sentinel_health{namespace="code-place-prod", check="master"}) or absent(codeplace_redis_sentinel_health{namespace="code-place-prod", check="quorum"})
+          for: 1m
+          labels:
+            namespace: code-place-prod
+            severity: critical
+            priority: P0
+          annotations:
+            summary: "prod Redis Sentinel master 또는 quorum을 확인할 수 없습니다"
+            description: "Redis/Sentinel Pod readiness와 별개로 mymaster 탐색 또는 CKQUORUM 검사가 1분 동안 실패했습니다."
         - alert: LokiUnavailable
           expr: (sum(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"loki-[0-9]+"}) == 0) or absent(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"loki-[0-9]+"})
           for: 1m
@@ -267,7 +287,16 @@ spec:
             priority: P1
           annotations:
             summary: "Celery broker queue가 쌓이고 있습니다"
-            description: "Redis broker 기본 queue에서 Celery task가 5분 동안 20개를 초과했습니다. celery-worker 처리량, Redis broker 상태, task 오류를 확인해야 합니다."
+            description: "Celery broker default queue가 5분 동안 20개를 초과했습니다. Worker 처리량과 Redis 상태를 확인해야 합니다."
+        - alert: CodePlaceCollectorFailed
+          expr: min by (namespace, collector) (codeplace_collector_success{namespace=~"code-place-(dev|prod)"}) == 0 or absent(codeplace_collector_success{namespace=~"code-place-(dev|prod)"})
+          for: 5m
+          labels:
+            severity: warning
+            priority: P1
+          annotations:
+            summary: "Backend custom metric collector가 실패했습니다"
+            description: "Backend custom metric collector가 5분 동안 Redis 기반 metric을 수집하지 못했습니다. 실패 collector label을 확인해야 합니다."
         - alert: SubmissionCreateSystemFailures
           expr: sum by (namespace, scope, status) (increase(codeplace_submission_create_outcome_total{namespace=~"code-place-(dev|prod)", status=~"db_error|enqueue_error"}[5m])) > 0
           for: 2m

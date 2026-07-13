@@ -5,11 +5,12 @@ import pickle
 from unittest.mock import patch, mock_open, MagicMock
 from django.test import RequestFactory, SimpleTestCase, TestCase, override_settings
 from django.core.cache import cache
-from prometheus_client.core import GaugeMetricFamily
+from prometheus_client.core import CounterMetricFamily, GaugeMetricFamily
 
 from utils.json_logging import CodePlaceJsonFormatter
 from utils.api import APIView
-from utils.observability_metrics import CodePlaceCollector
+from utils.observability_context import get_request_id
+from utils.observability_metrics import CodePlaceCollector, record_judge_task_outcome
 from utils import observability_tracing
 from utils.testcase_cache import TestCaseCacheManager
 from utils.throttling import TokenBucket
@@ -78,6 +79,61 @@ class CodePlaceCollectorTest(SimpleTestCase):
         broker_client.llen.assert_called_once_with("celery")
         self.assertEqual(samples["codeplace_celery_broker_queue_length"][0].value, 7)
 
+    def test_failed_collector_emits_failure_without_fake_queue_value(self):
+        collector = CodePlaceCollector()
+        with patch.object(collector, "_waiting_queue_length", side_effect=RuntimeError("redis down")), \
+                patch.object(collector, "_celery_broker_queue_length") as broker, \
+                patch.object(collector, "_judge_task_outcomes") as outcomes:
+            broker.return_value = GaugeMetricFamily("codeplace_celery_broker_queue_length", "broker")
+            outcomes.return_value = CounterMetricFamily(
+                "codeplace_judge_task_outcome", "outcomes", labels=["status", "scope"]
+            )
+            metrics = list(collector.collect())
+
+        metric_names = [metric.name for metric in metrics]
+        self.assertNotIn("codeplace_waiting_queue_length", metric_names)
+        success = next(metric for metric in metrics if metric.name == "codeplace_collector_success")
+        waiting_sample = next(sample for sample in success.samples if sample.labels["collector"] == "waiting_queue")
+        self.assertEqual(waiting_sample.value, 0)
+
+    @patch("utils.observability_metrics.cache")
+    def test_judge_task_outcomes_are_collected_from_shared_redis(self, redis_cache):
+        redis_cache.hgetall.return_value = {
+            b"success:practice": b"7",
+            b"error:contest": b"2",
+        }
+
+        metric = CodePlaceCollector()._judge_task_outcomes()
+
+        values = {(sample.labels["status"], sample.labels["scope"]): sample.value for sample in metric.samples}
+        self.assertEqual(values[("success", "practice")], 7)
+        self.assertEqual(values[("error", "contest")], 2)
+
+    @override_settings(
+        REDIS_USE_SENTINEL=True,
+        REDIS_SENTINEL_MASTER_NAME="mymaster",
+    )
+    def test_redis_sentinel_health_checks_master_and_quorum(self):
+        sentinel = MagicMock()
+        sentinel.sentinels = [MagicMock()]
+        with patch.object(CodePlaceCollector, "_sentinel_client", return_value=sentinel):
+            metric = CodePlaceCollector()._redis_sentinel_health()
+
+        sentinel.discover_master.assert_called_once_with("mymaster")
+        sentinel.sentinels[0].execute_command.assert_called_once_with("SENTINEL", "CKQUORUM", "mymaster")
+        values = {sample.labels["check"]: sample.value for sample in metric.samples}
+        self.assertEqual(values, {"master": 1, "quorum": 1})
+
+    @patch("utils.observability_metrics.cache")
+    def test_judge_task_outcome_persistence_is_fail_open(self, redis_cache):
+        redis_cache.hincrby.side_effect = RuntimeError("redis down")
+
+        record_judge_task_outcome("error", "practice")
+
+        redis_cache.hincrby.assert_called_once_with(
+            "observability:judge_task_outcomes", "error:practice", 1
+        )
+
     @override_settings(REDIS_USE_SENTINEL=False, CELERY_BROKER_URL="redis://127.0.0.1:6380/4")
     def test_celery_broker_client_uses_celery_broker_url(self):
         with patch("utils.observability_metrics.Redis.from_url") as from_url:
@@ -113,7 +169,12 @@ class CodePlaceMetricsEndpointTest(SimpleTestCase):
         )
         broker_queue_metric.add_metric([], 0)
         with patch.object(CodePlaceCollector, "_waiting_queue_length", return_value=waiting_queue_metric), \
-                patch.object(CodePlaceCollector, "_celery_broker_queue_length", return_value=broker_queue_metric):
+                patch.object(CodePlaceCollector, "_celery_broker_queue_length", return_value=broker_queue_metric), \
+                patch.object(CodePlaceCollector, "_judge_task_outcomes", return_value=CounterMetricFamily(
+                    "codeplace_judge_task_outcome", "outcomes", labels=["status", "scope"]
+                )), patch.object(CodePlaceCollector, "_redis_sentinel_health", return_value=GaugeMetricFamily(
+                    "codeplace_redis_sentinel_health", "sentinel", labels=["check"]
+                )):
             response = self.client.get("/metrics")
 
         self.assertEqual(response.status_code, 200)
@@ -121,6 +182,21 @@ class CodePlaceMetricsEndpointTest(SimpleTestCase):
         self.assertIn("django_http_requests_total_by_method_total", body)
         self.assertIn("codeplace_waiting_queue_length", body)
         self.assertIn("codeplace_celery_broker_queue_length", body)
+
+
+class CeleryRequestIDContextTest(SimpleTestCase):
+
+    def test_task_signals_bind_and_reset_request_id(self):
+        from oj.celery import bind_request_id, unbind_request_id
+
+        task = MagicMock()
+        task.request.headers = {"x-request-id": "celery-request-1"}
+
+        bind_request_id(task_id="task-1", task=task)
+        self.assertEqual(get_request_id(), "celery-request-1")
+
+        unbind_request_id(task_id="task-1")
+        self.assertIsNone(get_request_id())
 
 
 class ObservabilityTracingTest(SimpleTestCase):
