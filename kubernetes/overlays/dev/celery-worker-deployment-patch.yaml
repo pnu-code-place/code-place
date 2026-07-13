@@ -16,6 +16,8 @@ spec:
       containers:
         - name: celery-worker
           env:
+            - name: OJ_ENV
+              value: "dev"
             - name: SENTRY_DSN_BACKEND
               valueFrom:
                 secretKeyRef:

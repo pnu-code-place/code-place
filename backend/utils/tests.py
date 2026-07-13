@@ -217,6 +217,16 @@ class ObservabilityTracingTest(SimpleTestCase):
                 patch("builtins.__import__", side_effect=fail_import):
             observability_tracing.configure_opentelemetry("codeplace-test")
 
+    def test_configure_opentelemetry_is_fail_open(self):
+        with patch("utils.observability_tracing.get_env", return_value="1"), \
+                patch("utils.observability_tracing._configure_opentelemetry",
+                      side_effect=RuntimeError("collector setup failed")), \
+                patch.object(observability_tracing.logger, "exception") as log_exception:
+            observability_tracing.configure_opentelemetry("codeplace-test")
+
+        self.assertTrue(observability_tracing._OTEL_CONFIGURED)
+        log_exception.assert_called_once()
+
 
 class CodePlaceJsonFormatterTest(SimpleTestCase):
 

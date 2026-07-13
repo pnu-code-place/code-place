@@ -32,6 +32,19 @@ def configure_opentelemetry(service_name):
     if _OTEL_CONFIGURED:
         return
 
+    try:
+        _configure_opentelemetry(service_name)
+    except Exception:
+        logger.exception(
+            "OpenTelemetry setup failed; continuing without complete tracing for %s",
+            service_name,
+        )
+    finally:
+        _OTEL_CONFIGURED = True
+
+
+def _configure_opentelemetry(service_name):
+
     from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
     from opentelemetry.instrumentation.celery import CeleryInstrumentor
     from opentelemetry.instrumentation.django import DjangoInstrumentor
@@ -58,7 +71,6 @@ def configure_opentelemetry(service_name):
     current_provider = trace.get_tracer_provider()
     if type(current_provider).__name__ != "ProxyTracerProvider":
         logger.info("OpenTelemetry tracer provider is already configured; skipping CodePlace setup")
-        _OTEL_CONFIGURED = True
         return
 
     provider.add_span_processor(BatchSpanProcessor(OTLPSpanExporter(endpoint=endpoint, insecure=True)))
@@ -69,4 +81,3 @@ def configure_opentelemetry(service_name):
     Psycopg2Instrumentor().instrument()
     RedisInstrumentor().instrument()
     CeleryInstrumentor().instrument()
-    _OTEL_CONFIGURED = True
