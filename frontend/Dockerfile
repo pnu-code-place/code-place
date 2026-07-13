@@ -23,8 +23,16 @@ ENV SENTRY_ORG=$SENTRY_ORG
 ENV SENTRY_PROJECT=$SENTRY_PROJECT
 
 RUN npm run build:dll
-RUN --mount=type=secret,id=sentry_auth_token,required=false \
-    SENTRY_AUTH_TOKEN="$(cat /run/secrets/sentry_auth_token 2>/dev/null || true)" npm run build
+RUN --mount=type=secret,id=sentry_auth_token,required=false <<'EOF'
+set -eu
+SENTRY_AUTH_TOKEN="$(cat /run/secrets/sentry_auth_token 2>/dev/null || true)"
+if [ "${USE_SENTRY:-0}" = "1" ] && [ -z "$SENTRY_AUTH_TOKEN" ]; then
+  echo "SENTRY_AUTH_TOKEN is required when USE_SENTRY=1" >&2
+  exit 1
+fi
+export SENTRY_AUTH_TOKEN
+npm run build
+EOF
 
 # Production stage
 FROM nginx:stable-alpine AS production-stage
