@@ -34,12 +34,18 @@ backend는 `django-prometheus` 기반 `/metrics` 엔드포인트를 제공합니
 - `codeplace_judge_task_outcome_total{status,scope}`
 - `codeplace_waiting_queue_length`
 - `codeplace_celery_broker_queue_length`
+- `codeplace_collector_success{collector}`
+- `codeplace_redis_sentinel_health{check}`
+
+Celery worker에서 발생한 judge outcome은 worker 프로세스 메모리가 아니라 Redis hash에 누적하고 backend `/metrics` collector가 노출합니다. Collector가 Redis 값을 읽지 못하면 queue 값을 `0`으로 대체하지 않고 해당 시계열을 생략한 뒤 `codeplace_collector_success=0`을 노출합니다.
 
 `/metrics`와 `/api/health` 요청은 API request rate/latency metric과 request completion log에서 제외합니다.
 
 ### Logs
 
 backend는 `X-Request-ID`를 수용하고, 없으면 request ID를 생성한 뒤 응답 header로 반환합니다.
+
+Submission API는 동일한 request ID를 Celery task header로 전달하고 worker task context에 bind합니다. 따라서 HTTP 요청 로그와 비동기 judge 로그를 같은 ID로 조회할 수 있습니다.
 
 Kubernetes backend/celery 환경에서는 `JSON_LOGGING=1`을 기본으로 설정합니다. JSON 로그 필드는 다음을 기준으로 합니다.
 
@@ -61,6 +67,8 @@ Kubernetes backend/celery 환경에서는 `JSON_LOGGING=1`을 기본으로 설�
 
 frontend nginx의 Kubernetes 설정은 access log를 `/dev/stdout`, error log를 `/dev/stderr`로 출력합니다.
 
+브라우저 runtime exception은 Sentry가 수집합니다. CI frontend build는 배포 `APP_VERSION`과 같은 Sentry release에 source map을 업로드하고, 업로드 후 image에서 `.map` 파일을 제거합니다. `SENTRY_AUTH_TOKEN`은 GitHub Actions BuildKit secret으로만 전달합니다.
+
 Pod 로그 수집은 Grafana Alloy와 Loki로 처리합니다. 클라우드 object storage를 사용할 수 없는 현재 조건에서는 Loki SingleBinary + Longhorn PVC를 단기 보관 기준선으로 둡니다.
 
 - dev log retention: 3일.
@@ -70,6 +78,8 @@ Pod 로그 수집은 Grafana Alloy와 Loki로 처리합니다. 클라우드 obje
 ### Tracing
 
 OpenTelemetry는 앱 초기화 코드에 내장되어 있지만 기본값은 `OTEL_ENABLED=0`입니다. dev/staging에서 먼저 활성화하고 collector/Tempo/sampling 확인 후 prod 활성화를 결정합니다.
+
+계측 초기화 실패는 애플리케이션 기동 실패로 전파하지 않고 구조화 오류 로그를 남긴 뒤 fail-open 처리합니다. dev backend/celery는 `OJ_ENV=dev`를 명시하여 trace resource의 `deployment.environment`가 production으로 잘못 기록되지 않도록 합니다.
 
 자동 계측 대상은 Django, requests, psycopg2, Redis, Celery입니다. 제출/채점 경로에는 manual span을 추가합니다.
 
@@ -86,6 +96,8 @@ OpenTelemetry는 앱 초기화 코드에 내장되어 있지만 기본값은 `OT
 - `backend-service-monitor.yaml`: backend `/metrics` scrape, interval 15s.
 - `blackbox-exporter.yaml`, `public-endpoint-probes.yaml`: frontend/hub-auth/Grafana 공개 HTTPS probe.
 - `datastore-pod-monitors.yaml`: CNPG/Redis exporter scrape.
+- `dcgm-exporter.yaml`: GPU 상태 metric과 scrape target.
+- `otel-collector.yaml`, `tempo.yaml`: dev trace 수집, 전달, 저장 경로.
 - `logs/loki-values.yaml`, `logs/alloy-values.yaml`: Loki/Alloy Helm values.
 - `prometheus-rules.yaml`: P0/P1 fast alert rules와 일부 recording rules.
 - `alertmanager-config.yaml`: P0/P1 Discord alert routing.
@@ -106,8 +118,11 @@ P0는 `group_wait=10s`, `repeat_interval=15m`로 Discord에 빠르게 전달합�
 - `Api5xxSpike`: backend 5xx 비율 5% 초과 2분 지속.
 - `Ingress5xxSpike`: Traefik 5xx 비율 5% 초과 2분 지속.
 - `PostgresUnavailable`: PostgreSQL Pod not ready 또는 readiness metric missing 1분 지속.
+- `PostgresPrimaryUnavailable`: `postgres-rw` ready endpoint 부재 1분 지속.
 - `RedisUnavailable`: Redis/Sentinel Pod not ready 또는 readiness metric missing 1분 지속.
+- `RedisSentinelUnavailable`: Sentinel master 탐색 또는 quorum 검사 실패 1분 지속.
 - `LokiUnavailable`: Loki Pod not ready 1분 지속.
+- `DCGMExporterUnavailable`: GPU metric target 부재 또는 scrape 실패 2분 지속.
 
 ### P1
 
@@ -120,6 +135,10 @@ P1은 `group_wait=30s`, `repeat_interval=1h`로 전달합니다.
 - `PodCrashLooping`: 주요 Pod restart 증가 5분 지속.
 - `PVCAlmostFull`: PVC 사용률 85% 초과 10분 지속.
 - `CodePlaceCollectorFailed`: backend custom metric collector 실패 5분 지속.
+- `PostgresCollectorUnavailable`: CNPG collector 응답 실패 5분 지속.
+- `OpenTelemetryCollectorUnavailable`: collector target 실패 5분 지속.
+- `TempoUnavailable`: Tempo target 실패 5분 지속.
+- `OpenTelemetrySpanExportFailures`: Tempo span 전송 실패 5분 지속.
 
 Frontend runtime exception은 Kubernetes 로그가 아니라 Sentry release와 source map을 기준으로 확인합니다. 브라우저 오류를 backend Loki 로그로 가장하는 별도 panel이나 Prometheus alert은 두지 않습니다.
 

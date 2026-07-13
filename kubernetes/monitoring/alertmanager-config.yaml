@@ -48,6 +48,15 @@ spec:
       - matchers:
           - name: severity
             value: warning
+          - name: namespace
+            value: code-place-dev
+        groupWait: 30s
+        groupInterval: 5m
+        repeatInterval: 1h
+        receiver: dev-p1-muted
+      - matchers:
+          - name: severity
+            value: warning
         groupWait: 30s
         groupInterval: 5m
         repeatInterval: 1h
