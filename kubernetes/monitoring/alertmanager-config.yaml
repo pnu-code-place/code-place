@@ -38,6 +38,20 @@ spec:
         groupInterval: 5m
         repeatInterval: 1h
         receiver: p1-discord
+      - matchers:
+          - name: severity
+            value: critical
+        groupWait: 10s
+        groupInterval: 1m
+        repeatInterval: 15m
+        receiver: p0-discord
+      - matchers:
+          - name: severity
+            value: warning
+        groupWait: 30s
+        groupInterval: 5m
+        repeatInterval: 1h
+        receiver: p1-discord
   receivers:
     - name: unmatched-muted
     - name: p0-discord

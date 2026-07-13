@@ -61,7 +61,7 @@ spec:
             summary: "prod backend metrics target이 내려갔습니다"
             description: "Prometheus가 prod backend /metrics 엔드포인트를 1분 동안 scrape하지 못했거나 backend target metric이 사라졌습니다."
         - alert: Api5xxSpike
-          expr: sum by (namespace) (rate(codeplace_http_requests_total{namespace=~"code-place-(dev|prod)", status_code=~"5.."}[2m])) / clamp_min(sum by (namespace) (rate(codeplace_http_requests_total{namespace=~"code-place-(dev|prod)"}[2m])), 1) > 0.05
+          expr: (sum by (namespace) (rate(codeplace_http_requests_total{namespace=~"code-place-(dev|prod)", status_code=~"5.."}[2m])) / clamp_min(sum by (namespace) (rate(codeplace_http_requests_total{namespace=~"code-place-(dev|prod)"}[2m])), 0.001) > 0.05) and on (namespace) sum by (namespace) (increase(codeplace_http_requests_total{namespace=~"code-place-(dev|prod)"}[2m])) > 0
           for: 2m
           labels:
             severity: critical
@@ -70,7 +70,7 @@ spec:
             summary: "Backend API 5xx 비율이 높습니다"
             description: "Backend API 5xx 응답 비율이 2분 동안 5%를 초과했습니다."
         - alert: Ingress5xxSpike
-          expr: codeplace:ingress_5xx_rate2m{namespace="code-place-dev"} / clamp_min(codeplace:ingress_request_rate2m{namespace="code-place-dev"}, 1) > 0.05
+          expr: (codeplace:ingress_5xx_rate2m{namespace="code-place-dev"} / clamp_min(codeplace:ingress_request_rate2m{namespace="code-place-dev"}, 0.001) > 0.05) and on (namespace) codeplace:ingress_request_rate2m{namespace="code-place-dev"} > 0
           for: 2m
           labels:
             namespace: code-place-dev
@@ -80,7 +80,7 @@ spec:
             summary: "dev Ingress 5xx 비율이 높습니다"
             description: "code-place-dev Traefik 5xx 응답 비율이 2분 동안 5%를 초과했습니다."
         - alert: Ingress5xxSpike
-          expr: codeplace:ingress_5xx_rate2m{namespace="code-place-prod"} / clamp_min(codeplace:ingress_request_rate2m{namespace="code-place-prod"}, 1) > 0.05
+          expr: (codeplace:ingress_5xx_rate2m{namespace="code-place-prod"} / clamp_min(codeplace:ingress_request_rate2m{namespace="code-place-prod"}, 0.001) > 0.05) and on (namespace) codeplace:ingress_request_rate2m{namespace="code-place-prod"} > 0
           for: 2m
           labels:
             namespace: code-place-prod
@@ -119,6 +119,26 @@ spec:
           annotations:
             summary: "prod PostgreSQL Pod가 ready 상태가 아닙니다"
             description: "prod PostgreSQL Pod가 1분 동안 ready 상태가 아니거나 readiness metric이 사라졌습니다."
+        - alert: PostgresPrimaryUnavailable
+          expr: sum(kube_endpoint_address{namespace="code-place-dev", endpoint="postgres-rw", ready="true"}) == 0 or absent(kube_endpoint_address{namespace="code-place-dev", endpoint="postgres-rw", ready="true"})
+          for: 1m
+          labels:
+            namespace: code-place-dev
+            severity: critical
+            priority: P0
+          annotations:
+            summary: "dev PostgreSQL primary endpoint가 없습니다"
+            description: "dev postgres-rw Service에 1분 동안 ready primary endpoint가 없습니다. Replica Pod가 ready여도 쓰기 연결이 실패할 수 있습니다."
+        - alert: PostgresPrimaryUnavailable
+          expr: sum(kube_endpoint_address{namespace="code-place-prod", endpoint="postgres-rw", ready="true"}) == 0 or absent(kube_endpoint_address{namespace="code-place-prod", endpoint="postgres-rw", ready="true"})
+          for: 1m
+          labels:
+            namespace: code-place-prod
+            severity: critical
+            priority: P0
+          annotations:
+            summary: "prod PostgreSQL primary endpoint가 없습니다"
+            description: "prod postgres-rw Service에 1분 동안 ready primary endpoint가 없습니다. Replica Pod가 ready여도 쓰기 연결이 실패할 수 있습니다."
         - alert: RedisUnavailable
           expr: (sum(kube_pod_status_ready{namespace="code-place-dev", condition="true", pod=~"redis-.*|redis-replication-.*"}) == 0) or absent(kube_pod_status_ready{namespace="code-place-dev", condition="true", pod=~"redis-.*|redis-replication-.*"})
           for: 1m
@@ -189,6 +209,16 @@ spec:
           annotations:
             summary: "GPU driver XID 오류가 감지됐습니다"
             description: "DCGM이 1분 동안 NVIDIA XID 오류를 보고했습니다. vLLM GPU 상태와 노드 driver 상태를 확인해야 합니다."
+        - alert: DCGMExporterUnavailable
+          expr: up{job="dcgm-exporter", namespace="monitoring"} == 0 or absent(up{job="dcgm-exporter", namespace="monitoring"})
+          for: 2m
+          labels:
+            severity: critical
+            priority: P0
+            namespace: monitoring
+          annotations:
+            summary: "DCGM exporter를 scrape할 수 없습니다"
+            description: "DCGM exporter target이 2분 동안 없거나 내려갔습니다. 이 상태에서는 모든 GPU 상태 경보가 함께 사라집니다."
     - name: codeplace.p1
       interval: 30s
       rules:
@@ -382,6 +412,15 @@ spec:
           annotations:
             summary: "PostgreSQL metric 수집이 실패하고 있습니다"
             description: "CNPG PostgreSQL metric 수집 오류가 5분 동안 보고됐습니다."
+        - alert: PostgresCollectorUnavailable
+          expr: min by (namespace) (cnpg_collector_up{namespace=~"code-place-(dev|prod)", cluster="postgres"}) == 0 or absent(cnpg_collector_up{namespace=~"code-place-(dev|prod)", cluster="postgres"})
+          for: 5m
+          labels:
+            severity: warning
+            priority: P1
+          annotations:
+            summary: "PostgreSQL metric collector가 응답하지 않습니다"
+            description: "CNPG collector가 5분 동안 PostgreSQL에 접근하지 못했거나 collector metric이 사라졌습니다."
         - alert: PostgresHADegraded
           expr: min by (namespace) (cnpg_collector_nodes_used{namespace=~"code-place-(dev|prod)", cluster="postgres"}) < 2
           for: 10m
@@ -418,6 +457,36 @@ spec:
           annotations:
             summary: "Redis memory 사용률이 높습니다"
             description: "Redis exporter 기준 memory 사용률이 10분 동안 설정된 maxmemory의 85%를 초과했습니다."
+        - alert: OpenTelemetryCollectorUnavailable
+          expr: min(up{job="otel-collector", namespace="monitoring"}) == 0 or absent(up{job="otel-collector", namespace="monitoring"})
+          for: 5m
+          labels:
+            severity: warning
+            priority: P1
+            namespace: monitoring
+          annotations:
+            summary: "OpenTelemetry Collector를 scrape할 수 없습니다"
+            description: "OpenTelemetry Collector target이 5분 동안 없거나 내려갔습니다. dev trace 수집 상태를 확인해야 합니다."
+        - alert: TempoUnavailable
+          expr: up{job="tempo", namespace="monitoring"} == 0 or absent(up{job="tempo", namespace="monitoring"})
+          for: 5m
+          labels:
+            severity: warning
+            priority: P1
+            namespace: monitoring
+          annotations:
+            summary: "Tempo를 scrape할 수 없습니다"
+            description: "Tempo target이 5분 동안 없거나 내려갔습니다. trace 저장 및 조회가 실패할 수 있습니다."
+        - alert: OpenTelemetrySpanExportFailures
+          expr: sum(increase(otelcol_exporter_send_failed_spans_total{namespace="monitoring"}[5m])) > 0
+          for: 5m
+          labels:
+            severity: warning
+            priority: P1
+            namespace: monitoring
+          annotations:
+            summary: "OpenTelemetry span 전송 실패가 지속됩니다"
+            description: "Collector가 5분 동안 Tempo로 span을 전송하지 못했습니다. Collector exporter와 Tempo 상태를 확인해야 합니다."
         - alert: PVCAlmostFull
           expr: max by (namespace, persistentvolumeclaim) (kubelet_volume_stats_used_bytes{namespace=~"code-place-(dev|prod)"}) / clamp_min(max by (namespace, persistentvolumeclaim) (kubelet_volume_stats_capacity_bytes{namespace=~"code-place-(dev|prod)"}), 1) > 0.85
           for: 10m
