@@ -286,19 +286,13 @@ data:
           ]
         },
         {
-          "type": "logs",
-          "title": "Frontend Runtime Error Reports",
+          "type": "text",
+          "title": "Frontend Runtime Error Tracking",
           "gridPos": {"x": 0, "y": 38, "w": 24, "h": 8},
-          "datasource": {"type": "loki", "uid": "Loki"},
           "options": {
-            "showLabels": false,
-            "showTime": true,
-            "wrapLogMessage": true,
-            "dedupStrategy": "none"
-          },
-          "targets": [
-            {"expr": "{namespace=~\"$namespace\", app=\"backend\"} | json | logger=\"frontend.error\""}
-          ]
+            "mode": "markdown",
+            "content": "Frontend runtime exceptions are captured by Sentry with the deployment release, environment, and per-error request ID. They are intentionally not queried from Loki because the browser is not a Kubernetes log producer."
+          }
         },
         {
           "type": "timeseries",

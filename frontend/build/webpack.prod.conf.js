@@ -11,6 +11,8 @@ const HtmlWebpackPlugin = require("html-webpack-plugin")
 const MiniCssExtractPlugin = require("mini-css-extract-plugin")
 const TerserPlugin = require("terser-webpack-plugin")
 const CssMinimizerPlugin = require("css-minimizer-webpack-plugin")
+const { sentryWebpackPlugin } = require("@sentry/webpack-plugin")
+const sentry = require("../config/sentry")
 
 const webpackConfig = merge(baseWebpackConfig, {
   mode: "production",
@@ -130,6 +132,24 @@ if (config.build.bundleAnalyzerReport) {
   const BundleAnalyzerPlugin =
     require("webpack-bundle-analyzer").BundleAnalyzerPlugin
   webpackConfig.plugins.push(new BundleAnalyzerPlugin())
+}
+
+if (sentry.isSentryUploadEnabled("production")) {
+  webpackConfig.plugins.push(
+    sentryWebpackPlugin({
+      authToken: process.env.SENTRY_AUTH_TOKEN,
+      org: process.env.SENTRY_ORG || "onlinejudge",
+      project: process.env.SENTRY_PROJECT || "onlinejudgefe",
+      telemetry: false,
+      release: {
+        name: process.env.APP_VERSION || process.env.VUE_APP_VERSION,
+      },
+      sourcemaps: {
+        assets: "./dist/static/js/**",
+        filesToDeleteAfterUpload: "./dist/**/*.map",
+      },
+    }),
+  )
 }
 
 module.exports = webpackConfig

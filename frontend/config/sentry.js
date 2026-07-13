@@ -13,8 +13,17 @@ function getSentryEnvironment(nodeEnv = process.env.NODE_ENV) {
   return process.env.SENTRY_ENVIRONMENT || nodeEnv || "development"
 }
 
+function isSentryUploadEnabled(nodeEnv = process.env.NODE_ENV) {
+  return (
+    isSentryEnabled(nodeEnv) &&
+    Boolean(process.env.SENTRY_AUTH_TOKEN) &&
+    Boolean(process.env.APP_VERSION || process.env.VUE_APP_VERSION)
+  )
+}
+
 module.exports = {
   getSentryEnvironment,
   getSentryDsn,
   isSentryEnabled,
+  isSentryUploadEnabled,
 }

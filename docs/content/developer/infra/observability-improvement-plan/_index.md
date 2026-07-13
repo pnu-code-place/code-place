@@ -120,7 +120,8 @@ P1은 `group_wait=30s`, `repeat_interval=1h`로 전달합니다.
 - `PodCrashLooping`: 주요 Pod restart 증가 5분 지속.
 - `PVCAlmostFull`: PVC 사용률 85% 초과 10분 지속.
 - `CodePlaceCollectorFailed`: backend custom metric collector 실패 5분 지속.
-- `FrontendRuntimeErrorsSpike`: frontend runtime error report 증가 5분 지속.
+
+Frontend runtime exception은 Kubernetes 로그가 아니라 Sentry release와 source map을 기준으로 확인합니다. 브라우저 오류를 backend Loki 로그로 가장하는 별도 panel이나 Prometheus alert은 두지 않습니다.
 
 ## 5. 운영 확인 절차
 
