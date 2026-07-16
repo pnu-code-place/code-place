@@ -168,7 +168,7 @@
                 @update:problemZoomPercent="problemZoomPercent = $event"
               />
               <SubmissionList
-                v-if="isInitialized && !problemLoading && !problemError.visible"
+                v-if="isInitialized && !problemError.visible"
                 :key="`submission-${contestID || 'public'}-${problemID}`"
                 v-show="leftPainActiveTab === 'submission'"
                 :problemID="problemID"
