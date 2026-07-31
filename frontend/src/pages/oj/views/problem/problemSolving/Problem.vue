@@ -168,7 +168,7 @@
                 @update:problemZoomPercent="problemZoomPercent = $event"
               />
               <SubmissionList
-                v-if="isInitialized && !problemLoading && !problemError.visible"
+                v-if="isInitialized && !problemError.visible"
                 :key="`submission-${contestID || 'public'}-${problemID}`"
                 v-show="leftPainActiveTab === 'submission'"
                 :problemID="problemID"
@@ -774,8 +774,8 @@ export default {
 
               this.leftPainActiveTab = "submission"
               this.lastSubmissionId = id
-              // 통과(Accepted=0)하지 못한 결과면 질문 유도 넛지 표시
-              this.showAskNudge = this.result.result !== 0
+              // 통과(Accepted=0)하지 못한 결과면 질문 유도 넛지 표시 (대회에서는 질문 기능 자체가 없으므로 제외)
+              this.showAskNudge = !this.isContestProblem && this.result.result !== 0
 
               clearTimeout(this.refreshStatus)
               this.init({
