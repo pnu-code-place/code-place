@@ -9,8 +9,11 @@ resources:
   - ./dcgm-exporter.yaml
   - ./datastore-pod-monitors.yaml
   - ./grafana-dashboard-codeplace.yaml
+  - ./grafana-dashboard-platform.yaml
+  - ./grafana-dashboard-ai-api.yaml
   - ./grafana-dashboard-ai-inference.yaml
   - ./grafana-dashboard-logs.yaml
+  - ./grafana-dashboard-log-pipeline.yaml
   - ./grafana-dashboard-kubernetes-events.yaml
   - ./grafana-dashboard-monitoring-stack.yaml
   - ./grafana-dashboard-public-endpoints.yaml
@@ -22,5 +25,5 @@ resources:
   - ./prometheus-rules.yaml
   - ./public-endpoint-probes.yaml
   - ./tempo.yaml
-  - ./traefik-service-monitor.yaml
+  - ./traefik-pod-monitor.yaml
   - ./vllm-service-monitor.yaml

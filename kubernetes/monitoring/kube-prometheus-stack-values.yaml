@@ -1,3 +1,33 @@
+crds:
+  enabled: true
+  # Helm does not upgrade CRDs from the chart's crds/ directory. Run the
+  # chart-owned pre-upgrade hook so CRDs and the pinned operator stay aligned.
+  upgradeJob:
+    enabled: true
+    forceConflicts: false
+
+defaultRules:
+  rules:
+    # K3s embeds these control-plane components in k3s-server and does not
+    # expose the standalone endpoints expected by kube-prometheus-stack.
+    etcd: false
+    kubeControllerManager: false
+    kubeProxy: false
+    kubeSchedulerAlerting: false
+    kubeSchedulerRecording: false
+
+kubeControllerManager:
+  enabled: false
+
+kubeEtcd:
+  enabled: false
+
+kubeProxy:
+  enabled: false
+
+kubeScheduler:
+  enabled: false
+
 prometheus:
   prometheusSpec:
     replicas: 2
@@ -12,6 +42,30 @@ prometheus:
     podMonitorSelectorNilUsesHelmValues: false
     probeSelectorNilUsesHelmValues: false
     ruleSelectorNilUsesHelmValues: false
+    serviceMonitorSelector:
+      matchLabels:
+        release: kube-prometheus-stack
+    serviceMonitorNamespaceSelector:
+      matchLabels:
+        kubernetes.io/metadata.name: monitoring
+    podMonitorSelector:
+      matchLabels:
+        release: kube-prometheus-stack
+    podMonitorNamespaceSelector:
+      matchLabels:
+        kubernetes.io/metadata.name: monitoring
+    probeSelector:
+      matchLabels:
+        release: kube-prometheus-stack
+    probeNamespaceSelector:
+      matchLabels:
+        kubernetes.io/metadata.name: monitoring
+    ruleSelector:
+      matchLabels:
+        release: kube-prometheus-stack
+    ruleNamespaceSelector:
+      matchLabels:
+        kubernetes.io/metadata.name: monitoring
     storageSpec:
       volumeClaimTemplate:
         spec:
@@ -46,6 +100,11 @@ alertmanager:
               storage: 5Gi
 
 grafana:
+  defaultDashboardsEnabled: false
+  # One replica owns a Longhorn ReadWriteOnce PVC. Recreate avoids a rolling
+  # replacement waiting forever for the old pod to release that volume.
+  deploymentStrategy:
+    type: Recreate
   grafana.ini:
     metrics:
       enabled: true

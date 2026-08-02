@@ -16,6 +16,9 @@ spec:
     - port: metrics
       interval: 30s
       scrapeTimeout: 10s
+      relabelings:
+        - targetLabel: job
+          replacement: postgres
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: PodMonitor
@@ -39,3 +42,6 @@ spec:
     - portNumber: 9121
       interval: 30s
       scrapeTimeout: 10s
+      relabelings:
+        - targetLabel: job
+          replacement: redis

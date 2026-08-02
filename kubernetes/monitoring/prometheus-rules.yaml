@@ -37,29 +37,66 @@ spec:
           expr: avg by (environment, namespace, service, instance) (avg_over_time(probe_success{probe_type="public-http"}[5m]))
         - record: codeplace:judge_waiting_queue_length
           expr: max by (namespace) (codeplace_waiting_queue_length{namespace=~"code-place-(dev|prod)"})
+    - name: codeplace.monitoring-contract
+      interval: 15s
+      rules:
+        - alert: TraefikScrapeUnavailable
+          expr: (up{job="traefik", namespace="kube-system"} == 0) or absent(up{job="traefik", namespace="kube-system"})
+          for: 1m
+          labels:
+            namespace: kube-system
+            service: traefik
+            severity: critical
+            priority: P0
+          annotations:
+            summary: "Traefik metrics target을 scrape할 수 없습니다"
+            description: "Prometheus가 Traefik target을 1분 동안 발견하지 못했거나 scrape하지 못했습니다. 이 상태에서는 Ingress 트래픽과 5xx 경보가 동작하지 않습니다."
+        - alert: AlloyScrapeUnavailable
+          expr: (up{job=~".*alloy.*", namespace="monitoring"} == 0) or absent(up{job=~".*alloy.*", namespace="monitoring"})
+          for: 1m
+          labels:
+            namespace: monitoring
+            service: alloy
+            severity: critical
+            priority: P0
+          annotations:
+            summary: "Alloy metrics target을 scrape할 수 없습니다"
+            description: "Prometheus가 Alloy target을 1분 동안 발견하지 못했거나 scrape하지 못했습니다. 로그 수집 경로의 관측 가능성이 사라진 상태입니다."
+        - alert: PrometheusHADegraded
+          expr: (sum(max by (pod) (kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"prometheus-kube-prometheus-stack-prometheus-[0-9]+"})) < 2) or absent(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"prometheus-kube-prometheus-stack-prometheus-[0-9]+"})
+          for: 1m
+          labels:
+            namespace: monitoring
+            severity: warning
+            priority: P1
+          annotations:
+            summary: "Prometheus HA replica가 저하됐습니다"
+            description: "ready Prometheus replica가 1분 동안 기대 개수 2개보다 적거나 readiness metric이 사라졌습니다."
     - name: codeplace.p0
       interval: 15s
       rules:
         - alert: BackendTargetDown
-          expr: (min(up{job="backend", namespace="code-place-dev"}) == 0) or absent(up{job="backend", namespace="code-place-dev"})
+          expr: (up{job="backend", namespace="code-place-dev"} == 0) or (count(up{job="backend", namespace="code-place-dev"}) < 2) or absent(up{job="backend", namespace="code-place-dev"})
           for: 1m
           labels:
             namespace: code-place-dev
+            service: backend
             severity: critical
             priority: P0
           annotations:
             summary: "dev backend metrics target이 내려갔습니다"
-            description: "Prometheus가 dev backend /metrics 엔드포인트를 1분 동안 scrape하지 못했거나 backend target metric이 사라졌습니다."
+            description: "Prometheus가 dev backend /metrics 엔드포인트를 1분 동안 scrape하지 못했거나 기대 target 2개를 모두 발견하지 못했습니다."
         - alert: BackendTargetDown
-          expr: (min(up{job="backend", namespace="code-place-prod"}) == 0) or absent(up{job="backend", namespace="code-place-prod"})
+          expr: (up{job="backend", namespace="code-place-prod"} == 0) or (count(up{job="backend", namespace="code-place-prod"}) < 6) or absent(up{job="backend", namespace="code-place-prod"})
           for: 1m
           labels:
             namespace: code-place-prod
+            service: backend
             severity: critical
             priority: P0
           annotations:
             summary: "prod backend metrics target이 내려갔습니다"
-            description: "Prometheus가 prod backend /metrics 엔드포인트를 1분 동안 scrape하지 못했거나 backend target metric이 사라졌습니다."
+            description: "Prometheus가 prod backend /metrics 엔드포인트를 1분 동안 scrape하지 못했거나 기대 target 6개를 모두 발견하지 못했습니다."
         - alert: Api5xxSpike
           expr: (sum by (namespace) (rate(codeplace_http_requests_total{namespace=~"code-place-(dev|prod)", status_code=~"5.."}[2m])) / clamp_min(sum by (namespace) (rate(codeplace_http_requests_total{namespace=~"code-place-(dev|prod)"}[2m])), 0.001) > 0.05) and on (namespace) sum by (namespace) (increase(codeplace_http_requests_total{namespace=~"code-place-(dev|prod)"}[2m])) > 0
           for: 2m
@@ -90,15 +127,15 @@ spec:
             summary: "prod Ingress 5xx 비율이 높습니다"
             description: "code-place-prod Traefik 5xx 응답 비율이 2분 동안 5%를 초과했습니다."
         - alert: PublicEndpointDown
-          expr: (probe_success{environment="prod", probe_type="public-http"} == 0) or absent(probe_success{environment="prod", service="frontend", probe_type="public-http"}) or absent(probe_success{environment="prod", service="hub-auth", probe_type="public-http"})
+          expr: probe_success{environment="prod", namespace="code-place-prod", probe_type="public-http", service=~"frontend|hub-auth"} == 0
           for: 1m
           labels:
             severity: critical
             priority: P0
             namespace: code-place-prod
           annotations:
-            summary: "prod 공개 엔드포인트가 응답하지 않습니다"
-            description: "prod 공개 HTTPS synthetic probe가 1분 동안 실패했습니다."
+            summary: "prod {{ $labels.service }} 공개 엔드포인트가 응답하지 않습니다"
+            description: "{{ $labels.instance }} HTTPS synthetic probe가 1분 동안 실패했습니다."
         - alert: PostgresUnavailable
           expr: (sum(kube_pod_status_ready{namespace="code-place-dev", condition="true", pod=~"postgres-[0-9]+"}) == 0) or absent(kube_pod_status_ready{namespace="code-place-dev", condition="true", pod=~"postgres-[0-9]+"})
           for: 1m
@@ -160,20 +197,22 @@ spec:
             summary: "prod Redis/Sentinel Pod가 ready 상태가 아닙니다"
             description: "prod Redis/Sentinel Pod가 1분 동안 ready 상태가 아니거나 readiness metric이 사라졌습니다."
         - alert: RedisSentinelUnavailable
-          expr: min(codeplace_redis_sentinel_health{namespace="code-place-dev"}) == 0 or absent(codeplace_redis_sentinel_health{namespace="code-place-dev", check="master"}) or absent(codeplace_redis_sentinel_health{namespace="code-place-dev", check="quorum"})
+          expr: codeplace_redis_sentinel_health{namespace="code-place-dev"} == 0 or absent(codeplace_redis_sentinel_health{namespace="code-place-dev", check="master"}) or absent(codeplace_redis_sentinel_health{namespace="code-place-dev", check="quorum"})
           for: 1m
           labels:
             namespace: code-place-dev
+            service: redis
             severity: critical
             priority: P0
           annotations:
             summary: "dev Redis Sentinel master 또는 quorum을 확인할 수 없습니다"
             description: "Redis/Sentinel Pod readiness와 별개로 mymaster 탐색 또는 CKQUORUM 검사가 1분 동안 실패했습니다."
         - alert: RedisSentinelUnavailable
-          expr: min(codeplace_redis_sentinel_health{namespace="code-place-prod"}) == 0 or absent(codeplace_redis_sentinel_health{namespace="code-place-prod", check="master"}) or absent(codeplace_redis_sentinel_health{namespace="code-place-prod", check="quorum"})
+          expr: codeplace_redis_sentinel_health{namespace="code-place-prod"} == 0 or absent(codeplace_redis_sentinel_health{namespace="code-place-prod", check="master"}) or absent(codeplace_redis_sentinel_health{namespace="code-place-prod", check="quorum"})
           for: 1m
           labels:
             namespace: code-place-prod
+            service: redis
             severity: critical
             priority: P0
           annotations:
@@ -252,24 +291,44 @@ spec:
             summary: "Backend API p95 latency가 높습니다"
             description: "Backend API p95 latency가 5분 동안 2초를 초과했습니다."
         - alert: PublicEndpointDown
-          expr: (probe_success{environment="dev", probe_type="public-http"} == 0) or absent(probe_success{environment="dev", service="frontend", probe_type="public-http"}) or absent(probe_success{environment="dev", service="hub-auth", probe_type="public-http"})
+          expr: probe_success{environment="dev", namespace="code-place-dev", probe_type="public-http", service=~"frontend|hub-auth"} == 0
           for: 2m
           labels:
             severity: warning
             priority: P1
             namespace: code-place-dev
           annotations:
-            summary: "dev 공개 엔드포인트가 응답하지 않습니다"
-            description: "dev 공개 HTTPS synthetic probe가 2분 동안 실패했습니다."
+            summary: "dev {{ $labels.service }} 공개 엔드포인트가 응답하지 않습니다"
+            description: "{{ $labels.instance }} HTTPS synthetic probe가 2분 동안 실패했습니다."
+        - alert: PublicEndpointProbeMissing
+          expr: absent(probe_success{environment="prod", namespace="code-place-prod", service="frontend", probe_type="public-http"}) or absent(probe_success{environment="prod", namespace="code-place-prod", service="hub-auth", probe_type="public-http"})
+          for: 2m
+          labels:
+            severity: warning
+            priority: P1
+            namespace: code-place-prod
+          annotations:
+            summary: "prod {{ $labels.service }} 공개 probe metric이 없습니다"
+            description: "Prometheus가 prod {{ $labels.service }} synthetic probe 결과를 2분 동안 찾지 못했습니다. 공개 endpoint 장애가 아니라 probe 수집 경로 문제입니다."
+        - alert: PublicEndpointProbeMissing
+          expr: absent(probe_success{environment="dev", namespace="code-place-dev", service="frontend", probe_type="public-http"}) or absent(probe_success{environment="dev", namespace="code-place-dev", service="hub-auth", probe_type="public-http"})
+          for: 2m
+          labels:
+            severity: warning
+            priority: P1
+            namespace: code-place-dev
+          annotations:
+            summary: "dev {{ $labels.service }} 공개 probe metric이 없습니다"
+            description: "Prometheus가 dev {{ $labels.service }} synthetic probe 결과를 2분 동안 찾지 못했습니다. 공개 endpoint 장애가 아니라 probe 수집 경로 문제입니다."
         - alert: PublicEndpointLatencyHigh
-          expr: probe_duration_seconds{probe_type="public-http", namespace=~"code-place-(dev|prod)"} > 2
+          expr: probe_duration_seconds{probe_type="public-http", namespace=~"code-place-(dev|prod)", service=~"frontend|hub-auth"} > 2
           for: 5m
           labels:
             severity: warning
             priority: P1
           annotations:
-            summary: "공개 엔드포인트 응답 시간이 높습니다"
-            description: "공개 HTTPS synthetic probe 응답 시간이 5분 동안 2초를 초과했습니다."
+            summary: "{{ $labels.namespace }} {{ $labels.service }} 공개 엔드포인트 응답 시간이 높습니다"
+            description: "{{ $labels.instance }} HTTPS synthetic probe 응답 시간이 5분 동안 2초를 초과했습니다."
         - alert: JudgeWaitingQueueBacklog
           expr: codeplace_waiting_queue_length{namespace=~"code-place-(dev|prod)"} > 5
           for: 3m
@@ -289,25 +348,49 @@ spec:
             summary: "Celery broker queue가 쌓이고 있습니다"
             description: "Celery broker default queue가 5분 동안 20개를 초과했습니다. Worker 처리량과 Redis 상태를 확인해야 합니다."
         - alert: CodePlaceCollectorFailed
-          expr: min by (collector) (codeplace_collector_success{namespace="code-place-dev"}) == 0 or absent(codeplace_collector_success{namespace="code-place-dev"})
+          expr: codeplace_collector_success{namespace="code-place-dev"} == 0 or absent(codeplace_collector_success{namespace="code-place-dev"})
           for: 5m
           labels:
             namespace: code-place-dev
+            service: backend
             severity: warning
             priority: P1
           annotations:
             summary: "dev Backend custom metric collector가 실패했습니다"
             description: "dev Backend custom metric collector가 5분 동안 Redis 기반 metric을 수집하지 못했거나 metric이 사라졌습니다. 실패 collector label을 확인해야 합니다."
         - alert: CodePlaceCollectorFailed
-          expr: min by (collector) (codeplace_collector_success{namespace="code-place-prod"}) == 0 or absent(codeplace_collector_success{namespace="code-place-prod"})
+          expr: codeplace_collector_success{namespace="code-place-prod"} == 0 or absent(codeplace_collector_success{namespace="code-place-prod"})
           for: 5m
           labels:
             namespace: code-place-prod
+            service: backend
             severity: warning
             priority: P1
           annotations:
             summary: "prod Backend custom metric collector가 실패했습니다"
             description: "prod Backend custom metric collector가 5분 동안 Redis 기반 metric을 수집하지 못했거나 metric이 사라졌습니다. 실패 collector label을 확인해야 합니다."
+        - alert: CodePlaceTelemetryCoverageIncomplete
+          expr: (count(codeplace_collector_success{namespace="code-place-dev"}) < 8) or (count(codeplace_redis_sentinel_health{namespace="code-place-dev"}) < 4)
+          for: 5m
+          labels:
+            namespace: code-place-dev
+            service: backend
+            severity: warning
+            priority: P1
+          annotations:
+            summary: "dev Backend telemetry replica coverage가 불완전합니다"
+            description: "dev Backend target별 custom collector 4종 또는 Sentinel check 2종의 metric series가 5분 동안 누락됐습니다. Backend rollout 버전과 target별 /metrics 출력을 확인해야 합니다."
+        - alert: CodePlaceTelemetryCoverageIncomplete
+          expr: (count(codeplace_collector_success{namespace="code-place-prod"}) < 24) or (count(codeplace_redis_sentinel_health{namespace="code-place-prod"}) < 12)
+          for: 5m
+          labels:
+            namespace: code-place-prod
+            service: backend
+            severity: warning
+            priority: P1
+          annotations:
+            summary: "prod Backend telemetry replica coverage가 불완전합니다"
+            description: "prod Backend target별 custom collector 4종 또는 Sentinel check 2종의 metric series가 5분 동안 누락됐습니다. Backend rollout 버전과 target별 /metrics 출력을 확인해야 합니다."
         - alert: SubmissionCreateSystemFailures
           expr: sum by (namespace, scope, status) (increase(codeplace_submission_create_outcome_total{namespace=~"code-place-(dev|prod)", status=~"db_error|enqueue_error"}[5m])) > 0
           for: 2m
@@ -453,25 +536,27 @@ spec:
             summary: "PostgreSQL metric 수집이 실패하고 있습니다"
             description: "CNPG PostgreSQL metric 수집 오류가 5분 동안 보고됐습니다."
         - alert: PostgresCollectorUnavailable
-          expr: min(cnpg_collector_up{namespace="code-place-dev", cluster="postgres"}) == 0 or absent(cnpg_collector_up{namespace="code-place-dev", cluster="postgres"})
+          expr: (cnpg_collector_up{namespace="code-place-dev", cluster="postgres"} == 0) or (count(cnpg_collector_up{namespace="code-place-dev", cluster="postgres"}) < 3) or absent(cnpg_collector_up{namespace="code-place-dev", cluster="postgres"})
           for: 5m
           labels:
             namespace: code-place-dev
+            service: postgres
             severity: warning
             priority: P1
           annotations:
             summary: "dev PostgreSQL metric collector가 응답하지 않습니다"
-            description: "dev CNPG collector가 5분 동안 PostgreSQL에 접근하지 못했거나 collector metric이 사라졌습니다."
+            description: "dev CNPG collector가 5분 동안 PostgreSQL에 접근하지 못했거나 기대 instance 3개의 collector metric을 모두 제공하지 못했습니다."
         - alert: PostgresCollectorUnavailable
-          expr: min(cnpg_collector_up{namespace="code-place-prod", cluster="postgres"}) == 0 or absent(cnpg_collector_up{namespace="code-place-prod", cluster="postgres"})
+          expr: (cnpg_collector_up{namespace="code-place-prod", cluster="postgres"} == 0) or (count(cnpg_collector_up{namespace="code-place-prod", cluster="postgres"}) < 3) or absent(cnpg_collector_up{namespace="code-place-prod", cluster="postgres"})
           for: 5m
           labels:
             namespace: code-place-prod
+            service: postgres
             severity: warning
             priority: P1
           annotations:
             summary: "prod PostgreSQL metric collector가 응답하지 않습니다"
-            description: "prod CNPG collector가 5분 동안 PostgreSQL에 접근하지 못했거나 collector metric이 사라졌습니다."
+            description: "prod CNPG collector가 5분 동안 PostgreSQL에 접근하지 못했거나 기대 instance 3개의 collector metric을 모두 제공하지 못했습니다."
         - alert: PostgresHADegraded
           expr: min by (namespace) (cnpg_collector_nodes_used{namespace=~"code-place-(dev|prod)", cluster="postgres"}) < 2
           for: 10m
@@ -499,6 +584,28 @@ spec:
           annotations:
             summary: "Redis/Sentinel ready replica 수가 부족합니다"
             description: "Redis replication 및 Sentinel Pod ready 수가 5분 동안 6개 미만입니다. Redis failover 여력이 줄어들 수 있습니다."
+        - alert: RedisExporterCoverageIncomplete
+          expr: (redis_up{namespace="code-place-dev", job="redis"} == 0) or (count(redis_up{namespace="code-place-dev", job="redis"}) < 6) or absent(redis_up{namespace="code-place-dev", job="redis"})
+          for: 5m
+          labels:
+            namespace: code-place-dev
+            service: redis
+            severity: warning
+            priority: P1
+          annotations:
+            summary: "dev Redis exporter coverage가 불완전합니다"
+            description: "dev Redis/Sentinel exporter가 5분 동안 실패했거나 기대 target 6개의 redis_up metric을 모두 제공하지 못했습니다."
+        - alert: RedisExporterCoverageIncomplete
+          expr: (redis_up{namespace="code-place-prod", job="redis"} == 0) or (count(redis_up{namespace="code-place-prod", job="redis"}) < 6) or absent(redis_up{namespace="code-place-prod", job="redis"})
+          for: 5m
+          labels:
+            namespace: code-place-prod
+            service: redis
+            severity: warning
+            priority: P1
+          annotations:
+            summary: "prod Redis exporter coverage가 불완전합니다"
+            description: "prod Redis/Sentinel exporter가 5분 동안 실패했거나 기대 target 6개의 redis_up metric을 모두 제공하지 못했습니다."
         - alert: RedisMemoryHigh
           expr: (max by (namespace, pod) (redis_memory_used_bytes{namespace=~"code-place-(dev|prod)"}) / max by (namespace, pod) (redis_memory_max_bytes{namespace=~"code-place-(dev|prod)"}) > 0.85) and on (namespace, pod) max by (namespace, pod) (redis_memory_max_bytes{namespace=~"code-place-(dev|prod)"}) > 0
           for: 10m
@@ -509,15 +616,27 @@ spec:
             summary: "Redis memory 사용률이 높습니다"
             description: "Redis exporter 기준 memory 사용률이 10분 동안 설정된 maxmemory의 85%를 초과했습니다."
         - alert: OpenTelemetryCollectorUnavailable
-          expr: min(up{job="otel-collector", namespace="monitoring"}) == 0 or absent(up{job="otel-collector", namespace="monitoring"})
+          expr: (up{job="otel-collector", namespace="monitoring"} == 0) or (count(up{job="otel-collector", namespace="monitoring"}) < 2) or absent(up{job="otel-collector", namespace="monitoring"})
           for: 5m
           labels:
             severity: warning
             priority: P1
             namespace: monitoring
+            service: otel-collector
           annotations:
             summary: "OpenTelemetry Collector를 scrape할 수 없습니다"
-            description: "OpenTelemetry Collector target이 5분 동안 없거나 내려갔습니다. dev trace 수집 상태를 확인해야 합니다."
+            description: "OpenTelemetry Collector target이 5분 동안 없거나 내려갔거나 기대 target 2개보다 적습니다. dev/prod trace 수집 상태를 확인해야 합니다."
+        - alert: BlackboxExporterCoverageIncomplete
+          expr: (up{job="blackbox-exporter", namespace="monitoring"} == 0) or (count(up{job="blackbox-exporter", namespace="monitoring"}) < 2) or absent(up{job="blackbox-exporter", namespace="monitoring"})
+          for: 5m
+          labels:
+            namespace: monitoring
+            service: blackbox-exporter
+            severity: warning
+            priority: P1
+          annotations:
+            summary: "Blackbox exporter coverage가 불완전합니다"
+            description: "Blackbox exporter가 5분 동안 실패했거나 기대 target 2개보다 적습니다. public synthetic probe 수집 경로를 확인해야 합니다."
         - alert: TempoUnavailable
           expr: up{job="tempo", namespace="monitoring"} == 0 or absent(up{job="tempo", namespace="monitoring"})
           for: 5m
