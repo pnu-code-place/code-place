@@ -44,6 +44,12 @@ helm upgrade --install alloy grafana/alloy \
   --create-namespace \
   --version 1.10.0 \
   --values kubernetes/monitoring/logs/alloy-values.yaml
+
+kubectl apply -k kubernetes/monitoring
+
+# One-time migration after the replacement Traefik PodMonitor is present.
+kubectl -n monitoring get podmonitor traefik
+kubectl -n monitoring delete servicemonitor traefik --ignore-not-found
 ```
 
 ## Verify
@@ -54,6 +60,16 @@ After applying the monitoring resources, check the live resources directly:
 kubectl -n monitoring get pod | grep -E 'loki|alloy|grafana'
 kubectl -n monitoring get pvc | grep loki
 kubectl -n monitoring get servicemonitor loki alloy
+```
+
+For the complete scrape, probe, metric-family, and HA contract, port-forward Prometheus and run the live verifier in another terminal:
+
+```sh
+# terminal 1
+kubectl -n monitoring port-forward service/kube-prometheus-stack-prometheus 19090:9090
+
+# terminal 2
+python3 kubernetes/monitoring/verify_live.py --prometheus-url http://127.0.0.1:19090
 ```
 
 Grafana should show a `Loki` datasource. Useful Explore queries:
@@ -69,7 +85,9 @@ Grafana should show a `Loki` datasource. Useful Explore queries:
 Grafana should also show:
 
 - `CodePlace Overview`
+- `CodePlace Platform`
 - `CodePlace Logs`
+- `CodePlace Log Pipeline`
 
 ## Notes
 
