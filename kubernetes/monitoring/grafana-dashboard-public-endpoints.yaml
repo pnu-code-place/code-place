@@ -13,15 +13,42 @@ data:
       "version": 1,
       "refresh": "30s",
       "tags": ["codeplace", "synthetic", "blackbox"],
+      "links": [
+        {
+          "asDropdown": true,
+          "includeVars": true,
+          "keepTime": true,
+          "tags": ["codeplace"],
+          "targetBlank": false,
+          "title": "CodePlace Dashboards",
+          "type": "dashboards"
+        }
+      ],
       "editable": true,
       "time": {
         "from": "now-1h",
         "to": "now"
       },
+      "templating": {
+        "list": [
+          {
+            "name": "environment",
+            "label": "Environment",
+            "type": "custom",
+            "query": "prod,dev",
+            "multi": false,
+            "includeAll": false,
+            "current": {
+              "text": "prod",
+              "value": "prod"
+            }
+          }
+        ]
+      },
       "panels": [
         {
           "type": "stat",
-          "title": "Prod Endpoints Up",
+          "title": "$environment Endpoint Health",
           "gridPos": {"x": 0, "y": 0, "w": 4, "h": 4},
           "datasource": "Prometheus",
           "fieldConfig": {
@@ -36,36 +63,36 @@ data:
               }
             }
           },
-          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "options": {"graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
           "targets": [
-            {"expr": "codeplace:public_endpoint_availability5m{environment=\"prod\"}", "legendFormat": "{{service}} {{instance}}"}
-          ]
+            {"expr": "probe_success{environment=\"$environment\", probe_type=\"public-http\"}", "legendFormat": "{{service}} {{instance}}", "instant": true}          ]
         },
         {
           "type": "stat",
-          "title": "Dev Endpoints Up",
+          "title": "$environment Probe Target Coverage",
+          "description": "Healthy Prometheus scrape targets divided by the two expected workload probes (frontend and hub-auth).",
           "gridPos": {"x": 4, "y": 0, "w": 4, "h": 4},
           "datasource": "Prometheus",
           "fieldConfig": {
             "defaults": {
-              "unit": "short",
+              "unit": "percentunit",
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
                   {"color": "red", "value": null},
+                  {"color": "orange", "value": 0.5},
                   {"color": "green", "value": 1}
                 ]
               }
             }
           },
-          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "options": {"graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
           "targets": [
-            {"expr": "codeplace:public_endpoint_availability5m{environment=\"dev\"}", "legendFormat": "{{service}} {{instance}}"}
-          ]
+            {"expr": "sum(up{job=~\"codeplace-(public|hub-auth)-http-$environment\"}) / 2", "legendFormat": "healthy / expected", "instant": true}          ]
         },
         {
           "type": "stat",
-          "title": "HTTP Status",
+          "title": "$environment HTTP Status",
           "gridPos": {"x": 8, "y": 0, "w": 4, "h": 4},
           "datasource": "Prometheus",
           "fieldConfig": {
@@ -75,19 +102,19 @@ data:
                 "mode": "absolute",
                 "steps": [
                   {"color": "red", "value": null},
-                  {"color": "green", "value": 200}
+                  {"color": "green", "value": 200},
+                  {"color": "red", "value": 400}
                 ]
               }
             }
           },
-          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "options": {"graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
           "targets": [
-            {"expr": "probe_http_status_code{probe_type=\"public-http\"}", "legendFormat": "{{environment}} {{instance}}"}
-          ]
+            {"expr": "probe_http_status_code{environment=\"$environment\", probe_type=\"public-http\"}", "legendFormat": "{{service}} {{instance}}", "instant": true}          ]
         },
         {
           "type": "stat",
-          "title": "TLS Days Left",
+          "title": "$environment TLS Days Left",
           "gridPos": {"x": 12, "y": 0, "w": 4, "h": 4},
           "datasource": "Prometheus",
           "fieldConfig": {
@@ -97,20 +124,19 @@ data:
                 "mode": "absolute",
                 "steps": [
                   {"color": "red", "value": null},
-                  {"color": "orange", "value": 3},
-                  {"color": "green", "value": 14}
+                  {"color": "orange", "value": 14},
+                  {"color": "green", "value": 30}
                 ]
               }
             }
           },
-          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "options": {"graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
           "targets": [
-            {"expr": "(probe_ssl_earliest_cert_expiry{probe_type=\"public-http\"} - time()) / 86400", "legendFormat": "{{environment}} {{instance}}"}
-          ]
+            {"expr": "(probe_ssl_earliest_cert_expiry{environment=\"$environment\", probe_type=\"public-http\"} - time()) / 86400", "legendFormat": "{{service}} {{instance}}", "instant": true}          ]
         },
         {
           "type": "stat",
-          "title": "Probe Duration",
+          "title": "$environment Probe Duration",
           "gridPos": {"x": 16, "y": 0, "w": 4, "h": 4},
           "datasource": "Prometheus",
           "fieldConfig": {
@@ -126,14 +152,14 @@ data:
               }
             }
           },
-          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "options": {"graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
           "targets": [
-            {"expr": "probe_duration_seconds{probe_type=\"public-http\"}", "legendFormat": "{{environment}} {{instance}}"}
-          ]
+            {"expr": "probe_duration_seconds{environment=\"$environment\", probe_type=\"public-http\"}", "legendFormat": "{{service}} {{instance}}", "instant": true}          ]
         },
         {
           "type": "stat",
-          "title": "Blackbox Exporter Replicas",
+          "title": "Grafana Self Probe",
+          "description": "Monitoring-plane probe kept separate from the selected application environment.",
           "gridPos": {"x": 20, "y": 0, "w": 4, "h": 4},
           "datasource": "Prometheus",
           "fieldConfig": {
@@ -143,46 +169,76 @@ data:
                 "mode": "absolute",
                 "steps": [
                   {"color": "red", "value": null},
-                  {"color": "orange", "value": 1},
-                  {"color": "green", "value": 2}
+                  {"color": "green", "value": 1}
                 ]
               }
             }
           },
-          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "options": {"graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
           "targets": [
-            {"expr": "kube_deployment_status_replicas_available{namespace=\"monitoring\", deployment=\"blackbox-exporter\"} or vector(0)", "legendFormat": "available"},
-            {"expr": "kube_deployment_spec_replicas{namespace=\"monitoring\", deployment=\"blackbox-exporter\"} or vector(0)", "legendFormat": "desired"}
-          ]
+            {"expr": "probe_success{environment=\"monitoring\", service=\"grafana\", probe_type=\"public-http\"}", "legendFormat": "grafana", "instant": true}          ]
         },
         {
           "type": "timeseries",
-          "title": "Endpoint Availability",
+          "title": "$environment Endpoint Availability",
           "gridPos": {"x": 0, "y": 4, "w": 8, "h": 8},
           "datasource": "Prometheus",
-          "fieldConfig": {"defaults": {"unit": "short", "decimals": 0}},
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percentunit",
+              "decimals": 2,
+              "custom": {
+                "drawStyle": "line",
+                "lineInterpolation": "linear",
+                "lineWidth": 2,
+                "fillOpacity": 8,
+                "showPoints": "never",
+                "spanNulls": false
+              }
+            }
+          },
           "targets": [
-            {"expr": "codeplace:public_endpoint_availability5m", "legendFormat": "{{environment}} {{service}} {{instance}}"}
+            {"expr": "codeplace:public_endpoint_availability5m{environment=\"$environment\"}", "legendFormat": "{{service}} {{instance}}"}
           ]
         },
         {
           "type": "timeseries",
-          "title": "Endpoint Duration",
+          "title": "$environment Endpoint Duration",
           "gridPos": {"x": 8, "y": 4, "w": 8, "h": 8},
           "datasource": "Prometheus",
-          "fieldConfig": {"defaults": {"unit": "s"}},
+          "fieldConfig": {
+            "defaults": {
+              "unit": "s",
+              "custom": {
+                "drawStyle": "line",
+                "lineInterpolation": "linear",
+                "lineWidth": 2,
+                "fillOpacity": 8,
+                "showPoints": "never",
+                "spanNulls": false
+              }
+            }
+          },
           "targets": [
-            {"expr": "probe_duration_seconds{probe_type=\"public-http\"}", "legendFormat": "{{environment}} {{instance}}"}
+            {"expr": "probe_duration_seconds{environment=\"$environment\", probe_type=\"public-http\"}", "legendFormat": "{{service}} {{instance}}"}
           ]
         },
         {
           "type": "timeseries",
-          "title": "TLS Days Left",
+          "title": "$environment TLS Days Left",
           "gridPos": {"x": 16, "y": 4, "w": 8, "h": 8},
           "datasource": "Prometheus",
           "fieldConfig": {
             "defaults": {
               "unit": "d",
+              "custom": {
+                "drawStyle": "line",
+                "lineInterpolation": "linear",
+                "lineWidth": 2,
+                "fillOpacity": 8,
+                "showPoints": "never",
+                "spanNulls": false
+              },
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
@@ -194,17 +250,29 @@ data:
             }
           },
           "targets": [
-            {"expr": "(probe_ssl_earliest_cert_expiry{probe_type=\"public-http\"} - time()) / 86400", "legendFormat": "{{environment}} {{instance}}"}
+            {"expr": "(probe_ssl_earliest_cert_expiry{environment=\"$environment\", probe_type=\"public-http\"} - time()) / 86400", "legendFormat": "{{service}} {{instance}}"}
           ]
         },
         {
           "type": "timeseries",
-          "title": "HTTP Phase Duration",
+          "title": "$environment HTTP Phase Duration",
           "gridPos": {"x": 0, "y": 12, "w": 24, "h": 8},
           "datasource": "Prometheus",
-          "fieldConfig": {"defaults": {"unit": "s"}},
+          "fieldConfig": {
+            "defaults": {
+              "unit": "s",
+              "custom": {
+                "drawStyle": "line",
+                "lineInterpolation": "linear",
+                "lineWidth": 2,
+                "fillOpacity": 8,
+                "showPoints": "never",
+                "spanNulls": false
+              }
+            }
+          },
           "targets": [
-            {"expr": "probe_http_duration_seconds{probe_type=\"public-http\"}", "legendFormat": "{{environment}} {{phase}}"}
+            {"expr": "probe_http_duration_seconds{environment=\"$environment\", probe_type=\"public-http\"}", "legendFormat": "{{service}} {{phase}}"}
           ]
         }
       ]

@@ -1,0 +1,144 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-codeplace-ai-api
+  labels:
+    grafana_dashboard: "1"
+data:
+  codeplace-ai-api.json: |
+    {
+      "uid": "codeplace-ai-api",
+      "title": "CodePlace AI API",
+      "schemaVersion": 39,
+      "version": 1,
+      "refresh": "30s",
+      "tags": ["codeplace", "ai", "api"],
+      "links": [
+        {
+          "asDropdown": true,
+          "includeVars": true,
+          "keepTime": true,
+          "tags": ["codeplace"],
+          "targetBlank": false,
+          "title": "CodePlace Dashboards",
+          "type": "dashboards"
+        }
+      ],
+      "editable": true,
+      "time": {
+        "from": "now-1h",
+        "to": "now"
+      },
+      "templating": {
+        "list": [
+          {
+            "name": "environment",
+            "label": "Environment",
+            "type": "custom",
+            "query": "prod,dev",
+            "multi": false,
+            "includeAll": false,
+            "current": {
+              "text": "prod",
+              "value": "prod"
+            }
+          }
+        ]
+      },
+      "panels": [
+        {
+          "type": "stat",
+          "title": "$environment Backend Metrics Up",
+          "description": "Scrape health for the backend that emits AI hint API metrics in the selected environment.",
+          "gridPos": {"x": 0, "y": 0, "w": 8, "h": 8},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "red", "value": null},
+                  {"color": "green", "value": 1}
+                ]
+              }
+            }
+          },
+          "options": {"graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "min(up{job=\"backend\", namespace=\"code-place-$environment\"})", "legendFormat": "backend", "instant": true}          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "$environment AI Hint API Outcomes",
+          "description": "User-facing AI hint API outcomes per second, split by request scope and final status.",
+          "gridPos": {"x": 8, "y": 0, "w": 16, "h": 8},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ops",
+              "custom": {
+                "drawStyle": "bars",
+                "lineInterpolation": "stepAfter",
+                "lineWidth": 1,
+                "fillOpacity": 70,
+                "showPoints": "never",
+                "barAlignment": 0,
+                "stacking": {"mode": "normal", "group": "A"}
+              }
+            }
+          },
+          "targets": [
+            {"expr": "sum by (scope, status) (rate(codeplace_ai_hint_api_outcome_total{namespace=\"code-place-$environment\"}[5m]))", "legendFormat": "{{scope}} {{status}}/s"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "$environment Backend AI Hint Streams",
+          "description": "Backend-to-model AI hint streams per second, split by completion status.",
+          "gridPos": {"x": 0, "y": 8, "w": 12, "h": 8},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ops",
+              "custom": {
+                "drawStyle": "bars",
+                "lineInterpolation": "stepAfter",
+                "lineWidth": 1,
+                "fillOpacity": 70,
+                "showPoints": "never",
+                "barAlignment": 0,
+                "stacking": {"mode": "normal", "group": "A"}
+              }
+            }
+          },
+          "targets": [
+            {"expr": "sum by (status) (rate(codeplace_ai_hint_requests_total{namespace=\"code-place-$environment\"}[5m]))", "legendFormat": "{{status}} streams/s"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "$environment Backend AI Hint Duration",
+          "description": "End-to-end AI hint stream duration at p95, separated into successful and non-successful outcomes.",
+          "gridPos": {"x": 12, "y": 8, "w": 12, "h": 8},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "s",
+              "custom": {
+                "drawStyle": "line",
+                "lineInterpolation": "linear",
+                "lineWidth": 2,
+                "fillOpacity": 8,
+                "showPoints": "never",
+                "spanNulls": false
+              }
+            }
+          },
+          "targets": [
+            {"expr": "histogram_quantile(0.95, sum by (le) (rate(codeplace_ai_hint_duration_seconds_bucket{namespace=\"code-place-$environment\", status=\"success\"}[10m])))", "legendFormat": "success p95"},
+            {"expr": "histogram_quantile(0.95, sum by (status, le) (rate(codeplace_ai_hint_duration_seconds_bucket{namespace=\"code-place-$environment\", status!=\"success\"}[10m])))", "legendFormat": "{{status}} p95"}
+          ]
+        }
+      ]
+    }

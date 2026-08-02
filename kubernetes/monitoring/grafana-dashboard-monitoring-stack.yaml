@@ -10,9 +10,20 @@ data:
       "uid": "codeplace-monitoring-stack",
       "title": "CodePlace Monitoring Stack",
       "schemaVersion": 39,
-      "version": 1,
+      "version": 2,
       "refresh": "30s",
-      "tags": ["codeplace", "monitoring"],
+      "tags": ["codeplace", "monitoring", "scrape-contract"],
+      "links": [
+        {
+          "asDropdown": true,
+          "includeVars": true,
+          "keepTime": true,
+          "tags": ["codeplace"],
+          "targetBlank": false,
+          "title": "CodePlace Dashboards",
+          "type": "dashboards"
+        }
+      ],
       "editable": true,
       "time": {
         "from": "now-1h",
@@ -20,299 +31,545 @@ data:
       },
       "panels": [
         {
+          "type": "text",
+          "title": "Scrape contract",
+          "gridPos": {"x": 0, "y": 0, "w": 24, "h": 3},
+          "options": {
+            "mode": "markdown",
+            "content": "필수 수집 경로를 환경별로 고정해 표시합니다. **ABSENT**는 target discovery 자체가 없음, **DOWN / DEGRADED**는 발견됐지만 scrape 실패 또는 고정 replica 수 미달, **UP**은 모든 기대 target이 발견되고 정상임을 뜻합니다. ABSENT를 정상값 0으로 위장하지 않습니다."
+          }
+        },
+        {
           "type": "stat",
-          "title": "Prometheus Ready Replicas",
-          "gridPos": {"x": 0, "y": 0, "w": 4, "h": 4},
+          "title": "Expected scrape targets",
+          "description": "각 쿼리는 해당 target에 한정해 0=ABSENT, 1=DOWN/DEGRADED, 2=UP 상태를 구분합니다. Backend, PostgreSQL, Redis, OTel, Blackbox는 배포 계약의 기대 replica 수도 함께 확인합니다.",
+          "gridPos": {"x": 0, "y": 3, "w": 24, "h": 13},
           "datasource": "Prometheus",
           "fieldConfig": {
             "defaults": {
-              "unit": "short",
+              "unit": "none",
+              "min": 0,
+              "max": 2,
+              "mappings": [
+                {
+                  "type": "value",
+                  "options": {
+                    "0": {"text": "ABSENT", "color": "dark-red"},
+                    "1": {"text": "DOWN / DEGRADED", "color": "orange"},
+                    "2": {"text": "UP", "color": "green"}
+                  }
+                }
+              ],
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
-                  {"color": "red", "value": null},
+                  {"color": "dark-red", "value": null},
                   {"color": "orange", "value": 1},
                   {"color": "green", "value": 2}
                 ]
               }
-            }
+            },
+            "overrides": []
           },
-          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "orientation": "horizontal",
+            "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+            "textMode": "auto",
+            "wideLayout": true
+          },
           "targets": [
-            {"expr": "sum(kube_pod_status_ready{namespace=\"monitoring\", condition=\"true\", pod=~\"prometheus-kube-prometheus-stack-prometheus-.*\"}) or vector(0)", "legendFormat": "prometheus ready"}
+            {
+              "refId": "A",
+              "expr": "((count(up{job=\"backend\", namespace=\"code-place-dev\"}) > bool 0) or vector(0)) + (((min(up{job=\"backend\", namespace=\"code-place-dev\"}) == bool 1) * (count(up{job=\"backend\", namespace=\"code-place-dev\"}) >= bool 2)) or vector(0))",
+              "legendFormat": "backend dev",
+              "instant": true
+            },
+            {
+              "refId": "B",
+              "expr": "((count(up{job=\"backend\", namespace=\"code-place-prod\"}) > bool 0) or vector(0)) + (((min(up{job=\"backend\", namespace=\"code-place-prod\"}) == bool 1) * (count(up{job=\"backend\", namespace=\"code-place-prod\"}) >= bool 6)) or vector(0))",
+              "legendFormat": "backend prod",
+              "instant": true
+            },
+            {
+              "refId": "C",
+              "expr": "((count(up{job=\"postgres\", namespace=\"code-place-dev\"}) > bool 0) or vector(0)) + (((min(up{job=\"postgres\", namespace=\"code-place-dev\"}) == bool 1) * (count(up{job=\"postgres\", namespace=\"code-place-dev\"}) >= bool 3)) or vector(0))",
+              "legendFormat": "postgres dev",
+              "instant": true
+            },
+            {
+              "refId": "D",
+              "expr": "((count(up{job=\"postgres\", namespace=\"code-place-prod\"}) > bool 0) or vector(0)) + (((min(up{job=\"postgres\", namespace=\"code-place-prod\"}) == bool 1) * (count(up{job=\"postgres\", namespace=\"code-place-prod\"}) >= bool 3)) or vector(0))",
+              "legendFormat": "postgres prod",
+              "instant": true
+            },
+            {
+              "refId": "E",
+              "expr": "((count(up{job=\"redis\", namespace=\"code-place-dev\"}) > bool 0) or vector(0)) + (((min(up{job=\"redis\", namespace=\"code-place-dev\"}) == bool 1) * (count(up{job=\"redis\", namespace=\"code-place-dev\"}) >= bool 6)) or vector(0))",
+              "legendFormat": "redis dev",
+              "instant": true
+            },
+            {
+              "refId": "F",
+              "expr": "((count(up{job=\"redis\", namespace=\"code-place-prod\"}) > bool 0) or vector(0)) + (((min(up{job=\"redis\", namespace=\"code-place-prod\"}) == bool 1) * (count(up{job=\"redis\", namespace=\"code-place-prod\"}) >= bool 6)) or vector(0))",
+              "legendFormat": "redis prod",
+              "instant": true
+            },
+            {
+              "refId": "G",
+              "expr": "((2 * (min(up{job=\"traefik\", namespace=\"kube-system\"}) == bool 1)) + (1 * (min(up{job=\"traefik\", namespace=\"kube-system\"}) == bool 0))) or (absent(up{job=\"traefik\", namespace=\"kube-system\"}) * 0)",
+              "legendFormat": "Traefik",
+              "instant": true
+            },
+            {
+              "refId": "H",
+              "expr": "((2 * (min(up{job=~\".*alloy.*\", namespace=\"monitoring\"}) == bool 1)) + (1 * (min(up{job=~\".*alloy.*\", namespace=\"monitoring\"}) == bool 0))) or (absent(up{job=~\".*alloy.*\", namespace=\"monitoring\"}) * 0)",
+              "legendFormat": "Alloy",
+              "instant": true
+            },
+            {
+              "refId": "I",
+              "expr": "((2 * (min(up{job=~\".*loki.*\", namespace=\"monitoring\"}) == bool 1)) + (1 * (min(up{job=~\".*loki.*\", namespace=\"monitoring\"}) == bool 0))) or (absent(up{job=~\".*loki.*\", namespace=\"monitoring\"}) * 0)",
+              "legendFormat": "Loki",
+              "instant": true
+            },
+            {
+              "refId": "J",
+              "expr": "((count(up{job=\"otel-collector\", namespace=\"monitoring\"}) > bool 0) or vector(0)) + (((min(up{job=\"otel-collector\", namespace=\"monitoring\"}) == bool 1) * (count(up{job=\"otel-collector\", namespace=\"monitoring\"}) >= bool 2)) or vector(0))",
+              "legendFormat": "OTel Collector",
+              "instant": true
+            },
+            {
+              "refId": "K",
+              "expr": "((2 * (min(up{job=\"tempo\", namespace=\"monitoring\"}) == bool 1)) + (1 * (min(up{job=\"tempo\", namespace=\"monitoring\"}) == bool 0))) or (absent(up{job=\"tempo\", namespace=\"monitoring\"}) * 0)",
+              "legendFormat": "Tempo",
+              "instant": true
+            },
+            {
+              "refId": "L",
+              "expr": "((2 * (min(up{job=\"vllm\", namespace=\"code-place-prod\"}) == bool 1)) + (1 * (min(up{job=\"vllm\", namespace=\"code-place-prod\"}) == bool 0))) or (absent(up{job=\"vllm\", namespace=\"code-place-prod\"}) * 0)",
+              "legendFormat": "vLLM prod",
+              "instant": true
+            },
+            {
+              "refId": "M",
+              "expr": "((2 * (min(up{job=\"dcgm-exporter\", namespace=\"monitoring\"}) == bool 1)) + (1 * (min(up{job=\"dcgm-exporter\", namespace=\"monitoring\"}) == bool 0))) or (absent(up{job=\"dcgm-exporter\", namespace=\"monitoring\"}) * 0)",
+              "legendFormat": "DCGM",
+              "instant": true
+            },
+            {
+              "refId": "N",
+              "expr": "((count(up{job=\"blackbox-exporter\", namespace=\"monitoring\"}) > bool 0) or vector(0)) + (((min(up{job=\"blackbox-exporter\", namespace=\"monitoring\"}) == bool 1) * (count(up{job=\"blackbox-exporter\", namespace=\"monitoring\"}) >= bool 2)) or vector(0))",
+              "legendFormat": "Blackbox exporter",
+              "instant": true
+            },
+            {
+              "refId": "P",
+              "expr": "((2 * (min(up{namespace=\"longhorn-system\", endpoint=\"manager\"}) == bool 1)) + (1 * (min(up{namespace=\"longhorn-system\", endpoint=\"manager\"}) == bool 0))) or (absent(up{namespace=\"longhorn-system\", endpoint=\"manager\"}) * 0)",
+              "legendFormat": "Longhorn",
+              "instant": true
+            },
+            {
+              "refId": "Q",
+              "expr": "((2 * (min(up{namespace=\"monitoring\", job=\"kubernetes-event-exporter\"}) == bool 1)) + (1 * (min(up{namespace=\"monitoring\", job=\"kubernetes-event-exporter\"}) == bool 0))) or (absent(up{namespace=\"monitoring\", job=\"kubernetes-event-exporter\"}) * 0)",
+              "legendFormat": "Event exporter",
+              "instant": true
+            },
+            {
+              "refId": "R",
+              "expr": "((2 * (min(up{namespace=\"monitoring\", service=~\".*kube-state-metrics.*\"}) == bool 1)) + (1 * (min(up{namespace=\"monitoring\", service=~\".*kube-state-metrics.*\"}) == bool 0))) or (absent(up{namespace=\"monitoring\", service=~\".*kube-state-metrics.*\"}) * 0)",
+              "legendFormat": "kube-state-metrics",
+              "instant": true
+            }
           ]
         },
         {
           "type": "stat",
-          "title": "Alertmanager Ready Replicas",
-          "gridPos": {"x": 4, "y": 0, "w": 4, "h": 4},
-          "datasource": "Prometheus",
-          "fieldConfig": {
-            "defaults": {
-              "unit": "short",
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {"color": "red", "value": null},
-                  {"color": "orange", "value": 1},
-                  {"color": "green", "value": 2}
-                ]
-              }
-            }
-          },
-          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
-          "targets": [
-            {"expr": "sum(kube_pod_status_ready{namespace=\"monitoring\", condition=\"true\", pod=~\"alertmanager-kube-prometheus-stack-alertmanager-.*\"}) or vector(0)", "legendFormat": "alertmanager ready"}
-          ]
-        },
-        {
-          "type": "stat",
-          "title": "Grafana Ready",
-          "gridPos": {"x": 8, "y": 0, "w": 4, "h": 4},
-          "datasource": "Prometheus",
-          "fieldConfig": {
-            "defaults": {
-              "unit": "short",
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {"color": "red", "value": null},
-                  {"color": "green", "value": 1}
-                ]
-              }
-            }
-          },
-          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
-          "targets": [
-            {"expr": "max(kube_pod_status_ready{namespace=\"monitoring\", condition=\"true\", pod=~\"kube-prometheus-stack-grafana-.*\"}) or vector(0)", "legendFormat": "grafana"}
-          ]
-        },
-        {
-          "type": "stat",
-          "title": "Prometheus Operator Ready",
-          "gridPos": {"x": 12, "y": 0, "w": 4, "h": 4},
-          "datasource": "Prometheus",
-          "fieldConfig": {
-            "defaults": {
-              "unit": "short",
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {"color": "red", "value": null},
-                  {"color": "green", "value": 1}
-                ]
-              }
-            }
-          },
-          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
-          "targets": [
-            {"expr": "max(kube_pod_status_ready{namespace=\"monitoring\", condition=\"true\", pod=~\"kube-prometheus-stack-operator-.*\"}) or vector(0)", "legendFormat": "operator"}
-          ]
-        },
-        {
-          "type": "stat",
-          "title": "Alertmanager Discovered",
-          "gridPos": {"x": 16, "y": 0, "w": 4, "h": 4},
-          "datasource": "Prometheus",
-          "fieldConfig": {
-            "defaults": {
-              "unit": "short",
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {"color": "red", "value": null},
-                  {"color": "green", "value": 1}
-                ]
-              }
-            }
-          },
-          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
-          "targets": [
-            {"expr": "max(prometheus_notifications_alertmanagers_discovered) or vector(0)", "legendFormat": "targets"}
-          ]
-        },
-        {
-          "type": "stat",
-          "title": "Rule Fail",
-          "gridPos": {"x": 20, "y": 0, "w": 2, "h": 4},
-          "datasource": "Prometheus",
-          "fieldConfig": {
-            "defaults": {
-              "unit": "short",
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {"color": "green", "value": null},
-                  {"color": "red", "value": 1}
-                ]
-              }
-            }
-          },
-          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
-          "targets": [
-            {"expr": "sum(increase(prometheus_rule_evaluation_failures_total[5m])) or vector(0)", "legendFormat": "failures"}
-          ]
-        },
-        {
-          "type": "stat",
-          "title": "Grafana Metrics",
-          "gridPos": {"x": 0, "y": 36, "w": 4, "h": 4},
-          "datasource": "Prometheus",
-          "fieldConfig": {
-            "defaults": {
-              "unit": "short",
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {"color": "red", "value": null},
-                  {"color": "green", "value": 1}
-                ]
-              }
-            }
-          },
-          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
-          "targets": [
-            {"expr": "max(up{namespace=\"monitoring\", service=\"kube-prometheus-stack-grafana\"}) or vector(0)", "legendFormat": "up"}
-          ]
-        },
-        {
-          "type": "stat",
-          "title": "Notify Fail",
-          "gridPos": {"x": 22, "y": 0, "w": 2, "h": 4},
-          "datasource": "Prometheus",
-          "fieldConfig": {
-            "defaults": {
-              "unit": "short",
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {"color": "green", "value": null},
-                  {"color": "red", "value": 1}
-                ]
-              }
-            }
-          },
-          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
-          "targets": [
-            {"expr": "sum(increase(alertmanager_notifications_failed_total[5m])) or vector(0)", "legendFormat": "failures"}
-          ]
-        },
-        {
-          "type": "timeseries",
-          "title": "Monitoring Pod Restarts",
-          "gridPos": {"x": 0, "y": 4, "w": 8, "h": 8},
-          "datasource": "Prometheus",
-          "fieldConfig": {"defaults": {"unit": "short"}},
-          "targets": [
-            {"expr": "sum by (pod) (increase(kube_pod_container_status_restarts_total{namespace=\"monitoring\", pod=~\"prometheus-.*|alertmanager-.*|kube-prometheus-stack-grafana-.*|kube-prometheus-stack-operator-.*\"}[1h]))", "legendFormat": "{{pod}}"}
-          ]
-        },
-        {
-          "type": "timeseries",
-          "title": "Prometheus Target Scrape Failures",
-          "gridPos": {"x": 8, "y": 4, "w": 8, "h": 8},
-          "datasource": "Prometheus",
-          "fieldConfig": {"defaults": {"unit": "short"}},
-          "targets": [
-            {"expr": "sum by (job, namespace) (up == 0) or vector(0)", "legendFormat": "{{namespace}} {{job}}"}
-          ]
-        },
-        {
-          "type": "timeseries",
-          "title": "Monitoring Service Target Up",
-          "gridPos": {"x": 8, "y": 36, "w": 8, "h": 6},
-          "datasource": "Prometheus",
-          "fieldConfig": {
-            "defaults": {
-              "unit": "short",
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {"color": "red", "value": null},
-                  {"color": "green", "value": 1}
-                ]
-              }
-            }
-          },
-          "targets": [
-            {"expr": "max by (service) (up{namespace=\"monitoring\", service=~\"blackbox-exporter|dcgm-exporter|kubernetes-event-exporter|otel-collector|tempo|kube-prometheus-stack-grafana|loki|loki-canary|alloy\"})", "legendFormat": "{{service}}"}
-          ]
-        },
-        {
-          "type": "timeseries",
-          "title": "Prometheus TSDB Head Series",
-          "gridPos": {"x": 16, "y": 4, "w": 8, "h": 8},
-          "datasource": "Prometheus",
-          "fieldConfig": {"defaults": {"unit": "short"}},
-          "targets": [
-            {"expr": "prometheus_tsdb_head_series", "legendFormat": "{{pod}}"}
-          ]
-        },
-        {
-          "type": "timeseries",
-          "title": "Prometheus Rule and Config Health",
-          "gridPos": {"x": 0, "y": 12, "w": 12, "h": 8},
-          "datasource": "Prometheus",
-          "fieldConfig": {"defaults": {"unit": "short"}},
-          "targets": [
-            {"expr": "sum by (rule_group) (increase(prometheus_rule_evaluation_failures_total[5m])) or vector(0)", "legendFormat": "{{rule_group}} failures"},
-            {"expr": "max(prometheus_config_last_reload_successful{namespace=\"monitoring\"}) or vector(0)", "legendFormat": "config reload successful"}
-          ]
-        },
-        {
-          "type": "timeseries",
-          "title": "Alertmanager Notifications and Config",
-          "gridPos": {"x": 12, "y": 12, "w": 12, "h": 8},
-          "datasource": "Prometheus",
-          "fieldConfig": {"defaults": {"unit": "ops"}},
-          "targets": [
-            {"expr": "sum by (integration) (rate(alertmanager_notifications_total[5m]))", "legendFormat": "{{integration}} sent"},
-            {"expr": "sum by (integration) (rate(alertmanager_notifications_failed_total[5m])) or vector(0)", "legendFormat": "{{integration}} failed"},
-            {"expr": "max(alertmanager_config_last_reload_successful{namespace=\"monitoring\"}) or vector(0)", "legendFormat": "config reload successful"}
-          ]
-        },
-        {
-          "type": "timeseries",
-          "title": "Prometheus Resource Usage",
-          "gridPos": {"x": 0, "y": 20, "w": 12, "h": 8},
-          "datasource": "Prometheus",
-          "fieldConfig": {"defaults": {"unit": "short"}},
-          "targets": [
-            {"expr": "sum by (pod) (rate(container_cpu_usage_seconds_total{namespace=\"monitoring\", pod=~\"prometheus-kube-prometheus-stack-prometheus-.*\", container=\"prometheus\"}[5m]))", "legendFormat": "{{pod}} cpu cores"},
-            {"expr": "max by (pod) (container_memory_working_set_bytes{namespace=\"monitoring\", pod=~\"prometheus-kube-prometheus-stack-prometheus-.*\", container=\"prometheus\"})", "legendFormat": "{{pod}} memory bytes"}
-          ]
-        },
-        {
-          "type": "timeseries",
-          "title": "Grafana Resource Usage",
-          "gridPos": {"x": 12, "y": 20, "w": 12, "h": 8},
-          "datasource": "Prometheus",
-          "fieldConfig": {"defaults": {"unit": "short"}},
-          "targets": [
-            {"expr": "sum by (pod) (rate(container_cpu_usage_seconds_total{namespace=\"monitoring\", pod=~\"kube-prometheus-stack-grafana-.*\", container!=\"\"}[5m]))", "legendFormat": "{{pod}} cpu cores"},
-            {"expr": "max by (pod) (container_memory_working_set_bytes{namespace=\"monitoring\", pod=~\"kube-prometheus-stack-grafana-.*\", container!=\"\"})", "legendFormat": "{{pod}} memory bytes"}
-          ]
-        },
-        {
-          "type": "timeseries",
-          "title": "Monitoring PVC Usage",
-          "gridPos": {"x": 0, "y": 28, "w": 24, "h": 8},
+          "title": "Application telemetry coverage",
+          "description": "Backend custom collector 4종과 Redis Sentinel check 2종의 환경별 수집 완전성입니다. 값이 없으면 ABSENT, 일부 누락 또는 실패는 100% 미만으로 표시합니다.",
+          "gridPos": {"x": 0, "y": 16, "w": 24, "h": 5},
           "datasource": "Prometheus",
           "fieldConfig": {
             "defaults": {
               "unit": "percentunit",
+              "min": 0,
+              "max": 1,
+              "noValue": "ABSENT",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "red", "value": null},
+                  {"color": "orange", "value": 0.75},
+                  {"color": "green", "value": 1}
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "orientation": "horizontal",
+            "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+            "textMode": "value_and_name",
+            "wideLayout": true
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "clamp_max(sum(codeplace_collector_success{namespace=\"code-place-dev\"}) / 8, 1)",
+              "legendFormat": "custom collectors dev (4 x 2 replicas)",
+              "instant": true
+            },
+            {
+              "refId": "B",
+              "expr": "clamp_max(sum(codeplace_collector_success{namespace=\"code-place-prod\"}) / 24, 1)",
+              "legendFormat": "custom collectors prod (4 x 6 replicas)",
+              "instant": true
+            },
+            {
+              "refId": "C",
+              "expr": "clamp_max(sum(codeplace_redis_sentinel_health{namespace=\"code-place-dev\"}) / 4, 1)",
+              "legendFormat": "Sentinel checks dev (2 x 2 replicas)",
+              "instant": true
+            },
+            {
+              "refId": "D",
+              "expr": "clamp_max(sum(codeplace_redis_sentinel_health{namespace=\"code-place-prod\"}) / 12, 1)",
+              "legendFormat": "Sentinel checks prod (2 x 6 replicas)",
+              "instant": true
+            }
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "Prometheus ready replicas / 2",
+          "gridPos": {"x": 0, "y": 21, "w": 6, "h": 5},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "min": 0,
+              "max": 2,
+              "noValue": "ABSENT",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "dark-red", "value": null},
+                  {"color": "orange", "value": 1},
+                  {"color": "green", "value": 2}
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+            "textMode": "value_and_name"
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum(max by (pod) (kube_pod_status_ready{namespace=\"monitoring\", condition=\"true\", pod=~\"prometheus-kube-prometheus-stack-prometheus-[0-9]+\"}))",
+              "legendFormat": "ready replicas",
+              "instant": true
+            }
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "Discovered targets",
+          "gridPos": {"x": 6, "y": 21, "w": 6, "h": 5},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {"unit": "short", "noValue": "NO TELEMETRY"},
+            "overrides": []
+          },
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+            "textMode": "value_and_name"
+          },
+          "targets": [
+            {"refId": "A", "expr": "count(up)", "legendFormat": "discovered", "instant": true}
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "Down discovered targets",
+          "gridPos": {"x": 12, "y": 21, "w": 6, "h": 5},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "noValue": "NO TELEMETRY",
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
                   {"color": "green", "value": null},
-                  {"color": "orange", "value": 0.75},
-                  {"color": "red", "value": 0.85}
+                  {"color": "red", "value": 1}
                 ]
               }
-            }
+            },
+            "overrides": []
+          },
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+            "textMode": "value_and_name"
           },
           "targets": [
-            {"expr": "max by (persistentvolumeclaim) (kubelet_volume_stats_used_bytes{namespace=\"monitoring\", persistentvolumeclaim!~\".*loki.*|tempo-data\"}) / clamp_min(max by (persistentvolumeclaim) (kubelet_volume_stats_capacity_bytes{namespace=\"monitoring\", persistentvolumeclaim!~\".*loki.*|tempo-data\"}), 1) or vector(0)", "legendFormat": "{{persistentvolumeclaim}}"}
+            {"refId": "A", "expr": "count(up) - count(up == 1)", "legendFormat": "down", "instant": true}
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "Rule evaluation failures / 5m",
+          "gridPos": {"x": 18, "y": 21, "w": 6, "h": 5},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "noValue": "NO TELEMETRY",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "red", "value": 1}
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+            "textMode": "value_and_name"
+          },
+          "targets": [
+            {"refId": "A", "expr": "sum(increase(prometheus_rule_evaluation_failures_total[5m]))", "legendFormat": "failures", "instant": true}
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "Alertmanager ready replicas / 2",
+          "gridPos": {"x": 0, "y": 26, "w": 6, "h": 5},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "min": 0,
+              "max": 2,
+              "noValue": "ABSENT",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "dark-red", "value": null},
+                  {"color": "orange", "value": 1},
+                  {"color": "green", "value": 2}
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+            "textMode": "value_and_name"
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum(max by (pod) (kube_pod_status_ready{namespace=\"monitoring\", condition=\"true\", pod=~\"alertmanager-kube-prometheus-stack-alertmanager-[0-9]+\"}))",
+              "legendFormat": "ready replicas",
+              "instant": true
+            }
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "Prometheus to Alertmanager discovery",
+          "gridPos": {"x": 6, "y": 26, "w": 6, "h": 5},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "noValue": "ABSENT",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "red", "value": null},
+                  {"color": "green", "value": 1}
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+            "textMode": "value_and_name"
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "min(prometheus_notifications_alertmanagers_discovered{namespace=\"monitoring\", job=\"kube-prometheus-stack-prometheus\"})",
+              "legendFormat": "minimum discovered",
+              "instant": true
+            }
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "Alertmanager config reload",
+          "gridPos": {"x": 12, "y": 26, "w": 6, "h": 5},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "none",
+              "min": 0,
+              "max": 1,
+              "noValue": "ABSENT",
+              "mappings": [
+                {"type": "value", "options": {"0": {"text": "FAILED", "color": "red"}, "1": {"text": "OK", "color": "green"}}}
+              ],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "red", "value": null},
+                  {"color": "green", "value": 1}
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+            "textMode": "value_and_name"
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "min(alertmanager_config_last_reload_successful{namespace=\"monitoring\", job=\"kube-prometheus-stack-alertmanager\"})",
+              "legendFormat": "reload",
+              "instant": true
+            }
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "Alertmanager notification failures / 5m",
+          "gridPos": {"x": 18, "y": 26, "w": 6, "h": 5},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "noValue": "ABSENT",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "red", "value": 1}
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "options": {
+            "colorMode": "background",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+            "textMode": "value_and_name"
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum(increase(alertmanager_notifications_failed_total{namespace=\"monitoring\", job=\"kube-prometheus-stack-alertmanager\"}[5m]))",
+              "legendFormat": "failed notifications",
+              "instant": true
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "title": "Failing discovered targets",
+          "description": "Discovery된 target 중 현재 up=0인 항목입니다. 위 Expected scrape targets의 ABSENT 항목은 이 표에 나타나지 않습니다.",
+          "gridPos": {"x": 0, "y": 31, "w": 12, "h": 10},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {"unit": "short"},
+            "overrides": []
+          },
+          "options": {"showHeader": true, "cellHeight": "sm"},
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "up == 0",
+              "legendFormat": "{{namespace}} {{job}} {{instance}}",
+              "format": "table",
+              "instant": true
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "title": "Active monitoring contract alerts",
+          "gridPos": {"x": 12, "y": 31, "w": 12, "h": 10},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {"unit": "short"},
+            "overrides": []
+          },
+          "options": {"showHeader": true, "cellHeight": "sm"},
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "ALERTS{alertstate=\"firing\", priority=~\"P0|P1\"} == 1",
+              "legendFormat": "{{alertname}} {{namespace}}",
+              "format": "table",
+              "instant": true
+            }
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Scrape samples by expected job",
+          "gridPos": {"x": 0, "y": 41, "w": 24, "h": 8},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {"unit": "short", "custom": {"drawStyle": "line", "lineInterpolation": "linear", "lineWidth": 2, "fillOpacity": 10, "showPoints": "auto", "stacking": {"mode": "none", "group": "A"}}},
+            "overrides": []
+          },
+          "options": {
+            "legend": {"displayMode": "table", "placement": "bottom", "showLegend": true},
+            "tooltip": {"mode": "multi", "sort": "desc"}
+          },
+          "targets": [
+            {
+              "refId": "A",
+              "expr": "sum by (namespace, job) (scrape_samples_scraped{job=~\"backend|postgres|redis|traefik|.*alloy.*|.*loki.*|.*longhorn.*|kubernetes-event-exporter|kube-state-metrics|otel-collector|tempo|vllm|dcgm-exporter|blackbox-exporter\"})",
+              "legendFormat": "{{namespace}} {{job}}"
+            }
           ]
         }
       ]

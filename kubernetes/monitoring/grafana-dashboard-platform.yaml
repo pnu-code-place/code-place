@@ -1,0 +1,289 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-codeplace-platform
+  labels:
+    grafana_dashboard: "1"
+data:
+  codeplace-platform.json: |
+    {
+      "uid": "codeplace-platform",
+      "title": "CodePlace Platform",
+      "schemaVersion": 39,
+      "version": 1,
+      "refresh": "30s",
+      "tags": ["codeplace", "platform"],
+      "links": [
+        {
+          "asDropdown": true,
+          "includeVars": true,
+          "keepTime": true,
+          "tags": ["codeplace"],
+          "targetBlank": false,
+          "title": "CodePlace Dashboards",
+          "type": "dashboards"
+        }
+      ],
+      "editable": true,
+      "time": {
+        "from": "now-1h",
+        "to": "now"
+      },
+      "templating": {
+        "list": [
+          {
+            "name": "environment",
+            "label": "Environment",
+            "type": "custom",
+            "query": "prod,dev",
+            "includeAll": false,
+            "multi": false,
+            "current": {
+              "text": "prod",
+              "value": "prod"
+            }
+          }
+        ]
+      },
+      "panels": [
+        {
+          "type": "row",
+          "title": "Workloads",
+          "gridPos": {"x": 0, "y": 0, "w": 24, "h": 1},
+          "collapsed": false,
+          "panels": []
+        },
+        {
+          "type": "timeseries",
+          "title": "Pod Restarts in Previous 1h",
+          "gridPos": {"x": 0, "y": 1, "w": 8, "h": 7},
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "short", "custom": {"drawStyle": "line", "lineInterpolation": "stepAfter", "lineWidth": 2, "fillOpacity": 10, "showPoints": "never", "stacking": {"mode": "none", "group": "A"}}}},
+          "targets": [
+            {"expr": "sum by (namespace, pod) (increase(kube_pod_container_status_restarts_total{namespace=\"code-place-$environment\", pod=~\"backend-.*|frontend-.*|hub-auth-.*|celery-.*|judge-server-.*|postgres-.*|redis-.*|vllm-.*\"}[1h]))", "legendFormat": "{{namespace}} {{pod}}"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Container CPU Usage",
+          "gridPos": {"x": 8, "y": 1, "w": 8, "h": 7},
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "cores", "custom": {"drawStyle": "line", "lineInterpolation": "linear", "lineWidth": 2, "fillOpacity": 10, "showPoints": "auto", "stacking": {"mode": "none", "group": "A"}}}},
+          "targets": [
+            {"expr": "topk(10, sum by (namespace, pod, container) (rate(container_cpu_usage_seconds_total{namespace=\"code-place-$environment\", container!=\"\", pod=~\"backend-.*|frontend-.*|hub-auth-.*|celery-.*|judge-server-.*|postgres-.*|redis-.*|vllm-.*\"}[5m])))", "legendFormat": "{{namespace}} {{pod}} {{container}}"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Container Memory Usage",
+          "gridPos": {"x": 16, "y": 1, "w": 8, "h": 7},
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "bytes", "custom": {"drawStyle": "line", "lineInterpolation": "linear", "lineWidth": 2, "fillOpacity": 10, "showPoints": "auto", "stacking": {"mode": "none", "group": "A"}}}},
+          "targets": [
+            {"expr": "topk(10, container_memory_working_set_bytes{namespace=\"code-place-$environment\", container!=\"\", pod=~\"backend-.*|frontend-.*|hub-auth-.*|celery-.*|judge-server-.*|postgres-.*|redis-.*|vllm-.*\"})", "legendFormat": "{{namespace}} {{pod}} {{container}}"}
+          ]
+        },
+        {
+          "type": "row",
+          "title": "Storage / Availability",
+          "gridPos": {"x": 0, "y": 8, "w": 24, "h": 1},
+          "collapsed": false,
+          "panels": []
+        },
+        {
+          "type": "timeseries",
+          "title": "PVC Usage",
+          "gridPos": {"x": 0, "y": 9, "w": 12, "h": 7},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percentunit",
+              "custom": {"drawStyle": "line", "lineInterpolation": "linear", "lineWidth": 2, "fillOpacity": 10, "showPoints": "auto", "stacking": {"mode": "none", "group": "A"}},
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "orange", "value": 0.75},
+                  {"color": "red", "value": 0.85}
+                ]
+              }
+            }
+          },
+          "targets": [
+            {"expr": "max by (namespace, persistentvolumeclaim) (kubelet_volume_stats_used_bytes{namespace=\"code-place-$environment\"}) / clamp_min(max by (namespace, persistentvolumeclaim) (kubelet_volume_stats_capacity_bytes{namespace=\"code-place-$environment\"}), 1)", "legendFormat": "{{namespace}} {{persistentvolumeclaim}}"}
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "Cluster Node Pressure (Global)",
+          "description": "Cluster-wide node conditions; this panel is intentionally independent of the environment selector.",
+          "gridPos": {"x": 12, "y": 9, "w": 6, "h": 7},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "red", "value": 1}
+                ]
+              }
+            }
+          },
+          "options": {"graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "kube_node_status_condition{condition=~\"MemoryPressure|DiskPressure|PIDPressure\", status=\"true\"}", "legendFormat": "{{node}} {{condition}}", "instant": true}
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "PDB Healthy Pods",
+          "gridPos": {"x": 18, "y": 9, "w": 6, "h": 7},
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "short"}},
+          "options": {"graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "kube_poddisruptionbudget_status_current_healthy{namespace=\"code-place-$environment\", poddisruptionbudget=~\"backend|frontend\"}", "legendFormat": "{{namespace}} {{poddisruptionbudget}} current", "instant": true},
+            {"expr": "kube_poddisruptionbudget_status_desired_healthy{namespace=\"code-place-$environment\", poddisruptionbudget=~\"backend|frontend\"}", "legendFormat": "{{namespace}} {{poddisruptionbudget}} desired", "instant": true}
+          ]
+        },
+        {
+          "type": "row",
+          "title": "Data Stores",
+          "gridPos": {"x": 0, "y": 16, "w": 24, "h": 1},
+          "collapsed": false,
+          "panels": []
+        },
+        {
+          "type": "stat",
+          "title": "PostgreSQL Exporter Up",
+          "gridPos": {"x": 0, "y": 17, "w": 12, "h": 5},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "red", "value": null},
+                  {"color": "green", "value": 1}
+                ]
+              }
+            }
+          },
+          "options": {"graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "min by (namespace) (cnpg_collector_up{namespace=\"code-place-$environment\", cluster=\"postgres\"})", "legendFormat": "{{namespace}}", "instant": true}
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "Redis Exporter Up",
+          "gridPos": {"x": 12, "y": 17, "w": 12, "h": 5},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "red", "value": null},
+                  {"color": "green", "value": 1}
+                ]
+              }
+            }
+          },
+          "options": {"graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "min by (namespace) (redis_up{namespace=\"code-place-$environment\"})", "legendFormat": "{{namespace}}", "instant": true}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "PostgreSQL Restarts in Previous 1h",
+          "gridPos": {"x": 0, "y": 22, "w": 12, "h": 6},
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "short", "custom": {"drawStyle": "line", "lineInterpolation": "stepAfter", "lineWidth": 2, "fillOpacity": 10, "showPoints": "never", "stacking": {"mode": "none", "group": "A"}}}},
+          "targets": [
+            {"expr": "sum by (namespace, pod) (increase(kube_pod_container_status_restarts_total{namespace=\"code-place-$environment\", pod=~\"postgres-.*\"}[1h]))", "legendFormat": "{{namespace}} {{pod}}"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Redis Restarts in Previous 1h",
+          "gridPos": {"x": 12, "y": 22, "w": 12, "h": 6},
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "short", "custom": {"drawStyle": "line", "lineInterpolation": "stepAfter", "lineWidth": 2, "fillOpacity": 10, "showPoints": "never", "stacking": {"mode": "none", "group": "A"}}}},
+          "targets": [
+            {"expr": "sum by (namespace, pod) (increase(kube_pod_container_status_restarts_total{namespace=\"code-place-$environment\", pod=~\"redis-.*|redis-replication-.*\"}[1h]))", "legendFormat": "{{namespace}} {{pod}}"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "PostgreSQL WAL Bytes",
+          "gridPos": {"x": 0, "y": 28, "w": 12, "h": 6},
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "Bps", "custom": {"drawStyle": "line", "lineInterpolation": "linear", "lineWidth": 2, "fillOpacity": 10, "showPoints": "auto", "stacking": {"mode": "none", "group": "A"}}}},
+          "targets": [
+            {"expr": "sum by (namespace) (rate(cnpg_collector_wal_bytes{namespace=\"code-place-$environment\", cluster=\"postgres\"}[5m]))", "legendFormat": "{{namespace}}"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Redis Memory Usage",
+          "gridPos": {"x": 12, "y": 28, "w": 12, "h": 6},
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "bytes", "custom": {"drawStyle": "line", "lineInterpolation": "linear", "lineWidth": 2, "fillOpacity": 10, "showPoints": "auto", "stacking": {"mode": "none", "group": "A"}}}},
+          "targets": [
+            {"expr": "max by (namespace, pod) (redis_memory_used_bytes{namespace=\"code-place-$environment\"})", "legendFormat": "{{namespace}} {{pod}} used"},
+            {"expr": "max by (namespace, pod) (redis_memory_max_bytes{namespace=\"code-place-$environment\"})", "legendFormat": "{{namespace}} {{pod}} maxmemory"}
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "PostgreSQL Collector Errors",
+          "gridPos": {"x": 0, "y": 34, "w": 8, "h": 6},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "red", "value": 1}
+                ]
+              }
+            }
+          },
+          "options": {"graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "max by (namespace, pod) (cnpg_collector_last_collection_error{namespace=\"code-place-$environment\", cluster=\"postgres\"})", "legendFormat": "{{namespace}} {{pod}}", "instant": true}
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "PostgreSQL Nodes Used",
+          "gridPos": {"x": 8, "y": 34, "w": 16, "h": 6},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "red", "value": null},
+                  {"color": "orange", "value": 1},
+                  {"color": "green", "value": 2}
+                ]
+              }
+            }
+          },
+          "options": {"graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "min by (namespace) (cnpg_collector_nodes_used{namespace=\"code-place-$environment\", cluster=\"postgres\"})", "legendFormat": "{{namespace}} nodes", "instant": true}
+          ]
+        }
+      ]
+    }

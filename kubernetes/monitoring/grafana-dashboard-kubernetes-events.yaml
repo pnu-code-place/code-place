@@ -13,6 +13,17 @@ data:
       "version": 1,
       "refresh": "30s",
       "tags": ["codeplace", "kubernetes", "events"],
+      "links": [
+        {
+          "asDropdown": true,
+          "includeVars": true,
+          "keepTime": true,
+          "tags": ["codeplace"],
+          "targetBlank": false,
+          "title": "CodePlace Dashboards",
+          "type": "dashboards"
+        }
+      ],
       "editable": true,
       "time": {
         "from": "now-1h",
@@ -21,15 +32,15 @@ data:
       "templating": {
         "list": [
           {
-            "name": "namespace",
+            "name": "environment",
+            "label": "Environment",
             "type": "custom",
-            "query": "code-place-dev,code-place-prod,monitoring,longhorn-system,kube-system",
-            "multi": true,
-            "includeAll": true,
-            "allValue": "code-place-dev|code-place-prod|monitoring|longhorn-system|kube-system",
+            "query": "prod,dev",
+            "multi": false,
+            "includeAll": false,
             "current": {
-              "text": "code-place-dev",
-              "value": "code-place-dev"
+              "text": "prod",
+              "value": "prod"
             }
           }
         ]
@@ -37,7 +48,8 @@ data:
       "panels": [
         {
           "type": "stat",
-          "title": "Event Exporter Ready",
+          "title": "Event Telemetry Health (Global)",
+          "description": "Cluster-wide collector health. Missing exporter or kube-state-metrics scrapes are treated as unhealthy, so expected-zero event states do not hide telemetry loss.",
           "gridPos": {"x": 0, "y": 0, "w": 4, "h": 4},
           "datasource": "Prometheus",
           "fieldConfig": {
@@ -52,10 +64,9 @@ data:
               }
             }
           },
-          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "options": {"graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
           "targets": [
-            {"expr": "max(kube_pod_status_ready{namespace=\"monitoring\", condition=\"true\", pod=~\"kubernetes-event-exporter-.*\"}) or vector(0)", "legendFormat": "ready"}
-          ]
+            {"expr": "max(kube_deployment_status_replicas_available{namespace=\"monitoring\", deployment=\"kubernetes-event-exporter\"}) or vector(0)", "legendFormat": "exporter ready", "instant": true},            {"expr": "max(up{namespace=\"monitoring\", job=\"kubernetes-event-exporter\"}) or vector(0)", "legendFormat": "exporter scrape", "instant": true},            {"expr": "max(up{namespace=\"monitoring\", service=~\".*kube-state-metrics.*\"}) or vector(0)", "legendFormat": "kube-state-metrics scrape", "instant": true}          ]
         },
         {
           "type": "stat",
@@ -74,10 +85,9 @@ data:
               }
             }
           },
-          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "options": {"graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
           "targets": [
-            {"expr": "sum(kube_pod_container_status_waiting_reason{namespace=~\"$namespace\", reason=~\"ImagePullBackOff|ErrImagePull\"}) or vector(0)", "legendFormat": "pods"}
-          ]
+            {"expr": "sum(kube_pod_container_status_waiting_reason{namespace=\"code-place-$environment\", reason=~\"ImagePullBackOff|ErrImagePull\"}) or vector(0)", "legendFormat": "pods", "instant": true}          ]
         },
         {
           "type": "stat",
@@ -96,10 +106,9 @@ data:
               }
             }
           },
-          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "options": {"graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
           "targets": [
-            {"expr": "sum(kube_pod_container_status_waiting_reason{namespace=~\"$namespace\", reason=\"CrashLoopBackOff\"}) or vector(0)", "legendFormat": "pods"}
-          ]
+            {"expr": "sum(kube_pod_container_status_waiting_reason{namespace=\"code-place-$environment\", reason=\"CrashLoopBackOff\"}) or vector(0)", "legendFormat": "pods", "instant": true}          ]
         },
         {
           "type": "stat",
@@ -118,10 +127,9 @@ data:
               }
             }
           },
-          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "options": {"graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
           "targets": [
-            {"expr": "sum(max_over_time(kube_pod_container_status_last_terminated_reason{namespace=~\"$namespace\", reason=\"OOMKilled\"}[10m])) or vector(0)", "legendFormat": "containers"}
-          ]
+            {"expr": "sum((kube_pod_container_status_last_terminated_reason{namespace=\"code-place-$environment\", reason=\"OOMKilled\"} == 1) and on (namespace, pod, container) (kube_pod_container_status_last_terminated_timestamp{namespace=\"code-place-$environment\"} > time() - 600)) or vector(0)", "legendFormat": "containers", "instant": true}          ]
         },
         {
           "type": "stat",
@@ -140,10 +148,9 @@ data:
               }
             }
           },
-          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "options": {"graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
           "targets": [
-            {"expr": "sum(kube_pod_status_phase{namespace=~\"$namespace\", phase=\"Pending\"}) or vector(0)", "legendFormat": "pods"}
-          ]
+            {"expr": "sum(kube_pod_status_phase{namespace=\"code-place-$environment\", phase=\"Pending\"}) or vector(0)", "legendFormat": "pods", "instant": true}          ]
         },
         {
           "type": "stat",
@@ -162,29 +169,56 @@ data:
               }
             }
           },
-          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "options": {"graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
           "targets": [
-            {"expr": "sum(kube_pod_status_unschedulable{namespace=~\"$namespace\"}) or vector(0)", "legendFormat": "pods"}
-          ]
+            {"expr": "sum(kube_pod_status_unschedulable{namespace=\"code-place-$environment\"}) or vector(0)", "legendFormat": "pods", "instant": true}          ]
         },
         {
-          "type": "timeseries",
+          "type": "state-timeline",
           "title": "Container Waiting Reasons",
+          "description": "컨테이너별 waiting 상태의 시작과 종료를 표시합니다. 막대 높이는 사건 횟수가 아닙니다.",
           "gridPos": {"x": 0, "y": 4, "w": 12, "h": 8},
           "datasource": "Prometheus",
-          "fieldConfig": {"defaults": {"unit": "short"}},
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "mappings": [
+                {
+                  "type": "value",
+                  "options": {
+                    "0": {"text": "Normal", "color": "green", "index": 0},
+                    "1": {"text": "Waiting", "color": "red", "index": 1}
+                  }
+                }
+              ]
+            }
+          },
           "targets": [
-            {"expr": "sum by (namespace, pod, container, reason) (kube_pod_container_status_waiting_reason{namespace=~\"$namespace\", reason=~\"CrashLoopBackOff|ImagePullBackOff|ErrImagePull|CreateContainerConfigError|CreateContainerError\"})", "legendFormat": "{{namespace}} {{pod}} {{container}} {{reason}}"}
+            {"expr": "sum by (namespace, pod, container, reason) (kube_pod_container_status_waiting_reason{namespace=\"code-place-$environment\", reason=~\"CrashLoopBackOff|ImagePullBackOff|ErrImagePull|CreateContainerConfigError|CreateContainerError\"})", "legendFormat": "{{namespace}} {{pod}} {{container}} {{reason}}"}
           ]
         },
         {
-          "type": "timeseries",
+          "type": "state-timeline",
           "title": "Recent OOMKilled Containers",
+          "description": "최근 10분 내 OOMKilled 여부를 컨테이너별 상태로 표시합니다.",
           "gridPos": {"x": 12, "y": 4, "w": 12, "h": 8},
           "datasource": "Prometheus",
-          "fieldConfig": {"defaults": {"unit": "short"}},
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "mappings": [
+                {
+                  "type": "value",
+                  "options": {
+                    "0": {"text": "Clear", "color": "green", "index": 0},
+                    "1": {"text": "OOMKilled", "color": "red", "index": 1}
+                  }
+                }
+              ]
+            }
+          },
           "targets": [
-            {"expr": "max by (namespace, pod, container) (max_over_time(kube_pod_container_status_last_terminated_reason{namespace=~\"$namespace\", reason=\"OOMKilled\"}[10m]))", "legendFormat": "{{namespace}} {{pod}} {{container}}"}
+            {"expr": "max by (namespace, pod, container) ((kube_pod_container_status_last_terminated_reason{namespace=\"code-place-$environment\", reason=\"OOMKilled\"} == bool 1) * on (namespace, pod, container) (kube_pod_container_status_last_terminated_timestamp{namespace=\"code-place-$environment\"} > bool time() - 600))", "legendFormat": "{{namespace}} {{pod}} {{container}}"}
           ]
         },
         {
@@ -199,7 +233,7 @@ data:
             "dedupStrategy": "none"
           },
           "targets": [
-            {"expr": "{namespace=\"monitoring\", app_kubernetes_io_name=\"kubernetes-event-exporter\"}"}
+            {"expr": "{namespace=\"monitoring\", app_kubernetes_io_name=\"kubernetes-event-exporter\"} | json | metadata_namespace=\"code-place-$environment\" | line_format \"[{{.reason}}] {{.involvedObject_kind}}/{{.involvedObject_name}}: {{.message}}\""}
           ]
         },
         {
@@ -214,7 +248,7 @@ data:
             "dedupStrategy": "none"
           },
           "targets": [
-            {"expr": "{namespace=\"monitoring\", app_kubernetes_io_name=\"kubernetes-event-exporter\"} |~ \"FailedScheduling|ImagePullBackOff|ErrImagePull|BackOff|OOMKilling|Unhealthy|FailedMount|FailedAttachVolume\""}
+            {"expr": "{namespace=\"monitoring\", app_kubernetes_io_name=\"kubernetes-event-exporter\"} | json | metadata_namespace=\"code-place-$environment\" |~ \"FailedScheduling|ImagePullBackOff|ErrImagePull|BackOff|OOMKilling|Unhealthy|FailedMount|FailedAttachVolume\" | line_format \"[{{.reason}}] {{.involvedObject_kind}}/{{.involvedObject_name}}: {{.message}}\""}
           ]
         }
       ]

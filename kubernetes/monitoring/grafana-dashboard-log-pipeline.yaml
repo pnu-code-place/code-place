@@ -1,0 +1,175 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-codeplace-log-pipeline
+  labels:
+    grafana_dashboard: "1"
+data:
+  codeplace-log-pipeline.json: |
+    {
+      "uid": "codeplace-log-pipeline",
+      "title": "CodePlace Log Pipeline",
+      "schemaVersion": 39,
+      "version": 1,
+      "refresh": "30s",
+      "tags": ["codeplace", "logs", "platform"],
+      "links": [
+        {
+          "asDropdown": true,
+          "includeVars": true,
+          "keepTime": true,
+          "tags": ["codeplace"],
+          "targetBlank": false,
+          "title": "CodePlace Dashboards",
+          "type": "dashboards"
+        }
+      ],
+      "editable": true,
+      "time": {
+        "from": "now-1h",
+        "to": "now"
+      },
+      "templating": {
+        "list": []
+      },
+      "panels": [
+        {
+          "type": "stat",
+          "title": "Loki Replica Availability (Global)",
+          "description": "Cluster-wide Loki single-binary and gateway available/desired ratios.",
+          "gridPos": {"x": 0, "y": 0, "w": 8, "h": 5},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percentunit",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "red", "value": null},
+                  {"color": "orange", "value": 0.5},
+                  {"color": "green", "value": 1}
+                ]
+              }
+            }
+          },
+          "options": {"graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "(max(kube_statefulset_status_replicas_ready{namespace=\"monitoring\", statefulset=\"loki\"}) / clamp_min(max(kube_statefulset_replicas{namespace=\"monitoring\", statefulset=\"loki\"}), 1)) or vector(0)", "legendFormat": "single-binary", "instant": true},
+            {"expr": "(max(kube_deployment_status_replicas_available{namespace=\"monitoring\", deployment=\"loki-gateway\"}) / clamp_min(max(kube_deployment_spec_replicas{namespace=\"monitoring\", deployment=\"loki-gateway\"}), 1)) or vector(0)", "legendFormat": "gateway", "instant": true}
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "Alloy Nodes (Global)",
+          "description": "Cluster-wide Alloy DaemonSet readiness.",
+          "gridPos": {"x": 8, "y": 0, "w": 8, "h": 5},
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "short"}},
+          "options": {"graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "kube_daemonset_status_number_available{namespace=\"monitoring\", daemonset=\"alloy\"}", "legendFormat": "available", "instant": true},
+            {"expr": "kube_daemonset_status_desired_number_scheduled{namespace=\"monitoring\", daemonset=\"alloy\"}", "legendFormat": "desired", "instant": true}
+          ]
+        },
+        {
+          "type": "stat",
+          "title": "Log Pipeline Telemetry Health (Global)",
+          "description": "An absent Loki or Alloy scrape is treated as unhealthy, so expected-zero error panels cannot hide telemetry loss.",
+          "gridPos": {"x": 16, "y": 0, "w": 8, "h": 5},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "short",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "red", "value": null},
+                  {"color": "green", "value": 1}
+                ]
+              }
+            }
+          },
+          "options": {"graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "min(up{namespace=\"monitoring\", service=~\"loki|loki-gateway\"}) or vector(0)", "legendFormat": "Loki scrape", "instant": true},
+            {"expr": "min(up{namespace=\"monitoring\", job=~\".*alloy.*\"}) or vector(0)", "legendFormat": "Alloy scrape", "instant": true}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Loki PVC Usage (Global)",
+          "description": "Cluster-wide Loki storage usage.",
+          "gridPos": {"x": 0, "y": 5, "w": 12, "h": 7},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percentunit",
+              "custom": {"drawStyle": "line", "lineInterpolation": "linear", "lineWidth": 2, "fillOpacity": 10, "showPoints": "auto", "stacking": {"mode": "none", "group": "A"}},
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "orange", "value": 0.75},
+                  {"color": "red", "value": 0.85}
+                ]
+              }
+            }
+          },
+          "targets": [
+            {"expr": "max(kubelet_volume_stats_used_bytes{namespace=\"monitoring\", persistentvolumeclaim=~\".*loki.*\"}) / clamp_min(max(kubelet_volume_stats_capacity_bytes{namespace=\"monitoring\", persistentvolumeclaim=~\".*loki.*\"}), 1)", "legendFormat": "usage"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Loki Ingestion Rate (Global)",
+          "description": "Cluster-wide Loki ingestion.",
+          "gridPos": {"x": 12, "y": 5, "w": 12, "h": 7},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {"unit": "logs/sec", "custom": {"drawStyle": "line", "lineInterpolation": "linear", "lineWidth": 2, "fillOpacity": 10, "showPoints": "auto", "stacking": {"mode": "none", "group": "A"}}},
+            "overrides": [
+              {"matcher": {"id": "byName", "options": "bytes received"}, "properties": [{"id": "unit", "value": "Bps"}]}
+            ]
+          },
+          "targets": [
+            {"expr": "sum(rate(loki_distributor_lines_received_total{namespace=\"monitoring\"}[5m]))", "legendFormat": "lines received"},
+            {"expr": "sum(rate(loki_distributor_bytes_received_total{namespace=\"monitoring\"}[5m]))", "legendFormat": "bytes received"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Loki Request Errors (Global)",
+          "description": "Cluster-wide Loki request errors; expected zero values are paired with the telemetry health panel above.",
+          "gridPos": {"x": 0, "y": 12, "w": 8, "h": 7},
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "reqps", "custom": {"drawStyle": "bars", "lineInterpolation": "linear", "lineWidth": 1, "fillOpacity": 70, "showPoints": "never", "barAlignment": 0, "stacking": {"mode": "normal", "group": "A"}}}},
+          "targets": [
+            {"expr": "sum by (route, status_code) (rate(loki_request_duration_seconds_count{namespace=\"monitoring\", status_code=~\"5..\"}[5m])) or vector(0)", "legendFormat": "{{route}} {{status_code}}"},
+            {"expr": "sum by (route, status_code) (rate(loki_request_duration_seconds_count{namespace=\"monitoring\", status_code=~\"4..\"}[5m])) or vector(0)", "legendFormat": "{{route}} {{status_code}}"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Alloy Loki Write Backpressure (Global)",
+          "description": "Cluster-wide Alloy write health.",
+          "gridPos": {"x": 8, "y": 12, "w": 8, "h": 7},
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "ops", "custom": {"drawStyle": "line", "lineInterpolation": "linear", "lineWidth": 2, "fillOpacity": 10, "showPoints": "auto", "stacking": {"mode": "none", "group": "A"}}}},
+          "targets": [
+            {"expr": "sum(rate(loki_write_batch_retries_total{namespace=\"monitoring\"}[5m]))", "legendFormat": "batch retries/s"},
+            {"expr": "sum(rate(loki_write_dropped_entries_total{namespace=\"monitoring\"}[5m]))", "legendFormat": "dropped entries/s"}
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Loki Canary Missing Entries in Previous 5m (Global)",
+          "description": "Cluster-wide Loki canary result.",
+          "gridPos": {"x": 16, "y": 12, "w": 8, "h": 7},
+          "datasource": "Prometheus",
+          "fieldConfig": {"defaults": {"unit": "short", "custom": {"drawStyle": "line", "lineInterpolation": "stepAfter", "lineWidth": 2, "fillOpacity": 10, "showPoints": "never", "stacking": {"mode": "none", "group": "A"}}}},
+          "targets": [
+            {"expr": "sum(increase(loki_canary_missing_entries_total{namespace=\"monitoring\"}[5m]))", "legendFormat": "missing entries"}
+          ]
+        }
+      ]
+    }
