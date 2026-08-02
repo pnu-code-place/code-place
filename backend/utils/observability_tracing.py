@@ -1,11 +1,14 @@
 import logging
+import os
 
 from opentelemetry import trace
 
-from utils.shortcuts import get_env
-
 logger = logging.getLogger(__name__)
 _OTEL_CONFIGURED = False
+
+
+def get_env(name, default=""):
+    return os.environ.get(name, default)
 
 
 def get_tracer(name):
@@ -23,6 +26,16 @@ def get_current_trace_context():
         "trace_id": format(span_context.trace_id, "032x"),
         "span_id": format(span_context.span_id, "016x"),
     }
+
+
+def get_deployment_environment():
+    """Return the telemetry environment without changing Django's OJ_ENV contract."""
+    return get_env("OTEL_DEPLOYMENT_ENVIRONMENT", get_env("OJ_ENV", "dev"))
+
+
+def get_service_name(default):
+    """Keep process identity stable when Django imports the Celery app first."""
+    return get_env("OTEL_SERVICE_NAME", default)
 
 
 def configure_opentelemetry(service_name):
@@ -63,8 +76,8 @@ def _configure_opentelemetry(service_name):
         sampler_ratio = 0.05
     sampler_ratio = min(max(sampler_ratio, 0), 1)
     resource = Resource.create({
-        "service.name": service_name,
-        "deployment.environment": get_env("OJ_ENV", "dev"),
+        "service.name": get_service_name(service_name),
+        "deployment.environment": get_deployment_environment(),
     })
     provider = TracerProvider(resource=resource, sampler=ParentBased(TraceIdRatioBased(sampler_ratio)))
     endpoint = get_env("OTEL_EXPORTER_OTLP_ENDPOINT", "http://otel-collector.monitoring.svc.cluster.local:4317")

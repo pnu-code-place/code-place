@@ -27,3 +27,5 @@ spec:
               value: "dev"
             - name: OTEL_ENABLED
               value: "1"
+            - name: OTEL_DEPLOYMENT_ENVIRONMENT
+              value: "dev"
