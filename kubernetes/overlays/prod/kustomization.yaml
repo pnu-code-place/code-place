@@ -23,13 +23,13 @@ patches:
 images:
   - name: backend
     newName: harbor.code-place-dev.site/code-place-prod/backend
-    newTag: fb2a448db8e14177f3d3ad9e4f8afd26fa7408eb-prod
+    newTag: 57563df8c4de2a51ecb334180aa944d4a4d418d7-prod
   - name: frontend
     newName: harbor.code-place-dev.site/code-place-prod/frontend
-    newTag: fb2a448db8e14177f3d3ad9e4f8afd26fa7408eb-prod
+    newTag: 57563df8c4de2a51ecb334180aa944d4a4d418d7-prod
   - name: judge-server
     newName: harbor.code-place-dev.site/code-place-prod/judge-server
     newTag: 1.0.3
   - name: hub-auth
     newName: harbor.code-place-dev.site/code-place-prod/hub-auth
-    newTag: 8a0b89a42cb426562df1cf5f36b056f991cce7ca-prod
+    newTag: 57563df8c4de2a51ecb334180aa944d4a4d418d7-prod
