@@ -66,7 +66,7 @@ data:
           },
           "options": {"graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
           "targets": [
-            {"expr": "min(up{job=\"backend\", namespace=\"code-place-$environment\"})", "legendFormat": "backend", "instant": true}          ]
+            {"expr": "(sum by (namespace) (up{job=\"backend\", namespace=\"code-place-$environment\"}) >= bool max by (namespace) (kube_deployment_spec_replicas{namespace=\"code-place-$environment\", deployment=\"backend\"})) or on() vector(0)", "legendFormat": "backend", "instant": true}          ]
         },
         {
           "type": "timeseries",

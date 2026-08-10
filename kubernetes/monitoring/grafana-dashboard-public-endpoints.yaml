@@ -103,7 +103,7 @@ data:
                 "steps": [
                   {"color": "red", "value": null},
                   {"color": "green", "value": 200},
-                  {"color": "red", "value": 400}
+                  {"color": "red", "value": 201}
                 ]
               }
             }
@@ -237,7 +237,8 @@ data:
                 "lineWidth": 2,
                 "fillOpacity": 8,
                 "showPoints": "never",
-                "spanNulls": false
+                "spanNulls": false,
+                "thresholdsStyle": {"mode": "line"}
               },
               "thresholds": {
                 "mode": "absolute",

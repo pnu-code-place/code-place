@@ -70,7 +70,7 @@ data:
           "datasource": "Prometheus",
           "fieldConfig": {"defaults": {"unit": "cores", "custom": {"drawStyle": "line", "lineInterpolation": "linear", "lineWidth": 2, "fillOpacity": 10, "showPoints": "auto", "stacking": {"mode": "none", "group": "A"}}}},
           "targets": [
-            {"expr": "topk(10, sum by (namespace, pod, container) (rate(container_cpu_usage_seconds_total{namespace=\"code-place-$environment\", container!=\"\", pod=~\"backend-.*|frontend-.*|hub-auth-.*|celery-.*|judge-server-.*|postgres-.*|redis-.*|vllm-.*\"}[5m])))", "legendFormat": "{{namespace}} {{pod}} {{container}}"}
+            {"expr": "topk(10, sum by (namespace, pod, container) (rate(container_cpu_usage_seconds_total{namespace=\"code-place-$environment\", container!=\"\", pod=~\"backend-.*|frontend-.*|hub-auth-.*|celery-.*|judge-server-.*|postgres-.*|redis-.*|vllm-.*\"}[5m])))", "legendFormat": "{{pod}} {{container}}"}
           ]
         },
         {
@@ -80,7 +80,7 @@ data:
           "datasource": "Prometheus",
           "fieldConfig": {"defaults": {"unit": "bytes", "custom": {"drawStyle": "line", "lineInterpolation": "linear", "lineWidth": 2, "fillOpacity": 10, "showPoints": "auto", "stacking": {"mode": "none", "group": "A"}}}},
           "targets": [
-            {"expr": "topk(10, container_memory_working_set_bytes{namespace=\"code-place-$environment\", container!=\"\", pod=~\"backend-.*|frontend-.*|hub-auth-.*|celery-.*|judge-server-.*|postgres-.*|redis-.*|vllm-.*\"})", "legendFormat": "{{namespace}} {{pod}} {{container}}"}
+            {"expr": "topk(10, container_memory_working_set_bytes{namespace=\"code-place-$environment\", container!=\"\", pod=~\"backend-.*|frontend-.*|hub-auth-.*|celery-.*|judge-server-.*|postgres-.*|redis-.*|vllm-.*\"})", "legendFormat": "{{pod}} {{container}}"}
           ]
         },
         {
@@ -98,7 +98,9 @@ data:
           "fieldConfig": {
             "defaults": {
               "unit": "percentunit",
-              "custom": {"drawStyle": "line", "lineInterpolation": "linear", "lineWidth": 2, "fillOpacity": 10, "showPoints": "auto", "stacking": {"mode": "none", "group": "A"}},
+              "min": 0,
+              "max": 1,
+              "custom": {"drawStyle": "line", "lineInterpolation": "linear", "lineWidth": 2, "fillOpacity": 10, "showPoints": "auto", "stacking": {"mode": "none", "group": "A"}, "thresholdsStyle": {"mode": "line"}},
               "thresholds": {
                 "mode": "absolute",
                 "steps": [

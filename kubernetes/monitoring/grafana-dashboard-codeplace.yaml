@@ -65,7 +65,7 @@ data:
           },
           "options": {"graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
           "targets": [
-            {"expr": "min by (namespace) (up{job=\"backend\", namespace=\"code-place-$environment\"})", "legendFormat": "{{namespace}}", "instant": true}
+            {"expr": "(sum by (namespace) (up{job=\"backend\", namespace=\"code-place-$environment\"}) >= bool max by (namespace) (kube_deployment_spec_replicas{namespace=\"code-place-$environment\", deployment=\"backend\"})) or on() vector(0)", "legendFormat": "{{namespace}}", "instant": true}
           ]
         },
         {
@@ -87,7 +87,9 @@ data:
           "fieldConfig": {
             "defaults": {
               "unit": "percentunit",
-              "custom": {"drawStyle": "line", "lineInterpolation": "linear", "lineWidth": 2, "fillOpacity": 10, "showPoints": "auto", "stacking": {"mode": "none", "group": "A"}},
+              "min": 0,
+              "max": 1,
+              "custom": {"drawStyle": "line", "lineInterpolation": "linear", "lineWidth": 2, "fillOpacity": 10, "showPoints": "auto", "stacking": {"mode": "none", "group": "A"}, "thresholdsStyle": {"mode": "line"}},
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
@@ -111,7 +113,8 @@ data:
           "fieldConfig": {
             "defaults": {
               "unit": "s",
-              "custom": {"drawStyle": "line", "lineInterpolation": "linear", "lineWidth": 2, "fillOpacity": 10, "showPoints": "auto", "stacking": {"mode": "none", "group": "A"}},
+              "min": 0,
+              "custom": {"drawStyle": "line", "lineInterpolation": "linear", "lineWidth": 2, "fillOpacity": 10, "showPoints": "auto", "stacking": {"mode": "none", "group": "A"}, "thresholdsStyle": {"mode": "line"}},
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
@@ -134,7 +137,8 @@ data:
           "fieldConfig": {
             "defaults": {
               "unit": "short",
-              "custom": {"drawStyle": "line", "lineInterpolation": "stepAfter", "lineWidth": 2, "fillOpacity": 10, "showPoints": "never", "stacking": {"mode": "none", "group": "A"}},
+              "min": 0,
+              "custom": {"drawStyle": "line", "lineInterpolation": "stepAfter", "lineWidth": 2, "fillOpacity": 10, "showPoints": "never", "stacking": {"mode": "none", "group": "A"}, "thresholdsStyle": {"mode": "line"}},
               "thresholds": {
                 "mode": "absolute",
                 "steps": [

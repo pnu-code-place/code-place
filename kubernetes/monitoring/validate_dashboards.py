@@ -138,7 +138,9 @@ def validate_visualizations(dashboard: dict[str, Any], errors: list[str]) -> Non
         if panel_type != "timeseries":
             continue
 
-        custom = panel.get("fieldConfig", {}).get("defaults", {}).get("custom", {})
+        field_config = panel.get("fieldConfig", {})
+        defaults = field_config.get("defaults", {})
+        custom = defaults.get("custom", {})
         draw_style = custom.get("drawStyle")
         if draw_style not in {"line", "bars"}:
             errors.append(f"{uid}: timeseries panel {title!r} must explicitly use lines or bars")
@@ -149,6 +151,74 @@ def validate_visualizations(dashboard: dict[str, Any], errors: list[str]) -> Non
             errors.append(f"{uid}: line panel {title!r} must have a visible line width")
         if draw_style == "bars" and "barAlignment" not in custom:
             errors.append(f"{uid}: bar panel {title!r} must explicitly align its bars")
+
+        threshold_steps = defaults.get("thresholds", {}).get("steps", [])
+        if len(threshold_steps) > 1:
+            if custom.get("thresholdsStyle", {}).get("mode") != "line":
+                errors.append(f"{uid}: threshold panel {title!r} must show threshold lines")
+            allows_negative = (
+                uid == "codeplace-public-endpoints"
+                and str(title).endswith("TLS Days Left")
+            )
+            if defaults.get("min") != 0 and not allows_negative:
+                errors.append(f"{uid}: threshold panel {title!r} must start at zero")
+            expected_max = {"percentunit": 1, "percent": 100}.get(defaults.get("unit"))
+            if expected_max is not None and defaults.get("max") != expected_max:
+                errors.append(
+                    f"{uid}: bounded threshold panel {title!r} must end at {expected_max}"
+                )
+
+        for override in field_config.get("overrides", []):
+            properties = {
+                prop.get("id"): prop.get("value")
+                for prop in override.get("properties", [])
+            }
+            if "unit" in properties and properties["unit"] != defaults.get("unit"):
+                if properties.get("custom.axisPlacement") != "right":
+                    errors.append(
+                        f"{uid}: mixed-unit panel {title!r} must place the override on the right axis"
+                    )
+
+
+def validate_operational_semantics(dashboard: dict[str, Any], errors: list[str]) -> None:
+    """Guard the small set of panels whose colors directly communicate health."""
+    uid = dashboard["uid"]
+    panels = list(all_panels(dashboard.get("panels", [])))
+
+    if uid in {"codeplace-overview", "codeplace-ai-api"}:
+        expressions = [
+            target.get("expr", "")
+            for panel in panels
+            for target in panel.get("targets", [])
+            if 'up{job="backend"' in target.get("expr", "")
+        ]
+        if len(expressions) != 1:
+            errors.append(f"{uid}: expected one backend health expression")
+        else:
+            expression = expressions[0]
+            for token in (
+                "sum by (namespace)",
+                "kube_deployment_spec_replicas",
+                ">= bool",
+                "or on() vector(0)",
+            ):
+                if token not in expression:
+                    errors.append(f"{uid}: backend health must enforce desired replicas with {token}")
+
+    if uid == "codeplace-public-endpoints":
+        matching = [panel for panel in panels if panel.get("title", "").endswith("HTTP Status")]
+        if len(matching) != 1:
+            errors.append(f"{uid}: expected one HTTP status panel")
+        else:
+            steps = matching[0].get("fieldConfig", {}).get("defaults", {}).get(
+                "thresholds", {}
+            ).get("steps", [])
+            if steps != [
+                {"color": "red", "value": None},
+                {"color": "green", "value": 200},
+                {"color": "red", "value": 201},
+            ]:
+                errors.append(f"{uid}: HTTP status colors must accept only status 200")
 
 
 def validate_shared_judge_outcome(dashboard: dict[str, Any], errors: list[str]) -> None:
@@ -297,6 +367,7 @@ def validate_dashboard(dashboard: dict[str, Any], errors: list[str]) -> None:
 
     validate_grid(dashboard, errors)
     validate_visualizations(dashboard, errors)
+    validate_operational_semantics(dashboard, errors)
     validate_shared_judge_outcome(dashboard, errors)
     validate_alert_delivery_visibility(dashboard, errors)
     validate_scrape_target_coverage(dashboard, errors)

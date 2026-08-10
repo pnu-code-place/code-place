@@ -74,7 +74,8 @@ data:
           "fieldConfig": {
             "defaults": {
               "unit": "short",
-              "custom": {"drawStyle": "line", "lineInterpolation": "stepAfter", "lineWidth": 2, "fillOpacity": 10, "showPoints": "never", "stacking": {"mode": "none", "group": "A"}},
+              "min": 0,
+              "custom": {"drawStyle": "line", "lineInterpolation": "stepAfter", "lineWidth": 2, "fillOpacity": 10, "showPoints": "never", "stacking": {"mode": "none", "group": "A"}, "thresholdsStyle": {"mode": "line"}},
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
@@ -97,7 +98,8 @@ data:
           "fieldConfig": {
             "defaults": {
               "unit": "short",
-              "custom": {"drawStyle": "line", "lineInterpolation": "stepAfter", "lineWidth": 2, "fillOpacity": 10, "showPoints": "never", "stacking": {"mode": "none", "group": "A"}},
+              "min": 0,
+              "custom": {"drawStyle": "line", "lineInterpolation": "stepAfter", "lineWidth": 2, "fillOpacity": 10, "showPoints": "never", "stacking": {"mode": "none", "group": "A"}, "thresholdsStyle": {"mode": "line"}},
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
@@ -145,14 +147,14 @@ data:
           ]
         },
         {
-          "type": "timeseries",
+          "type": "stat",
           "title": "Ingress 5xx in Previous 5m",
-          "gridPos": {"x": 0, "y": 11, "w": 4, "h": 4},
+          "gridPos": {"x": 0, "y": 11, "w": 8, "h": 4},
           "datasource": {"type": "loki", "uid": "Loki"},
           "fieldConfig": {
             "defaults": {
               "unit": "short",
-              "custom": {"drawStyle": "line", "lineInterpolation": "stepAfter", "lineWidth": 2, "fillOpacity": 10, "showPoints": "never", "stacking": {"mode": "none", "group": "A"}},
+              "min": 0,
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
@@ -163,6 +165,7 @@ data:
               }
             }
           },
+          "options": {"graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
           "targets": [
             {"expr": "sum(count_over_time({namespace=\"kube-system\", app_kubernetes_io_name=\"traefik\"} | json | RouterName=~\"code-place-$environment-.*\" | DownstreamStatus >= 500 [5m]))", "legendFormat": "5xx"}
           ]
@@ -170,7 +173,7 @@ data:
         {
           "type": "timeseries",
           "title": "Selected Environment Log Rate by Node",
-          "gridPos": {"x": 0, "y": 15, "w": 4, "h": 6},
+          "gridPos": {"x": 0, "y": 15, "w": 8, "h": 6},
           "datasource": {"type": "loki", "uid": "Loki"},
           "fieldConfig": {"defaults": {"unit": "logs/sec", "custom": {"drawStyle": "line", "lineInterpolation": "linear", "lineWidth": 2, "fillOpacity": 10, "showPoints": "auto", "stacking": {"mode": "none", "group": "A"}}}},
           "targets": [
@@ -180,7 +183,7 @@ data:
         {
           "type": "logs",
           "title": "Recent Backend Errors",
-          "gridPos": {"x": 4, "y": 11, "w": 10, "h": 10},
+          "gridPos": {"x": 8, "y": 11, "w": 8, "h": 10},
           "datasource": {"type": "loki", "uid": "Loki"},
           "options": {
             "showLabels": false,
@@ -195,7 +198,7 @@ data:
         {
           "type": "logs",
           "title": "Auth, Judge, Celery, and vLLM Logs",
-          "gridPos": {"x": 14, "y": 11, "w": 10, "h": 10},
+          "gridPos": {"x": 16, "y": 11, "w": 8, "h": 10},
           "datasource": {"type": "loki", "uid": "Loki"},
           "options": {
             "showLabels": false,

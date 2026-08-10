@@ -256,13 +256,16 @@ data:
           "fieldConfig": {
             "defaults": {
               "unit": "percentunit",
+              "min": 0,
+              "max": 1,
               "custom": {
                 "drawStyle": "line",
                 "lineInterpolation": "linear",
                 "lineWidth": 2,
                 "fillOpacity": 8,
                 "showPoints": "never",
-                "spanNulls": false
+                "spanNulls": false,
+                "thresholdsStyle": {"mode": "line"}
               },
               "thresholds": {
                 "mode": "absolute",
@@ -286,13 +289,16 @@ data:
           "fieldConfig": {
             "defaults": {
               "unit": "percentunit",
+              "min": 0,
+              "max": 1,
               "custom": {
                 "drawStyle": "line",
                 "lineInterpolation": "linear",
                 "lineWidth": 2,
                 "fillOpacity": 8,
                 "showPoints": "never",
-                "spanNulls": false
+                "spanNulls": false,
+                "thresholdsStyle": {"mode": "line"}
               },
               "thresholds": {
                 "mode": "absolute",

@@ -104,7 +104,9 @@ data:
           "fieldConfig": {
             "defaults": {
               "unit": "percentunit",
-              "custom": {"drawStyle": "line", "lineInterpolation": "linear", "lineWidth": 2, "fillOpacity": 10, "showPoints": "auto", "stacking": {"mode": "none", "group": "A"}},
+              "min": 0,
+              "max": 1,
+              "custom": {"drawStyle": "line", "lineInterpolation": "linear", "lineWidth": 2, "fillOpacity": 10, "showPoints": "auto", "stacking": {"mode": "none", "group": "A"}, "thresholdsStyle": {"mode": "line"}},
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
@@ -128,7 +130,7 @@ data:
           "fieldConfig": {
             "defaults": {"unit": "logs/sec", "custom": {"drawStyle": "line", "lineInterpolation": "linear", "lineWidth": 2, "fillOpacity": 10, "showPoints": "auto", "stacking": {"mode": "none", "group": "A"}}},
             "overrides": [
-              {"matcher": {"id": "byName", "options": "bytes received"}, "properties": [{"id": "unit", "value": "Bps"}]}
+              {"matcher": {"id": "byName", "options": "bytes received"}, "properties": [{"id": "unit", "value": "Bps"}, {"id": "custom.axisPlacement", "value": "right"}]}
             ]
           },
           "targets": [
