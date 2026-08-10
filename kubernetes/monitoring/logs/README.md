@@ -4,7 +4,7 @@ This directory contains Helm values for the Kubernetes logs stack.
 
 - Loki: SingleBinary mode, filesystem storage, Longhorn PVC.
 - Loki gateway: 2 replicas for the stateless write/query entrypoint.
-- Alloy: DaemonSet log collector for every pod in `code-place-dev`, `code-place-prod`, and `monitoring`, plus Traefik pods in `kube-system`. It mounts host `/var/log` so `/var/log/pods` is readable from the Alloy container. It tolerates the standard `control-plane` and `master` NoSchedule taints so tainted control-plane nodes are still covered.
+- Alloy: DaemonSet log collector for every pod in `code-place-dev`, `code-place-prod`, and `monitoring`, plus Traefik and kube-vip pods in `kube-system`. It mounts host `/var/log` so `/var/log/pods` is readable from the Alloy container. It tolerates the standard `control-plane` and `master` NoSchedule taints so tainted control-plane nodes are still covered.
 - Kubernetes Event Exporter: Warning events are written to stdout as JSON and collected by Alloy from the `monitoring` namespace.
 - Retention: `code-place-dev` 3 days, `code-place-prod` 7 days.
 - Monitoring: Loki and Alloy ServiceMonitors are enabled for kube-prometheus-stack.
@@ -47,6 +47,10 @@ helm upgrade --install alloy grafana/alloy \
 
 kubectl apply -k kubernetes/monitoring
 
+# Event exporter reads its ConfigMap only at startup.
+kubectl -n monitoring rollout restart deployment/kubernetes-event-exporter
+kubectl -n monitoring rollout status deployment/kubernetes-event-exporter --timeout=3m
+
 # One-time migration after the replacement Traefik PodMonitor is present.
 kubectl -n monitoring get podmonitor traefik
 kubectl -n monitoring delete servicemonitor traefik --ignore-not-found
@@ -79,6 +83,7 @@ Grafana should show a `Loki` datasource. Useful Explore queries:
 {namespace="code-place-prod", app="backend"} | json
 {namespace="code-place-dev", container=~"backend|celery-worker|judge-server"}
 {namespace="kube-system", app_kubernetes_io_name="traefik"} | json | DownstreamStatus >= 400
+{namespace="kube-system", app_kubernetes_io_name="kube-vip-ds"}
 {namespace="monitoring", app_kubernetes_io_name="kubernetes-event-exporter"}
 ```
 
