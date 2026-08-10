@@ -11,7 +11,7 @@ COPY . .
 ARG APP_VERSION
 ARG SENTRY_ENVIRONMENT
 ARG SENTRY_DSN_FRONTEND
-ARG USE_SENTRY=1
+ARG USE_SENTRY=0
 ARG SENTRY_ORG=onlinejudge
 ARG SENTRY_PROJECT=onlinejudgefe
 ENV APP_VERSION=$APP_VERSION
@@ -26,7 +26,7 @@ RUN npm run build:dll
 RUN --mount=type=secret,id=sentry_auth_token,required=false <<'EOF'
 set -eu
 SENTRY_AUTH_TOKEN="$(cat /run/secrets/sentry_auth_token 2>/dev/null || true)"
-if [ "${USE_SENTRY:-1}" = "1" ]; then
+if [ "${USE_SENTRY:-0}" = "1" ]; then
   if [ -z "${SENTRY_DSN_FRONTEND:-}" ]; then
     echo "SENTRY_DSN_FRONTEND is required when USE_SENTRY=1" >&2
     exit 1

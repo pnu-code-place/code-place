@@ -134,8 +134,8 @@ if (config.build.bundleAnalyzerReport) {
   webpackConfig.plugins.push(new BundleAnalyzerPlugin())
 }
 
-sentry.assertSentryUploadConfig("production")
-if (sentry.isSentryUploadEnabled("production")) {
+sentry.assertSentryUploadConfig()
+if (sentry.isSentryUploadEnabled()) {
   webpackConfig.plugins.push(
     sentryWebpackPlugin({
       authToken: process.env.SENTRY_AUTH_TOKEN,

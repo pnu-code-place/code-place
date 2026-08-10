@@ -1,8 +1,7 @@
 "use strict"
 
-function isSentryEnabled(nodeEnv = process.env.NODE_ENV) {
-  const enabled = (process.env.USE_SENTRY || (nodeEnv === "production" ? "1" : "0")) === "1"
-  return enabled && Boolean(getSentryDsn())
+function isSentryEnabled() {
+  return process.env.USE_SENTRY === "1" && Boolean(getSentryDsn())
 }
 
 function getSentryDsn() {
@@ -13,17 +12,16 @@ function getSentryEnvironment(nodeEnv = process.env.NODE_ENV) {
   return process.env.SENTRY_ENVIRONMENT || nodeEnv || "development"
 }
 
-function isSentryUploadEnabled(nodeEnv = process.env.NODE_ENV) {
+function isSentryUploadEnabled() {
   return (
-    isSentryEnabled(nodeEnv) &&
+    isSentryEnabled() &&
     Boolean(process.env.SENTRY_AUTH_TOKEN) &&
     Boolean(process.env.APP_VERSION || process.env.VUE_APP_VERSION)
   )
 }
 
-function assertSentryUploadConfig(nodeEnv = process.env.NODE_ENV) {
-  const requested = (process.env.USE_SENTRY || (nodeEnv === "production" ? "1" : "0")) === "1"
-  if (!requested) {
+function assertSentryUploadConfig() {
+  if (process.env.USE_SENTRY !== "1") {
     return
   }
 
