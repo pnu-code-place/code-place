@@ -24,6 +24,7 @@ resources:
   - ./otel-collector.yaml
   - ./prometheus-rules.yaml
   - ./public-endpoint-probes.yaml
+  - ./secrets/grafana-admin-credentials.sealedsecret.yaml
   - ./tempo.yaml
   - ./traefik-pod-monitor.yaml
   - ./vllm-service-monitor.yaml

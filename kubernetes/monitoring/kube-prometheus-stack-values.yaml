@@ -100,6 +100,10 @@ alertmanager:
               storage: 5Gi
 
 grafana:
+  admin:
+    existingSecret: grafana-admin-credentials
+    userKey: admin-user
+    passwordKey: admin-password
   defaultDashboardsEnabled: false
   # One replica owns a Longhorn ReadWriteOnce PVC. Recreate avoids a rolling
   # replacement waiting forever for the old pod to release that volume.
