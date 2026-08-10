@@ -92,9 +92,7 @@ spec:
             스토리지(dev): https://monitoring.code-place-dev.site/d/codeplace-storage/codeplace-storage?orgId=1&var-environment=dev
             {{ end }}
             모니터링: https://monitoring.code-place-dev.site/d/codeplace-monitoring-stack/codeplace-monitoring-stack?orgId=1
-            발생 쿼리:
-            {{ range .Alerts }}- {{ .GeneratorURL }}
-            {{ end }}
+            {{ with index .Alerts 0 }}발생 쿼리: [Prometheus에서 보기]({{ .GeneratorURL }}){{ end }}
           username: CodePlace Alertmanager
     - name: dev-p1-muted
     - name: p1-discord
@@ -125,7 +123,5 @@ spec:
             스토리지(dev): https://monitoring.code-place-dev.site/d/codeplace-storage/codeplace-storage?orgId=1&var-environment=dev
             {{ end }}
             모니터링: https://monitoring.code-place-dev.site/d/codeplace-monitoring-stack/codeplace-monitoring-stack?orgId=1
-            발생 쿼리:
-            {{ range .Alerts }}- {{ .GeneratorURL }}
-            {{ end }}
+            {{ with index .Alerts 0 }}발생 쿼리: [Prometheus에서 보기]({{ .GeneratorURL }}){{ end }}
           username: CodePlace Alertmanager

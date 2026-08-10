@@ -54,6 +54,14 @@ CHECKS = (
         ">= 3 targets",
     ),
     Check(
+        "PostgreSQL dev diagnostic metric families",
+        '(count(cnpg_collector_last_collection_error{namespace="code-place-dev",cluster="postgres",job="postgres"}) > bool 0)'
+        ' * (count(cnpg_collector_nodes_used{namespace="code-place-dev",cluster="postgres",job="postgres"}) > bool 0)'
+        ' * (count(cnpg_collector_wal_bytes{namespace="code-place-dev",cluster="postgres",job="postgres"}) > bool 0)',
+        ONE,
+        "collector error, HA, and WAL metrics present",
+    ),
+    Check(
         "PostgreSQL prod collector",
         'min(cnpg_collector_up{namespace="code-place-prod",cluster="postgres",job="postgres"})',
         ONE,
@@ -64,6 +72,14 @@ CHECKS = (
         'count(cnpg_collector_up{namespace="code-place-prod",cluster="postgres",job="postgres"})',
         AT_LEAST_THREE,
         ">= 3 targets",
+    ),
+    Check(
+        "PostgreSQL prod diagnostic metric families",
+        '(count(cnpg_collector_last_collection_error{namespace="code-place-prod",cluster="postgres",job="postgres"}) > bool 0)'
+        ' * (count(cnpg_collector_nodes_used{namespace="code-place-prod",cluster="postgres",job="postgres"}) > bool 0)'
+        ' * (count(cnpg_collector_wal_bytes{namespace="code-place-prod",cluster="postgres",job="postgres"}) > bool 0)',
+        ONE,
+        "collector error, HA, and WAL metrics present",
     ),
     Check("Redis dev exporter", 'min(redis_up{namespace="code-place-dev",job="redis"})', ONE, "1"),
     Check(

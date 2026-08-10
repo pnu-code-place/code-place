@@ -17,9 +17,18 @@ def load_yaml(name: str) -> dict[str, Any]:
     return yaml.safe_load((ROOT / name).read_text(encoding="utf-8"))
 
 
+def load_yaml_documents(name: str) -> list[dict[str, Any]]:
+    return [
+        document
+        for document in yaml.safe_load_all((ROOT / name).read_text(encoding="utf-8"))
+        if document is not None
+    ]
+
+
 def main() -> int:
     prometheus = load_yaml("prometheus-rules.yaml")
     alertmanager = load_yaml("alertmanager-config.yaml")
+    datastore_monitors = load_yaml_documents("datastore-pod-monitors.yaml")
     rules = [
         rule
         for group in prometheus["spec"]["groups"]
@@ -27,6 +36,25 @@ def main() -> int:
         if "alert" in rule
     ]
     errors: list[str] = []
+
+    postgres_monitors = [
+        monitor
+        for monitor in datastore_monitors
+        if monitor.get("kind") == "PodMonitor"
+        and monitor.get("metadata", {}).get("name") == "postgres"
+    ]
+    if len(postgres_monitors) != 1:
+        errors.append("expected exactly one PostgreSQL PodMonitor")
+    else:
+        endpoints = postgres_monitors[0].get("spec", {}).get("podMetricsEndpoints", [])
+        relabelings = endpoints[0].get("relabelings", []) if len(endpoints) == 1 else []
+        if not any(
+            relabeling.get("sourceLabels")
+            == ["__meta_kubernetes_pod_label_cnpg_io_cluster"]
+            and relabeling.get("targetLabel") == "cluster"
+            for relabeling in relabelings
+        ):
+            errors.append("PostgreSQL PodMonitor must expose the CNPG cluster label")
 
     expected_environments = {
         "code-place-prod": ("prod", "P0", "1m"),
@@ -340,6 +368,10 @@ def main() -> int:
                 errors.append(f"{receiver_name}: message is missing {token}")
         if "문맥:" not in message:
             errors.append(f"{receiver_name}: message must show available workload context labels")
+        if message.count(".GeneratorURL") != 1:
+            errors.append(f"{receiver_name}: message must show one query link per alert group")
+        if "발생 쿼리: [Prometheus에서 보기]" not in message:
+            errors.append(f"{receiver_name}: query URL must use a compact link label")
         if f"우선순위: {priority}" not in message:
             errors.append(f"{receiver_name}: message must show its routed priority {priority}")
         for environment in ("prod", "dev"):
