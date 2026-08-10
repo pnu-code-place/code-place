@@ -45,6 +45,7 @@
               <span v-if="item.is_pinned">📌</span>
               <span v-else class="dot" />
             </span>
+            <span v-if="isNew(item.create_time)" class="badge-new">NEW</span>
             <span class="item-title" :class="{ pinned: item.is_pinned }">{{
               item.title
             }}</span>
@@ -68,7 +69,7 @@
             class="notice-item"
             @click="goSWItem(item)"
           >
-            <span class="badge-new">NEW</span>
+            <span v-if="isNew(item.pubDate)" class="badge-new">NEW</span>
             <span class="item-title">{{ item.title }}</span>
             <span class="item-date">{{ formatDate(item.pubDate) }}</span>
           </div>
@@ -123,6 +124,13 @@ export default {
           this.aiLoading = false
         },
       )
+    },
+    isNew(dateStr) {
+      if (!dateStr) return false
+      const t = new Date(dateStr).getTime()
+      if (Number.isNaN(t)) return false
+      const FIVE_DAYS = 5 * 24 * 60 * 60 * 1000
+      return Date.now() - t <= FIVE_DAYS
     },
     formatDate(dateStr) {
       if (!dateStr) return ""
