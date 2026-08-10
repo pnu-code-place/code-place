@@ -9,6 +9,12 @@ from ..serializers import (CommentSerializer, CreatePostSerializer, PostListSeri
                            PostUpdateSerializer)
 
 
+def can_view_post(user, post):
+    if post.visibility != Post.Visibility.CONTEST_HOSTS:
+        return True
+    return user.is_authenticated and (post.author == user or user.is_contest_admin(post.contest))
+
+
 class PostAPIView(APIView):
     """게시글 생성 및 목록 조회를 위한 API"""
 
@@ -76,6 +82,7 @@ class PostAPIView(APIView):
         question_status = request.GET.get("question_status")
         keyword = request.GET.get("keyword", "").strip()
         sort_type = request.GET.get("sort_type")
+        is_mine = request.GET.get("is_mine") in ["1", "true", "True"]
 
         is_mine_condition = Q(author_id=request.user.id) if request.user.is_authenticated else Q(pk__isnull=True)
         can_view_condition = Q(visibility=Post.Visibility.CONTEST_PARTICIPANTS) | Q(contest__isnull=True)
@@ -114,6 +121,12 @@ class PostAPIView(APIView):
             posts = posts.filter(contest_id__isnull=True)
         if post_type:
             posts = posts.filter(post_type=post_type)
+
+        if is_mine:
+            if request.user.is_authenticated:
+                posts = posts.filter(author=request.user)
+            else:
+                posts = posts.none()
 
         if question_status:
             posts = posts.filter(question_status=question_status)
@@ -160,9 +173,7 @@ class PostDetailAPIView(APIView):
             error = self._check_contest_permission(request)
             if error:
                 return self.error("No permission to access this contest's community")
-            if (post.visibility == Post.Visibility.CONTEST_HOSTS and
-                    post.author != request.user and
-                    not request.user.is_contest_admin(post.contest)):
+            if not can_view_post(request.user, post):
                 return self.error("Only contest hosts or the author can view this post")
 
         return self.success(PostDetailSerializer(post).data)
@@ -217,28 +228,47 @@ class PostDetailAPIView(APIView):
 class CommentAPIView(APIView):
     """특정 게시글의 댓글 생성 및 목록 조회를 위한 API"""
 
+    @check_contest_permission(check_type="community")
+    def _check_contest_permission(self, request):
+        return None
+
+    def get_post(self, request, post_id):
+        try:
+            post = Post.objects.select_related("author", "contest__created_by").get(id=post_id)
+        except Post.DoesNotExist:
+            return None, self.error("Post does not exist")
+
+        if post.contest:
+            self.contest = post.contest
+            error = self._check_contest_permission(request)
+            if error:
+                return None, self.error("No permission to access this contest's community")
+            if not can_view_post(request.user, post):
+                return None, self.error("Only contest hosts or the author can view this post")
+        return post, None
+
     def get(self, request, post_id):
         """댓글 목록을 조회합니다."""
-        try:
-            Post.objects.get(id=post_id)
-        except Post.DoesNotExist:
-            return self.error("Post does not exist")
+        post, error = self.get_post(request, post_id)
+        if error:
+            return error
 
         comments = (
             Comment.objects.filter(
-                post_id=post_id).select_related("author").prefetch_related("replies__author").order_by("created_at"))
+                post=post).select_related("author", "post__contest").prefetch_related(
+                    "replies__author", "replies__post__contest").order_by("created_at"))
 
         root_comments = comments.filter(parent_comment__isnull=True)
-        data = self.paginate_data(request, root_comments, CommentSerializer)
+        data = self.paginate_data(request, root_comments, lambda results, many: CommentSerializer(
+            results, many=many, context={"contest": post.contest}))
         return self.success(data)
 
     @login_required
     def post(self, request, post_id):
         """댓글을 생성합니다."""
-        try:
-            post = Post.objects.get(id=post_id)
-        except Post.DoesNotExist:
-            return self.error("Post does not exist")
+        post, error = self.get_post(request, post_id)
+        if error:
+            return error
 
         content = request.data.get("content")
         parent_comment_id = request.data.get("parent_comment_id")
@@ -259,19 +289,39 @@ class CommentAPIView(APIView):
             content=content,
             parent_comment=parent_comment,
         )
-        return self.success(CommentSerializer(comment).data)
+        return self.success(CommentSerializer(comment, context={"contest": post.contest}).data)
 
 
 class CommentDetailAPIView(APIView):
     """특정 댓글 수정 및 삭제를 위한 API"""
 
+    @check_contest_permission(check_type="community")
+    def _check_contest_permission(self, request):
+        return None
+
+    def get_comment(self, request, post_id, comment_id):
+        try:
+            comment = Comment.objects.select_related(
+                "author", "post__author", "post__contest__created_by").get(id=comment_id, post_id=post_id)
+        except Comment.DoesNotExist:
+            return None, self.error("Comment does not exist")
+
+        post = comment.post
+        if post.contest:
+            self.contest = post.contest
+            error = self._check_contest_permission(request)
+            if error:
+                return None, self.error("No permission to access this contest's community")
+            if not can_view_post(request.user, post):
+                return None, self.error("Only contest hosts or the author can view this post")
+        return comment, None
+
     @login_required
     def put(self, request, post_id, comment_id):
         """댓글을 수정합니다."""
-        try:
-            comment = Comment.objects.get(id=comment_id, post_id=post_id)
-        except Comment.DoesNotExist:
-            return self.error("Comment does not exist")
+        comment, error = self.get_comment(request, post_id, comment_id)
+        if error:
+            return error
 
         if comment.author != request.user and not request.user.is_super_admin():
             return self.error("No permission to edit this comment")
@@ -282,15 +332,14 @@ class CommentDetailAPIView(APIView):
 
         comment.content = content
         comment.save()
-        return self.success(CommentSerializer(comment).data)
+        return self.success(CommentSerializer(comment, context={"contest": comment.post.contest}).data)
 
     @login_required
     def delete(self, request, post_id, comment_id):
         """댓글을 삭제합니다."""
-        try:
-            comment = Comment.objects.get(id=comment_id, post_id=post_id)
-        except Comment.DoesNotExist:
-            return self.error("Comment does not exist")
+        comment, error = self.get_comment(request, post_id, comment_id)
+        if error:
+            return error
 
         if comment.author != request.user and not request.user.is_super_admin():
             return self.error("No permission to delete this comment")

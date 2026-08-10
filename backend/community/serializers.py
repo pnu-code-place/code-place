@@ -97,6 +97,8 @@ class PostListSerializer(serializers.ModelSerializer):
 
     def get_content_preview(self, obj):
         """게시글 내용의 미리보기(HTML 태그를 제거한 처음 100자)를 반환합니다."""
+        if not getattr(obj, "can_view", True):
+            return ""
         text = strip_tags(obj.content)
         return text[:100] + ("..." if len(text) > 100 else "")
 

@@ -113,12 +113,11 @@ def check_contest_permission(check_type="details"):
             if not contest_id:
                 return self.error("Parameter error, contest_id is required")
 
-            if not getattr(self, "contest", None):
-                try:
-                    # use self.contest to avoid query contest again in view.
-                    self.contest = Contest.objects.select_related("created_by").get(id=contest_id, visible=True)
-                except Contest.DoesNotExist:
-                    return self.error("Contest %s doesn't exist" % contest_id)
+            try:
+                # Always reload with visible=True so preloaded contests cannot bypass soft-delete visibility.
+                self.contest = Contest.objects.select_related("created_by").get(id=contest_id, visible=True)
+            except Contest.DoesNotExist:
+                return self.error("Contest %s doesn't exist" % contest_id)
 
             # Anonymous
             if not user.is_authenticated:
