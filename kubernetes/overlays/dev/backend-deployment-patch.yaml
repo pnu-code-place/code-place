@@ -8,8 +8,6 @@ spec:
       containers:
         - name: backend
           env:
-            - name: OJ_ENV
-              value: "dev"
             - name: CSRF_TRUSTED_ORIGINS
               value: "https://k3s.code-place-dev.site"
             - name: SENTRY_DSN_BACKEND
