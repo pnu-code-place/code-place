@@ -51,7 +51,7 @@ spec:
             - name: svc_enable
               value: "true"
             - name: svc_leasename
-              value: plndr-svcs-lock
+              value: plndr-cp-lock
             - name: vip_leaderelection
               value: "true"
             - name: vip_leasename
