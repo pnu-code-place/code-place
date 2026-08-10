@@ -11,9 +11,16 @@ on:
       - "kubernetes/overlays/dev/**"
       - "kubernetes/overlays/prod/**"
       - "hub/auth_server/**"
+      - "backend/account/middleware.py"
+      - "backend/account/tests.py"
       - "backend/judge/tasks.py"
       - "backend/judge/tests.py"
       - "backend/oj/celery.py"
+      - "backend/problem/llm_hint.py"
+      - "backend/problem/views/oj.py"
+      - "backend/problem/tests.py"
+      - "backend/submission/views/oj.py"
+      - "backend/submission/tests.py"
       - "backend/utils/observability_metrics.py"
       - "backend/utils/observability_tracing.py"
       - "backend/utils/tests.py"
@@ -30,9 +37,16 @@ on:
       - "kubernetes/overlays/dev/**"
       - "kubernetes/overlays/prod/**"
       - "hub/auth_server/**"
+      - "backend/account/middleware.py"
+      - "backend/account/tests.py"
       - "backend/judge/tasks.py"
       - "backend/judge/tests.py"
       - "backend/oj/celery.py"
+      - "backend/problem/llm_hint.py"
+      - "backend/problem/views/oj.py"
+      - "backend/problem/tests.py"
+      - "backend/submission/views/oj.py"
+      - "backend/submission/tests.py"
       - "backend/utils/observability_metrics.py"
       - "backend/utils/observability_tracing.py"
       - "backend/utils/tests.py"
@@ -45,6 +59,37 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-latest
+    env:
+      POSTGRES_HOST: 127.0.0.1
+      POSTGRES_PORT: "5435"
+      POSTGRES_DB: onlinejudge
+      POSTGRES_USER: onlinejudge
+      POSTGRES_PASSWORD: onlinejudge
+      REDIS_HOST: 127.0.0.1
+      REDIS_PORT: "6380"
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_DB: onlinejudge
+          POSTGRES_USER: onlinejudge
+          POSTGRES_PASSWORD: onlinejudge
+        ports:
+          - 5435:5432
+        options: >-
+          --health-cmd "pg_isready -U onlinejudge -d onlinejudge"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6380:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -88,7 +133,14 @@ jobs:
             utils.tests.CeleryRequestIDContextTest \
             utils.tests.ObservabilityTracingTest \
             utils.tests.CodePlaceMetricsEndpointTest \
-            judge.tests.JudgeTaskObservabilityTest
+            judge.tests.JudgeTaskObservabilityTest \
+            account.tests.RequestLogMiddlewareTest \
+            problem.tests.ProblemLLMHintAPITest.test_stream_llm_hint_records_api_success_outcome \
+            problem.tests.ProblemLLMHintAPITest.test_stream_llm_hint_records_success_metric \
+            problem.tests.ProblemLLMHintAPITest.test_stream_llm_hint_records_request_error_metric \
+            problem.tests.ProblemLLMHintAPITest.test_stream_llm_hint_records_problem_limit_outcome \
+            submission.tests.SubmissionAPITest.test_create_submission_records_success_outcome \
+            submission.tests.SubmissionAPITest.test_create_submission_records_problem_not_found_outcome
 
       - name: Validate dashboard contracts
         run: python kubernetes/monitoring/validate_dashboards.py --prometheus-rules-output /tmp/codeplace-dashboard-rules.json
