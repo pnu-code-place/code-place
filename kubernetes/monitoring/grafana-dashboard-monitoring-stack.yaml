@@ -10,7 +10,7 @@ data:
       "uid": "codeplace-monitoring-stack",
       "title": "CodePlace Monitoring Stack",
       "schemaVersion": 39,
-      "version": 2,
+      "version": 3,
       "refresh": "30s",
       "tags": ["codeplace", "monitoring", "scrape-contract"],
       "links": [
@@ -570,6 +570,22 @@ data:
               "expr": "sum by (namespace, job) (scrape_samples_scraped{job=~\"backend|postgres|redis|traefik|.*alloy.*|.*loki.*|.*longhorn.*|kubernetes-event-exporter|kube-state-metrics|otel-collector|tempo|vllm|dcgm-exporter|blackbox-exporter\"})",
               "legendFormat": "{{namespace}} {{job}}"
             }
+          ]
+        },
+        {
+          "type": "logs",
+          "title": "Recent kube-vip Logs",
+          "description": "Cluster control-plane kube-vip logs for VIP ownership, leader election, and ARP troubleshooting.",
+          "gridPos": {"x": 0, "y": 49, "w": 24, "h": 8},
+          "datasource": {"type": "loki", "uid": "Loki"},
+          "options": {
+            "showLabels": false,
+            "showTime": true,
+            "wrapLogMessage": true,
+            "dedupStrategy": "none"
+          },
+          "targets": [
+            {"refId": "A", "expr": "{namespace=\"kube-system\", app_kubernetes_io_name=\"kube-vip-ds\"}"}
           ]
         }
       ]
