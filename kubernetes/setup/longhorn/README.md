@@ -95,12 +95,7 @@ kubectl get pods -n longhorn-system -w
 
 kube-prometheus-stack이 설치된 클러스터에서는 CodePlace monitoring kustomization이 Longhorn manager metric을 scrape합니다.
 
-```sh
-kubectl apply -k kubernetes/monitoring
-kubectl -n monitoring get servicemonitor longhorn
-```
-
-Prometheus target에서 `longhorn` scrape가 healthy인지 확인하고, Grafana의 `CodePlace Storage` dashboard에서 다음 상태를 확인합니다.
+Monitoring 배포 절차는 `kubernetes/monitoring/logs/README.md`를 따릅니다. 적용 후 `kubernetes/monitoring/verify_live.py`로 Longhorn manager scrape를 확인합니다. Grafana의 `CodePlace Storage` dashboard에서는 선택한 dev/prod 환경의 PVC 상태와 cluster-global Longhorn 상태를 분리해 다음 항목을 확인합니다.
 
 - Longhorn manager ready count.
 - faulted/degraded/read-only volume count.

@@ -27,6 +27,9 @@ spec:
         cpu: 500m
         memory: 512Mi
 
+  redisConfig:
+    maxMemoryPercentOfLimit: 80
+
   storage:
     volumeClaimTemplate:
       spec:

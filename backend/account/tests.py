@@ -18,7 +18,7 @@ from options.options import SysOptions
 
 from .models import AdminType, ProblemPermission, User
 from .decorators import login_required, scheduler_only
-from .middleware import AdminRoleRequiredMiddleware, RequestIDMiddleware
+from .middleware import AdminRoleRequiredMiddleware, RequestIDMiddleware, RequestLogMiddleware
 from .tasks import calculate_user_score_basis, calculate_user_score_fluctuation
 
 
@@ -63,6 +63,23 @@ class RequestIDMiddlewareTest(SimpleTestCase):
 
         self.assertEqual(len(request.request_id), 32)
         self.assertEqual(response["X-Request-ID"], request.request_id)
+
+
+class RequestLogMiddlewareTest(SimpleTestCase):
+
+    @mock.patch("account.middleware.HTTP_REQUEST_DURATION_SECONDS")
+    @mock.patch("account.middleware.HTTP_REQUESTS_TOTAL")
+    def test_records_request_metrics(self, requests_total, duration_seconds):
+        request = RequestFactory().get("/api/problem")
+        request.resolver_match = mock.Mock(view_name="problem_api")
+        middleware = RequestLogMiddleware(lambda _: JsonResponse({}, status=201))
+
+        middleware(request)
+
+        requests_total.labels.assert_called_once_with("GET", "problem_api", "201")
+        requests_total.labels.return_value.inc.assert_called_once()
+        duration_seconds.labels.assert_called_once_with("GET", "problem_api")
+        duration_seconds.labels.return_value.observe.assert_called_once()
 
 
 class AdminRoleRequiredMiddlewareTest(SimpleTestCase):

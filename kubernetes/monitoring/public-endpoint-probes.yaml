@@ -83,7 +83,7 @@ spec:
   targets:
     staticConfig:
       static:
-        - https://hub-auth-dev.code-place-dev.site/
+        - https://hub-auth-dev.code-place-dev.site/healthz
       labels:
         environment: dev
         namespace: code-place-dev
@@ -106,7 +106,7 @@ spec:
   targets:
     staticConfig:
       static:
-        - https://hub-auth.code-place-dev.site/
+        - https://hub-auth.code-place-dev.site/healthz
       labels:
         environment: prod
         namespace: code-place-prod

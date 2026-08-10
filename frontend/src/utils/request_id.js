@@ -1,5 +1,3 @@
-import { setRequestIdContext } from "@/utils/sentry"
-
 const REQUEST_ID_HEADER = "X-Request-ID"
 const RESPONSE_REQUEST_ID_HEADER = "x-request-id"
 
@@ -18,14 +16,6 @@ function randomHex(length) {
 
 function createRequestId() {
   return `cp-${Date.now().toString(36)}-${randomHex(16)}`
-}
-
-function rememberRequestId(requestId) {
-  if (!requestId) {
-    return
-  }
-
-  setRequestIdContext(requestId)
 }
 
 function responseRequestId(response) {
@@ -50,7 +40,6 @@ export function configureAxiosRequestId(axios) {
       ...(config.metadata || {}),
       requestId,
     }
-    rememberRequestId(requestId)
     return config
   })
 
@@ -60,7 +49,6 @@ export function configureAxiosRequestId(axios) {
         responseRequestId(response) ||
         (response.config && response.config.metadata && response.config.metadata.requestId)
       response.requestId = requestId
-      rememberRequestId(requestId)
       return response
     },
     (error) => {
@@ -68,7 +56,6 @@ export function configureAxiosRequestId(axios) {
         responseRequestId(error.response) ||
         (error.config && error.config.metadata && error.config.metadata.requestId)
       error.requestId = requestId
-      rememberRequestId(requestId)
       return Promise.reject(error)
     },
   )
