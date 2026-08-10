@@ -47,6 +47,10 @@ helm upgrade --install alloy grafana/alloy \
 
 kubectl apply -k kubernetes/monitoring
 
+# Event exporter reads its ConfigMap only at startup.
+kubectl -n monitoring rollout restart deployment/kubernetes-event-exporter
+kubectl -n monitoring rollout status deployment/kubernetes-event-exporter --timeout=3m
+
 # One-time migration after the replacement Traefik PodMonitor is present.
 kubectl -n monitoring get podmonitor traefik
 kubectl -n monitoring delete servicemonitor traefik --ignore-not-found
