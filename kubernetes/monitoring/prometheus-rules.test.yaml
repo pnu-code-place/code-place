@@ -1,0 +1,397 @@
+rule_files:
+  - /rules.yaml
+
+evaluation_interval: 15s
+
+tests:
+  - name: healthy public endpoints stay quiet
+    interval: 15s
+    input_series:
+      - series: 'probe_success{environment="prod",namespace="code-place-prod",probe_type="public-http",service="frontend",instance="https://code.pusan.ac.kr/"}'
+        values: '1 1 1 1 1 1 1 1 1 1 1 1 1'
+      - series: 'probe_success{environment="prod",namespace="code-place-prod",probe_type="public-http",service="hub-auth",instance="https://hub-auth.code-place-dev.site/healthz"}'
+        values: '1 1 1 1 1 1 1 1 1 1 1 1 1'
+      - series: 'probe_success{environment="dev",namespace="code-place-dev",probe_type="public-http",service="frontend",instance="https://k3s.code-place-dev.site/"}'
+        values: '1 1 1 1 1 1 1 1 1 1 1 1 1'
+      - series: 'probe_success{environment="dev",namespace="code-place-dev",probe_type="public-http",service="hub-auth",instance="https://hub-auth-dev.code-place-dev.site/healthz"}'
+        values: '1 1 1 1 1 1 1 1 1 1 1 1 1'
+    alert_rule_test:
+      - eval_time: 3m
+        alertname: PublicEndpointDown
+        exp_alerts: []
+      - eval_time: 3m
+        alertname: PublicEndpointProbeMissing
+        exp_alerts: []
+
+  - name: prod hub-auth failure identifies the failing service and instance
+    interval: 15s
+    input_series:
+      - series: 'probe_success{environment="prod",namespace="code-place-prod",probe_type="public-http",service="frontend",instance="https://code.pusan.ac.kr/"}'
+        values: '1 1 1 1 1 1'
+      - series: 'probe_success{environment="prod",namespace="code-place-prod",probe_type="public-http",service="hub-auth",instance="https://hub-auth.code-place-dev.site/healthz"}'
+        values: '0 0 0 0 0 0'
+      - series: 'probe_success{environment="dev",namespace="code-place-dev",probe_type="public-http",service="frontend",instance="https://k3s.code-place-dev.site/"}'
+        values: '1 1 1 1 1 1'
+      - series: 'probe_success{environment="dev",namespace="code-place-dev",probe_type="public-http",service="hub-auth",instance="https://hub-auth-dev.code-place-dev.site/healthz"}'
+        values: '1 1 1 1 1 1'
+    alert_rule_test:
+      - eval_time: 1m15s
+        alertname: PublicEndpointDown
+        exp_alerts:
+          - exp_labels:
+              environment: prod
+              instance: https://hub-auth.code-place-dev.site/healthz
+              namespace: code-place-prod
+              priority: P0
+              probe_type: public-http
+              service: hub-auth
+              severity: critical
+            exp_annotations:
+              summary: prod hub-auth 공개 엔드포인트가 응답하지 않습니다
+              description: https://hub-auth.code-place-dev.site/healthz HTTPS synthetic probe가 1분 동안 실패했습니다.
+
+  - name: transient prod failure recovers before the one minute threshold
+    interval: 15s
+    input_series:
+      - series: 'probe_success{environment="prod",namespace="code-place-prod",probe_type="public-http",service="frontend",instance="https://code.pusan.ac.kr/"}'
+        values: '1 1 1 1 1 1 1'
+      - series: 'probe_success{environment="prod",namespace="code-place-prod",probe_type="public-http",service="hub-auth",instance="https://hub-auth.code-place-dev.site/healthz"}'
+        values: '0 0 0 1 1 1 1'
+      - series: 'probe_success{environment="dev",namespace="code-place-dev",probe_type="public-http",service="frontend",instance="https://k3s.code-place-dev.site/"}'
+        values: '1 1 1 1 1 1 1'
+      - series: 'probe_success{environment="dev",namespace="code-place-dev",probe_type="public-http",service="hub-auth",instance="https://hub-auth-dev.code-place-dev.site/healthz"}'
+        values: '1 1 1 1 1 1 1'
+    alert_rule_test:
+      - eval_time: 1m30s
+        alertname: PublicEndpointDown
+        exp_alerts: []
+
+  - name: dev failure requires two minutes and preserves target context
+    interval: 15s
+    input_series:
+      - series: 'probe_success{environment="prod",namespace="code-place-prod",probe_type="public-http",service="frontend",instance="https://code.pusan.ac.kr/"}'
+        values: '1 1 1 1 1 1 1 1 1 1'
+      - series: 'probe_success{environment="prod",namespace="code-place-prod",probe_type="public-http",service="hub-auth",instance="https://hub-auth.code-place-dev.site/healthz"}'
+        values: '1 1 1 1 1 1 1 1 1 1'
+      - series: 'probe_success{environment="dev",namespace="code-place-dev",probe_type="public-http",service="frontend",instance="https://k3s.code-place-dev.site/"}'
+        values: '1 1 1 1 1 1 1 1 1 1'
+      - series: 'probe_success{environment="dev",namespace="code-place-dev",probe_type="public-http",service="hub-auth",instance="https://hub-auth-dev.code-place-dev.site/healthz"}'
+        values: '0 0 0 0 0 0 0 0 0 0'
+    alert_rule_test:
+      - eval_time: 1m45s
+        alertname: PublicEndpointDown
+        exp_alerts: []
+      - eval_time: 2m15s
+        alertname: PublicEndpointDown
+        exp_alerts:
+          - exp_labels:
+              environment: dev
+              instance: https://hub-auth-dev.code-place-dev.site/healthz
+              namespace: code-place-dev
+              priority: P1
+              probe_type: public-http
+              service: hub-auth
+              severity: warning
+            exp_annotations:
+              summary: dev hub-auth 공개 엔드포인트가 응답하지 않습니다
+              description: https://hub-auth-dev.code-place-dev.site/healthz HTTPS synthetic probe가 2분 동안 실패했습니다.
+
+  - name: missing prod hub-auth telemetry is not endpoint downtime
+    interval: 15s
+    input_series:
+      - series: 'probe_success{environment="prod",namespace="code-place-prod",probe_type="public-http",service="frontend",instance="https://code.pusan.ac.kr/"}'
+        values: '1 1 1 1 1 1 1 1 1 1'
+      - series: 'probe_success{environment="dev",namespace="code-place-dev",probe_type="public-http",service="frontend",instance="https://k3s.code-place-dev.site/"}'
+        values: '1 1 1 1 1 1 1 1 1 1'
+      - series: 'probe_success{environment="dev",namespace="code-place-dev",probe_type="public-http",service="hub-auth",instance="https://hub-auth-dev.code-place-dev.site/healthz"}'
+        values: '1 1 1 1 1 1 1 1 1 1'
+    alert_rule_test:
+      - eval_time: 2m15s
+        alertname: PublicEndpointDown
+        exp_alerts: []
+      - eval_time: 2m15s
+        alertname: PublicEndpointProbeMissing
+        exp_alerts:
+          - exp_labels:
+              environment: prod
+              namespace: code-place-prod
+              priority: P1
+              probe_type: public-http
+              service: hub-auth
+              severity: warning
+            exp_annotations:
+              summary: prod hub-auth 공개 probe metric이 없습니다
+              description: Prometheus가 prod hub-auth synthetic probe 결과를 2분 동안 찾지 못했습니다. 공개 endpoint 장애가 아니라 probe 수집 경로 문제입니다.
+
+  - name: unrelated prod-labelled probe cannot trigger the CodePlace prod alert
+    interval: 15s
+    input_series:
+      - series: 'probe_success{environment="prod",namespace="code-place-prod",probe_type="public-http",service="frontend",instance="https://code.pusan.ac.kr/"}'
+        values: '1 1 1 1 1 1'
+      - series: 'probe_success{environment="prod",namespace="code-place-prod",probe_type="public-http",service="hub-auth",instance="https://hub-auth.code-place-dev.site/healthz"}'
+        values: '1 1 1 1 1 1'
+      - series: 'probe_success{environment="dev",namespace="code-place-dev",probe_type="public-http",service="frontend",instance="https://k3s.code-place-dev.site/"}'
+        values: '1 1 1 1 1 1'
+      - series: 'probe_success{environment="dev",namespace="code-place-dev",probe_type="public-http",service="hub-auth",instance="https://hub-auth-dev.code-place-dev.site/healthz"}'
+        values: '1 1 1 1 1 1'
+      - series: 'probe_success{environment="prod",namespace="another-system",probe_type="public-http",service="hub-auth",instance="https://example.invalid/"}'
+        values: '0 0 0 0 0 0'
+    alert_rule_test:
+      - eval_time: 1m15s
+        alertname: PublicEndpointDown
+        exp_alerts: []
+
+  - name: partial backend target discovery is not healthy
+    interval: 15s
+    input_series:
+      - series: 'up{job="backend",namespace="code-place-dev",instance="backend-dev-1"}'
+        values: '1 1 1 1 1 1'
+      - series: 'up{job="backend",namespace="code-place-prod",instance="backend-prod-1"}'
+        values: '1 1 1 1 1 1'
+      - series: 'up{job="backend",namespace="code-place-prod",instance="backend-prod-2"}'
+        values: '1 1 1 1 1 1'
+      - series: 'up{job="backend",namespace="code-place-prod",instance="backend-prod-3"}'
+        values: '1 1 1 1 1 1'
+      - series: 'up{job="backend",namespace="code-place-prod",instance="backend-prod-4"}'
+        values: '1 1 1 1 1 1'
+      - series: 'up{job="backend",namespace="code-place-prod",instance="backend-prod-5"}'
+        values: '1 1 1 1 1 1'
+      - series: 'up{job="backend",namespace="code-place-prod",instance="backend-prod-6"}'
+        values: '1 1 1 1 1 1'
+    alert_rule_test:
+      - eval_time: 1m15s
+        alertname: BackendTargetDown
+        exp_alerts:
+          - exp_labels:
+              namespace: code-place-dev
+              priority: P0
+              service: backend
+              severity: critical
+            exp_annotations:
+              summary: dev backend metrics target이 내려갔습니다
+              description: Prometheus가 dev backend /metrics 엔드포인트를 1분 동안 scrape하지 못했거나 기대 target 2개를 모두 발견하지 못했습니다.
+
+  - name: backend scrape failure preserves the failed instance
+    interval: 15s
+    input_series:
+      - series: 'up{job="backend",namespace="code-place-dev",instance="backend-dev-1"}'
+        values: '1 1 1 1 1 1'
+      - series: 'up{job="backend",namespace="code-place-dev",instance="backend-dev-2"}'
+        values: '0 0 0 0 0 0'
+      - series: 'up{job="backend",namespace="code-place-prod",instance="backend-prod-1"}'
+        values: '1 1 1 1 1 1'
+      - series: 'up{job="backend",namespace="code-place-prod",instance="backend-prod-2"}'
+        values: '1 1 1 1 1 1'
+      - series: 'up{job="backend",namespace="code-place-prod",instance="backend-prod-3"}'
+        values: '1 1 1 1 1 1'
+      - series: 'up{job="backend",namespace="code-place-prod",instance="backend-prod-4"}'
+        values: '1 1 1 1 1 1'
+      - series: 'up{job="backend",namespace="code-place-prod",instance="backend-prod-5"}'
+        values: '1 1 1 1 1 1'
+      - series: 'up{job="backend",namespace="code-place-prod",instance="backend-prod-6"}'
+        values: '1 1 1 1 1 1'
+    alert_rule_test:
+      - eval_time: 1m15s
+        alertname: BackendTargetDown
+        exp_alerts:
+          - exp_labels:
+              instance: backend-dev-2
+              job: backend
+              namespace: code-place-dev
+              priority: P0
+              service: backend
+              severity: critical
+            exp_annotations:
+              summary: dev backend metrics target이 내려갔습니다
+              description: Prometheus가 dev backend /metrics 엔드포인트를 1분 동안 scrape하지 못했거나 기대 target 2개를 모두 발견하지 못했습니다.
+
+  - name: backend rolling surge does not trigger target coverage
+    interval: 15s
+    input_series:
+      - series: 'up{job="backend",namespace="code-place-dev",instance="backend-dev-1"}'
+        values: '1+0x5'
+      - series: 'up{job="backend",namespace="code-place-dev",instance="backend-dev-2"}'
+        values: '1+0x5'
+      - series: 'up{job="backend",namespace="code-place-dev",instance="backend-dev-3"}'
+        values: '1+0x5'
+      - series: 'up{job="backend",namespace="code-place-prod",instance="backend-prod-1"}'
+        values: '1+0x5'
+      - series: 'up{job="backend",namespace="code-place-prod",instance="backend-prod-2"}'
+        values: '1+0x5'
+      - series: 'up{job="backend",namespace="code-place-prod",instance="backend-prod-3"}'
+        values: '1+0x5'
+      - series: 'up{job="backend",namespace="code-place-prod",instance="backend-prod-4"}'
+        values: '1+0x5'
+      - series: 'up{job="backend",namespace="code-place-prod",instance="backend-prod-5"}'
+        values: '1+0x5'
+      - series: 'up{job="backend",namespace="code-place-prod",instance="backend-prod-6"}'
+        values: '1+0x5'
+      - series: 'up{job="backend",namespace="code-place-prod",instance="backend-prod-7"}'
+        values: '1+0x5'
+    alert_rule_test:
+      - eval_time: 1m15s
+        alertname: BackendTargetDown
+        exp_alerts: []
+
+  - name: telemetry coverage uses expected backend replicas
+    interval: 15s
+    input_series:
+      - series: 'codeplace_collector_success{namespace="code-place-dev",collector="waiting_queue"}'
+        values: '1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1'
+      - series: 'codeplace_collector_success{namespace="code-place-dev",collector="judge_server"}'
+        values: '1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1'
+      - series: 'codeplace_collector_success{namespace="code-place-dev",collector="celery_queue"}'
+        values: '1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1'
+      - series: 'codeplace_collector_success{namespace="code-place-dev",collector="sentinel"}'
+        values: '1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1'
+      - series: 'codeplace_redis_sentinel_health{namespace="code-place-dev",check="master"}'
+        values: '1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1'
+      - series: 'codeplace_redis_sentinel_health{namespace="code-place-dev",check="quorum"}'
+        values: '1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1'
+    alert_rule_test:
+      - eval_time: 5m15s
+        alertname: CodePlaceTelemetryCoverageIncomplete
+        exp_alerts:
+          - exp_labels:
+              namespace: code-place-dev
+              priority: P1
+              service: backend
+              severity: warning
+            exp_annotations:
+              summary: dev Backend telemetry replica coverage가 불완전합니다
+              description: dev Backend target별 custom collector 4종 또는 Sentinel check 2종의 metric series가 5분 동안 누락됐습니다. Backend rollout 버전과 target별 /metrics 출력을 확인해야 합니다.
+
+  - name: partial OTel target discovery is not healthy
+    interval: 15s
+    input_series:
+      - series: 'up{job="otel-collector",namespace="monitoring",instance="otel-collector-1"}'
+        values: '1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1'
+    alert_rule_test:
+      - eval_time: 5m15s
+        alertname: OpenTelemetryCollectorUnavailable
+        exp_alerts:
+          - exp_labels:
+              namespace: monitoring
+              priority: P1
+              service: otel-collector
+              severity: warning
+            exp_annotations:
+              summary: OpenTelemetry Collector를 scrape할 수 없습니다
+              description: OpenTelemetry Collector target이 5분 동안 없거나 내려갔거나 기대 target 2개보다 적습니다. dev/prod trace 수집 상태를 확인해야 합니다.
+
+  - name: partial datastore and Blackbox metric coverage is not healthy
+    interval: 15s
+    input_series:
+      - series: 'cnpg_collector_up{namespace="code-place-dev",cluster="postgres",instance="postgres-1"}'
+        values: '1+0x21'
+      - series: 'cnpg_collector_up{namespace="code-place-dev",cluster="postgres",instance="postgres-2"}'
+        values: '1+0x21'
+      - series: 'cnpg_collector_up{namespace="code-place-prod",cluster="postgres",instance="postgres-1"}'
+        values: '1+0x21'
+      - series: 'cnpg_collector_up{namespace="code-place-prod",cluster="postgres",instance="postgres-2"}'
+        values: '1+0x21'
+      - series: 'cnpg_collector_up{namespace="code-place-prod",cluster="postgres",instance="postgres-3"}'
+        values: '1+0x21'
+      - series: 'redis_up{namespace="code-place-dev",job="redis",instance="redis-dev-1"}'
+        values: '1+0x21'
+      - series: 'redis_up{namespace="code-place-dev",job="redis",instance="redis-dev-2"}'
+        values: '1+0x21'
+      - series: 'redis_up{namespace="code-place-dev",job="redis",instance="redis-dev-3"}'
+        values: '1+0x21'
+      - series: 'redis_up{namespace="code-place-dev",job="redis",instance="redis-dev-4"}'
+        values: '1+0x21'
+      - series: 'redis_up{namespace="code-place-dev",job="redis",instance="redis-dev-5"}'
+        values: '1+0x21'
+      - series: 'redis_up{namespace="code-place-prod",job="redis",instance="redis-prod-1"}'
+        values: '1+0x21'
+      - series: 'redis_up{namespace="code-place-prod",job="redis",instance="redis-prod-2"}'
+        values: '1+0x21'
+      - series: 'redis_up{namespace="code-place-prod",job="redis",instance="redis-prod-3"}'
+        values: '1+0x21'
+      - series: 'redis_up{namespace="code-place-prod",job="redis",instance="redis-prod-4"}'
+        values: '1+0x21'
+      - series: 'redis_up{namespace="code-place-prod",job="redis",instance="redis-prod-5"}'
+        values: '1+0x21'
+      - series: 'redis_up{namespace="code-place-prod",job="redis",instance="redis-prod-6"}'
+        values: '1+0x21'
+      - series: 'up{namespace="monitoring",job="blackbox-exporter",instance="blackbox-1"}'
+        values: '1+0x21'
+    alert_rule_test:
+      - eval_time: 5m15s
+        alertname: PostgresCollectorUnavailable
+        exp_alerts:
+          - exp_labels:
+              namespace: code-place-dev
+              priority: P1
+              service: postgres
+              severity: warning
+            exp_annotations:
+              summary: dev PostgreSQL metric collector가 응답하지 않습니다
+              description: dev CNPG collector가 5분 동안 PostgreSQL에 접근하지 못했거나 기대 instance 3개의 collector metric을 모두 제공하지 못했습니다.
+      - eval_time: 5m15s
+        alertname: RedisExporterCoverageIncomplete
+        exp_alerts:
+          - exp_labels:
+              namespace: code-place-dev
+              priority: P1
+              service: redis
+              severity: warning
+            exp_annotations:
+              summary: dev Redis exporter coverage가 불완전합니다
+              description: dev Redis/Sentinel exporter가 5분 동안 실패했거나 기대 target 6개의 redis_up metric을 모두 제공하지 못했습니다.
+      - eval_time: 5m15s
+        alertname: BlackboxExporterCoverageIncomplete
+        exp_alerts:
+          - exp_labels:
+              namespace: monitoring
+              priority: P1
+              service: blackbox-exporter
+              severity: warning
+            exp_annotations:
+              summary: Blackbox exporter coverage가 불완전합니다
+              description: Blackbox exporter가 5분 동안 실패했거나 기대 target 2개보다 적습니다. public synthetic probe 수집 경로를 확인해야 합니다.
+
+  - name: failed collector checks preserve target context
+    interval: 15s
+    input_series:
+      - series: 'codeplace_redis_sentinel_health{namespace="code-place-dev",job="backend",instance="backend-dev-1",check="master"}'
+        values: '0+0x21'
+      - series: 'codeplace_redis_sentinel_health{namespace="code-place-dev",job="backend",instance="backend-dev-1",check="quorum"}'
+        values: '1+0x21'
+      - series: 'codeplace_redis_sentinel_health{namespace="code-place-prod",job="backend",instance="backend-prod-1",check="master"}'
+        values: '1+0x21'
+      - series: 'codeplace_redis_sentinel_health{namespace="code-place-prod",job="backend",instance="backend-prod-1",check="quorum"}'
+        values: '1+0x21'
+      - series: 'codeplace_collector_success{namespace="code-place-dev",job="backend",instance="backend-dev-1",collector="waiting_queue"}'
+        values: '0+0x21'
+      - series: 'codeplace_collector_success{namespace="code-place-prod",job="backend",instance="backend-prod-1",collector="waiting_queue"}'
+        values: '1+0x21'
+    alert_rule_test:
+      - eval_time: 1m15s
+        alertname: RedisSentinelUnavailable
+        exp_alerts:
+          - exp_labels:
+              check: master
+              instance: backend-dev-1
+              job: backend
+              namespace: code-place-dev
+              priority: P0
+              service: redis
+              severity: critical
+            exp_annotations:
+              summary: dev Redis Sentinel master 또는 quorum을 확인할 수 없습니다
+              description: Redis/Sentinel Pod readiness와 별개로 mymaster 탐색 또는 CKQUORUM 검사가 1분 동안 실패했습니다.
+      - eval_time: 5m15s
+        alertname: CodePlaceCollectorFailed
+        exp_alerts:
+          - exp_labels:
+              collector: waiting_queue
+              instance: backend-dev-1
+              job: backend
+              namespace: code-place-dev
+              priority: P1
+              service: backend
+              severity: warning
+            exp_annotations:
+              summary: dev Backend custom metric collector가 실패했습니다
+              description: dev Backend custom metric collector가 5분 동안 Redis 기반 metric을 수집하지 못했거나 metric이 사라졌습니다. 실패 collector label을 확인해야 합니다.

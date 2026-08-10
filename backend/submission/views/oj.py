@@ -105,7 +105,10 @@ class SubmissionAPI(APIView):
         # JudgeDispatcher(submission.id, problem.id).judge()
 
         try:
-            judge_task.apply_async(args=(submission.id, problem.id))
+            judge_task.apply_async(
+                args=(submission.id, problem.id),
+                headers={"x-request-id": request.request_id},
+            )
         except Exception:
             self._record_create_outcome("enqueue_error", scope)
             logger.exception("Failed to enqueue judge task for submission %s", submission.id)

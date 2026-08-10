@@ -13,15 +13,42 @@ data:
       "version": 1,
       "refresh": "30s",
       "tags": ["codeplace", "traces"],
+      "links": [
+        {
+          "asDropdown": true,
+          "includeVars": true,
+          "keepTime": true,
+          "tags": ["codeplace"],
+          "targetBlank": false,
+          "title": "CodePlace Dashboards",
+          "type": "dashboards"
+        }
+      ],
       "editable": true,
       "time": {
         "from": "now-1h",
         "to": "now"
       },
+      "templating": {
+        "list": [
+          {
+            "name": "environment",
+            "label": "Environment",
+            "type": "custom",
+            "query": "prod,dev",
+            "multi": false,
+            "includeAll": false,
+            "current": {
+              "text": "prod",
+              "value": "prod"
+            }
+          }
+        ]
+      },
       "panels": [
         {
           "type": "stat",
-          "title": "Tempo Ready",
+          "title": "Tempo Scrape Up (Global)",
           "gridPos": {"x": 0, "y": 0, "w": 4, "h": 4},
           "datasource": "Prometheus",
           "fieldConfig": {
@@ -36,14 +63,13 @@ data:
               }
             }
           },
-          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "options": {"graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
           "targets": [
-            {"expr": "sum(kube_pod_status_ready{namespace=\"monitoring\", condition=\"true\", pod=~\"tempo-.*\"}) or vector(0)", "legendFormat": "tempo"}
-          ]
+            {"expr": "min(up{job=\"tempo\", namespace=\"monitoring\"})", "legendFormat": "tempo", "instant": true}          ]
         },
         {
           "type": "stat",
-          "title": "OTel Collector Replicas",
+          "title": "OTel Collector Scrape Up (Global)",
           "gridPos": {"x": 4, "y": 0, "w": 4, "h": 4},
           "datasource": "Prometheus",
           "fieldConfig": {
@@ -53,32 +79,29 @@ data:
                 "mode": "absolute",
                 "steps": [
                   {"color": "red", "value": null},
-                  {"color": "orange", "value": 1},
-                  {"color": "green", "value": 2}
+                  {"color": "green", "value": 1}
                 ]
               }
             }
           },
-          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "options": {"graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
           "targets": [
-            {"expr": "kube_deployment_status_replicas_available{namespace=\"monitoring\", deployment=\"otel-collector\"} or vector(0)", "legendFormat": "available"},
-            {"expr": "kube_deployment_spec_replicas{namespace=\"monitoring\", deployment=\"otel-collector\"} or vector(0)", "legendFormat": "desired"}
-          ]
+            {"expr": "min(up{job=\"otel-collector\", namespace=\"monitoring\"})", "legendFormat": "otel-collector", "instant": true}          ]
         },
         {
           "type": "stat",
-          "title": "Trace Receive Rate",
+          "title": "Trace Receive Rate (All Environments)",
+          "description": "Collector internal metrics are cluster-wide; the environment selector scopes the Tempo trace searches below.",
           "gridPos": {"x": 8, "y": 0, "w": 4, "h": 4},
           "datasource": "Prometheus",
           "fieldConfig": {"defaults": {"unit": "ops"}},
-          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "options": {"graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
           "targets": [
-            {"expr": "sum(rate(otelcol_receiver_accepted_spans_total{namespace=\"monitoring\"}[5m])) or vector(0)", "legendFormat": "spans/s"}
-          ]
+            {"expr": "sum(rate(otelcol_receiver_accepted_spans_total{namespace=\"monitoring\"}[5m]))", "legendFormat": "spans/s", "instant": true}          ]
         },
         {
           "type": "stat",
-          "title": "Trace Export Failures",
+          "title": "Trace Export Failures (All Environments)",
           "gridPos": {"x": 12, "y": 0, "w": 4, "h": 4},
           "datasource": "Prometheus",
           "fieldConfig": {
@@ -94,14 +117,13 @@ data:
               }
             }
           },
-          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "options": {"graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
           "targets": [
-            {"expr": "sum(increase(otelcol_exporter_send_failed_spans_total{namespace=\"monitoring\"}[5m])) or vector(0)", "legendFormat": "failed"}
-          ]
+            {"expr": "sum(increase(otelcol_exporter_send_failed_spans_total{namespace=\"monitoring\"}[5m]))", "legendFormat": "failed", "instant": true}          ]
         },
         {
           "type": "stat",
-          "title": "Tempo PVC Usage",
+          "title": "Tempo PVC Usage (Global)",
           "gridPos": {"x": 16, "y": 0, "w": 4, "h": 4},
           "datasource": "Prometheus",
           "fieldConfig": {
@@ -117,17 +139,50 @@ data:
               }
             }
           },
-          "options": {"reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "options": {"graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
           "targets": [
-            {"expr": "max(kubelet_volume_stats_used_bytes{namespace=\"monitoring\", persistentvolumeclaim=\"tempo-data\"}) / clamp_min(max(kubelet_volume_stats_capacity_bytes{namespace=\"monitoring\", persistentvolumeclaim=\"tempo-data\"}), 1) or vector(0)", "legendFormat": "usage"}
-          ]
+            {"expr": "max(kubelet_volume_stats_used_bytes{namespace=\"monitoring\", persistentvolumeclaim=\"tempo-data\"}) / clamp_min(max(kubelet_volume_stats_capacity_bytes{namespace=\"monitoring\", persistentvolumeclaim=\"tempo-data\"}), 1)", "legendFormat": "usage", "instant": true}          ]
+        },
+        {
+          "type": "stat",
+          "title": "OTel Replica Availability (Global)",
+          "gridPos": {"x": 20, "y": 0, "w": 4, "h": 4},
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percentunit",
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "red", "value": null},
+                  {"color": "orange", "value": 0.5},
+                  {"color": "green", "value": 1}
+                ]
+              }
+            }
+          },
+          "options": {"graphMode": "none", "reduceOptions": {"calcs": ["lastNotNull"], "values": false}},
+          "targets": [
+            {"expr": "kube_deployment_status_replicas_available{namespace=\"monitoring\", deployment=\"otel-collector\"} / clamp_min(kube_deployment_spec_replicas{namespace=\"monitoring\", deployment=\"otel-collector\"}, 1)", "legendFormat": "available / desired", "instant": true}          ]
         },
         {
           "type": "timeseries",
-          "title": "Collector Spans",
+          "title": "Collector Spans (All Environments)",
           "gridPos": {"x": 0, "y": 4, "w": 12, "h": 8},
           "datasource": "Prometheus",
-          "fieldConfig": {"defaults": {"unit": "ops"}},
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ops",
+              "custom": {
+                "drawStyle": "line",
+                "lineInterpolation": "linear",
+                "lineWidth": 2,
+                "fillOpacity": 8,
+                "showPoints": "never",
+                "spanNulls": false
+              }
+            }
+          },
           "targets": [
             {"expr": "sum by (receiver, transport) (rate(otelcol_receiver_accepted_spans_total{namespace=\"monitoring\"}[5m]))", "legendFormat": "{{receiver}} {{transport}} accepted"},
             {"expr": "sum by (exporter) (rate(otelcol_exporter_sent_spans_total{namespace=\"monitoring\"}[5m]))", "legendFormat": "{{exporter}} sent"}
@@ -135,39 +190,54 @@ data:
         },
         {
           "type": "timeseries",
-          "title": "Collector Refused or Failed Spans",
+          "title": "Collector Refused or Failed Spans (All Environments)",
           "gridPos": {"x": 12, "y": 4, "w": 12, "h": 8},
           "datasource": "Prometheus",
-          "fieldConfig": {"defaults": {"unit": "ops"}},
+          "fieldConfig": {
+            "defaults": {
+              "unit": "ops",
+              "custom": {
+                "drawStyle": "bars",
+                "lineInterpolation": "stepAfter",
+                "lineWidth": 1,
+                "fillOpacity": 80,
+                "showPoints": "never",
+                "barAlignment": 0,
+                "stacking": {"mode": "normal", "group": "A"}
+              }
+            }
+          },
           "targets": [
-            {"expr": "sum(rate(otelcol_receiver_refused_spans_total{namespace=\"monitoring\"}[5m])) or vector(0)", "legendFormat": "refused"},
-            {"expr": "sum(rate(otelcol_exporter_send_failed_spans_total{namespace=\"monitoring\"}[5m])) or vector(0)", "legendFormat": "failed"}
+            {"expr": "sum(rate(otelcol_receiver_refused_spans_total{namespace=\"monitoring\"}[5m]))", "legendFormat": "refused"},
+            {"expr": "sum(rate(otelcol_exporter_send_failed_spans_total{namespace=\"monitoring\"}[5m]))", "legendFormat": "failed"}
           ]
         },
         {
           "type": "table",
-          "title": "Recent Backend/Celery Traces",
+          "title": "$environment Backend/Celery Trace Search",
           "gridPos": {"x": 0, "y": 12, "w": 12, "h": 8},
           "datasource": "Tempo",
+          "options": {"showHeader": true, "cellHeight": "sm"},
           "targets": [
             {
               "refId": "A",
               "queryType": "traceql",
-              "query": "{ resource.service.name =~ \"codeplace-(backend|celery)\" }",
+              "query": "{ resource.deployment.environment = \"$environment\" && resource.service.name =~ \"codeplace-(backend|celery(-worker|-beat)?)\" }",
               "limit": 20
             }
           ]
         },
         {
           "type": "table",
-          "title": "Submission/Judge Trace Search",
+          "title": "$environment Submission/Judge Trace Search",
           "gridPos": {"x": 12, "y": 12, "w": 12, "h": 8},
           "datasource": "Tempo",
+          "options": {"showHeader": true, "cellHeight": "sm"},
           "targets": [
             {
               "refId": "A",
               "queryType": "traceql",
-              "query": "{ name =~ \"judge_task|submission.judge|judge_server.select|judge_server.request|submission.result_save\" }",
+              "query": "{ resource.deployment.environment = \"$environment\" && name =~ \"judge_task|submission.judge|judge_server.select|judge_server.request|submission.result_save\" }",
               "limit": 20
             }
           ]

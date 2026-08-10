@@ -35,6 +35,17 @@ class TokenResponse(BaseModel):
     access_token: str
 
 
+class HealthResponse(BaseModel):
+    """Stable health contract used by Kubernetes and external probes."""
+    status: str
+
+
+@app.get("/healthz", response_model=HealthResponse, include_in_schema=False)
+async def healthz() -> HealthResponse:
+    """Return process health without calling GitHub or exposing credentials."""
+    return HealthResponse(status="ok")
+
+
 async def exchange_code_for_token(code: str) -> Dict[str, Any]:
     """
     Exchange OAuth code for a GitHub access token.

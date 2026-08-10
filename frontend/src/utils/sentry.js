@@ -45,11 +45,28 @@ function redact(value) {
   return value
 }
 
+function withRequestContext(event, hint) {
+  const originalException = hint && hint.originalException
+  const requestId = originalException && originalException.requestId
+  if (!requestId) {
+    return event
+  }
+  return {
+    ...event,
+    contexts: {
+      ...(event.contexts || {}),
+      request: {
+        request_id: requestId,
+      },
+    },
+  }
+}
+
 const options = {
   release: process.env.VERSION,
   environment: process.env.SENTRY_ENVIRONMENT,
-  beforeSend(event) {
-    return redact(event)
+  beforeSend(event, hint) {
+    return redact(withRequestContext(event, hint))
   },
   denyUrls: [
     // Chrome extensions
@@ -80,11 +97,5 @@ export function initSentry(Vue) {
   setContext("app", {
     version: process.env.VERSION,
     location: window.location.href,
-  })
-}
-
-export function setRequestIdContext(requestId) {
-  setContext("request", {
-    request_id: requestId,
   })
 }

@@ -1,7 +1,7 @@
 import logging
 
 from prometheus_client import Counter, Histogram, REGISTRY
-from prometheus_client.core import GaugeMetricFamily
+from prometheus_client.core import CounterMetricFamily, GaugeMetricFamily
 from django.conf import settings
 from redis import Redis
 from redis.sentinel import Sentinel
@@ -12,6 +12,7 @@ from utils.constants import CacheKey
 logger = logging.getLogger(__name__)
 
 CELERY_BROKER_QUEUE_KEY = "celery"
+JUDGE_TASK_OUTCOME_KEY = "observability:judge_task_outcomes"
 
 HTTP_REQUESTS_TOTAL = Counter(
     "codeplace_http_requests_total",
@@ -45,11 +46,6 @@ SUBMISSION_CREATE_OUTCOME_TOTAL = Counter(
     "Total user-facing submission create API outcomes.",
     ["status", "scope"],
 )
-JUDGE_TASK_OUTCOME_TOTAL = Counter(
-    "codeplace_judge_task_outcome_total",
-    "Total Celery judge task outcomes.",
-    ["status", "scope"],
-)
 
 
 class CodePlaceCollector:
@@ -63,21 +59,51 @@ class CodePlaceCollector:
             "codeplace_celery_broker_queue_length",
             "Number of Celery tasks waiting in the Redis broker default queue.",
         )
+        yield CounterMetricFamily(
+            "codeplace_judge_task_outcome",
+            "Total Celery judge task outcomes stored in Redis.",
+            labels=["status", "scope"],
+        )
+        yield GaugeMetricFamily(
+            "codeplace_collector_success",
+            "Whether the most recent custom metric collection succeeded.",
+            labels=["collector"],
+        )
+        yield GaugeMetricFamily(
+            "codeplace_redis_sentinel_health",
+            "Whether Redis Sentinel can resolve the master and satisfy quorum.",
+            labels=["check"],
+        )
 
     def collect(self):
-        yield self._waiting_queue_length()
-        yield self._celery_broker_queue_length()
+        success = GaugeMetricFamily(
+            "codeplace_collector_success",
+            "Whether the most recent custom metric collection succeeded.",
+            labels=["collector"],
+        )
+        collectors = (
+            ("waiting_queue", self._waiting_queue_length),
+            ("celery_broker_queue", self._celery_broker_queue_length),
+            ("judge_task_outcomes", self._judge_task_outcomes),
+            ("redis_sentinel_health", self._redis_sentinel_health),
+        )
+        for name, collector in collectors:
+            try:
+                metric = collector()
+            except Exception as e:
+                logger.warning("Failed to collect %s: %s", name, e)
+                success.add_metric([name], 0)
+            else:
+                success.add_metric([name], 1)
+                yield metric
+        yield success
 
     def _waiting_queue_length(self):
         metric = GaugeMetricFamily(
             "codeplace_waiting_queue_length",
             "Number of submissions waiting because no judge-server was available.",
         )
-        try:
-            metric.add_metric([], cache.llen(CacheKey.waiting_queue) or 0)
-        except Exception as e:
-            logger.warning("Failed to collect waiting queue length: %s", e)
-            metric.add_metric([], 0)
+        metric.add_metric([], cache.llen(CacheKey.waiting_queue) or 0)
         return metric
 
     def _celery_broker_queue_length(self):
@@ -85,26 +111,73 @@ class CodePlaceCollector:
             "codeplace_celery_broker_queue_length",
             "Number of Celery tasks waiting in the Redis broker default queue.",
         )
-        try:
-            metric.add_metric([], self._celery_broker_client().llen(CELERY_BROKER_QUEUE_KEY) or 0)
-        except Exception as e:
-            logger.warning("Failed to collect Celery broker queue length: %s", e)
-            metric.add_metric([], 0)
+        metric.add_metric([], self._celery_broker_client().llen(CELERY_BROKER_QUEUE_KEY) or 0)
         return metric
+
+    @staticmethod
+    def _judge_task_outcomes():
+        metric = CounterMetricFamily(
+            "codeplace_judge_task_outcome",
+            "Total Celery judge task outcomes stored in Redis.",
+            labels=["status", "scope"],
+        )
+        for raw_field, raw_value in cache.hgetall(JUDGE_TASK_OUTCOME_KEY).items():
+            field = raw_field.decode() if isinstance(raw_field, bytes) else str(raw_field)
+            value = raw_value.decode() if isinstance(raw_value, bytes) else raw_value
+            status, scope = field.split(":", 1)
+            metric.add_metric([status, scope], float(value))
+        return metric
+
+    @classmethod
+    def _redis_sentinel_health(cls):
+        if not getattr(settings, "REDIS_USE_SENTINEL", False):
+            raise RuntimeError("Redis Sentinel monitoring is disabled")
+        sentinel = cls._sentinel_client()
+        master_name = getattr(settings, "REDIS_SENTINEL_MASTER_NAME", "mymaster")
+        sentinel.discover_master(master_name)
+        quorum_available = False
+        for client in sentinel.sentinels:
+            try:
+                client.execute_command("SENTINEL", "CKQUORUM", master_name)
+            except Exception:
+                continue
+            quorum_available = True
+            break
+        if not quorum_available:
+            raise RuntimeError(f"Redis Sentinel quorum is unavailable for {master_name}")
+        metric = GaugeMetricFamily(
+            "codeplace_redis_sentinel_health",
+            "Whether Redis Sentinel can resolve the master and satisfy quorum.",
+            labels=["check"],
+        )
+        metric.add_metric(["master"], 1)
+        metric.add_metric(["quorum"], 1)
+        return metric
+
+    @staticmethod
+    def _sentinel_client():
+        return Sentinel(
+            getattr(settings, "REDIS_SENTINEL_HOSTS"),
+            socket_timeout=1,
+        )
 
     @staticmethod
     def _celery_broker_client():
         if getattr(settings, "REDIS_USE_SENTINEL", False):
-            sentinel = Sentinel(
-                getattr(settings, "REDIS_SENTINEL_HOSTS"),
-                socket_timeout=1,
-            )
+            sentinel = CodePlaceCollector._sentinel_client()
             return sentinel.master_for(
                 getattr(settings, "REDIS_SENTINEL_MASTER_NAME", "mymaster"),
                 db=4,
                 socket_timeout=1,
             )
         return Redis.from_url(getattr(settings, "CELERY_BROKER_URL"))
+
+
+def record_judge_task_outcome(status, scope):
+    try:
+        cache.hincrby(JUDGE_TASK_OUTCOME_KEY, f"{status}:{scope}", 1)
+    except Exception as e:
+        logger.warning("Failed to persist judge task outcome metric: %s", e)
 
 
 def register_codeplace_metrics():
