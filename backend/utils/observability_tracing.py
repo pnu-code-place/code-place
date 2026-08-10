@@ -1,11 +1,14 @@
 import logging
+import os
 
 from opentelemetry import trace
 
-from utils.shortcuts import get_env
-
 logger = logging.getLogger(__name__)
 _OTEL_CONFIGURED = False
+
+
+def get_env(name, default=""):
+    return os.environ.get(name, default)
 
 
 def get_tracer(name):
@@ -25,12 +28,35 @@ def get_current_trace_context():
     }
 
 
+def get_deployment_environment():
+    """Return the telemetry environment without changing Django's OJ_ENV contract."""
+    return get_env("OTEL_DEPLOYMENT_ENVIRONMENT", get_env("OJ_ENV", "dev"))
+
+
+def get_service_name(default):
+    """Keep process identity stable when Django imports the Celery app first."""
+    return get_env("OTEL_SERVICE_NAME", default)
+
+
 def configure_opentelemetry(service_name):
     global _OTEL_CONFIGURED
     if get_env("OTEL_ENABLED", "0").lower() not in ("1", "true", "yes", "on"):
         return
     if _OTEL_CONFIGURED:
         return
+
+    try:
+        _configure_opentelemetry(service_name)
+    except Exception:
+        logger.exception(
+            "OpenTelemetry setup failed; continuing without complete tracing for %s",
+            service_name,
+        )
+    finally:
+        _OTEL_CONFIGURED = True
+
+
+def _configure_opentelemetry(service_name):
 
     from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
     from opentelemetry.instrumentation.celery import CeleryInstrumentor
@@ -50,15 +76,14 @@ def configure_opentelemetry(service_name):
         sampler_ratio = 0.05
     sampler_ratio = min(max(sampler_ratio, 0), 1)
     resource = Resource.create({
-        "service.name": service_name,
-        "deployment.environment": get_env("OJ_ENV", "dev"),
+        "service.name": get_service_name(service_name),
+        "deployment.environment": get_deployment_environment(),
     })
     provider = TracerProvider(resource=resource, sampler=ParentBased(TraceIdRatioBased(sampler_ratio)))
     endpoint = get_env("OTEL_EXPORTER_OTLP_ENDPOINT", "http://otel-collector.monitoring.svc.cluster.local:4317")
     current_provider = trace.get_tracer_provider()
     if type(current_provider).__name__ != "ProxyTracerProvider":
         logger.info("OpenTelemetry tracer provider is already configured; skipping CodePlace setup")
-        _OTEL_CONFIGURED = True
         return
 
     provider.add_span_processor(BatchSpanProcessor(OTLPSpanExporter(endpoint=endpoint, insecure=True)))
@@ -69,4 +94,3 @@ def configure_opentelemetry(service_name):
     Psycopg2Instrumentor().instrument()
     RedisInstrumentor().instrument()
     CeleryInstrumentor().instrument()
-    _OTEL_CONFIGURED = True

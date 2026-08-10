@@ -4,7 +4,7 @@ import logging
 from account.models import User
 from utils.shortcuts import CELERY_TASK_ARGS
 from utils.observability_tracing import get_tracer
-from utils.observability_metrics import JUDGE_TASK_OUTCOME_TOTAL
+from utils.observability_metrics import record_judge_task_outcome
 from submission.models import Submission
 from judge.dispatcher import JudgeDispatcher
 
@@ -13,7 +13,7 @@ tracer = get_tracer(__name__)
 
 
 def _record_judge_task_outcome(status, scope):
-    JUDGE_TASK_OUTCOME_TOTAL.labels(status=status, scope=scope).inc()
+    record_judge_task_outcome(status, scope)
 
 
 @celery.shared_task(**CELERY_TASK_ARGS())

@@ -5,21 +5,44 @@ FROM node:24.11.0 AS build-stage
 
 WORKDIR /app
 COPY package*.json ./
-RUN npm install
+RUN npm ci
 COPY . .
 
 ARG APP_VERSION
 ARG SENTRY_ENVIRONMENT
 ARG SENTRY_DSN_FRONTEND
-ARG USE_SENTRY
+ARG USE_SENTRY=0
+ARG SENTRY_ORG=onlinejudge
+ARG SENTRY_PROJECT=onlinejudgefe
 ENV APP_VERSION=$APP_VERSION
 ENV VUE_APP_VERSION=$APP_VERSION
 ENV SENTRY_ENVIRONMENT=$SENTRY_ENVIRONMENT
 ENV SENTRY_DSN_FRONTEND=$SENTRY_DSN_FRONTEND
 ENV USE_SENTRY=$USE_SENTRY
+ENV SENTRY_ORG=$SENTRY_ORG
+ENV SENTRY_PROJECT=$SENTRY_PROJECT
 
 RUN npm run build:dll
-RUN npm run build
+RUN --mount=type=secret,id=sentry_auth_token,required=false <<'EOF'
+set -eu
+SENTRY_AUTH_TOKEN="$(cat /run/secrets/sentry_auth_token 2>/dev/null || true)"
+if [ "${USE_SENTRY:-0}" = "1" ]; then
+  if [ -z "${SENTRY_DSN_FRONTEND:-}" ]; then
+    echo "SENTRY_DSN_FRONTEND is required when USE_SENTRY=1" >&2
+    exit 1
+  fi
+  if [ -z "${APP_VERSION:-}" ]; then
+    echo "APP_VERSION is required when USE_SENTRY=1" >&2
+    exit 1
+  fi
+  if [ -z "$SENTRY_AUTH_TOKEN" ]; then
+    echo "SENTRY_AUTH_TOKEN is required when USE_SENTRY=1" >&2
+    exit 1
+  fi
+fi
+export SENTRY_AUTH_TOKEN
+npm run build
+EOF
 
 # Production stage
 FROM nginx:stable-alpine AS production-stage
