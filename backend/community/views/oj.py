@@ -58,7 +58,7 @@ class PostAPIView(APIView):
                 if error:
                     return self.error("No permission to access this contest's community")
                 post_data["contest_id"] = contest_id
-            except Contest.DoesNotExist:
+            except (Contest.DoesNotExist, ValueError, TypeError):
                 return self.error("Contest does not exist")
         else:
             post_data["visibility"] = Post.Visibility.CONTEST_PARTICIPANTS
@@ -68,7 +68,7 @@ class PostAPIView(APIView):
             try:
                 Problem.objects.get(id=problem_id)
                 post_data["problem_id"] = problem_id
-            except Problem.DoesNotExist:
+            except (Problem.DoesNotExist, ValueError, TypeError):
                 return self.error("Problem does not exist")
 
         post = Post.objects.create(**post_data)
@@ -112,7 +112,7 @@ class PostAPIView(APIView):
                 if error:
                     return self.error("No permission to access this contest's community")
                 posts = posts.filter(contest_id=contest_id)
-            except Contest.DoesNotExist:
+            except (Contest.DoesNotExist, ValueError, TypeError):
                 return self.error("Contest does not exist")
         elif problem_id:
             posts = posts.filter(problem_id=problem_id, contest_id__isnull=True)

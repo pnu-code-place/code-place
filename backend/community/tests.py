@@ -372,6 +372,52 @@ class CommunityAPITest(APITestCase):
         response = self.client.get(detail_url)
         self.assertFailed(response, "No permission to access this contest's community")
 
+    def test_contest_post_detail_cannot_be_spoofed_via_contest_id_param(self):
+        self.client.force_login(self.admin)
+        response = self.client.post(
+            self.post_list_url,
+            {
+                "title": "Private Contest Post",
+                "content": "Content",
+                "post_type": "ARTICLE",
+                "contest_id": self.private_contest["id"],
+            },
+        )
+        self.assertSuccess(response)
+        post_id = response.data["data"]["id"]
+        self.client.logout()
+
+        # self.user는 private_contest에는 권한이 없지만, 공개 대회(self.contest)에는 접근 가능하다.
+        self.client.force_login(self.user)
+        detail_url = self.reverse("community_post_detail", kwargs={"post_id": post_id})
+        response = self.client.get(detail_url, {"contest_id": self.contest["id"]})
+        self.assertFailed(response, "No permission to access this contest's community")
+
+    def test_contest_post_comments_cannot_be_spoofed_via_contest_id_param(self):
+        self.client.force_login(self.admin)
+        response = self.client.post(
+            self.post_list_url,
+            {
+                "title": "Private Contest Post",
+                "content": "Content",
+                "post_type": "ARTICLE",
+                "contest_id": self.private_contest["id"],
+            },
+        )
+        self.assertSuccess(response)
+        post_id = response.data["data"]["id"]
+        self.client.logout()
+
+        self.client.force_login(self.user)
+        comment_url = self.reverse("community_post_comments", kwargs={"post_id": post_id})
+        response = self.client.get(comment_url, {"contest_id": self.contest["id"]})
+        self.assertFailed(response, "No permission to access this contest's community")
+
+    def test_contest_post_list_non_integer_contest_id_does_not_500(self):
+        """contest_id에 정수가 아닌 값이 오면 500이 아니라 일반 에러 응답을 반환한다."""
+        response = self.client.get(self.post_list_url, {"contest_id": "not-a-number"})
+        self.assertFailed(response, "Contest does not exist")
+
     def test_get_contest_post_list_no_permission(self):
         """대회에 대한 접근 권한이 없는 사용자는 대회 게시글 목록을 조회할 수 없다."""
         # 비공개 대회 게시글 생성

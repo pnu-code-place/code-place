@@ -104,14 +104,19 @@ def check_contest_permission(check_type="details"):
             self = args[0]
             request = args[1]
             user = request.user
-            if request.data.get("contest_id"):
+            if getattr(self, "contest", None):
+                contest_id = self.contest.id
+            elif request.data.get("contest_id"):
                 contest_id = request.data["contest_id"]
             else:
                 contest_id = request.GET.get("contest_id")
-            if not contest_id and getattr(self, "contest", None):
-                contest_id = self.contest.id
             if not contest_id:
                 return self.error("Parameter error, contest_id is required")
+
+            try:
+                contest_id = int(contest_id)
+            except (TypeError, ValueError):
+                return self.error("Parameter error, contest_id must be an integer")
 
             try:
                 # Always reload with visible=True so preloaded contests cannot bypass soft-delete visibility.
