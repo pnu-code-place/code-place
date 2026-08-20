@@ -60,20 +60,18 @@ vLLM OpenAI-compatible server는 `/metrics`에서 Prometheus metrics를 제공�
 CodePlace monitoring kustomization은 prod vLLM Service를 `vllm-service-monitor.yaml`로 scrape합니다.
 같은 monitoring kustomization은 `dcgm-exporter.yaml`도 배포해 `workload.code-place.ai/vllm=true` node의 NVIDIA GPU metric을 수집합니다.
 
-```bash
-kubectl apply -k kubernetes/monitoring
-kubectl -n monitoring get servicemonitor vllm
-kubectl -n monitoring get daemonset,servicemonitor dcgm-exporter
-```
+Monitoring 배포 절차는 `kubernetes/monitoring/logs/README.md`를 따릅니다. 적용 후 `kubernetes/monitoring/verify_live.py`로 prod vLLM과 DCGM scrape 및 metric family를 확인합니다.
 
-Grafana에서는 `CodePlace AI Inference` dashboard에서 다음 상태를 확인합니다.
+Grafana의 `CodePlace AI Runtime (Prod)` dashboard에서는 다음 prod 전용 상태를 확인합니다.
 
-- vLLM scrape up / Pod ready.
+- vLLM/DCGM scrape up.
 - running/waiting request count.
 - KV cache usage.
 - p95 e2e latency, queue latency, time-to-first-token.
 - prompt/generation token throughput.
 - `vllm-hf-cache` PVC usage.
 - GPU utilization, framebuffer memory usage, temperature, XID error.
+
+dev/prod backend AI hint outcome과 latency는 별도 `CodePlace AI API` dashboard의 `environment` 선택으로 확인합니다. prod 전용 vLLM/GPU graph와 dev API graph를 한 화면에 섞지 않습니다.
 
 알림은 vLLM scrape 실패와 GPU XID error를 P0로 처리합니다. waiting queue 증가, KV cache 90% 초과, p95 latency 60초 초과, DCGM exporter unavailable, GPU utilization 95% 초과, GPU framebuffer memory 90% 초과, GPU temperature 85C 초과는 P1로 처리합니다.

@@ -57,6 +57,20 @@ class SubmissionAPITest(SubmissionCreateTestBase):
             self.assertSuccess(resp)
             self.assertIn("submission_id", resp.data["data"])
 
+    def test_create_submission_propagates_request_id_to_judge_task(self):
+        data = copy.deepcopy(DEFAULT_SUBMISSION_DATA)
+        data["problem_id"] = self.problem.id
+
+        with mock.patch('judge.tasks.judge_task.apply_async') as apply_async:
+            resp = self.client.post(self.url, data=data, HTTP_X_REQUEST_ID="submission-request-1")
+
+        self.assertSuccess(resp)
+        submission = Submission.objects.get(id=resp.data["data"]["submission_id"])
+        apply_async.assert_called_once_with(
+            args=(submission.id, self.problem.id),
+            headers={"x-request-id": "submission-request-1"},
+        )
+
     @mock.patch("submission.views.oj.SUBMISSION_CREATE_OUTCOME_TOTAL")
     def test_create_submission_records_success_outcome(self, outcome_total):
         data = copy.deepcopy(DEFAULT_SUBMISSION_DATA)

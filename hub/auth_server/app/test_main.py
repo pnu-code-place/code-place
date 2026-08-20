@@ -9,6 +9,13 @@ def client():
     return TestClient(app)
 
 
+def test_healthz(client):
+    response = client.get("/healthz")
+
+    assert response.status_code == 200
+    assert response.json() == {"status": "ok"}
+
+
 def test_no_code(client):
     """
     Test the /api/token/issue endpoint without providing a code.

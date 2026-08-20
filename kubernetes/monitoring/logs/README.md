@@ -4,7 +4,7 @@ This directory contains Helm values for the Kubernetes logs stack.
 
 - Loki: SingleBinary mode, filesystem storage, Longhorn PVC.
 - Loki gateway: 2 replicas for the stateless write/query entrypoint.
-- Alloy: DaemonSet log collector for every pod in `code-place-dev`, `code-place-prod`, and `monitoring`, plus Traefik pods in `kube-system`. It mounts host `/var/log` so `/var/log/pods` is readable from the Alloy container. It tolerates the standard `control-plane` and `master` NoSchedule taints so tainted control-plane nodes are still covered.
+- Alloy: DaemonSet log collector for every pod in `code-place-dev`, `code-place-prod`, and `monitoring`, plus Traefik and kube-vip pods in `kube-system`. It mounts host `/var/log` so `/var/log/pods` is readable from the Alloy container. It tolerates the standard `control-plane` and `master` NoSchedule taints so tainted control-plane nodes are still covered.
 - Kubernetes Event Exporter: Warning events are written to stdout as JSON and collected by Alloy from the `monitoring` namespace.
 - Retention: `code-place-dev` 3 days, `code-place-prod` 7 days.
 - Monitoring: Loki and Alloy ServiceMonitors are enabled for kube-prometheus-stack.
@@ -44,6 +44,16 @@ helm upgrade --install alloy grafana/alloy \
   --create-namespace \
   --version 1.10.0 \
   --values kubernetes/monitoring/logs/alloy-values.yaml
+
+kubectl apply -k kubernetes/monitoring
+
+# Event exporter reads its ConfigMap only at startup.
+kubectl -n monitoring rollout restart deployment/kubernetes-event-exporter
+kubectl -n monitoring rollout status deployment/kubernetes-event-exporter --timeout=3m
+
+# One-time migration after the replacement Traefik PodMonitor is present.
+kubectl -n monitoring get podmonitor traefik
+kubectl -n monitoring delete servicemonitor traefik --ignore-not-found
 ```
 
 ## Verify
@@ -56,6 +66,16 @@ kubectl -n monitoring get pvc | grep loki
 kubectl -n monitoring get servicemonitor loki alloy
 ```
 
+For the complete scrape, probe, metric-family, and HA contract, port-forward Prometheus and run the live verifier in another terminal:
+
+```sh
+# terminal 1
+kubectl -n monitoring port-forward service/kube-prometheus-stack-prometheus 19090:9090
+
+# terminal 2
+python3 kubernetes/monitoring/verify_live.py --prometheus-url http://127.0.0.1:19090
+```
+
 Grafana should show a `Loki` datasource. Useful Explore queries:
 
 ```logql
@@ -63,13 +83,16 @@ Grafana should show a `Loki` datasource. Useful Explore queries:
 {namespace="code-place-prod", app="backend"} | json
 {namespace="code-place-dev", container=~"backend|celery-worker|judge-server"}
 {namespace="kube-system", app_kubernetes_io_name="traefik"} | json | DownstreamStatus >= 400
+{namespace="kube-system", app_kubernetes_io_name="kube-vip-ds"}
 {namespace="monitoring", app_kubernetes_io_name="kubernetes-event-exporter"}
 ```
 
 Grafana should also show:
 
 - `CodePlace Overview`
+- `CodePlace Platform`
 - `CodePlace Logs`
+- `CodePlace Log Pipeline`
 
 ## Notes
 
