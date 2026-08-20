@@ -77,6 +77,7 @@
 </template>
 
 <script>
+import { mapGetters } from "vuex"
 import api from "@oj/api"
 import utils from "@/utils/utils"
 import YearDropdown from "./components/YearDropdown"
@@ -90,6 +91,7 @@ import { CONTEST_STATUS_REVERSE } from "../../../../utils/constants"
 export default {
   name: "contest-history-list",
   computed: {
+    ...mapGetters(["isAuthenticated"]),
     CONTEST_STATUS_REVERSE() {
       return CONTEST_STATUS_REVERSE
     },

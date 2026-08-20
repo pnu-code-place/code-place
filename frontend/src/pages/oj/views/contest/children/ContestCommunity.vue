@@ -58,11 +58,6 @@ export default {
       return DEFAULT_AVATAR
     },
     visiblePosts() {
-      if (this.activeTab === "my") {
-        return this.posts.filter(
-          (post) => post.is_mine && post.post_type === "QUESTION",
-        )
-      }
       return this.posts
     },
     emptyMessage() {
@@ -84,6 +79,7 @@ export default {
     },
     activeTab() {
       this.query.page = 1
+      this.fetchPosts()
     },
   },
   mounted() {
@@ -99,15 +95,18 @@ export default {
       const offset = (this.query.page - 1) * this.query.limit
 
       try {
+        const postType = this.activeTab === "my" ? "QUESTION" : null
+        const isMine = this.activeTab === "my" ? true : null
         const res = await api.getCommunityPostList(
           offset,
           this.query.limit,
-          null,
+          postType,
           null,
           null,
           this.contestID,
           null,
           "NEWEST",
+          isMine,
         )
         this.posts = res.data.data.results || []
         this.total = res.data.data.total || 0

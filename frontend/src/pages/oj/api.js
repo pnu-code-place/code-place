@@ -443,6 +443,7 @@ export default {
     contest_id = null,
     keyword = null,
     sort_type = null,
+    is_mine = null,
   ) {
     const params = {
       offset,
@@ -455,6 +456,7 @@ export default {
     if (contest_id) params.contest_id = contest_id
     if (keyword) params.keyword = keyword
     if (sort_type) params.sort_type = sort_type
+    if (is_mine !== null) params.is_mine = is_mine
 
     return ajax("community/posts", "get", {
       params,

@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "pilmate-frontend",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "cwd": "/Users/itaegyeong/Desktop/naveraiagent/hub/frontend",
+      "port": 5173
+    }
+  ]
+}
