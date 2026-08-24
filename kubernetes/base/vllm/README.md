@@ -38,7 +38,7 @@ kubectl describe pod -n code-place-prod -l app=vllm
 - 이미지: `vllm/vllm-openai:v0.24.0`
 - 모델: `nvidia/Qwen3.6-35B-A3B-NVFP4`
 - 포트: `8000`
-- 주요 옵션: `--dtype auto`, `--gpu-memory-utilization 0.9`, `--max-model-len 4096`, `--kv-cache-dtype fp8`, `--calculate-kv-scales`, `--enable-prefix-caching`, `--enable-chunked-prefill`, `--max-num-seqs 60`
+- 주요 옵션: `--dtype auto`, `--gpu-memory-utilization 0.9`, `--max-model-len 4096`, `--max-num-batched-tokens 4096`, `--kv-cache-dtype fp8`, `--calculate-kv-scales`, `--enable-prefix-caching`, `--enable-chunked-prefill`, `--max-num-seqs 60`
 - 리소스: `cpu: 16`, `memory: 64Gi`, `nvidia.com/gpu: 1`
 - PVC: `vllm-hf-cache`, `storageClassName: longhorn`, `30Gi`, `ReadWriteOnce`
 
