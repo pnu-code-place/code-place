@@ -30,10 +30,9 @@ kubeScheduler:
 
 prometheus:
   prometheusSpec:
-    replicas: 2
-    podAntiAffinity: soft
-    podAntiAffinityTopologyKey: kubernetes.io/hostname
-    replicaExternalLabelNameClear: true
+    # A second Prometheus replica stores an independent full TSDB copy. This
+    # cluster uses one durable Longhorn-backed instance to keep metric storage bounded.
+    replicas: 1
     evaluationInterval: 15s
     scrapeInterval: 15s
     retention: 15d

@@ -105,7 +105,7 @@ Keep these invariants unless the storage design changes intentionally:
 - Loki uses filesystem storage on a Longhorn PVC.
 - Alloy runs on every schedulable node. Loki and Tempo remain single-writer services on Longhorn PVCs, while stateless collectors, Loki gateway, and probe exporters can be replicated across nodes.
 - If a node uses a custom NoSchedule taint, add the matching Alloy toleration before relying on the `AlloyDaemonSetUnavailable` alert for full-node log coverage.
-- kube-prometheus-stack Prometheus and Alertmanager run with 2 replicas. Prometheus clears the replica external label so HA replicas do not create replica-labeled duplicate Alertmanager notifications. Prometheus, Alertmanager, and Grafana use Longhorn PVCs so metric data, silences, and UI state survive pod rescheduling.
+- kube-prometheus-stack Prometheus runs as one replica to avoid storing two independent copies of every time series. Alertmanager keeps 2 replicas. Prometheus, Alertmanager, and Grafana use Longhorn PVCs so metric data, silences, and UI state survive pod rescheduling.
 - Alloy keeps namespace-based collection for `code-place-dev`, `code-place-prod`, and `monitoring`; do not depend on `app.kubernetes.io/name` for CodePlace app logs because the application manifests primarily use `app`.
 - Alloy keeps `alloy.mounts.varlog=true`; otherwise the `/var/log/pods` targets are discovered but cannot be read.
 - The PVC size is explicit at `50Gi`, and `LokiPVCAlmostFull` alerts at 85%.
