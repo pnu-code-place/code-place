@@ -62,16 +62,16 @@ spec:
           annotations:
             summary: "Alloy metrics target을 scrape할 수 없습니다"
             description: "Prometheus가 Alloy target을 1분 동안 발견하지 못했거나 scrape하지 못했습니다. 로그 수집 경로의 관측 가능성이 사라진 상태입니다."
-        - alert: PrometheusHADegraded
-          expr: (sum(max by (pod) (kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"prometheus-kube-prometheus-stack-prometheus-[0-9]+"})) < 2) or absent(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"prometheus-kube-prometheus-stack-prometheus-[0-9]+"})
+        - alert: PrometheusUnavailable
+          expr: (sum(max by (pod) (kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"prometheus-kube-prometheus-stack-prometheus-[0-9]+"})) < 1) or absent(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"prometheus-kube-prometheus-stack-prometheus-[0-9]+"})
           for: 1m
           labels:
             namespace: monitoring
             severity: warning
             priority: P1
           annotations:
-            summary: "Prometheus HA replica가 저하됐습니다"
-            description: "ready Prometheus replica가 1분 동안 기대 개수 2개보다 적거나 readiness metric이 사라졌습니다."
+            summary: "Prometheus가 준비 상태가 아닙니다"
+            description: "Prometheus 단일 인스턴스가 1분 동안 ready 상태가 아니거나 readiness metric이 사라졌습니다."
     - name: codeplace.p0
       interval: 15s
       rules:

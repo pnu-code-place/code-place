@@ -145,7 +145,7 @@ P0는 `group_wait=10s`, `repeat_interval=15m`로 Discord에 빠르게 전달합�
 
 P1은 `group_wait=30s`, `repeat_interval=1h`를 사용합니다. prod와 cluster-global P1은 Discord로 전달하고 dev P1은 muted receiver로 분리합니다.
 
-- `PrometheusHADegraded`: ready Prometheus replica가 2개 미만인 상태 1분 지속.
+- `PrometheusUnavailable`: 단일 Prometheus replica가 ready 상태가 아니거나 readiness metric이 없는 상태 1분 지속.
 - `ApiLatencyHigh`: p95 latency 2초 초과 5분 지속.
 - `JudgeWaitingQueueBacklog`: `waiting_queue` 5 초과 3분 지속.
 - `CeleryWorkerRestarting`: worker restart 3회 이상/15분.
