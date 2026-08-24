@@ -18,7 +18,7 @@ spec:
       memory: 2Gi
 
   storage:
-    storageClass: longhorn
+    storageClass: longhorn-cnpg
     size: 30Gi
 
   bootstrap:

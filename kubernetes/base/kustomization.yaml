@@ -10,6 +10,7 @@ resources:
   - ./backend/pvc.yaml
 
   # Database and Cache
+  - ./postgres/longhorn-cnpg-storageclass.yaml
   - ./postgres/postgres.yaml
   - ./redis/redis.yaml
 
