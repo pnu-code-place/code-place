@@ -24,7 +24,7 @@ images:
     newTag: 32ba295092fdc045029b8d772777fcf0368a6c0f-dev
   - name: frontend
     newName: harbor.code-place-dev.site/code-place-dev/frontend
-    newTag: 32ba295092fdc045029b8d772777fcf0368a6c0f-dev
+    newTag: 06c87027ba23b041855245e77212c44dc0bee124-dev
   - name: judge-server
     newName: harbor.code-place-dev.site/code-place-dev/judge-server
     newTag: 1.0.3
