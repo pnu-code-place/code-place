@@ -18,8 +18,11 @@ spec:
       memory: 2Gi
 
   storage:
-    storageClass: longhorn-cnpg
-    size: 30Gi
+    # NOTE: CNPG 전용 storageClass(longhorn-cnpg, #761)로의 전환은 보류 중입니다.
+    # 기존 인스턴스의 PVC는 자동 이관되지 않아 별도 마이그레이션 계획이 필요하며,
+    # 우선 실제 배포 상태(longhorn)와 매니페스트를 일치시켜 apply가 반려되지 않게 합니다.
+    storageClass: longhorn
+    size: 50Gi
 
   bootstrap:
     initdb:
