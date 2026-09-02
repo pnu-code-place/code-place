@@ -26,7 +26,7 @@
 
 > 운영 서버 주소 : https://code.pusan.ac.kr/
 >
-> 개발(베타) 서버 주소 : [https://code-place-dev.site/](https://k3s.code-place-dev.site/)
+> 개발(베타) 서버 주소 : [https://code-place-dev.kr/](https://k3s.code-place-dev.kr/)
 
 <br/>
 

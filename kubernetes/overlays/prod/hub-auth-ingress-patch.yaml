@@ -4,7 +4,7 @@ metadata:
   name: hub-auth-ingress
 spec:
   rules:
-    - host: hub-auth.code-place-dev.site
+    - host: hub-auth.code-place-dev.kr
       http:
         paths:
           - path: /
@@ -16,4 +16,4 @@ spec:
                   number: 80
   tls:
     - hosts:
-        - hub-auth.code-place-dev.site
+        - hub-auth.code-place-dev.kr

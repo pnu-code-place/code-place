@@ -389,7 +389,7 @@ def main() -> int:
         for environment in ("prod", "dev"):
             storage_link = (
                 f"스토리지({environment}): "
-                "https://monitoring.code-place-dev.site/d/codeplace-storage/"
+                "https://monitoring.code-place-dev.kr/d/codeplace-storage/"
                 f"codeplace-storage?orgId=1&var-environment={environment}"
             )
             if storage_link not in message:
