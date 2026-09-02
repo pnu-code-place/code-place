@@ -119,7 +119,7 @@ export default {
   },
   created() {
     this.post.problem_id = this.$route.query.problemID || null
-    this.post.contest_id = this.$route.query.contestID || null
+    this.post.contest_id = this.$route.params.contestID || null
   },
   methods: {
     submitPost() {
@@ -130,10 +130,19 @@ export default {
             .createPost(this.post)
             .then((res) => {
               this.$success("Post created successfully")
-              this.$router.push({
-                name: "community-detail",
-                params: { postId: res.data.data.id },
-              })
+              const postId = res.data.data.id
+
+              if (this.post.contest_id) {
+                this.$router.push({
+                  name: "contest-community",
+                  params: { contestID: this.post.contest_id },
+                })
+              } else {
+                this.$router.push({
+                  name: "community-detail",
+                  params: { postId },
+                })
+              }
             })
             .catch((err) => {
               console.error("Error creating post:", err)

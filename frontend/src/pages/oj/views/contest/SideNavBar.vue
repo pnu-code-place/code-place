@@ -16,6 +16,9 @@
       >
         <Icon type="stats-bars"></Icon> {{ $t("m.Rankings") }}
       </router-link>
+      <router-link :to="{ name: 'contest-community' }">
+        <Icon type="ios-chatboxes"></Icon> {{ $t("m.Contest_Community") }}
+      </router-link>
     </ul>
   </nav>
 </template>

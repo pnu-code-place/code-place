@@ -9,11 +9,11 @@ tests:
     input_series:
       - series: 'probe_success{environment="prod",namespace="code-place-prod",probe_type="public-http",service="frontend",instance="https://code.pusan.ac.kr/"}'
         values: '1 1 1 1 1 1 1 1 1 1 1 1 1'
-      - series: 'probe_success{environment="prod",namespace="code-place-prod",probe_type="public-http",service="hub-auth",instance="https://hub-auth.code-place-dev.site/healthz"}'
+      - series: 'probe_success{environment="prod",namespace="code-place-prod",probe_type="public-http",service="hub-auth",instance="https://hub-auth.code-place-dev.kr/healthz"}'
         values: '1 1 1 1 1 1 1 1 1 1 1 1 1'
-      - series: 'probe_success{environment="dev",namespace="code-place-dev",probe_type="public-http",service="frontend",instance="https://k3s.code-place-dev.site/"}'
+      - series: 'probe_success{environment="dev",namespace="code-place-dev",probe_type="public-http",service="frontend",instance="https://k3s.code-place-dev.kr/"}'
         values: '1 1 1 1 1 1 1 1 1 1 1 1 1'
-      - series: 'probe_success{environment="dev",namespace="code-place-dev",probe_type="public-http",service="hub-auth",instance="https://hub-auth-dev.code-place-dev.site/healthz"}'
+      - series: 'probe_success{environment="dev",namespace="code-place-dev",probe_type="public-http",service="hub-auth",instance="https://hub-auth-dev.code-place-dev.kr/healthz"}'
         values: '1 1 1 1 1 1 1 1 1 1 1 1 1'
     alert_rule_test:
       - eval_time: 3m
@@ -28,11 +28,11 @@ tests:
     input_series:
       - series: 'probe_success{environment="prod",namespace="code-place-prod",probe_type="public-http",service="frontend",instance="https://code.pusan.ac.kr/"}'
         values: '1 1 1 1 1 1'
-      - series: 'probe_success{environment="prod",namespace="code-place-prod",probe_type="public-http",service="hub-auth",instance="https://hub-auth.code-place-dev.site/healthz"}'
+      - series: 'probe_success{environment="prod",namespace="code-place-prod",probe_type="public-http",service="hub-auth",instance="https://hub-auth.code-place-dev.kr/healthz"}'
         values: '0 0 0 0 0 0'
-      - series: 'probe_success{environment="dev",namespace="code-place-dev",probe_type="public-http",service="frontend",instance="https://k3s.code-place-dev.site/"}'
+      - series: 'probe_success{environment="dev",namespace="code-place-dev",probe_type="public-http",service="frontend",instance="https://k3s.code-place-dev.kr/"}'
         values: '1 1 1 1 1 1'
-      - series: 'probe_success{environment="dev",namespace="code-place-dev",probe_type="public-http",service="hub-auth",instance="https://hub-auth-dev.code-place-dev.site/healthz"}'
+      - series: 'probe_success{environment="dev",namespace="code-place-dev",probe_type="public-http",service="hub-auth",instance="https://hub-auth-dev.code-place-dev.kr/healthz"}'
         values: '1 1 1 1 1 1'
     alert_rule_test:
       - eval_time: 1m15s
@@ -40,26 +40,26 @@ tests:
         exp_alerts:
           - exp_labels:
               environment: prod
-              instance: https://hub-auth.code-place-dev.site/healthz
+              instance: https://hub-auth.code-place-dev.kr/healthz
               namespace: code-place-prod
               priority: P0
               probe_type: public-http
               service: hub-auth
               severity: critical
             exp_annotations:
-              summary: prod hub-auth 공개 엔드포인트가 응답하지 않습니다
-              description: https://hub-auth.code-place-dev.site/healthz HTTPS synthetic probe가 1분 동안 실패했습니다.
+              summary: 운영 hub-auth 공개 엔드포인트가 응답하지 않습니다
+              description: https://hub-auth.code-place-dev.kr/healthz의 HTTPS 가상 점검이 1분 동안 실패했습니다.
 
   - name: transient prod failure recovers before the one minute threshold
     interval: 15s
     input_series:
       - series: 'probe_success{environment="prod",namespace="code-place-prod",probe_type="public-http",service="frontend",instance="https://code.pusan.ac.kr/"}'
         values: '1 1 1 1 1 1 1'
-      - series: 'probe_success{environment="prod",namespace="code-place-prod",probe_type="public-http",service="hub-auth",instance="https://hub-auth.code-place-dev.site/healthz"}'
+      - series: 'probe_success{environment="prod",namespace="code-place-prod",probe_type="public-http",service="hub-auth",instance="https://hub-auth.code-place-dev.kr/healthz"}'
         values: '0 0 0 1 1 1 1'
-      - series: 'probe_success{environment="dev",namespace="code-place-dev",probe_type="public-http",service="frontend",instance="https://k3s.code-place-dev.site/"}'
+      - series: 'probe_success{environment="dev",namespace="code-place-dev",probe_type="public-http",service="frontend",instance="https://k3s.code-place-dev.kr/"}'
         values: '1 1 1 1 1 1 1'
-      - series: 'probe_success{environment="dev",namespace="code-place-dev",probe_type="public-http",service="hub-auth",instance="https://hub-auth-dev.code-place-dev.site/healthz"}'
+      - series: 'probe_success{environment="dev",namespace="code-place-dev",probe_type="public-http",service="hub-auth",instance="https://hub-auth-dev.code-place-dev.kr/healthz"}'
         values: '1 1 1 1 1 1 1'
     alert_rule_test:
       - eval_time: 1m30s
@@ -71,11 +71,11 @@ tests:
     input_series:
       - series: 'probe_success{environment="prod",namespace="code-place-prod",probe_type="public-http",service="frontend",instance="https://code.pusan.ac.kr/"}'
         values: '1 1 1 1 1 1 1 1 1 1'
-      - series: 'probe_success{environment="prod",namespace="code-place-prod",probe_type="public-http",service="hub-auth",instance="https://hub-auth.code-place-dev.site/healthz"}'
+      - series: 'probe_success{environment="prod",namespace="code-place-prod",probe_type="public-http",service="hub-auth",instance="https://hub-auth.code-place-dev.kr/healthz"}'
         values: '1 1 1 1 1 1 1 1 1 1'
-      - series: 'probe_success{environment="dev",namespace="code-place-dev",probe_type="public-http",service="frontend",instance="https://k3s.code-place-dev.site/"}'
+      - series: 'probe_success{environment="dev",namespace="code-place-dev",probe_type="public-http",service="frontend",instance="https://k3s.code-place-dev.kr/"}'
         values: '1 1 1 1 1 1 1 1 1 1'
-      - series: 'probe_success{environment="dev",namespace="code-place-dev",probe_type="public-http",service="hub-auth",instance="https://hub-auth-dev.code-place-dev.site/healthz"}'
+      - series: 'probe_success{environment="dev",namespace="code-place-dev",probe_type="public-http",service="hub-auth",instance="https://hub-auth-dev.code-place-dev.kr/healthz"}'
         values: '0 0 0 0 0 0 0 0 0 0'
     alert_rule_test:
       - eval_time: 1m45s
@@ -86,24 +86,24 @@ tests:
         exp_alerts:
           - exp_labels:
               environment: dev
-              instance: https://hub-auth-dev.code-place-dev.site/healthz
+              instance: https://hub-auth-dev.code-place-dev.kr/healthz
               namespace: code-place-dev
               priority: P1
               probe_type: public-http
               service: hub-auth
               severity: warning
             exp_annotations:
-              summary: dev hub-auth 공개 엔드포인트가 응답하지 않습니다
-              description: https://hub-auth-dev.code-place-dev.site/healthz HTTPS synthetic probe가 2분 동안 실패했습니다.
+              summary: 개발 hub-auth 공개 엔드포인트가 응답하지 않습니다
+              description: https://hub-auth-dev.code-place-dev.kr/healthz의 HTTPS 가상 점검이 2분 동안 실패했습니다.
 
   - name: missing prod hub-auth telemetry is not endpoint downtime
     interval: 15s
     input_series:
       - series: 'probe_success{environment="prod",namespace="code-place-prod",probe_type="public-http",service="frontend",instance="https://code.pusan.ac.kr/"}'
         values: '1 1 1 1 1 1 1 1 1 1'
-      - series: 'probe_success{environment="dev",namespace="code-place-dev",probe_type="public-http",service="frontend",instance="https://k3s.code-place-dev.site/"}'
+      - series: 'probe_success{environment="dev",namespace="code-place-dev",probe_type="public-http",service="frontend",instance="https://k3s.code-place-dev.kr/"}'
         values: '1 1 1 1 1 1 1 1 1 1'
-      - series: 'probe_success{environment="dev",namespace="code-place-dev",probe_type="public-http",service="hub-auth",instance="https://hub-auth-dev.code-place-dev.site/healthz"}'
+      - series: 'probe_success{environment="dev",namespace="code-place-dev",probe_type="public-http",service="hub-auth",instance="https://hub-auth-dev.code-place-dev.kr/healthz"}'
         values: '1 1 1 1 1 1 1 1 1 1'
     alert_rule_test:
       - eval_time: 2m15s
@@ -120,19 +120,19 @@ tests:
               service: hub-auth
               severity: warning
             exp_annotations:
-              summary: prod hub-auth 공개 probe metric이 없습니다
-              description: Prometheus가 prod hub-auth synthetic probe 결과를 2분 동안 찾지 못했습니다. 공개 endpoint 장애가 아니라 probe 수집 경로 문제입니다.
+              summary: 운영 hub-auth 공개 점검 메트릭이 없습니다
+              description: Prometheus가 2분 동안 운영 hub-auth의 가상 점검 결과를 찾지 못했습니다. 공개 엔드포인트 장애가 아니라 점검 수집 경로의 문제입니다.
 
   - name: unrelated prod-labelled probe cannot trigger the CodePlace prod alert
     interval: 15s
     input_series:
       - series: 'probe_success{environment="prod",namespace="code-place-prod",probe_type="public-http",service="frontend",instance="https://code.pusan.ac.kr/"}'
         values: '1 1 1 1 1 1'
-      - series: 'probe_success{environment="prod",namespace="code-place-prod",probe_type="public-http",service="hub-auth",instance="https://hub-auth.code-place-dev.site/healthz"}'
+      - series: 'probe_success{environment="prod",namespace="code-place-prod",probe_type="public-http",service="hub-auth",instance="https://hub-auth.code-place-dev.kr/healthz"}'
         values: '1 1 1 1 1 1'
-      - series: 'probe_success{environment="dev",namespace="code-place-dev",probe_type="public-http",service="frontend",instance="https://k3s.code-place-dev.site/"}'
+      - series: 'probe_success{environment="dev",namespace="code-place-dev",probe_type="public-http",service="frontend",instance="https://k3s.code-place-dev.kr/"}'
         values: '1 1 1 1 1 1'
-      - series: 'probe_success{environment="dev",namespace="code-place-dev",probe_type="public-http",service="hub-auth",instance="https://hub-auth-dev.code-place-dev.site/healthz"}'
+      - series: 'probe_success{environment="dev",namespace="code-place-dev",probe_type="public-http",service="hub-auth",instance="https://hub-auth-dev.code-place-dev.kr/healthz"}'
         values: '1 1 1 1 1 1'
       - series: 'probe_success{environment="prod",namespace="another-system",probe_type="public-http",service="hub-auth",instance="https://example.invalid/"}'
         values: '0 0 0 0 0 0'
@@ -168,8 +168,8 @@ tests:
               service: backend
               severity: critical
             exp_annotations:
-              summary: dev backend metrics target이 내려갔습니다
-              description: Prometheus가 dev backend /metrics 엔드포인트를 1분 동안 scrape하지 못했거나 기대 target 2개를 모두 발견하지 못했습니다.
+              summary: 개발 백엔드 메트릭 수집 대상에 연결할 수 없습니다
+              description: Prometheus가 1분 동안 개발 백엔드의 /metrics 엔드포인트를 수집하지 못했거나, 필요한 수집 대상 2개를 모두 찾지 못했습니다.
 
   - name: backend scrape failure preserves the failed instance
     interval: 15s
@@ -202,8 +202,8 @@ tests:
               service: backend
               severity: critical
             exp_annotations:
-              summary: dev backend metrics target이 내려갔습니다
-              description: Prometheus가 dev backend /metrics 엔드포인트를 1분 동안 scrape하지 못했거나 기대 target 2개를 모두 발견하지 못했습니다.
+              summary: 개발 백엔드 메트릭 수집 대상에 연결할 수 없습니다
+              description: Prometheus가 1분 동안 개발 백엔드의 /metrics 엔드포인트를 수집하지 못했거나, 필요한 수집 대상 2개를 모두 찾지 못했습니다.
 
   - name: backend rolling surge does not trigger target coverage
     interval: 15s
@@ -258,8 +258,8 @@ tests:
               service: backend
               severity: warning
             exp_annotations:
-              summary: dev Backend telemetry replica coverage가 불완전합니다
-              description: dev Backend target별 custom collector 4종 또는 Sentinel check 2종의 metric series가 5분 동안 누락됐습니다. Backend rollout 버전과 target별 /metrics 출력을 확인해야 합니다.
+              summary: 개발 백엔드 원격 측정 복제본 수집 범위가 불완전합니다
+              description: 개발 백엔드 수집 대상별 사용자 정의 수집기 4종 또는 Sentinel 점검 2종의 메트릭 시계열이 5분 동안 누락되었습니다. 백엔드 배포 버전과 대상별 /metrics 출력을 확인해야 합니다.
 
   - name: partial OTel target discovery is not healthy
     interval: 15s
@@ -276,8 +276,8 @@ tests:
               service: otel-collector
               severity: warning
             exp_annotations:
-              summary: OpenTelemetry Collector를 scrape할 수 없습니다
-              description: OpenTelemetry Collector target이 5분 동안 없거나 내려갔거나 기대 target 2개보다 적습니다. dev/prod trace 수집 상태를 확인해야 합니다.
+              summary: OpenTelemetry Collector 메트릭 수집 대상을 사용할 수 없습니다
+              description: OpenTelemetry Collector 수집 대상이 5분 동안 없거나 내려갔거나 필요한 수집 대상 2개보다 적습니다. 개발·운영 추적 수집 상태를 확인해야 합니다.
 
   - name: partial datastore and Blackbox metric coverage is not healthy
     interval: 15s
@@ -326,8 +326,8 @@ tests:
               service: postgres
               severity: warning
             exp_annotations:
-              summary: dev PostgreSQL metric collector가 응답하지 않습니다
-              description: dev CNPG collector가 5분 동안 PostgreSQL에 접근하지 못했거나 기대 instance 3개의 collector metric을 모두 제공하지 못했습니다.
+              summary: 개발 PostgreSQL 메트릭 수집기가 응답하지 않습니다
+              description: 개발 CNPG 수집기가 5분 동안 PostgreSQL에 접근하지 못했거나, 필요한 인스턴스 3개의 수집 메트릭을 모두 제공하지 못했습니다.
       - eval_time: 5m15s
         alertname: RedisExporterCoverageIncomplete
         exp_alerts:
@@ -337,8 +337,8 @@ tests:
               service: redis
               severity: warning
             exp_annotations:
-              summary: dev Redis exporter coverage가 불완전합니다
-              description: dev Redis/Sentinel exporter가 5분 동안 실패했거나 기대 target 6개의 redis_up metric을 모두 제공하지 못했습니다.
+              summary: 개발 Redis Exporter 수집 범위가 불완전합니다
+              description: 개발 Redis/Sentinel Exporter가 5분 동안 실패했거나 필요한 수집 대상 6개의 redis_up 메트릭을 모두 제공하지 못했습니다.
       - eval_time: 5m15s
         alertname: BlackboxExporterCoverageIncomplete
         exp_alerts:
@@ -348,8 +348,8 @@ tests:
               service: blackbox-exporter
               severity: warning
             exp_annotations:
-              summary: Blackbox exporter coverage가 불완전합니다
-              description: Blackbox exporter가 5분 동안 실패했거나 기대 target 2개보다 적습니다. public synthetic probe 수집 경로를 확인해야 합니다.
+              summary: Blackbox Exporter 수집 범위가 불완전합니다
+              description: Blackbox Exporter가 5분 동안 실패했거나 필요한 수집 대상 2개보다 적습니다. 공개 가상 점검 수집 경로를 확인해야 합니다.
 
   - name: failed collector checks preserve target context
     interval: 15s
@@ -379,8 +379,8 @@ tests:
               service: redis
               severity: critical
             exp_annotations:
-              summary: dev Redis Sentinel master 또는 quorum을 확인할 수 없습니다
-              description: Redis/Sentinel Pod readiness와 별개로 mymaster 탐색 또는 CKQUORUM 검사가 1분 동안 실패했습니다.
+              summary: 개발 Redis Sentinel의 주 노드 또는 정족수를 확인할 수 없습니다
+              description: Redis/Sentinel Pod의 준비 상태와 별개로 mymaster 탐색 또는 CKQUORUM 검사가 1분 동안 실패했습니다.
       - eval_time: 5m15s
         alertname: CodePlaceCollectorFailed
         exp_alerts:
@@ -393,5 +393,5 @@ tests:
               service: backend
               severity: warning
             exp_annotations:
-              summary: dev Backend custom metric collector가 실패했습니다
-              description: dev Backend custom metric collector가 5분 동안 Redis 기반 metric을 수집하지 못했거나 metric이 사라졌습니다. 실패 collector label을 확인해야 합니다.
+              summary: 개발 백엔드 사용자 정의 메트릭 수집기가 실패했습니다
+              description: 개발 백엔드 사용자 정의 메트릭 수집기가 5분 동안 Redis 기반 메트릭을 수집하지 못했거나 메트릭이 사라졌습니다. 실패한 수집기 레이블을 확인해야 합니다.

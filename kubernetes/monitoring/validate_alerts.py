@@ -37,6 +37,15 @@ def main() -> int:
     ]
     errors: list[str] = []
 
+    for rule in rules:
+        annotations = rule.get("annotations", {})
+        for field in ("summary", "description"):
+            value = annotations.get(field, "")
+            if not value:
+                errors.append(f"{rule['alert']}: missing {field} annotation")
+            elif not any("가" <= character <= "힣" for character in value):
+                errors.append(f"{rule['alert']}: {field} annotation must be Korean")
+
     postgres_monitors = [
         monitor
         for monitor in datastore_monitors
@@ -338,6 +347,8 @@ def main() -> int:
         message = config.get("message", "")
         if ".CommonLabels.service" not in title:
             errors.append(f"{receiver_name}: title must identify the failed service")
+        if ".CommonAnnotations.summary" not in title:
+            errors.append(f"{receiver_name}: title must use the Korean alert summary")
         if "활성" not in title:
             errors.append(f"{receiver_name}: repeated firing notifications must use the active-state label")
         for token in (
@@ -363,6 +374,7 @@ def main() -> int:
             ".Labels.gpu",
             ".Labels.UUID",
             ".Annotations.description",
+            ".Annotations.summary",
         ):
             if token not in message:
                 errors.append(f"{receiver_name}: message is missing {token}")
@@ -377,7 +389,7 @@ def main() -> int:
         for environment in ("prod", "dev"):
             storage_link = (
                 f"스토리지({environment}): "
-                "https://monitoring.code-place-dev.site/d/codeplace-storage/"
+                "https://monitoring.code-place-dev.kr/d/codeplace-storage/"
                 f"codeplace-storage?orgId=1&var-environment={environment}"
             )
             if storage_link not in message:

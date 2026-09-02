@@ -49,8 +49,8 @@ spec:
             severity: critical
             priority: P0
           annotations:
-            summary: "Traefik metrics target을 scrape할 수 없습니다"
-            description: "Prometheus가 Traefik target을 1분 동안 발견하지 못했거나 scrape하지 못했습니다. 이 상태에서는 Ingress 트래픽과 5xx 경보가 동작하지 않습니다."
+            summary: "Traefik 메트릭 수집 대상을 사용할 수 없습니다"
+            description: "Prometheus가 1분 동안 Traefik 수집 대상을 찾지 못했거나 메트릭을 수집하지 못했습니다. 이 상태에서는 Ingress 트래픽과 5xx 경보를 감시할 수 없습니다."
         - alert: AlloyScrapeUnavailable
           expr: (up{job=~".*alloy.*", namespace="monitoring"} == 0) or absent(up{job=~".*alloy.*", namespace="monitoring"})
           for: 1m
@@ -60,18 +60,18 @@ spec:
             severity: critical
             priority: P0
           annotations:
-            summary: "Alloy metrics target을 scrape할 수 없습니다"
-            description: "Prometheus가 Alloy target을 1분 동안 발견하지 못했거나 scrape하지 못했습니다. 로그 수집 경로의 관측 가능성이 사라진 상태입니다."
-        - alert: PrometheusHADegraded
-          expr: (sum(max by (pod) (kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"prometheus-kube-prometheus-stack-prometheus-[0-9]+"})) < 2) or absent(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"prometheus-kube-prometheus-stack-prometheus-[0-9]+"})
+            summary: "Alloy 메트릭 수집 대상을 사용할 수 없습니다"
+            description: "Prometheus가 1분 동안 Alloy 수집 대상을 찾지 못했거나 메트릭을 수집하지 못했습니다. 로그 수집 경로를 관측할 수 없는 상태입니다."
+        - alert: PrometheusUnavailable
+          expr: (sum(max by (pod) (kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"prometheus-kube-prometheus-stack-prometheus-[0-9]+"})) < 1) or absent(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"prometheus-kube-prometheus-stack-prometheus-[0-9]+"})
           for: 1m
           labels:
             namespace: monitoring
             severity: warning
             priority: P1
           annotations:
-            summary: "Prometheus HA replica가 저하됐습니다"
-            description: "ready Prometheus replica가 1분 동안 기대 개수 2개보다 적거나 readiness metric이 사라졌습니다."
+            summary: "Prometheus가 준비되지 않았습니다"
+            description: "Prometheus 단일 인스턴스가 1분 동안 준비 상태가 아니거나 준비 상태 메트릭이 사라졌습니다."
     - name: codeplace.p0
       interval: 15s
       rules:
@@ -84,8 +84,8 @@ spec:
             severity: critical
             priority: P0
           annotations:
-            summary: "dev backend metrics target이 내려갔습니다"
-            description: "Prometheus가 dev backend /metrics 엔드포인트를 1분 동안 scrape하지 못했거나 기대 target 2개를 모두 발견하지 못했습니다."
+            summary: "개발 백엔드 메트릭 수집 대상에 연결할 수 없습니다"
+            description: "Prometheus가 1분 동안 개발 백엔드의 /metrics 엔드포인트를 수집하지 못했거나, 필요한 수집 대상 2개를 모두 찾지 못했습니다."
         - alert: BackendTargetDown
           expr: (up{job="backend", namespace="code-place-prod"} == 0) or (count(up{job="backend", namespace="code-place-prod"}) < 6) or absent(up{job="backend", namespace="code-place-prod"})
           for: 1m
@@ -95,8 +95,8 @@ spec:
             severity: critical
             priority: P0
           annotations:
-            summary: "prod backend metrics target이 내려갔습니다"
-            description: "Prometheus가 prod backend /metrics 엔드포인트를 1분 동안 scrape하지 못했거나 기대 target 6개를 모두 발견하지 못했습니다."
+            summary: "운영 백엔드 메트릭 수집 대상에 연결할 수 없습니다"
+            description: "Prometheus가 1분 동안 운영 백엔드의 /metrics 엔드포인트를 수집하지 못했거나, 필요한 수집 대상 6개를 모두 찾지 못했습니다."
         - alert: Api5xxSpike
           expr: (sum by (namespace) (rate(codeplace_http_requests_total{namespace=~"code-place-(dev|prod)", status_code=~"5.."}[2m])) / clamp_min(sum by (namespace) (rate(codeplace_http_requests_total{namespace=~"code-place-(dev|prod)"}[2m])), 0.001) > 0.05) and on (namespace) sum by (namespace) (increase(codeplace_http_requests_total{namespace=~"code-place-(dev|prod)"}[2m])) > 0
           for: 2m
@@ -104,8 +104,8 @@ spec:
             severity: critical
             priority: P0
           annotations:
-            summary: "Backend API 5xx 비율이 높습니다"
-            description: "Backend API 5xx 응답 비율이 2분 동안 5%를 초과했습니다."
+            summary: "백엔드 API의 5xx 응답 비율이 높습니다"
+            description: "백엔드 API의 5xx 응답 비율이 2분 동안 5%를 초과했습니다."
         - alert: Ingress5xxSpike
           expr: (codeplace:ingress_5xx_rate2m{namespace="code-place-dev"} / clamp_min(codeplace:ingress_request_rate2m{namespace="code-place-dev"}, 0.001) > 0.05) and on (namespace) codeplace:ingress_request_rate2m{namespace="code-place-dev"} > 0
           for: 2m
@@ -114,8 +114,8 @@ spec:
             severity: critical
             priority: P0
           annotations:
-            summary: "dev Ingress 5xx 비율이 높습니다"
-            description: "code-place-dev Traefik 5xx 응답 비율이 2분 동안 5%를 초과했습니다."
+            summary: "개발 Ingress의 5xx 응답 비율이 높습니다"
+            description: "code-place-dev Traefik의 5xx 응답 비율이 2분 동안 5%를 초과했습니다."
         - alert: Ingress5xxSpike
           expr: (codeplace:ingress_5xx_rate2m{namespace="code-place-prod"} / clamp_min(codeplace:ingress_request_rate2m{namespace="code-place-prod"}, 0.001) > 0.05) and on (namespace) codeplace:ingress_request_rate2m{namespace="code-place-prod"} > 0
           for: 2m
@@ -124,8 +124,8 @@ spec:
             severity: critical
             priority: P0
           annotations:
-            summary: "prod Ingress 5xx 비율이 높습니다"
-            description: "code-place-prod Traefik 5xx 응답 비율이 2분 동안 5%를 초과했습니다."
+            summary: "운영 Ingress의 5xx 응답 비율이 높습니다"
+            description: "code-place-prod Traefik의 5xx 응답 비율이 2분 동안 5%를 초과했습니다."
         - alert: PublicEndpointDown
           expr: probe_success{environment="prod", namespace="code-place-prod", probe_type="public-http", service=~"frontend|hub-auth"} == 0
           for: 1m
@@ -134,8 +134,8 @@ spec:
             priority: P0
             namespace: code-place-prod
           annotations:
-            summary: "prod {{ $labels.service }} 공개 엔드포인트가 응답하지 않습니다"
-            description: "{{ $labels.instance }} HTTPS synthetic probe가 1분 동안 실패했습니다."
+            summary: "운영 {{ $labels.service }} 공개 엔드포인트가 응답하지 않습니다"
+            description: "{{ $labels.instance }}의 HTTPS 가상 점검이 1분 동안 실패했습니다."
         - alert: PostgresUnavailable
           expr: (sum(kube_pod_status_ready{namespace="code-place-dev", condition="true", pod=~"postgres-[0-9]+"}) == 0) or absent(kube_pod_status_ready{namespace="code-place-dev", condition="true", pod=~"postgres-[0-9]+"})
           for: 1m
@@ -144,8 +144,8 @@ spec:
             severity: critical
             priority: P0
           annotations:
-            summary: "dev PostgreSQL Pod가 ready 상태가 아닙니다"
-            description: "dev PostgreSQL Pod가 1분 동안 ready 상태가 아니거나 readiness metric이 사라졌습니다."
+            summary: "개발 PostgreSQL Pod가 준비되지 않았습니다"
+            description: "개발 PostgreSQL Pod가 1분 동안 준비 상태가 아니거나 준비 상태 메트릭이 사라졌습니다."
         - alert: PostgresUnavailable
           expr: (sum(kube_pod_status_ready{namespace="code-place-prod", condition="true", pod=~"postgres-[0-9]+"}) == 0) or absent(kube_pod_status_ready{namespace="code-place-prod", condition="true", pod=~"postgres-[0-9]+"})
           for: 1m
@@ -154,8 +154,8 @@ spec:
             severity: critical
             priority: P0
           annotations:
-            summary: "prod PostgreSQL Pod가 ready 상태가 아닙니다"
-            description: "prod PostgreSQL Pod가 1분 동안 ready 상태가 아니거나 readiness metric이 사라졌습니다."
+            summary: "운영 PostgreSQL Pod가 준비되지 않았습니다"
+            description: "운영 PostgreSQL Pod가 1분 동안 준비 상태가 아니거나 준비 상태 메트릭이 사라졌습니다."
         - alert: PostgresPrimaryUnavailable
           expr: sum(kube_endpointslice_endpoints{namespace="code-place-dev", endpointslice=~"postgres-rw-.*", ready="true"}) == 0 or absent(kube_endpointslice_endpoints{namespace="code-place-dev", endpointslice=~"postgres-rw-.*", ready="true"})
           for: 1m
@@ -164,8 +164,8 @@ spec:
             severity: critical
             priority: P0
           annotations:
-            summary: "dev PostgreSQL primary endpoint가 없습니다"
-            description: "dev postgres-rw Service에 1분 동안 ready primary endpoint가 없습니다. Replica Pod가 ready여도 쓰기 연결이 실패할 수 있습니다."
+            summary: "개발 PostgreSQL 주 엔드포인트가 없습니다"
+            description: "개발 postgres-rw Service에 1분 동안 준비된 주 엔드포인트가 없습니다. 복제 Pod가 준비되어 있어도 쓰기 연결이 실패할 수 있습니다."
         - alert: PostgresPrimaryUnavailable
           expr: sum(kube_endpointslice_endpoints{namespace="code-place-prod", endpointslice=~"postgres-rw-.*", ready="true"}) == 0 or absent(kube_endpointslice_endpoints{namespace="code-place-prod", endpointslice=~"postgres-rw-.*", ready="true"})
           for: 1m
@@ -174,8 +174,8 @@ spec:
             severity: critical
             priority: P0
           annotations:
-            summary: "prod PostgreSQL primary endpoint가 없습니다"
-            description: "prod postgres-rw Service에 1분 동안 ready primary endpoint가 없습니다. Replica Pod가 ready여도 쓰기 연결이 실패할 수 있습니다."
+            summary: "운영 PostgreSQL 주 엔드포인트가 없습니다"
+            description: "운영 postgres-rw Service에 1분 동안 준비된 주 엔드포인트가 없습니다. 복제 Pod가 준비되어 있어도 쓰기 연결이 실패할 수 있습니다."
         - alert: RedisUnavailable
           expr: (sum(kube_pod_status_ready{namespace="code-place-dev", condition="true", pod=~"redis-.*|redis-replication-.*"}) == 0) or absent(kube_pod_status_ready{namespace="code-place-dev", condition="true", pod=~"redis-.*|redis-replication-.*"})
           for: 1m
@@ -184,8 +184,8 @@ spec:
             severity: critical
             priority: P0
           annotations:
-            summary: "dev Redis/Sentinel Pod가 ready 상태가 아닙니다"
-            description: "dev Redis/Sentinel Pod가 1분 동안 ready 상태가 아니거나 readiness metric이 사라졌습니다."
+            summary: "개발 Redis/Sentinel Pod가 준비되지 않았습니다"
+            description: "개발 Redis/Sentinel Pod가 1분 동안 준비 상태가 아니거나 준비 상태 메트릭이 사라졌습니다."
         - alert: RedisUnavailable
           expr: (sum(kube_pod_status_ready{namespace="code-place-prod", condition="true", pod=~"redis-.*|redis-replication-.*"}) == 0) or absent(kube_pod_status_ready{namespace="code-place-prod", condition="true", pod=~"redis-.*|redis-replication-.*"})
           for: 1m
@@ -194,8 +194,8 @@ spec:
             severity: critical
             priority: P0
           annotations:
-            summary: "prod Redis/Sentinel Pod가 ready 상태가 아닙니다"
-            description: "prod Redis/Sentinel Pod가 1분 동안 ready 상태가 아니거나 readiness metric이 사라졌습니다."
+            summary: "운영 Redis/Sentinel Pod가 준비되지 않았습니다"
+            description: "운영 Redis/Sentinel Pod가 1분 동안 준비 상태가 아니거나 준비 상태 메트릭이 사라졌습니다."
         - alert: RedisSentinelUnavailable
           expr: codeplace_redis_sentinel_health{namespace="code-place-dev"} == 0 or absent(codeplace_redis_sentinel_health{namespace="code-place-dev", check="master"}) or absent(codeplace_redis_sentinel_health{namespace="code-place-dev", check="quorum"})
           for: 1m
@@ -205,8 +205,8 @@ spec:
             severity: critical
             priority: P0
           annotations:
-            summary: "dev Redis Sentinel master 또는 quorum을 확인할 수 없습니다"
-            description: "Redis/Sentinel Pod readiness와 별개로 mymaster 탐색 또는 CKQUORUM 검사가 1분 동안 실패했습니다."
+            summary: "개발 Redis Sentinel의 주 노드 또는 정족수를 확인할 수 없습니다"
+            description: "Redis/Sentinel Pod의 준비 상태와 별개로 mymaster 탐색 또는 CKQUORUM 검사가 1분 동안 실패했습니다."
         - alert: RedisSentinelUnavailable
           expr: codeplace_redis_sentinel_health{namespace="code-place-prod"} == 0 or absent(codeplace_redis_sentinel_health{namespace="code-place-prod", check="master"}) or absent(codeplace_redis_sentinel_health{namespace="code-place-prod", check="quorum"})
           for: 1m
@@ -216,8 +216,8 @@ spec:
             severity: critical
             priority: P0
           annotations:
-            summary: "prod Redis Sentinel master 또는 quorum을 확인할 수 없습니다"
-            description: "Redis/Sentinel Pod readiness와 별개로 mymaster 탐색 또는 CKQUORUM 검사가 1분 동안 실패했습니다."
+            summary: "운영 Redis Sentinel의 주 노드 또는 정족수를 확인할 수 없습니다"
+            description: "Redis/Sentinel Pod의 준비 상태와 별개로 mymaster 탐색 또는 CKQUORUM 검사가 1분 동안 실패했습니다."
         - alert: LokiUnavailable
           expr: (sum(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"loki-[0-9]+"}) == 0) or absent(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"loki-[0-9]+"})
           for: 1m
@@ -226,8 +226,8 @@ spec:
             priority: P0
             namespace: monitoring
           annotations:
-            summary: "Loki가 ready 상태가 아닙니다"
-            description: "Loki single-binary Pod가 1분 동안 ready 상태가 아닙니다. 로그 수집이나 로그 조회가 실패할 수 있습니다."
+            summary: "Loki가 준비되지 않았습니다"
+            description: "Loki 단일 바이너리 Pod가 1분 동안 준비 상태가 아닙니다. 로그 수집 또는 조회가 실패할 수 있습니다."
         - alert: LonghornVolumeFaulted
           expr: longhorn_volume_robustness == 3
           for: 1m
@@ -236,8 +236,8 @@ spec:
             priority: P0
             namespace: longhorn-system
           annotations:
-            summary: "Longhorn volume이 faulted 상태입니다"
-            description: "Longhorn volume이 1분 동안 faulted 상태입니다. PVC를 사용하는 workload의 스토리지 접근이 실패할 수 있습니다."
+            summary: "Longhorn 볼륨에 장애가 발생했습니다"
+            description: "Longhorn 볼륨이 1분 동안 장애 상태입니다. PVC를 사용하는 워크로드의 스토리지 접근이 실패할 수 있습니다."
         - alert: LonghornVolumeReadOnly
           expr: longhorn_volume_file_system_read_only == 1
           for: 1m
@@ -246,8 +246,8 @@ spec:
             priority: P0
             namespace: longhorn-system
           annotations:
-            summary: "Longhorn volume이 read-only 상태입니다"
-            description: "Longhorn volume filesystem이 1분 동안 read-only 상태입니다. 연결된 workload의 쓰기가 실패할 수 있습니다."
+            summary: "Longhorn 볼륨이 읽기 전용 상태입니다"
+            description: "Longhorn 볼륨 파일 시스템이 1분 동안 읽기 전용 상태입니다. 연결된 워크로드에 데이터를 쓸 수 없습니다."
         - alert: VLLMUnavailable
           expr: (up{job="vllm", namespace="code-place-prod"} == 0) or absent(up{job="vllm", namespace="code-place-prod"})
           for: 2m
@@ -256,8 +256,8 @@ spec:
             priority: P0
             namespace: code-place-prod
           annotations:
-            summary: "vLLM metrics target을 scrape할 수 없습니다"
-            description: "Prometheus가 vLLM /metrics 엔드포인트를 2분 동안 scrape하지 못했습니다. AI 힌트 제공이 실패할 수 있습니다."
+            summary: "vLLM 메트릭 수집 대상을 사용할 수 없습니다"
+            description: "Prometheus가 2분 동안 vLLM의 /metrics 엔드포인트를 수집하지 못했습니다. AI 힌트 제공이 실패할 수 있습니다."
         - alert: GPUXIDError
           expr: max by (Hostname, gpu, UUID) (DCGM_FI_DEV_XID_ERRORS{namespace="monitoring"}) > 0
           for: 1m
@@ -266,8 +266,8 @@ spec:
             priority: P0
             namespace: monitoring
           annotations:
-            summary: "GPU driver XID 오류가 감지됐습니다"
-            description: "DCGM이 1분 동안 NVIDIA XID 오류를 보고했습니다. vLLM GPU 상태와 노드 driver 상태를 확인해야 합니다."
+            summary: "GPU 드라이버 XID 오류가 감지되었습니다"
+            description: "DCGM이 1분 동안 NVIDIA XID 오류를 보고했습니다. vLLM의 GPU 상태와 노드 드라이버 상태를 확인해야 합니다."
         - alert: DCGMExporterUnavailable
           expr: up{job="dcgm-exporter", namespace="monitoring"} == 0 or absent(up{job="dcgm-exporter", namespace="monitoring"})
           for: 2m
@@ -276,8 +276,8 @@ spec:
             priority: P0
             namespace: monitoring
           annotations:
-            summary: "DCGM exporter를 scrape할 수 없습니다"
-            description: "DCGM exporter target이 2분 동안 없거나 내려갔습니다. 이 상태에서는 모든 GPU 상태 경보가 함께 사라집니다."
+            summary: "DCGM 메트릭 수집 대상을 사용할 수 없습니다"
+            description: "DCGM Exporter 수집 대상이 2분 동안 없거나 내려갔습니다. 이 상태에서는 모든 GPU 상태 경보를 확인할 수 없습니다."
     - name: codeplace.p1
       interval: 30s
       rules:
@@ -288,8 +288,8 @@ spec:
             severity: warning
             priority: P1
           annotations:
-            summary: "Backend API p95 latency가 높습니다"
-            description: "Backend API p95 latency가 5분 동안 2초를 초과했습니다."
+            summary: "백엔드 API의 p95 응답 시간이 높습니다"
+            description: "백엔드 API의 p95 응답 시간이 5분 동안 2초를 초과했습니다."
         - alert: PublicEndpointDown
           expr: probe_success{environment="dev", namespace="code-place-dev", probe_type="public-http", service=~"frontend|hub-auth"} == 0
           for: 2m
@@ -298,8 +298,8 @@ spec:
             priority: P1
             namespace: code-place-dev
           annotations:
-            summary: "dev {{ $labels.service }} 공개 엔드포인트가 응답하지 않습니다"
-            description: "{{ $labels.instance }} HTTPS synthetic probe가 2분 동안 실패했습니다."
+            summary: "개발 {{ $labels.service }} 공개 엔드포인트가 응답하지 않습니다"
+            description: "{{ $labels.instance }}의 HTTPS 가상 점검이 2분 동안 실패했습니다."
         - alert: PublicEndpointProbeMissing
           expr: absent(probe_success{environment="prod", namespace="code-place-prod", service="frontend", probe_type="public-http"}) or absent(probe_success{environment="prod", namespace="code-place-prod", service="hub-auth", probe_type="public-http"})
           for: 2m
@@ -308,8 +308,8 @@ spec:
             priority: P1
             namespace: code-place-prod
           annotations:
-            summary: "prod {{ $labels.service }} 공개 probe metric이 없습니다"
-            description: "Prometheus가 prod {{ $labels.service }} synthetic probe 결과를 2분 동안 찾지 못했습니다. 공개 endpoint 장애가 아니라 probe 수집 경로 문제입니다."
+            summary: "운영 {{ $labels.service }} 공개 점검 메트릭이 없습니다"
+            description: "Prometheus가 2분 동안 운영 {{ $labels.service }}의 가상 점검 결과를 찾지 못했습니다. 공개 엔드포인트 장애가 아니라 점검 수집 경로의 문제입니다."
         - alert: PublicEndpointProbeMissing
           expr: absent(probe_success{environment="dev", namespace="code-place-dev", service="frontend", probe_type="public-http"}) or absent(probe_success{environment="dev", namespace="code-place-dev", service="hub-auth", probe_type="public-http"})
           for: 2m
@@ -318,8 +318,8 @@ spec:
             priority: P1
             namespace: code-place-dev
           annotations:
-            summary: "dev {{ $labels.service }} 공개 probe metric이 없습니다"
-            description: "Prometheus가 dev {{ $labels.service }} synthetic probe 결과를 2분 동안 찾지 못했습니다. 공개 endpoint 장애가 아니라 probe 수집 경로 문제입니다."
+            summary: "개발 {{ $labels.service }} 공개 점검 메트릭이 없습니다"
+            description: "Prometheus가 2분 동안 개발 {{ $labels.service }}의 가상 점검 결과를 찾지 못했습니다. 공개 엔드포인트 장애가 아니라 점검 수집 경로의 문제입니다."
         - alert: PublicEndpointLatencyHigh
           expr: probe_duration_seconds{probe_type="public-http", namespace=~"code-place-(dev|prod)", service=~"frontend|hub-auth"} > 2
           for: 5m
@@ -328,7 +328,7 @@ spec:
             priority: P1
           annotations:
             summary: "{{ $labels.namespace }} {{ $labels.service }} 공개 엔드포인트 응답 시간이 높습니다"
-            description: "{{ $labels.instance }} HTTPS synthetic probe 응답 시간이 5분 동안 2초를 초과했습니다."
+            description: "{{ $labels.instance }}의 HTTPS 가상 점검 응답 시간이 5분 동안 2초를 초과했습니다."
         - alert: JudgeWaitingQueueBacklog
           expr: codeplace_waiting_queue_length{namespace=~"code-place-(dev|prod)"} > 5
           for: 3m
@@ -345,8 +345,8 @@ spec:
             severity: warning
             priority: P1
           annotations:
-            summary: "Celery broker queue가 쌓이고 있습니다"
-            description: "Celery broker default queue가 5분 동안 20개를 초과했습니다. Worker 처리량과 Redis 상태를 확인해야 합니다."
+            summary: "Celery 브로커 대기열이 쌓이고 있습니다"
+            description: "Celery 브로커의 기본 대기열이 5분 동안 20개를 초과했습니다. 워커 처리량과 Redis 상태를 확인해야 합니다."
         - alert: CodePlaceCollectorFailed
           expr: codeplace_collector_success{namespace="code-place-dev"} == 0 or absent(codeplace_collector_success{namespace="code-place-dev"})
           for: 5m
@@ -356,8 +356,8 @@ spec:
             severity: warning
             priority: P1
           annotations:
-            summary: "dev Backend custom metric collector가 실패했습니다"
-            description: "dev Backend custom metric collector가 5분 동안 Redis 기반 metric을 수집하지 못했거나 metric이 사라졌습니다. 실패 collector label을 확인해야 합니다."
+            summary: "개발 백엔드 사용자 정의 메트릭 수집기가 실패했습니다"
+            description: "개발 백엔드 사용자 정의 메트릭 수집기가 5분 동안 Redis 기반 메트릭을 수집하지 못했거나 메트릭이 사라졌습니다. 실패한 수집기 레이블을 확인해야 합니다."
         - alert: CodePlaceCollectorFailed
           expr: codeplace_collector_success{namespace="code-place-prod"} == 0 or absent(codeplace_collector_success{namespace="code-place-prod"})
           for: 5m
@@ -367,8 +367,8 @@ spec:
             severity: warning
             priority: P1
           annotations:
-            summary: "prod Backend custom metric collector가 실패했습니다"
-            description: "prod Backend custom metric collector가 5분 동안 Redis 기반 metric을 수집하지 못했거나 metric이 사라졌습니다. 실패 collector label을 확인해야 합니다."
+            summary: "운영 백엔드 사용자 정의 메트릭 수집기가 실패했습니다"
+            description: "운영 백엔드 사용자 정의 메트릭 수집기가 5분 동안 Redis 기반 메트릭을 수집하지 못했거나 메트릭이 사라졌습니다. 실패한 수집기 레이블을 확인해야 합니다."
         - alert: CodePlaceTelemetryCoverageIncomplete
           expr: (count(codeplace_collector_success{namespace="code-place-dev"}) < 8) or (count(codeplace_redis_sentinel_health{namespace="code-place-dev"}) < 4)
           for: 5m
@@ -378,8 +378,8 @@ spec:
             severity: warning
             priority: P1
           annotations:
-            summary: "dev Backend telemetry replica coverage가 불완전합니다"
-            description: "dev Backend target별 custom collector 4종 또는 Sentinel check 2종의 metric series가 5분 동안 누락됐습니다. Backend rollout 버전과 target별 /metrics 출력을 확인해야 합니다."
+            summary: "개발 백엔드 원격 측정 복제본 수집 범위가 불완전합니다"
+            description: "개발 백엔드 수집 대상별 사용자 정의 수집기 4종 또는 Sentinel 점검 2종의 메트릭 시계열이 5분 동안 누락되었습니다. 백엔드 배포 버전과 대상별 /metrics 출력을 확인해야 합니다."
         - alert: CodePlaceTelemetryCoverageIncomplete
           expr: (count(codeplace_collector_success{namespace="code-place-prod"}) < 24) or (count(codeplace_redis_sentinel_health{namespace="code-place-prod"}) < 12)
           for: 5m
@@ -389,8 +389,8 @@ spec:
             severity: warning
             priority: P1
           annotations:
-            summary: "prod Backend telemetry replica coverage가 불완전합니다"
-            description: "prod Backend target별 custom collector 4종 또는 Sentinel check 2종의 metric series가 5분 동안 누락됐습니다. Backend rollout 버전과 target별 /metrics 출력을 확인해야 합니다."
+            summary: "운영 백엔드 원격 측정 복제본 수집 범위가 불완전합니다"
+            description: "운영 백엔드 수집 대상별 사용자 정의 수집기 4종 또는 Sentinel 점검 2종의 메트릭 시계열이 5분 동안 누락되었습니다. 백엔드 배포 버전과 대상별 /metrics 출력을 확인해야 합니다."
         - alert: SubmissionCreateSystemFailures
           expr: sum by (namespace, scope, status) (increase(codeplace_submission_create_outcome_total{namespace=~"code-place-(dev|prod)", status=~"db_error|enqueue_error"}[5m])) > 0
           for: 2m
@@ -399,7 +399,7 @@ spec:
             priority: P1
           annotations:
             summary: "제출 생성 경로에서 시스템 오류가 발생했습니다"
-            description: "제출 생성 중 DB 오류 또는 judge enqueue 오류가 보고됐습니다. backend 로그, PostgreSQL, Redis/Celery broker, judge task queue를 확인해야 합니다."
+            description: "제출 생성 중 데이터베이스 오류 또는 채점 작업 대기열 등록 오류가 보고되었습니다. 백엔드 로그, PostgreSQL, Redis/Celery 브로커, 채점 작업 대기열을 확인해야 합니다."
         - alert: JudgeTaskFailures
           expr: max by (namespace, scope, status) (increase(codeplace_judge_task_outcome_total{namespace=~"code-place-(dev|prod)", status=~"error|submission_missing|user_missing"}[5m])) > 0
           for: 2m
@@ -407,16 +407,16 @@ spec:
             severity: warning
             priority: P1
           annotations:
-            summary: "judge_task 실패가 감지됐습니다"
-            description: "Celery judge_task가 채점 dispatch 전후로 실패하고 있습니다. celery-worker 로그, submission/user row, judge-server 가용성, 결과 저장 경로를 확인해야 합니다."
+            summary: "채점 작업 실패가 감지되었습니다"
+            description: "Celery 채점 작업이 채점 요청 전후로 실패하고 있습니다. celery-worker 로그, 제출 및 사용자 행, judge-server 가용성, 결과 저장 경로를 확인해야 합니다."
         - alert: CeleryWorkerRestarting
           expr: sum by (namespace) (increase(kube_pod_container_status_restarts_total{namespace=~"code-place-(dev|prod)", pod=~"celery-worker-.*"}[15m])) > 3
           labels:
             severity: warning
             priority: P1
           annotations:
-            summary: "Celery worker가 반복 재시작 중입니다"
-            description: "Celery worker Pod가 15분 동안 3회 넘게 재시작했습니다."
+            summary: "Celery 워커가 반복 재시작 중입니다"
+            description: "Celery 워커 Pod가 15분 동안 3회 넘게 재시작했습니다."
         - alert: CeleryBeatDown
           expr: (kube_deployment_status_replicas_available{namespace=~"code-place-(dev|prod)", deployment="celery-beat"} < 1) or (kube_deployment_spec_replicas{namespace=~"code-place-(dev|prod)", deployment="celery-beat"} unless on (namespace, deployment) kube_deployment_status_replicas_available{namespace=~"code-place-(dev|prod)", deployment="celery-beat"})
           for: 2m
@@ -424,8 +424,8 @@ spec:
             severity: warning
             priority: P1
           annotations:
-            summary: "Celery beat가 ready 상태가 아닙니다"
-            description: "celery-beat Deployment에 2분 동안 available replica가 없거나 availability metric이 사라졌습니다."
+            summary: "Celery Beat가 준비되지 않았습니다"
+            description: "celery-beat Deployment에 2분 동안 사용 가능한 복제본이 없거나 가용성 메트릭이 사라졌습니다."
         - alert: PodCrashLooping
           expr: sum by (namespace, pod) (increase(kube_pod_container_status_restarts_total{namespace=~"code-place-(dev|prod)", pod=~"backend-.*|frontend-.*|hub-auth-.*|celery-.*|judge-server-.*|vllm-.*"}[5m])) > 0
           for: 5m
@@ -434,7 +434,7 @@ spec:
             priority: P1
           annotations:
             summary: "CodePlace Pod가 재시작 중입니다"
-            description: "CodePlace application Pod가 최근 5분 안에 재시작했습니다."
+            description: "CodePlace 애플리케이션 Pod가 최근 5분 안에 재시작했습니다."
         - alert: CodePlacePodNotReady
           expr: max by (namespace, pod) (kube_pod_status_ready{namespace=~"code-place-(dev|prod)", condition="true", pod=~"backend-.*|frontend-.*|hub-auth-.*|celery-.*|judge-server-.*|postgres-.*|redis-.*|vllm-.*"}) == 0
           for: 5m
@@ -442,8 +442,8 @@ spec:
             severity: warning
             priority: P1
           annotations:
-            summary: "CodePlace Pod가 ready 상태가 아닙니다"
-            description: "CodePlace application 또는 datastore Pod가 5분 동안 ready 상태가 아닙니다."
+            summary: "CodePlace Pod가 준비되지 않았습니다"
+            description: "CodePlace 애플리케이션 또는 데이터 저장소 Pod가 5분 동안 준비 상태가 아닙니다."
         - alert: KubernetesPodImagePullBackOff
           expr: max by (namespace, pod, container, reason) (kube_pod_container_status_waiting_reason{namespace=~"code-place-(dev|prod)", reason=~"ImagePullBackOff|ErrImagePull"}) == 1
           for: 2m
@@ -451,8 +451,8 @@ spec:
             severity: warning
             priority: P1
           annotations:
-            summary: "Kubernetes Pod가 이미지를 pull하지 못하고 있습니다"
-            description: "Pod가 2분 동안 ImagePullBackOff 또는 ErrImagePull 상태입니다. image tag, registry 접근, image pull secret을 확인해야 합니다."
+            summary: "Kubernetes Pod가 이미지를 가져오지 못하고 있습니다"
+            description: "Pod가 2분 동안 ImagePullBackOff 또는 ErrImagePull 상태입니다. 이미지 태그, 레지스트리 접근, 이미지 가져오기 Secret을 확인해야 합니다."
         - alert: KubernetesPodCrashLoopBackOff
           expr: max by (namespace, pod, container) (kube_pod_container_status_waiting_reason{namespace=~"code-place-(dev|prod)", reason="CrashLoopBackOff"}) == 1
           for: 5m
@@ -461,7 +461,7 @@ spec:
             priority: P1
           annotations:
             summary: "Kubernetes Pod가 CrashLoopBackOff 상태입니다"
-            description: "Pod가 5분 동안 CrashLoopBackOff 상태입니다. 이전 container 로그와 Kubernetes Warning event를 확인해야 합니다."
+            description: "Pod가 5분 동안 CrashLoopBackOff 상태입니다. 이전 컨테이너 로그와 Kubernetes 경고 이벤트를 확인해야 합니다."
         - alert: KubernetesPodOOMKilled
           expr: max by (namespace, pod, container) (max_over_time(kube_pod_container_status_last_terminated_reason{namespace=~"code-place-(dev|prod)", reason="OOMKilled"}[10m])) == 1
           for: 2m
@@ -469,8 +469,8 @@ spec:
             severity: warning
             priority: P1
           annotations:
-            summary: "Kubernetes container가 OOMKilled 됐습니다"
-            description: "최근 10분 안에 container가 OOMKilled로 종료됐습니다. memory limit, 최근 트래픽, heap/cache 증가를 확인해야 합니다."
+            summary: "Kubernetes 컨테이너가 메모리 부족으로 종료되었습니다"
+            description: "최근 10분 안에 컨테이너가 OOMKilled로 종료되었습니다. 메모리 제한, 최근 트래픽, 힙 또는 캐시 증가를 확인해야 합니다."
         - alert: KubernetesPodUnschedulable
           expr: (max by (namespace, pod) (kube_pod_status_unschedulable{namespace=~"code-place-(dev|prod)"}) == 1) or (max by (namespace, pod) (kube_pod_status_phase{namespace=~"code-place-(dev|prod)", phase="Pending"}) == 1)
           for: 10m
@@ -478,8 +478,8 @@ spec:
             severity: warning
             priority: P1
           annotations:
-            summary: "Kubernetes Pod가 Pending 또는 unschedulable 상태입니다"
-            description: "Pod가 10분 동안 Pending 또는 unschedulable 상태입니다. node 용량, taint, affinity, PVC binding, FailedScheduling event를 확인해야 합니다."
+            summary: "Kubernetes Pod가 대기 중이거나 배치할 수 없습니다"
+            description: "Pod가 10분 동안 Pending 또는 배치 불가 상태입니다. 노드 용량, 테인트, 어피니티, PVC 바인딩, FailedScheduling 이벤트를 확인해야 합니다."
         - alert: CodePlaceDeploymentUnavailable
           expr: max by (namespace, deployment) (kube_deployment_status_replicas_unavailable{namespace=~"code-place-(dev|prod)", deployment=~"backend|frontend|hub-auth|celery-worker|celery-beat|judge-server|vllm"}) > 0
           for: 5m
@@ -487,8 +487,8 @@ spec:
             severity: warning
             priority: P1
           annotations:
-            summary: "CodePlace Deployment에 unavailable replica가 있습니다"
-            description: "CodePlace Deployment에 5분 동안 unavailable replica가 있습니다. rollout 상태, Pod event, readiness probe, image pull, resource pressure를 확인해야 합니다."
+            summary: "CodePlace Deployment에 사용할 수 없는 복제본이 있습니다"
+            description: "CodePlace Deployment에 5분 동안 사용할 수 없는 복제본이 있습니다. 배포 상태, Pod 이벤트, 준비 상태 점검, 이미지 가져오기, 리소스 압박을 확인해야 합니다."
         - alert: CodePlaceServiceNoReadyEndpoints
           expr: (sum by (namespace, service) (label_replace(kube_endpointslice_endpoints{namespace=~"code-place-(dev|prod)", endpointslice=~"(backend|frontend|hub-auth|judge-server)-.*", ready="true"}, "service", "$1", "endpointslice", "(backend|frontend|hub-auth|judge-server)-.*")) < 1) or (kube_service_info{namespace=~"code-place-(dev|prod)", service=~"backend|frontend|hub-auth|judge-server"} unless on (namespace, service) label_replace(kube_endpointslice_endpoints{namespace=~"code-place-(dev|prod)", endpointslice=~"(backend|frontend|hub-auth|judge-server)-.*", ready="true"}, "service", "$1", "endpointslice", "(backend|frontend|hub-auth|judge-server)-.*"))
           for: 2m
@@ -496,8 +496,8 @@ spec:
             severity: warning
             priority: P1
           annotations:
-            summary: "CodePlace Service에 ready endpoint가 없습니다"
-            description: "CodePlace Service에 2분 동안 ready endpoint가 없거나 Service는 있는데 endpoint availability metric이 사라졌습니다. Service selector label, Pod readiness, EndpointSlice 상태, rollout event를 확인해야 합니다."
+            summary: "CodePlace Service에 준비된 엔드포인트가 없습니다"
+            description: "CodePlace Service에 2분 동안 준비된 엔드포인트가 없거나 Service는 있는데 엔드포인트 가용성 메트릭이 사라졌습니다. Service 선택기 레이블, Pod 준비 상태, EndpointSlice 상태, 배포 이벤트를 확인해야 합니다."
         - alert: VLLMServiceNoReadyEndpoints
           expr: (sum by (namespace, service) (label_replace(kube_endpointslice_endpoints{namespace="code-place-prod", endpointslice=~"vllm-.*", ready="true"}, "service", "vllm", "endpointslice", ".*")) < 1) or (kube_service_info{namespace="code-place-prod", service="vllm"} unless on (namespace, service) label_replace(kube_endpointslice_endpoints{namespace="code-place-prod", endpointslice=~"vllm-.*", ready="true"}, "service", "vllm", "endpointslice", ".*"))
           for: 2m
@@ -506,8 +506,8 @@ spec:
             priority: P1
             namespace: code-place-prod
           annotations:
-            summary: "vLLM Service에 ready endpoint가 없습니다"
-            description: "prod vLLM Service에 2분 동안 ready endpoint가 없거나 Service는 있는데 endpoint availability metric이 사라졌습니다. Service object가 있어도 AI 힌트 routing이 실패할 수 있습니다."
+            summary: "vLLM Service에 준비된 엔드포인트가 없습니다"
+            description: "운영 vLLM Service에 2분 동안 준비된 엔드포인트가 없거나 Service는 있는데 엔드포인트 가용성 메트릭이 사라졌습니다. Service 객체가 있어도 AI 힌트 라우팅이 실패할 수 있습니다."
         - alert: CodePlaceContainerCPUHigh
           expr: sum by (namespace, pod, container) (rate(container_cpu_usage_seconds_total{namespace=~"code-place-(dev|prod)", container!="", pod=~"backend-.*|frontend-.*|hub-auth-.*|celery-.*|judge-server-.*|postgres-.*|redis-.*|vllm-.*"}[5m])) / clamp_min(sum by (namespace, pod, container) (kube_pod_container_resource_limits{namespace=~"code-place-(dev|prod)", resource="cpu", unit="core", pod=~"backend-.*|frontend-.*|hub-auth-.*|celery-.*|judge-server-.*|postgres-.*|redis-.*|vllm-.*"}), 0.001) > 0.8
           for: 10m
@@ -515,8 +515,8 @@ spec:
             severity: warning
             priority: P1
           annotations:
-            summary: "CodePlace container CPU 사용률이 높습니다"
-            description: "CodePlace container가 10분 동안 CPU limit의 80%를 초과해 사용했습니다."
+            summary: "CodePlace 컨테이너 CPU 사용률이 높습니다"
+            description: "CodePlace 컨테이너가 10분 동안 CPU 제한의 80%를 초과해 사용했습니다."
         - alert: CodePlaceContainerMemoryHigh
           expr: max by (namespace, pod, container) (container_memory_working_set_bytes{namespace=~"code-place-(dev|prod)", container!="", pod=~"backend-.*|frontend-.*|hub-auth-.*|celery-.*|judge-server-.*|postgres-.*|redis-.*|vllm-.*"}) / clamp_min(sum by (namespace, pod, container) (kube_pod_container_resource_limits{namespace=~"code-place-(dev|prod)", resource="memory", unit="byte", pod=~"backend-.*|frontend-.*|hub-auth-.*|celery-.*|judge-server-.*|postgres-.*|redis-.*|vllm-.*"}), 1) > 0.85
           for: 10m
@@ -524,8 +524,8 @@ spec:
             severity: warning
             priority: P1
           annotations:
-            summary: "CodePlace container memory 사용률이 높습니다"
-            description: "CodePlace container가 10분 동안 memory limit의 85%를 초과해 사용했습니다."
+            summary: "CodePlace 컨테이너 메모리 사용률이 높습니다"
+            description: "CodePlace 컨테이너가 10분 동안 메모리 제한의 85%를 초과해 사용했습니다."
         - alert: PostgresCollectorError
           expr: max by (namespace, pod) (cnpg_collector_last_collection_error{namespace=~"code-place-(dev|prod)", cluster="postgres"}) > 0
           for: 5m
@@ -533,8 +533,8 @@ spec:
             severity: warning
             priority: P1
           annotations:
-            summary: "PostgreSQL metric 수집이 실패하고 있습니다"
-            description: "CNPG PostgreSQL metric 수집 오류가 5분 동안 보고됐습니다."
+            summary: "PostgreSQL 메트릭 수집이 실패하고 있습니다"
+            description: "CNPG PostgreSQL 메트릭 수집 오류가 5분 동안 보고되었습니다."
         - alert: PostgresCollectorUnavailable
           expr: (cnpg_collector_up{namespace="code-place-dev", cluster="postgres"} == 0) or (count(cnpg_collector_up{namespace="code-place-dev", cluster="postgres"}) < 3) or absent(cnpg_collector_up{namespace="code-place-dev", cluster="postgres"})
           for: 5m
@@ -544,8 +544,8 @@ spec:
             severity: warning
             priority: P1
           annotations:
-            summary: "dev PostgreSQL metric collector가 응답하지 않습니다"
-            description: "dev CNPG collector가 5분 동안 PostgreSQL에 접근하지 못했거나 기대 instance 3개의 collector metric을 모두 제공하지 못했습니다."
+            summary: "개발 PostgreSQL 메트릭 수집기가 응답하지 않습니다"
+            description: "개발 CNPG 수집기가 5분 동안 PostgreSQL에 접근하지 못했거나, 필요한 인스턴스 3개의 수집 메트릭을 모두 제공하지 못했습니다."
         - alert: PostgresCollectorUnavailable
           expr: (cnpg_collector_up{namespace="code-place-prod", cluster="postgres"} == 0) or (count(cnpg_collector_up{namespace="code-place-prod", cluster="postgres"}) < 3) or absent(cnpg_collector_up{namespace="code-place-prod", cluster="postgres"})
           for: 5m
@@ -555,8 +555,8 @@ spec:
             severity: warning
             priority: P1
           annotations:
-            summary: "prod PostgreSQL metric collector가 응답하지 않습니다"
-            description: "prod CNPG collector가 5분 동안 PostgreSQL에 접근하지 못했거나 기대 instance 3개의 collector metric을 모두 제공하지 못했습니다."
+            summary: "운영 PostgreSQL 메트릭 수집기가 응답하지 않습니다"
+            description: "운영 CNPG 수집기가 5분 동안 PostgreSQL에 접근하지 못했거나, 필요한 인스턴스 3개의 수집 메트릭을 모두 제공하지 못했습니다."
         - alert: PostgresHADegraded
           expr: min by (namespace) (cnpg_collector_nodes_used{namespace=~"code-place-(dev|prod)", cluster="postgres"}) < 2
           for: 10m
@@ -565,7 +565,7 @@ spec:
             priority: P1
           annotations:
             summary: "PostgreSQL HA 배치가 저하됐습니다"
-            description: "CNPG가 10분 동안 PostgreSQL instance가 2개 미만의 노드에 배치됐다고 보고했습니다."
+            description: "CNPG가 10분 동안 PostgreSQL 인스턴스가 2개 미만의 노드에 배치되었다고 보고했습니다."
         - alert: PostgresReplicaUnavailable
           expr: sum by (namespace) (kube_pod_status_ready{namespace=~"code-place-(dev|prod)", condition="true", pod=~"postgres-[0-9]+"}) < 2
           for: 5m
@@ -573,8 +573,8 @@ spec:
             severity: warning
             priority: P1
           annotations:
-            summary: "PostgreSQL ready replica 수가 부족합니다"
-            description: "PostgreSQL Pod ready 수가 5분 동안 2개 미만입니다. failover 여력이나 quorum이 줄어들 수 있습니다."
+            summary: "PostgreSQL 준비 복제본 수가 부족합니다"
+            description: "PostgreSQL Pod의 준비된 수가 5분 동안 2개 미만입니다. 장애 조치 여력이나 정족수가 줄어들 수 있습니다."
         - alert: RedisReplicaUnavailable
           expr: sum by (namespace) (kube_pod_status_ready{namespace=~"code-place-(dev|prod)", condition="true", pod=~"redis-.*|redis-replication-.*"}) < 6
           for: 5m
@@ -582,8 +582,8 @@ spec:
             severity: warning
             priority: P1
           annotations:
-            summary: "Redis/Sentinel ready replica 수가 부족합니다"
-            description: "Redis replication 및 Sentinel Pod ready 수가 5분 동안 6개 미만입니다. Redis failover 여력이 줄어들 수 있습니다."
+            summary: "Redis/Sentinel 준비 복제본 수가 부족합니다"
+            description: "Redis 복제 및 Sentinel Pod의 준비된 수가 5분 동안 6개 미만입니다. Redis 장애 조치 여력이 줄어들 수 있습니다."
         - alert: RedisExporterCoverageIncomplete
           expr: (redis_up{namespace="code-place-dev", job="redis"} == 0) or (count(redis_up{namespace="code-place-dev", job="redis"}) < 6) or absent(redis_up{namespace="code-place-dev", job="redis"})
           for: 5m
@@ -593,8 +593,8 @@ spec:
             severity: warning
             priority: P1
           annotations:
-            summary: "dev Redis exporter coverage가 불완전합니다"
-            description: "dev Redis/Sentinel exporter가 5분 동안 실패했거나 기대 target 6개의 redis_up metric을 모두 제공하지 못했습니다."
+            summary: "개발 Redis Exporter 수집 범위가 불완전합니다"
+            description: "개발 Redis/Sentinel Exporter가 5분 동안 실패했거나 필요한 수집 대상 6개의 redis_up 메트릭을 모두 제공하지 못했습니다."
         - alert: RedisExporterCoverageIncomplete
           expr: (redis_up{namespace="code-place-prod", job="redis"} == 0) or (count(redis_up{namespace="code-place-prod", job="redis"}) < 6) or absent(redis_up{namespace="code-place-prod", job="redis"})
           for: 5m
@@ -604,8 +604,8 @@ spec:
             severity: warning
             priority: P1
           annotations:
-            summary: "prod Redis exporter coverage가 불완전합니다"
-            description: "prod Redis/Sentinel exporter가 5분 동안 실패했거나 기대 target 6개의 redis_up metric을 모두 제공하지 못했습니다."
+            summary: "운영 Redis Exporter 수집 범위가 불완전합니다"
+            description: "운영 Redis/Sentinel Exporter가 5분 동안 실패했거나 필요한 수집 대상 6개의 redis_up 메트릭을 모두 제공하지 못했습니다."
         - alert: RedisMemoryHigh
           expr: (max by (namespace, pod) (redis_memory_used_bytes{namespace=~"code-place-(dev|prod)"}) / max by (namespace, pod) (redis_memory_max_bytes{namespace=~"code-place-(dev|prod)"}) > 0.85) and on (namespace, pod) max by (namespace, pod) (redis_memory_max_bytes{namespace=~"code-place-(dev|prod)"}) > 0
           for: 10m
@@ -613,8 +613,8 @@ spec:
             severity: warning
             priority: P1
           annotations:
-            summary: "Redis memory 사용률이 높습니다"
-            description: "Redis exporter 기준 memory 사용률이 10분 동안 설정된 maxmemory의 85%를 초과했습니다."
+            summary: "Redis 메모리 사용률이 높습니다"
+            description: "Redis Exporter 기준 메모리 사용률이 10분 동안 설정된 maxmemory의 85%를 초과했습니다."
         - alert: OpenTelemetryCollectorUnavailable
           expr: (up{job="otel-collector", namespace="monitoring"} == 0) or (count(up{job="otel-collector", namespace="monitoring"}) < 2) or absent(up{job="otel-collector", namespace="monitoring"})
           for: 5m
@@ -624,8 +624,8 @@ spec:
             namespace: monitoring
             service: otel-collector
           annotations:
-            summary: "OpenTelemetry Collector를 scrape할 수 없습니다"
-            description: "OpenTelemetry Collector target이 5분 동안 없거나 내려갔거나 기대 target 2개보다 적습니다. dev/prod trace 수집 상태를 확인해야 합니다."
+            summary: "OpenTelemetry Collector 메트릭 수집 대상을 사용할 수 없습니다"
+            description: "OpenTelemetry Collector 수집 대상이 5분 동안 없거나 내려갔거나 필요한 수집 대상 2개보다 적습니다. 개발·운영 추적 수집 상태를 확인해야 합니다."
         - alert: BlackboxExporterCoverageIncomplete
           expr: (up{job="blackbox-exporter", namespace="monitoring"} == 0) or (count(up{job="blackbox-exporter", namespace="monitoring"}) < 2) or absent(up{job="blackbox-exporter", namespace="monitoring"})
           for: 5m
@@ -635,8 +635,8 @@ spec:
             severity: warning
             priority: P1
           annotations:
-            summary: "Blackbox exporter coverage가 불완전합니다"
-            description: "Blackbox exporter가 5분 동안 실패했거나 기대 target 2개보다 적습니다. public synthetic probe 수집 경로를 확인해야 합니다."
+            summary: "Blackbox Exporter 수집 범위가 불완전합니다"
+            description: "Blackbox Exporter가 5분 동안 실패했거나 필요한 수집 대상 2개보다 적습니다. 공개 가상 점검 수집 경로를 확인해야 합니다."
         - alert: TempoUnavailable
           expr: up{job="tempo", namespace="monitoring"} == 0 or absent(up{job="tempo", namespace="monitoring"})
           for: 5m
@@ -645,8 +645,8 @@ spec:
             priority: P1
             namespace: monitoring
           annotations:
-            summary: "Tempo를 scrape할 수 없습니다"
-            description: "Tempo target이 5분 동안 없거나 내려갔습니다. trace 저장 및 조회가 실패할 수 있습니다."
+            summary: "Tempo 메트릭 수집 대상을 사용할 수 없습니다"
+            description: "Tempo 수집 대상이 5분 동안 없거나 내려갔습니다. 추적 데이터의 저장 및 조회가 실패할 수 있습니다."
         - alert: OpenTelemetrySpanExportFailures
           expr: sum(increase(otelcol_exporter_send_failed_spans_total{namespace="monitoring"}[5m])) > 0
           for: 5m
@@ -655,8 +655,8 @@ spec:
             priority: P1
             namespace: monitoring
           annotations:
-            summary: "OpenTelemetry span 전송 실패가 지속됩니다"
-            description: "Collector가 5분 동안 Tempo로 span을 전송하지 못했습니다. Collector exporter와 Tempo 상태를 확인해야 합니다."
+            summary: "OpenTelemetry 스팬 전송 실패가 지속되고 있습니다"
+            description: "수집기가 5분 동안 Tempo로 스팬을 전송하지 못했습니다. 수집기 Exporter와 Tempo 상태를 확인해야 합니다."
         - alert: PVCAlmostFull
           expr: max by (namespace, persistentvolumeclaim) (kubelet_volume_stats_used_bytes{namespace=~"code-place-(dev|prod)"}) / clamp_min(max by (namespace, persistentvolumeclaim) (kubelet_volume_stats_capacity_bytes{namespace=~"code-place-(dev|prod)"}), 1) > 0.85
           for: 10m
@@ -665,7 +665,7 @@ spec:
             priority: P1
           annotations:
             summary: "PVC 사용률이 85%를 초과했습니다"
-            description: "PersistentVolumeClaim 사용률이 10분 동안 85%를 초과했습니다."
+            description: "PersistentVolumeClaim의 사용률이 10분 동안 85%를 초과했습니다."
         - alert: LokiPVCAlmostFull
           expr: max by (namespace, persistentvolumeclaim) (kubelet_volume_stats_used_bytes{namespace="monitoring", persistentvolumeclaim=~".*loki.*"}) / clamp_min(max by (namespace, persistentvolumeclaim) (kubelet_volume_stats_capacity_bytes{namespace="monitoring", persistentvolumeclaim=~".*loki.*"}), 1) > 0.85
           for: 10m
@@ -675,7 +675,7 @@ spec:
             namespace: monitoring
           annotations:
             summary: "Loki PVC 사용률이 85%를 초과했습니다"
-            description: "Loki Longhorn PVC 사용률이 10분 동안 85%를 초과했습니다. 로그 수집이 멈추기 전에 retention 또는 PVC 크기를 조정해야 합니다."
+            description: "Loki Longhorn PVC의 사용률이 10분 동안 85%를 초과했습니다. 로그 수집이 멈추기 전에 보존 기간 또는 PVC 크기를 조정해야 합니다."
         - alert: AlloyDaemonSetUnavailable
           expr: (kube_daemonset_status_number_available{namespace="monitoring", daemonset="alloy"} < kube_daemonset_status_desired_number_scheduled{namespace="monitoring", daemonset="alloy"}) or absent(kube_daemonset_status_desired_number_scheduled{namespace="monitoring", daemonset="alloy"})
           for: 5m
@@ -684,8 +684,8 @@ spec:
             priority: P1
             namespace: monitoring
           annotations:
-            summary: "일부 노드에서 Alloy log collector가 실행되지 않습니다"
-            description: "최소 1개 노드에서 5분 동안 available Alloy DaemonSet Pod가 없습니다. 해당 노드의 로그가 누락될 수 있습니다."
+            summary: "일부 노드에서 Alloy 로그 수집기가 실행되지 않습니다"
+            description: "최소 1개 노드에서 5분 동안 사용 가능한 Alloy DaemonSet Pod가 없습니다. 해당 노드의 로그가 누락될 수 있습니다."
         - alert: LokiGatewayUnavailable
           expr: (sum(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"loki-gateway-.*"}) == 0) or absent(kube_pod_status_ready{namespace="monitoring", condition="true", pod=~"loki-gateway-.*"})
           for: 2m
@@ -694,8 +694,8 @@ spec:
             priority: P1
             namespace: monitoring
           annotations:
-            summary: "Loki gateway가 ready 상태가 아닙니다"
-            description: "Loki gateway replica가 2분 동안 ready 상태가 아닙니다. Alloy write와 Grafana Loki query가 실패할 수 있습니다."
+            summary: "Loki 게이트웨이가 준비되지 않았습니다"
+            description: "Loki 게이트웨이 복제본이 2분 동안 준비 상태가 아닙니다. Alloy 쓰기와 Grafana Loki 조회가 실패할 수 있습니다."
         - alert: LokiRequestErrors
           expr: sum(rate(loki_request_duration_seconds_count{namespace="monitoring", status_code=~"5.."}[5m])) > 0
           for: 5m
@@ -705,7 +705,7 @@ spec:
             namespace: monitoring
           annotations:
             summary: "Loki가 5xx 응답을 반환하고 있습니다"
-            description: "Loki가 5분 동안 5xx 응답을 반환했습니다. 로그 write 또는 Grafana 로그 query가 실패할 수 있습니다."
+            description: "Loki가 5분 동안 5xx 응답을 반환했습니다. 로그 쓰기 또는 Grafana 로그 조회가 실패할 수 있습니다."
         - alert: LonghornVolumeDegraded
           expr: longhorn_volume_robustness == 2
           for: 5m
@@ -714,8 +714,8 @@ spec:
             priority: P1
             namespace: longhorn-system
           annotations:
-            summary: "Longhorn volume이 degraded 상태입니다"
-            description: "Longhorn volume이 5분 동안 degraded 상태입니다. replica rebuild, node 상태, disk pressure를 확인해야 합니다."
+            summary: "Longhorn 볼륨의 상태가 저하되었습니다"
+            description: "Longhorn 볼륨의 상태가 5분 동안 저하되었습니다. 복제본 재구축, 노드 상태, 디스크 압박을 확인해야 합니다."
         - alert: LonghornNodeNotReady
           expr: longhorn_node_status{condition="ready"} == 0
           for: 5m
@@ -724,8 +724,8 @@ spec:
             priority: P1
             namespace: longhorn-system
           annotations:
-            summary: "Longhorn node가 ready 상태가 아닙니다"
-            description: "Longhorn node가 5분 동안 ready 상태가 아닙니다."
+            summary: "Longhorn 노드가 준비되지 않았습니다"
+            description: "Longhorn 노드가 5분 동안 준비 상태가 아닙니다."
         - alert: LonghornDiskNotReady
           expr: longhorn_disk_status{condition="ready"} == 0
           for: 5m
@@ -734,8 +734,8 @@ spec:
             priority: P1
             namespace: longhorn-system
           annotations:
-            summary: "Longhorn disk가 ready 상태가 아닙니다"
-            description: "Longhorn disk가 5분 동안 ready 상태가 아닙니다."
+            summary: "Longhorn 디스크가 준비되지 않았습니다"
+            description: "Longhorn 디스크가 5분 동안 준비 상태가 아닙니다."
         - alert: LonghornNodeStorageHigh
           expr: (longhorn_node_storage_usage_bytes + longhorn_node_storage_reservation_bytes) / clamp_min(longhorn_node_storage_capacity_bytes, 1) > 0.85
           for: 10m
@@ -744,8 +744,8 @@ spec:
             priority: P1
             namespace: longhorn-system
           annotations:
-            summary: "Longhorn node storage 사용률이 높습니다"
-            description: "Longhorn node가 10분 동안 사용 가능 storage의 85%를 초과해 사용 또는 예약했습니다."
+            summary: "Longhorn 노드 스토리지 사용률이 높습니다"
+            description: "Longhorn 노드가 10분 동안 사용 가능한 스토리지의 85%를 초과해 사용하거나 예약했습니다."
         - alert: LonghornDiskUsageHigh
           expr: (longhorn_disk_usage_bytes + longhorn_disk_reservation_bytes) / clamp_min(longhorn_disk_capacity_bytes, 1) > 0.85
           for: 10m
@@ -754,8 +754,8 @@ spec:
             priority: P1
             namespace: longhorn-system
           annotations:
-            summary: "Longhorn disk 사용률이 높습니다"
-            description: "Longhorn disk가 10분 동안 용량의 85%를 초과해 사용 또는 예약했습니다."
+            summary: "Longhorn 디스크 사용률이 높습니다"
+            description: "Longhorn 디스크가 10분 동안 용량의 85%를 초과해 사용하거나 예약했습니다."
         - alert: VLLMWaitingQueueHigh
           expr: max({__name__="vllm:num_requests_waiting", namespace="code-place-prod"}) > 5
           for: 5m
@@ -764,8 +764,8 @@ spec:
             priority: P1
             namespace: code-place-prod
           annotations:
-            summary: "vLLM request 대기열이 높습니다"
-            description: "vLLM request가 5분 동안 5개를 초과해 대기했습니다. AI 힌트 latency가 증가할 수 있습니다."
+            summary: "vLLM 요청 대기열이 길어지고 있습니다"
+            description: "vLLM 요청이 5분 동안 5개를 초과해 대기했습니다. AI 힌트의 응답 시간이 늘어날 수 있습니다."
         - alert: VLLMKVCacheHigh
           expr: max({__name__="vllm:kv_cache_usage_perc", namespace="code-place-prod"}) > 0.9
           for: 10m
@@ -774,8 +774,8 @@ spec:
             priority: P1
             namespace: code-place-prod
           annotations:
-            summary: "vLLM KV cache 사용률이 높습니다"
-            description: "vLLM KV cache 사용률이 10분 동안 90%를 초과했습니다."
+            summary: "vLLM KV 캐시 사용률이 높습니다"
+            description: "vLLM KV 캐시 사용률이 10분 동안 90%를 초과했습니다."
         - alert: VLLMRequestLatencyHigh
           expr: histogram_quantile(0.95, sum by (le) (rate({__name__="vllm:e2e_request_latency_seconds_bucket", namespace="code-place-prod"}[10m]))) > 60
           for: 10m
@@ -784,8 +784,8 @@ spec:
             priority: P1
             namespace: code-place-prod
           annotations:
-            summary: "vLLM request latency가 높습니다"
-            description: "vLLM p95 end-to-end request latency가 10분 동안 60초를 초과했습니다."
+            summary: "vLLM 요청 응답 시간이 높습니다"
+            description: "vLLM의 p95 종단 간 요청 응답 시간이 10분 동안 60초를 초과했습니다."
         - alert: AIHintBackendErrors
           expr: sum by (namespace, status) (increase(codeplace_ai_hint_requests_total{namespace=~"code-place-(dev|prod)", status=~"request_error|stream_parse_error|error"}[5m])) > 0
           for: 2m
@@ -793,8 +793,8 @@ spec:
             severity: warning
             priority: P1
           annotations:
-            summary: "Backend AI 힌트 stream 실패가 감지됐습니다"
-            description: "최근 5분 동안 Backend AI 힌트 streaming에서 request, parse, internal 오류가 보고됐습니다. backend 로그, vLLM Service endpoint, vLLM metric, request_id 기반 trace를 확인해야 합니다."
+            summary: "백엔드 AI 힌트 스트리밍 실패가 감지되었습니다"
+            description: "최근 5분 동안 백엔드 AI 힌트 스트리밍에서 요청, 파싱 또는 내부 오류가 보고되었습니다. 백엔드 로그, vLLM Service 엔드포인트, vLLM 메트릭, request_id 기반 추적을 확인해야 합니다."
         - alert: AIHintBackendLatencyHigh
           expr: histogram_quantile(0.95, sum by (namespace, le) (rate(codeplace_ai_hint_duration_seconds_bucket{namespace=~"code-place-(dev|prod)", status="success"}[10m]))) > 120
           for: 10m
@@ -802,8 +802,8 @@ spec:
             severity: warning
             priority: P1
           annotations:
-            summary: "Backend AI 힌트 stream latency가 높습니다"
-            description: "성공한 Backend AI 힌트 stream p95 duration이 10분 동안 120초를 초과했습니다. vLLM queue, GPU 사용률, client stream 동작을 확인해야 합니다."
+            summary: "백엔드 AI 힌트 스트리밍 응답 시간이 높습니다"
+            description: "성공한 백엔드 AI 힌트 스트리밍의 p95 처리 시간이 10분 동안 120초를 초과했습니다. vLLM 대기열, GPU 사용률, 클라이언트 스트림 동작을 확인해야 합니다."
         - alert: AIHintAPIFailures
           expr: sum by (namespace, scope, status) (increase(codeplace_ai_hint_api_outcome_total{namespace=~"code-place-(dev|prod)", status=~"llm_error|unexpected_error|empty_response"}[5m])) > 0
           for: 2m
@@ -812,7 +812,7 @@ spec:
             priority: P1
           annotations:
             summary: "사용자 AI 힌트 API 실패가 감지됐습니다"
-            description: "최근 5분 동안 AI 힌트 API가 LLM 오류, unexpected 오류, empty response를 반환했습니다. API outcome status를 backend stream 및 vLLM panel과 비교해야 합니다."
+            description: "최근 5분 동안 AI 힌트 API가 LLM 오류, 예기치 않은 오류 또는 빈 응답을 반환했습니다. API 결과 상태를 백엔드 스트리밍 및 vLLM 패널과 비교해야 합니다."
         - alert: GPUUtilizationHigh
           expr: max by (Hostname, gpu, UUID) (DCGM_FI_DEV_GPU_UTIL{namespace="monitoring"}) > 95
           for: 15m
@@ -822,7 +822,7 @@ spec:
             namespace: monitoring
           annotations:
             summary: "GPU 사용률이 높습니다"
-            description: "DCGM 기준 GPU 사용률이 15분 동안 95%를 초과했습니다. 지속 부하에서 vLLM AI 힌트 latency가 증가할 수 있습니다."
+            description: "DCGM 기준 GPU 사용률이 15분 동안 95%를 초과했습니다. 지속적인 부하에서 vLLM AI 힌트의 응답 시간이 늘어날 수 있습니다."
         - alert: GPUMemoryHigh
           expr: max by (Hostname, gpu, UUID) (DCGM_FI_DEV_FB_USED{namespace="monitoring"} / clamp_min(DCGM_FI_DEV_FB_USED{namespace="monitoring"} + DCGM_FI_DEV_FB_FREE{namespace="monitoring"}, 1)) > 0.9
           for: 10m
@@ -831,8 +831,8 @@ spec:
             priority: P1
             namespace: monitoring
           annotations:
-            summary: "GPU framebuffer memory 사용률이 높습니다"
-            description: "DCGM 기준 GPU framebuffer memory 사용률이 10분 동안 90%를 초과했습니다. vLLM KV cache와 max sequence 설정을 확인해야 합니다."
+            summary: "GPU 프레임버퍼 메모리 사용률이 높습니다"
+            description: "DCGM 기준 GPU 프레임버퍼 메모리 사용률이 10분 동안 90%를 초과했습니다. vLLM KV 캐시와 최대 시퀀스 설정을 확인해야 합니다."
         - alert: GPUTemperatureHigh
           expr: max by (Hostname, gpu, UUID) (DCGM_FI_DEV_GPU_TEMP{namespace="monitoring"}) > 85
           for: 10m
@@ -851,5 +851,5 @@ spec:
             priority: P1
             namespace: monitoring
           annotations:
-            summary: "Kubernetes node pressure가 감지됐습니다"
-            description: "Kubernetes node가 5분 동안 memory, disk 또는 PID pressure를 보고했습니다."
+            summary: "Kubernetes 노드 리소스 압박이 감지되었습니다"
+            description: "Kubernetes 노드가 5분 동안 메모리, 디스크 또는 PID 리소스 압박을 보고했습니다."

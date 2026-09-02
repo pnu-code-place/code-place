@@ -7,7 +7,7 @@ const oAuth2 = {
     this.KEY = "CodePlaceHub_token";
     // TODO: Change ACCESS_TOKEN_URL to the correct one. This is for testing.
     this.ACCESS_TOKEN_URL =
-      "https://hub-auth.code-place-dev.site/api/token/issue";
+      "https://hub-auth.code-place-dev.kr/api/token/issue";
     this.AUTHORIZATION_URL = "https://github.com/login/oauth/authorize";
     this.CLIENT_ID = "Ov23liGMeecEJnH8nRfD"; // Code Place Hub OAuth App ID
     this.REDIRECT_URL = "https://github.com/"; // for example, https://github.com

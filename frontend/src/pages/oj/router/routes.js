@@ -166,6 +166,16 @@ export default [
         path: "rank",
         component: Contest.ContestRank,
       },
+      {
+        name: "contest-community",
+        path: "community",
+        component: Contest.ContestCommunity,
+      },
+      {
+        name: "contest-community-create",
+        path: "community/create",
+        component: CreatePostPage,
+      },
     ],
   },
   {

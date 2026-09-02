@@ -70,11 +70,11 @@ spec:
           apiURL:
             name: alertmanager-contact-points
             key: webhook-url
-          title: '[{{ if eq .Status "firing" }}활성{{ else }}해결{{ end }}][P0] {{ .CommonLabels.alertname }}{{ with .CommonLabels.service }} ({{ . }}){{ end }}'
+          title: '[{{ if eq .Status "firing" }}활성{{ else }}해결{{ end }}][P0] {{ .CommonAnnotations.summary }}{{ with .CommonLabels.service }} ({{ . }}){{ end }}'
           content: '{{ .CommonAnnotations.summary }}'
           message: |-
             {{ range .Alerts }}
-            대상: {{ if .Labels.service }}{{ .Labels.service }}{{ else }}{{ .Labels.alertname }}{{ end }}{{ with .Labels.instance }} ({{ . }}){{ end }}
+            대상: {{ if .Labels.service }}{{ .Labels.service }}{{ else }}{{ .Annotations.summary }}{{ end }}{{ with .Labels.instance }} ({{ . }}){{ end }}
             {{ if or .Labels.pod .Labels.container .Labels.persistentvolumeclaim .Labels.pvc .Labels.pvc_namespace .Labels.deployment .Labels.daemonset .Labels.node .Labels.volume .Labels.disk .Labels.reason .Labels.condition .Labels.collector .Labels.check .Labels.scope .Labels.status .Labels.Hostname .Labels.gpu .Labels.UUID }}
             문맥:{{ with .Labels.pod }} pod={{ . }}{{ end }}{{ with .Labels.container }} container={{ . }}{{ end }}{{ with .Labels.persistentvolumeclaim }} pvc={{ . }}{{ end }}{{ with .Labels.pvc }} pvc={{ . }}{{ end }}{{ with .Labels.pvc_namespace }} pvc_namespace={{ . }}{{ end }}{{ with .Labels.deployment }} deployment={{ . }}{{ end }}{{ with .Labels.daemonset }} daemonset={{ . }}{{ end }}{{ with .Labels.node }} node={{ . }}{{ end }}{{ with .Labels.volume }} volume={{ . }}{{ end }}{{ with .Labels.disk }} disk={{ . }}{{ end }}{{ with .Labels.reason }} reason={{ . }}{{ end }}{{ with .Labels.condition }} condition={{ . }}{{ end }}{{ with .Labels.collector }} collector={{ . }}{{ end }}{{ with .Labels.check }} check={{ . }}{{ end }}{{ with .Labels.scope }} scope={{ . }}{{ end }}{{ with .Labels.status }} status={{ . }}{{ end }}{{ with .Labels.Hostname }} host={{ . }}{{ end }}{{ with .Labels.gpu }} gpu={{ . }}{{ end }}{{ with .Labels.UUID }} gpu_uuid={{ . }}{{ end }}
             {{ end }}
@@ -84,14 +84,14 @@ spec:
             우선순위: P0
             네임스페이스: {{ .CommonLabels.namespace }}
             {{ if match "^code-place-(dev|prod)$" .CommonLabels.namespace }}
-            개요: https://monitoring.code-place-dev.site/d/codeplace-overview/codeplace-overview?orgId=1&var-environment={{ reReplaceAll "^code-place-" "" .CommonLabels.namespace }}
-            로그: https://monitoring.code-place-dev.site/d/codeplace-logs/codeplace-logs?orgId=1&var-environment={{ reReplaceAll "^code-place-" "" .CommonLabels.namespace }}
+            개요: https://monitoring.code-place-dev.kr/d/codeplace-overview/codeplace-overview?orgId=1&var-environment={{ reReplaceAll "^code-place-" "" .CommonLabels.namespace }}
+            로그: https://monitoring.code-place-dev.kr/d/codeplace-logs/codeplace-logs?orgId=1&var-environment={{ reReplaceAll "^code-place-" "" .CommonLabels.namespace }}
             {{ end }}
             {{ if eq .CommonLabels.namespace "longhorn-system" }}
-            스토리지(prod): https://monitoring.code-place-dev.site/d/codeplace-storage/codeplace-storage?orgId=1&var-environment=prod
-            스토리지(dev): https://monitoring.code-place-dev.site/d/codeplace-storage/codeplace-storage?orgId=1&var-environment=dev
+            스토리지(prod): https://monitoring.code-place-dev.kr/d/codeplace-storage/codeplace-storage?orgId=1&var-environment=prod
+            스토리지(dev): https://monitoring.code-place-dev.kr/d/codeplace-storage/codeplace-storage?orgId=1&var-environment=dev
             {{ end }}
-            모니터링: https://monitoring.code-place-dev.site/d/codeplace-monitoring-stack/codeplace-monitoring-stack?orgId=1
+            모니터링: https://monitoring.code-place-dev.kr/d/codeplace-monitoring-stack/codeplace-monitoring-stack?orgId=1
             {{ with index .Alerts 0 }}발생 쿼리: [Prometheus에서 보기]({{ .GeneratorURL }}){{ end }}
           username: CodePlace Alertmanager
     - name: dev-p1-muted
@@ -101,11 +101,11 @@ spec:
           apiURL:
             name: alertmanager-contact-points
             key: webhook-url
-          title: '[{{ if eq .Status "firing" }}활성{{ else }}해결{{ end }}][P1] {{ .CommonLabels.alertname }}{{ with .CommonLabels.service }} ({{ . }}){{ end }}'
+          title: '[{{ if eq .Status "firing" }}활성{{ else }}해결{{ end }}][P1] {{ .CommonAnnotations.summary }}{{ with .CommonLabels.service }} ({{ . }}){{ end }}'
           content: '{{ .CommonAnnotations.summary }}'
           message: |-
             {{ range .Alerts }}
-            대상: {{ if .Labels.service }}{{ .Labels.service }}{{ else }}{{ .Labels.alertname }}{{ end }}{{ with .Labels.instance }} ({{ . }}){{ end }}
+            대상: {{ if .Labels.service }}{{ .Labels.service }}{{ else }}{{ .Annotations.summary }}{{ end }}{{ with .Labels.instance }} ({{ . }}){{ end }}
             {{ if or .Labels.pod .Labels.container .Labels.persistentvolumeclaim .Labels.pvc .Labels.pvc_namespace .Labels.deployment .Labels.daemonset .Labels.node .Labels.volume .Labels.disk .Labels.reason .Labels.condition .Labels.collector .Labels.check .Labels.scope .Labels.status .Labels.Hostname .Labels.gpu .Labels.UUID }}
             문맥:{{ with .Labels.pod }} pod={{ . }}{{ end }}{{ with .Labels.container }} container={{ . }}{{ end }}{{ with .Labels.persistentvolumeclaim }} pvc={{ . }}{{ end }}{{ with .Labels.pvc }} pvc={{ . }}{{ end }}{{ with .Labels.pvc_namespace }} pvc_namespace={{ . }}{{ end }}{{ with .Labels.deployment }} deployment={{ . }}{{ end }}{{ with .Labels.daemonset }} daemonset={{ . }}{{ end }}{{ with .Labels.node }} node={{ . }}{{ end }}{{ with .Labels.volume }} volume={{ . }}{{ end }}{{ with .Labels.disk }} disk={{ . }}{{ end }}{{ with .Labels.reason }} reason={{ . }}{{ end }}{{ with .Labels.condition }} condition={{ . }}{{ end }}{{ with .Labels.collector }} collector={{ . }}{{ end }}{{ with .Labels.check }} check={{ . }}{{ end }}{{ with .Labels.scope }} scope={{ . }}{{ end }}{{ with .Labels.status }} status={{ . }}{{ end }}{{ with .Labels.Hostname }} host={{ . }}{{ end }}{{ with .Labels.gpu }} gpu={{ . }}{{ end }}{{ with .Labels.UUID }} gpu_uuid={{ . }}{{ end }}
             {{ end }}
@@ -115,13 +115,13 @@ spec:
             우선순위: P1
             네임스페이스: {{ .CommonLabels.namespace }}
             {{ if match "^code-place-(dev|prod)$" .CommonLabels.namespace }}
-            개요: https://monitoring.code-place-dev.site/d/codeplace-overview/codeplace-overview?orgId=1&var-environment={{ reReplaceAll "^code-place-" "" .CommonLabels.namespace }}
-            로그: https://monitoring.code-place-dev.site/d/codeplace-logs/codeplace-logs?orgId=1&var-environment={{ reReplaceAll "^code-place-" "" .CommonLabels.namespace }}
+            개요: https://monitoring.code-place-dev.kr/d/codeplace-overview/codeplace-overview?orgId=1&var-environment={{ reReplaceAll "^code-place-" "" .CommonLabels.namespace }}
+            로그: https://monitoring.code-place-dev.kr/d/codeplace-logs/codeplace-logs?orgId=1&var-environment={{ reReplaceAll "^code-place-" "" .CommonLabels.namespace }}
             {{ end }}
             {{ if eq .CommonLabels.namespace "longhorn-system" }}
-            스토리지(prod): https://monitoring.code-place-dev.site/d/codeplace-storage/codeplace-storage?orgId=1&var-environment=prod
-            스토리지(dev): https://monitoring.code-place-dev.site/d/codeplace-storage/codeplace-storage?orgId=1&var-environment=dev
+            스토리지(prod): https://monitoring.code-place-dev.kr/d/codeplace-storage/codeplace-storage?orgId=1&var-environment=prod
+            스토리지(dev): https://monitoring.code-place-dev.kr/d/codeplace-storage/codeplace-storage?orgId=1&var-environment=dev
             {{ end }}
-            모니터링: https://monitoring.code-place-dev.site/d/codeplace-monitoring-stack/codeplace-monitoring-stack?orgId=1
+            모니터링: https://monitoring.code-place-dev.kr/d/codeplace-monitoring-stack/codeplace-monitoring-stack?orgId=1
             {{ with index .Alerts 0 }}발생 쿼리: [Prometheus에서 보기]({{ .GeneratorURL }}){{ end }}
           username: CodePlace Alertmanager

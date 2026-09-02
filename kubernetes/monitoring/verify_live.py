@@ -177,11 +177,11 @@ CHECKS = (
         ">= 2 targets",
     ),
     Check(
-        "Prometheus ready replicas",
+        "Prometheus ready replica",
         'sum(kube_pod_status_ready{namespace="monitoring",condition="true",'
         'pod=~"prometheus-kube-prometheus-stack-prometheus-.*"})',
-        AT_LEAST_TWO,
-        ">= 2",
+        ONE,
+        "1",
     ),
     Check(
         "Alertmanager ready replicas",

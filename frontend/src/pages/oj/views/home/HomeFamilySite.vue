@@ -47,6 +47,14 @@ export default {
           title: "부산대학교<br>SW역량지원시스템",
           url: "https://swcss.pusan.ac.kr/",
         },
+        {
+          title: "부산대학교<br>AIPMS",
+          url: "https://aipms.pusan.ac.kr",
+        },
+        {
+          title: "부산대학교<br>서버관리시스템",
+          url: "https://pickle.pusan.ac.kr",
+        },
       ],
     }
   },
@@ -97,8 +105,8 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 5px;
-  background-color: #f4f6fb;
-  border: 0.5px solid #e2e6f0;
+  background-color: rgba(91, 100, 237, 0.045);
+  border: 1px solid rgba(91, 100, 237, 0.12);
   transition:
     transform 0.16s ease,
     box-shadow 0.16s ease,
@@ -107,9 +115,9 @@ export default {
 
   &:hover {
     transform: translateY(-2px);
-    background-color: #edf0fa;
-    box-shadow: 0 6px 18px rgba(90, 110, 200, 0.1);
-    border-color: #c8cfea;
+    background-color: rgba(91, 100, 237, 0.08);
+    box-shadow: 0 6px 18px rgba(91, 100, 237, 0.12);
+    border-color: rgba(91, 100, 237, 0.25);
 
     .fs-arrow {
       transform: translateX(2px);
@@ -121,7 +129,7 @@ export default {
   width: 20px;
   height: 2px;
   border-radius: 2px;
-  background-color: #7c8fd6;
+  background-color: var(--point-color, #5b64ed);
   margin-bottom: 2px;
 }
 
@@ -134,7 +142,7 @@ export default {
 
 .fs-card-sub {
   font-size: 10px;
-  color: #9ba5c9;
+  color: rgba(91, 100, 237, 0.75);
   display: flex;
   align-items: center;
   gap: 2px;
