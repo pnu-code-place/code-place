@@ -14,7 +14,7 @@ spec:
   targets:
     staticConfig:
       static:
-        - https://k3s.code-place-dev.site/
+        - https://k3s.code-place-dev.kr/
       labels:
         environment: dev
         namespace: code-place-dev
@@ -60,7 +60,7 @@ spec:
   targets:
     staticConfig:
       static:
-        - https://monitoring.code-place-dev.site/
+        - https://monitoring.code-place-dev.kr/
       labels:
         environment: monitoring
         namespace: monitoring
@@ -83,7 +83,7 @@ spec:
   targets:
     staticConfig:
       static:
-        - https://hub-auth-dev.code-place-dev.site/healthz
+        - https://hub-auth-dev.code-place-dev.kr/healthz
       labels:
         environment: dev
         namespace: code-place-dev
@@ -106,7 +106,7 @@ spec:
   targets:
     staticConfig:
       static:
-        - https://hub-auth.code-place-dev.site/healthz
+        - https://hub-auth.code-place-dev.kr/healthz
       labels:
         environment: prod
         namespace: code-place-prod

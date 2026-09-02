@@ -9,11 +9,11 @@ tests:
     input_series:
       - series: 'probe_success{environment="prod",namespace="code-place-prod",probe_type="public-http",service="frontend",instance="https://code.pusan.ac.kr/"}'
         values: '1 1 1 1 1 1 1 1 1 1 1 1 1'
-      - series: 'probe_success{environment="prod",namespace="code-place-prod",probe_type="public-http",service="hub-auth",instance="https://hub-auth.code-place-dev.site/healthz"}'
+      - series: 'probe_success{environment="prod",namespace="code-place-prod",probe_type="public-http",service="hub-auth",instance="https://hub-auth.code-place-dev.kr/healthz"}'
         values: '1 1 1 1 1 1 1 1 1 1 1 1 1'
-      - series: 'probe_success{environment="dev",namespace="code-place-dev",probe_type="public-http",service="frontend",instance="https://k3s.code-place-dev.site/"}'
+      - series: 'probe_success{environment="dev",namespace="code-place-dev",probe_type="public-http",service="frontend",instance="https://k3s.code-place-dev.kr/"}'
         values: '1 1 1 1 1 1 1 1 1 1 1 1 1'
-      - series: 'probe_success{environment="dev",namespace="code-place-dev",probe_type="public-http",service="hub-auth",instance="https://hub-auth-dev.code-place-dev.site/healthz"}'
+      - series: 'probe_success{environment="dev",namespace="code-place-dev",probe_type="public-http",service="hub-auth",instance="https://hub-auth-dev.code-place-dev.kr/healthz"}'
         values: '1 1 1 1 1 1 1 1 1 1 1 1 1'
     alert_rule_test:
       - eval_time: 3m
@@ -28,11 +28,11 @@ tests:
     input_series:
       - series: 'probe_success{environment="prod",namespace="code-place-prod",probe_type="public-http",service="frontend",instance="https://code.pusan.ac.kr/"}'
         values: '1 1 1 1 1 1'
-      - series: 'probe_success{environment="prod",namespace="code-place-prod",probe_type="public-http",service="hub-auth",instance="https://hub-auth.code-place-dev.site/healthz"}'
+      - series: 'probe_success{environment="prod",namespace="code-place-prod",probe_type="public-http",service="hub-auth",instance="https://hub-auth.code-place-dev.kr/healthz"}'
         values: '0 0 0 0 0 0'
-      - series: 'probe_success{environment="dev",namespace="code-place-dev",probe_type="public-http",service="frontend",instance="https://k3s.code-place-dev.site/"}'
+      - series: 'probe_success{environment="dev",namespace="code-place-dev",probe_type="public-http",service="frontend",instance="https://k3s.code-place-dev.kr/"}'
         values: '1 1 1 1 1 1'
-      - series: 'probe_success{environment="dev",namespace="code-place-dev",probe_type="public-http",service="hub-auth",instance="https://hub-auth-dev.code-place-dev.site/healthz"}'
+      - series: 'probe_success{environment="dev",namespace="code-place-dev",probe_type="public-http",service="hub-auth",instance="https://hub-auth-dev.code-place-dev.kr/healthz"}'
         values: '1 1 1 1 1 1'
     alert_rule_test:
       - eval_time: 1m15s
@@ -40,7 +40,7 @@ tests:
         exp_alerts:
           - exp_labels:
               environment: prod
-              instance: https://hub-auth.code-place-dev.site/healthz
+              instance: https://hub-auth.code-place-dev.kr/healthz
               namespace: code-place-prod
               priority: P0
               probe_type: public-http
@@ -48,18 +48,18 @@ tests:
               severity: critical
             exp_annotations:
               summary: 운영 hub-auth 공개 엔드포인트가 응답하지 않습니다
-              description: https://hub-auth.code-place-dev.site/healthz의 HTTPS 가상 점검이 1분 동안 실패했습니다.
+              description: https://hub-auth.code-place-dev.kr/healthz의 HTTPS 가상 점검이 1분 동안 실패했습니다.
 
   - name: transient prod failure recovers before the one minute threshold
     interval: 15s
     input_series:
       - series: 'probe_success{environment="prod",namespace="code-place-prod",probe_type="public-http",service="frontend",instance="https://code.pusan.ac.kr/"}'
         values: '1 1 1 1 1 1 1'
-      - series: 'probe_success{environment="prod",namespace="code-place-prod",probe_type="public-http",service="hub-auth",instance="https://hub-auth.code-place-dev.site/healthz"}'
+      - series: 'probe_success{environment="prod",namespace="code-place-prod",probe_type="public-http",service="hub-auth",instance="https://hub-auth.code-place-dev.kr/healthz"}'
         values: '0 0 0 1 1 1 1'
-      - series: 'probe_success{environment="dev",namespace="code-place-dev",probe_type="public-http",service="frontend",instance="https://k3s.code-place-dev.site/"}'
+      - series: 'probe_success{environment="dev",namespace="code-place-dev",probe_type="public-http",service="frontend",instance="https://k3s.code-place-dev.kr/"}'
         values: '1 1 1 1 1 1 1'
-      - series: 'probe_success{environment="dev",namespace="code-place-dev",probe_type="public-http",service="hub-auth",instance="https://hub-auth-dev.code-place-dev.site/healthz"}'
+      - series: 'probe_success{environment="dev",namespace="code-place-dev",probe_type="public-http",service="hub-auth",instance="https://hub-auth-dev.code-place-dev.kr/healthz"}'
         values: '1 1 1 1 1 1 1'
     alert_rule_test:
       - eval_time: 1m30s
@@ -71,11 +71,11 @@ tests:
     input_series:
       - series: 'probe_success{environment="prod",namespace="code-place-prod",probe_type="public-http",service="frontend",instance="https://code.pusan.ac.kr/"}'
         values: '1 1 1 1 1 1 1 1 1 1'
-      - series: 'probe_success{environment="prod",namespace="code-place-prod",probe_type="public-http",service="hub-auth",instance="https://hub-auth.code-place-dev.site/healthz"}'
+      - series: 'probe_success{environment="prod",namespace="code-place-prod",probe_type="public-http",service="hub-auth",instance="https://hub-auth.code-place-dev.kr/healthz"}'
         values: '1 1 1 1 1 1 1 1 1 1'
-      - series: 'probe_success{environment="dev",namespace="code-place-dev",probe_type="public-http",service="frontend",instance="https://k3s.code-place-dev.site/"}'
+      - series: 'probe_success{environment="dev",namespace="code-place-dev",probe_type="public-http",service="frontend",instance="https://k3s.code-place-dev.kr/"}'
         values: '1 1 1 1 1 1 1 1 1 1'
-      - series: 'probe_success{environment="dev",namespace="code-place-dev",probe_type="public-http",service="hub-auth",instance="https://hub-auth-dev.code-place-dev.site/healthz"}'
+      - series: 'probe_success{environment="dev",namespace="code-place-dev",probe_type="public-http",service="hub-auth",instance="https://hub-auth-dev.code-place-dev.kr/healthz"}'
         values: '0 0 0 0 0 0 0 0 0 0'
     alert_rule_test:
       - eval_time: 1m45s
@@ -86,7 +86,7 @@ tests:
         exp_alerts:
           - exp_labels:
               environment: dev
-              instance: https://hub-auth-dev.code-place-dev.site/healthz
+              instance: https://hub-auth-dev.code-place-dev.kr/healthz
               namespace: code-place-dev
               priority: P1
               probe_type: public-http
@@ -94,16 +94,16 @@ tests:
               severity: warning
             exp_annotations:
               summary: 개발 hub-auth 공개 엔드포인트가 응답하지 않습니다
-              description: https://hub-auth-dev.code-place-dev.site/healthz의 HTTPS 가상 점검이 2분 동안 실패했습니다.
+              description: https://hub-auth-dev.code-place-dev.kr/healthz의 HTTPS 가상 점검이 2분 동안 실패했습니다.
 
   - name: missing prod hub-auth telemetry is not endpoint downtime
     interval: 15s
     input_series:
       - series: 'probe_success{environment="prod",namespace="code-place-prod",probe_type="public-http",service="frontend",instance="https://code.pusan.ac.kr/"}'
         values: '1 1 1 1 1 1 1 1 1 1'
-      - series: 'probe_success{environment="dev",namespace="code-place-dev",probe_type="public-http",service="frontend",instance="https://k3s.code-place-dev.site/"}'
+      - series: 'probe_success{environment="dev",namespace="code-place-dev",probe_type="public-http",service="frontend",instance="https://k3s.code-place-dev.kr/"}'
         values: '1 1 1 1 1 1 1 1 1 1'
-      - series: 'probe_success{environment="dev",namespace="code-place-dev",probe_type="public-http",service="hub-auth",instance="https://hub-auth-dev.code-place-dev.site/healthz"}'
+      - series: 'probe_success{environment="dev",namespace="code-place-dev",probe_type="public-http",service="hub-auth",instance="https://hub-auth-dev.code-place-dev.kr/healthz"}'
         values: '1 1 1 1 1 1 1 1 1 1'
     alert_rule_test:
       - eval_time: 2m15s
@@ -128,11 +128,11 @@ tests:
     input_series:
       - series: 'probe_success{environment="prod",namespace="code-place-prod",probe_type="public-http",service="frontend",instance="https://code.pusan.ac.kr/"}'
         values: '1 1 1 1 1 1'
-      - series: 'probe_success{environment="prod",namespace="code-place-prod",probe_type="public-http",service="hub-auth",instance="https://hub-auth.code-place-dev.site/healthz"}'
+      - series: 'probe_success{environment="prod",namespace="code-place-prod",probe_type="public-http",service="hub-auth",instance="https://hub-auth.code-place-dev.kr/healthz"}'
         values: '1 1 1 1 1 1'
-      - series: 'probe_success{environment="dev",namespace="code-place-dev",probe_type="public-http",service="frontend",instance="https://k3s.code-place-dev.site/"}'
+      - series: 'probe_success{environment="dev",namespace="code-place-dev",probe_type="public-http",service="frontend",instance="https://k3s.code-place-dev.kr/"}'
         values: '1 1 1 1 1 1'
-      - series: 'probe_success{environment="dev",namespace="code-place-dev",probe_type="public-http",service="hub-auth",instance="https://hub-auth-dev.code-place-dev.site/healthz"}'
+      - series: 'probe_success{environment="dev",namespace="code-place-dev",probe_type="public-http",service="hub-auth",instance="https://hub-auth-dev.code-place-dev.kr/healthz"}'
         values: '1 1 1 1 1 1'
       - series: 'probe_success{environment="prod",namespace="another-system",probe_type="public-http",service="hub-auth",instance="https://example.invalid/"}'
         values: '0 0 0 0 0 0'

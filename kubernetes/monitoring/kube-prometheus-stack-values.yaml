@@ -148,10 +148,10 @@ grafana:
     annotations:
       traefik.ingress.kubernetes.io/router.tls.certresolver: default
     hosts:
-      - monitoring.code-place-dev.site
+      - monitoring.code-place-dev.kr
     tls:
       - hosts:
-          - monitoring.code-place-dev.site
+          - monitoring.code-place-dev.kr
   sidecar:
     dashboards:
       enabled: true

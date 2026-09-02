@@ -84,14 +84,14 @@ spec:
             우선순위: P0
             네임스페이스: {{ .CommonLabels.namespace }}
             {{ if match "^code-place-(dev|prod)$" .CommonLabels.namespace }}
-            개요: https://monitoring.code-place-dev.site/d/codeplace-overview/codeplace-overview?orgId=1&var-environment={{ reReplaceAll "^code-place-" "" .CommonLabels.namespace }}
-            로그: https://monitoring.code-place-dev.site/d/codeplace-logs/codeplace-logs?orgId=1&var-environment={{ reReplaceAll "^code-place-" "" .CommonLabels.namespace }}
+            개요: https://monitoring.code-place-dev.kr/d/codeplace-overview/codeplace-overview?orgId=1&var-environment={{ reReplaceAll "^code-place-" "" .CommonLabels.namespace }}
+            로그: https://monitoring.code-place-dev.kr/d/codeplace-logs/codeplace-logs?orgId=1&var-environment={{ reReplaceAll "^code-place-" "" .CommonLabels.namespace }}
             {{ end }}
             {{ if eq .CommonLabels.namespace "longhorn-system" }}
-            스토리지(prod): https://monitoring.code-place-dev.site/d/codeplace-storage/codeplace-storage?orgId=1&var-environment=prod
-            스토리지(dev): https://monitoring.code-place-dev.site/d/codeplace-storage/codeplace-storage?orgId=1&var-environment=dev
+            스토리지(prod): https://monitoring.code-place-dev.kr/d/codeplace-storage/codeplace-storage?orgId=1&var-environment=prod
+            스토리지(dev): https://monitoring.code-place-dev.kr/d/codeplace-storage/codeplace-storage?orgId=1&var-environment=dev
             {{ end }}
-            모니터링: https://monitoring.code-place-dev.site/d/codeplace-monitoring-stack/codeplace-monitoring-stack?orgId=1
+            모니터링: https://monitoring.code-place-dev.kr/d/codeplace-monitoring-stack/codeplace-monitoring-stack?orgId=1
             {{ with index .Alerts 0 }}발생 쿼리: [Prometheus에서 보기]({{ .GeneratorURL }}){{ end }}
           username: CodePlace Alertmanager
     - name: dev-p1-muted
@@ -115,13 +115,13 @@ spec:
             우선순위: P1
             네임스페이스: {{ .CommonLabels.namespace }}
             {{ if match "^code-place-(dev|prod)$" .CommonLabels.namespace }}
-            개요: https://monitoring.code-place-dev.site/d/codeplace-overview/codeplace-overview?orgId=1&var-environment={{ reReplaceAll "^code-place-" "" .CommonLabels.namespace }}
-            로그: https://monitoring.code-place-dev.site/d/codeplace-logs/codeplace-logs?orgId=1&var-environment={{ reReplaceAll "^code-place-" "" .CommonLabels.namespace }}
+            개요: https://monitoring.code-place-dev.kr/d/codeplace-overview/codeplace-overview?orgId=1&var-environment={{ reReplaceAll "^code-place-" "" .CommonLabels.namespace }}
+            로그: https://monitoring.code-place-dev.kr/d/codeplace-logs/codeplace-logs?orgId=1&var-environment={{ reReplaceAll "^code-place-" "" .CommonLabels.namespace }}
             {{ end }}
             {{ if eq .CommonLabels.namespace "longhorn-system" }}
-            스토리지(prod): https://monitoring.code-place-dev.site/d/codeplace-storage/codeplace-storage?orgId=1&var-environment=prod
-            스토리지(dev): https://monitoring.code-place-dev.site/d/codeplace-storage/codeplace-storage?orgId=1&var-environment=dev
+            스토리지(prod): https://monitoring.code-place-dev.kr/d/codeplace-storage/codeplace-storage?orgId=1&var-environment=prod
+            스토리지(dev): https://monitoring.code-place-dev.kr/d/codeplace-storage/codeplace-storage?orgId=1&var-environment=dev
             {{ end }}
-            모니터링: https://monitoring.code-place-dev.site/d/codeplace-monitoring-stack/codeplace-monitoring-stack?orgId=1
+            모니터링: https://monitoring.code-place-dev.kr/d/codeplace-monitoring-stack/codeplace-monitoring-stack?orgId=1
             {{ with index .Alerts 0 }}발생 쿼리: [Prometheus에서 보기]({{ .GeneratorURL }}){{ end }}
           username: CodePlace Alertmanager

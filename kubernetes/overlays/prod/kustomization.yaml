@@ -22,14 +22,14 @@ patches:
 # `judge-server` 이미지는 자주 변경되지 않으므로 수동으로 설정합니다.
 images:
   - name: backend
-    newName: harbor.code-place-dev.site/code-place-prod/backend
+    newName: harbor.code-place-dev.kr/code-place-prod/backend
     newTag: 57563df8c4de2a51ecb334180aa944d4a4d418d7-prod
   - name: frontend
-    newName: harbor.code-place-dev.site/code-place-prod/frontend
+    newName: harbor.code-place-dev.kr/code-place-prod/frontend
     newTag: 57563df8c4de2a51ecb334180aa944d4a4d418d7-prod
   - name: judge-server
-    newName: harbor.code-place-dev.site/code-place-prod/judge-server
+    newName: harbor.code-place-dev.kr/code-place-prod/judge-server
     newTag: 1.0.3
   - name: hub-auth
-    newName: harbor.code-place-dev.site/code-place-prod/hub-auth
+    newName: harbor.code-place-dev.kr/code-place-prod/hub-auth
     newTag: 57563df8c4de2a51ecb334180aa944d4a4d418d7-prod
