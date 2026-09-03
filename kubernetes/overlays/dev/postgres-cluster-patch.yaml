@@ -1,0 +1,7 @@
+# 개발 환경의 실제 운영 상태를 매니페스트에 반영합니다.
+#
+# - instances: dev는 복제본 2개로 운영합니다. base의 3개를 그대로 적용하면
+#   인스턴스가 하나 더 생성되며 50Gi PVC가 추가로 잡힙니다.
+- op: replace
+  path: /spec/instances
+  value: 2
