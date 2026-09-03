@@ -2,6 +2,10 @@
 #
 # - instances: dev는 복제본 2개로 운영합니다. base의 3개를 그대로 적용하면
 #   인스턴스가 하나 더 생성되며 50Gi PVC가 추가로 잡힙니다.
+# - resources: dev/prod 모두 제한 없이 동작 중입니다. 리소스 제한은 두 환경에서
+#   같은 기준으로 정해야 하므로, 지금은 실제 상태를 반영해 제거만 해둡니다.
 - op: replace
   path: /spec/instances
   value: 2
+- op: remove
+  path: /spec/resources
