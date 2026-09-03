@@ -1,0 +1,11 @@
+# 운영 DB의 실제 설정을 매니페스트에 반영합니다.
+#
+# - resources: 운영 클러스터는 제한 없이 동작 중입니다. base의 메모리 상한(2Gi)은
+#   실사용량(약 1.2Gi)에 비해 여유가 적어 OOM 위험이 있으므로 prod에서는 제거합니다.
+# - primaryUpdateStrategy: 운영 DB는 primary 교체를 수동 승인(supervised)으로 운영합니다.
+#   자동 switchover는 예기치 않은 시점에 primary가 바뀔 수 있어 prod에서는 사용하지 않습니다.
+- op: remove
+  path: /spec/resources
+- op: replace
+  path: /spec/primaryUpdateStrategy
+  value: supervised
