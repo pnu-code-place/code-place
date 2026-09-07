@@ -193,16 +193,19 @@ class UserProfileActivityAPI(APIView):
             .filter(
                 user_id=user.id,
                 result=JudgeStatus.ACCEPTED,
-                create_time__gte=start_datetime,
-                create_time__lt=end_datetime,
             )
             .order_by("create_time")
-            .values_list("create_time", flat=True)
+            .values_list("problem_id", "create_time")
         )
+        solved_problem_ids = set()
         count_by_date = {}
-        for create_time in submissions:
+        for problem_id, create_time in submissions:
+            if problem_id in solved_problem_ids:
+                continue
+            solved_problem_ids.add(problem_id)
             activity_date = get_activity_service_date(create_time, current_timezone)
-            count_by_date[activity_date] = count_by_date.get(activity_date, 0) + 1
+            if start_date <= activity_date <= end_date:
+                count_by_date[activity_date] = count_by_date.get(activity_date, 0) + 1
 
         current_streak, longest_streak = calculate_activity_streaks(start_date, end_date, count_by_date)
         activity_days = []
