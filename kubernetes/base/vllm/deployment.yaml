@@ -45,7 +45,7 @@ spec:
             - --gpu-memory-utilization
             - "0.9"
             - --max-model-len
-            - "4096"
+            - "32768"
             - --max-num-batched-tokens
             - "4096"
             - --kv-cache-dtype

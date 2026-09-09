@@ -141,6 +141,9 @@ export const m = {
   Ended: "已结束",
   No_contest: "尚无练习或比赛",
   Please_login_first: "请先登录！",
+  Underway_Contest: "进行中的比赛",
+  Upcoming_Contest: "即将举办的比赛",
+  Ongoing_And_Upcoming_Contests: "进行中及预定比赛",
   // ContestProblemList.vue
   Problems_List: "问题列表",
   No_Problems: "尚无问题",

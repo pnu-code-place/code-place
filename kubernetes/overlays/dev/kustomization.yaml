@@ -15,6 +15,12 @@ patches:
   - path: celery-beat-deployment-patch.yaml
   - path: judge-server-deployment-patch.yaml
   - path: hub-auth-ingress-patch.yaml
+  - path: postgres-cluster-patch.yaml
+    target:
+      group: postgresql.cnpg.io
+      version: v1
+      kind: Cluster
+      name: postgres
 # NOTE: base 디렉토리의 이미지 이름과 태그를 오버라이드합니다.
 # `backend`, `frontend`, `hub-auth` 이미지 태그는 CI 파이프라인에서 자동으로 변경됩니다.
 # `judge-server` 이미지는 자주 변경되지 않으므로 수동으로 설정합니다.
@@ -24,7 +30,7 @@ images:
     newTag: 32ba295092fdc045029b8d772777fcf0368a6c0f-dev
   - name: frontend
     newName: harbor.code-place-dev.kr/code-place-dev/frontend
-    newTag: e3aee4415ff8903382da96d1db9af1eccc1b1d05-dev
+    newTag: 3787784162f680da690392d93c3871e3968f7da5-dev
   - name: judge-server
     newName: harbor.code-place-dev.kr/code-place-dev/judge-server
     newTag: 1.0.3
