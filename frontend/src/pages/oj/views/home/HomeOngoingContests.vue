@@ -1,42 +1,15 @@
 <template>
-  <div class="ongoing-section">
+  <!-- 진행 중이거나 개최 예정인 대회가 있을 때만 섹션 노출 -->
+  <div class="ongoing-section" v-if="hasContests">
     <div class="ongoing-card">
       <div class="section-header">
-        <p class="section-title">진행 중인 대회</p>
+        <!-- 대회 구성(진행 중/예정/혼합)에 따른 동적 제목 -->
+        <p class="section-title">{{ sectionTitle }}</p>
         <span class="more-link" @click="goContestList">더보기 →</span>
       </div>
 
-      <!-- 빈 상태 -->
-      <div
-        v-if="
-          !loading && contests.length === 0 && upcomingContests.length === 0
-        "
-        class="empty-state"
-      >
-        <img
-          class="empty-illust"
-          src="@/assets/images/contest-empty-calendar.svg"
-          alt=""
-        />
-        <div class="empty-text">
-          <p class="empty-title">현재 진행 중인 콘테스트가 없어요</p>
-          <p class="empty-desc">
-            다음 대회를 준비하는 동안, 추천 문제를 풀며<br />
-            실력을 키워보는 건 어때요?
-          </p>
-          <div class="empty-actions">
-            <button class="empty-btn-primary" @click="goProblemList">
-              추천 문제 풀러가기 →
-            </button>
-            <span class="empty-btn-text" @click="goContestHistory">
-              이전 대회 보기
-            </span>
-          </div>
-        </div>
-      </div>
-
       <!-- 대회 목록 (진행중 + 개최 예정 가로 나열) -->
-      <div class="contest-list-wrap" v-else>
+      <div class="contest-list-wrap">
         <!-- 좌측 화살표 -->
         <div
           v-if="totalContests >= 3"
@@ -217,39 +190,62 @@ export default {
     }
   },
   computed: {
+    // 노출할 전체 대회 수 (진행 중 + 개최 예정)
     totalContests() {
       return this.contests.length + this.upcomingContests.length
     },
+    // 로딩 완료 후 대회가 1개 이상 존재할 때만 섹션 렌더링
+    hasContests() {
+      return !this.loading && this.totalContests > 0
+    },
+    // 대회 목록 상태에 따른 동적 섹션 제목
+    sectionTitle() {
+      if (this.contests.length > 0 && this.upcomingContests.length > 0) {
+        return this.$t("m.Ongoing_And_Upcoming_Contests")
+      }
+      if (this.upcomingContests.length > 0) {
+        return this.$t("m.Upcoming_Contest")
+      }
+      return this.$t("m.Underway_Contest")
+    },
   },
   mounted() {
-    api.getUnderwayContestList().then(
-      (res) => {
-        this.contests = (res.data.data || []).slice(0, 6)
-        this.loading = false
-      },
-      () => {
-        this.loading = false
-      },
-    )
-    api
-      .getNotStartedContestList()
-      .then((res) => {
-        const now = Date.now()
-        const sevenDays = 7 * 24 * 60 * 60 * 1000
-        this.upcomingContests = (res.data.data || [])
-          .filter((c) => {
-            const start = new Date(c.start_time).getTime()
-            return start - now <= sevenDays
-          })
-          .slice(0, 3)
-      })
-      .catch(() => {})
-    this.timer = setInterval(() => {
-      this.now = Date.now()
-    }, 1000)
+    // 진행 중 대회와 미시작 대회를 병렬 조회 후 로딩 완료 처리
+    Promise.all([
+      // 1. 진행 중인 대회 조회 (최대 6개)
+      api
+        .getUnderwayContestList()
+        .then((res) => {
+          this.contests = (res.data.data || []).slice(0, 6)
+        })
+        .catch(() => {}),
+      // 2. 개최 예정 대회 조회 (시작일 빠른 순 정렬, 최대 3개)
+      api
+        .getNotStartedContestList()
+        .then((res) => {
+          this.upcomingContests = (res.data.data || [])
+            .sort(
+              (a, b) =>
+                new Date(a.start_time).getTime() -
+                new Date(b.start_time).getTime(),
+            )
+            .slice(0, 3)
+        })
+        .catch(() => {}),
+    ]).then(() => {
+      this.loading = false
+      // 대회가 있을 때만 1초 주기 타이머 실행 (프로그레스 바 및 남은 시간 갱신)
+      if (this.totalContests > 0) {
+        this.timer = setInterval(() => {
+          this.now = Date.now()
+        }, 1000)
+      }
+    })
   },
   beforeDestroy() {
-    clearInterval(this.timer)
+    if (this.timer) {
+      clearInterval(this.timer)
+    }
     document.removeEventListener("mousemove", this._onDragMove)
     document.removeEventListener("mouseup", this._onDragEnd)
   },
@@ -296,12 +292,6 @@ export default {
     },
     goContestList() {
       this.$router.push({ name: "contest-list" })
-    },
-    goContestHistory() {
-      this.$router.push({ name: "contest-history-list" })
-    },
-    goProblemList() {
-      this.$router.push({ name: "problem-list" })
     },
     goContest(contest) {
       if (this.drag.moved) return
@@ -614,87 +604,5 @@ export default {
   background-color: #ede9ff;
   border-radius: 99px;
   padding: 2px 8px;
-}
-
-/* 빈 상태 */
-.empty-state {
-  background-color: #f2f2fa;
-  border-radius: 16px;
-  padding: 32px 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 28px;
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    padding: 28px 20px;
-    gap: 16px;
-  }
-}
-
-.empty-illust {
-  width: 100px;
-  height: 100px;
-  flex-shrink: 0;
-  object-fit: contain;
-}
-
-.empty-text {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.empty-title {
-  font-size: 18px;
-  font-weight: 700;
-  color: #14141f;
-  margin: 0;
-}
-
-.empty-desc {
-  font-size: 13px;
-  color: #59596b;
-  margin: 0;
-  line-height: 1.65;
-}
-
-.empty-actions {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-top: 6px;
-}
-
-.empty-btn-primary {
-  display: inline-flex;
-  align-items: center;
-  padding: 11px 22px;
-  border-radius: 12px;
-  background: #6d5df0;
-  color: #fff;
-  font-size: 14px;
-  font-weight: 600;
-  border: none;
-  cursor: pointer;
-  transition: background 0.15s;
-
-  &:hover {
-    background: #5b4dd4;
-  }
-}
-
-.empty-btn-text {
-  font-size: 13px;
-  font-weight: 500;
-  color: #9999a6;
-  cursor: pointer;
-
-  &:hover {
-    color: #6d5df0;
-  }
 }
 </style>

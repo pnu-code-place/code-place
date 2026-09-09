@@ -184,6 +184,8 @@ export const m = {
   Please_login_first: "로그인이 필요합니다.",
   Underway_Contest: "진행 중인 대회",
   Not_Start_Contest: "진행 예정 대회",
+  Upcoming_Contest: "개최 예정 대회",
+  Ongoing_And_Upcoming_Contests: "진행 및 예정 대회",
   Ended_Contest: "최근에 마감된 대회",
   History_Of_Contest: "전체 대회 히스토리",
   Contest_History: "대회 히스토리",
