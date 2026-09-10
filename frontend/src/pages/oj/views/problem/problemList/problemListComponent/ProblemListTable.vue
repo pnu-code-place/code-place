@@ -2,7 +2,17 @@
   <table>
     <thead>
       <tr>
-        <th class="th-first">{{ $t("m.Th_Problem_Id") }}</th>
+        <!-- 문제 번호(#) 헤더: 클릭 시 최신순 ↔ 오래된순 토글 정렬 -->
+        <th class="th-first">
+          <button
+            type="button"
+            class="sort-header-button"
+            @click="changeSort('id')"
+          >
+            {{ $t("m.Th_Problem_Id") }}
+            <i :class="sortIconClass('id')"></i>
+          </button>
+        </th>
         <th class="th-second">{{ $t("m.Th_Problem_Title") }}</th>
         <th class="th-third">
           <button
@@ -75,6 +85,8 @@
             <span class="problemTitle">
               {{ problem.title }}
             </span>
+            <!-- 최근 7일 이내 등록된 신규 문제 NEW 뱃지 -->
+            <span v-if="problem.is_new" class="badge-new">NEW</span>
             <br />
             <div v-if="showTags" class="problem-meta-row">
               <FieldCategoryBox
@@ -331,6 +343,22 @@ tbody {
 
     .problemTitle:hover {
       color: #4a86c0;
+    }
+
+    /* 공지사항과 동일한 그린 톤의 신규 문제 NEW 뱃지 */
+    .badge-new {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      color: #16a34a;
+      background-color: #dcfce7;
+      border-radius: 6px;
+      padding: 2px 7px;
+      margin-left: 6px;
+      letter-spacing: 0.3px;
+      white-space: nowrap;
+      vertical-align: middle;
+      user-select: none;
     }
 
     .problem-meta-row {
