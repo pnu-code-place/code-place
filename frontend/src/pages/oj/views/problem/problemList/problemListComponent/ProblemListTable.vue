@@ -82,12 +82,13 @@
             class="td-second"
             @click="enterProblemDetail(problem._id, problem.title)"
           >
-            <span class="problemTitle">
-              {{ problem.title }}
-            </span>
-            <!-- 최근 7일 이내 등록된 신규 문제 NEW 뱃지 -->
-            <span v-if="problem.is_new" class="badge-new">NEW</span>
-            <br />
+            <div class="problem-title-wrapper">
+              <span class="problemTitle">
+                {{ problem.title }}
+              </span>
+              <!-- 최근 7일 이내 등록된 신규 문제 NEW 뱃지 -->
+              <span v-if="problem.is_new" class="badge-new">NEW</span>
+            </div>
             <div v-if="showTags" class="problem-meta-row">
               <FieldCategoryBox
                 :boxType="true"
@@ -335,10 +336,19 @@ tbody {
       text-align: center;
     }
 
+    .problem-title-wrapper {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 6px;
+      vertical-align: middle;
+    }
+
     .problemTitle {
       font-weight: bold;
       cursor: pointer;
       font-size: medium;
+      line-height: 1.4;
     }
 
     .problemTitle:hover {
@@ -347,17 +357,18 @@ tbody {
 
     /* 공지사항과 동일한 그린 톤의 신규 문제 NEW 뱃지 */
     .badge-new {
-      display: inline-block;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       font-size: 10px;
       font-weight: 700;
       color: #16a34a;
       background-color: #dcfce7;
       border-radius: 6px;
       padding: 2px 7px;
-      margin-left: 6px;
+      line-height: 1.2;
       letter-spacing: 0.3px;
       white-space: nowrap;
-      vertical-align: middle;
       user-select: none;
     }
 
