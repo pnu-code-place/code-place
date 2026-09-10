@@ -1,6 +1,8 @@
 import re
+from datetime import timedelta
 
 from django import forms
+from django.utils import timezone
 
 from options.options import SysOptions
 from utils.api import UsernameSerializer, serializers
@@ -9,6 +11,9 @@ from utils.serializers import LanguageNameMultiChoiceField, SPJLanguageNameChoic
 
 from .models import Problem, ProblemRuleType, ProblemTag, ProblemIOMode, ProblemDifficulty, ProblemAIHintLog
 from .utils import parse_problem_template
+
+# 등록 후 신규 문제(NEW 태그)로 표시할 기간 (일 단위)
+NEW_PROBLEM_DAYS = 7
 
 
 class AIHintLogSerializer(serializers.ModelSerializer):
@@ -130,11 +135,18 @@ class ProblemAdminSerializer(BaseProblemSerializer):
 class ProblemSerializer(BaseProblemSerializer):
     template = serializers.SerializerMethodField("get_public_template")
     mine_submission_state = serializers.SerializerMethodField(default=None)
+    is_new = serializers.SerializerMethodField()
 
     class Meta:
         model = Problem
         exclude = ("test_case_score", "test_case_id", "visible", "is_public", "spj_code", "spj_version",
                    "spj_compile_ok")
+
+    def get_is_new(self, obj):
+        # 생성 후 NEW_PROBLEM_DAYS(7일) 이내인 경우 신규 문제(True)로 판별
+        if not obj.create_time:
+            return False
+        return (timezone.now() - obj.create_time) <= timedelta(days=NEW_PROBLEM_DAYS)
 
     def get_mine_submission_state(self, obj):
         if not self.context:
