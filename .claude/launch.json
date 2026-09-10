@@ -7,6 +7,19 @@
       "runtimeArgs": ["run", "dev"],
       "cwd": "/Users/itaegyeong/Desktop/naveraiagent/hub/frontend",
       "port": 5173
+    },
+    {
+      "name": "code-place-frontend",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [
+        "-lc",
+        "source ~/.nvm/nvm.sh && nvm use 24.18.0 && exec npm run dev"
+      ],
+      "cwd": "frontend",
+      "port": 8080,
+      "env": {
+        "TARGET": "https://code.pusan.ac.kr"
+      }
     }
   ]
 }
