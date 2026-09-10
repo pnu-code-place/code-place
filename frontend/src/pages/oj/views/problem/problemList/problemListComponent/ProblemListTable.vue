@@ -255,6 +255,7 @@ table {
   border-radius: 7px;
   border-spacing: 0;
   overflow: hidden;
+  table-layout: fixed;
 }
 table:hover {
   border: 1px solid #cccccc;
@@ -302,13 +303,27 @@ thead {
   color: #7e7e7e;
 
   .th-first {
-    white-space: normal;
-    word-break: normal;
-    overflow-wrap: break-word;
+    width: 13%;
+    white-space: nowrap;
   }
 
   .th-second {
-    width: 400px;
+    width: 45%;
+  }
+
+  .th-third {
+    width: 14%;
+    white-space: nowrap;
+  }
+
+  .th-fourth {
+    width: 14%;
+    white-space: nowrap;
+  }
+
+  .th-fifth {
+    width: 14%;
+    white-space: nowrap;
   }
 }
 
@@ -322,9 +337,7 @@ tbody {
     }
 
     .td-first {
-      white-space: normal;
-      word-break: normal;
-      overflow-wrap: break-word;
+      white-space: nowrap;
     }
 
     td:nth-child(2) {
