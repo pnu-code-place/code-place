@@ -3,24 +3,32 @@
     <div class="fs-header">
       <span class="fs-header-label">FAMILY SITE</span>
       <div class="fs-header-line" />
+      <div class="fs-nav-group">
+        <button
+          type="button"
+          class="fs-nav-btn"
+          aria-label="이전"
+          @click="scrollByStep(-1)"
+        >
+          <i class="fas fa-chevron-left" />
+        </button>
+        <button
+          type="button"
+          class="fs-nav-btn"
+          aria-label="다음"
+          @click="scrollByStep(1)"
+        >
+          <i class="fas fa-chevron-right" />
+        </button>
+      </div>
     </div>
 
     <div class="fs-carousel">
-      <button
-        type="button"
-        class="fs-nav fs-nav--prev"
-        v-show="canScrollLeft"
-        aria-label="이전"
-        @click="scrollByStep(-1)"
-      >
-        <i class="fas fa-chevron-left" />
-      </button>
-
       <div
         ref="track"
         class="fs-track"
         :class="{ 'is-dragging': isDragging }"
-        @scroll="updateScrollState"
+        @scroll="onScroll"
         @mousedown="onDragStart"
         @mousemove="onDragMove"
         @mouseup="onDragEnd"
@@ -28,8 +36,8 @@
       >
         <a
           class="fs-card"
-          v-for="site in sites"
-          :key="site.title"
+          v-for="(site, idx) in infiniteSites"
+          :key="site.title + '-' + idx"
           :href="site.url"
           target="_blank"
           rel="noopener noreferrer"
@@ -41,15 +49,6 @@
           <div class="fs-card-sub">바로가기 <span class="fs-arrow">→</span></div>
         </a>
       </div>
-
-      <button
-        type="button"
-        class="fs-nav fs-nav--next"
-        aria-label="다음"
-        @click="onNext"
-      >
-        <i class="fas fa-chevron-right" />
-      </button>
     </div>
   </div>
 </template>
@@ -65,8 +64,7 @@ export default {
       dragMoved: false,
       dragStartX: 0,
       dragStartScrollLeft: 0,
-      canScrollLeft: false,
-      canScrollRight: false,
+      scrollResetTimer: null,
       sites: [
         {
           title: "부산대학교<br>AI융합교육원",
@@ -99,35 +97,89 @@ export default {
       ],
     }
   },
+  computed: {
+    // 무한 롤링을 위해 3세트 복제
+    infiniteSites() {
+      return [...this.sites, ...this.sites, ...this.sites]
+    },
+  },
   mounted() {
-    this.updateScrollState()
-    window.addEventListener("resize", this.updateScrollState)
+    this.$nextTick(() => {
+      this.initScrollPosition()
+    })
+    window.addEventListener("resize", this.initScrollPosition)
   },
   beforeDestroy() {
-    window.removeEventListener("resize", this.updateScrollState)
+    window.removeEventListener("resize", this.initScrollPosition)
+    if (this.scrollResetTimer) clearTimeout(this.scrollResetTimer)
   },
   methods: {
-    updateScrollState() {
+    getCardStep() {
+      const track = this.$refs.track
+      if (!track) return 0
+      const card = track.querySelector(".fs-card")
+      if (card) {
+        const style = window.getComputedStyle(track)
+        const gap = parseFloat(style.gap) || 8
+        return card.offsetWidth + gap
+      }
+      return (track.clientWidth - 4 * 8) / 5 + 8
+    },
+    initScrollPosition() {
       const track = this.$refs.track
       if (!track) return
-      this.canScrollLeft = track.scrollLeft > 1
-      this.canScrollRight = track.scrollLeft + track.clientWidth < track.scrollWidth - 1
+      const step = this.getCardStep()
+      if (!step) return
+      const setWidth = this.sites.length * step
+      // 가운데 세트 시작점으로 초기 이동
+      track.style.scrollBehavior = "auto"
+      track.scrollLeft = setWidth
+      track.style.scrollBehavior = "smooth"
+    },
+    onScroll() {
+      if (this.isDragging) return
+      if (this.scrollResetTimer) clearTimeout(this.scrollResetTimer)
+      this.scrollResetTimer = setTimeout(() => {
+        this.checkAndResetScroll()
+      }, 150)
+    },
+    checkAndResetScroll() {
+      const track = this.$refs.track
+      if (!track || this.isDragging) return
+      const step = this.getCardStep()
+      if (!step) return
+      const setWidth = this.sites.length * step
+
+      if (track.scrollLeft < setWidth * 0.4) {
+        track.style.scrollBehavior = "auto"
+        track.scrollLeft += setWidth
+        track.style.scrollBehavior = "smooth"
+      } else if (track.scrollLeft > setWidth * 1.8) {
+        track.style.scrollBehavior = "auto"
+        track.scrollLeft -= setWidth
+        track.style.scrollBehavior = "smooth"
+      }
     },
     scrollByStep(direction) {
       const track = this.$refs.track
       if (!track) return
-      // 한 번에 보이는 폭의 80% 정도씩 넘긴다
-      track.scrollBy({ left: direction * track.clientWidth * 0.8, behavior: "smooth" })
-    },
-    onNext() {
-      const track = this.$refs.track
-      if (!track) return
-      // 오른쪽 끝에 닿아 있으면 맨 앞으로 되돌아간다
-      if (!this.canScrollRight) {
-        track.scrollTo({ left: 0, behavior: "smooth" })
-      } else {
-        this.scrollByStep(1)
+      const step = this.getCardStep()
+      if (!step) return
+      const setWidth = this.sites.length * step
+
+      // 경계면에 너무 가까우면 먼저 가운데 세트로 보정
+      if (track.scrollLeft < setWidth * 0.3) {
+        track.style.scrollBehavior = "auto"
+        track.scrollLeft += setWidth
+        track.style.scrollBehavior = "smooth"
+      } else if (track.scrollLeft > setWidth * 1.8) {
+        track.style.scrollBehavior = "auto"
+        track.scrollLeft -= setWidth
+        track.style.scrollBehavior = "smooth"
       }
+
+      // 1칸씩 부드럽게 무한 이동
+      track.scrollBy({ left: direction * step, behavior: "smooth" })
     },
     onDragStart(event) {
       const track = this.$refs.track
@@ -148,6 +200,7 @@ export default {
     },
     onDragEnd() {
       this.isDragging = false
+      this.checkAndResetScroll()
     },
     onCardClick(event) {
       // 드래그로 밀었던 경우엔 링크가 열리지 않게 막는다
@@ -169,7 +222,7 @@ export default {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 14px;
+  margin-bottom: 8px;
 }
 
 .fs-header-label {
@@ -186,6 +239,40 @@ export default {
   background-color: #e5e5ed;
 }
 
+.fs-nav-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.fs-nav-btn {
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(91, 100, 237, 0.2);
+  border-radius: 50%;
+  background: #fff;
+  color: var(--point-color, #5b64ed);
+  cursor: pointer;
+  font-size: 10px;
+  box-shadow: 0 1px 4px rgba(91, 100, 237, 0.1);
+  transition: all 0.15s ease;
+
+  &:hover:not(:disabled) {
+    background: rgba(91, 100, 237, 0.08);
+    border-color: rgba(91, 100, 237, 0.35);
+    transform: scale(1.05);
+  }
+
+  &:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+}
+
 .fs-carousel {
   position: relative;
 }
@@ -200,6 +287,9 @@ export default {
   cursor: grab;
   user-select: none;
   scrollbar-width: none;
+  padding: 8px 4px 14px;
+  margin-top: -6px;
+  margin-bottom: -6px;
 
   &::-webkit-scrollbar {
     display: none;
@@ -272,39 +362,5 @@ export default {
 .fs-arrow {
   display: inline-block;
   transition: transform 0.14s;
-}
-
-.fs-nav {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 2;
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid rgba(91, 100, 237, 0.2);
-  border-radius: 50%;
-  background: #fff;
-  color: var(--point-color, #5b64ed);
-  cursor: pointer;
-  font-size: 11px;
-  box-shadow: 0 2px 10px rgba(91, 100, 237, 0.15);
-  transition:
-    background-color 0.14s ease,
-    transform 0.14s ease;
-
-  &:hover {
-    background: rgba(91, 100, 237, 0.08);
-  }
-
-  &--prev {
-    left: -10px;
-  }
-
-  &--next {
-    right: -10px;
-  }
 }
 </style>
