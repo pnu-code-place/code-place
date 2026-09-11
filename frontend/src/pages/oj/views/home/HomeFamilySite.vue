@@ -8,7 +8,7 @@
           type="button"
           class="fs-nav-btn"
           aria-label="이전"
-          @click="scrollByStep(-1)"
+          @click="slidePrev"
         >
           <i class="fas fa-chevron-left" />
         </button>
@@ -16,7 +16,7 @@
           type="button"
           class="fs-nav-btn"
           aria-label="다음"
-          @click="scrollByStep(1)"
+          @click="slideNext"
         >
           <i class="fas fa-chevron-right" />
         </button>
@@ -27,17 +27,21 @@
       <div
         ref="track"
         class="fs-track"
-        :class="{ 'is-dragging': isDragging }"
-        @scroll="onScroll"
+        :class="{ 'is-animating': isAnimating }"
+        :style="trackStyle"
+        @transitionend="onTransitionEnd"
         @mousedown="onDragStart"
         @mousemove="onDragMove"
         @mouseup="onDragEnd"
         @mouseleave="onDragEnd"
+        @touchstart="onTouchStart"
+        @touchmove="onTouchMove"
+        @touchend="onTouchEnd"
       >
         <a
           class="fs-card"
-          v-for="(site, idx) in infiniteSites"
-          :key="site.title + '-' + idx"
+          v-for="site in sites"
+          :key="site.title"
           :href="site.url"
           target="_blank"
           rel="noopener noreferrer"
@@ -54,17 +58,19 @@
 </template>
 
 <script>
-const DRAG_THRESHOLD_PX = 4
+const DRAG_THRESHOLD_PX = 5
 
 export default {
   name: "HomeFamilySite",
   data() {
     return {
+      isAnimating: false,
       isDragging: false,
       dragMoved: false,
       dragStartX: 0,
-      dragStartScrollLeft: 0,
-      scrollResetTimer: null,
+      translateX: 0,
+      transitionDuration: 0,
+      animationTimer: null,
       sites: [
         {
           title: "부산대학교<br>AI융합교육원",
@@ -98,20 +104,18 @@ export default {
     }
   },
   computed: {
-    // 무한 롤링을 위해 3세트 복제
-    infiniteSites() {
-      return [...this.sites, ...this.sites, ...this.sites]
+    trackStyle() {
+      return {
+        transform: `translateX(${this.translateX}px)`,
+        transition:
+          this.transitionDuration > 0
+            ? `transform ${this.transitionDuration}ms cubic-bezier(0.25, 1, 0.5, 1)`
+            : "none",
+      }
     },
   },
-  mounted() {
-    this.$nextTick(() => {
-      this.initScrollPosition()
-    })
-    window.addEventListener("resize", this.initScrollPosition)
-  },
   beforeDestroy() {
-    window.removeEventListener("resize", this.initScrollPosition)
-    if (this.scrollResetTimer) clearTimeout(this.scrollResetTimer)
+    if (this.animationTimer) clearTimeout(this.animationTimer)
   },
   methods: {
     getCardStep() {
@@ -123,87 +127,123 @@ export default {
         const gap = parseFloat(style.gap) || 8
         return card.offsetWidth + gap
       }
-      return (track.clientWidth - 4 * 8) / 5 + 8
+      return 0
     },
-    initScrollPosition() {
-      const track = this.$refs.track
-      if (!track) return
+    slideNext() {
+      if (this.isAnimating) return
       const step = this.getCardStep()
       if (!step) return
-      const setWidth = this.sites.length * step
-      // 가운데 세트 시작점으로 초기 이동
-      track.style.scrollBehavior = "auto"
-      track.scrollLeft = setWidth
-      track.style.scrollBehavior = "smooth"
-    },
-    onScroll() {
-      if (this.isDragging) return
-      if (this.scrollResetTimer) clearTimeout(this.scrollResetTimer)
-      this.scrollResetTimer = setTimeout(() => {
-        this.checkAndResetScroll()
-      }, 150)
-    },
-    checkAndResetScroll() {
-      const track = this.$refs.track
-      if (!track || this.isDragging) return
-      const step = this.getCardStep()
-      if (!step) return
-      const setWidth = this.sites.length * step
 
-      if (track.scrollLeft < setWidth * 0.4) {
-        track.style.scrollBehavior = "auto"
-        track.scrollLeft += setWidth
-        track.style.scrollBehavior = "smooth"
-      } else if (track.scrollLeft > setWidth * 1.8) {
-        track.style.scrollBehavior = "auto"
-        track.scrollLeft -= setWidth
-        track.style.scrollBehavior = "smooth"
+      this.isAnimating = true
+      this.transitionDuration = 280
+      this.translateX = -step
+
+      if (this.animationTimer) clearTimeout(this.animationTimer)
+      this.animationTimer = setTimeout(() => {
+        if (this.isAnimating) {
+          this.onTransitionEnd({ target: this.$refs.track })
+        }
+      }, 320)
+    },
+    slidePrev() {
+      if (this.isAnimating) return
+      const step = this.getCardStep()
+      if (!step) return
+
+      this.isAnimating = true
+
+      // 1. 마지막 카드를 맨 앞으로 이동
+      this.sites.unshift(this.sites.pop())
+
+      // 2. 즉시 -step 위치로 보내어 화면상 위치 유지 (애니메이션 없음)
+      this.transitionDuration = 0
+      this.translateX = -step
+
+      // 3. DOM 갱신 후 0으로 부드럽게 애니메이션
+      this.$nextTick(() => {
+        const track = this.$refs.track
+        if (track) {
+          void track.offsetHeight // force reflow
+        }
+        requestAnimationFrame(() => {
+          this.transitionDuration = 280
+          this.translateX = 0
+
+          if (this.animationTimer) clearTimeout(this.animationTimer)
+          this.animationTimer = setTimeout(() => {
+            if (this.isAnimating) {
+              this.onTransitionEnd({ target: this.$refs.track })
+            }
+          }, 320)
+        })
+      })
+    },
+    onTransitionEnd(event) {
+      if (event && event.target !== this.$refs.track) return
+      if (!this.isAnimating) return
+
+      if (this.animationTimer) {
+        clearTimeout(this.animationTimer)
+        this.animationTimer = null
       }
-    },
-    scrollByStep(direction) {
-      const track = this.$refs.track
-      if (!track) return
-      const step = this.getCardStep()
-      if (!step) return
-      const setWidth = this.sites.length * step
 
-      // 경계면에 너무 가까우면 먼저 가운데 세트로 보정
-      if (track.scrollLeft < setWidth * 0.3) {
-        track.style.scrollBehavior = "auto"
-        track.scrollLeft += setWidth
-        track.style.scrollBehavior = "smooth"
-      } else if (track.scrollLeft > setWidth * 1.8) {
-        track.style.scrollBehavior = "auto"
-        track.scrollLeft -= setWidth
-        track.style.scrollBehavior = "smooth"
+      // Next 완료 시 맨 앞 카드를 맨 뒤로 이동
+      if (this.translateX < 0) {
+        this.sites.push(this.sites.shift())
       }
 
-      // 1칸씩 부드럽게 무한 이동
-      track.scrollBy({ left: direction * step, behavior: "smooth" })
+      this.transitionDuration = 0
+      this.translateX = 0
+      this.isAnimating = false
     },
     onDragStart(event) {
-      const track = this.$refs.track
-      if (!track) return
+      if (this.isAnimating) return
       this.isDragging = true
       this.dragMoved = false
       this.dragStartX = event.pageX
-      this.dragStartScrollLeft = track.scrollLeft
     },
     onDragMove(event) {
       if (!this.isDragging) return
-      const track = this.$refs.track
-      if (!track) return
-      event.preventDefault()
       const delta = event.pageX - this.dragStartX
-      if (Math.abs(delta) > DRAG_THRESHOLD_PX) this.dragMoved = true
-      track.scrollLeft = this.dragStartScrollLeft - delta
+      if (Math.abs(delta) > DRAG_THRESHOLD_PX) {
+        this.dragMoved = true
+      }
     },
-    onDragEnd() {
+    onDragEnd(event) {
+      if (!this.isDragging) return
       this.isDragging = false
-      this.checkAndResetScroll()
+      const delta = (event.pageX || 0) - this.dragStartX
+      if (delta < -30) {
+        this.slideNext()
+      } else if (delta > 30) {
+        this.slidePrev()
+      }
+    },
+    onTouchStart(event) {
+      if (this.isAnimating) return
+      if (!event.touches || event.touches.length === 0) return
+      this.dragStartX = event.touches[0].pageX
+      this.dragMoved = false
+    },
+    onTouchMove(event) {
+      if (!event.touches || event.touches.length === 0) return
+      const delta = event.touches[0].pageX - this.dragStartX
+      if (Math.abs(delta) > DRAG_THRESHOLD_PX) {
+        this.dragMoved = true
+      }
+    },
+    onTouchEnd(event) {
+      if (!this.dragMoved) return
+      const touch = event.changedTouches && event.changedTouches[0]
+      if (!touch) return
+      const delta = touch.pageX - this.dragStartX
+      if (delta < -30) {
+        this.slideNext()
+      } else if (delta > 30) {
+        this.slidePrev()
+      }
     },
     onCardClick(event) {
-      // 드래그로 밀었던 경우엔 링크가 열리지 않게 막는다
       if (this.dragMoved) {
         event.preventDefault()
         this.dragMoved = false
@@ -275,36 +315,27 @@ export default {
 
 .fs-carousel {
   position: relative;
+  overflow: hidden;
+  padding: 8px 4px 14px;
+  margin-top: -6px;
+  margin-bottom: -6px;
 }
 
 .fs-track {
   display: flex;
   gap: 8px;
-  overflow-x: auto;
-  scroll-snap-type: x proximity;
-  scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch;
-  cursor: grab;
   user-select: none;
-  scrollbar-width: none;
-  padding: 8px 4px 14px;
-  margin-top: -6px;
-  margin-bottom: -6px;
+  cursor: grab;
 
-  &::-webkit-scrollbar {
-    display: none;
-  }
-
-  &.is-dragging {
-    cursor: grabbing;
-    scroll-behavior: auto;
+  &.is-animating {
+    pointer-events: none;
   }
 }
 
 .fs-card {
-  flex: 0 0 auto;
+  flex: 0 0 calc((100% - 4 * 8px) / 5);
   width: calc((100% - 4 * 8px) / 5);
-  scroll-snap-align: start;
+  box-sizing: border-box;
   border-radius: 12px;
   padding: 12px 14px;
   cursor: pointer;
@@ -332,6 +363,7 @@ export default {
   }
 
   @media (max-width: 768px) {
+    flex: 0 0 calc((100% - 8px) / 2);
     width: calc((100% - 8px) / 2);
   }
 }
