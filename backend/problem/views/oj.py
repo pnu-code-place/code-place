@@ -92,6 +92,10 @@ class ProblemAPI(APIView):
     }
 
     SORT_FIELDS = {
+        "id_desc": ("-create_time", "-_id"),
+        "id_asc": ("create_time", "_id"),
+        "create_time_desc": ("-create_time", "-_id"),
+        "create_time_asc": ("create_time", "_id"),
         "difficulty_asc": ("difficulty_order", "_id"),
         "difficulty_desc": ("-difficulty_order", "_id"),
         "accepted_desc": ("-accepted_number", "_id"),
@@ -179,6 +183,9 @@ class ProblemAPI(APIView):
                     output_field=FloatField(),
                 ),
             ).order_by(*self.SORT_FIELDS[sort])
+        else:
+            # 문제 기본 정렬: 최신 등록일 내림차순 (동일 일시일 경우 ID 내림차순)
+            problems = problems.order_by("-create_time", "-_id")
 
         # 根据profile 为做过的题目添加标记
         data = self.paginate_data(request, problems, ProblemSerializer)

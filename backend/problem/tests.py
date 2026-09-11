@@ -241,6 +241,58 @@ class ProblemAPITest(ProblemCreateTestBase):
         resp = self.client.get(f"{self.url}?limit=10")
         self.assertSuccess(resp)
 
+    def test_get_problem_list_default_sort_by_create_time_desc(self):
+        """정렬 옵션이 없을 때 기본적으로 최신 등록순으로 정렬되는지 검증"""
+        newer_problem = self.create_problem_with_custom_field(
+            self.problem.created_by,
+            _id="A-999",
+            title="newer problem",
+        )
+        resp = self.client.get(f"{self.url}?limit=10")
+        self.assertSuccess(resp)
+        results = resp.data["data"]["results"]
+        self.assertEqual(results[0]["_id"], newer_problem._id)
+        self.assertEqual(results[1]["_id"], self.problem._id)
+
+    def test_get_problem_list_sort_by_id(self):
+        """문제 번호(#) 헤더 클릭 시 id_desc(최신순), id_asc(오래된순) 정렬 검증"""
+        newer_problem = self.create_problem_with_custom_field(
+            self.problem.created_by,
+            _id="A-999",
+            title="newer problem",
+        )
+        # id_desc (newest first)
+        resp = self.client.get(f"{self.url}?limit=10&sort=id_desc")
+        self.assertSuccess(resp)
+        results = resp.data["data"]["results"]
+        self.assertEqual(results[0]["_id"], newer_problem._id)
+
+        # id_asc (oldest first)
+        resp = self.client.get(f"{self.url}?limit=10&sort=id_asc")
+        self.assertSuccess(resp)
+        results = resp.data["data"]["results"]
+        self.assertEqual(results[0]["_id"], self.problem._id)
+
+    def test_problem_is_new_badge(self):
+        """등록 7일 이내 문제는 is_new=True, 기간 경과 문제는 is_new=False 반환 검증"""
+        from datetime import timedelta
+        from django.utils import timezone
+
+        # self.problem was just created -> is_new True
+        resp = self.client.get(f"{self.url}?limit=10")
+        self.assertSuccess(resp)
+        results = resp.data["data"]["results"]
+        self.assertTrue(results[0]["is_new"])
+
+        # simulate an old problem created 10 days ago
+        self.problem.create_time = timezone.now() - timedelta(days=10)
+        self.problem.save(update_fields=["create_time"])
+
+        resp = self.client.get(f"{self.url}?limit=10")
+        self.assertSuccess(resp)
+        results = resp.data["data"]["results"]
+        self.assertFalse(results[0]["is_new"])
+
     def test_get_problem_list_sort_by_accepted_number(self):
         self.problem.accepted_number = 2
         self.problem.submission_number = 10
