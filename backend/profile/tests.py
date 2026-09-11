@@ -30,11 +30,11 @@ class UserProfileActivityAPITest(APITestCase):
             self.current_timezone,
         )
 
-    def create_submission(self, user, result, created_at):
+    def create_submission(self, user, result, created_at, problem=None):
         submission = Submission.objects.create(
             user_id=user.id,
             username=user.username,
-            problem=self.problem,
+            problem=problem or self.problem,
             code="print(1)",
             language="Python3",
             result=result,
@@ -49,9 +49,17 @@ class UserProfileActivityAPITest(APITestCase):
             datetime.datetime.combine(yesterday, datetime.time(hour=12)),
             self.current_timezone,
         )
+        another_problem_data = copy.deepcopy(DEFAULT_PROBLEM_DATA)
+        another_problem_data["_id"] = "ACTIVITY-2"
+        another_problem = ProblemCreateTestBase.add_problem(another_problem_data, self.user)
 
         self.create_submission(self.user, JudgeStatus.ACCEPTED, yesterday_at_noon)
-        self.create_submission(self.user, JudgeStatus.ACCEPTED, yesterday_at_noon + datetime.timedelta(minutes=5))
+        self.create_submission(
+            self.user,
+            JudgeStatus.ACCEPTED,
+            yesterday_at_noon + datetime.timedelta(minutes=5),
+            problem=another_problem,
+        )
         self.create_submission(self.user, JudgeStatus.WRONG_ANSWER, yesterday_at_noon + datetime.timedelta(minutes=10))
         self.create_submission(self.other_user, JudgeStatus.ACCEPTED, yesterday_at_noon)
 
