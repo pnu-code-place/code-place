@@ -829,7 +829,11 @@ export default {
           },
           (res) => {
             this.getCaptchaSrc()
-            if (res.data.data.startsWith("Captcha is required")) {
+            const errorData = res && res.data && res.data.data
+            if (
+              typeof errorData === "string" &&
+              errorData.startsWith("Captcha is required")
+            ) {
               this.captchaRequired = true
             }
             this.submitting = false
