@@ -132,16 +132,8 @@ export default {
     },
     getContestProblems() {
       this.problemLoadError = false
-      this.$store.dispatch("getContestProblems", this.keyword)
-        .then((res) => {
-          if (this.isAuthenticated) {
-            if (this.contestRuleType === "ACM") {
-              this.addStatusColumn(this.ACMTableColumns, res.data.data)
-            } else if (this.OIContestRealTimePermission) {
-              this.addStatusColumn(this.ACMTableColumns, res.data.data)
-            }
-          }
-        })
+      this.$store
+        .dispatch("getContestProblems", this.keyword)
         .catch((err) => {
           this.problemLoadError = true
           console.error("Failed to fetch contest problems:", err)
