@@ -63,7 +63,7 @@
           <td class="TableTitle">
             {{ problem.title }}
           </td>
-          <td>{{ DIFFICULTY_MAP[problem.difficulty].value }}</td>
+          <td>{{ (DIFFICULTY_MAP[problem.difficulty] || {}).value }}</td>
           <td v-if="contestRuleType !== 'ACM'">{{ problem.total_score }}</td>
           <td>
             {{ getACRate(problem.accepted_number, problem.submission_number) }}
@@ -132,16 +132,8 @@ export default {
     },
     getContestProblems() {
       this.problemLoadError = false
-      this.$store.dispatch("getContestProblems", this.keyword)
-        .then((res) => {
-          if (this.isAuthenticated) {
-            if (this.contestRuleType === "ACM") {
-              this.addStatusColumn(this.ACMTableColumns, res.data.data)
-            } else if (this.OIContestRealTimePermission) {
-              this.addStatusColumn(this.ACMTableColumns, res.data.data)
-            }
-          }
-        })
+      this.$store
+        .dispatch("getContestProblems", this.keyword)
         .catch((err) => {
           this.problemLoadError = true
           console.error("Failed to fetch contest problems:", err)
