@@ -63,7 +63,7 @@
           <td class="TableTitle">
             {{ problem.title }}
           </td>
-          <td>{{ DIFFICULTY_MAP[problem.difficulty].value }}</td>
+          <td>{{ (DIFFICULTY_MAP[problem.difficulty] || {}).value }}</td>
           <td v-if="contestRuleType !== 'ACM'">{{ problem.total_score }}</td>
           <td>
             {{ getACRate(problem.accepted_number, problem.submission_number) }}
