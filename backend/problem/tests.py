@@ -20,6 +20,7 @@ from .models import Problem, ProblemRuleType, ProblemAIHintLog
 from .tasks import update_weekly_stats, update_bonus_problem
 from contest.models import Contest, ContestRuleType
 from contest.tests import DEFAULT_CONTEST_DATA
+from submission.models import JudgeStatus, Submission
 from utils.constants import CONTEST_PASSWORD_SESSION_KEY
 from .llm_hint import (CLUSTER_VLLM_CHAT_COMPLETIONS_URL, LOCAL_VLLM_CHAT_COMPLETIONS_URL,
                        VLLM_CONNECT_TIMEOUT_SEC, VLLM_MODEL, VLLM_STREAM_READ_TIMEOUT_SEC,
@@ -1286,3 +1287,117 @@ class UpdateBonusProblemTest(APITestCase):
         with mock.patch('problem.models.Problem.objects.filter', side_effect=DatabaseError("Database error")):
             with self.assertRaises(DatabaseError):
                 update_bonus_problem()
+
+
+class AIHintStatsAPITest(APITestCase):
+    """집계 쿼리가 실제 Postgres 에서 도는지, 지표가 정의대로 나오는지 확인한다.
+
+    윈도우 함수와 FILTER, percentile_disc 등 Postgres 전용 문법을 쓰므로
+    이 테스트가 없으면 배포 후에야 오류를 알게 된다.
+    """
+
+    def setUp(self):
+        self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
+        self.url = self.reverse("ai_hint_stats_api")
+        self.admin = self.create_super_admin()
+        self.problem = ProblemCreateTestBase.add_problem(DEFAULT_PROBLEM_DATA, self.admin)
+        self.user = self.create_user("hint@test.com", "hintuser", "hint1234!", login=False)
+
+    def _log(self, minutes_ago, content="[1단계] 힌트"):
+        log = ProblemAIHintLog.objects.create(user=self.user, problem=self.problem, hint_content=content)
+        # auto_now_add 라서 생성 후에 시각을 덮어써야 한다.
+        ProblemAIHintLog.objects.filter(id=log.id).update(
+            created_at=timezone.now() - timedelta(minutes=minutes_ago))
+        return log
+
+    def test_requires_super_admin(self):
+        self.client.logout()
+        self.create_user("normal@test.com", "normaluser", "normal1234!")
+        resp = self.client.get(self.url)
+        self.assertFailed(resp)
+
+    def test_empty_range_returns_zeros(self):
+        resp = self.client.get(self.url)
+        self.assertSuccess(resp)
+        data = resp.data["data"]
+        self.assertEqual(data["summary"]["turns"], 0)
+        self.assertEqual(data["depth"]["distribution"], [])
+        self.assertEqual(len(data["hourly"]), 24)
+
+    def test_session_split_by_gap(self):
+        # 10분 간격 두 건은 한 대화, 하루 전 한 건은 별도 대화로 묶여야 한다.
+        self._log(minutes_ago=20)
+        self._log(minutes_ago=10)
+        self._log(minutes_ago=60 * 24)
+
+        resp = self.client.get(self.url)
+        self.assertSuccess(resp)
+        data = resp.data["data"]
+
+        self.assertEqual(data["summary"]["turns"], 3)
+        self.assertEqual(data["summary"]["sessions"], 2)
+        self.assertEqual(data["summary"]["users"], 1)
+        self.assertEqual(data["depth"]["avg_turns"], 1.5)
+        self.assertEqual(data["depth"]["single_turn_rate"], 50.0)
+
+    def test_failure_and_label_rate(self):
+        self._log(minutes_ago=30, content="[1단계] 정상 응답")
+        self._log(minutes_ago=20, content="머리말 없는 응답")
+        self._log(minutes_ago=10, content="")
+
+        resp = self.client.get(self.url)
+        self.assertSuccess(resp)
+        quality = resp.data["data"]["quality"]
+
+        self.assertEqual(quality["turns"], 3)
+        self.assertEqual(quality["empty"], 1)
+        self.assertEqual(quality["failure_rate"], 33.3)
+        # 라벨 준수율은 빈 응답을 뺀 2건 중 1건이다.
+        self.assertEqual(quality["labeled"], 1)
+        self.assertEqual(quality["label_rate"], 50.0)
+
+    def test_effect_and_top_problems(self):
+        self._log(minutes_ago=30)
+        Submission.objects.create(problem=self.problem, user_id=self.user.id,
+                                  username=self.user.username, code="x",
+                                  result=JudgeStatus.ACCEPTED, language="Python3")
+
+        resp = self.client.get(self.url)
+        self.assertSuccess(resp)
+        data = resp.data["data"]
+
+        self.assertEqual(data["effect"]["with_hint"]["pairs"], 1)
+        self.assertEqual(data["effect"]["with_hint"]["accepted"], 1)
+        self.assertEqual(data["effect"]["with_hint"]["rate"], 100.0)
+        self.assertEqual(data["top_problems"][0]["display_id"], self.problem._id)
+        self.assertEqual(data["top_problems"][0]["turns"], 1)
+
+    def test_limit_reached_counts_per_problem_not_per_session(self):
+        # 5회를 여러 날에 걸쳐 나눠 써도 한도는 채운 것이다.
+        for days in range(5):
+            self._log(minutes_ago=60 * 24 * days)
+
+        resp = self.client.get(self.url)
+        self.assertSuccess(resp)
+        depth = resp.data["data"]["depth"]
+
+        # 세션은 5개로 쪼개지지만 (사용자, 문제) 기준으로는 한도 도달이다.
+        self.assertEqual(depth["sessions"], 5)
+        self.assertEqual(depth["single_turn_rate"], 100.0)
+        self.assertEqual(depth["limit_reached_rate"], 100.0)
+
+    def test_adoption_rate_never_exceeds_100(self):
+        # 힌트만 받고 제출하지 않은 경우가 있어도 채택률이 100%를 넘으면 안 된다.
+        self._log(minutes_ago=30)
+
+        resp = self.client.get(self.url)
+        self.assertSuccess(resp)
+        summary = resp.data["data"]["summary"]
+
+        self.assertEqual(summary["hinted_pairs"], 1)
+        self.assertEqual(summary["engaged_pairs"], 1)
+        self.assertEqual(summary["adoption_rate"], 100.0)
+
+    def test_invalid_date_is_rejected(self):
+        resp = self.client.get(self.url + "?start=2026-13-99")
+        self.assertFailed(resp)
