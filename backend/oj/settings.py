@@ -370,5 +370,9 @@ CELERY_BEAT_SCHEDULE = {
     'update_bonus_problem': {
         'task': 'problem.tasks.update_bonus_problem',
         'schedule': celery.schedules.crontab(hour=0, minute=0, day_of_week='mon'),    # Every Monday at midnight
-    }
+    },
+    'cleanup_dead_judge_servers': {
+        'task': 'judge.tasks.cleanup_dead_judge_servers',
+        'schedule': celery.schedules.crontab(minute=0, hour=0),    # Every day at midnight
+    },
 }
