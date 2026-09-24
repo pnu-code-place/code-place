@@ -57,8 +57,8 @@ def judge_task(submission_id, problem_id):
 
 @celery.shared_task(**CELERY_TASK_ARGS())
 def cleanup_dead_judge_servers():
-    """1시간 이상 heartbeat가 끊긴 dead judge server 파드 정리"""
-    dead_threshold = timezone.now() - timedelta(hours=1)
+    """12시간 이상 heartbeat가 끊긴 dead judge server 파드 정리"""
+    dead_threshold = timezone.now() - timedelta(hours=12)
     with transaction.atomic():
         deleted_count, _ = JudgeServer.objects.filter(last_heartbeat__lt=dead_threshold).delete()
     if deleted_count:

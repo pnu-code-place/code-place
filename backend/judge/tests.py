@@ -49,7 +49,7 @@ class CleanupDeadJudgeServersTest(TestCase):
             memory_usage=80.3,
             cpu_usage=90.5,
             service_url="http://127.0.0.1",
-            last_heartbeat=timezone.now() - timedelta(hours=2)
+            last_heartbeat=timezone.now() - timedelta(hours=13)
         )
         JudgeServer.objects.create(
             hostname="alive_server",
@@ -58,7 +58,7 @@ class CleanupDeadJudgeServersTest(TestCase):
             memory_usage=80.3,
             cpu_usage=90.5,
             service_url="http://127.0.0.1",
-            last_heartbeat=timezone.now()
+            last_heartbeat=timezone.now() - timedelta(hours=6)
         )
 
         deleted = cleanup_dead_judge_servers.run()
