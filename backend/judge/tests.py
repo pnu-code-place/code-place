@@ -1,8 +1,11 @@
+from datetime import timedelta
 from unittest import mock
 
-from django.test import SimpleTestCase
+from django.test import SimpleTestCase, TestCase
+from django.utils import timezone
 
-from judge.tasks import judge_task
+from conf.models import JudgeServer
+from judge.tasks import judge_task, cleanup_dead_judge_servers
 
 
 class JudgeTaskObservabilityTest(SimpleTestCase):
@@ -33,3 +36,33 @@ class JudgeTaskObservabilityTest(SimpleTestCase):
 
         dispatcher.assert_not_called()
         record_outcome.assert_called_once_with("user_disabled", "contest")
+
+
+class CleanupDeadJudgeServersTest(TestCase):
+
+    def test_cleanup_dead_judge_servers(self):
+        """judge server dead 파드 제거 테스트"""
+        JudgeServer.objects.create(
+            hostname="dead_server",
+            judger_version="1.0.4",
+            cpu_core=4,
+            memory_usage=80.3,
+            cpu_usage=90.5,
+            service_url="http://127.0.0.1",
+            last_heartbeat=timezone.now() - timedelta(hours=13)
+        )
+        JudgeServer.objects.create(
+            hostname="alive_server",
+            judger_version="1.0.4",
+            cpu_core=4,
+            memory_usage=80.3,
+            cpu_usage=90.5,
+            service_url="http://127.0.0.1",
+            last_heartbeat=timezone.now() - timedelta(hours=6)
+        )
+
+        deleted = cleanup_dead_judge_servers.run()
+
+        self.assertEqual(deleted, 1)
+        self.assertFalse(JudgeServer.objects.filter(hostname="dead_server").exists())
+        self.assertTrue(JudgeServer.objects.filter(hostname="alive_server").exists())
