@@ -364,6 +364,11 @@ export default {
   getDashboardInfo() {
     return ajax("admin/dashboard_info", "get")
   },
+  getAIHintStats(start, end) {
+    return ajax("admin/ai_hint_stats", "get", {
+      params: { start, end },
+    })
+  },
   getSessions() {
     return ajax("sessions", "get")
   },
