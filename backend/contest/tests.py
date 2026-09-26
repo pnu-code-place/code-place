@@ -1,12 +1,18 @@
 import copy
+import json
 from datetime import datetime, timedelta
+from unittest import mock
 
 from django.conf import settings
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 from django.utils import timezone
 
 from utils.api.tests import APITestCase
 
-from .models import ContestAnnouncement, ContestRuleType, Contest
+from .models import ACMContestRank, ContestAnnouncement, ContestRuleType, Contest
+from .rank_cache import get_cached_public_rank, refresh_public_rank_cache
+from .serializers import ACMContestRankSerializer
 
 DEFAULT_CONTEST_DATA = {
     "title": "test title",
@@ -243,14 +249,72 @@ class ContestRankAPITest(APITestCase):
 
     def setUp(self):
         self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
-        user = self.create_admin()
-        self.acm_contest = Contest.objects.create(created_by=user, **DEFAULT_CONTEST_DATA)
-        self.create_user(email="test@test.com", username="test", password="test1234!")
-        self.url = self.reverse("contest_rank_api")
+        self.admin = self.create_admin()
+        contest_data = {**DEFAULT_CONTEST_DATA, "password": ""}
+        self.acm_contest = Contest.objects.create(created_by=self.admin, **contest_data)
+        self.rank_user = self.create_user(email="test@test.com", username="test", password="test1234!")
+        self.rank = ACMContestRank.objects.create(
+            contest=self.acm_contest,
+            user=self.rank_user,
+            accepted_number=1,
+            submission_number=1,
+            submission_info={"1": {"is_ac": True}},
+        )
+        # The public and admin URL modules currently share this route name,
+        # so use the public path explicitly for the regular-user contract test.
+        self.url = "/api/contest_rank"
 
-    def get_contest_rank(self):
-        resp = self.client.get(self.url + "?contest_id=" + self.acm_contest.id)
+    @mock.patch("contest.views.oj.get_public_rank")
+    def test_regular_rank_payload_excludes_private_user_fields(self, get_public_rank):
+        get_public_rank.return_value = list(ACMContestRankSerializer([self.rank], many=True).data)
+        self.client.force_authenticate(user=self.rank_user)
+        resp = self.client.get(self.url, {"contest_id": self.acm_contest.id, "limit": 30})
         self.assertSuccess(resp)
+        user_data = resp.data["data"]["results"][0]["user"]
+        self.assertEqual(set(user_data), {"id", "username", "avatar"})
+
+    def test_admin_rank_payload_keeps_export_user_fields(self):
+        data = ACMContestRankSerializer(self.rank, is_contest_admin=True).data["user"]
+        self.assertTrue({"real_name", "email", "school", "major", "student_id"}.issubset(data))
+
+    def test_rank_serialization_does_not_query_each_user_profile(self):
+        ranks = list(
+            ACMContestRank.objects.filter(contest=self.acm_contest)
+            .select_related("user", "user__userprofile")
+        )
+        with CaptureQueriesContext(connection) as queries:
+            ACMContestRankSerializer(ranks, many=True).data
+        self.assertEqual(len(queries), 0)
+
+    @mock.patch("contest.views.oj.get_public_rank", return_value=None)
+    def test_rank_api_falls_back_to_db_when_redis_is_unavailable(self, _get_public_rank):
+        self.client.force_authenticate(user=self.rank_user)
+        resp = self.client.get(self.url, {"contest_id": self.acm_contest.id, "limit": 30})
+        self.assertSuccess(resp)
+        self.assertEqual(resp.data["data"]["results"][0]["user"]["username"], self.rank_user.username)
+
+    @mock.patch("contest.rank_cache.cache")
+    def test_rank_cache_read_failure_returns_cache_miss(self, rank_cache):
+        rank_cache.get.side_effect = ConnectionError("redis unavailable")
+        self.assertIsNone(get_cached_public_rank(self.acm_contest.id))
+
+    @mock.patch("contest.rank_cache.cache")
+    def test_rank_cache_write_failure_still_returns_db_snapshot(self, rank_cache):
+        rank_cache.get.return_value = None
+        rank_cache.set.side_effect = ConnectionError("redis unavailable")
+        data = refresh_public_rank_cache(self.acm_contest)
+        self.assertEqual(data[0]["user"]["username"], self.rank_user.username)
+        rank_cache.delete.assert_called_once()
+        self.assertEqual(rank_cache.set.call_args.kwargs["timeout"], 30)
+
+    @mock.patch("contest.rank_cache.cache")
+    def test_waiting_requests_reuse_snapshot_built_by_lock_owner(self, rank_cache):
+        cached_data = list(ACMContestRankSerializer([self.rank], many=True).data)
+        rank_cache.get.return_value = json.dumps(cached_data)
+        data = refresh_public_rank_cache(self.acm_contest)
+        self.assertEqual(data, cached_data)
+        rank_cache.delete.assert_not_called()
+        rank_cache.set.assert_not_called()
 
 
 class ContestParticipantsAPITest(APITestCase):

@@ -24,7 +24,7 @@ class ContestRuleType(Choices):
 
 class CacheKey:
     waiting_queue = "waiting_queue"
-    contest_rank_cache = "contest_rank_cache"
+    contest_rank_cache = "contest_rank_cache:v2"
     website_config = "website_config"
 
 

@@ -2,17 +2,17 @@ from django.conf import settings
 from django.db.models import OuterRef, Count, Subquery
 from django.http import HttpResponse
 from django.utils.timezone import now
-from django.core.cache import cache
 from submission.models import Submission
 from utils.api import APIView, validate_serializer
-from utils.constants import CacheKey, CONTEST_PASSWORD_SESSION_KEY
+from utils.constants import CONTEST_PASSWORD_SESSION_KEY
 from utils.contest_ranking_writer import ContestRankingWriter
 from utils.shortcuts import datetime2str, check_is_id
-from account.models import AdminType, User, UserProfile
+from account.models import User, UserProfile
 from account.decorators import login_required, check_contest_permission, check_contest_password, ensure_created_by
 
 from utils.constants import ContestRuleType, ContestStatus
-from ..models import ContestAnnouncement, Contest, OIContestRank, ACMContestRank
+from ..models import ContestAnnouncement, Contest
+from ..rank_cache import get_contest_rank_queryset, get_public_rank, serialize_public_rank
 from ..serializers import ContestAnnouncementSerializer, ContestUserSubmissionSummarySerializer
 from ..serializers import ContestSerializer, ContestPasswordVerifySerializer
 from ..serializers import OIContestRankSerializer, ACMContestRankSerializer
@@ -207,16 +207,7 @@ class ContestParticipantsAPI(APIView):
 class ContestRankAPI(APIView):
 
     def get_rank(self):
-        if self.contest.rule_type == ContestRuleType.ACM:
-            return ACMContestRank.objects.filter(contest=self.contest,
-                                                 user__is_disabled=False,
-                                                 user__admin_type__exact=AdminType.REGULAR_USER). \
-                select_related("user").order_by("-accepted_number", "total_time")
-        else:
-            return OIContestRank.objects.filter(contest=self.contest,
-                                                user__is_disabled=False,
-                                                user__admin_type__exact=AdminType.REGULAR_USER). \
-                select_related("user").order_by("-total_score")
+        return get_contest_rank_queryset(self.contest)
 
     @check_contest_permission(check_type="ranks")
     def get(self, request):
@@ -229,13 +220,15 @@ class ContestRankAPI(APIView):
         if is_contest_admin:
             qs = self.get_rank()
         else:
-            cache_key = f"{CacheKey.contest_rank_cache}:{self.contest.id}"
-            qs = cache.get(cache_key)
-            if not qs:
-                qs = self.get_rank()
-                cache.set(cache_key, qs)
+            qs = get_public_rank(self.contest)
+            if qs is None:
+                # Redis is optional for rank reads. A cache outage falls back to
+                # one optimized DB query and does not fail the API request.
+                qs = serialize_public_rank(self.contest)
 
         if download_csv:
+            if not is_contest_admin:
+                return self.error("No permission to download contest rank")
             data = serializer(qs, many=True, is_contest_admin=is_contest_admin).data
             contest_rank_writer = ContestRankingWriter(self.contest, data)
             csv = contest_rank_writer.create_csv()
@@ -245,5 +238,8 @@ class ContestRankAPI(APIView):
             return response
 
         page_qs = self.paginate_data(request, qs)
-        page_qs["results"] = serializer(page_qs["results"], many=True, is_contest_admin=is_contest_admin).data
+        if is_contest_admin:
+            page_qs["results"] = serializer(
+                page_qs["results"], many=True, is_contest_admin=True
+            ).data
         return self.success(page_qs)

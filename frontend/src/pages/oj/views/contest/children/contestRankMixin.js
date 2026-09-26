@@ -3,12 +3,21 @@ import { mapGetters, mapState } from "vuex"
 import { types } from "@/store"
 import { CONTEST_STATUS } from "@/utils/constants"
 
+const RANK_REFRESH_INTERVAL_MS = 2000
+const RANK_REFRESH_JITTER_MS = 500
+
 export default {
   components: {
     ScreenFull,
   },
+  data() {
+    return {
+      refreshFunc: null,
+      rankRequestInFlight: false,
+    }
+  },
   computed: {
-    ...mapGetters(["isContestAdmin"]),
+    ...mapGetters(["isContestAdmin", "contestStatus"]),
     ...mapState({
       contest: (state) => state.contest.contest,
       contestProblems: (state) => state.contest.contestProblems,
@@ -55,10 +64,51 @@ export default {
       },
     },
     refreshDisabled() {
-      return this.contest.status === CONTEST_STATUS.ENDED
+      return this.contestStatus === CONTEST_STATUS.ENDED
+    },
+  },
+  mounted() {
+    document.addEventListener("visibilitychange", this.handleRankVisibilityChange)
+  },
+  methods: {
+    startRankPolling() {
+      this.stopRankPolling()
+      if (this.refreshDisabled || document.hidden) return
+
+      const jitter = Math.floor(Math.random() * (RANK_REFRESH_JITTER_MS + 1))
+      this.refreshFunc = setTimeout(
+        this.pollContestRank,
+        RANK_REFRESH_INTERVAL_MS + jitter,
+      )
+    },
+    stopRankPolling() {
+      if (this.refreshFunc !== null) {
+        clearTimeout(this.refreshFunc)
+        this.refreshFunc = null
+      }
+    },
+    pollContestRank() {
+      this.stopRankPolling()
+      if (this.refreshDisabled || document.hidden) return
+
+      Promise.resolve(this.updateContestData({ silent: true })).finally(() => {
+        this.startRankPolling()
+      })
+    },
+    handleRankVisibilityChange() {
+      if (document.hidden || this.refreshDisabled) {
+        this.stopRankPolling()
+        return
+      }
+
+      this.pollContestRank()
     },
   },
   beforeDestroy() {
-    clearInterval(this.refreshFunc)
+    this.stopRankPolling()
+    document.removeEventListener(
+      "visibilitychange",
+      this.handleRankVisibilityChange,
+    )
   },
 }
