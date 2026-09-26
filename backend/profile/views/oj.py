@@ -196,6 +196,7 @@ class UserProfileActivityAPI(APIView):
                 create_time__gte=start_datetime,
                 create_time__lt=end_datetime,
             )
+            .exclude(contest__isnull=False)
             .order_by("create_time")
             .values_list("problem_id", "create_time")
         )
