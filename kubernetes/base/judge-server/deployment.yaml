@@ -32,13 +32,24 @@ spec:
                     operator: In
                     values:
                       - ojserver-ms-7e01
-            - weight: 20
+            - weight: 30
               preference:
                 matchExpressions:
                   - key: kubernetes.io/hostname
                     operator: In
                     values:
                       - swec-server01-precision-tower-7810
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 30
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - judge-server
+                topologyKey: kubernetes.io/hostname
       imagePullSecrets:
         - name: regcred
       containers:
