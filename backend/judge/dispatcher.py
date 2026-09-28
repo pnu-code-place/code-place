@@ -13,7 +13,7 @@ from django.http import HttpResponseNotFound
 
 from account.models import User, UserScore, UserSolved
 from conf.models import JudgeServer
-from contest.rank_cache import refresh_public_rank_cache
+from contest.rank_cache import mark_public_rank_cache_stale
 from contest.models import ContestRuleType, ACMContestRank, OIContestRank, ContestStatus
 from options.options import SysOptions
 from problem.models import Problem, ProblemRuleType
@@ -405,7 +405,7 @@ class JudgeDispatcher(DispatcherBase):
         if self.contest.rule_type == ContestRuleType.OI or self.contest.real_time_rank:
             contest_id = self.contest.id
             transaction.on_commit(
-                lambda current_contest_id=contest_id: refresh_public_rank_cache(current_contest_id, force=True)
+                lambda current_contest_id=contest_id: mark_public_rank_cache_stale(current_contest_id)
             )
 
     def _update_acm_contest_rank(self, rank):

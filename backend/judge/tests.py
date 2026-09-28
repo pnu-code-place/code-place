@@ -72,10 +72,10 @@ class CleanupDeadJudgeServersTest(TestCase):
 
 class ContestRankCacheRefreshTest(SimpleTestCase):
 
-    @mock.patch("judge.dispatcher.refresh_public_rank_cache")
+    @mock.patch("judge.dispatcher.mark_public_rank_cache_stale")
     @mock.patch("judge.dispatcher.transaction.on_commit")
     @mock.patch("judge.dispatcher.ACMContestRank")
-    def test_real_time_rank_cache_is_refreshed_after_commit(self, rank_model, on_commit, refresh_rank_cache):
+    def test_real_time_rank_cache_is_marked_stale_after_commit(self, rank_model, on_commit, mark_rank_cache_stale):
         dispatcher = JudgeDispatcher.__new__(JudgeDispatcher)
         dispatcher.contest = mock.Mock(id=42, rule_type=ContestRuleType.ACM, real_time_rank=True)
         dispatcher.submission = mock.Mock(user_id=7)
@@ -86,10 +86,10 @@ class ContestRankCacheRefreshTest(SimpleTestCase):
         dispatcher.update_contest_rank()
 
         dispatcher._update_acm_contest_rank.assert_called_once_with(rank)
-        refresh_rank_cache.assert_not_called()
+        mark_rank_cache_stale.assert_not_called()
         on_commit.assert_called_once()
 
         callback = on_commit.call_args.args[0]
         callback()
 
-        refresh_rank_cache.assert_called_once_with(42, force=True)
+        mark_rank_cache_stale.assert_called_once_with(42)

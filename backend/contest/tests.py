@@ -7,11 +7,19 @@ from django.conf import settings
 from django.db import connection
 from django.test.utils import CaptureQueriesContext
 from django.utils import timezone
+from redis.exceptions import LockError
 
 from utils.api.tests import APITestCase
 
 from .models import ACMContestRank, ContestAnnouncement, ContestRuleType, Contest
-from .rank_cache import get_cached_public_rank, refresh_public_rank_cache
+from .rank_cache import (
+    get_cached_public_rank,
+    get_public_rank,
+    mark_public_rank_cache_stale,
+    public_rank_cache_generation_key,
+    public_rank_cache_key,
+    refresh_public_rank_cache,
+)
 from .serializers import ACMContestRankSerializer
 
 DEFAULT_CONTEST_DATA = {
@@ -306,24 +314,83 @@ class ContestRankAPITest(APITestCase):
 
     @mock.patch("contest.rank_cache.cache")
     def test_rank_cache_read_failure_returns_cache_miss(self, rank_cache):
-        rank_cache.get.side_effect = ConnectionError("redis unavailable")
+        rank_cache.get_many.side_effect = ConnectionError("redis unavailable")
         self.assertIsNone(get_cached_public_rank(self.acm_contest.id))
 
     @mock.patch("contest.rank_cache.cache")
     def test_rank_cache_write_failure_still_returns_db_snapshot(self, rank_cache):
-        rank_cache.get.return_value = None
+        rank_cache.get_many.return_value = {}
         rank_cache.set.side_effect = ConnectionError("redis unavailable")
         data = refresh_public_rank_cache(self.acm_contest)
         self.assertEqual(data[0]["user"]["username"], self.rank_user.username)
-        rank_cache.delete.assert_called_once()
+        rank_cache.delete.assert_not_called()
         self.assertEqual(rank_cache.set.call_args.kwargs["timeout"], 30)
 
     @mock.patch("contest.rank_cache.cache")
-    def test_waiting_requests_reuse_snapshot_built_by_lock_owner(self, rank_cache):
+    def test_fresh_rank_snapshot_is_reused_without_locking(self, rank_cache):
         cached_data = list(ACMContestRankSerializer([self.rank], many=True).data)
-        rank_cache.get.return_value = json.dumps(cached_data)
+        cache_key = public_rank_cache_key(self.acm_contest.id)
+        generation_key = public_rank_cache_generation_key(self.acm_contest.id)
+        rank_cache.get_many.return_value = {
+            cache_key: json.dumps({"generation": 3, "data": cached_data}),
+            generation_key: 3,
+        }
+
         data = refresh_public_rank_cache(self.acm_contest)
+
         self.assertEqual(data, cached_data)
+        rank_cache.lock.assert_not_called()
+        rank_cache.delete.assert_not_called()
+        rank_cache.set.assert_not_called()
+
+    @mock.patch("contest.rank_cache.serialize_public_rank")
+    @mock.patch("contest.rank_cache.cache")
+    def test_stale_snapshot_is_served_while_another_request_rebuilds(self, rank_cache, serialize_rank):
+        cached_data = [{"user": {"username": "cached"}}]
+        cache_key = public_rank_cache_key(self.acm_contest.id)
+        generation_key = public_rank_cache_generation_key(self.acm_contest.id)
+        rank_cache.get_many.return_value = {
+            cache_key: json.dumps({"generation": 3, "data": cached_data}),
+            generation_key: 4,
+        }
+        rank_cache.lock.return_value.__enter__.side_effect = LockError("busy")
+
+        data = get_public_rank(self.acm_contest)
+
+        self.assertEqual(data, cached_data)
+        self.assertEqual(rank_cache.lock.call_args.kwargs["blocking_timeout"], 0)
+        serialize_rank.assert_not_called()
+        rank_cache.delete.assert_not_called()
+
+    @mock.patch("contest.rank_cache.cache")
+    def test_stale_snapshot_is_rebuilt_without_deleting_it_first(self, rank_cache):
+        cached_data = [{"user": {"username": "cached"}}]
+        cache_key = public_rank_cache_key(self.acm_contest.id)
+        generation_key = public_rank_cache_generation_key(self.acm_contest.id)
+        rank_cache.get_many.return_value = {
+            cache_key: json.dumps({"generation": 3, "data": cached_data}),
+            generation_key: 4,
+        }
+
+        data = get_public_rank(self.acm_contest)
+
+        self.assertEqual(data[0]["user"]["username"], self.rank_user.username)
+        rank_cache.delete.assert_not_called()
+        payload = json.loads(rank_cache.set.call_args.args[1])
+        self.assertEqual(payload["generation"], 4)
+        self.assertEqual(payload["data"], data)
+
+    @mock.patch("contest.rank_cache.cache")
+    def test_marking_rank_cache_stale_only_increments_generation(self, rank_cache):
+        rank_cache.incr.return_value = 4
+
+        generation = mark_public_rank_cache_stale(self.acm_contest.id)
+
+        self.assertEqual(generation, 4)
+        rank_cache.incr.assert_called_once_with(
+            public_rank_cache_generation_key(self.acm_contest.id),
+            ignore_key_check=True,
+        )
         rank_cache.delete.assert_not_called()
         rank_cache.set.assert_not_called()
 
