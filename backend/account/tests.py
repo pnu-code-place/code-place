@@ -94,13 +94,17 @@ class RequestLogMiddlewareTest(SimpleTestCase):
 
 class SessionRecordMiddlewareTest(SimpleTestCase):
 
-    class FakeSession(dict):
-        session_key = "session-key"
-
-        def __init__(self, *args, **kwargs):
-            super().__init__(*args, **kwargs)
-            self.modified = False
-            self.save = mock.Mock()
+    @staticmethod
+    def make_session(data=None):
+        values = dict(data or {})
+        session = mock.MagicMock()
+        session.session_key = "session-key"
+        session.modified = False
+        session.__contains__.side_effect = values.__contains__
+        session.get.side_effect = values.get
+        session.__getitem__.side_effect = values.__getitem__
+        session.__setitem__.side_effect = values.__setitem__
+        return session
 
     def setUp(self):
         self.middleware = SessionRecordMiddleware(lambda request: None)
@@ -110,7 +114,7 @@ class SessionRecordMiddlewareTest(SimpleTestCase):
     @mock.patch("account.middleware.now")
     def test_existing_cache_session_is_marked_for_database_persistence(self, current_time):
         current_time.return_value = now()
-        self.request.session = self.FakeSession()
+        self.request.session = self.make_session()
 
         self.middleware.process_request(self.request)
 
@@ -123,7 +127,7 @@ class SessionRecordMiddlewareTest(SimpleTestCase):
     def test_recent_activity_does_not_write_session_on_every_poll(self, current_time):
         last_activity = now()
         current_time.return_value = last_activity + timedelta(seconds=30)
-        self.request.session = self.FakeSession({
+        self.request.session = self.make_session({
             DURABLE_SESSION_MARKER: True,
             "user_agent": "test-agent",
             "ip": "127.0.0.1",
