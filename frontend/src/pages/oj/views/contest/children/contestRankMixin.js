@@ -65,7 +65,17 @@ export default {
       },
     },
     refreshDisabled() {
-      return this.contestStatus === CONTEST_STATUS.ENDED
+      return this.contestStatus !== CONTEST_STATUS.UNDERWAY
+    },
+  },
+  watch: {
+    contestStatus(status) {
+      if (status !== CONTEST_STATUS.UNDERWAY) {
+        this.stopRankPolling()
+        return
+      }
+
+      this.pollContestRank()
     },
   },
   mounted() {
