@@ -1,5 +1,6 @@
 import copy
 import json
+import time
 from datetime import datetime, timedelta
 from unittest import mock
 
@@ -345,7 +346,7 @@ class ContestRankAPITest(APITestCase):
         data = refresh_public_rank_cache(self.acm_contest)
         self.assertEqual(data[0]["user"]["username"], self.rank_user.username)
         rank_cache.delete.assert_not_called()
-        self.assertEqual(rank_cache.set.call_args.kwargs["timeout"], 30)
+        self.assertEqual(rank_cache.set.call_args.kwargs["timeout"], 300)
 
     @mock.patch("contest.rank_cache.cache")
     def test_fresh_rank_snapshot_is_reused_without_locking(self, rank_cache):
@@ -353,7 +354,11 @@ class ContestRankAPITest(APITestCase):
         cache_key = public_rank_cache_key(self.acm_contest.id)
         generation_key = public_rank_cache_generation_key(self.acm_contest.id)
         rank_cache.get_many.return_value = {
-            cache_key: json.dumps({"generation": 3, "data": cached_data}),
+            cache_key: json.dumps({
+                "generation": 3,
+                "refreshed_at": time.time(),
+                "data": cached_data,
+            }),
             generation_key: 3,
         }
 
@@ -383,6 +388,51 @@ class ContestRankAPITest(APITestCase):
         serialize_rank.assert_not_called()
         rank_cache.delete.assert_not_called()
 
+    @mock.patch("contest.rank_cache.serialize_public_rank")
+    @mock.patch("contest.rank_cache.cache")
+    def test_expired_snapshot_is_served_while_another_request_rebuilds(self, rank_cache, serialize_rank):
+        cached_data = [{"user": {"username": "cached"}}]
+        cache_key = public_rank_cache_key(self.acm_contest.id)
+        generation_key = public_rank_cache_generation_key(self.acm_contest.id)
+        rank_cache.get_many.return_value = {
+            cache_key: json.dumps({
+                "generation": 3,
+                "refreshed_at": time.time() - 31,
+                "data": cached_data,
+            }),
+            generation_key: 3,
+        }
+        rank_cache.lock.return_value.__enter__.side_effect = LockError("busy")
+
+        data = get_public_rank(self.acm_contest)
+
+        self.assertEqual(data, cached_data)
+        self.assertEqual(rank_cache.lock.call_args.kwargs["blocking_timeout"], 0)
+        serialize_rank.assert_not_called()
+        rank_cache.delete.assert_not_called()
+
+    @mock.patch("contest.rank_cache.cache")
+    def test_expired_snapshot_is_rebuilt_without_waiting_for_redis_expiry(self, rank_cache):
+        cached_data = [{"user": {"username": "cached"}}]
+        cache_key = public_rank_cache_key(self.acm_contest.id)
+        generation_key = public_rank_cache_generation_key(self.acm_contest.id)
+        rank_cache.get_many.return_value = {
+            cache_key: json.dumps({
+                "generation": 3,
+                "refreshed_at": time.time() - 31,
+                "data": cached_data,
+            }),
+            generation_key: 3,
+        }
+
+        data = get_public_rank(self.acm_contest)
+
+        self.assertEqual(data[0]["user"]["username"], self.rank_user.username)
+        payload = json.loads(rank_cache.set.call_args.args[1])
+        self.assertEqual(payload["generation"], 3)
+        self.assertGreater(payload["refreshed_at"], time.time() - 5)
+        self.assertEqual(rank_cache.set.call_args.kwargs["timeout"], 300)
+
     @mock.patch("contest.rank_cache.cache")
     def test_stale_snapshot_is_rebuilt_without_deleting_it_first(self, rank_cache):
         cached_data = [{"user": {"username": "cached"}}]
@@ -400,6 +450,7 @@ class ContestRankAPITest(APITestCase):
         payload = json.loads(rank_cache.set.call_args.args[1])
         self.assertEqual(payload["generation"], 4)
         self.assertEqual(payload["data"], data)
+        self.assertIn("refreshed_at", payload)
 
     @mock.patch("contest.rank_cache.cache")
     def test_marking_rank_cache_stale_only_increments_generation(self, rank_cache):

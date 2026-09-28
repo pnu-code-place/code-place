@@ -13,7 +13,8 @@ from .serializers import ACMContestRankSerializer, OIContestRankSerializer
 
 logger = logging.getLogger(__name__)
 
-RANK_CACHE_TIMEOUT_SECONDS = 30
+RANK_CACHE_FRESHNESS_SECONDS = 30
+RANK_CACHE_RETENTION_SECONDS = 5 * 60
 RANK_CACHE_LOCK_TIMEOUT_SECONDS = 10
 RANK_CACHE_COLD_LOCK_WAIT_SECONDS = 0.5
 CACHE_ERROR_LOG_INTERVAL_SECONDS = 30
@@ -77,10 +78,9 @@ def _decode_cached_public_rank(payload, contest_id):
         return None
 
     # Cache entries created by the first version of this feature stored only
-    # the list. Treat them as generation 0 so rolling deployments can rebuild
-    # them after the next judged submission.
+    # the list. Keep them available as stale data during a rolling deployment.
     if isinstance(snapshot, list):
-        return 0, snapshot
+        return 0, snapshot, 0
 
     if not isinstance(snapshot, dict) or not isinstance(snapshot.get("data"), list):
         logger.warning("Ignoring invalid contest %s rank cache snapshot", contest_id)
@@ -91,7 +91,19 @@ def _decode_cached_public_rank(payload, contest_id):
     except (KeyError, TypeError, ValueError):
         logger.warning("Ignoring invalid contest %s rank cache generation", contest_id)
         return None
-    return generation, snapshot["data"]
+    try:
+        refreshed_at = float(snapshot.get("refreshed_at", 0))
+    except (TypeError, ValueError):
+        refreshed_at = 0
+    return generation, snapshot["data"], refreshed_at
+
+
+def _snapshot_is_current(snapshot, generation, contest):
+    if snapshot is None or snapshot[0] < generation:
+        return False
+    if not contest.real_time_rank:
+        return True
+    return time.time() - snapshot[2] < RANK_CACHE_FRESHNESS_SECONDS
 
 
 def _get_public_rank_cache_state(contest_id):
@@ -144,15 +156,16 @@ def _refresh_public_rank_cache(contest_or_id, snapshot):
             current_snapshot, current_generation = _get_public_rank_cache_state(contest_id)
             if current_generation is None:
                 return stale_rank
-            if current_snapshot is not None and current_snapshot[0] >= current_generation:
+            contest = contest_or_id if isinstance(contest_or_id, Contest) else Contest.objects.get(id=contest_id)
+            if _snapshot_is_current(current_snapshot, current_generation, contest):
                 return current_snapshot[1]
 
-            contest = contest_or_id if isinstance(contest_or_id, Contest) else Contest.objects.get(id=contest_id)
             rank_data = serialize_public_rank(contest)
             try:
-                timeout = RANK_CACHE_TIMEOUT_SECONDS if contest.real_time_rank else None
+                timeout = RANK_CACHE_RETENTION_SECONDS if contest.real_time_rank else None
                 payload = {
                     "generation": current_generation,
+                    "refreshed_at": time.time(),
                     "data": rank_data,
                 }
                 cache.set(
@@ -174,19 +187,20 @@ def _refresh_public_rank_cache(contest_or_id, snapshot):
 
 
 def refresh_public_rank_cache(contest_or_id):
-    contest_id = contest_or_id.id if isinstance(contest_or_id, Contest) else int(contest_or_id)
+    contest = contest_or_id if isinstance(contest_or_id, Contest) else Contest.objects.get(id=int(contest_or_id))
+    contest_id = contest.id
     snapshot, generation = _get_public_rank_cache_state(contest_id)
     if generation is None:
         return None
-    if snapshot is not None and snapshot[0] >= generation:
+    if _snapshot_is_current(snapshot, generation, contest):
         return snapshot[1]
-    return _refresh_public_rank_cache(contest_or_id, snapshot)
+    return _refresh_public_rank_cache(contest, snapshot)
 
 
 def get_public_rank(contest):
     snapshot, generation = _get_public_rank_cache_state(contest.id)
     if generation is None:
         return None
-    if snapshot is not None and snapshot[0] >= generation:
+    if _snapshot_is_current(snapshot, generation, contest):
         return snapshot[1]
     return _refresh_public_rank_cache(contest, snapshot)

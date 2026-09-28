@@ -2,13 +2,15 @@ import time
 import os
 
 from unittest import mock
-from datetime import timedelta
+from datetime import datetime, timedelta
 from copy import deepcopy
 
 from django.contrib import auth
+from django.contrib.sessions.backends.cache import SessionStore as CacheOnlySessionStore
+from django.contrib.sessions.models import Session
 from django.db import DatabaseError
 from django.http.response import JsonResponse
-from django.test import RequestFactory, SimpleTestCase
+from django.test import RequestFactory, SimpleTestCase, TestCase
 from django.utils import decorators
 from django.utils.timezone import now
 from utils.api.tests import APIClient, APITestCase
@@ -18,8 +20,16 @@ from options.options import SysOptions
 
 from .models import AdminType, ProblemPermission, User
 from .decorators import login_required, scheduler_only
-from .middleware import AdminRoleRequiredMiddleware, RequestIDMiddleware, RequestLogMiddleware
-from .tasks import calculate_user_score_basis, calculate_user_score_fluctuation
+from utils.session_backend import SessionStore
+
+from .middleware import (
+    AdminRoleRequiredMiddleware,
+    DURABLE_SESSION_MARKER,
+    RequestIDMiddleware,
+    RequestLogMiddleware,
+    SessionRecordMiddleware,
+)
+from .tasks import cleanup_expired_sessions, calculate_user_score_basis, calculate_user_score_fluctuation
 
 
 class RequestIDMiddlewareTest(SimpleTestCase):
@@ -80,6 +90,113 @@ class RequestLogMiddlewareTest(SimpleTestCase):
         requests_total.labels.return_value.inc.assert_called_once()
         duration_seconds.labels.assert_called_once_with("GET", "problem_api")
         duration_seconds.labels.return_value.observe.assert_called_once()
+
+
+class SessionRecordMiddlewareTest(SimpleTestCase):
+
+    class FakeSession(dict):
+        session_key = "session-key"
+
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.modified = False
+            self.save = mock.Mock()
+
+    def setUp(self):
+        self.middleware = SessionRecordMiddleware(lambda request: None)
+        self.request = RequestFactory().get("/api/contest_rank", HTTP_USER_AGENT="test-agent")
+        self.request.user = mock.Mock(is_authenticated=True)
+
+    @mock.patch("account.middleware.now")
+    def test_existing_cache_session_is_marked_for_database_persistence(self, current_time):
+        current_time.return_value = now()
+        self.request.session = self.FakeSession()
+
+        self.middleware.process_request(self.request)
+
+        self.assertTrue(self.request.session[DURABLE_SESSION_MARKER])
+        self.assertEqual(self.request.session["last_activity"], current_time.return_value)
+        self.assertTrue(self.request.session.modified)
+        self.request.session.save.assert_not_called()
+
+    @mock.patch("account.middleware.now")
+    def test_recent_activity_does_not_write_session_on_every_poll(self, current_time):
+        last_activity = now()
+        current_time.return_value = last_activity + timedelta(seconds=30)
+        self.request.session = self.FakeSession({
+            DURABLE_SESSION_MARKER: True,
+            "user_agent": "test-agent",
+            "ip": "127.0.0.1",
+            "last_activity": last_activity,
+        })
+
+        self.middleware.process_request(self.request)
+
+        self.assertEqual(self.request.session["last_activity"], last_activity)
+        self.assertFalse(self.request.session.modified)
+        self.request.session.save.assert_not_called()
+
+
+class ResilientSessionBackendTest(TestCase):
+
+    def test_legacy_cache_only_session_is_loaded_and_migrated_to_database(self):
+        legacy_store = CacheOnlySessionStore()
+        legacy_store["user_id"] = 42
+        legacy_store.save()
+        session_key = legacy_store.session_key
+        self.assertFalse(Session.objects.filter(session_key=session_key).exists())
+
+        store = SessionStore(session_key)
+        self.assertEqual(store.load()["user_id"], 42)
+        store.save()
+
+        self.assertTrue(Session.objects.filter(session_key=session_key).exists())
+        store.delete()
+
+    def test_cache_failure_still_persists_and_loads_database_session(self):
+        store = SessionStore()
+        store["user_id"] = 42
+        store["last_activity"] = now()
+        with mock.patch.object(store._cache, "set", side_effect=ConnectionError("redis unavailable")):
+            store.save()
+
+        session_key = store.session_key
+        database_session = Session.objects.get(session_key=session_key)
+        self.assertEqual(store.decode(database_session.session_data)["user_id"], 42)
+
+        fallback_store = SessionStore(session_key)
+        with mock.patch.object(fallback_store._cache, "get", side_effect=ConnectionError("redis unavailable")), \
+                mock.patch.object(fallback_store._cache, "set", side_effect=ConnectionError("redis unavailable")):
+            fallback_data = fallback_store.load()
+            self.assertEqual(fallback_data["user_id"], 42)
+            self.assertIsInstance(fallback_data["last_activity"], datetime)
+
+    def test_cache_failure_does_not_prevent_database_session_deletion(self):
+        store = SessionStore()
+        store["user_id"] = 42
+        store.save()
+        session_key = store.session_key
+
+        with mock.patch.object(store._cache, "delete", side_effect=ConnectionError("redis unavailable")):
+            store.delete()
+
+        self.assertFalse(Session.objects.filter(session_key=session_key).exists())
+
+    def test_cleanup_expired_sessions_keeps_active_sessions(self):
+        expired_store = SessionStore()
+        expired_store["user_id"] = 1
+        expired_store.set_expiry(-1)
+        expired_store.save()
+
+        active_store = SessionStore()
+        active_store["user_id"] = 2
+        active_store.save()
+
+        deleted = cleanup_expired_sessions.run()
+
+        self.assertEqual(deleted, 1)
+        self.assertFalse(Session.objects.filter(session_key=expired_store.session_key).exists())
+        self.assertTrue(Session.objects.filter(session_key=active_store.session_key).exists())
 
 
 class AdminRoleRequiredMiddlewareTest(SimpleTestCase):
