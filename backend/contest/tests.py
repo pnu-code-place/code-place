@@ -272,14 +272,19 @@ class ContestRankAPITest(APITestCase):
         # so use the public path explicitly for the regular-user contract test.
         self.url = "/api/contest_rank"
 
-    @mock.patch("contest.views.oj.get_public_rank")
-    def test_regular_rank_payload_excludes_private_user_fields(self, get_public_rank):
-        get_public_rank.return_value = list(ACMContestRankSerializer([self.rank], many=True).data)
+    @mock.patch("contest.rank_cache.cache")
+    def test_regular_rank_payload_excludes_private_user_fields(self, rank_cache):
+        rank_cache.get_many.return_value = {}
         self.client.force_authenticate(user=self.rank_user)
         resp = self.client.get(self.url, {"contest_id": self.acm_contest.id, "limit": 30})
+
         self.assertSuccess(resp)
         user_data = resp.data["data"]["results"][0]["user"]
         self.assertEqual(set(user_data), {"id", "username", "avatar"})
+
+        cached_snapshot = json.loads(rank_cache.set.call_args.args[1])
+        cached_user_data = cached_snapshot["data"][0]["user"]
+        self.assertEqual(set(cached_user_data), {"id", "username", "avatar"})
 
     def test_admin_rank_payload_keeps_export_user_fields(self):
         data = ACMContestRankSerializer(self.rank, is_contest_admin=True).data["user"]
