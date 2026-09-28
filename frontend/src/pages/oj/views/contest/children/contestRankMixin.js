@@ -14,6 +14,7 @@ export default {
     return {
       refreshFunc: null,
       rankRequestInFlight: false,
+      rankPollingDisposed: false,
     }
   },
   computed: {
@@ -73,7 +74,9 @@ export default {
   methods: {
     startRankPolling() {
       this.stopRankPolling()
-      if (this.refreshDisabled || document.hidden) return
+      if (this.rankPollingDisposed || this.refreshDisabled || document.hidden) {
+        return
+      }
 
       const jitter = Math.floor(Math.random() * (RANK_REFRESH_JITTER_MS + 1))
       this.refreshFunc = setTimeout(
@@ -89,10 +92,14 @@ export default {
     },
     pollContestRank() {
       this.stopRankPolling()
-      if (this.refreshDisabled || document.hidden) return
+      if (this.rankPollingDisposed || this.refreshDisabled || document.hidden) {
+        return
+      }
 
       Promise.resolve(this.updateContestData({ silent: true })).finally(() => {
-        this.startRankPolling()
+        if (!this.rankPollingDisposed) {
+          this.startRankPolling()
+        }
       })
     },
     handleRankVisibilityChange() {
@@ -105,6 +112,7 @@ export default {
     },
   },
   beforeDestroy() {
+    this.rankPollingDisposed = true
     this.stopRankPolling()
     document.removeEventListener(
       "visibilitychange",
