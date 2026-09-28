@@ -213,6 +213,9 @@ class ContestRankAPI(APIView):
     def get(self, request):
         download_csv = request.GET.get("download_csv")
         is_contest_admin = request.user.is_authenticated and request.user.is_contest_admin(self.contest)
+        if download_csv and not is_contest_admin:
+            return self.error("No permission to download contest rank")
+
         if self.contest.rule_type == ContestRuleType.OI:
             serializer = OIContestRankSerializer
         else:
@@ -227,8 +230,6 @@ class ContestRankAPI(APIView):
                 qs = serialize_public_rank(self.contest)
 
         if download_csv:
-            if not is_contest_admin:
-                return self.error("No permission to download contest rank")
             data = serializer(qs, many=True, is_contest_admin=is_contest_admin).data
             contest_rank_writer = ContestRankingWriter(self.contest, data)
             csv = contest_rank_writer.create_csv()

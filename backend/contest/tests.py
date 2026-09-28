@@ -277,6 +277,17 @@ class ContestRankAPITest(APITestCase):
         data = ACMContestRankSerializer(self.rank, is_contest_admin=True).data["user"]
         self.assertTrue({"real_name", "email", "school", "major", "student_id"}.issubset(data))
 
+    @mock.patch("contest.views.oj.get_public_rank")
+    def test_regular_user_csv_request_is_rejected_before_rank_loading(self, get_public_rank):
+        self.client.force_authenticate(user=self.rank_user)
+        resp = self.client.get(
+            self.url,
+            {"contest_id": self.acm_contest.id, "download_csv": "1"},
+        )
+
+        self.assertFailed(resp, "No permission to download contest rank")
+        get_public_rank.assert_not_called()
+
     def test_rank_serialization_does_not_query_each_user_profile(self):
         ranks = list(
             ACMContestRank.objects.filter(contest=self.acm_contest)
