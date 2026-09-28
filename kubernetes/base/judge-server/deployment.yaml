@@ -15,6 +15,30 @@ spec:
       labels:
         app: judge-server
     spec:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 80
+              preference:
+                matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - oem-ms73-hb1-000
+            - weight: 70
+              preference:
+                matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - ojserver-ms-7e01
+            - weight: 20
+              preference:
+                matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - swec-server01-precision-tower-7810
       imagePullSecrets:
         - name: regcred
       containers:
