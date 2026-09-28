@@ -86,7 +86,7 @@ class DispatcherBase(object):
         return urljoin(server.service_url, endpoint)
 
     def _request(self, url, data=None):
-        kwargs = {"headers": {"X-Judge-Server-Token": self.token}}
+        kwargs = {"headers": {"X-Judge-Server-Token": self.token}, "timeout": (5, 300)}
         if data:
             kwargs["json"] = data
         try:

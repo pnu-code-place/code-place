@@ -149,3 +149,16 @@ class JudgeServerRoutingTest(TestCase):
                     call_args, _ = mock_req.call_args
                     self.assertEqual(call_args[0], "http://10.42.3.15:8080/judge")
 
+    @mock.patch("judge.dispatcher.requests.post")
+    def test_request_timeout(self, mock_post):
+        """_request 호출 시 connect 5초, read 300초(5분) 타임아웃이 적용되는지 검증"""
+        mock_resp = mock.Mock(status_code=200)
+        mock_resp.json.return_value = {"err": None, "data": "ok"}
+        mock_post.return_value = mock_resp
+
+        self.dispatcher_base._request("http://10.42.1.100:8080/judge", data={"test": 1})
+        mock_post.assert_called_once()
+        _, kwargs = mock_post.call_args
+        self.assertEqual(kwargs.get("timeout"), (5, 300))
+
+
