@@ -15,7 +15,7 @@ from utils.api import APIView, validate_serializer
 from utils.shortcuts import rand_str
 from utils.tasks import delete_files
 from ..models import Contest, ContestAnnouncement, ACMContestRank, OIContestRank
-from ..rank_cache import refresh_public_rank_cache
+from ..rank_cache import mark_public_rank_cache_stale
 from datetime import datetime
 from ..serializers import (
     ContestAnnouncementSerializer,
@@ -73,7 +73,7 @@ class ContestAPI(APIView):
             setattr(contest, k, v)
         contest.save()
         if rank_was_enabled:
-            refresh_public_rank_cache(contest, force=True)
+            mark_public_rank_cache_stale(contest.id)
         return self.success(ContestAdminSerializer(contest).data)
 
     def get(self, request):

@@ -74,6 +74,22 @@ class ContestAdminAPITest(APITestCase):
                 continue
             self.assertEqual(response_data[k], data[k])
 
+    @mock.patch("contest.views.admin.mark_public_rank_cache_stale")
+    def test_enabling_real_time_rank_marks_public_cache_stale(self, mark_rank_cache_stale):
+        create_data = copy.deepcopy(self.data)
+        create_data["real_time_rank"] = False
+        create_response = self.client.post(self.url, data=create_data)
+        self.assertSuccess(create_response)
+
+        update_data = copy.deepcopy(create_data)
+        contest_id = create_response.data["data"]["id"]
+        update_data.update({"id": contest_id, "real_time_rank": True})
+
+        response = self.client.put(self.url, data=update_data)
+
+        self.assertSuccess(response)
+        mark_rank_cache_stale.assert_called_once_with(contest_id)
+
     def test_get_contests(self):
         self.test_create_contest()
         response = self.client.get(self.url)
@@ -396,6 +412,16 @@ class ContestRankAPITest(APITestCase):
             public_rank_cache_generation_key(self.acm_contest.id),
             ignore_key_check=True,
         )
+        rank_cache.delete.assert_not_called()
+        rank_cache.set.assert_not_called()
+
+    @mock.patch("contest.rank_cache.cache")
+    def test_marking_rank_cache_stale_ignores_redis_failure(self, rank_cache):
+        rank_cache.incr.side_effect = ConnectionError("redis unavailable")
+
+        generation = mark_public_rank_cache_stale(self.acm_contest.id)
+
+        self.assertIsNone(generation)
         rank_cache.delete.assert_not_called()
         rank_cache.set.assert_not_called()
 
