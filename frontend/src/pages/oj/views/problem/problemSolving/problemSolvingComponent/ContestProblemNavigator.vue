@@ -13,7 +13,6 @@
             class="navigator-skeleton-item"
           >
             <span class="navigator-skeleton-number"></span>
-            <span class="navigator-skeleton-dot"></span>
           </div>
         </div>
         <button
@@ -35,10 +34,6 @@
           @mouseleave="hideTooltip"
         >
           <span class="problem-number">{{ index + 1 }}</span>
-          <span
-            class="problem-status-dot"
-            aria-hidden="true"
-          ></span>
         </button>
       </div>
     </div>
@@ -197,9 +192,9 @@ export default {
   --navigator-tooltip-bg: #ffffff;
   --navigator-tooltip-border: rgba(148, 163, 184, 0.22);
   --navigator-tooltip-shadow: 0 8px 22px rgba(15, 23, 42, 0.1);
-  --navigator-accepted: #6f9f84;
-  --navigator-partial: #a98d62;
-  --navigator-failed: #aa7777;
+  --navigator-accepted: #aed4b5;
+  --navigator-partial: #f59e0b;
+  --navigator-failed: #e59f93;
 
   position: relative;
   z-index: 20;
@@ -236,9 +231,9 @@ export default {
   --navigator-tooltip-bg: #172033;
   --navigator-tooltip-border: rgba(255, 255, 255, 0.08);
   --navigator-tooltip-shadow: 0 10px 26px rgba(2, 6, 23, 0.36);
-  --navigator-accepted: #86ad98;
-  --navigator-partial: #b9a06f;
-  --navigator-failed: #bc8b8b;
+  --navigator-accepted: #aed4b5;
+  --navigator-partial: #fbbf24;
+  --navigator-failed: #e59f93;
 }
 
 .navigator-problems {
@@ -264,10 +259,9 @@ export default {
 .navigator-problem-button {
   position: relative;
   flex: 0 0 34px;
-  display: grid;
-  grid-template-columns: 38px 7px;
+  display: flex;
   align-items: center;
-  gap: 2px;
+  justify-content: center;
   width: 48px;
   padding: 0;
   border: 0;
@@ -288,27 +282,17 @@ export default {
 
 .navigator-skeleton-item {
   flex: 0 0 34px;
-  display: grid;
-  grid-template-columns: 38px 7px;
+  display: flex;
   align-items: center;
-  gap: 2px;
+  justify-content: center;
   width: 48px;
 }
 
 .navigator-skeleton-number {
   width: 28px;
   height: 28px;
-  justify-self: center;
   border-radius: 999px;
   background: var(--navigator-number-bg);
-}
-
-.navigator-skeleton-dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 999px;
-  background: var(--navigator-muted);
-  opacity: 0.45;
 }
 
 .navigator-problem-button:disabled {
@@ -322,7 +306,25 @@ export default {
   color: var(--navigator-text-strong);
 }
 
-.navigator-problem-button.active .problem-number {
+.navigator-problem-button:not(:disabled):hover.status-accepted .problem-number {
+  border-color: var(--navigator-accepted);
+  background: var(--navigator-accepted);
+  color: #1f2937;
+}
+
+.navigator-problem-button:not(:disabled):hover.status-partial .problem-number {
+  border-color: var(--navigator-partial);
+  background: var(--navigator-partial);
+  color: #1f2937;
+}
+
+.navigator-problem-button:not(:disabled):hover.status-failed .problem-number {
+  border-color: var(--navigator-failed);
+  background: var(--navigator-failed);
+  color: #1f2937;
+}
+
+.navigator-problem-button:not(:disabled):hover.active .problem-number {
   border-color: transparent;
   background: var(--navigator-active-bg);
   color: var(--navigator-active-text);
@@ -347,7 +349,6 @@ export default {
   background: var(--navigator-number-bg);
   border: 1px solid var(--navigator-number-border);
   color: var(--navigator-text);
-  justify-self: center;
   font-size: 12px;
   font-weight: 700;
   line-height: 1;
@@ -358,24 +359,28 @@ export default {
     transform 0.16s ease;
 }
 
-.problem-status-dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 999px;
-  background: var(--navigator-muted);
-  opacity: 0.72;
-}
-
-.navigator-problem-button.status-accepted .problem-status-dot {
+.navigator-problem-button.status-accepted .problem-number {
+  border-color: var(--navigator-accepted);
   background: var(--navigator-accepted);
+  color: #1f2937;
 }
 
-.navigator-problem-button.status-partial .problem-status-dot {
+.navigator-problem-button.status-partial .problem-number {
+  border-color: var(--navigator-partial);
   background: var(--navigator-partial);
+  color: #1f2937;
 }
 
-.navigator-problem-button.status-failed .problem-status-dot {
+.navigator-problem-button.status-failed .problem-number {
+  border-color: var(--navigator-failed);
   background: var(--navigator-failed);
+  color: #1f2937;
+}
+
+.navigator-problem-button.active .problem-number {
+  border-color: transparent;
+  background: var(--navigator-active-bg);
+  color: var(--navigator-active-text);
 }
 
 .navigator-tooltip {
