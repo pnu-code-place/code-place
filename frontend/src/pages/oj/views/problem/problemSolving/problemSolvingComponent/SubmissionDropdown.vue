@@ -1,5 +1,8 @@
 <template>
-  <tr class="dropdown-row">
+  <tr
+    class="dropdown-row"
+    :style="{ borderLeftColor: resultColor }"
+  >
     <td colspan="7" class="dropdown-cell">
       <div class="dropdown-content">
         <SubmissionAcceptedDropdown
@@ -22,6 +25,7 @@
 <script>
 import SubmissionAcceptedDropdown from "./SubmissionAcceptedDropdown.vue"
 import SubmissionErrorDropdown from "./SubmissionErrorDropdown.vue"
+import { JUDGE_STATUS } from "../../../../../../utils/constants"
 
 export default {
   name: "SubmissionDropdown",
@@ -47,6 +51,10 @@ export default {
     isAccepted() {
       return this.submission.result === 0
     },
+    resultColor() {
+      const judgeStatus = JUDGE_STATUS[this.submission.result]
+      return judgeStatus ? judgeStatus.color : "#9ca3af"
+    },
   },
 }
 </script>
@@ -54,10 +62,12 @@ export default {
 <style scoped lang="less">
 .dropdown-row {
   cursor: default;
+  background: var(--row-selected-bg);
+  border-left: 3px solid transparent;
 }
 
 .dropdown-cell {
-  padding: 10px;
+  padding: 10px 10px 24px;
   border-bottom: 1px solid var(--dropdown-border);
 }
 

@@ -147,35 +147,57 @@ export default {
   },
   mounted() {
     this.contestID = this.$route.params.contestID
-    this.updateContestData()
+    this.updateContestData().finally(() => {
+      this.startRankPolling()
+    })
   },
   methods: {
     ...mapActions(["getContestProblems"]),
-    updateContestData() {
-      this.loadingRank = true
-      this.rankLoadError = false
+    updateContestData(options = {}) {
+      const silent = options.silent === true
+      if (this.rankRequestInFlight) return Promise.resolve(false)
+
+      this.rankRequestInFlight = true
+      if (!silent) {
+        this.loadingRank = true
+        this.rankLoadError = false
+      }
       let params = {
         offset: (this.page - 1) * this.limit,
         limit: this.limit,
         contest_id: this.$route.params.contestID,
         force_refresh: this.forceUpdate ? "1" : "0",
       }
-      api.getContestRank(params).then((res) => {
-        const data = res.data.data.results
-        let dataRank = JSON.parse(JSON.stringify(data))
+      return api
+        .getContestRank(params)
+        .then((res) => {
+          const data = res.data.data.results
+          let dataRank = JSON.parse(JSON.stringify(data))
+          const problemsPromise = this.contestProblems.length
+            ? Promise.resolve(this.contestProblems)
+            : this.getContestProblems().then(
+                (problemRes) => problemRes.data.data,
+              )
 
-        this.total = res.data.data.total
-        return this.getContestProblems()
-          .then((res) => {
-            this.addRankData(dataRank, res.data.data)
+          this.total = res.data.data.total
+          return problemsPromise.then((problems) => {
+            this.addRankData(dataRank, problems)
+            this.rankLoadError = false
+            return true
           })
-      }).catch(() => {
-        this.myDataRank = []
-        this.total = 0
-        this.rankLoadError = true
-      }).finally(() => {
-        this.loadingRank = false
-      })
+        })
+        .catch(() => {
+          if (!silent) {
+            this.myDataRank = []
+            this.total = 0
+            this.rankLoadError = true
+          }
+          return false
+        })
+        .finally(() => {
+          this.rankRequestInFlight = false
+          if (!silent) this.loadingRank = false
+        })
     },
     addRankData(dataRank, problems) {
       problems.forEach((problem) => {

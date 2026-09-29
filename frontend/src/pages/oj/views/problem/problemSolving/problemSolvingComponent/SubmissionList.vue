@@ -164,6 +164,7 @@ export default {
   --border-color: #e0e0e0;
   --th-color: #3a3a4a;
   --row-hover-bg: #f5f6fa;
+  --row-selected-bg: rgba(245, 246, 250, 0.55);
   --text-color: #222;
   --dropdown-border: #e0e0e0;
 }
@@ -172,6 +173,7 @@ export default {
   --border-color: #3a3a4a;
   --th-color: #e6e6e6;
   --row-hover-bg: #2f3542;
+  --row-selected-bg: rgba(245, 246, 250, 0.08);
   --text-color: #e6e6e6;
   --dropdown-border: #3a3a4a;
 }
