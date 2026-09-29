@@ -1,4 +1,3 @@
-import api from "@oj/api"
 import ScreenFull from "@admin/components/ScreenFull.vue"
 import { mapGetters, mapState } from "vuex"
 import { types } from "@/store"
@@ -36,28 +35,7 @@ export default {
         })
       },
     },
-    showRealName: {
-      get() {
-        return this.$store.state.contest.itemVisible.realName
-      },
-      set(value) {
-        this.$store.commit(types.CHANGE_CONTEST_ITEM_VISIBLE, {
-          realName: value,
-        })
-        if (value) {
-          this.columns.splice(2, 0, {
-            title: "RealName",
-            align: "center",
-            width: 150,
-            render: (h, { row }) => {
-              return h("span", row.user.real_name)
-            },
-          })
-        } else {
-          this.columns.splice(2, 1)
-        }
-      },
-    },
+
     forceUpdate: {
       get() {
         return this.$store.state.contest.forceUpdate
