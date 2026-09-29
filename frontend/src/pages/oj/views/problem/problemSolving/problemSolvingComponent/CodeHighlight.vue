@@ -127,6 +127,7 @@ export default {
   background-color: var(--error-bg) !important;
   color: var(--error-text) !important;
   border: 1px solid var(--error-border) !important;
+  /* 에러 메세지 줄바꿈 개선 */
   white-space: pre-wrap !important;
   word-break: break-word;
   overflow-wrap: anywhere;
