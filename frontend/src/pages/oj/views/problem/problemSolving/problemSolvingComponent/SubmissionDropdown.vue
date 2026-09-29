@@ -67,7 +67,7 @@ export default {
 }
 
 .dropdown-cell {
-  padding: 10px;
+  padding: 10px 10px 24px;
   border-bottom: 1px solid var(--dropdown-border);
 }
 
