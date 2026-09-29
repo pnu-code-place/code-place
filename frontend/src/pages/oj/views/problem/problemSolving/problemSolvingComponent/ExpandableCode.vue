@@ -2,7 +2,9 @@
   <div class="expandable-code">
     <div class="code-header">
       <p class="sub-title">{{ title }}</p>
-      <span class="expand-hint" v-if="!isExpanded">클릭하여 펼치기</span>
+      <span class="expand-hint" v-if="!isExpanded"
+        >제출 코드 클릭하여 펼치기</span
+      >
     </div>
     <div
       class="code-wrapper"
