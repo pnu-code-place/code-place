@@ -127,6 +127,9 @@ export default {
   background-color: var(--error-bg) !important;
   color: var(--error-text) !important;
   border: 1px solid var(--error-border) !important;
+  white-space: pre-wrap !important;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .code-highlight-wrapper {
