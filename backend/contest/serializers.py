@@ -89,6 +89,25 @@ class ContestPasswordVerifySerializer(serializers.Serializer):
     password = serializers.CharField(max_length=30, required=True)
 
 
+class ContestRankUserSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    username = serializers.CharField()
+    avatar = serializers.CharField(source="userprofile.avatar")
+
+
+class ContestRankAdminUserSerializer(ContestRankUserSerializer):
+    real_name = serializers.CharField(source="userprofile.real_name", allow_null=True)
+    email = serializers.EmailField(allow_null=True)
+    school = serializers.CharField(source="userprofile.school", allow_null=True)
+    major = serializers.CharField(source="userprofile.major", allow_null=True)
+    student_id = serializers.CharField(source="userprofile.student_id", allow_null=True)
+
+
+def serialize_contest_rank_user(user, is_contest_admin):
+    serializer = ContestRankAdminUserSerializer if is_contest_admin else ContestRankUserSerializer
+    return serializer(user).data
+
+
 class ACMContestRankSerializer(serializers.ModelSerializer):
     user = serializers.SerializerMethodField()
 
@@ -101,7 +120,7 @@ class ACMContestRankSerializer(serializers.ModelSerializer):
         super().__init__(*args, **kwargs)
 
     def get_user(self, obj):
-        return UsernameSerializer(obj.user, need_real_name=self.is_contest_admin).data
+        return serialize_contest_rank_user(obj.user, self.is_contest_admin)
 
 
 class OIContestRankSerializer(serializers.ModelSerializer):
@@ -116,7 +135,7 @@ class OIContestRankSerializer(serializers.ModelSerializer):
         super().__init__(*args, **kwargs)
 
     def get_user(self, obj):
-        return UsernameSerializer(obj.user, need_real_name=self.is_contest_admin).data
+        return serialize_contest_rank_user(obj.user, self.is_contest_admin)
 
 
 class ACMContesHelperSerializer(serializers.Serializer):

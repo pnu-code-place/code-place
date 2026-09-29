@@ -1,7 +1,12 @@
+from datetime import timedelta
+
 import celery
 import logging
+from django.db import transaction
+from django.utils import timezone
 
 from account.models import User
+from conf.models import JudgeServer
 from utils.shortcuts import CELERY_TASK_ARGS
 from utils.observability_tracing import get_tracer
 from utils.observability_metrics import record_judge_task_outcome
@@ -48,3 +53,14 @@ def judge_task(submission_id, problem_id):
             raise
         else:
             _record_judge_task_outcome("success", scope)
+
+
+@celery.shared_task(**CELERY_TASK_ARGS())
+def cleanup_dead_judge_servers():
+    """12시간 이상 heartbeat가 끊긴 dead judge server 파드 정리"""
+    dead_threshold = timezone.now() - timedelta(hours=12)
+    with transaction.atomic():
+        deleted_count, _ = JudgeServer.objects.filter(last_heartbeat__lt=dead_threshold).delete()
+    if deleted_count:
+        logger.info("Cleaned up %d dead judge servers", deleted_count)
+    return deleted_count

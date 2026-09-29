@@ -1,5 +1,7 @@
 import logging
+from django.contrib.sessions.models import Session
 from django.db.models import F
+from django.utils import timezone
 import celery
 
 from options.options import SysOptions
@@ -8,6 +10,12 @@ from utils.shortcuts import CELERY_TASK_ARGS, send_email
 from .models import UserScore
 
 logger = logging.getLogger(__name__)
+
+
+@celery.shared_task(**CELERY_TASK_ARGS())
+def cleanup_expired_sessions():
+    deleted, _details = Session.objects.filter(expire_date__lt=timezone.now()).delete()
+    return deleted
 
 
 @celery.shared_task(**CELERY_TASK_ARGS(max_retries=3))
