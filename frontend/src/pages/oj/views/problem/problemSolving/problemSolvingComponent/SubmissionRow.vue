@@ -2,6 +2,7 @@
   <tr
     class="submission-row"
     :class="{ selected: isSelected }"
+    :style="{ borderLeftColor: isSelected ? resultColor : 'transparent' }"
     @click="$emit('click')"
   >
     <td>{{ index }}</td>
@@ -147,8 +148,11 @@ export default {
 
 <style scoped lang="less">
 .submission-row {
-  transition: background 0.2s;
+  transition:
+    background 0.2s,
+    border-color 0.2s;
   padding: 0 12px;
+  border-left: 3px solid transparent;
   cursor: pointer;
 
   td {
@@ -163,13 +167,17 @@ export default {
     }
   }
 
-  &.selected {
+  &:hover {
     background: var(--row-hover-bg);
+  }
+
+  &.selected {
+    background: var(--row-selected-bg);
     transition: background 0.5s;
   }
 
-  &:hover {
-    background: var(--row-hover-bg);
+  &.selected:hover {
+    background: var(--row-selected-bg);
   }
 }
 
