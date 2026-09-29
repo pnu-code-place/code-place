@@ -231,6 +231,7 @@ export default {
   --navigator-tooltip-bg: #172033;
   --navigator-tooltip-border: rgba(255, 255, 255, 0.08);
   --navigator-tooltip-shadow: 0 10px 26px rgba(2, 6, 23, 0.36);
+  // 각 현재 채점 현황 색상에 맞도록 수정
   --navigator-accepted: #aed4b5;
   --navigator-partial: #fbbf24;
   --navigator-failed: #e59f93;
