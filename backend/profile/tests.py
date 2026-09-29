@@ -6,6 +6,7 @@ from django.utils import timezone
 
 from problem.tests import DEFAULT_PROBLEM_DATA, ProblemCreateTestBase
 from submission.models import JudgeStatus, Submission
+from contest.models import Contest
 from utils.api.tests import APITestCase
 
 
@@ -30,7 +31,7 @@ class UserProfileActivityAPITest(APITestCase):
             self.current_timezone,
         )
 
-    def create_submission(self, user, result, created_at):
+    def create_submission(self, user, result, created_at, contest=None):
         submission = Submission.objects.create(
             user_id=user.id,
             username=user.username,
@@ -38,9 +39,22 @@ class UserProfileActivityAPITest(APITestCase):
             code="print(1)",
             language="Python3",
             result=result,
+            contest=contest,
         )
         Submission.objects.filter(id=submission.id).update(create_time=created_at)
         return submission
+
+    def create_contest(self):
+        contest = Contest.objects.create(
+            title="Test Contest",
+            description="Test Contest Description",
+            real_time_rank=True,
+            rule_type="ACM",
+            start_time=self.now - datetime.timedelta(days=1),
+            end_time=self.now + datetime.timedelta(days=1),
+            created_by=self.user,
+        )
+        return contest
 
     def test_counts_only_accepted_submissions_for_requested_user(self):
         today = self.now.date()
@@ -134,6 +148,41 @@ class UserProfileActivityAPITest(APITestCase):
             {"date": today.isoformat(), "count": 1},
         ])
 
+    def test_excludes_contest_submissions_from_activity_count(self):
+        contest = self.create_contest()
+        today = self.now.date()
+        yesterday = today - datetime.timedelta(days=1)
+        yesterday_at_noon = timezone.make_aware(
+            datetime.datetime.combine(yesterday, datetime.time(hour=12)),
+            self.current_timezone,
+        )
+
+        self.create_submission(self.user, JudgeStatus.ACCEPTED, yesterday_at_noon, contest=contest)
+        self.create_submission(self.user, JudgeStatus.ACCEPTED, yesterday_at_noon + datetime.timedelta(minutes=5))
+
+        with mock.patch("profile.views.oj.timezone.now", return_value=self.now):
+            response = self.client.get(self.url, {"username": self.user.username, "days": 7})
+
+        self.assertSuccess(response)
+        data = response.data["data"]
+        self.assertEqual(data["total"], 1)
+        self.assertEqual(data["days"], [{"date": yesterday.isoformat(), "count": 1}])
+
+    def test_contest_only_submission_does_not_count_toward_activity(self):
+        contest = self.create_contest()
+        yesterday = self.now.date() - datetime.timedelta(days=1)
+        yesterday_at_noon = timezone.make_aware(
+            datetime.datetime.combine(yesterday, datetime.time(hour=12)),
+            self.current_timezone,
+        )
+        self.create_submission(self.user, JudgeStatus.ACCEPTED, yesterday_at_noon, contest=contest)
+
+        with mock.patch("profile.views.oj.timezone.now", return_value=self.now):
+            response = self.client.get(self.url, {"username": self.user.username, "days": 7})
+
+        self.assertSuccess(response)
+        self.assertEqual(response.data["data"]["total"], 0)
+        self.assertEqual(response.data["data"]["days"], [])
 
 class ProfileProblemAPITest(APITestCase):
 
