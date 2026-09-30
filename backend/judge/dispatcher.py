@@ -13,6 +13,7 @@ from django.http import HttpResponseNotFound
 
 from account.models import User, UserScore, UserSolved
 from conf.models import JudgeServer
+from contest.rank_cache import mark_public_rank_cache_stale
 from contest.models import ContestRuleType, ACMContestRank, OIContestRank, ContestStatus
 from options.options import SysOptions
 from problem.models import Problem, ProblemRuleType
@@ -404,9 +405,6 @@ class JudgeDispatcher(DispatcherBase):
             problem.save(update_fields=["submission_number", "accepted_number", "statistic_info"])
 
     def update_contest_rank(self):
-        if self.contest.rule_type == ContestRuleType.OI or self.contest.real_time_rank:
-            cache.delete(f"{CacheKey.contest_rank_cache}:{self.contest.id}")
-
         def get_rank(model):
             return model.objects.select_for_update().get(user_id=self.submission.user_id, contest=self.contest)
 
@@ -426,6 +424,12 @@ class JudgeDispatcher(DispatcherBase):
             except IntegrityError:
                 rank = get_rank(model)
         func(rank)
+
+        if self.contest.rule_type == ContestRuleType.OI or self.contest.real_time_rank:
+            contest_id = self.contest.id
+            transaction.on_commit(
+                lambda current_contest_id=contest_id: mark_public_rank_cache_stale(current_contest_id)
+            )
 
     def _update_acm_contest_rank(self, rank):
         info = rank.submission_info.get(str(self.submission.problem_id))

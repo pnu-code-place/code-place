@@ -171,7 +171,7 @@ class APIView(View):
             count = query_set.count()
             results = object_serializer(results, many=True).data
         else:
-            count = query_set.count()
+            count = len(query_set) if isinstance(query_set, (list, tuple)) else query_set.count()
         data = {"results": results, "total": count}
         return data
 

@@ -312,23 +312,29 @@ def redis_config():
         "LOCATION": f"{REDIS_URL}",
         "TIMEOUT": None,
         "KEY_PREFIX": "",
-        "KEY_FUNCTION": make_key
+        "KEY_FUNCTION": make_key,
+        "OPTIONS": {
+            "SOCKET_CONNECT_TIMEOUT": float(get_env("REDIS_SOCKET_CONNECT_TIMEOUT", "0.2")),
+            "SOCKET_TIMEOUT": float(get_env("REDIS_SOCKET_TIMEOUT", "0.5")),
+        },
     }
     if REDIS_USE_SENTINEL:
         config["LOCATION"] = "redis://%s/0" % REDIS_SENTINEL_MASTER_NAME
-        config["OPTIONS"] = {
+        config["OPTIONS"].update({
             "CLIENT_CLASS": "django_redis.client.SentinelClient",
             "SENTINELS": REDIS_SENTINEL_HOSTS,
             "CONNECTION_POOL_CLASS": "redis.sentinel.SentinelConnectionPool",
             "CONNECTION_FACTORY": "django_redis.pool.SentinelConnectionFactory",
-        }
+        })
     return config
 
 
 CACHES = {"default": redis_config()}
 
-SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+SESSION_ENGINE = "utils.session_backend"
 SESSION_CACHE_ALIAS = "default"
+SESSION_SERIALIZER = "utils.session_serializer.DateTimeJSONSerializer"
+SESSION_ACTIVITY_UPDATE_INTERVAL_SECONDS = int(get_env("SESSION_ACTIVITY_UPDATE_INTERVAL_SECONDS", "60"))
 
 IP_HEADER = "HTTP_X_REAL_IP"
 
@@ -355,6 +361,10 @@ CELERY_TIMEZONE = TIME_ZONE
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
 CELERY_BEAT_SCHEDULE = {
+    'cleanup_expired_sessions': {
+        'task': 'account.tasks.cleanup_expired_sessions',
+        'schedule': celery.schedules.crontab(minute=15, hour=0),    # Every day at 00:15
+    },
     'calculate_user_score_basis': {
         'task': 'account.tasks.calculate_user_score_basis',
         'schedule': celery.schedules.crontab(minute=0, hour=0),    # Every day at midnight
