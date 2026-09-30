@@ -6,6 +6,7 @@ from django.utils import timezone
 
 from problem.tests import DEFAULT_PROBLEM_DATA, ProblemCreateTestBase
 from submission.models import JudgeStatus, Submission
+from contest.models import Contest
 from utils.api.tests import APITestCase
 
 
@@ -30,7 +31,12 @@ class UserProfileActivityAPITest(APITestCase):
             self.current_timezone,
         )
 
-    def create_submission(self, user, result, created_at, problem=None):
+    def create_problem(self, problem_id):
+        problem_data = copy.deepcopy(DEFAULT_PROBLEM_DATA)
+        problem_data["_id"] = problem_id
+        return ProblemCreateTestBase.add_problem(problem_data, self.user)
+
+    def create_submission(self, user, result, created_at, contest=None, problem=None):
         submission = Submission.objects.create(
             user_id=user.id,
             username=user.username,
@@ -38,9 +44,22 @@ class UserProfileActivityAPITest(APITestCase):
             code="print(1)",
             language="Python3",
             result=result,
+            contest=contest,
         )
         Submission.objects.filter(id=submission.id).update(create_time=created_at)
         return submission
+
+    def create_contest(self):
+        contest = Contest.objects.create(
+            title="Test Contest",
+            description="Test Contest Description",
+            real_time_rank=True,
+            rule_type="ACM",
+            start_time=self.now - datetime.timedelta(days=1),
+            end_time=self.now + datetime.timedelta(days=1),
+            created_by=self.user,
+        )
+        return contest
 
     def test_counts_only_accepted_submissions_for_requested_user(self):
         today = self.now.date()
@@ -49,19 +68,16 @@ class UserProfileActivityAPITest(APITestCase):
             datetime.datetime.combine(yesterday, datetime.time(hour=12)),
             self.current_timezone,
         )
-        another_problem_data = copy.deepcopy(DEFAULT_PROBLEM_DATA)
-        another_problem_data["_id"] = "ACTIVITY-2"
-        another_problem = ProblemCreateTestBase.add_problem(another_problem_data, self.user)
 
-        self.create_submission(self.user, JudgeStatus.ACCEPTED, yesterday_at_noon)
-        self.create_submission(
-            self.user,
-            JudgeStatus.ACCEPTED,
-            yesterday_at_noon + datetime.timedelta(minutes=5),
-            problem=another_problem,
-        )
-        self.create_submission(self.user, JudgeStatus.WRONG_ANSWER, yesterday_at_noon + datetime.timedelta(minutes=10))
-        self.create_submission(self.other_user, JudgeStatus.ACCEPTED, yesterday_at_noon)
+        problem_a = self.create_problem("ACTIVITY-2")
+        problem_b = self.create_problem("ACTIVITY-3")
+        problem_c = self.create_problem("ACTIVITY-4")
+
+
+        self.create_submission(self.user, JudgeStatus.ACCEPTED, yesterday_at_noon, problem=problem_a)
+        self.create_submission(self.user, JudgeStatus.ACCEPTED, yesterday_at_noon + datetime.timedelta(minutes=5), problem=problem_b)
+        self.create_submission(self.user, JudgeStatus.WRONG_ANSWER, yesterday_at_noon + datetime.timedelta(minutes=10), problem=problem_c)
+        self.create_submission(self.other_user, JudgeStatus.ACCEPTED, yesterday_at_noon, problem=problem_a)
 
         with mock.patch("profile.views.oj.timezone.now", return_value=self.now):
             response = self.client.get(self.url, {"username": self.user.username, "days": 7})
@@ -103,11 +119,11 @@ class UserProfileActivityAPITest(APITestCase):
         three_days_ago = today - datetime.timedelta(days=3)
         two_days_ago = today - datetime.timedelta(days=2)
         yesterday = today - datetime.timedelta(days=1)
-        boundary_problems = []
-        for index in range(2, 6):
-            problem_data = copy.deepcopy(DEFAULT_PROBLEM_DATA)
-            problem_data["_id"] = f"ACTIVITY-{index}"
-            boundary_problems.append(ProblemCreateTestBase.add_problem(problem_data, self.user))
+
+        problem_a = self.create_problem("ACTIVITY-2")
+        problem_b = self.create_problem("ACTIVITY-3")
+        problem_c = self.create_problem("ACTIVITY-4")
+
 
         # 05:59 belongs to the previous activity day; 06:00 starts the new one.
         self.create_submission(
@@ -115,26 +131,26 @@ class UserProfileActivityAPITest(APITestCase):
             JudgeStatus.ACCEPTED,
             timezone.make_aware(datetime.datetime.combine(yesterday, datetime.time(hour=5, minute=59)),
                                 self.current_timezone),
-            problem=boundary_problems[0],
+            problem=problem_a,
         )
         self.create_submission(
             self.user,
             JudgeStatus.ACCEPTED,
             timezone.make_aware(datetime.datetime.combine(yesterday, datetime.time(hour=6)), self.current_timezone),
-            problem=boundary_problems[1],
+            problem=problem_a,
         )
         self.create_submission(
             self.user,
             JudgeStatus.ACCEPTED,
             timezone.make_aware(datetime.datetime.combine(today, datetime.time(hour=6)), self.current_timezone),
-            problem=boundary_problems[2],
+            problem=problem_b,
         )
         self.create_submission(
             self.user,
             JudgeStatus.ACCEPTED,
             timezone.make_aware(datetime.datetime.combine(three_days_ago, datetime.time(hour=7)),
                                 self.current_timezone),
-            problem=boundary_problems[3],
+            problem=problem_c,
         )
 
         with mock.patch("profile.views.oj.timezone.now", return_value=self.now):
@@ -142,15 +158,49 @@ class UserProfileActivityAPITest(APITestCase):
 
         self.assertSuccess(response)
         data = response.data["data"]
-        self.assertEqual(data["current_streak"], 4)
-        self.assertEqual(data["longest_streak"], 4)
+        self.assertEqual(data["current_streak"], 1)
+        self.assertEqual(data["longest_streak"], 2)
         self.assertEqual(data["days"], [
             {"date": three_days_ago.isoformat(), "count": 1},
             {"date": two_days_ago.isoformat(), "count": 1},
-            {"date": yesterday.isoformat(), "count": 1},
             {"date": today.isoformat(), "count": 1},
         ])
 
+    def test_excludes_contest_submissions_from_activity_count(self):
+        contest = self.create_contest()
+        today = self.now.date()
+        yesterday = today - datetime.timedelta(days=1)
+        yesterday_at_noon = timezone.make_aware(
+            datetime.datetime.combine(yesterday, datetime.time(hour=12)),
+            self.current_timezone,
+        )
+
+        self.create_submission(self.user, JudgeStatus.ACCEPTED, yesterday_at_noon, contest=contest)
+        self.create_submission(self.user, JudgeStatus.ACCEPTED, yesterday_at_noon + datetime.timedelta(minutes=5))
+
+        with mock.patch("profile.views.oj.timezone.now", return_value=self.now):
+            response = self.client.get(self.url, {"username": self.user.username, "days": 7})
+
+        self.assertSuccess(response)
+        data = response.data["data"]
+        self.assertEqual(data["total"], 1)
+        self.assertEqual(data["days"], [{"date": yesterday.isoformat(), "count": 1}])
+
+    def test_contest_only_submission_does_not_count_toward_activity(self):
+        contest = self.create_contest()
+        yesterday = self.now.date() - datetime.timedelta(days=1)
+        yesterday_at_noon = timezone.make_aware(
+            datetime.datetime.combine(yesterday, datetime.time(hour=12)),
+            self.current_timezone,
+        )
+        self.create_submission(self.user, JudgeStatus.ACCEPTED, yesterday_at_noon, contest=contest)
+
+        with mock.patch("profile.views.oj.timezone.now", return_value=self.now):
+            response = self.client.get(self.url, {"username": self.user.username, "days": 7})
+
+        self.assertSuccess(response)
+        self.assertEqual(response.data["data"]["total"], 0)
+        self.assertEqual(response.data["data"]["days"], [])
 
 class ProfileProblemAPITest(APITestCase):
 

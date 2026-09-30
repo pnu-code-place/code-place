@@ -1,7 +1,7 @@
 import os
 import datetime
 
-from django.db.models import Q, Count, F
+from django.db.models import Q, Count, F, Min
 from django.http import HttpResponseNotFound
 from django.utils.decorators import method_decorator
 from django.utils import timezone
@@ -188,24 +188,19 @@ class UserProfileActivityAPI(APIView):
         current_timezone = timezone.get_current_timezone()
         start_date, end_date, start_datetime, end_datetime = get_activity_day_bounds(days, current_timezone)
 
-        submissions = (
+        first_solved_times = (
             Submission.objects
-            .filter(
-                user_id=user.id,
-                result=JudgeStatus.ACCEPTED,
-                create_time__gte=start_datetime,
-                create_time__lt=end_datetime,
-            )
-            .order_by("create_time")
-            .values_list("problem_id", "create_time")
+            .filter(user_id=user.id, result=JudgeStatus.ACCEPTED)
+            .exclude(contest__isnull=False)
+            .values("problem_id")
+            .annotate(first_solved_at=Min("create_time"))
+            .values_list("first_solved_at", flat=True)
         )
-        solved_problem_ids = set()
         count_by_date = {}
-        for problem_id, create_time in submissions:
-            if problem_id in solved_problem_ids:
+        for first_solved_at in first_solved_times:
+            if not (start_datetime <= first_solved_at < end_datetime):
                 continue
-            solved_problem_ids.add(problem_id)
-            activity_date = get_activity_service_date(create_time, current_timezone)
+            activity_date = get_activity_service_date(first_solved_at, current_timezone)
             count_by_date[activity_date] = count_by_date.get(activity_date, 0) + 1
 
         current_streak, longest_streak = calculate_activity_streaks(start_date, end_date, count_by_date)
