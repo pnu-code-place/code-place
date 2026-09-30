@@ -30,11 +30,11 @@ class UserProfileActivityAPITest(APITestCase):
             self.current_timezone,
         )
 
-    def create_submission(self, user, result, created_at):
+    def create_submission(self, user, result, created_at, problem=None):
         submission = Submission.objects.create(
             user_id=user.id,
             username=user.username,
-            problem=self.problem,
+            problem=problem or self.problem,
             code="print(1)",
             language="Python3",
             result=result,
@@ -49,9 +49,17 @@ class UserProfileActivityAPITest(APITestCase):
             datetime.datetime.combine(yesterday, datetime.time(hour=12)),
             self.current_timezone,
         )
+        another_problem_data = copy.deepcopy(DEFAULT_PROBLEM_DATA)
+        another_problem_data["_id"] = "ACTIVITY-2"
+        another_problem = ProblemCreateTestBase.add_problem(another_problem_data, self.user)
 
         self.create_submission(self.user, JudgeStatus.ACCEPTED, yesterday_at_noon)
-        self.create_submission(self.user, JudgeStatus.ACCEPTED, yesterday_at_noon + datetime.timedelta(minutes=5))
+        self.create_submission(
+            self.user,
+            JudgeStatus.ACCEPTED,
+            yesterday_at_noon + datetime.timedelta(minutes=5),
+            problem=another_problem,
+        )
         self.create_submission(self.user, JudgeStatus.WRONG_ANSWER, yesterday_at_noon + datetime.timedelta(minutes=10))
         self.create_submission(self.other_user, JudgeStatus.ACCEPTED, yesterday_at_noon)
 
@@ -95,6 +103,11 @@ class UserProfileActivityAPITest(APITestCase):
         three_days_ago = today - datetime.timedelta(days=3)
         two_days_ago = today - datetime.timedelta(days=2)
         yesterday = today - datetime.timedelta(days=1)
+        boundary_problems = []
+        for index in range(2, 6):
+            problem_data = copy.deepcopy(DEFAULT_PROBLEM_DATA)
+            problem_data["_id"] = f"ACTIVITY-{index}"
+            boundary_problems.append(ProblemCreateTestBase.add_problem(problem_data, self.user))
 
         # 05:59 belongs to the previous activity day; 06:00 starts the new one.
         self.create_submission(
@@ -102,22 +115,26 @@ class UserProfileActivityAPITest(APITestCase):
             JudgeStatus.ACCEPTED,
             timezone.make_aware(datetime.datetime.combine(yesterday, datetime.time(hour=5, minute=59)),
                                 self.current_timezone),
+            problem=boundary_problems[0],
         )
         self.create_submission(
             self.user,
             JudgeStatus.ACCEPTED,
             timezone.make_aware(datetime.datetime.combine(yesterday, datetime.time(hour=6)), self.current_timezone),
+            problem=boundary_problems[1],
         )
         self.create_submission(
             self.user,
             JudgeStatus.ACCEPTED,
             timezone.make_aware(datetime.datetime.combine(today, datetime.time(hour=6)), self.current_timezone),
+            problem=boundary_problems[2],
         )
         self.create_submission(
             self.user,
             JudgeStatus.ACCEPTED,
             timezone.make_aware(datetime.datetime.combine(three_days_ago, datetime.time(hour=7)),
                                 self.current_timezone),
+            problem=boundary_problems[3],
         )
 
         with mock.patch("profile.views.oj.timezone.now", return_value=self.now):

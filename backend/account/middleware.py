@@ -2,6 +2,7 @@ import logging
 import re
 import time
 import uuid
+from datetime import datetime, timezone as datetime_timezone
 
 from django.conf import settings
 from django.contrib.auth import user_logged_in
@@ -18,6 +19,7 @@ from account.models import User
 request_logger = logging.getLogger("codeplace.request")
 MAX_REQUEST_ID_LENGTH = 128
 REQUEST_ID_ALLOWED_CHARS = re.compile(r"[^A-Za-z0-9_.:-]+")
+DURABLE_SESSION_MARKER = "_db_backed_session_v1"
 
 
 class RequestIDMiddleware:
@@ -117,8 +119,33 @@ class SessionRecordMiddleware(MiddlewareMixin):
                 session["user_agent"] = request.META.get("HTTP_USER_AGENT", "")
                 session["ip"] = request.ip
                 session.modified = True
-            session["last_activity"] = now()
-            session.save()
+            if session.get(DURABLE_SESSION_MARKER) is not True:
+                # Existing cache-only sessions are written to the database by
+                # SessionMiddleware at the end of their first successful request.
+                session[DURABLE_SESSION_MARKER] = True
+                session.modified = True
+
+            current_time = now()
+            last_activity = session.get("last_activity")
+            if isinstance(last_activity, (int, float)):
+                # Normalize sessions created by prerelease versions of the DB
+                # fallback while keeping the cache format compatible with old
+                # application instances during a rolling deployment.
+                last_activity = datetime.fromtimestamp(last_activity, tz=datetime_timezone.utc)
+                session["last_activity"] = last_activity
+                session.modified = True
+
+            activity_update_interval = settings.SESSION_ACTIVITY_UPDATE_INTERVAL_SECONDS
+            try:
+                activity_is_stale = (
+                    not isinstance(last_activity, datetime)
+                    or (current_time - last_activity).total_seconds() >= activity_update_interval
+                )
+            except TypeError:
+                activity_is_stale = True
+            if activity_is_stale:
+                session["last_activity"] = current_time
+                session.modified = True
 
 
 @receiver(user_logged_in)

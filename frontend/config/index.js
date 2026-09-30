@@ -7,6 +7,7 @@ const sentry = require("./sentry")
 const commonProxy = {
   onProxyReq: (proxyReq, req, res) => {
     proxyReq.setHeader("Referer", process.env.TARGET)
+    proxyReq.setHeader("Origin", process.env.TARGET)
   },
   target: process.env.TARGET,
   changeOrigin: true,

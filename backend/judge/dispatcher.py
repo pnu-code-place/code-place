@@ -1,7 +1,7 @@
 import hashlib
 import json
 import logging
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlsplit
 
 from django.utils import timezone
 from utils.shortcuts import get_env
@@ -13,6 +13,7 @@ from django.http import HttpResponseNotFound
 
 from account.models import User, UserScore, UserSolved
 from conf.models import JudgeServer
+from contest.rank_cache import mark_public_rank_cache_stale
 from contest.models import ContestRuleType, ACMContestRank, OIContestRank, ContestStatus
 from options.options import SysOptions
 from problem.models import Problem, ProblemRuleType
@@ -70,8 +71,23 @@ class DispatcherBase(object):
     def __init__(self):
         self.token = hashlib.sha256(SysOptions.judge_server_token.encode("utf-8")).hexdigest()
 
+    def _get_target_url(self, server, endpoint):
+        """
+        채점서버 pod의 내부 ip로 채점 요청 url 생성
+        fallback : k3s service url 사용
+        """
+        if server.ip:
+            port = 8080
+            scheme = "http"
+            if server.service_url:
+                parsed = urlsplit(server.service_url)
+                scheme = parsed.scheme or "http"
+                port = parsed.port or 8080
+            return f"{scheme}://{server.ip}:{port}/{endpoint.lstrip('/')}"
+        return urljoin(server.service_url, endpoint)
+
     def _request(self, url, data=None):
-        kwargs = {"headers": {"X-Judge-Server-Token": self.token}}
+        kwargs = {"headers": {"X-Judge-Server-Token": self.token}, "timeout": (5, 300)}
         if data:
             kwargs["json"] = data
         try:
@@ -97,7 +113,9 @@ class SPJCompiler(DispatcherBase):
         with ChooseJudgeServer() as server:
             if not server:
                 return "No available judge_server"
-            result = self._request(urljoin(server.service_url, "compile_spj"), data=self.data)
+            target_url = self._get_target_url(server, "compile_spj")
+            logger.info(f"Dispatching SPJ compile request to {target_url} (server: {server.hostname})")
+            result = self._request(target_url, data=self.data)
             if not result:
                 return "Failed to call judge server"
             if result["err"]:
@@ -183,10 +201,16 @@ class JudgeDispatcher(DispatcherBase):
                 cache.lpush(CacheKey.waiting_queue, json.dumps(data))
                 span.set_attribute("codeplace.judge.queued", True)
                 return
+            target_url = self._get_target_url(server, "/judge")
             span.set_attribute("codeplace.judge_server.hostname", server.hostname)
+            if server.ip:
+                span.set_attribute("codeplace.judge_server.ip", server.ip)
+            logger.info(
+                f"Dispatching judge request to {target_url} (server: {server.hostname}, current tasks: {server.task_number})"
+            )
             Submission.objects.filter(id=self.submission.id).update(result=JudgeStatus.JUDGING)
             self.submission.judge_start_time = timezone.now()
-            resp = self._request(urljoin(server.service_url, "/judge"), data=data)
+            resp = self._request(target_url, data=data)
             self.submission.judge_end_time = timezone.now()
 
         if not resp:
@@ -381,9 +405,6 @@ class JudgeDispatcher(DispatcherBase):
             problem.save(update_fields=["submission_number", "accepted_number", "statistic_info"])
 
     def update_contest_rank(self):
-        if self.contest.rule_type == ContestRuleType.OI or self.contest.real_time_rank:
-            cache.delete(f"{CacheKey.contest_rank_cache}:{self.contest.id}")
-
         def get_rank(model):
             return model.objects.select_for_update().get(user_id=self.submission.user_id, contest=self.contest)
 
@@ -403,6 +424,12 @@ class JudgeDispatcher(DispatcherBase):
             except IntegrityError:
                 rank = get_rank(model)
         func(rank)
+
+        if self.contest.rule_type == ContestRuleType.OI or self.contest.real_time_rank:
+            contest_id = self.contest.id
+            transaction.on_commit(
+                lambda current_contest_id=contest_id: mark_public_rank_cache_stale(current_contest_id)
+            )
 
     def _update_acm_contest_rank(self, rank):
         info = rank.submission_info.get(str(self.submission.problem_id))

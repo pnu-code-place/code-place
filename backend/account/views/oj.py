@@ -1,5 +1,5 @@
 import os
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone as datetime_timezone
 from importlib import import_module
 import json
 
@@ -363,7 +363,7 @@ class SessionManagementAPI(APIView):
         result = []
         modified = False
         for key in session_keys[:]:
-            session = session_store(key)
+            session = request.session if key == current_session else session_store(key)
             # session does not exist or is expiry
             if not session._session:
                 session_keys.remove(key)
@@ -372,9 +372,12 @@ class SessionManagementAPI(APIView):
             s = {}
             if current_session == key:
                 s["current_session"] = True
-            s["ip"] = session["ip"]
-            s["user_agent"] = session["user_agent"]
-            s["last_activity"] = datetime2str(session["last_activity"])
+            s["ip"] = session.get("ip", "")
+            s["user_agent"] = session.get("user_agent", "")
+            last_activity = session.get("last_activity")
+            if isinstance(last_activity, (int, float)):
+                last_activity = datetime.fromtimestamp(last_activity, tz=datetime_timezone.utc)
+            s["last_activity"] = datetime2str(last_activity) if isinstance(last_activity, datetime) else None
             s["session_key"] = key
             result.append(s)
         if modified:
