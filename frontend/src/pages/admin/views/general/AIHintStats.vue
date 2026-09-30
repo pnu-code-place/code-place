@@ -3,27 +3,31 @@
     <Panel :title="$t('m.AI_Hint_Stats')">
       <div slot="header">
         <el-row type="flex" justify="end" align="middle">
+          <span class="range-label" v-if="stats.range.start">
+            {{ stats.range.start }} ~ {{ stats.range.end }}
+          </span>
           <el-date-picker
             v-model="range"
             type="daterange"
             value-format="yyyy-MM-dd"
             unlink-panels
+            :picker-options="pickerOptions"
             :start-placeholder="$t('m.AI_Hint_Start_Date')"
             :end-placeholder="$t('m.AI_Hint_End_Date')"
-            @change="fetch"
+            @change="scheduleFetch"
+            @blur="pickedAt = null"
+            @visible-change="(open) => open || (pickedAt = null)"
           />
         </el-row>
       </div>
 
-      <el-row :gutter="12">
-        <el-col :span="4" v-for="card in summaryCards" :key="card.label">
-          <div class="stat-card">
+      <div class="stat-row">
+        <div class="stat-card" v-for="card in summaryCards" :key="card.label">
             <p class="stat-value">{{ card.value }}</p>
             <p class="stat-label">{{ card.label }}</p>
             <p class="stat-note">{{ card.note }}</p>
-          </div>
-        </el-col>
-      </el-row>
+        </div>
+      </div>
     </Panel>
 
     <Panel :title="$t('m.AI_Hint_Usage_Trend')">
@@ -56,7 +60,7 @@
               <b>{{ depth.single_turn_rate }}%</b>
             </p>
             <p>
-              {{ $t("m.AI_Hint_Limit_Reached_Rate") }}
+              {{ limitReachedLabel }}
               <b>{{ depth.limit_reached_rate }}%</b>
             </p>
           </div>
@@ -64,47 +68,9 @@
       </el-row>
     </Panel>
 
-    <Panel :title="$t('m.AI_Hint_Effect')">
-      <el-table :data="effectRows" border>
-        <el-table-column
-          prop="group"
-          :label="$t('m.AI_Hint_Effect_Group')"
-          width="160"
-        />
-        <el-table-column prop="pairs" :label="$t('m.AI_Hint_Effect_Pairs')" />
-        <el-table-column
-          prop="accepted"
-          :label="$t('m.AI_Hint_Effect_Accepted')"
-        />
-        <el-table-column prop="rate" :label="$t('m.AI_Hint_Effect_Rate')">
-          <template slot-scope="scope">
-            <div class="cell-bar">
-              <span class="cell-bar-track">
-                <i
-                  :style="{
-                    width: scope.row.rate + '%',
-                    background: scope.row.color,
-                  }"
-                ></i>
-              </span>
-              <b>{{ scope.row.rate }}%</b>
-            </div>
-          </template>
-        </el-table-column>
-      </el-table>
-      <p class="warn-note">{{ $t("m.AI_Hint_Effect_Note") }}</p>
-    </Panel>
-
     <Panel :title="$t('m.AI_Hint_Quality')">
       <el-row :gutter="12">
         <el-col :span="12">
-          <p>
-            {{ $t("m.AI_Hint_Failure_Rate") }}
-            <b>{{ quality.failure_rate }}%</b>
-            <span class="hint-note">
-              ({{ quality.empty }} / {{ quality.turns }})
-            </span>
-          </p>
           <p>
             {{ $t("m.AI_Hint_Label_Rate") }}
             <b>{{ quality.label_rate }}%</b>
@@ -163,69 +129,43 @@ const EMPTY = {
     sessions: 0,
     users: 0,
     problems: 0,
-    failure_rate: 0,
     hinted_pairs: 0,
     engaged_pairs: 0,
     adoption_rate: 0,
   },
-  range: { session_gap_minutes: 30 },
+  range: { start: "", end: "", session_gap_minutes: 0, max_range_span_days: 0 },
   monthly: [],
   hourly: [],
   depth: {
     distribution: [],
-    sessions: 0,
     avg_turns: 0,
     single_turn_rate: 0,
     limit_reached_rate: 0,
-    limit: 5,
-  },
-  effect: {
-    with_hint: { pairs: 0, accepted: 0, rate: 0 },
-    without_hint: { pairs: 0, accepted: 0, rate: 0 },
+    limit: 0,
   },
   quality: {
-    turns: 0,
-    empty: 0,
-    failure_rate: 0,
     length: { p50: 0, p90: 0, max: 0 },
-    labeled: 0,
     label_rate: 0,
   },
   top_problems: [],
 }
 
-const ACCENT = "#409eff"
+const DAY_MS = 24 * 60 * 60 * 1000
+
 // 순서형 램프. 진한 쪽이 앞 단계다. 색만으로 구분하지 않도록 막대에 값도 함께 찍는다.
 const ORDINAL = ["#1c5cab", "#2a78d6", "#3987e5", "#5598e7", "#86b6ef"]
-// 요점이 하나인 막대는 그 하나만 진하게, 나머지는 물러나게 한다.
 const MUTED = "#c6dcf7"
-
-// 막대 하나짜리 단순 차트는 형태가 같아 한 곳에서 만든다.
-// colors 를 주면 막대마다 색을 달리한다.
-function barOption(categories, values, name, colors) {
-  return {
-    tooltip: { trigger: "axis" },
-    grid: { left: 40, right: 16, top: 24, bottom: 28 },
-    xAxis: { type: "category", data: categories },
-    yAxis: { type: "value", minInterval: 1 },
-    series: [
-      {
-        name,
-        type: "bar",
-        data: colors
-          ? values.map((v, i) => ({ value: v, itemStyle: { color: colors[i] } }))
-          : values,
-        itemStyle: { color: ACCENT },
-      },
-    ],
-  }
-}
 
 export default {
   name: "AIHintStats",
   data() {
     return {
       loading: false,
+      requestSeq: 0,
+      pickedAt: null,
+      // 응답이 실패해도 폭 제한이 풀리면 안 되므로 stats 와 따로 들고 있는다.
+      maxRangeSpanDays: 0,
+      fetchTimer: null,
       range: [],
       stats: JSON.parse(JSON.stringify(EMPTY)),
     }
@@ -234,6 +174,33 @@ export default {
     this.fetch()
   },
   computed: {
+    // 백엔드 MAX_RANGE_DAYS 와 같은 폭으로 막는다. 넘겨 고르면 서버가 거절하고
+    // 화면이 0으로 비워져 무슨 일이 난 건지 알 수 없다.
+    pickerOptions() {
+      return {
+        disabledDate: (date) => {
+          if (date > new Date()) return true
+          if (!this.pickedAt || !this.maxRangeMs) return false
+          return Math.abs(date - this.pickedAt) > this.maxRangeMs
+        },
+        onPick: ({ minDate, maxDate }) => {
+          this.pickedAt = maxDate ? null : minDate
+        },
+      }
+    },
+    maxRangeMs() {
+      // 허용 폭은 서버가 계산해 응답에 실어 보낸다. 포함/배타 규칙을 여기서
+      // 다시 세면 서버가 바뀔 때 조용히 어긋난다. 아직 모르면 폭 검사를 쉰다.
+      return this.maxRangeSpanDays * DAY_MS
+    },
+    maxTopProblemTurns() {
+      return Math.max(...this.topProblems.map((p) => p.turns), 1)
+    },
+    limitReachedLabel() {
+      return this.depth.limit
+        ? this.$t("m.AI_Hint_Limit_Reached_Rate", { limit: this.depth.limit })
+        : this.$t("m.AI_Hint_Limit_Reached_Rate_Plain")
+    },
     summary() {
       return this.stats.summary
     },
@@ -255,11 +222,14 @@ export default {
           note: "",
         },
         {
-          label: this.$t("m.AI_Hint_Card_Sessions"),
+          label: this.$t("m.AI_Hint_Sessions"),
           value: s.sessions,
-          note: this.$t("m.AI_Hint_Card_Sessions_Note", {
-            minutes: this.stats.range.session_gap_minutes,
-          }),
+          // 아직 응답이 없으면 간격을 모르므로 설명을 비워 둔다.
+          note: this.stats.range.session_gap_minutes
+            ? this.$t("m.AI_Hint_Card_Sessions_Note", {
+                minutes: this.stats.range.session_gap_minutes,
+              })
+            : "",
         },
         {
           label: this.$t("m.AI_Hint_Card_Users"),
@@ -275,11 +245,6 @@ export default {
           label: this.$t("m.AI_Hint_Card_Adoption"),
           value: s.adoption_rate + "%",
           note: `${s.hinted_pairs} / ${s.engaged_pairs}`,
-        },
-        {
-          label: this.$t("m.AI_Hint_Card_Failure"),
-          value: s.failure_rate + "%",
-          note: "",
         },
       ]
     },
@@ -319,15 +284,26 @@ export default {
         ],
       }
     },
+    // 요점이 하나인 막대는 그 하나만 진하게, 나머지는 물러나게 한다.
     hourlyOption() {
       const values = this.stats.hourly.map((h) => h.turns)
       const peak = Math.max(...values, 0)
-      return barOption(
-        this.stats.hourly.map((h) => h.hour),
-        values,
-        this.$t("m.AI_Hint_Turns"),
-        values.map((v) => (v === peak && peak > 0 ? "#1c5cab" : MUTED)),
-      )
+      return {
+        tooltip: { trigger: "axis" },
+        grid: { left: 40, right: 16, top: 24, bottom: 28 },
+        xAxis: { type: "category", data: this.stats.hourly.map((h) => h.hour) },
+        yAxis: { type: "value", minInterval: 1 },
+        series: [
+          {
+            name: this.$t("m.AI_Hint_Turns"),
+            type: "bar",
+            data: values.map((v) => ({
+              value: v,
+              itemStyle: { color: v === peak && peak > 0 ? ORDINAL[0] : MUTED },
+            })),
+          },
+        ],
+      }
     },
     // "N턴짜리 대화가 몇 건"이 아니라 "몇 건이 N턴까지 이어졌나"를 보여준다.
     // 어디에서 멈추는지가 알고 싶은 것이고, 그건 누적 잔존이라야 보인다.
@@ -373,20 +349,15 @@ export default {
             label: {
               show: true,
               position: "right",
-              formatter: (p) => `${rows[p.dataIndex].sessions}건 · ${rows[p.dataIndex].rate}%`,
+              formatter: (p) =>
+                this.$t("m.AI_Hint_Session_Count", {
+                  count: rows[p.dataIndex].sessions,
+                }) + ` · ${rows[p.dataIndex].rate}%`,
               color: "#5c6773",
             },
           },
         ],
       }
-    },
-    effectRows() {
-      const e = this.stats.effect
-      // 미사용은 기준선이므로 회색, 관심 대상인 사용 쪽만 강조한다.
-      return [
-        { group: this.$t("m.AI_Hint_Effect_With"), color: ACCENT, ...e.with_hint },
-        { group: this.$t("m.AI_Hint_Effect_Without"), color: "#c0c4cc", ...e.without_hint },
-      ]
     },
     // 응답 길이는 분포이므로 눈금 두 개를 얹은 범위 막대로 보여준다.
     lengthScale() {
@@ -395,21 +366,38 @@ export default {
       return { p50: pct(this.quality.length.p50), p90: pct(this.quality.length.p90) }
     },
   },
+  beforeDestroy() {
+    clearTimeout(this.fetchTimer)
+  },
   methods: {
     topProblemWidth(turns) {
-      const max = Math.max(...this.topProblems.map((p) => p.turns), 1)
-      return Math.round((100 * turns) / max) + "%"
+      return Math.round((100 * turns) / this.maxTopProblemTurns) + "%"
+    },
+    // 달력을 연달아 바꾸면 요청이 겹친다. 응답만 버리면 질의는 그대로 나가므로
+    // 마지막 선택만 실제로 보낸다.
+    scheduleFetch() {
+      clearTimeout(this.fetchTimer)
+      this.fetchTimer = setTimeout(this.fetch, 250)
     },
     fetch() {
+      // 날짜를 빠르게 바꾸면 느린 응답이 나중에 도착해 최신 결과를 덮어쓸 수 있다.
+      // 마지막 요청만 반영한다.
+      const seq = ++this.requestSeq
       this.loading = true
       const [start, end] = this.range || []
       api
         .getAIHintStats(start, end)
         .then((res) => {
+          if (seq !== this.requestSeq) return
           this.stats = res.data.data
+          this.maxRangeSpanDays =
+            this.stats.range.max_range_span_days || this.maxRangeSpanDays
           this.loading = false
         })
         .catch(() => {
+          if (seq !== this.requestSeq) return
+          // 실패한 구간의 화면에 이전 구간 숫자가 남아 있으면 오독한다.
+          this.stats = JSON.parse(JSON.stringify(EMPTY))
           this.loading = false
         })
     },
@@ -418,7 +406,14 @@ export default {
 </script>
 
 <style scoped lang="less">
+.stat-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
 .stat-card {
+  flex: 1 1 150px;
   padding: 12px;
   border: 1px solid #eeeeee;
   border-radius: 4px;
@@ -530,14 +525,16 @@ export default {
   font-variant-numeric: tabular-nums;
 }
 
+.range-label {
+  margin-right: 12px;
+  font-size: 12px;
+  color: #909399;
+  align-self: center;
+}
+
 .hint-note {
   color: #999999;
   font-size: 12px;
 }
 
-.warn-note {
-  margin-top: 10px;
-  color: #e6a23c;
-  font-size: 12px;
-}
 </style>

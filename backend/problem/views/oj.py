@@ -13,7 +13,7 @@ from account.models import UserProfile, UserScore
 from contest.models import Contest, ContestRuleType, ContestStatus, ContestType
 from submission.models import JudgeStatus, Submission
 from utils.api import APIView
-from utils.constants import Difficulty, ProblemField, Tier
+from utils.constants import Difficulty, HINT_LIMIT_PER_PROBLEM, ProblemField, Tier
 from utils.observability_metrics import AI_HINT_API_OUTCOME_TOTAL
 
 from ..llm_hint import LLMHintError, MAX_USER_CODE_LENGTH, stream_problem_hint
@@ -311,9 +311,10 @@ class ProblemLLMHintAPI(APIView):
                 previous_logs = ProblemAIHintLog.objects.filter(user=request.user, problem=problem).order_by("created_at")
                 problem_hint_count = previous_logs.count()
 
-                if problem_hint_count >= 5:
+                if problem_hint_count >= HINT_LIMIT_PER_PROBLEM:
                     return self._error_response(
-                        "이 문제에 대한 AI 조교 사용 횟수(5회)를 모두 소진했습니다. 이전 답변을 복습해 보세요.",
+                        f"이 문제에 대한 AI 조교 사용 횟수({HINT_LIMIT_PER_PROBLEM}회)를 모두 소진했습니다. "
+                        "이전 답변을 복습해 보세요.",
                         err="problem-limit-exceeded",
                         metric_status="problem_limit_exceeded",
                         scope=scope,
