@@ -1150,6 +1150,70 @@ class UpdateWeeklyStatsTest(APITestCase):
         self.assertFalse(updated_problem_2.is_most_difficult)
         self.assertTrue(updated_problem_3.is_most_difficult)
 
+    def test_update_weekly_stats_excludes_invisible_and_untouched_problems(self):
+        # Genuinely hard but attempted problem: should win.
+        hard_week_info = {
+            'submission': 10,
+            'accepted': 1,
+            'success_rate': 0.1,
+            'solver': ['user1'],
+        }
+        self.problem_1.curr_week_info = hard_week_info
+        self.problem_1.save(update_fields=['curr_week_info'])
+
+        # Invisible problem tied at 0% success rate: must not win.
+        self.problem_2.visible = False
+        self.problem_2.curr_week_info = {
+            'submission': 10, 'accepted': 0, 'success_rate': 0.0, 'solver': [],
+        }
+        self.problem_2.save(update_fields=['visible', 'curr_week_info'])
+
+        # Untouched problem (0 submissions) also tied at 0% by default: must not win either.
+        self.problem_3.curr_week_info = get_default_week_info()
+        self.problem_3.save(update_fields=['curr_week_info'])
+
+        update_weekly_stats()
+
+        self.assertTrue(Problem.objects.get(id=self.problem_1.id).is_most_difficult)
+        self.assertFalse(Problem.objects.get(id=self.problem_2.id).is_most_difficult)
+        self.assertFalse(Problem.objects.get(id=self.problem_3.id).is_most_difficult)
+
+    def test_update_weekly_stats_excludes_contest_problems(self):
+        contest = Contest.objects.create(**{**DEFAULT_CONTEST_DATA, "created_by": self.admin})
+        self.problem_1.contest = contest
+        self.problem_1.curr_week_info = {
+            'submission': 10, 'accepted': 1, 'success_rate': 0.1, 'solver': ['user1'],
+        }
+        self.problem_1.save(update_fields=['contest', 'curr_week_info'])
+
+        self.problem_2.curr_week_info = {
+            'submission': 10, 'accepted': 3, 'success_rate': 0.3, 'solver': ['user1', 'user2', 'user3'],
+        }
+        self.problem_2.save(update_fields=['curr_week_info'])
+
+        update_weekly_stats()
+
+        self.assertFalse(Problem.objects.get(id=self.problem_1.id).is_most_difficult)
+        self.assertTrue(Problem.objects.get(id=self.problem_2.id).is_most_difficult)
+
+    def test_update_weekly_stats_tiebreaks_by_submission_count(self):
+        # Same success rate, but problem_2 was attempted by far more people:
+        # it should win as the more "actively graded" problem.
+        self.problem_1.curr_week_info = {
+            'submission': 10, 'accepted': 5, 'success_rate': 0.5, 'solver': ['u1', 'u2', 'u3', 'u4', 'u5'],
+        }
+        self.problem_1.save(update_fields=['curr_week_info'])
+
+        self.problem_2.curr_week_info = {
+            'submission': 100, 'accepted': 50, 'success_rate': 0.5, 'solver': [f'u{i}' for i in range(50)],
+        }
+        self.problem_2.save(update_fields=['curr_week_info'])
+
+        update_weekly_stats()
+
+        self.assertFalse(Problem.objects.get(id=self.problem_1.id).is_most_difficult)
+        self.assertTrue(Problem.objects.get(id=self.problem_2.id).is_most_difficult)
+
     def test_update_weekly_stats_database_error(self):
 
         with mock.patch('problem.models.Problem.objects.update', side_effect=Exception("Database error")):
