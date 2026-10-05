@@ -72,7 +72,10 @@ spec:
               memory: "500Mi"
               cpu: "1000m"
             limits:
-              memory: "1Gi"
+              # 테스트케이스를 2개씩 병렬로 채점하므로 (문제 메모리 상한 × 2 + 채점 서버) 보다 커야 한다.
+              # 문제 메모리 상한은 backend/problem/serializers.py 의 PROBLEM_MEMORY_LIMIT_MAX_MB.
+              # 1Gi일 때 1024MB 문제에서 pod가 재시작하며 SYSTEM_ERROR가 났다 (2026/09/30 대회).
+              memory: "2Gi"
               cpu: "2000m" # TODO: 추후 채점 서버를 단일 프로세스로 변경하고, cgroup 종속성을 제거한 뒤 CPU Limit 제거
           livenessProbe:
             exec:

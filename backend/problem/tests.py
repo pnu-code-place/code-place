@@ -193,6 +193,16 @@ class ProblemAdminAPITest(APITestCase):
         self.assertSuccess(resp)
         return resp
 
+    def test_memory_limit_cap(self):
+        # judge pod 한도를 넘지 않도록 문제 메모리 제한은 512MB까지만 받는다.
+        self.data["memory_limit"] = 1024
+        resp = self.client.post(self.url, data=self.data)
+        self.assertFailed(resp)
+
+        self.data["memory_limit"] = 512
+        resp = self.client.post(self.url, data=self.data)
+        self.assertSuccess(resp)
+
     def test_duplicate_display_id(self):
         self.test_create_problem()
 

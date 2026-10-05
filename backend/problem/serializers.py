@@ -15,6 +15,12 @@ from .utils import parse_problem_template
 # 등록 후 신규 문제(NEW 태그)로 표시할 기간 (일 단위)
 NEW_PROBLEM_DAYS = 7
 
+# 문제 메모리 제한 상한 (MB). 채점 서버가 테스트케이스를 2개씩 병렬로 돌리므로
+# judge pod 메모리 한도(kubernetes/base/judge-server)는 이 값의 2배보다 넉넉해야 한다.
+# 둘이 같으면 메모리를 많이 쓰는 코드가 샌드박스보다 pod 한도를 먼저 넘겨
+# pod가 재시작하고 그 제출은 SYSTEM_ERROR가 된다 (2026/09/30 대회, 1024MB 문제).
+PROBLEM_MEMORY_LIMIT_MAX_MB = 512
+
 
 class AIHintLogSerializer(serializers.ModelSerializer):
 
@@ -67,7 +73,7 @@ class CreateOrEditProblemSerializer(serializers.Serializer):
     test_case_id = serializers.CharField(max_length=32)
     test_case_score = serializers.ListField(child=CreateTestCaseScoreSerializer(), allow_empty=True)
     time_limit = serializers.IntegerField(min_value=1, max_value=1000 * 60)
-    memory_limit = serializers.IntegerField(min_value=1, max_value=1024)
+    memory_limit = serializers.IntegerField(min_value=1, max_value=PROBLEM_MEMORY_LIMIT_MAX_MB)
     languages = LanguageNameMultiChoiceField()
     template = serializers.DictField(child=serializers.CharField(min_length=1))
     rule_type = serializers.ChoiceField(choices=[ProblemRuleType.ACM, ProblemRuleType.OI])
@@ -298,7 +304,7 @@ class ImportProblemSerializer(serializers.Serializer):
     hint = FormatValueSerializer()
     test_case_score = serializers.ListField(child=TestCaseScoreSerializer(), allow_null=True)
     time_limit = serializers.IntegerField(min_value=1, max_value=60000)
-    memory_limit = serializers.IntegerField(min_value=1, max_value=10240)
+    memory_limit = serializers.IntegerField(min_value=1, max_value=PROBLEM_MEMORY_LIMIT_MAX_MB)
     samples = serializers.ListField(child=CreateSampleSerializer())
     template = serializers.DictField(child=TemplateSerializer())
     spj = SPJSerializer(allow_null=True)
@@ -329,6 +335,12 @@ class FPSProblemSerializer(serializers.Serializer):
     template = serializers.ListField(child=serializers.DictField(), allow_empty=True, allow_null=True)
     append = serializers.ListField(child=serializers.DictField(), allow_empty=True, allow_null=True)
     prepend = serializers.ListField(child=serializers.DictField(), allow_empty=True, allow_null=True)
+
+    def validate_memory_limit(self, value):
+        # UnitSerializer는 시간과 같이 써서 상한이 60000이다. 메모리만 따로 막는다.
+        if value["value"] > PROBLEM_MEMORY_LIMIT_MAX_MB:
+            raise serializers.ValidationError(f"Memory limit must be at most {PROBLEM_MEMORY_LIMIT_MAX_MB}MB")
+        return value
 
 
 class RecommendBonusProblemSerializer(serializers.ModelSerializer):
