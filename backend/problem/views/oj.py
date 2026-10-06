@@ -5,7 +5,6 @@ import json
 from django.db import transaction
 from django.db.models import Case, Count, ExpressionWrapper, F, FloatField, IntegerField, Q, Value, When
 from django.http import HttpResponseBadRequest, HttpResponseNotFound, StreamingHttpResponse
-from django.contrib.auth import get_user_model
 
 from account.decorators import (check_contest_permission, check_contest_password, scheduler_only)
 from utils.constants import CONTEST_PASSWORD_SESSION_KEY
@@ -16,7 +15,7 @@ from utils.api import APIView
 from utils.constants import Difficulty, ProblemField, Tier
 from utils.observability_metrics import AI_HINT_API_OUTCOME_TOTAL
 
-from ..llm_hint import LLMHintError, MAX_USER_CODE_LENGTH, stream_problem_hint
+from ..llm_hint import LLMHintError, MAX_QUESTION_LENGTH, MAX_USER_CODE_LENGTH, stream_problem_hint
 from ..models import (Problem, ProblemRuleType, ProblemTag, get_default_week_info, ProblemAIHintLog)
 from ..serializers import (MostDifficultProblemSerializer, ProblemSafeSerializer, ProblemSerializer,
                            RecommendBonusProblemSerializer, TagSerializer, AIHintLogSerializer)
@@ -231,8 +230,30 @@ class ProblemLLMHintAPI(APIView):
         return self._streaming_response(self._error_events(message, err=err))
 
     def get(self, request):
-        problem_id = request.GET.get("problem_id")
-        contest_id = request.GET.get("contest_id")
+        return self._answer(
+            request,
+            problem_id=request.GET.get("problem_id"),
+            contest_id=request.GET.get("contest_id"),
+            user_code=request.GET.get("user_code") or "",
+            question=None,
+        )
+
+    def post(self, request):
+        try:
+            body = json.loads(request.body or b"{}")
+        except ValueError:
+            body = {}
+        if not isinstance(body, dict):
+            body = {}
+        return self._answer(
+            request,
+            problem_id=str(body.get("problem_id") or "").strip(),
+            contest_id=body.get("contest_id") or None,
+            user_code=str(body.get("user_code") or ""),
+            question=str(body.get("question") or "").strip(),
+        )
+
+    def _answer(self, request, problem_id, contest_id, user_code, question):
         scope = "contest" if contest_id else "practice"
         if not request.user.is_authenticated:
             return self._error_response(
@@ -245,11 +266,20 @@ class ProblemLLMHintAPI(APIView):
         if not problem_id:
             return self._error_response("문제 번호가 필요합니다.", metric_status="bad_request", scope=scope)
 
+        if question is not None:
+            if not question:
+                return self._error_response("질문을 입력해 주세요.", metric_status="bad_request", scope=scope)
+            if len(question) > MAX_QUESTION_LENGTH:
+                return self._error_response(
+                    f"질문은 {MAX_QUESTION_LENGTH}자 이하로 입력해 주세요.",
+                    metric_status="bad_request",
+                    scope=scope,
+                )
+
         # 사용자가 현재 작성 중인 코드 (없으면 None)
         # 서버에서 한 번 더 길이를 제한해 과도하게 큰 요청을 차단
-        raw_user_code = request.GET.get("user_code") or ""
-        user_code = raw_user_code[:MAX_USER_CODE_LENGTH] if raw_user_code else None
-      
+        user_code = user_code[:MAX_USER_CODE_LENGTH] if user_code else None
+
         if contest_id:
             try:
                 contest = Contest.objects.select_related("created_by").get(id=contest_id, visible=True)
@@ -298,42 +328,25 @@ class ProblemLLMHintAPI(APIView):
             except Problem.DoesNotExist:
                 return self._error_response("문제를 찾을 수 없습니다.", metric_status="problem_not_found", scope=scope)
 
-        hint_log = None
-        previous_hints = []
+        history_logs = (
+            ProblemAIHintLog.objects.filter(user=request.user, problem=problem)
+            .exclude(hint_content="")
+            .order_by("created_at")
+        )
+        previous_turns = [(log.role, log.hint_content) for log in history_logs]
 
-        if not (request.user.is_super_admin() or request.user.is_admin()):
-            # 트랜잭션을 묶어 체크와 생성이 최대한 원자적으로 이루어지도록 처리
-            with transaction.atomic():
-                User = get_user_model()
-                User.objects.select_for_update().get(pk=request.user.pk)
-
-                # 이전 힌트 로그들 조회 및 시간순 정렬
-                previous_logs = ProblemAIHintLog.objects.filter(user=request.user, problem=problem).order_by("created_at")
-                problem_hint_count = previous_logs.count()
-
-                if problem_hint_count >= 5:
-                    return self._error_response(
-                        "이 문제에 대한 AI 조교 사용 횟수(5회)를 모두 소진했습니다. 이전 답변을 복습해 보세요.",
-                        err="problem-limit-exceeded",
-                        metric_status="problem_limit_exceeded",
-                        scope=scope,
-                    )
-
-                # 이전 힌트 문자열 추출
-                previous_hints = [log.hint_content for log in previous_logs if log.hint_content.strip()]
-
-                # 제한 통과 시, 스트리밍 시작 전에 빈 내용으로 로그를 선제 생성하여 횟수 차감 처리
-                hint_log = ProblemAIHintLog.objects.create(user=request.user, problem=problem, hint_content="")
-        else:
-            # 어드민인 경우에도 이전 힌트 컨텍스트는 유지하도록 조회
-            previous_logs = ProblemAIHintLog.objects.filter(user=request.user, problem=problem).order_by("created_at")
-            previous_hints = [log.hint_content for log in previous_logs if log.hint_content.strip()]
-            hint_log = ProblemAIHintLog.objects.create(user=request.user, problem=problem, hint_content="")
+        if question is not None:
+            ProblemAIHintLog.objects.create(
+                user=request.user, problem=problem, role=ProblemAIHintLog.ROLE_USER, hint_content=question,
+            )
+        hint_log = ProblemAIHintLog.objects.create(
+            user=request.user, problem=problem, role=ProblemAIHintLog.ROLE_ASSISTANT, hint_content="",
+        )
 
         def generator():
             full_text_chunks = []
             try:
-                for chunk in stream_problem_hint(problem, previous_hints=previous_hints, user_code=user_code):
+                for chunk in stream_problem_hint(problem, previous_turns=previous_turns, user_code=user_code, question=question):
                     full_text_chunks.append(chunk)
                     yield self._format_sse_event("chunk", {"text": chunk})
                 if self._persist_hint_log(hint_log, full_text_chunks):
