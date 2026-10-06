@@ -759,7 +759,7 @@ export default {
     },
     notifyCodePlaceHub(submissionResult) {
       try {
-        if (!this.problem) return
+        if (!this.problem || this.isContestProblem) return
         const memory = submissionResult.statistic_info
           ? submissionResult.statistic_info.memory_cost
           : null
@@ -787,8 +787,8 @@ export default {
           outputDescription: this.problem.output_description,
           inputSample: (this.problem.samples || []).map((s) => s.input),
           outputSample: (this.problem.samples || []).map((s) => s.output),
-          timeLimit: `${this.problem.time_limit} ms`,
-          memoryLimit: `${this.problem.memory_limit} MB`,
+          timeLimit: `시간 제한: ${this.problem.time_limit} ms`,
+          memoryLimit: `메모리 제한: ${this.problem.memory_limit} MB`,
           hint: this.problem.hint || "",
           code: submissionResult.code || this.code,
           memoryCost: formattedMemory,
@@ -826,7 +826,7 @@ export default {
               // 통과(Accepted=0)하지 못한 결과면 질문 유도 넛지 표시 (대회에서는 질문 기능 자체가 없으므로 제외)
               this.showAskNudge = !this.isContestProblem && this.result.result !== 0
 
-              if (this.result.result === 0) {
+              if (this.result.result === 0 && !this.isContestProblem) {
                 this.notifyCodePlaceHub(this.result)
               }
 
