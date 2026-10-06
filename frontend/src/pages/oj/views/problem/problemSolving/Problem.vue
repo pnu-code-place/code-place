@@ -757,6 +757,55 @@ export default {
       this.leftPainActiveTab = "community"
       this.showAskNudge = false
     },
+    notifyCodePlaceHub(submissionResult) {
+      try {
+        if (!this.problem) return
+        const memory = submissionResult.statistic_info
+          ? submissionResult.statistic_info.memory_cost
+          : null
+        let formattedMemory = "N/A KB"
+        if (memory != null) {
+          if (memory < 1024 * 1024) {
+            formattedMemory = `${Math.round(memory / 1024)} KB`
+          } else {
+            formattedMemory = `${(memory / (1024 * 1024)).toFixed(2)} MB`
+          }
+        }
+        const time = submissionResult.statistic_info
+          ? submissionResult.statistic_info.time_cost
+          : null
+        const formattedTime = time != null ? `${time} ms` : "N/A ms"
+
+        const payload = {
+          problemId: this.problem._id || this.problem.id,
+          title: this.problem.title,
+          status: "Accepted",
+          difficulty: this.problem.difficulty,
+          language: submissionResult.language || this.language,
+          description: this.problem.description,
+          inputDescription: this.problem.input_description,
+          outputDescription: this.problem.output_description,
+          inputSample: (this.problem.samples || []).map((s) => s.input),
+          outputSample: (this.problem.samples || []).map((s) => s.output),
+          timeLimit: `${this.problem.time_limit} ms`,
+          memoryLimit: `${this.problem.memory_limit} MB`,
+          hint: this.problem.hint || "",
+          code: submissionResult.code || this.code,
+          memoryCost: formattedMemory,
+          timeCost: formattedTime,
+        }
+
+        window.postMessage(
+          {
+            type: "CODEPLACE_HUB_SUBMISSION_ACCEPTED",
+            data: payload,
+          },
+          "*",
+        )
+      } catch (error) {
+        console.debug("CodePlaceHub notification error:", error)
+      }
+    },
     checkSubmissionStatus() {
       // 使用setTimeout避免一些问题
       if (this.refreshStatus) {
@@ -776,6 +825,10 @@ export default {
               this.lastSubmissionId = id
               // 통과(Accepted=0)하지 못한 결과면 질문 유도 넛지 표시 (대회에서는 질문 기능 자체가 없으므로 제외)
               this.showAskNudge = !this.isContestProblem && this.result.result !== 0
+
+              if (this.result.result === 0) {
+                this.notifyCodePlaceHub(this.result)
+              }
 
               clearTimeout(this.refreshStatus)
               this.init({

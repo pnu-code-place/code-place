@@ -2,6 +2,15 @@ export const m = {
   // 404.vue
   Go_Home: "回到首頁",
   // Problem.vue
+  AI_Assistant: "AI助教",
+  AI_Assistant_Get_Hint: "獲取AI助教提示",
+  AI_Assistant_Thinking: "思考中...",
+  AI_Assistant_Exhausted: "次數已用盡",
+  AI_Assistant_Close: "關閉AI助教",
+  AI_Assistant_Empty_Title: "暫無獲得的提示",
+  AI_Assistant_Empty_Desc:
+    "遇到困難時，請點擊下方的「獲取AI助教提示」。從第1階段開始，隨著階段深入將提供更具體的幫助。",
+  AI_Assistant_Fetch_Failed: "獲取AI提示失敗。",
   Description: "題目描述",
   Input: "輸入",
   Output: "輸出",
