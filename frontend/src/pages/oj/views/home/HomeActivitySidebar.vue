@@ -62,12 +62,13 @@
 
 <script>
 import api from "@oj/api"
-import { mapActions } from "vuex"
+import { mapActions, mapGetters } from "vuex"
 import { FIELD_MAP, DIFFICULTY_MAP } from "../../../../utils/constants"
 
 export default {
   name: "HomeActivitySidebar",
   computed: {
+    ...mapGetters(["isAuthenticated"]),
     FIELD_MAP() {
       return FIELD_MAP
     },
@@ -91,15 +92,11 @@ export default {
     this.loadTodayProblem()
   },
   methods: {
-    ...mapActions(["changeProblemSolvingState"]),
+    ...mapActions(["changeProblemSolvingState, changeModalStatus"]),
     loadTodayProblem() {
       this.loading = true
       api
-        .pickone()
-        .then((res) => {
-          const problemId = res.data.data
-          return api.getProblem(problemId)
-        })
+        .pickOneSummary()
         .then((res) => {
           this.problem = res.data.data
           this.loading = false
@@ -112,6 +109,10 @@ export default {
       this.loadTodayProblem()
     },
     enterProblem(problemId) {
+      if (!this.isAuthenticated) {
+        this.changeModalStatus({ mode: "login", visible: true })
+        return
+      }
       this.changeProblemSolvingState(true)
       this.$router.push({
         name: "problem-details",
