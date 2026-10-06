@@ -20,6 +20,7 @@ from ..llm_hint import LLMHintError, MAX_USER_CODE_LENGTH, stream_problem_hint
 from ..models import (Problem, ProblemRuleType, ProblemTag, get_default_week_info, ProblemAIHintLog)
 from ..serializers import (MostDifficultProblemSerializer, ProblemSafeSerializer, ProblemSerializer, ProblemPublicListSerializer,
                            RecommendBonusProblemSerializer, TagSerializer, AIHintLogSerializer)
+
 logger = logging.getLogger(__name__)
 
 
@@ -44,7 +45,7 @@ class PickOneAPI(APIView):
         problem = problems[random.randint(0, count - 1)]
         if request.GET.get("summary"):
             return self.success(MostDifficultProblemSerializer(problem).data)
-        return self.success(problems._id)
+        return self.success(problem._id)
 
 
 class WeeklyTopProblemsAPI(APIView):

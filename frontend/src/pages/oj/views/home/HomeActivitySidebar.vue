@@ -92,7 +92,7 @@ export default {
     this.loadTodayProblem()
   },
   methods: {
-    ...mapActions(["changeProblemSolvingState, changeModalStatus"]),
+    ...mapActions(["changeProblemSolvingState", "changeModalStatus"]),
     loadTodayProblem() {
       this.loading = true
       api
