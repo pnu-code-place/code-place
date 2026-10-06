@@ -20,7 +20,7 @@ class AIHintLogSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProblemAIHintLog
-        fields = ["id", "role", "hint_content", "created_at"]
+        fields = ["id", "hint_content", "created_at"]
 
 
 class TestCaseUploadForm(forms.Form):

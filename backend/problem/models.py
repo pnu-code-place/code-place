@@ -7,13 +7,8 @@ from utils.constants import Choices
 
 
 class ProblemAIHintLog(models.Model):
-    ROLE_USER = "user"
-    ROLE_ASSISTANT = "assistant"
-    ROLE_CHOICES = [(ROLE_USER, "user"), (ROLE_ASSISTANT, "assistant")]
-
     user = models.ForeignKey("account.User", on_delete=models.CASCADE)
     problem = models.ForeignKey("Problem", on_delete=models.CASCADE)
-    role = models.CharField(max_length=16, choices=ROLE_CHOICES, default=ROLE_ASSISTANT)
     hint_content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
