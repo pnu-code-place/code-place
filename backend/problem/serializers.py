@@ -298,7 +298,7 @@ class ImportProblemSerializer(serializers.Serializer):
     hint = FormatValueSerializer()
     test_case_score = serializers.ListField(child=TestCaseScoreSerializer(), allow_null=True)
     time_limit = serializers.IntegerField(min_value=1, max_value=60000)
-    memory_limit = serializers.IntegerField(min_value=1, max_value=10240)
+    memory_limit = serializers.IntegerField(min_value=1, max_value=1024)
     samples = serializers.ListField(child=CreateSampleSerializer())
     template = serializers.DictField(child=TemplateSerializer())
     spj = SPJSerializer(allow_null=True)
