@@ -405,6 +405,18 @@ class ProblemAPITest(ProblemCreateTestBase):
         self.assertSuccess(resp)
         self.assertIn("description", resp.data["data"]["results"][0])
 
+    def test_pick_one_default_returns_id_string(self):
+        resp = self.client.get(self.reverse("pick_one_api"))
+        self.assertSuccess(resp)
+        self.assertEqual(resp.data["data"], self.problem._id)
+
+    def test_pick_one_summary_is_public_and_has_no_body(self):
+        self.client.logout()
+        resp = self.client.get(self.reverse("pick_one_api"), {"summary": 1})
+        self.assertSuccess(resp)
+        self.assertIn("title", resp.data["data"])
+        self.assertNotIn("description", resp.data["data"])
+
 class ProblemLLMHintAPITest(ProblemCreateTestBase):
 
     def setUp(self):

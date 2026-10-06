@@ -41,7 +41,10 @@ class PickOneAPI(APIView):
         count = problems.count()
         if count == 0:
             return self.error("No problem to pick")
-        return self.success(problems[random.randint(0, count - 1)]._id)
+        problem = problems[random.randint(0, count - 1)]
+        if request.GET.get("summary"):
+            return self.success(MostDifficultProblemSerializer(problem).data)
+        return self.success(problems._id)
 
 
 class WeeklyTopProblemsAPI(APIView):
