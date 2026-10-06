@@ -435,15 +435,19 @@ class ProblemLLMHintAPITest(ProblemCreateTestBase):
         self.assertEqual(mocked_post.call_args.kwargs["json"]["model"], VLLM_MODEL)
 
         # messages[0]: 시스템 프롬프트
-        self.assertIn("AI tutor", msgs[0]["content"])
-        self.assertNotIn("Level 1", msgs[0]["content"])
+        self.assertIn("Do not repeat or rephrase previous hints.", msgs[0]["content"])
+        self.assertIn("Start from a concrete condition, structure, or property of the problem.",
+                      msgs[0]["content"])
+        self.assertIn("Level definitions:", msgs[0]["content"])
+        self.assertIn("There are exactly 5 levels.", msgs[0]["content"])
 
         # messages[1]: 문제 데이터 (HTML 태그 미포함, problem._id 포함)
         self.assertIn(self.problem._id, msgs[1]["content"])
         self.assertNotIn("<p>", msgs[1]["content"])
 
+        # messages[2]: 트리거 — 첫 요청이므로 1단계를 명시해야 함
         self.assertEqual(msgs[2]["role"], "user")
-        self.assertIn("latest question or request", msgs[2]["content"])
+        self.assertIn("You must provide the Level 1 hint now.", msgs[2]["content"])
 
         self.assertEqual(mocked_post.call_args.kwargs["json"]["temperature"], 0.2)
         self.assertEqual(mocked_post.call_args.kwargs["stream"], True)
@@ -504,6 +508,58 @@ class ProblemLLMHintAPITest(ProblemCreateTestBase):
         request_labels.inc.assert_called_once()
         duration_seconds.labels.assert_called_once_with(status="request_error")
         duration_labels.observe.assert_called_once()
+
+    @mock.patch("problem.views.oj.AI_HINT_API_OUTCOME_TOTAL")
+    @mock.patch("problem.llm_hint.requests.post")
+    def test_stream_llm_hint_records_problem_limit_outcome(self, mocked_post, outcome_total):
+        for i in range(5):
+            ProblemAIHintLog.objects.create(user=self.user, problem=self.problem, hint_content=f"더미 {i}")
+        labels = mock.Mock()
+        outcome_total.labels.return_value = labels
+
+        resp = self.client.get(f"{self.url}?problem_id={self.problem._id}")
+        self._streaming_body(resp)
+
+        outcome_total.labels.assert_called_once_with(status="problem_limit_exceeded", scope="practice")
+        labels.inc.assert_called_once()
+        mocked_post.assert_not_called()
+
+    @mock.patch("problem.llm_hint.requests.post")
+    def test_stream_llm_hint_problem_limit(self, mocked_post):
+        """한 문제당 5회 제한에 걸리는지 테스트"""
+        # 해당 문제에 대해 이미 5개의 힌트 로그가 존재하도록 세팅
+        for i in range(5):
+            ProblemAIHintLog.objects.create(user=self.user, problem=self.problem, hint_content=f"더미 {i}")
+
+        resp = self.client.get(f"{self.url}?problem_id={self.problem._id}")
+        body = self._streaming_body(resp)
+
+        self.assertIn('event: app-error', body)
+        self.assertIn("limit-exceeded", body)
+        self.assertIn("소진", body)
+        mocked_post.assert_not_called()    # 제한에 걸리면 LLM 호출이 아예 안 일어나야 함
+
+    @mock.patch("problem.llm_hint.requests.post")
+    def test_stream_llm_hint_admin_bypass(self, mocked_post):
+        """관리자는 횟수 제한 없이 무제한으로 사용 가능한지 테스트"""
+        mocked_post.return_value = self._mock_streaming_response([
+            'data: {"choices":[{"delta":{"content":"어드민 패스"}}]}',
+            "data: [DONE]",
+        ])
+
+        # Admin 계정으로 5회 꽉 채움
+        for i in range(5):
+            ProblemAIHintLog.objects.create(user=self.admin, problem=self.problem, hint_content=f"더미 {i}")
+
+        # 일반 유저를 로그아웃시키고 Admin으로 로그인
+        self.client.force_login(self.admin)
+        resp = self.client.get(f"{self.url}?problem_id={self.problem._id}")
+        body = self._streaming_body(resp)
+
+        # 제한에 걸리지 않고 정상 응답이 와야 함
+        self.assertNotIn("limit-exceeded", body)
+        self.assertIn("어드민 패스", body)
+        mocked_post.assert_called_once()
 
     @mock.patch("problem.llm_hint.requests.post")
     def test_stream_llm_hint_empty_response(self, mocked_post):
@@ -807,100 +863,6 @@ class ProblemLLMHintAPITest(ProblemCreateTestBase):
 
         self.assertIn("event: app-error", body)
         self.assertIn("AI 조교를 사용할 수 없습니다", body)
-
-
-class ProblemLLMHintPostAPITest(ProblemCreateTestBase):
-
-    def setUp(self):
-        os.environ["IS_LOCAL_TEST"] = "False"
-
-        self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
-        self.url = self.reverse("problem_llm_hint_api")
-        self.admin = self.create_admin(login=False)
-        self.problem = self.add_problem(DEFAULT_PROBLEM_DATA, self.admin)
-        self.user = self.create_user(email="test@test.com", username="test", password="test1234!")
-        self.client.force_login(self.user)
-
-    @staticmethod
-    def _mock_streaming_response(lines):
-        response = mock.Mock()
-        response.raise_for_status.return_value = None
-        response.iter_lines.return_value = lines
-        response.close.return_value = None
-        return response
-
-    def _post(self, **body):
-        return self.client.post(self.url, data=json.dumps(body), content_type="application/json")
-
-    @mock.patch("problem.llm_hint.requests.post")
-    def test_post_question_saves_question_and_answer(self, mocked_post):
-        mocked_post.return_value = self._mock_streaming_response([
-            'data: {"choices":[{"delta":{"content":"답변"}}]}',
-            "data: [DONE]",
-        ])
-
-        resp = self._post(problem_id=self.problem._id, question="이 문제는 어떤 유형인가요?")
-        body = "".join(c.decode("utf-8") if isinstance(c, bytes) else c for c in resp.streaming_content)
-
-        self.assertIn("event: done", body)
-        logs = list(ProblemAIHintLog.objects.filter(user=self.user, problem=self.problem).order_by("created_at"))
-        self.assertEqual([(log.role, log.hint_content) for log in logs],
-                         [("user", "이 문제는 어떤 유형인가요?"), ("assistant", "답변")])
-        msgs = mocked_post.call_args.kwargs["json"]["messages"]
-        self.assertEqual(msgs[-1], {"role": "user", "content": "이 문제는 어떤 유형인가요?"})
-
-    @mock.patch("problem.llm_hint.requests.post")
-    def test_post_includes_previous_turns_in_order(self, mocked_post):
-        mocked_post.return_value = self._mock_streaming_response(["data: [DONE]"])
-        ProblemAIHintLog.objects.create(user=self.user, problem=self.problem,
-                                        role="user", hint_content="첫 질문")
-        ProblemAIHintLog.objects.create(user=self.user, problem=self.problem,
-                                        role="assistant", hint_content="첫 답변")
-
-        resp = self._post(problem_id=self.problem._id, question="두 번째 질문")
-        "".join(c.decode("utf-8") if isinstance(c, bytes) else c for c in resp.streaming_content)
-
-        turns_block = mocked_post.call_args.kwargs["json"]["messages"][2]["content"]
-        self.assertIn('speaker="student">첫 질문', turns_block)
-        self.assertIn('speaker="tutor">첫 답변', turns_block)
-
-    @mock.patch("problem.llm_hint.requests.post")
-    def test_post_has_no_per_problem_limit(self, mocked_post):
-        mocked_post.return_value = self._mock_streaming_response(["data: [DONE]"])
-        for i in range(20):
-            ProblemAIHintLog.objects.create(user=self.user, problem=self.problem,
-                                            role="assistant", hint_content=f"답변 {i}")
-
-        resp = self._post(problem_id=self.problem._id, question="또 질문")
-        body = "".join(c.decode("utf-8") if isinstance(c, bytes) else c for c in resp.streaming_content)
-
-        self.assertIn("event: done", body)
-        mocked_post.assert_called_once()
-
-    @mock.patch("problem.llm_hint.requests.post")
-    def test_post_rejects_empty_question(self, mocked_post):
-        resp = self._post(problem_id=self.problem._id, question="   ")
-        body = "".join(c.decode("utf-8") if isinstance(c, bytes) else c for c in resp.streaming_content)
-
-        self.assertIn("질문을 입력해 주세요", body)
-        mocked_post.assert_not_called()
-        self.assertFalse(ProblemAIHintLog.objects.filter(user=self.user).exists())
-
-    @mock.patch("problem.llm_hint.requests.post")
-    def test_post_rejects_too_long_question(self, mocked_post):
-        resp = self._post(problem_id=self.problem._id, question="가" * 1001)
-        body = "".join(c.decode("utf-8") if isinstance(c, bytes) else c for c in resp.streaming_content)
-
-        self.assertIn("1000자", body)
-        mocked_post.assert_not_called()
-
-    def test_post_requires_login(self):
-        self.client.logout()
-        resp = self._post(problem_id=self.problem._id, question="질문")
-        body = "".join(c.decode("utf-8") if isinstance(c, bytes) else c for c in resp.streaming_content)
-
-        self.assertIn("permission-denied", body)
-        self.assertFalse(ProblemAIHintLog.objects.exists())
 
 
 class AIHintHistoryAPITest(ProblemCreateTestBase):
