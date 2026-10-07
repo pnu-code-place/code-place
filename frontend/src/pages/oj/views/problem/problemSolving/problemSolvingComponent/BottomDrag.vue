@@ -9,7 +9,7 @@
             >실행 결과</span
           >
           <span :class="{ active: tab === 'ai' }" @click="tab = 'ai'"
-            >AI 조교</span
+            >{{ $t("m.AI_Assistant") }}</span
           >
         </div>
         <div class="tab-right-group">
@@ -29,17 +29,17 @@
             >
               {{
                 isLoading
-                  ? "생각 중..."
+                  ? $t("m.AI_Assistant_Thinking")
                   : hintsExhausted
-                    ? "횟수 초과"
-                    : "AI조교 힌트받기"
+                    ? $t("m.AI_Assistant_Exhausted")
+                    : $t("m.AI_Assistant_Get_Hint")
               }}
             </button>
           </div>
           <button
             type="button"
             class="close-btn"
-            aria-label="AI 조교 닫기"
+            :aria-label="$t('m.AI_Assistant_Close')"
             @click="visible = false"
           >
             ✕
@@ -67,10 +67,9 @@
             <div class="ai-empty-avatar">
               <img src="@/assets/images/AIAssistant.svg" alt="AI" />
             </div>
-            <p class="ai-empty-title">아직 받은 힌트가 없어요</p>
+            <p class="ai-empty-title">{{ $t("m.AI_Assistant_Empty_Title") }}</p>
             <p class="ai-empty-sub">
-              막히는 부분이 있으면 아래 'AI조교 힌트받기'를 눌러보세요. 1단계부터
-              시작해 단계가 올라갈수록 더 구체적으로 도와드립니다.
+              {{ $t("m.AI_Assistant_Empty_Desc") }}
             </p>
           </div>
 
@@ -81,7 +80,7 @@
             </div>
 
             <div v-if="msg.thinking" class="bubble thinking-bubble">
-              생각 중...
+              {{ $t("m.AI_Assistant_Thinking") }}
             </div>
 
             <div v-else-if="msg.error" class="bubble error">{{ msg.text }}</div>
@@ -241,11 +240,11 @@ export default {
         try {
           payload = JSON.parse(event.data)
         } catch (error) {
-          payload = { message: "AI 힌트를 불러오지 못했습니다." }
+          payload = { message: this.$t("m.AI_Assistant_Fetch_Failed") }
         }
 
         this.messages.splice(thinkingIndex, 1, {
-          text: payload.message || "AI 힌트를 불러오지 못했습니다.",
+          text: payload.message || this.$t("m.AI_Assistant_Fetch_Failed"),
           error: true,
         })
         this.scrollToBottom()
@@ -266,7 +265,7 @@ export default {
           this.messages[thinkingIndex].thinking
         ) {
           this.messages.splice(thinkingIndex, 1, {
-            text: "AI 힌트를 불러오지 못했습니다.",
+            text: this.$t("m.AI_Assistant_Fetch_Failed"),
             error: true,
           })
           this.scrollToBottom()
