@@ -108,7 +108,7 @@ export default [
   {
     name: "problem-details",
     path: "/problem/:problemID",
-    meta: { title: "Problem Details" },
+    meta: { requiresAuth: true, title: "Problem Details" },
     component: Problem,
   },
   {

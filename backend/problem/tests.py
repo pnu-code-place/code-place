@@ -28,6 +28,7 @@ from .llm_hint import (CLUSTER_VLLM_CHAT_COMPLETIONS_URL, LOCAL_VLLM_CHAT_COMPLE
 
 from .views.admin import TestCaseAPI
 from .utils import parse_problem_template
+from account.models import User
 
 DEFAULT_PROBLEM_DATA = {
     "_id": "A-110",
@@ -379,9 +380,43 @@ class ProblemAPITest(ProblemCreateTestBase):
         self.assertEqual(results[0]["_id"], very_high_problem._id)
 
     def test_get_one_problem(self):
+        self.client.force_login(User.objects.get(username="test"))
         resp = self.client.get(self.url + "?problem_id=" + self.problem._id)
         self.assertSuccess(resp)
 
+    def test_get_one_problem_requires_login(self):
+        self.client.logout()
+        resp = self.client.get(self.url + "?problem_id=" + self.problem._id)
+        self.assertFailed(resp, "Please login first")
+        self.assertEqual(resp.status_code, 401)
+
+    def test_get_problem_list_anonymous_has_no_body_fields(self):
+        self.client.logout()
+        resp = self.client.get(self.url + "?limit=10")
+        self.assertSuccess(resp)
+        item = resp.data["data"]["results"][0]
+        for field in ("description", "input_description", "output_description",
+                      "samples", "hint", "template"):
+            self.assertNotIn(field, item)
+        self.assertIn("title", item)
+
+    def test_get_problem_list_authenticated_keeps_body_fields(self):
+        self.client.force_login(User.objects.get(username="test"))
+        resp = self.client.get(self.url + "?limit=10")
+        self.assertSuccess(resp)
+        self.assertIn("description", resp.data["data"]["results"][0])
+
+    def test_pick_one_default_returns_id_string(self):
+        resp = self.client.get(self.reverse("pick_one_api"))
+        self.assertSuccess(resp)
+        self.assertEqual(resp.data["data"], self.problem._id)
+
+    def test_pick_one_summary_is_public_and_has_no_body(self):
+        self.client.logout()
+        resp = self.client.get(self.reverse("pick_one_api"), {"summary": 1})
+        self.assertSuccess(resp)
+        self.assertIn("title", resp.data["data"])
+        self.assertNotIn("description", resp.data["data"])
 
 class ProblemLLMHintAPITest(ProblemCreateTestBase):
 

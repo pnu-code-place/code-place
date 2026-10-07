@@ -232,6 +232,9 @@ export default {
   pickone() {
     return ajax("pickone", "get")
   },
+  pickOneSummary() {
+    return ajax("pickone", "get", { params: { summary: 1 } })
+  },
   getProblem(problemID) {
     return ajax("problem", "get", {
       params: {
