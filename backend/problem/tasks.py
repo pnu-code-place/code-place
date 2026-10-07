@@ -19,7 +19,7 @@ DIFFICULTY_GROUPS = [
 @celery.shared_task(**CELERY_TASK_ARGS())
 def update_weekly_stats():
     """Update the weekly statistics of problems.
-    
+
     This method updates the last week's statistics to the current week,
     resets the current week's statistics, and identifies the most difficult problem
     based on the success rate from the last week.
@@ -32,8 +32,14 @@ def update_weekly_stats():
             is_most_difficult=False,
         )
 
-        most_difficult_problem = Problem.objects.annotate(
-            min_success_rate=F('last_week_info__success_rate')).order_by('min_success_rate').first()
+        most_difficult_problem = Problem.objects.filter(
+            visible=True,
+            contest__isnull=True,
+            last_week_info__submission__gt=0,
+        ).annotate(
+            min_success_rate=F('last_week_info__success_rate'),
+            submission_count=F('last_week_info__submission'),
+        ).order_by('min_success_rate', '-submission_count').first()
 
         if most_difficult_problem:
             most_difficult_problem.is_most_difficult = True
