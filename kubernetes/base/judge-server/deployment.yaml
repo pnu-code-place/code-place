@@ -72,7 +72,10 @@ spec:
               memory: "500Mi"
               cpu: "1000m"
             limits:
-              memory: "1Gi"
+              # 문제 메모리 limit이 1024mb 일 경우,
+              # 채점서버는 이의 2배 이상의 메모리를 확보해야함. -> 5Gi로 상향
+              # github issue: #815
+              memory: "5Gi"
               cpu: "2000m" # TODO: 추후 채점 서버를 단일 프로세스로 변경하고, cgroup 종속성을 제거한 뒤 CPU Limit 제거
           livenessProbe:
             exec:
