@@ -7,6 +7,7 @@ import JudgeServer from "./general/JudgeServer.vue"
 import PruneTestCase from "./general/PruneTestCase.vue"
 import HomeBannerManagement from "./general/HomeBannerManagement.vue"
 import PopupManagement from "./general/PopupManagement.vue"
+import AIHintStats from "./general/AIHintStats.vue"
 import Problem from "./problem/Problem.vue"
 import ProblemList from "./problem/ProblemList.vue"
 import ContestSubmission from "./contest/ContestSubmission.vue"
@@ -34,4 +35,5 @@ export {
   Dashboard,
   ProblemImportOrExport,
   PopupManagement,
+  AIHintStats,
 }
