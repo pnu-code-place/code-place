@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-    # 운영 중 submission 테이블 잠금을 피하기 위해 CONCURRENTLY로 생성
     atomic = False
 
     dependencies = [

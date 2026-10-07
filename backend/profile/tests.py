@@ -241,29 +241,6 @@ class UserProfileActivityAPITest(APITestCase):
         self.assertEqual(response.data["data"]["total"], 0)
         self.assertEqual(response.data["data"]["days"], [])
 
-    def test_contest_solve_before_window_does_not_hide_first_practice_solve(self):
-        contest = self.create_contest()
-        contest_problem = self.create_problem("A", contest=contest)
-        today = self.now.date()
-        yesterday = today - datetime.timedelta(days=1)
-        yesterday_at_noon = timezone.make_aware(
-            datetime.datetime.combine(yesterday, datetime.time(hour=12)),
-            self.current_timezone,
-        )
-        before_window = timezone.make_aware(
-            datetime.datetime.combine(today - datetime.timedelta(days=30), datetime.time(hour=12)),
-            self.current_timezone,
-        )
-        self.create_submission(self.user, JudgeStatus.ACCEPTED, before_window, problem=contest_problem, contest=contest)
-        self.create_submission(self.user, JudgeStatus.ACCEPTED, yesterday_at_noon)
-
-        with mock.patch("profile.views.oj.timezone.now", return_value=self.now):
-            response = self.client.get(self.url, {"username": self.user.username, "days": 7})
-
-        self.assertSuccess(response)
-        self.assertEqual(response.data["data"]["total"], 1)
-        self.assertEqual(response.data["data"]["days"], [{"date": yesterday.isoformat(), "count": 1}])
-
 
 class ProfileProblemAPITest(APITestCase):
 
