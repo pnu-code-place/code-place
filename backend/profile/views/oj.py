@@ -190,16 +190,14 @@ class UserProfileActivityAPI(APIView):
 
         first_solved_times = (
             Submission.objects
-            .filter(user_id=user.id, result=JudgeStatus.ACCEPTED)
-            .exclude(contest__isnull=False)
+            .filter(user_id=user.id, result=JudgeStatus.ACCEPTED, contest__isnull=True)
             .values("problem_id")
             .annotate(first_solved_at=Min("create_time"))
+            .filter(first_solved_at__gte=start_datetime, first_solved_at__lt=end_datetime)
             .values_list("first_solved_at", flat=True)
         )
         count_by_date = {}
         for first_solved_at in first_solved_times:
-            if not (start_datetime <= first_solved_at < end_datetime):
-                continue
             activity_date = get_activity_service_date(first_solved_at, current_timezone)
             count_by_date[activity_date] = count_by_date.get(activity_date, 0) + 1
 
