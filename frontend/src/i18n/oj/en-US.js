@@ -9,6 +9,15 @@ export const m = {
   Reload_Page: "페이지를 새로고침하거나, 나중에 다시 시도해주세요",
   Try_Again_Later: "나중에 다시 시도해주세요.",
   // Problem.vue
+  AI_Assistant: "AI 조교",
+  AI_Assistant_Get_Hint: "AI조교 힌트받기",
+  AI_Assistant_Thinking: "생각 중...",
+  AI_Assistant_Exhausted: "횟수 초과",
+  AI_Assistant_Close: "AI 조교 닫기",
+  AI_Assistant_Empty_Title: "아직 받은 힌트가 없어요",
+  AI_Assistant_Empty_Desc:
+    "막히는 부분이 있으면 아래 'AI조교 힌트받기'를 눌러보세요. 1단계부터 시작해 단계가 올라갈수록 더 구체적으로 도와드립니다.",
+  AI_Assistant_Fetch_Failed: "AI 힌트를 불러오지 못했습니다.",
   There_Is_No_Solved_Problem: "해결한 문제가 없습니다.",
   Description: "설명",
   Input: "입력",

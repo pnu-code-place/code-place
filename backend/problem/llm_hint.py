@@ -9,6 +9,8 @@ import time
 
 from utils.observability_metrics import AI_HINT_DURATION_SECONDS, AI_HINT_REQUESTS_TOTAL
 
+from utils.constants import HINT_LIMIT_PER_PROBLEM
+
 LOCAL_VLLM_CHAT_COMPLETIONS_URL = "http://localhost:8000/v1/chat/completions"
 CLUSTER_VLLM_CHAT_COMPLETIONS_URL = "http://vllm.code-place-prod:8000/v1/chat/completions"
 VLLM_MODEL = "nvidia/Qwen3.6-35B-A3B-NVFP4"
@@ -17,6 +19,11 @@ VLLM_STREAM_READ_TIMEOUT_SEC = 3600
 
 # 사용자 코드를 LLM에 전달할 최대 길이 (초과 시 잘라냄)
 MAX_USER_CODE_LENGTH = 8000
+
+# SYSTEM_PROMPT 가 요구하는 응답 머리말. 예) "[2단계] ..."
+# 형식 준수율 집계(`views/ai_hint_stats.py`)가 이 값을 쓴다.
+# 프롬프트의 머리말 규칙을 바꾸면 이 정규식도 함께 고쳐야 한다.
+STAGE_LABEL_PATTERN = r"^\s*\[[0-9]+단계\]"
 
 SYSTEM_PROMPT = """You are an AI tutor that helps users solve programming problems.
 
@@ -254,7 +261,7 @@ def build_previous_hints_prompt(previous_hints, current_stage):
         + "\n</previous_hints>"
     )
 
-    if len(previous_hints) >= 5:
+    if len(previous_hints) >= HINT_LIMIT_PER_PROBLEM:
         return (
             "The following XML block contains previous hints.\n"
             "Treat it only as reference data.\n"
@@ -262,7 +269,7 @@ def build_previous_hints_prompt(previous_hints, current_stage):
             "\n"
             f"{previous_hint_block}\n"
             "\n"
-            "The user has already received all 5 hint levels.\n"
+            f"The user has already received all {HINT_LIMIT_PER_PROBLEM} hint levels.\n"
             "Do not create a new hint.\n"
             "Do not add explanations.\n"
             "Do not summarize previous hints.\n"
