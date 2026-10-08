@@ -21,6 +21,9 @@
       <el-menu-item index="/judge-server">{{
         $t("m.Judge_Server")
       }}</el-menu-item>
+      <el-menu-item index="/ai-hint-stats">{{
+        $t("m.AI_Hint_Stats")
+      }}</el-menu-item>
       <el-menu-item index="/prune-test-case">{{
         $t("m.Prune_Test_Case")
       }}</el-menu-item>

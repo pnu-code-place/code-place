@@ -19,6 +19,7 @@ import {
   ProblemImportOrExport,
   AdminCatalog,
   PopupManagement,
+  AIHintStats,
 } from "./views"
 Vue.use(VueRouter)
 
@@ -60,6 +61,11 @@ export default new VueRouter({
           path: "/conf",
           name: "conf",
           component: Conf,
+        },
+        {
+          path: "/ai-hint-stats",
+          name: "ai-hint-stats",
+          component: AIHintStats,
         },
         {
           path: "/judge-server",
