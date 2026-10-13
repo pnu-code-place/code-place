@@ -121,6 +121,7 @@ export default {
     goList() {
       this.$router.push({
         name: "notice",
+        query: this.announcement.is_release_note ? { tab: "updates" } : {},
       })
     },
   },
