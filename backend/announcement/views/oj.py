@@ -11,4 +11,10 @@ class AnnouncementAPI(APIView):
         announcements = Announcement.objects.filter(visible=True)
         if id is not None:
             announcements = announcements.filter(id=id)
+        else:
+            category = request.GET.get('category')
+            if category == 'release':
+                announcements = announcements.filter(is_release_note=True).order_by('-create_time')
+            elif category == 'general':
+                announcements = announcements.filter(is_release_note=False)
         return self.success(self.paginate_data(request, announcements, AnnouncementSerializer))

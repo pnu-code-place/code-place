@@ -47,6 +47,31 @@ class AnnouncementAdminTest(APITestCase):
         self.assertEqual(resp_data["visible"], False)
         self.assertEqual(resp_data["is_pinned"], True)
 
+    def test_edit_announcement_preserves_release_note_when_omitted(self):
+        announcement = Announcement.objects.create(
+            title="Release 3.1.10",
+            content="release content",
+            visible=True,
+            is_pinned=False,
+            is_release_note=True,
+            created_by=self.user,
+        )
+
+        resp = self.client.put(
+            self.url,
+            data={
+                "id": announcement.id,
+                "title": "Release 3.1.10 updated",
+                "content": announcement.content,
+                "visible": announcement.visible,
+                "is_pinned": announcement.is_pinned,
+            },
+        )
+
+        self.assertSuccess(resp)
+        announcement.refresh_from_db()
+        self.assertTrue(announcement.is_release_note)
+
     def test_edit_announcement_not_exist(self):
         """
         존재하지 않는 공지사항 수정 test
@@ -144,6 +169,27 @@ class AnnouncementAPITest(APITestCase):
     def test_get_announcement_list(self):
         resp = self.client.get(self.url)
         self.assertSuccess(resp)
+
+    def test_filter_announcement_list_by_category(self):
+        Announcement.objects.create(
+            title="Release 3.1.10",
+            content="release content",
+            is_release_note=True,
+            visible=True,
+            created_by=self.user,
+        )
+
+        general_resp = self.client.get(self.url + "?category=general")
+        release_resp = self.client.get(self.url + "?category=release")
+
+        self.assertSuccess(general_resp)
+        self.assertSuccess(release_resp)
+        self.assertEqual(general_resp.data["data"]["total"], 1)
+        self.assertEqual(release_resp.data["data"]["total"], 1)
+        self.assertEqual(
+            release_resp.data["data"]["results"][0]["title"],
+            "Release 3.1.10",
+        )
 
     def test_announcement_detail(self):
         response = self.client.get(self.url + f"?id={self.announcement.id}")
