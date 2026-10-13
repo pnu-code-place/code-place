@@ -4,25 +4,25 @@
       <!-- 헤더 (아이콘 + 제목 + 탭 + 더보기) -->
       <div class="card-header">
         <div class="header-left">
-          <span class="header-title">공지사항</span>
+          <span class="header-title">{{ $t("m.Announcements") }}</span>
           <div class="tab-pills">
             <button
               class="tab-pill"
               :class="{ active: activeTab === 'cp' }"
               @click="activeTab = 'cp'"
             >
-              코드플레이스
+              {{ $t("m.CSEP") }}
             </button>
             <button
               class="tab-pill"
               :class="{ active: activeTab === 'ai' }"
               @click="activeTab = 'ai'"
             >
-              AI융합교육원
+              {{ $t("m.SWCenter") }}
             </button>
           </div>
         </div>
-        <span class="header-more" @click="goMore">더보기 →</span>
+        <span class="header-more" @click="goMore"> {{ $t("m.More") }} → </span>
       </div>
 
       <!-- 코드플레이스 공지 목록 -->
@@ -45,14 +45,18 @@
               <span v-if="item.is_pinned">📌</span>
               <span v-else class="dot" />
             </span>
-            <span v-if="isNew(item.create_time)" class="badge-new">NEW</span>
-            <span class="item-title" :class="{ pinned: item.is_pinned }">{{
-              item.title
-            }}</span>
+            <span class="item-main">
+              <span class="item-title" :class="{ pinned: item.is_pinned }">
+                {{ item.title }}
+              </span>
+              <span v-if="isNew(item.create_time)" class="badge-new">
+                NEW
+              </span>
+            </span>
             <span class="item-date">{{ formatDate(item.create_time) }}</span>
           </div>
           <div v-if="cpAnnouncements.length === 0" class="empty-text">
-            공지사항이 없습니다.
+            {{ $t("m.No_Announcements") }}
           </div>
         </template>
       </div>
@@ -69,12 +73,14 @@
             class="notice-item"
             @click="goSWItem(item)"
           >
-            <span v-if="isNew(item.pubDate)" class="badge-new">NEW</span>
-            <span class="item-title">{{ item.title }}</span>
+            <span class="item-main">
+              <span class="item-title">{{ item.title }}</span>
+              <span v-if="isNew(item.pubDate)" class="badge-new">NEW</span>
+            </span>
             <span class="item-date">{{ formatDate(item.pubDate) }}</span>
           </div>
           <div v-if="aiAnnouncements.length === 0" class="empty-text">
-            공지사항이 없습니다.
+            {{ $t("m.No_Announcements") }}
           </div>
         </template>
       </div>
@@ -103,9 +109,19 @@ export default {
   methods: {
     loadCPAnnouncements() {
       this.loading = true
-      api.getAnnouncementList(0, 5).then(
-        (res) => {
-          this.cpAnnouncements = res.data.data.results || []
+      Promise.all([
+        api.getAnnouncementList(0, 5, "general"),
+        api.getAnnouncementList(0, 1, "release"),
+      ]).then(
+        ([announcements, releases]) => {
+          const generalItems = announcements.data.data.results || []
+          const latestRelease = releases.data.data.results[0]
+          const pinnedItems = generalItems.filter((item) => item.is_pinned)
+          const recentItems = [
+            ...generalItems.filter((item) => !item.is_pinned),
+            ...(latestRelease ? [latestRelease] : []),
+          ].sort((a, b) => new Date(b.create_time) - new Date(a.create_time))
+          this.cpAnnouncements = [...pinnedItems, ...recentItems].slice(0, 5)
           this.loading = false
         },
         () => {
@@ -321,7 +337,7 @@ export default {
 .item-title {
   font-size: 14px;
   color: #1a1a2e;
-  flex: 1;
+  min-width: 0;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -331,6 +347,14 @@ export default {
     font-weight: 700;
     color: #3b3a8e;
   }
+}
+
+.item-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
 }
 
 .item-date {
