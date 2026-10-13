@@ -58,6 +58,13 @@ class Submission(models.Model):
     class Meta:
         db_table = "submission"
         ordering = ("-create_time",)
+        indexes = [
+            models.Index(
+                fields=["user_id", "problem", "create_time"],
+                condition=models.Q(result=JudgeStatus.ACCEPTED, contest__isnull=True),
+                name="submission_user_accepted_idx",
+            ),
+        ]
 
     def __str__(self):
         return self.id
