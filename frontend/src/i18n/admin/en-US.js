@@ -109,6 +109,7 @@ export const m = {
   Announcement_Content: "내용",
   Announcement_visible: "공개 여부",
   Announcement_Pin: "고정 여부",
+  Announcement_Release_Note: "릴리즈 노트 여부",
   Announcement_Table_Id: "ID",
   Announcement_Table_Title: "제목",
   Announcement_Table_CreateTime: "생성일",

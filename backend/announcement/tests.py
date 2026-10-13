@@ -145,6 +145,27 @@ class AnnouncementAPITest(APITestCase):
         resp = self.client.get(self.url)
         self.assertSuccess(resp)
 
+    def test_filter_announcement_list_by_category(self):
+        Announcement.objects.create(
+            title="Release 3.1.10",
+            content="release content",
+            is_release_note=True,
+            visible=True,
+            created_by=self.user,
+        )
+
+        general_resp = self.client.get(self.url + "?category=general")
+        release_resp = self.client.get(self.url + "?category=release")
+
+        self.assertSuccess(general_resp)
+        self.assertSuccess(release_resp)
+        self.assertEqual(general_resp.data["data"]["total"], 1)
+        self.assertEqual(release_resp.data["data"]["total"], 1)
+        self.assertEqual(
+            release_resp.data["data"]["results"][0]["title"],
+            "Release 3.1.10",
+        )
+
     def test_announcement_detail(self):
         response = self.client.get(self.url + f"?id={self.announcement.id}")
         self.assertSuccess(response)

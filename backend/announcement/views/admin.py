@@ -19,7 +19,8 @@ class AnnouncementAdminAPI(APIView):
             content=data["content"],
             created_by=request.user,
             visible=data["visible"],
-            is_pinned=data["is_pinned"])
+            is_pinned=data["is_pinned"],
+            is_release_note=data["is_release_note"])
         return self.success(AnnouncementSerializer(announcement).data)
 
     @validate_serializer(EditAnnouncementSerializer)

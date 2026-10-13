@@ -62,6 +62,7 @@ export const m = {
   Announcement_Title: "標題",
   Announcement_Content: "內容",
   Announcement_visible: "是否可見",
+  Announcement_Release_Note: "是否為版本說明",
   Announcement_Table_Id: "ID",
   Announcement_Table_Title: "제목",
   Announcement_Table_CreateTime: "생성일",
