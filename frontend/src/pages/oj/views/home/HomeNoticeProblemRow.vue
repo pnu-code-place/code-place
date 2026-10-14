@@ -116,11 +116,21 @@ export default {
         ([announcements, releases]) => {
           const generalItems = announcements.data.data.results || []
           const latestRelease = releases.data.data.results[0]
-          const pinnedItems = generalItems.filter((item) => item.is_pinned)
-          const recentItems = [
-            ...generalItems.filter((item) => !item.is_pinned),
-            ...(latestRelease ? [latestRelease] : []),
-          ].sort((a, b) => new Date(b.create_time) - new Date(a.create_time))
+
+          const generalPinned = generalItems.filter((item) => item.is_pinned)
+          const releasePinned =
+            latestRelease && latestRelease.is_pinned ? [latestRelease] : []
+          const pinnedItems = [...generalPinned, ...releasePinned].sort(
+            (a, b) => new Date(b.create_time) - new Date(a.create_time),
+          )
+
+          const generalRecent = generalItems.filter((item) => !item.is_pinned)
+          const releaseRecent =
+            latestRelease && !latestRelease.is_pinned ? [latestRelease] : []
+          const recentItems = [...generalRecent, ...releaseRecent].sort(
+            (a, b) => new Date(b.create_time) - new Date(a.create_time),
+          )
+
           this.cpAnnouncements = [...pinnedItems, ...recentItems].slice(0, 5)
           this.loading = false
         },
@@ -292,11 +302,14 @@ export default {
 
   &--pinned {
     background-color: #f5f4ff;
-    border-radius: 10px;
 
     &:hover {
       background-color: #eceaff;
     }
+  }
+
+  &--pinned + &--pinned {
+    border-top: 1px solid #e8e6f8;
   }
 }
 

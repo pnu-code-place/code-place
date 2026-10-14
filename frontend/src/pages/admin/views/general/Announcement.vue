@@ -72,6 +72,22 @@
             </template>
           </el-table-column>
           <el-table-column
+            v-if="!contestID"
+            width="100"
+            prop="is_release_note"
+            :label="$t('m.Announcement_Table_Release_Note')"
+          >
+            <template slot-scope="scope">
+              <el-switch
+                v-model="scope.row.is_release_note"
+                active-text=""
+                inactive-text=""
+                @change="handleReleaseNoteSwitch(scope.row)"
+              >
+              </el-switch>
+            </template>
+          </el-table-column>
+          <el-table-column
             fixed="right"
             :label="$t('m.Announcement_Table_Option')"
             width="200"
@@ -352,6 +368,17 @@ export default {
       })
     },
     handlePinSwitch(row) {
+      this.mode = "edit"
+      this.submitAnnouncement({
+        id: row.id,
+        title: row.title,
+        content: row.content,
+        visible: row.visible,
+        is_pinned: row.is_pinned,
+        is_release_note: row.is_release_note,
+      })
+    },
+    handleReleaseNoteSwitch(row) {
       this.mode = "edit"
       this.submitAnnouncement({
         id: row.id,
