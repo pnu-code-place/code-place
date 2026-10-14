@@ -69,6 +69,7 @@ export const m = {
   Announcement_Table_LastUpdateTime: "마지막 수정일",
   Announcement_Table_Author: "작성자",
   Announcement_Table_Visible: "공개",
+  Announcement_Table_Release_Note: "릴리즈",
   Announcement_Table_Option: "설정",
   Announcement_Create: "추가",
   Edit_Announcement: "공지사항 수정",
