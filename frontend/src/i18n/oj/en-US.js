@@ -116,6 +116,7 @@ export const m = {
   CSEP: "코드플레이스",
   SWCenter: "AI융합교육원",
   CSEPDescription: "코드플레이스",
+  More: "더보기",
   // ApplyResetPassword.vue
   The_email_doesnt_exist: "존재하지 않는 이메일입니다.",
   Success: "Success",
@@ -167,6 +168,7 @@ export const m = {
   // ContestDetail.vue
   Problems: "문제",
   Announcements: "공지사항",
+  Release_Notes: "릴리즈 노트",
   Submissions: "제출물",
   Rankings: "랭킹",
   Contest_Overview: "대회 개요",

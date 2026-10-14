@@ -9,6 +9,7 @@ class CreateAnnouncementSerializer(serializers.Serializer):
     content = serializers.CharField(max_length=1024 * 1024 * 8)
     visible = serializers.BooleanField()
     is_pinned = serializers.BooleanField(default=False)
+    is_release_note = serializers.BooleanField(default=False)
 
 
 class AnnouncementSerializer(serializers.ModelSerializer):
@@ -25,3 +26,4 @@ class EditAnnouncementSerializer(serializers.Serializer):
     content = serializers.CharField(max_length=1024 * 1024 * 8)
     visible = serializers.BooleanField()
     is_pinned = serializers.BooleanField(default=False)
+    is_release_note = serializers.BooleanField(required=False)

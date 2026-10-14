@@ -1,7 +1,7 @@
 <template>
   <div class="noticeBox">
     <div class="noticeBoxHeader">
-      <span>공지사항</span>
+      <span>{{ $t("m.Announcements") }}</span>
     </div>
     <div>
       <div class="announcement-header csep" @click="goAnnouncement('')">
@@ -10,7 +10,7 @@
         <span class="facility-description">
           <span class="plusDiv">
             <Icon type="android-add" size="13" color="#fff"></Icon>
-            <span>더보기</span>
+            <span>{{ $t("m.More") }}</span>
           </span>
         </span>
       </div>
@@ -41,7 +41,7 @@
         <span class="facility-description">
           <span class="plusDiv">
             <Icon type="android-add" size="13" color="#fff"></Icon>
-            <span>더보기</span>
+            <span>{{ $t("m.More") }}</span>
           </span>
         </span>
       </div>
@@ -108,17 +108,19 @@ export default {
   methods: {
     getAnnouncementList(page = 1) {
       this.loadingCSEP = true
-      api.getAnnouncementList((page - 1) * this.limit, this.limit).then(
-        (res) => {
-          this.loadingCSEP = false
-          this.csepAnnouncements = res.data.data.results
-          this.total = res.data.data.total
-        },
-        () => {
-          this.loadingCSEP = false
-          this.errorCSPE = true
-        },
-      )
+      api
+        .getAnnouncementList((page - 1) * this.limit, this.limit, "general")
+        .then(
+          (res) => {
+            this.loadingCSEP = false
+            this.csepAnnouncements = res.data.data.results
+            this.total = res.data.data.total
+          },
+          () => {
+            this.loadingCSEP = false
+            this.errorCSPE = true
+          },
+        )
     },
     getSWCenterList() {
       this.loadingSW = true
