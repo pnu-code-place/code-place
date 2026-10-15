@@ -1,8 +1,26 @@
 <template>
   <div class="announcements">
-    <h1 class="title main-title">
-      {{ $t("m.Announcements") }}
-    </h1>
+    <div class="page-heading">
+      <h1 class="title main-title">
+        {{ pageTitle }}
+      </h1>
+      <div v-if="!isContest" class="content-tabs">
+        <button
+          type="button"
+          :class="{ active: activeCategory === 'general' }"
+          @click="setCategory('general')"
+        >
+          {{ $t("m.Announcements") }}
+        </button>
+        <button
+          type="button"
+          :class="{ active: activeCategory === 'release' }"
+          @click="setCategory('release')"
+        >
+          {{ $t("m.Release_Notes") }}
+        </button>
+      </div>
+    </div>
     <div class="announcement-container">
       <div
         class="no-announcement"
@@ -23,7 +41,7 @@
         <tbody>
           <announcement-item
             v-for="announcement in announcements"
-            :key="announcement.title"
+            :key="announcement.id"
             :announcement="announcement"
           >
           </announcement-item>
@@ -60,6 +78,8 @@ export default {
       announcements: [],
       announcement: "",
       listVisible: true,
+      activeCategory: "general",
+      currentPage: 1,
     }
   },
   mounted() {
@@ -67,7 +87,9 @@ export default {
   },
   methods: {
     init() {
-      const savedPage = Number(sessionStorage.getItem("noticePage")) || 1
+      this.activeCategory =
+        this.$route.query.tab === "updates" ? "release" : "general"
+      const savedPage = Number(sessionStorage.getItem(this.pageStorageKey)) || 1
       this.currentPage = savedPage
 
       if (this.isContest) {
@@ -79,19 +101,25 @@ export default {
     getAnnouncementList(page = this.currentPage) {
       this.currentPage = page
 
-      sessionStorage.setItem("noticePage", page)
+      sessionStorage.setItem(this.pageStorageKey, page)
 
       this.btnLoading = true
-      api.getAnnouncementList((page - 1) * this.limit, this.limit).then(
-        (res) => {
-          this.btnLoading = false
-          this.announcements = res.data.data.results
-          this.total = res.data.data.total
-        },
-        () => {
-          this.btnLoading = false
-        },
-      )
+      api
+        .getAnnouncementList(
+          (page - 1) * this.limit,
+          this.limit,
+          this.activeCategory,
+        )
+        .then(
+          (res) => {
+            this.btnLoading = false
+            this.announcements = res.data.data.results
+            this.total = res.data.data.total
+          },
+          () => {
+            this.btnLoading = false
+          },
+        )
     },
     getContestAnnouncementList() {
       this.btnLoading = true
@@ -109,8 +137,26 @@ export default {
       this.announcement = announcement
       this.listVisible = false
     },
+    setCategory(category) {
+      if (this.activeCategory === category) return
+      this.activeCategory = category
+      this.currentPage = 1
+      this.$router.replace({
+        name: "notice",
+        query: category === "release" ? { tab: "updates" } : {},
+      })
+      this.getAnnouncementList(1)
+    },
   },
   computed: {
+    pageTitle() {
+      if (this.isContest) {
+        return this.$i18n.t("m.Contest_Announcements")
+      }
+      return this.activeCategory === "release"
+        ? this.$i18n.t("m.Release_Notes")
+        : this.$i18n.t("m.Announcements")
+    },
     title() {
       if (this.listVisible) {
         return this.isContest
@@ -123,6 +169,9 @@ export default {
     isContest() {
       return !!this.$route.params.contestID
     },
+    pageStorageKey() {
+      return `noticePage-${this.activeCategory}`
+    },
   },
 }
 </script>
@@ -131,8 +180,40 @@ export default {
 .announcements {
   width: var(--global-width);
 
-  .title {
+  .page-heading {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
     margin-bottom: 20px;
+  }
+
+  .title {
+    margin-bottom: 0;
+  }
+
+  .content-tabs {
+    display: flex;
+    gap: 4px;
+    padding: 4px;
+    border-radius: 8px;
+    background-color: #f1f1f5;
+
+    button {
+      padding: 7px 15px;
+      border: 0;
+      border-radius: 6px;
+      color: #858594;
+      background: transparent;
+      font-size: 13px;
+      cursor: pointer;
+
+      &.active {
+        color: #33334a;
+        background-color: #ffffff;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        font-weight: 600;
+      }
+    }
   }
 
   .announcement-container {

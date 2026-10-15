@@ -38,10 +38,13 @@ export default {
       params,
     })
   },
-  getAnnouncementList(offset, limit) {
+  getAnnouncementList(offset, limit, category) {
     let params = {
       offset: offset,
       limit: limit,
+    }
+    if (category) {
+      params.category = category
     }
     return ajax("announcement", "get", {
       params,

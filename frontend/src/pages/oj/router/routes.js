@@ -82,6 +82,11 @@ export default [
     component: AnnouncementDetail,
   },
   {
+    name: "release-notes",
+    path: "/release-notes",
+    redirect: { name: "notice", query: { tab: "updates" } },
+  },
+  {
     name: "logout",
     path: "/logout",
     meta: { title: "Logout" },
