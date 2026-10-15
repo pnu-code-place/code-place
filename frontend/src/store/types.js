@@ -13,7 +13,6 @@ export default keyMirror({
   CHANGE_PROFILE: null,
   CHANGE_MODAL_STATUS: null,
   UPDATE_WEBSITE_CONF: null,
-  CHANGE_PROBLEM_SOLVING_STATE: null,
   CHANGE_PROBLEM_SOLVING_THEME: null,
 
   NOW: null,

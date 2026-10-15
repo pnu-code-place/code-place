@@ -92,7 +92,7 @@ export default {
     this.loadTodayProblem()
   },
   methods: {
-    ...mapActions(["changeProblemSolvingState", "changeModalStatus"]),
+    ...mapActions(["changeModalStatus"]),
     loadTodayProblem() {
       this.loading = true
       api
@@ -113,7 +113,6 @@ export default {
         this.changeModalStatus({ mode: "login", visible: true })
         return
       }
-      this.changeProblemSolvingState(true)
       this.$router.push({
         name: "problem-details",
         params: { problemID: problemId },
