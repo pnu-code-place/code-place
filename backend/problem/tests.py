@@ -1221,6 +1221,26 @@ class UpdateWeeklyStatsTest(APITestCase):
             with self.assertRaises(Exception):
                 update_weekly_stats()
 
+    @mock.patch.dict(os.environ, {"SCHEDULER_TOKEN": "test-token"})
+    def test_update_weekly_stats_api_uses_same_selection_logic(self):
+        self.problem_1.curr_week_info = {
+            'submission': 10, 'accepted': 1, 'success_rate': 0.1, 'solver': ['user1'],
+        }
+        self.problem_1.save(update_fields=['curr_week_info'])
+
+        self.problem_2.visible = False
+        self.problem_2.curr_week_info = {
+            'submission': 10, 'accepted': 0, 'success_rate': 0.0, 'solver': [],
+        }
+        self.problem_2.save(update_fields=['visible', 'curr_week_info'])
+
+        resp = self.client.post(self.url, data={}, HTTP_X_SCHEDULER_TOKEN="test-token")
+        self.assertSuccess(resp)
+
+        self.assertTrue(Problem.objects.get(id=self.problem_1.id).is_most_difficult)
+        self.assertFalse(Problem.objects.get(id=self.problem_2.id).is_most_difficult)
+        self.assertFalse(Problem.objects.get(id=self.problem_3.id).is_most_difficult)
+
 
 class UpdateBonusProblemTest(APITestCase):
 

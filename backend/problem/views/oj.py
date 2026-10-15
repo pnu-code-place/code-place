@@ -17,9 +17,10 @@ from utils.constants import Difficulty, HINT_LIMIT_PER_PROBLEM, ProblemField, Ti
 from utils.observability_metrics import AI_HINT_API_OUTCOME_TOTAL
 
 from ..llm_hint import LLMHintError, MAX_USER_CODE_LENGTH, stream_problem_hint
-from ..models import (Problem, ProblemRuleType, ProblemTag, get_default_week_info, ProblemAIHintLog)
+from ..models import (Problem, ProblemRuleType, ProblemTag, ProblemAIHintLog)
 from ..serializers import (MostDifficultProblemSerializer, ProblemSafeSerializer, ProblemSerializer,
                            RecommendBonusProblemSerializer, TagSerializer, AIHintLogSerializer)
+from ..tasks import update_weekly_stats
 
 logger = logging.getLogger(__name__)
 
@@ -600,27 +601,12 @@ class UpdateWeeklyStatsAPI(APIView):
     @scheduler_only
     def post(self, request):
         """Update the weekly statistics of problems.
-        
-        This method updates the last week's statistics to the current week,
-        resets the current week's statistics, and identifies the most difficult problem
-        based on the success rate from the last week.
-        It marks the most difficult problem as such and resets the flag for all others.
+
+        Delegates to the `update_weekly_stats` task so that the API and the
+        scheduled celery task share the same selection logic.
         """
         try:
-            with transaction.atomic():
-                Problem.objects.update(
-                    last_week_info=F('curr_week_info'),
-                    curr_week_info=get_default_week_info(),
-                    is_most_difficult=False,
-                )
-
-                most_difficult_problem = Problem.objects.annotate(
-                    min_success_rate=F('last_week_info__success_rate')).order_by('min_success_rate').first()
-
-                if most_difficult_problem:
-                    most_difficult_problem.is_most_difficult = True
-                    most_difficult_problem.save(update_fields=['is_most_difficult'])
-
+            update_weekly_stats()
             return self.success("Weekly stats updated successfully.")
         except Exception as e:
             logging.error("Error updating weekly stats: %s", e)
