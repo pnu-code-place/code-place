@@ -83,6 +83,9 @@ export const m = {
   Rating: "评分",
   // Announcements.vue
   Contest_Announcements: "比赛公告",
+  CSEP: "CodePlace",
+  SWCenter: "AI融合教育院",
+  More: "查看更多",
   By: "创建人",
   // ApplyResetPassword.vue
   The_email_doesnt_exist: "该电子邮件地址不存在",
@@ -131,6 +134,7 @@ export const m = {
   // ContestDetail.vue
   Problems: "题目",
   Announcements: "公告",
+  Release_Notes: "发布说明",
   Submissions: "提交信息",
   Rankings: "排名",
   Overview: "概要",

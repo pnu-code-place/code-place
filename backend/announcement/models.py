@@ -13,6 +13,7 @@ class Announcement(models.Model):
     last_update_time = models.DateTimeField(auto_now=True)
     visible = models.BooleanField(default=True)
     is_pinned = models.BooleanField(default=False)
+    is_release_note = models.BooleanField(default=False)
 
     class Meta:
         db_table = "announcement"
