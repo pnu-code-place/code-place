@@ -156,13 +156,8 @@ export default {
     this.init()
   },
   methods: {
-    ...mapActions([
-      "getProfile",
-      "changeModalStatus",
-      "changeProblemSolvingState",
-    ]),
+    ...mapActions(["getProfile", "changeModalStatus"]),
     enterProblemDetail(problemId) {
-      this.changeProblemSolvingState(true)
       this.$router.push({
         name: "problem-details",
         params: { problemID: problemId },
