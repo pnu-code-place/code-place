@@ -73,6 +73,10 @@
             class="notice-item"
             @click="goSWItem(item)"
           >
+            <!-- 탭 간 UI 정렬 통일을 위한 불릿 점 추가-->
+            <span class="bullet bullet--dot">
+              <span class="dot" />
+            </span>
             <span class="item-main">
               <span class="item-title">{{ item.title }}</span>
               <span v-if="isNew(item.pubDate)" class="badge-new">NEW</span>

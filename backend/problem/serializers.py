@@ -158,6 +158,12 @@ class ProblemSerializer(BaseProblemSerializer):
         if obj.id in self.context["failed"]:
             return "Failed"
 
+class ProblemPublicListSerializer(ProblemSerializer):
+    # 비로그인 사용자용 목록 응답. 문제 본문(설명, 예제, 힌트 등)은 보내지 않는다.
+    class Meta:
+        model = Problem
+        fields = ("id", "_id", "title", "difficulty", "field", "tags", "rule_type",
+                  "accepted_number", "submission_number", "create_time", "is_new")
 
 class ProblemSafeSerializer(BaseProblemSerializer):
     template = serializers.SerializerMethodField("get_public_template")
