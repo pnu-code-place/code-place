@@ -387,12 +387,10 @@ export default {
     window.removeEventListener("keydown", this.handleSettingsKeydown)
     document.removeEventListener("click", this.handleSettingsOutsideClick)
     this.removeBeforeUnload()
-    this.changeProblemSolvingState(false)
   },
   methods: {
     ...mapActions([
       "changeDomTitle",
-      "changeProblemSolvingState",
       "changeProblemSolvingTheme",
       "getContestProblems",
     ]),
@@ -547,7 +545,6 @@ export default {
         forceLoadNavigation = false,
         restoreCode = true,
       } = options
-      this.changeProblemSolvingState(true)
       this.$Loading.start()
       this.problemLoading = true
       this.problemError.visible = false
