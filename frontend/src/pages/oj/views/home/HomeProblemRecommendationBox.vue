@@ -42,7 +42,6 @@
 import api from "@oj/api"
 import { FIELD_MAP } from "../../../../utils/constants"
 import FieldCategoryBox from "../../components/FieldCategoryBox.vue"
-import { mapActions } from "vuex"
 
 export default {
   name: "HomeProblemRecommendationBox",
@@ -65,7 +64,6 @@ export default {
     this.init()
   },
   methods: {
-    ...mapActions(["changeProblemSolvingState"]),
     handleRoute(route) {
       this.$router.push({ name: route })
     },
@@ -75,7 +73,6 @@ export default {
       })
     },
     enterProblemDetail(problemId) {
-      this.changeProblemSolvingState(true)
       this.$router.push({
         name: "problem-details",
         params: { problemID: problemId },
