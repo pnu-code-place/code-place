@@ -139,6 +139,7 @@
 </template>
 
 <script>
+import { mapActions } from "vuex"
 import FieldCategoryBox from "../../../../components/FieldCategoryBox.vue"
 import { DIFFICULTY_MAP, FIELD_MAP } from "../../../../../../utils/constants"
 
@@ -168,7 +169,9 @@ export default {
     },
   },
   methods: {
+    ...mapActions(["changeProblemSolvingState"]),
     enterProblemDetail(problemId, problemTitle) {
+      this.changeProblemSolvingState(true)
       this.$router.push({
         name: "problem-details",
         params: { problemID: problemId, problemTitle: problemTitle },

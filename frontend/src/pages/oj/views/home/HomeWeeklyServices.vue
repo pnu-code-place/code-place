@@ -52,6 +52,7 @@
 
 <script>
 import api from "@oj/api"
+import { mapActions } from "vuex"
 import { FIELD_MAP, DIFFICULTY_MAP } from "../../../../utils/constants"
 
 export default {
@@ -78,7 +79,9 @@ export default {
       .catch(() => {})
   },
   methods: {
+    ...mapActions(["changeProblemSolvingState"]),
     enterProblem(problemId) {
+      this.changeProblemSolvingState(true)
       this.$router.push({
         name: "problem-details",
         params: { problemID: problemId },

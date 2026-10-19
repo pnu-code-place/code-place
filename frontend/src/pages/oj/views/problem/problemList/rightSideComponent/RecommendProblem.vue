@@ -34,6 +34,7 @@
 import { defineComponent } from "vue"
 import FieldCategoryBox from "../../../../components/FieldCategoryBox.vue"
 import { FIELD_MAP } from "../../../../../../utils/constants"
+import { mapActions } from "vuex"
 
 export default defineComponent({
   computed: {
@@ -52,7 +53,9 @@ export default defineComponent({
     FieldCategoryBox,
   },
   methods: {
+    ...mapActions(["changeProblemSolvingState"]),
     enterProblemDetail(problemId) {
+      this.changeProblemSolvingState(true)
       this.$router.push({
         name: "problem-details",
         params: { problemID: problemId },
