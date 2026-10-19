@@ -7,6 +7,7 @@ import { STORAGE_KEY, USER_TYPE, PROBLEM_PERMISSION } from "@/utils/constants"
 const state = {
   profile: {},
   profileResolved: false,
+  isProblemSolving: false,
   isDarkMode: false,
 }
 
@@ -14,6 +15,7 @@ const getters = {
   user: (state) => state.profile.user || {},
   profile: (state) => state.profile,
   profileResolved: (state) => state.profileResolved,
+  isProblemSolving: (state) => state.isProblemSolving,
   isAuthenticated: (state, getters) => {
     return !!getters.user.id
   },
@@ -43,6 +45,9 @@ const mutations = {
   },
   resolveProfile(state) {
     state.profileResolved = true
+  },
+  [types.CHANGE_PROBLEM_SOLVING_STATE](state, payload) {
+    state.isProblemSolving = payload
   },
   [types.CHANGE_PROBLEM_SOLVING_THEME](state, payload) {
     state.isDarkMode = payload
@@ -74,6 +79,9 @@ const actions = {
       profile: {},
     })
     storage.clear()
+  },
+  changeProblemSolvingState({ commit }, payload) {
+    commit(types.CHANGE_PROBLEM_SOLVING_STATE, payload)
   },
   changeProblemSolvingTheme({ commit }, payload) {
     commit(types.CHANGE_PROBLEM_SOLVING_THEME, payload)

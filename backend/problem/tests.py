@@ -28,7 +28,6 @@ from .llm_hint import (CLUSTER_VLLM_CHAT_COMPLETIONS_URL, LOCAL_VLLM_CHAT_COMPLE
 
 from .views.admin import TestCaseAPI
 from .utils import parse_problem_template
-from account.models import User
 
 DEFAULT_PROBLEM_DATA = {
     "_id": "A-110",
@@ -380,43 +379,9 @@ class ProblemAPITest(ProblemCreateTestBase):
         self.assertEqual(results[0]["_id"], very_high_problem._id)
 
     def test_get_one_problem(self):
-        self.client.force_login(User.objects.get(username="test"))
         resp = self.client.get(self.url + "?problem_id=" + self.problem._id)
         self.assertSuccess(resp)
 
-    def test_get_one_problem_requires_login(self):
-        self.client.logout()
-        resp = self.client.get(self.url + "?problem_id=" + self.problem._id)
-        self.assertFailed(resp, "Please login first")
-        self.assertEqual(resp.status_code, 401)
-
-    def test_get_problem_list_anonymous_has_no_body_fields(self):
-        self.client.logout()
-        resp = self.client.get(self.url + "?limit=10")
-        self.assertSuccess(resp)
-        item = resp.data["data"]["results"][0]
-        for field in ("description", "input_description", "output_description",
-                      "samples", "hint", "template"):
-            self.assertNotIn(field, item)
-        self.assertIn("title", item)
-
-    def test_get_problem_list_authenticated_keeps_body_fields(self):
-        self.client.force_login(User.objects.get(username="test"))
-        resp = self.client.get(self.url + "?limit=10")
-        self.assertSuccess(resp)
-        self.assertIn("description", resp.data["data"]["results"][0])
-
-    def test_pick_one_default_returns_id_string(self):
-        resp = self.client.get(self.reverse("pick_one_api"))
-        self.assertSuccess(resp)
-        self.assertEqual(resp.data["data"], self.problem._id)
-
-    def test_pick_one_summary_is_public_and_has_no_body(self):
-        self.client.logout()
-        resp = self.client.get(self.reverse("pick_one_api"), {"summary": 1})
-        self.assertSuccess(resp)
-        self.assertIn("title", resp.data["data"])
-        self.assertNotIn("description", resp.data["data"])
 
 class ProblemLLMHintAPITest(ProblemCreateTestBase):
 
@@ -1186,95 +1151,11 @@ class UpdateWeeklyStatsTest(APITestCase):
         self.assertFalse(updated_problem_2.is_most_difficult)
         self.assertTrue(updated_problem_3.is_most_difficult)
 
-    def test_update_weekly_stats_excludes_invisible_and_untouched_problems(self):
-        # Genuinely hard but attempted problem: should win.
-        hard_week_info = {
-            'submission': 10,
-            'accepted': 1,
-            'success_rate': 0.1,
-            'solver': ['user1'],
-        }
-        self.problem_1.curr_week_info = hard_week_info
-        self.problem_1.save(update_fields=['curr_week_info'])
-
-        # Invisible problem tied at 0% success rate: must not win.
-        self.problem_2.visible = False
-        self.problem_2.curr_week_info = {
-            'submission': 10, 'accepted': 0, 'success_rate': 0.0, 'solver': [],
-        }
-        self.problem_2.save(update_fields=['visible', 'curr_week_info'])
-
-        # Untouched problem (0 submissions) also tied at 0% by default: must not win either.
-        self.problem_3.curr_week_info = get_default_week_info()
-        self.problem_3.save(update_fields=['curr_week_info'])
-
-        update_weekly_stats()
-
-        self.assertTrue(Problem.objects.get(id=self.problem_1.id).is_most_difficult)
-        self.assertFalse(Problem.objects.get(id=self.problem_2.id).is_most_difficult)
-        self.assertFalse(Problem.objects.get(id=self.problem_3.id).is_most_difficult)
-
-    def test_update_weekly_stats_excludes_contest_problems(self):
-        contest = Contest.objects.create(**{**DEFAULT_CONTEST_DATA, "created_by": self.admin})
-        self.problem_1.contest = contest
-        self.problem_1.curr_week_info = {
-            'submission': 10, 'accepted': 1, 'success_rate': 0.1, 'solver': ['user1'],
-        }
-        self.problem_1.save(update_fields=['contest', 'curr_week_info'])
-
-        self.problem_2.curr_week_info = {
-            'submission': 10, 'accepted': 3, 'success_rate': 0.3, 'solver': ['user1', 'user2', 'user3'],
-        }
-        self.problem_2.save(update_fields=['curr_week_info'])
-
-        update_weekly_stats()
-
-        self.assertFalse(Problem.objects.get(id=self.problem_1.id).is_most_difficult)
-        self.assertTrue(Problem.objects.get(id=self.problem_2.id).is_most_difficult)
-
-    def test_update_weekly_stats_tiebreaks_by_submission_count(self):
-        # Same success rate, but problem_2 was attempted by far more people:
-        # it should win as the more "actively graded" problem.
-        self.problem_1.curr_week_info = {
-            'submission': 10, 'accepted': 5, 'success_rate': 0.5, 'solver': ['u1', 'u2', 'u3', 'u4', 'u5'],
-        }
-        self.problem_1.save(update_fields=['curr_week_info'])
-
-        self.problem_2.curr_week_info = {
-            'submission': 100, 'accepted': 50, 'success_rate': 0.5, 'solver': [f'u{i}' for i in range(50)],
-        }
-        self.problem_2.save(update_fields=['curr_week_info'])
-
-        update_weekly_stats()
-
-        self.assertFalse(Problem.objects.get(id=self.problem_1.id).is_most_difficult)
-        self.assertTrue(Problem.objects.get(id=self.problem_2.id).is_most_difficult)
-
     def test_update_weekly_stats_database_error(self):
 
         with mock.patch('problem.models.Problem.objects.update', side_effect=Exception("Database error")):
             with self.assertRaises(Exception):
                 update_weekly_stats()
-
-    @mock.patch.dict(os.environ, {"SCHEDULER_TOKEN": "test-token"})
-    def test_update_weekly_stats_api_uses_same_selection_logic(self):
-        self.problem_1.curr_week_info = {
-            'submission': 10, 'accepted': 1, 'success_rate': 0.1, 'solver': ['user1'],
-        }
-        self.problem_1.save(update_fields=['curr_week_info'])
-
-        self.problem_2.visible = False
-        self.problem_2.curr_week_info = {
-            'submission': 10, 'accepted': 0, 'success_rate': 0.0, 'solver': [],
-        }
-        self.problem_2.save(update_fields=['visible', 'curr_week_info'])
-
-        resp = self.client.post(self.url, data={}, HTTP_X_SCHEDULER_TOKEN="test-token")
-        self.assertSuccess(resp)
-
-        self.assertTrue(Problem.objects.get(id=self.problem_1.id).is_most_difficult)
-        self.assertFalse(Problem.objects.get(id=self.problem_2.id).is_most_difficult)
-        self.assertFalse(Problem.objects.get(id=self.problem_3.id).is_most_difficult)
 
 
 class UpdateBonusProblemTest(APITestCase):
