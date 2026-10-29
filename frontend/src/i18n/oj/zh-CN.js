@@ -2,6 +2,15 @@ export const m = {
   // 404.vue
   Go_Home: "返回主页",
   // Problem.vue
+  AI_Assistant: "AI助教",
+  AI_Assistant_Get_Hint: "获取AI助教提示",
+  AI_Assistant_Thinking: "思考中...",
+  AI_Assistant_Exhausted: "次数已用尽",
+  AI_Assistant_Close: "关闭AI助教",
+  AI_Assistant_Empty_Title: "暂无获得的提示",
+  AI_Assistant_Empty_Desc:
+    "遇到困难时，请点击下方的“获取AI助教提示”。从第1阶段开始，随着阶段深入将提供更具体的帮助。",
+  AI_Assistant_Fetch_Failed: "获取AI提示失败。",
   Description: "题目描述",
   Input: "输入",
   Output: "输出",
@@ -74,6 +83,9 @@ export const m = {
   Rating: "评分",
   // Announcements.vue
   Contest_Announcements: "比赛公告",
+  CSEP: "CodePlace",
+  SWCenter: "AI融合教育院",
+  More: "查看更多",
   By: "创建人",
   // ApplyResetPassword.vue
   The_email_doesnt_exist: "该电子邮件地址不存在",
@@ -122,6 +134,7 @@ export const m = {
   // ContestDetail.vue
   Problems: "题目",
   Announcements: "公告",
+  Release_Notes: "发布说明",
   Submissions: "提交信息",
   Rankings: "排名",
   Overview: "概要",

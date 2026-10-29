@@ -12,13 +12,14 @@ from account.models import UserProfile, UserScore
 from contest.models import Contest, ContestRuleType, ContestStatus, ContestType
 from submission.models import JudgeStatus, Submission
 from utils.api import APIView
-from utils.constants import Difficulty, ProblemField, Tier
+from utils.constants import Difficulty, HINT_LIMIT_PER_PROBLEM, ProblemField, Tier
 from utils.observability_metrics import AI_HINT_API_OUTCOME_TOTAL
 
 from ..llm_hint import LLMHintError, MAX_QUESTION_LENGTH, MAX_USER_CODE_LENGTH, stream_problem_hint
 from ..models import (Problem, ProblemRuleType, ProblemTag, get_default_week_info, ProblemAIHintLog)
 from ..serializers import (MostDifficultProblemSerializer, ProblemSafeSerializer, ProblemSerializer,
                            RecommendBonusProblemSerializer, TagSerializer, AIHintLogSerializer)
+from ..tasks import update_weekly_stats
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +42,10 @@ class PickOneAPI(APIView):
         count = problems.count()
         if count == 0:
             return self.error("No problem to pick")
-        return self.success(problems[random.randint(0, count - 1)]._id)
+        problem = problems[random.randint(0, count - 1)]
+        if request.GET.get("summary"):
+            return self.success(MostDifficultProblemSerializer(problem).data)
+        return self.success(problem._id)
 
 
 class WeeklyTopProblemsAPI(APIView):
@@ -128,6 +132,8 @@ class ProblemAPI(APIView):
         problem_id = request.GET.get("problem_id")
         # problem_id가 제공되면 문제 상세 정보를 반환합니다.
         if problem_id:
+            if not request.user.is_authenticated:
+                return self.error("Please login first", err="permission-denied", status=401)
             try:
                 problem = Problem.objects.select_related("created_by") \
                     .get(_id=problem_id, contest_id__isnull=True, visible=True)
@@ -187,7 +193,8 @@ class ProblemAPI(APIView):
             problems = problems.order_by("-create_time", "-_id")
 
         # 根据profile 为做过的题目添加标记
-        data = self.paginate_data(request, problems, ProblemSerializer)
+        serializer_class = ProblemSerializer if request.user.is_authenticated else ProblemPublicListSerializer
+        data = self.paginate_data(request, problems, serializer_class)
         self._add_problem_status(request, data)
         return self.success(data)
 
@@ -612,27 +619,12 @@ class UpdateWeeklyStatsAPI(APIView):
     @scheduler_only
     def post(self, request):
         """Update the weekly statistics of problems.
-        
-        This method updates the last week's statistics to the current week,
-        resets the current week's statistics, and identifies the most difficult problem
-        based on the success rate from the last week.
-        It marks the most difficult problem as such and resets the flag for all others.
+
+        Delegates to the `update_weekly_stats` task so that the API and the
+        scheduled celery task share the same selection logic.
         """
         try:
-            with transaction.atomic():
-                Problem.objects.update(
-                    last_week_info=F('curr_week_info'),
-                    curr_week_info=get_default_week_info(),
-                    is_most_difficult=False,
-                )
-
-                most_difficult_problem = Problem.objects.annotate(
-                    min_success_rate=F('last_week_info__success_rate')).order_by('min_success_rate').first()
-
-                if most_difficult_problem:
-                    most_difficult_problem.is_most_difficult = True
-                    most_difficult_problem.save(update_fields=['is_most_difficult'])
-
+            update_weekly_stats()
             return self.success("Weekly stats updated successfully.")
         except Exception as e:
             logging.error("Error updating weekly stats: %s", e)

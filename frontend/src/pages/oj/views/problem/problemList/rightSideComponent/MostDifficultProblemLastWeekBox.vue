@@ -156,13 +156,8 @@ export default {
     this.init()
   },
   methods: {
-    ...mapActions([
-      "getProfile",
-      "changeModalStatus",
-      "changeProblemSolvingState",
-    ]),
+    ...mapActions(["getProfile", "changeModalStatus"]),
     enterProblemDetail(problemId) {
-      this.changeProblemSolvingState(true)
       this.$router.push({
         name: "problem-details",
         params: { problemID: problemId },
@@ -206,19 +201,20 @@ export default {
   border: 1px solid #dedede;
   background-color: var(--box-background-color);
   width: 100%;
-  height: 240px;
+  min-height: 240px;
   margin-bottom: 20px;
   text-align: center;
   padding-left: 20px;
   padding-right: 20px;
   padding-top: 13px;
+  padding-bottom: 13px;
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 
   .hardProblemRecommendationBoxBody {
     border-radius: 7px;
     background-color: #fbfbfb;
     padding: 20px;
-    height: 160px;
+    min-height: 160px;
 
     .hardProblemFieldCategory {
       display: flex;

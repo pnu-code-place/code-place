@@ -82,6 +82,11 @@ export default [
     component: AnnouncementDetail,
   },
   {
+    name: "release-notes",
+    path: "/release-notes",
+    redirect: { name: "notice", query: { tab: "updates" } },
+  },
+  {
     name: "logout",
     path: "/logout",
     meta: { title: "Logout" },
@@ -108,7 +113,7 @@ export default [
   {
     name: "problem-details",
     path: "/problem/:problemID",
-    meta: { title: "Problem Details" },
+    meta: { requiresAuth: true, title: "Problem Details" },
     component: Problem,
   },
   {
@@ -120,7 +125,7 @@ export default [
   {
     name: "submission-details",
     path: "/status/:id/",
-    meta: { title: "Submission Details" },
+    meta: { requiresAuth: true, title: "Submission Details" },
     component: SubmissionDetails,
   },
   {
@@ -216,7 +221,7 @@ export default [
     name: "user-home",
     redirect: { name: "user-dashboard" },
     component: UserHome,
-    meta: { title: "User Home" },
+    meta: { requiresAuth: true, title: "User Home" },
     children: [
       {
         name: "user-dashboard",

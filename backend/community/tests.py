@@ -696,6 +696,43 @@ class CommunityAPITest(APITestCase):
         self.assertSuccess(response)
         self.assertEqual(response.data["data"]["post_type"], "ANNOUNCEMENT")
 
+    def test_update_question_status_by_super_admin(self):
+        """Super Admin은 다른 사용자의 질문글 해결 상태를 변경할 수 있다."""
+        question_post = Post.objects.create(
+            title="Question Post",
+            content="Content",
+            author=self.user,
+            post_type=Post.PostType.QUESTION,
+            question_status=Post.QuestionStatus.OPEN,
+        )
+        url = self.reverse("community_post_detail", kwargs={"post_id": question_post.id})
+        self.client.force_login(self.admin)
+
+        response = self.client.patch(url, {"question_status": "CLOSED"})
+        self.assertSuccess(response)
+        self.assertEqual(response.data["data"]["question_status"], "CLOSED")
+
+        response = self.client.patch(url, {"question_status": "OPEN"})
+        self.assertSuccess(response)
+        self.assertEqual(response.data["data"]["question_status"], "OPEN")
+
+    def test_update_question_status_by_other_user(self):
+        """작성자나 Super Admin이 아닌 사용자는 질문글 해결 상태를 변경할 수 없다."""
+        question_post = Post.objects.create(
+            title="Question Post",
+            content="Content",
+            author=self.user,
+            post_type=Post.PostType.QUESTION,
+            question_status=Post.QuestionStatus.OPEN,
+        )
+        url = self.reverse("community_post_detail", kwargs={"post_id": question_post.id})
+        self.client.force_login(self.other_user)
+
+        response = self.client.patch(url, {"question_status": "CLOSED"})
+        self.assertFailed(response, "No permission to edit this post")
+        question_post.refresh_from_db()
+        self.assertEqual(question_post.question_status, Post.QuestionStatus.OPEN)
+
     def test_update_post_by_other_user(self):
         """다른 사용자는 게시글을 수정할 수 없다."""
         self.client.force_login(self.other_user)

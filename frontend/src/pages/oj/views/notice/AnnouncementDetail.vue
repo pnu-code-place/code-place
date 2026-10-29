@@ -121,6 +121,7 @@ export default {
     goList() {
       this.$router.push({
         name: "notice",
+        query: this.announcement.is_release_note ? { tab: "updates" } : {},
       })
     },
   },
@@ -212,9 +213,11 @@ export default {
         ></div>
       </div>
     </div>
-    <button class="notice-list-btn" @click="goList">
-      {{ $t("m.Notice_List") }}
-    </button>
+    <div class="notice-list-actions">
+      <button class="notice-list-btn" @click="goList">
+        {{ $t("m.Notice_List") }}
+      </button>
+    </div>
     <!--    <div class="other-announcements">-->
     <!--      <div class="other-announcement-wrapper">-->
     <!--        <div class="announcement-skeleton" v-if="this.loadingNext">-->
@@ -385,6 +388,12 @@ export default {
   100% {
     opacity: 0.5;
   }
+}
+
+.notice-list-actions {
+  display: flex;
+  justify-content: flex-end;
+  width: var(--global-width);
 }
 
 .notice-list-btn {

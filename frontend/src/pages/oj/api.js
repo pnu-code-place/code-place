@@ -38,10 +38,13 @@ export default {
       params,
     })
   },
-  getAnnouncementList(offset, limit) {
+  getAnnouncementList(offset, limit, category) {
     let params = {
       offset: offset,
       limit: limit,
+    }
+    if (category) {
+      params.category = category
     }
     return ajax("announcement", "get", {
       params,
@@ -231,6 +234,9 @@ export default {
   },
   pickone() {
     return ajax("pickone", "get")
+  },
+  pickOneSummary() {
+    return ajax("pickone", "get", { params: { summary: 1 } })
   },
   getProblem(problemID) {
     return ajax("problem", "get", {
