@@ -151,34 +151,67 @@ jobs:
 
   update-prod-manifest:
     needs: [check-release-branch, ci-backend, ci-frontend, ci-hub-auth]
+    # 컴포넌트가 하나라도 빌드 실패/취소되면 manifest 갱신을 하지 않는다.
+    # skipped 된 컴포넌트는 허용함.
     if: |
       always() &&
       needs.check-release-branch.outputs.is_release == 'true' &&
+      !contains(needs.*.result, 'failure') &&
+      !contains(needs.*.result, 'cancelled') &&
       (needs.ci-frontend.result == 'success' || needs.ci-backend.result == 'success' || needs.ci-hub-auth.result == 'success')
     runs-on: ubuntu-latest
+    # manifest는 한 번에 하나씩만 실행.
+    concurrency:
+      group: update-prod-manifest
+      cancel-in-progress: false
     steps:
+      # CI가 돌아갈 때 기준으로, main 브랜치의 최신 커밋을 checkout함.
+      # 그 후, 현재가 가장 최신의 커밋인지 확인 후, 최신이면 manifest갱신 아니면 skip
       - name: Checkout code
         uses: actions/checkout@v2
         with:
           token: ${{ secrets.ACTION_TOKEN }}
+          ref: ${{ github.ref_name }}
           fetch-depth: 0
+
+      - name: Decide which image tags to update
+        id: check
+        run: |
+          FILE=kubernetes/overlays/prod/kustomization.yaml
+          # 이 CI를 실행시킨 커밋의 sha값 확인
+          MY_SHA=${{ github.sha }}
+          for name in backend frontend hub-auth; do
+
+            # 현재 kustomization.yaml에 적힌 이미지 태그 확인
+            current_tag=$(yq ".images[] | select(.name == \"$name\").newTag" "$FILE")
+            current_sha=${current_tag%-prod}
+
+            # 현재의 커밋이 과거의 커밋보다 최신인지 확인
+            # 맞으면 -> 갱신 / 틀리면 -> skip
+            if git merge-base --is-ancestor "$current_sha" "$MY_SHA"; then
+              echo "$name=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "$name: $current_sha is newer than $MY_SHA, skip"
+              echo "$name=false" >> "$GITHUB_OUTPUT"
+            fi
+          done
 
       # NOTE: 기존에 kustomize를 사용하였지만 포멧 문제로 yq로 변경 (junwoo)
       # images.[] .name 에 맞는 항목의 newTag 값을 github.sha 로 변경
       - name: Update Backend Image Tag
-        if: needs.ci-backend.result == 'success'
+        if: needs.ci-backend.result == 'success' && steps.check.outputs.backend == 'true'
         uses: mikefarah/yq@master
         with:
           cmd: yq -i '(.images[] | select(.name == "backend").newTag) = "${{ github.sha }}-prod"' kubernetes/overlays/prod/kustomization.yaml
 
       - name: Update Frontend Image Tag
-        if: needs.ci-frontend.result == 'success'
+        if: needs.ci-frontend.result == 'success' && steps.check.outputs.frontend == 'true'
         uses: mikefarah/yq@master
         with:
           cmd: yq -i '(.images[] | select(.name == "frontend").newTag) = "${{ github.sha }}-prod"' kubernetes/overlays/prod/kustomization.yaml
 
       - name: Update Hub Auth Image Tag
-        if: needs.ci-hub-auth.result == 'success'
+        if: needs.ci-hub-auth.result == 'success' && steps.check.outputs.hub-auth == 'true'
         uses: mikefarah/yq@master
         with:
           cmd: yq -i '(.images[] | select(.name == "hub-auth").newTag) = "${{ github.sha }}-prod"' kubernetes/overlays/prod/kustomization.yaml
@@ -201,10 +234,13 @@ jobs:
           git push origin main
 
   create-release:
-    needs: [check-release-branch, update-prod-manifest]
+    needs: [check-release-branch, detect-changes-by-component, ci-backend, ci-frontend, ci-hub-auth, update-prod-manifest]
+    # 변경 감지, 컴포넌트 빌드, manifest 갱신 중 하나라도 실패/취소되면 Release를 만들지 않는다.
     if: |
       always() &&
       needs.check-release-branch.outputs.is_release == 'true' &&
+      !contains(needs.*.result, 'failure') &&
+      !contains(needs.*.result, 'cancelled') &&
       (needs.update-prod-manifest.result == 'success' || needs.update-prod-manifest.result == 'skipped')
     runs-on: ubuntu-latest
     steps:
