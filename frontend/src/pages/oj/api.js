@@ -256,12 +256,78 @@ export default {
     }
     return url
   },
-  getAIHintHistory(problemID) {
-    return ajax("problem/ai_hint_history", "get", {
-      params: {
-        problem_id: problemID,
-      },
-    })
+  // AI 조교 응답을 SSE로 스트리밍. question이 있으면 POST(질문), 없으면 GET(단계별 힌트).
+  // onEvent(eventName, payload)는 chunk / app-error / done 이벤트마다 호출된다.
+  async streamProblemLLMHint({
+    problemID,
+    contestID,
+    code,
+    question,
+    signal,
+    onEvent,
+  }) {
+    let response
+    if (question) {
+      const csrfMatch = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/)
+      response = await fetch("/api/problem/llm_hint", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": csrfMatch ? decodeURIComponent(csrfMatch[1]) : "",
+        },
+        body: JSON.stringify({
+          problem_id: problemID,
+          contest_id: contestID || null,
+          user_code: code ? code.slice(0, 4000) : "",
+          question,
+        }),
+        signal,
+      })
+    } else {
+      response = await fetch(
+        this.getProblemLLMHintUrl(problemID, code, contestID),
+        {
+          credentials: "same-origin",
+          signal,
+        },
+      )
+    }
+    if (!response.ok || !response.body) {
+      throw new Error(`llm_hint request failed: ${response.status}`)
+    }
+
+    const reader = response.body.getReader()
+    const decoder = new TextDecoder()
+    let buffer = ""
+    for (;;) {
+      const { value, done } = await reader.read()
+      if (done) break
+      buffer += decoder.decode(value, { stream: true })
+      let boundary
+      while ((boundary = buffer.indexOf("\n\n")) !== -1) {
+        const rawEvent = buffer.slice(0, boundary)
+        buffer = buffer.slice(boundary + 2)
+        let eventName = "message"
+        let data = ""
+        rawEvent.split("\n").forEach((line) => {
+          if (line.startsWith("event:")) eventName = line.slice(6).trim()
+          else if (line.startsWith("data:")) data += line.slice(5).trim()
+        })
+        let payload
+        try {
+          payload = data ? JSON.parse(data) : {}
+        } catch {
+          continue
+        }
+        onEvent(eventName, payload)
+      }
+    }
+  },
+  getAIHintHistory(problemID, contestID) {
+    const params = { problem_id: problemID }
+    if (contestID) params.contest_id = contestID
+    return ajax("problem/ai_hint_history", "get", { params })
   },
   getContestList(offset, limit, searchParams) {
     let params = {

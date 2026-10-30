@@ -184,7 +184,7 @@ h1.main-title {
   --ai-assistant-btn-hover-text-color: #f0f1ff;
   --ai-assistant-btn-icon-color: #000478;
   --ai-assistant-btn-hover-icon-color: #f0f1ff;
-  --ai-assistant-panel-bg: #f8f9ff;
+  --ai-assistant-panel-bg: #ffffff;
   --ai-assistant-header-bg: #ffffff;
   --ai-assistant-border-color: #e0e0e0;
   --ai-assistant-header-border-color: #e8e8e8;
@@ -194,10 +194,9 @@ h1.main-title {
   --ai-assistant-subtle-text-color: #555555;
   --ai-assistant-subtle-bg: #eef0ff;
   --ai-assistant-subtle-hover-bg: #dde0ff;
-  --ai-assistant-avatar-bg: #dde0ff;
-  --ai-assistant-avatar-icon-filter: invert(18%) sepia(79%) saturate(3438%)
-    hue-rotate(234deg) brightness(68%) contrast(117%);
-  --ai-assistant-bubble-bg: #eef0ff;
+  --ai-assistant-avatar-bg: #f0f0f1;
+  --ai-assistant-avatar-icon-filter: brightness(0) saturate(100%) invert(25%);
+  --ai-assistant-bubble-bg: #f2f2f3;
   --ai-assistant-bubble-text-color: #222222;
   --ai-assistant-thinking-bg: #f0f0f0;
   --ai-assistant-thinking-text-color: #888888;
@@ -205,6 +204,12 @@ h1.main-title {
   --ai-assistant-close-hover-bg: #eeeeee;
   --ai-assistant-close-hover-text-color: #555555;
   --ai-assistant-error-text-color: #c0392b;
+  --ai-assistant-send-bg: #1f1f1f;
+  --ai-assistant-send-text-color: #ffffff;
+  --ai-assistant-send-hover-bg: #3d3d3d;
+  --ai-assistant-focus-border-color: #a3a3a3;
+  --ai-assistant-callout-bg: rgba(0, 0, 0, 0.035);
+  --ai-assistant-callout-border-color: #c4c4c4;
 
   /* Contest Page */
   --container-border-color: #dedede;
@@ -262,10 +267,10 @@ h1.main-title {
   --ai-assistant-subtle-text-color: #d0d8e2;
   --ai-assistant-subtle-bg: #343f5a;
   --ai-assistant-subtle-hover-bg: #465477;
-  --ai-assistant-avatar-bg: #364361;
+  --ai-assistant-avatar-bg: rgba(255, 255, 255, 0.08);
   --ai-assistant-avatar-icon-filter: brightness(0) saturate(100%) invert(99%)
     sepia(19%) saturate(331%) hue-rotate(176deg) brightness(116%) contrast(87%);
-  --ai-assistant-bubble-bg: #343f5a;
+  --ai-assistant-bubble-bg: rgba(255, 255, 255, 0.08);
   --ai-assistant-bubble-text-color: #ffffff;
   --ai-assistant-thinking-bg: #2a3142;
   --ai-assistant-thinking-text-color: #c6d1dc;
@@ -273,6 +278,12 @@ h1.main-title {
   --ai-assistant-close-hover-bg: #343f5a;
   --ai-assistant-close-hover-text-color: #ffffff;
   --ai-assistant-error-text-color: #ff9e9e;
+  --ai-assistant-send-bg: #f2f2f2;
+  --ai-assistant-send-text-color: #1a1a1a;
+  --ai-assistant-send-hover-bg: #d6d6d6;
+  --ai-assistant-focus-border-color: rgba(255, 255, 255, 0.35);
+  --ai-assistant-callout-bg: rgba(255, 255, 255, 0.05);
+  --ai-assistant-callout-border-color: rgba(255, 255, 255, 0.25);
 
   --bg-color: #1f2430;
   --text-color: #ffffff;

@@ -100,9 +100,14 @@
         </div>
       </div>
     </section>
-    <splitpanes v-else vertical style="height: calc(100vh - 50px)">
+    <splitpanes
+      v-else
+      vertical
+      style="height: calc(100vh - 50px)"
+      @resized="onPanesResized"
+    >
       <pane
-        :size="50"
+        :size="paneSizes.problem"
         :class="{ 'problem-pane-with-navigator': isContestProblem }"
       >
         <div
@@ -193,12 +198,12 @@
           </div>
         </div>
       </pane>
-      <pane min-size="30" :size="50">
+      <pane min-size="30" :size="paneSizes.editor">
         <div class="editor-pane-wrapper">
           <CodeEditorHeader
             @create-submission="submitCode"
             @change-language="changeLanguage"
-            @open-ai="$refs.bottomDrag.show()"
+            @open-ai="toggleAIPanel"
             :problem="problem"
             :language.sync="language"
             :statusVisible="statusVisible"
@@ -219,14 +224,15 @@
             />
             <StickyLnCol :cursorPos="cursorPos" />
           </div>
-          <BottomDrag
-            ref="bottomDrag"
-            :result="result"
-            :problemID="problemID"
-            :contestID="contestID"
-            :code="code"
-          />
         </div>
+      </pane>
+      <pane v-if="aiPanelOpen" min-size="20" :size="paneSizes.ai">
+        <AIAssistantPanel
+          :problemID="problemID"
+          :contestID="contestID"
+          :code="code"
+          @close="closeAIPanel"
+        />
       </pane>
     </splitpanes>
   </div>
@@ -252,7 +258,7 @@ import StickyLnCol from "./problemSolvingComponent/StickyLnCol.vue"
 import CodeEditor from "./problemSolvingComponent/CodeEditor.vue"
 import SubmissionList from "./problemSolvingComponent/SubmissionList.vue"
 import ProblemCommunity from "./problemSolvingComponent/ProblemCommunity.vue"
-import BottomDrag from "./problemSolvingComponent/BottomDrag.vue"
+import AIAssistantPanel from "./problemSolvingComponent/AIAssistantPanel.vue"
 import ContestProblemNavigator from "./problemSolvingComponent/ContestProblemNavigator.vue"
 
 export default {
@@ -267,7 +273,7 @@ export default {
     ContestProblemNavigator,
     Splitpanes,
     Pane,
-    BottomDrag,
+    AIAssistantPanel,
   },
   mixins: [FormMixin],
   data() {
@@ -333,6 +339,8 @@ export default {
       leftPainActiveTab: "problem",
       showAskNudge: false,
       rightPainActiveTab: "editor",
+      aiPanelOpen: false,
+      paneSizes: { problem: 50, editor: 50, ai: 0 },
       lastSubmissionId: null,
       isInitialized: false,
       problemLoading: false,
@@ -389,6 +397,35 @@ export default {
     this.removeBeforeUnload()
   },
   methods: {
+    toggleAIPanel() {
+      if (this.aiPanelOpen) {
+        this.closeAIPanel()
+        return
+      }
+      // 문제/에디터 비율은 유지한 채 오른쪽에 AI 조교 패널 공간 확보
+      const aiSize = 28
+      const rest = this.paneSizes.problem + this.paneSizes.editor
+      const scale = (100 - aiSize) / rest
+      this.paneSizes = {
+        problem: this.paneSizes.problem * scale,
+        editor: this.paneSizes.editor * scale,
+        ai: aiSize,
+      }
+      this.aiPanelOpen = true
+    },
+    closeAIPanel() {
+      const rest = this.paneSizes.problem + this.paneSizes.editor
+      this.paneSizes = {
+        problem: (this.paneSizes.problem / rest) * 100,
+        editor: (this.paneSizes.editor / rest) * 100,
+        ai: 0,
+      }
+      this.aiPanelOpen = false
+    },
+    onPanesResized(panes) {
+      const [problem, editor, ai] = panes.map((pane) => pane.size)
+      this.paneSizes = { problem, editor, ai: ai || 0 }
+    },
     ...mapActions([
       "changeDomTitle",
       "changeProblemSolvingTheme",

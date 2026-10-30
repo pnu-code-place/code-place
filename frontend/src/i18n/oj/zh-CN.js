@@ -3,14 +3,22 @@ export const m = {
   Go_Home: "返回主页",
   // Problem.vue
   AI_Assistant: "AI助教",
-  AI_Assistant_Get_Hint: "获取AI助教提示",
+  AI_Assistant_Get_Hint: "获取提示",
   AI_Assistant_Thinking: "思考中...",
-  AI_Assistant_Exhausted: "次数已用尽",
   AI_Assistant_Close: "关闭AI助教",
-  AI_Assistant_Empty_Title: "暂无获得的提示",
+  AI_Assistant_Empty_Title: "有问题随时问我",
   AI_Assistant_Empty_Desc:
-    "遇到困难时，请点击下方的“获取AI助教提示”。从第1阶段开始，随着阶段深入将提供更具体的帮助。",
+    "可以就本题卡住的地方提问，或点击“获取提示”获得分阶段提示。我不会直接给出答案，而是引导你自己解决。",
   AI_Assistant_Fetch_Failed: "获取AI提示失败。",
+  AI_Assistant_Placeholder: "输入你的问题（Shift+Enter 换行）",
+  AI_Assistant_Send: "发送",
+  AI_Assistant_Hint_Question: "我卡住了，请给我一个对当前进度有帮助的提示。",
+  // 대회(v1) 단계별 힌트
+  AI_Assistant_Get_Step_Hint: "获取AI助教提示",
+  AI_Assistant_Exhausted: "次数已用尽",
+  AI_Assistant_Hint_Empty_Title: "暂无获得的提示",
+  AI_Assistant_Hint_Empty_Desc:
+    "遇到困难时，请点击下方的“获取AI助教提示”。从第1阶段开始，随着阶段深入将提供更具体的帮助。",
   Description: "题目描述",
   Input: "输入",
   Output: "输出",
