@@ -1,7 +1,7 @@
 ARG SERVER_NAME
 
 # Build stage
-FROM node:24.11.0 AS build-stage
+FROM node:24.22.1 AS build-stage
 
 WORKDIR /app
 COPY package*.json ./
