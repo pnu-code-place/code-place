@@ -28,6 +28,7 @@
     "highlight.js": "^10.7.3",
     "iview": "^2.13.0",
     "katex": "^0.10.0",
+    "markdown-it": "^14.1.0",
     "moment": "^2.22.1",
     "papaparse": "^5.5.3",
     "regenerator-runtime": "^0.14.1",
