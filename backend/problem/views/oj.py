@@ -5,6 +5,7 @@ import json
 from django.db import transaction
 from django.db.models import Case, Count, ExpressionWrapper, F, FloatField, IntegerField, Q, Value, When
 from django.http import HttpResponseBadRequest, HttpResponseNotFound, StreamingHttpResponse
+from django.contrib.auth import get_user_model
 
 from account.decorators import (check_contest_permission, check_contest_password, scheduler_only)
 from utils.constants import CONTEST_PASSWORD_SESSION_KEY
@@ -15,9 +16,9 @@ from utils.api import APIView
 from utils.constants import Difficulty, HINT_LIMIT_PER_PROBLEM, ProblemField, Tier
 from utils.observability_metrics import AI_HINT_API_OUTCOME_TOTAL
 
-from ..llm_hint import LLMHintError, MAX_QUESTION_LENGTH, MAX_USER_CODE_LENGTH, stream_problem_hint
+from ..llm_hint import LLMHintError, MAX_QUESTION_LENGTH, MAX_USER_CODE_LENGTH, stream_chat_answer, stream_problem_hint
 from ..models import (Problem, ProblemRuleType, ProblemTag, get_default_week_info, ProblemAIHintLog)
-from ..serializers import (MostDifficultProblemSerializer, ProblemSafeSerializer, ProblemSerializer,
+from ..serializers import (MostDifficultProblemSerializer, ProblemSafeSerializer, ProblemSerializer, ProblemPublicListSerializer,
                            RecommendBonusProblemSerializer, TagSerializer, AIHintLogSerializer)
 from ..tasks import update_weekly_stats
 
@@ -273,6 +274,14 @@ class ProblemLLMHintAPI(APIView):
         if not problem_id:
             return self._error_response("문제 번호가 필요합니다.", metric_status="bad_request", scope=scope)
 
+        # 대회는 v1(단계별 힌트)만 지원하므로 자유 질문을 받지 않는다
+        if contest_id and question is not None:
+            return self._error_response(
+                "대회에서는 단계별 힌트만 사용할 수 있습니다.",
+                metric_status="bad_request",
+                scope=scope,
+            )
+
         if question is not None:
             if not question:
                 return self._error_response("질문을 입력해 주세요.", metric_status="bad_request", scope=scope)
@@ -335,25 +344,62 @@ class ProblemLLMHintAPI(APIView):
             except Problem.DoesNotExist:
                 return self._error_response("문제를 찾을 수 없습니다.", metric_status="problem_not_found", scope=scope)
 
-        history_logs = (
-            ProblemAIHintLog.objects.filter(user=request.user, problem=problem)
-            .exclude(hint_content="")
-            .order_by("created_at")
-        )
-        previous_turns = [(log.role, log.hint_content) for log in history_logs]
+        if contest_id:
+            # v1: 단계별 힌트 (문제당 HINT_LIMIT_PER_PROBLEM 회, 관리자는 무제한)
+            if not (request.user.is_super_admin() or request.user.is_admin()):
+                # 트랜잭션을 묶어 체크와 생성이 최대한 원자적으로 이루어지도록 처리
+                with transaction.atomic():
+                    User = get_user_model()
+                    User.objects.select_for_update().get(pk=request.user.pk)
 
-        if question is not None:
-            ProblemAIHintLog.objects.create(
-                user=request.user, problem=problem, role=ProblemAIHintLog.ROLE_USER, hint_content=question,
+                    previous_logs = ProblemAIHintLog.objects.filter(user=request.user, problem=problem).order_by("created_at")
+                    if previous_logs.count() >= HINT_LIMIT_PER_PROBLEM:
+                        return self._error_response(
+                            f"이 문제에 대한 AI 조교 사용 횟수({HINT_LIMIT_PER_PROBLEM}회)를 모두 소진했습니다. "
+                            "이전 답변을 복습해 보세요.",
+                            err="problem-limit-exceeded",
+                            metric_status="problem_limit_exceeded",
+                            scope=scope,
+                        )
+
+                    previous_hints = [log.hint_content for log in previous_logs if log.hint_content.strip()]
+                    # 스트리밍 시작 전에 빈 내용으로 로그를 선제 생성하여 횟수 차감 처리
+                    hint_log = ProblemAIHintLog.objects.create(
+                        user=request.user, problem=problem, role=ProblemAIHintLog.ROLE_ASSISTANT, hint_content="",
+                    )
+            else:
+                previous_logs = ProblemAIHintLog.objects.filter(user=request.user, problem=problem).order_by("created_at")
+                previous_hints = [log.hint_content for log in previous_logs if log.hint_content.strip()]
+                hint_log = ProblemAIHintLog.objects.create(
+                    user=request.user, problem=problem, role=ProblemAIHintLog.ROLE_ASSISTANT, hint_content="",
+                )
+
+            def stream_answer():
+                return stream_problem_hint(problem, previous_hints=previous_hints, user_code=user_code)
+        else:
+            # v2: 자유 질문 채팅 (횟수 제한 없음)
+            history_logs = (
+                ProblemAIHintLog.objects.filter(user=request.user, problem=problem)
+                .exclude(hint_content="")
+                .order_by("created_at")
             )
-        hint_log = ProblemAIHintLog.objects.create(
-            user=request.user, problem=problem, role=ProblemAIHintLog.ROLE_ASSISTANT, hint_content="",
-        )
+            previous_turns = [(log.role, log.hint_content) for log in history_logs]
+
+            if question is not None:
+                ProblemAIHintLog.objects.create(
+                    user=request.user, problem=problem, role=ProblemAIHintLog.ROLE_USER, hint_content=question,
+                )
+            hint_log = ProblemAIHintLog.objects.create(
+                user=request.user, problem=problem, role=ProblemAIHintLog.ROLE_ASSISTANT, hint_content="",
+            )
+
+            def stream_answer():
+                return stream_chat_answer(problem, previous_turns=previous_turns, user_code=user_code, question=question)
 
         def generator():
             full_text_chunks = []
             try:
-                for chunk in stream_problem_hint(problem, previous_turns=previous_turns, user_code=user_code, question=question):
+                for chunk in stream_answer():
                     full_text_chunks.append(chunk)
                     yield self._format_sse_event("chunk", {"text": chunk})
                 if self._persist_hint_log(hint_log, full_text_chunks):
@@ -396,11 +442,16 @@ class AIHintHistoryAPI(APIView):
         problem_id = request.GET.get("problem_id")
         if not problem_id:
             return self.error("problem_id는 필수입니다.")
+        contest_id = request.GET.get("contest_id")
 
         # 1. 문제 조회 및 접근 가능 여부(공개 여부, 대회 여부) 검증
+        # 대회 문제는 contest_id가 있어야 조회되며, 아래에서 본인 로그만 반환한다
         try:
-            problem = Problem.objects.get(_id=problem_id, contest_id__isnull=True, visible=True)
-        except Problem.DoesNotExist:
+            if contest_id:
+                problem = Problem.objects.get(_id=problem_id, contest_id=contest_id, visible=True)
+            else:
+                problem = Problem.objects.get(_id=problem_id, contest_id__isnull=True, visible=True)
+        except (Problem.DoesNotExist, ValueError):
             return self.error("문제를 찾을 수 없습니다.")
 
         # 2. JOIN 없이 Foreign Key를 직접 활용하여 로그 조회

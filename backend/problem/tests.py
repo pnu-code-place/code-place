@@ -21,7 +21,7 @@ from .tasks import update_weekly_stats, update_bonus_problem
 from contest.models import Contest, ContestRuleType
 from contest.tests import DEFAULT_CONTEST_DATA
 from submission.models import JudgeStatus, Submission
-from utils.constants import CONTEST_PASSWORD_SESSION_KEY
+from utils.constants import CONTEST_PASSWORD_SESSION_KEY, HINT_LIMIT_PER_PROBLEM
 from .llm_hint import (CLUSTER_VLLM_CHAT_COMPLETIONS_URL, LOCAL_VLLM_CHAT_COMPLETIONS_URL,
                        VLLM_CONNECT_TIMEOUT_SEC, VLLM_MODEL, VLLM_STREAM_READ_TIMEOUT_SEC,
                        LLMHintError, get_vllm_chat_completions_url, get_vllm_model, stream_problem_hint)
@@ -645,6 +645,81 @@ class ProblemLLMHintAPITest(ProblemCreateTestBase):
         self.assertNotIn('event: app-error', body)
         mocked_post.assert_called_once()
 
+    @mock.patch("problem.llm_hint.requests.post")
+    def test_contest_uses_step_hint_prompt(self, mocked_post):
+        """대회 문제는 v1(단계별 힌트) 프롬프트를 쓴다."""
+        mocked_post.return_value = self._mock_streaming_response([
+            'data: {"choices":[{"delta":{"content":"[1단계] 힌트"}}]}',
+            "data: [DONE]",
+        ])
+        contest, problem = self._make_contest("C-310")
+
+        self._streaming_body(self.client.get(f"{self.url}?problem_id={problem._id}&contest_id={contest.id}"))
+
+        msgs = mocked_post.call_args.kwargs["json"]["messages"]
+        self.assertIn("Level 1", msgs[0]["content"])
+        self.assertIn("You must provide the Level 1 hint now.", msgs[2]["content"])
+
+    @mock.patch("problem.llm_hint.requests.post")
+    def test_practice_uses_chat_prompt(self, mocked_post):
+        """일반 문제는 v2(채팅) 프롬프트를 쓴다."""
+        mocked_post.return_value = self._mock_streaming_response([
+            'data: {"choices":[{"delta":{"content":"답변"}}]}',
+            "data: [DONE]",
+        ])
+
+        self._streaming_body(self.client.get(f"{self.url}?problem_id={self.problem._id}"))
+
+        msgs = mocked_post.call_args.kwargs["json"]["messages"]
+        self.assertNotIn("Level 1", msgs[0]["content"])
+        self.assertIn("latest question or request", msgs[2]["content"])
+
+    @mock.patch("problem.llm_hint.requests.post")
+    def test_contest_hint_limit_per_problem(self, mocked_post):
+        """대회 문제는 문제당 HINT_LIMIT_PER_PROBLEM 회까지만 힌트를 받는다."""
+        contest, problem = self._make_contest("C-311")
+        for i in range(HINT_LIMIT_PER_PROBLEM):
+            ProblemAIHintLog.objects.create(user=self.user, problem=problem, hint_content=f"[{i + 1}단계] 힌트")
+
+        body = self._streaming_body(self.client.get(f"{self.url}?problem_id={problem._id}&contest_id={contest.id}"))
+
+        self.assertIn("problem-limit-exceeded", body)
+        mocked_post.assert_not_called()
+        self.assertEqual(
+            ProblemAIHintLog.objects.filter(user=self.user, problem=problem).count(), HINT_LIMIT_PER_PROBLEM)
+
+    @mock.patch("problem.llm_hint.requests.post")
+    def test_contest_hint_limit_does_not_apply_to_admin(self, mocked_post):
+        mocked_post.return_value = self._mock_streaming_response([
+            'data: {"choices":[{"delta":{"content":"[6단계] 힌트"}}]}',
+            "data: [DONE]",
+        ])
+        contest, problem = self._make_contest("C-312")
+        for i in range(HINT_LIMIT_PER_PROBLEM):
+            ProblemAIHintLog.objects.create(user=self.admin, problem=problem, hint_content=f"[{i + 1}단계] 힌트")
+        self.client.force_login(self.admin)
+
+        body = self._streaming_body(self.client.get(f"{self.url}?problem_id={problem._id}&contest_id={contest.id}"))
+
+        self.assertNotIn("event: app-error", body)
+        mocked_post.assert_called_once()
+
+    @mock.patch("problem.llm_hint.requests.post")
+    def test_contest_rejects_free_question(self, mocked_post):
+        """대회에서는 자유 질문(POST question)을 받지 않는다."""
+        contest, problem = self._make_contest("C-313")
+
+        resp = self.client.post(
+            self.url,
+            data=json.dumps({"problem_id": problem._id, "contest_id": contest.id, "question": "정답 알려줘"}),
+            content_type="application/json",
+        )
+        body = self._streaming_body(resp)
+
+        self.assertIn("대회에서는 단계별 힌트만 사용할 수 있습니다.", body)
+        mocked_post.assert_not_called()
+        self.assertFalse(ProblemAIHintLog.objects.filter(problem=problem).exists())
+
     def test_contest_stream_llm_hint_ai_disabled(self):
         """app-error when ai_assistant_enabled=False."""
         contest, problem = self._make_contest("C-302", ai_assistant_enabled=False)
@@ -765,7 +840,7 @@ class ProblemLLMHintAPITest(ProblemCreateTestBase):
         self.assertIn('event: app-error', body)
         self.assertIn("힌트를 생성하지 못했습니다.", body)
 
-    @mock.patch("problem.views.oj.stream_problem_hint", side_effect=TypeError("boom"))
+    @mock.patch("problem.views.oj.stream_chat_answer", side_effect=TypeError("boom"))
     def test_stream_llm_hint_handles_unexpected_error(self, mocked_stream):
         resp = self.client.get(f"{self.url}?problem_id={self.problem._id}")
         body = self._streaming_body(resp)
@@ -1003,6 +1078,25 @@ class AIHintHistoryAPITest(ProblemCreateTestBase):
 
         self.assertIsNotNone(resp.data.get("error"))
         self.assertIn("문제를 찾을 수 없습니다.", resp.data.get("data", ""))
+
+    def test_get_history_with_contest_id(self):
+        """contest_id를 함께 보내면 대회 문제의 본인 힌트 기록을 조회한다"""
+        self.client.force_login(self.user)
+
+        from contest.models import Contest
+        from contest.tests import DEFAULT_CONTEST_DATA
+        contest = Contest.objects.create(created_by=self.admin, **DEFAULT_CONTEST_DATA)
+        contest_problem = self.create_problem_with_custom_field(self.admin, _id="C-998")
+        contest_problem.contest = contest
+        contest_problem.save(update_fields=["contest"])
+        ProblemAIHintLog.objects.create(user=self.user, problem=contest_problem, hint_content="[1단계] 대회 힌트")
+        ProblemAIHintLog.objects.create(user=self.admin, problem=contest_problem, hint_content="다른 사람 힌트")
+
+        resp = self.client.get(f"{self.url}?problem_id={contest_problem._id}&contest_id={contest.id}")
+
+        self.assertIsNone(resp.data.get("error"))
+        logs = resp.data["data"]["logs"]
+        self.assertEqual([log["hint_content"] for log in logs], ["[1단계] 대회 힌트"])
 
     def test_get_history_with_invalid_problem_id(self):
         """존재하지 않는 문제 ID를 넣었을 때 처리"""
