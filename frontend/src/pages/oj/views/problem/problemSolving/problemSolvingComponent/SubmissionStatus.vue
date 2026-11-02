@@ -1,7 +1,13 @@
 <template>
-  <div class="submissionStatusWrapper">
+  <!-- 좁은 헤더에서는 제출 전 빈 자리표시를 숨김 -->
+  <div
+    v-if="!(compact && !statusVisible)"
+    class="submissionStatusWrapper"
+    :class="{ compact }"
+    :title="compact ? compactTitle : null"
+  >
     <template v-if="!statusVisible">
-      <span>제출결과</span>
+      <span>{{ $t("m.Code_Editor_Submission_Result") }}</span>
     </template>
     <template
       v-else-if="
@@ -26,7 +32,7 @@
           class="fas fa-circle"
           :style="{ color: submissionStatus.color }"
         />
-        {{ $t("m." + submissionStatus.text.replace(/ /g, "_")) }}
+        <span v-if="!compact">{{ submissionStatusLabel }}</span>
       </div>
     </template>
     <template
@@ -36,7 +42,7 @@
     >
       <div class="submission-success">
         <Icon type="ios-checkmark-circle" />
-        {{ $t("m.Submitted_successfully") }}
+        <span v-if="!compact">{{ $t("m.Submitted_successfully") }}</span>
       </div>
     </template>
   </div>
@@ -53,6 +59,11 @@ export default defineComponent({
     contestID: [String, Number],
     result: Object,
     submissionId: String,
+    // 좁은 헤더에서 아이콘만 표시, 내용은 툴팁
+    compact: {
+      type: Boolean,
+      default: false,
+    },
   },
   components: {},
   data() {
@@ -70,6 +81,15 @@ export default defineComponent({
         text: JUDGE_STATUS[this.result.result]["name"],
         color: JUDGE_STATUS[this.result.result]["color"],
       }
+    },
+    submissionStatusLabel() {
+      return this.$t("m." + this.submissionStatus.text.replace(/ /g, "_"))
+    },
+    compactTitle() {
+      if (this.contestID && !this.OIContestRealTimePermission) {
+        return this.$t("m.Submitted_successfully")
+      }
+      return this.submissionStatusLabel
     },
   },
 })
@@ -90,6 +110,15 @@ export default defineComponent({
   box-shadow: inset 0 0 1px;
   color: var(--submission-result-btn-text-color);
   background-color: var(--submission-result-btn-color);
+  white-space: nowrap;
+
+  &.compact {
+    padding: 6px 9px;
+
+    .submissionState i {
+      margin-right: 0;
+    }
+  }
 }
 
 .submissionState {
