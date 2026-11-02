@@ -43,10 +43,6 @@ export default {
       type: String,
       default: "",
     },
-    deferUpload: {
-      type: Boolean,
-      default: false,
-    },
   },
   data() {
     return {
@@ -74,20 +70,18 @@ export default {
         // span: ['color']
       },
     })
-    if (this.deferUpload) {
-      const uploader = this.editor.uploader
-      uploader._xhrUpload = (file) => {
-        const blobUrl = URL.createObjectURL(file.obj)
-        this.pendingImages[blobUrl] = file.obj
-        setTimeout(() => {
-          uploader.trigger("uploadprogress", [file, file.size, file.size])
-          uploader.trigger("uploadsuccess", [
-            file,
-            { success: true, file_path: blobUrl },
-          ])
-          uploader.trigger("uploadcomplete", [file, ""])
-        })
-      }
+    const uploader = this.editor.uploader
+    uploader._xhrUpload = (file) => {
+      const blobUrl = URL.createObjectURL(file.obj)
+      this.pendingImages[blobUrl] = file.obj
+      setTimeout(() => {
+        uploader.trigger("uploadprogress", [file, file.size, file.size])
+        uploader.trigger("uploadsuccess", [
+          file,
+          { success: true, file_path: blobUrl },
+        ])
+        uploader.trigger("uploadcomplete", [file, ""])
+      })
     }
     this.editor.on("valuechanged", (e, src) => {
       this.currentValue = this.editor.getValue()

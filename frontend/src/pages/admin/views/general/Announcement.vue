@@ -143,7 +143,10 @@
           </el-input>
         </el-form-item>
         <el-form-item :label="$t('m.Announcement_Content')" required>
-          <Simditor v-model="announcement.content"></Simditor>
+          <Simditor
+            ref="contentEditor"
+            v-model="announcement.content"
+          ></Simditor>
         </el-form-item>
         <div class="toggle-container">
           <div class="visible-box">
@@ -271,9 +274,16 @@ export default {
     },
     // 提交编辑
     // 默认传入MouseEvent
-    submitAnnouncement(data = undefined) {
+    async submitAnnouncement(data = undefined) {
       let funcName
       if (!data.title) {
+        try {
+          this.announcement.content =
+            await this.$refs.contentEditor.uploadPendingImages()
+        } catch (e) {
+          this.$error("Image upload failed: " + e.message)
+          return
+        }
         data = {
           id: this.currentAnnouncementId,
           title: this.announcement.title,

@@ -110,11 +110,7 @@
               ><span class="required-asterisk">*</span
               >{{ $t("m.Description") }}</label
             >
-            <Simditor
-              ref="descEditor"
-              defer-upload
-              v-model="problem.description"
-            ></Simditor>
+            <Simditor ref="descEditor" v-model="problem.description"></Simditor>
           </div>
           <!-- Input Description -->
           <div class="form-group">
@@ -124,7 +120,6 @@
             >
             <Simditor
               ref="inputDescEditor"
-              defer-upload
               v-model="problem.input_description"
             ></Simditor>
           </div>
@@ -136,7 +131,6 @@
             >
             <Simditor
               ref="outputDescEditor"
-              defer-upload
               v-model="problem.output_description"
             ></Simditor>
           </div>
@@ -229,11 +223,7 @@
           <label class="custom-label">
             {{ $t("m.Hint") }}
           </label>
-          <Simditor
-            ref="hintEditor"
-            defer-upload
-            v-model="problem.hint"
-          ></Simditor>
+          <Simditor ref="hintEditor" v-model="problem.hint"></Simditor>
         </div>
 
         <!-- 종류 / 테케 / 입출력모드 / 배점 설정 -->
