@@ -49,6 +49,8 @@ export default {
       editor: null,
       currentValue: this.value,
       pendingImages: {},
+      uploadedPaths: {},
+      uploadingPromise: null,
     }
   },
   mounted() {
@@ -107,29 +109,49 @@ export default {
     },
   },
   methods: {
-    async uploadPendingImages() {
-      let html = this.editor.getValue()
-      for (const [blobUrl, file] of Object.entries(this.pendingImages)) {
-        if (!html.includes(blobUrl)) continue
-        const form = new FormData()
-        form.append("image", file)
-        const res = await fetch("/api/admin/upload_image/", {
-          method: "POST",
-          body: form,
-          credentials: "same-origin",
+    uploadPendingImages() {
+      if (!this.uploadingPromise) {
+        this.uploadingPromise = this.uploadImagesInBody().finally(() => {
+          this.uploadingPromise = null
         })
-        const data = await res.json()
-        if (!data.success) throw new Error(data.msg)
-        html = html.split(blobUrl).join(data.file_path)
       }
-      this.revokeAll()
-      this.editor.setValue(html)
-      this.currentValue = html
-      return html
+      return this.uploadingPromise
+    },
+    async uploadImagesInBody() {
+      const done = new Set()
+      let blobUrls
+      while (
+        (blobUrls = Object.keys(this.pendingImages).filter(
+          (url) => !done.has(url) && this.editor.getValue().includes(url),
+        )).length
+      ) {
+        for (const blobUrl of blobUrls) {
+          if (!this.uploadedPaths[blobUrl]) {
+            const form = new FormData()
+            form.append("image", this.pendingImages[blobUrl])
+            const res = await fetch("/api/admin/upload_image/", {
+              method: "POST",
+              body: form,
+              credentials: "same-origin",
+            })
+            const data = await res.json()
+            if (!data.success) throw new Error(data.msg)
+            this.uploadedPaths[blobUrl] = data.file_path
+          }
+          this.editor.body
+            .find("img")
+            .filter((_, img) => img.getAttribute("src") === blobUrl)
+            .attr("src", this.uploadedPaths[blobUrl])
+          done.add(blobUrl)
+          this.currentValue = this.editor.getValue()
+        }
+      }
+      return this.editor.getValue()
     },
     revokeAll() {
       Object.keys(this.pendingImages).forEach(URL.revokeObjectURL)
       this.pendingImages = {}
+      this.uploadedPaths = {}
     },
   },
   beforeDestroy() {
