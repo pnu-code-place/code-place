@@ -951,6 +951,18 @@ export default {
       )
     },
     async submit() {
+      if (!this.problem.title) {
+        this.$error("Title is required")
+        return
+      }
+      if (
+        !this.problem.description ||
+        !this.problem.input_description ||
+        !this.problem.output_description
+      ) {
+        this.$error("Description, input and output description are required")
+        return
+      }
       if (this.problem.field == null) {
         this.$error("Field is required")
         return

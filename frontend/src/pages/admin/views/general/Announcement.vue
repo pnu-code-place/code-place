@@ -277,6 +277,14 @@ export default {
     async submitAnnouncement(data = undefined) {
       let funcName
       if (!data.title) {
+        if (!this.announcement.title) {
+          this.$error("Title is required")
+          return
+        }
+        if (!this.announcement.content) {
+          this.$error("Content is required")
+          return
+        }
         try {
           this.announcement.content =
             await this.$refs.contentEditor.uploadPendingImages()
