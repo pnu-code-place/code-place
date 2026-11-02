@@ -19,7 +19,7 @@
             <span class="required-asterisk">*</span
             >{{ $t("m.ContestDescription") }}
           </label>
-          <Simditor v-model="contest.description" />
+          <Simditor ref="descEditor" v-model="contest.description" />
         </div>
 
         <!-- 시작/종료 시간 -->
@@ -247,9 +247,34 @@ export default {
     }
   },
   methods: {
-    saveContest() {
+    async saveContest() {
       let funcName =
         this.$route.name === "edit-contest" ? "editContest" : "createContest"
+      if (!this.contest.title) {
+        this.$error("Title is required")
+        return
+      }
+      if (!this.contest.description) {
+        this.$error("Description is required")
+        return
+      }
+      if (!this.contest.start_time || !this.contest.end_time) {
+        this.$error("Start time and end time are required")
+        return
+      }
+      if (
+        new Date(this.contest.start_time) >= new Date(this.contest.end_time)
+      ) {
+        this.$error("Start time must occur earlier than end time")
+        return
+      }
+      try {
+        this.contest.description =
+          await this.$refs.descEditor.uploadPendingImages()
+      } catch (e) {
+        this.$error("Image upload failed: " + e.message)
+        return
+      }
       let data = Object.assign({}, this.contest)
       let ranges = []
       for (let v of data.allowed_ip_ranges) {
