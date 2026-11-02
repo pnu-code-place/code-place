@@ -110,7 +110,11 @@
               ><span class="required-asterisk">*</span
               >{{ $t("m.Description") }}</label
             >
-            <Simditor v-model="problem.description"></Simditor>
+            <Simditor
+              ref="descEditor"
+              defer-upload
+              v-model="problem.description"
+            ></Simditor>
           </div>
           <!-- Input Description -->
           <div class="form-group">
@@ -118,7 +122,11 @@
               ><span class="required-asterisk">*</span
               >{{ $t("m.Input_Description") }}</label
             >
-            <Simditor v-model="problem.input_description"></Simditor>
+            <Simditor
+              ref="inputDescEditor"
+              defer-upload
+              v-model="problem.input_description"
+            ></Simditor>
           </div>
           <!-- Output Description -->
           <div class="form-group">
@@ -126,7 +134,11 @@
               ><span class="required-asterisk">*</span
               >{{ $t("m.Output_Description") }}</label
             >
-            <Simditor v-model="problem.output_description"></Simditor>
+            <Simditor
+              ref="outputDescEditor"
+              defer-upload
+              v-model="problem.output_description"
+            ></Simditor>
           </div>
         </div>
 
@@ -217,7 +229,11 @@
           <label class="custom-label">
             {{ $t("m.Hint") }}
           </label>
-          <Simditor v-model="problem.hint"></Simditor>
+          <Simditor
+            ref="hintEditor"
+            defer-upload
+            v-model="problem.hint"
+          ></Simditor>
         </div>
 
         <!-- 종류 / 테케 / 입출력모드 / 배점 설정 -->
@@ -944,7 +960,7 @@ export default {
         },
       )
     },
-    submit() {
+    async submit() {
       if (this.problem.field == null) {
         this.$error("Field is required")
         return
@@ -1015,6 +1031,18 @@ export default {
       // edit contest problem 时, contest_id会被后来的请求覆盖掉
       if (funcName === "editContestProblem") {
         this.problem.contest_id = this.contest.id
+      }
+      try {
+        this.problem.description =
+          await this.$refs.descEditor.uploadPendingImages()
+        this.problem.input_description =
+          await this.$refs.inputDescEditor.uploadPendingImages()
+        this.problem.output_description =
+          await this.$refs.outputDescEditor.uploadPendingImages()
+        this.problem.hint = await this.$refs.hintEditor.uploadPendingImages()
+      } catch (e) {
+        this.$error("Image upload failed: " + e.message)
+        return
       }
       api[funcName](this.problem)
         .then((res) => {
