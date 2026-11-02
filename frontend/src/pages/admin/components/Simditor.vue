@@ -161,3 +161,10 @@ export default {
 </script>
 
 <style lang="less" scoped></style>
+
+<style lang="less">
+.simditor .simditor-body img {
+  max-width: calc(100% - 10px);
+  height: auto;
+}
+</style>

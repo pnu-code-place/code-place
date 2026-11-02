@@ -2153,7 +2153,10 @@ export default {
 /deep/ .simditor {
   border-radius: 8px;
   border: 1px solid #dcdfe6;
-  overflow: hidden;
+
+  .simditor-wrapper {
+    border-radius: 8px;
+  }
 
   .simditor-toolbar {
     border-radius: 8px 8px 0 0;
