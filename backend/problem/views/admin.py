@@ -1,10 +1,11 @@
 import hashlib
+import html
 import json
 import os
-import re
 import shutil
 import tempfile
 import zipfile
+from html.parser import HTMLParser
 from wsgiref.util import FileWrapper
 
 from django.conf import settings
@@ -643,16 +644,40 @@ class ExportProblemAPI(APIView):
         return resp
 
 
+class ImageTagParser(HTMLParser):
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.tags = []
+
+    def handle_starttag(self, tag, attrs):
+        if tag == "img":
+            self.tags.append((self.getpos(), self.get_starttag_text(), attrs))
+
+
 class ImportProblemAPI(CSRFExemptAPIView, TestCaseZipProcessor):
     request_parsers = ()
-    image_src_pattern = re.compile(r"""(<img\b[^>]*?\bsrc\s*=\s*)(["'])(images/[^"']+)\2""", re.IGNORECASE)
     image_fields = ("description", "input_description", "output_description", "hint")
     image_suffixes = (".gif", ".jpg", ".jpeg", ".bmp", ".png")
+
+    def find_image_tags(self, value):
+        parser = ImageTagParser()
+        parser.feed(value)
+        parser.close()
+        line_starts = [0]
+        for line in value.split("\n")[:-1]:
+            line_starts.append(line_starts[-1] + len(line) + 1)
+        tags = []
+        for (lineno, offset), text, attrs in parser.tags:
+            src = dict(attrs).get("src") or ""
+            if src.startswith("images/"):
+                start = line_starts[lineno - 1] + offset
+                tags.append((start, start + len(text), text, attrs, src))
+        return tags
 
     def collect_images(self, problem_info, problem_dir, name_list):
         images = {}
         for field in self.image_fields:
-            for _, _, src in self.image_src_pattern.findall(problem_info[field]["value"]):
+            for *_, src in self.find_image_tags(problem_info[field]["value"]):
                 if f"{problem_dir}/{src}" not in name_list:
                     raise APIError(f"{problem_info['title']}: {src} 파일이 zip에 없습니다")
                 if os.path.splitext(src)[-1].lower() not in self.image_suffixes:
@@ -670,8 +695,15 @@ class ImportProblemAPI(CSRFExemptAPIView, TestCaseZipProcessor):
                 shutil.copyfileobj(source, target)
             urls[src] = f"{settings.UPLOAD_PREFIX}/{name}"
         for field in self.image_fields:
-            problem_info[field]["value"] = self.image_src_pattern.sub(
-                lambda m: f"{m.group(1)}{m.group(2)}{urls[m.group(3)]}{m.group(2)}", problem_info[field]["value"])
+            value = problem_info[field]["value"]
+            for start, end, text, attrs, src in reversed(self.find_image_tags(value)):
+                attrs_html = "".join(
+                    f" {key}" if key != "src" and val is None
+                    else f' {key}="{html.escape(urls[src] if key == "src" else val)}"'
+                    for key, val in attrs)
+                closing = " />" if text.rstrip().endswith("/>") else ">"
+                value = f"{value[:start]}<img{attrs_html}{closing}{value[end:]}"
+            problem_info[field]["value"] = value
 
     def post(self, request):
         self.created_files = []

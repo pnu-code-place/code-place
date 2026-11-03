@@ -243,6 +243,21 @@ class ImportProblemAPITest(APITestCase):
         self.assertEqual(self.read_upload(re.search(pattern, second.description).group()), b"second")
         self.assertEqual(self.read_upload(re.search(pattern, second.hint).group()), b"hint")
 
+    def test_import_images_with_unusual_html(self):
+        resp = self.import_zip({
+            "1": (self.problem_json("p1", '<p>x</p>\n<img src=images/a.png>\n<img alt="a > b" src="images/b.png" />',
+                                    '<img src="images/a&amp;b.png" alt="c">'),
+                  {"a.png": b"a", "b.png": b"b", "a&b.png": b"amp"}),
+        })
+        self.assertSuccess(resp)
+
+        problem = Problem.objects.get(_id="p1")
+        pattern = rf"{settings.UPLOAD_PREFIX}/\w+\.png"
+        self.assertNotIn("images/", problem.description + problem.hint)
+        self.assertEqual([self.read_upload(path) for path in re.findall(pattern, problem.description)], [b"a", b"b"])
+        self.assertEqual(self.read_upload(re.search(pattern, problem.hint).group()), b"amp")
+        self.assertIn('alt="a &gt; b"', problem.description)
+
     def test_missing_image_is_rejected(self):
         resp = self.import_zip({"1": (self.problem_json("p1", '<img src="images/2.png">'), {"1.png": b"x"})})
         self.assertFailed(resp, "title-p1: images/2.png 파일이 zip에 없습니다")
