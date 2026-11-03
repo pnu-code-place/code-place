@@ -7,6 +7,7 @@ import shutil
 import tempfile
 import zipfile
 from html.parser import HTMLParser
+from itertools import islice
 from json.decoder import scanstring
 from wsgiref.util import FileWrapper
 
@@ -661,6 +662,7 @@ class ImportProblemAPI(CSRFExemptAPIView, TestCaseZipProcessor):
     request_parsers = ()
     image_fields = ("description", "input_description", "output_description", "hint")
     image_suffixes = (".gif", ".jpg", ".jpeg", ".bmp", ".png")
+    missing_test_case_limit = 10
 
     def find_image_tags(self, value):
         parser = ImageTagParser()
@@ -795,18 +797,33 @@ class ImportProblemAPI(CSRFExemptAPIView, TestCaseZipProcessor):
     def check_test_cases(self, problem_info, problem_dir, name_list):
         prefix = f"{problem_dir}/testcase/"
         spj = problem_info["spj"] is not None
+        suffixes = (".in",) if spj else (".in", ".out")
         names = {name[len(prefix):] for name in name_list if name.startswith(prefix)}
-        numbers = [int(name.split(".")[0]) for name in names if re.fullmatch(r"\d+\.(in|out)", name)]
         if "1.in" not in names:
             required = "1.in" if spj else "1.in, 1.out"
             self.add_error(problem_dir, problem_info["title"], "testcase", f"테스트케이스가 없습니다 ({required}부터 필요)")
-            return []
-        suffixes = (".in",) if spj else (".in", ".out")
-        expected = [f"{number}{suffix}" for number in range(1, max(numbers) + 1) for suffix in suffixes]
-        missing = [name for name in expected if name not in names]
-        if missing:
-            self.add_error(problem_dir, problem_info["title"], "testcase", f"{', '.join(missing)} 파일이 없습니다")
-        return expected
+            return set()
+        numbers = sorted({int(name.split(".")[0]) for name in names
+                          if re.fullmatch(r"\d+\.(in|out)", name) and name.endswith(suffixes)})
+
+        def missing_names():
+            previous = 0
+            for number in numbers:
+                for gap in range(previous + 1, number):
+                    for suffix in suffixes:
+                        yield f"{gap}{suffix}"
+                for suffix in suffixes:
+                    if f"{number}{suffix}" not in names:
+                        yield f"{number}{suffix}"
+                previous = number
+
+        missing_count = sum(f"{number}{suffix}" not in names for number in numbers for suffix in suffixes)
+        missing_count += (numbers[-1] - len(numbers)) * len(suffixes)
+        if missing_count:
+            shown = list(islice(missing_names(), self.missing_test_case_limit))
+            rest = f" 외 {missing_count - len(shown)}개" if missing_count > len(shown) else ""
+            self.add_error(problem_dir, problem_info["title"], "testcase", f"{', '.join(shown)}{rest} 파일이 없습니다")
+        return names
 
     def check_test_case_score(self, problem_info, problem_dir, test_cases):
         if problem_info["rule_type"] != ProblemRuleType.OI:
@@ -815,8 +832,9 @@ class ImportProblemAPI(CSRFExemptAPIView, TestCaseZipProcessor):
             self.add_field_error(problem_dir, problem_info["title"], ("test_case_score",),
                                  "OI 문제는 테스트케이스별 점수가 필요합니다")
             return
+        keys = ("input_name",) if problem_info["spj"] is not None else ("input_name", "output_name")
         for index, item in enumerate(problem_info["test_case_score"]):
-            for key in ("input_name", "output_name"):
+            for key in keys:
                 if test_cases and item[key] not in test_cases:
                     self.add_field_error(problem_dir, problem_info["title"], ("test_case_score", index, key),
                                          f"testcase 폴더에 {item[key]} 파일이 없습니다")

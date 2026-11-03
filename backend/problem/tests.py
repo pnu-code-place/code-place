@@ -340,6 +340,41 @@ class ImportProblemAPITest(APITestCase):
         self.assertEqual(errors[0]["column"], 1)
         self.assertEqual(errors[2]["detail"], "")
 
+    def spj_problem_json(self, display_id):
+        info = self.problem_json(display_id, "")
+        info["rule_type"] = "OI"
+        info["spj"] = {"code": "int main() { return 0; }", "language": "C"}
+        info["test_case_score"] = [{"score": 50, "input_name": "1.in", "output_name": "-"},
+                                   {"score": 50, "input_name": "2.in", "output_name": "-"}]
+        return info
+
+    def test_import_oi_spj_problem(self):
+        resp = self.import_files({
+            "1/problem.json": json.dumps(self.spj_problem_json("p1")),
+            "1/testcase/1.in": "1", "1/testcase/2.in": "2",
+        })
+        self.assertSuccess(resp)
+        problem = Problem.objects.get(_id="p1")
+        self.assertTrue(problem.spj)
+        self.assertEqual(problem.total_score, 100)
+
+    def test_spj_ignores_out_files(self):
+        resp = self.import_files({
+            "1/problem.json": json.dumps(self.spj_problem_json("p1")),
+            "1/testcase/1.in": "1", "1/testcase/2.in": "2", "1/testcase/5.out": "5",
+        })
+        self.assertSuccess(resp)
+
+    def test_large_test_case_number(self):
+        resp = self.import_files({
+            "1/problem.json": json.dumps(self.problem_json("p1", "")),
+            "1/testcase/1.in": "1", "1/testcase/1.out": "1", "1/testcase/1000000000.in": "x",
+        })
+        self.assertEqual(self.import_errors(resp), [
+            ("1", "testcase", "", "2.in, 2.out, 3.in, 3.out, 4.in, 4.out, 5.in, 5.out, 6.in, 6.out 외 1999999987개 파일이 없습니다",
+             None),
+        ])
+
     def test_test_case_errors(self):
         oi = self.problem_json("p2", "")
         oi["rule_type"] = "OI"
