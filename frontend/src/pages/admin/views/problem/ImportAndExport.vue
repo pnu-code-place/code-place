@@ -75,8 +75,8 @@
         :limit="3"
         :on-change="onFile1Change"
         :auto-upload="false"
-        :on-success="uploadSucceeded"
-        :on-error="uploadFailed"
+        :on-success="(response) => uploadSucceeded('QDU', response)"
+        :on-error="(err) => uploadFailed('QDU', err)"
       >
         <el-button
           size="small"
@@ -93,6 +93,11 @@
           >{{ $t("m.Button_Upload") }}</el-button
         >
       </el-upload>
+      <import-error-report
+        v-if="importError && importError.ref === 'QDU'"
+        :error="importError"
+        @close="importError = null"
+      />
     </panel>
 
     <panel :title="$t('m.ImportAndExport_Import_FPS')">
@@ -106,8 +111,8 @@
         :limit="3"
         :on-change="onFile2Change"
         :auto-upload="false"
-        :on-success="uploadSucceeded"
-        :on-error="uploadFailed"
+        :on-success="(response) => uploadSucceeded('FPS', response)"
+        :on-error="(err) => uploadFailed('FPS', err)"
       >
         <el-button
           size="small"
@@ -124,15 +129,24 @@
           >{{ $t("m.Button_Upload") }}</el-button
         >
       </el-upload>
+      <import-error-report
+        v-if="importError && importError.ref === 'FPS'"
+        :error="importError"
+        @close="importError = null"
+      />
     </panel>
   </div>
 </template>
 <script>
 import api from "@admin/api"
 import utils from "@/utils/utils"
+import ImportErrorReport from "../../components/ImportErrorReport.vue"
 
 export default {
   name: "import_and_export",
+  components: {
+    ImportErrorReport,
+  },
   data() {
     return {
       fileList1: [],
@@ -145,6 +159,7 @@ export default {
       keyword: "",
       problems: [],
       selected_problems: [],
+      importError: null,
     }
   },
   mounted() {
@@ -176,7 +191,12 @@ export default {
       utils.downloadFile(url)
     },
     submitUpload(ref) {
-      this.$refs[ref].submit()
+      const upload = this.$refs[ref]
+      if (!upload.uploadFiles.some((file) => file.status === "ready")) {
+        this.$error("업로드할 파일을 선택해주세요")
+        return
+      }
+      upload.submit()
     },
     onFile1Change(file, fileList) {
       this.fileList1 = fileList.slice(-1)
@@ -184,9 +204,10 @@ export default {
     onFile2Change(file, fileList) {
       this.fileList2 = fileList.slice(-1)
     },
-    uploadSucceeded(response) {
+    uploadSucceeded(ref, response) {
+      this.importError = null
       if (response.error) {
-        this.$error(response.data)
+        this.showImportError(ref, response.data)
       } else {
         this.$success(
           "Successfully imported " + response.data.import_count + " problems",
@@ -194,8 +215,28 @@ export default {
         this.getProblems()
       }
     },
-    uploadFailed() {
+    uploadFailed(ref, err) {
+      let data
+      try {
+        data = JSON.parse(err.message).data
+      } catch (e) {
+        data = null
+      }
+      if (data) {
+        this.showImportError(ref, data)
+      } else if (err.status === 413) {
+        this.showImportError(ref, "파일 용량이 너무 큽니다")
+      } else {
+        this.showImportError(ref, `서버 오류가 발생했습니다 (${err.status})`)
+      }
+    },
+    showImportError(ref, data) {
       this.$error("Upload failed")
+      if (!data.errors) {
+        const error = { dir: "", title: "", location: "", message: data }
+        data = { message: data, errors: [error] }
+      }
+      this.importError = { ref, ...data }
     },
   },
   watch: {
