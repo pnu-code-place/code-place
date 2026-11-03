@@ -559,7 +559,6 @@ export default defineComponent({
 
     /deep/ img {
       display: inline-block;
-      width: auto;
       max-width: ~"min(100%, 640px)";
       height: auto;
       vertical-align: middle;

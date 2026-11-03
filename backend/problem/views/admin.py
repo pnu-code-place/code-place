@@ -1,9 +1,14 @@
 import hashlib
+import html
 import json
 import os
+import re
 import shutil
 import tempfile
 import zipfile
+from html.parser import HTMLParser
+from itertools import islice
+from json.decoder import scanstring
 from wsgiref.util import FileWrapper
 
 from django.conf import settings
@@ -11,6 +16,7 @@ from django.db import transaction
 from django.db.models import Q
 from django.http import StreamingHttpResponse, FileResponse
 from django.shortcuts import get_object_or_404
+from django.utils import translation
 
 from account.decorators import problem_permission_required, ensure_created_by
 from contest.models import Contest, ContestStatus
@@ -642,10 +648,240 @@ class ExportProblemAPI(APIView):
         return resp
 
 
+class ImageTagParser(HTMLParser):
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.tags = []
+
+    def handle_starttag(self, tag, attrs):
+        if tag == "img":
+            self.tags.append((self.getpos(), self.get_starttag_text(), attrs))
+
+
 class ImportProblemAPI(CSRFExemptAPIView, TestCaseZipProcessor):
     request_parsers = ()
+    image_fields = ("description", "input_description", "output_description", "hint")
+    image_suffixes = (".gif", ".jpg", ".jpeg", ".bmp", ".png")
+    missing_test_case_limit = 10
+
+    def find_image_tags(self, value):
+        parser = ImageTagParser()
+        parser.feed(value)
+        parser.close()
+        line_starts = [0]
+        for line in value.split("\n")[:-1]:
+            line_starts.append(line_starts[-1] + len(line) + 1)
+        tags = []
+        for (lineno, offset), text, attrs in parser.tags:
+            src = dict(attrs).get("src") or ""
+            if src.startswith("images/"):
+                start = line_starts[lineno - 1] + offset
+                tags.append((start, start + len(text), text, attrs, src))
+        return tags
+
+    json_error_messages = {
+        "Expecting value": "값이 와야 합니다",
+        "Expecting ',' delimiter": "쉼표(,)가 빠졌습니다",
+        "Expecting ':' delimiter": "콜론(:)이 빠졌습니다",
+        "Expecting property name enclosed in double quotes": "키는 큰따옴표로 감싸야 합니다 (마지막 쉼표가 남아 있는지 확인해주세요)",
+        "Unterminated string starting at": "문자열이 닫히지 않았습니다",
+        "Invalid control character at": "문자열 안에 줄바꿈이나 탭 같은 제어 문자가 있습니다",
+        "Invalid \\escape": "잘못된 이스케이프 문자입니다",
+        "Extra data": "JSON이 끝난 뒤에 내용이 더 있습니다",
+    }
+
+    def fail(self, message):
+        raise APIError({"message": message, "errors": [self.error_item("", "", "zip", message)]})
+
+    def error_item(self, problem_dir, title, location, message, field="", line=None, column=None, detail=""):
+        return {"dir": problem_dir, "title": title, "location": location, "field": field, "message": message,
+                "line": line, "column": column, "detail": detail}
+
+    def add_error(self, problem_dir, title, location, message, **kwargs):
+        self.errors.append(self.error_item(problem_dir, title, location, message, **kwargs))
+
+    def add_field_error(self, problem_dir, title, path, message, location="problem.json", target=None):
+        field = "".join(f"[{key}]" if isinstance(key, int) else f".{key}" for key in path).lstrip(".")
+        pos = self.find_json_position(self.problem_text, path)
+        if pos is not None and target and self.problem_text.find(target, pos) != -1:
+            pos = self.problem_text.find(target, pos)
+        line = None if pos is None else self.json_location(self.problem_text, pos)[0]
+        self.add_error(problem_dir, title, location, message, field=field, line=line)
+
+    def flatten_errors(self, errors, path=()):
+        if isinstance(errors, dict):
+            for key, value in errors.items():
+                yield from self.flatten_errors(value, path + (key,))
+        elif errors and all(isinstance(item, str) for item in errors):
+            yield path, errors[0]
+        else:
+            for index, value in enumerate(errors):
+                if value:
+                    yield from self.flatten_errors(value, path + (index,))
+
+    def find_json_position(self, text, path):
+        decoder = json.JSONDecoder()
+        whitespace = re.compile(r"\s*")
+
+        def skip(pos):
+            return whitespace.match(text, pos).end()
+
+        pos = skip(0)
+        found = None
+        for key in path:
+            if text[pos] == "{" and isinstance(key, str):
+                pos = skip(pos + 1)
+                while text[pos] == '"':
+                    name, pos = scanstring(text, pos + 1)
+                    pos = skip(skip(pos) + 1)
+                    if name == key:
+                        break
+                    pos = skip(decoder.raw_decode(text, pos)[1])
+                    if text[pos] == ",":
+                        pos = skip(pos + 1)
+                else:
+                    return found
+            elif text[pos] == "[" and isinstance(key, int):
+                pos = skip(pos + 1)
+                for _ in range(key):
+                    if text[pos] == "]":
+                        return found
+                    pos = skip(decoder.raw_decode(text, pos)[1])
+                    if text[pos] == ",":
+                        pos = skip(pos + 1)
+                if text[pos] == "]":
+                    return found
+            else:
+                return found
+            found = pos
+        return found
+
+    def code_snippet(self, text, lineno, colno, width=100):
+        lines = text.split("\n")
+        start, end = max(lineno - 3, 0), min(lineno + 2, len(lines))
+        digits = len(str(end))
+        snippet = []
+        for number in range(start + 1, end + 1):
+            line = lines[number - 1]
+            offset = 0
+            if len(line) > width:
+                center = colno - 1 if number == lineno else 0
+                offset = max(min(center - width // 2, len(line) - width), 0)
+                line = ("…" if offset else "") + line[offset:offset + width] + ("…" if offset + width < len(line) else "")
+            snippet.append(f"{'>' if number == lineno else ' '} {number:>{digits}} | {line}")
+            if number == lineno:
+                snippet.append(f"  {' ' * digits} | {' ' * (colno - 1 - offset + (1 if offset else 0))}^")
+        return "\n".join(snippet)
+
+    def json_location(self, text, pos):
+        lineno = text.count("\n", 0, pos) + 1
+        colno = pos - text.rfind("\n", 0, pos)
+        return lineno, colno
+
+    def collect_images(self, problem_info, problem_dir, name_list):
+        images = {}
+        for field in self.image_fields:
+            for *_, src in self.find_image_tags(problem_info[field]["value"]):
+                if f"{problem_dir}/{src}" not in name_list:
+                    self.add_field_error(problem_dir, problem_info["title"], (field, "value"),
+                                         f"{src} 파일이 없습니다", location="images", target=src)
+                elif os.path.splitext(src)[-1].lower() not in self.image_suffixes:
+                    suffixes = ", ".join(suffix[1:] for suffix in self.image_suffixes)
+                    self.add_field_error(problem_dir, problem_info["title"], (field, "value"),
+                                         f"{src}는 지원하지 않는 형식입니다 ({suffixes})", location="images",
+                                         target=src)
+                else:
+                    images[src] = f"{problem_dir}/{src}"
+        return images
+
+    def check_test_cases(self, problem_info, problem_dir, name_list):
+        prefix = f"{problem_dir}/testcase/"
+        spj = problem_info["spj"] is not None
+        suffixes = (".in",) if spj else (".in", ".out")
+        names = {name[len(prefix):] for name in name_list if name.startswith(prefix)}
+        if "1.in" not in names:
+            required = "1.in" if spj else "1.in, 1.out"
+            self.add_error(problem_dir, problem_info["title"], "testcase", f"테스트케이스가 없습니다 ({required}부터 필요)")
+            return set()
+        numbers = sorted({int(name.split(".")[0]) for name in names
+                          if re.fullmatch(r"\d+\.(in|out)", name) and name.endswith(suffixes)})
+
+        def missing_names():
+            previous = 0
+            for number in numbers:
+                for gap in range(previous + 1, number):
+                    for suffix in suffixes:
+                        yield f"{gap}{suffix}"
+                for suffix in suffixes:
+                    if f"{number}{suffix}" not in names:
+                        yield f"{number}{suffix}"
+                previous = number
+
+        missing_count = sum(f"{number}{suffix}" not in names for number in numbers for suffix in suffixes)
+        missing_count += (numbers[-1] - len(numbers)) * len(suffixes)
+        if missing_count:
+            shown = list(islice(missing_names(), self.missing_test_case_limit))
+            rest = f" 외 {missing_count - len(shown)}개" if missing_count > len(shown) else ""
+            self.add_error(problem_dir, problem_info["title"], "testcase", f"{', '.join(shown)}{rest} 파일이 없습니다")
+        return names
+
+    def check_test_case_score(self, problem_info, problem_dir, test_cases):
+        if problem_info["rule_type"] != ProblemRuleType.OI:
+            return
+        if not problem_info["test_case_score"]:
+            self.add_field_error(problem_dir, problem_info["title"], ("test_case_score",),
+                                 "OI 문제는 테스트케이스별 점수가 필요합니다")
+            return
+        keys = ("input_name",) if problem_info["spj"] is not None else ("input_name", "output_name")
+        for index, item in enumerate(problem_info["test_case_score"]):
+            for key in keys:
+                if test_cases and item[key] not in test_cases:
+                    self.add_field_error(problem_dir, problem_info["title"], ("test_case_score", index, key),
+                                         f"testcase 폴더에 {item[key]} 파일이 없습니다")
+
+    def check_display_id(self, problem_info, problem_dir, display_ids):
+        display_id = problem_info["display_id"]
+        if display_id in display_ids:
+            self.add_field_error(problem_dir, problem_info["title"], ("display_id",),
+                                 f"{display_ids[display_id]} 폴더의 문제와 Problem ID '{display_id}'가 겹칩니다")
+        elif Problem.objects.filter(_id=display_id).exists():
+            self.add_field_error(problem_dir, problem_info["title"], ("display_id",),
+                                 f"Problem ID '{display_id}'인 문제가 이미 있습니다")
+        display_ids.setdefault(display_id, problem_dir)
+
+    def save_images(self, zip_file, problem_info, images):
+        urls = {}
+        for src, path in images.items():
+            name = rand_str(10) + os.path.splitext(src)[-1].lower()
+            target_path = os.path.join(settings.UPLOAD_DIR, name)
+            self.created_files.append(target_path)
+            with zip_file.open(path) as source, open(target_path, "wb") as target:
+                shutil.copyfileobj(source, target)
+            urls[src] = f"{settings.UPLOAD_PREFIX}/{name}"
+        for field in self.image_fields:
+            value = problem_info[field]["value"]
+            for start, end, text, attrs, src in reversed(self.find_image_tags(value)):
+                attrs_html = "".join(
+                    f" {key}" if key != "src" and val is None
+                    else f' {key}="{html.escape(urls[src] if key == "src" else val)}"'
+                    for key, val in attrs)
+                closing = " />" if text.rstrip().endswith("/>") else ">"
+                value = f"{value[:start]}<img{attrs_html}{closing}{value[end:]}"
+            problem_info[field]["value"] = value
 
     def post(self, request):
+        self.created_files = []
+        try:
+            return self.import_problems(request)
+        except Exception:
+            for path in self.created_files:
+                if os.path.isdir(path):
+                    shutil.rmtree(path, ignore_errors=True)
+                elif os.path.exists(path):
+                    os.remove(path)
+            raise
+
+    def import_problems(self, request):
         form = UploadProblemForm(request.POST, request.FILES)
         if form.is_valid():
             file = form.cleaned_data["file"]
@@ -654,11 +890,20 @@ class ImportProblemAPI(CSRFExemptAPIView, TestCaseZipProcessor):
                 for chunk in file:
                     f.write(chunk)
         else:
-            return self.error("Upload failed")
+            self.fail("업로드할 zip 파일을 선택해주세요")
+
+        try:
+            zip_file = zipfile.ZipFile(tmp_file, "r")
+        except zipfile.BadZipFile:
+            self.fail("올바른 zip 파일이 아닙니다")
 
         count = 0
-        with zipfile.ZipFile(tmp_file, "r") as zip_file:
+        self.errors = []
+        display_ids = {}
+        with zip_file:
             name_list = zip_file.namelist()
+            if "problem.json" in name_list:
+                self.fail("problem.json은 문제 폴더 안에 있어야 합니다 (예: 1/problem.json)")
 
             # 공백이 있는 경우도 처리할 수 있도록 수정
             problem_dirs = set()
@@ -666,67 +911,118 @@ class ImportProblemAPI(CSRFExemptAPIView, TestCaseZipProcessor):
                 parts = name.split('/')
                 if len(parts) >= 2 and parts[-1] == 'problem.json':
                     problem_dirs.add('/'.join(parts[:-1]))
+            missing_dirs = self.find_dirs_without_problem_json(name_list, problem_dirs)
+            if not problem_dirs and not missing_dirs:
+                self.fail("zip에 problem.json이 없습니다")
+            for problem_dir in missing_dirs:
+                self.add_error(problem_dir, "", "problem.json", "problem.json 파일이 없습니다")
 
             with transaction.atomic():
-                for problem_dir in problem_dirs:
-                    json_path = f"{problem_dir}/problem.json"
-                    if json_path not in name_list:
-                        return self.error(f"problem.json not found in directory: {problem_dir}")
-
-                    with zip_file.open(json_path) as f:
-                        problem_info = json.load(f)
-                        serializer = ImportProblemSerializer(data=problem_info)
-                        if not serializer.is_valid():
-                            return self.error(f"Invalid problem format, error is {serializer.errors}")
-                        else:
-                            problem_info = serializer.data
-                            for item in problem_info["template"].keys():
-                                if item not in SysOptions.language_names:
-                                    return self.error(f"Unsupported language {item}")
-
-                        problem_info["display_id"] = problem_info["display_id"][:24]
-                        for k, v in problem_info["template"].items():
-                            problem_info["template"][k] = build_problem_template(v["prepend"], v["template"],
-                                                                                 v["append"])
-
-                        spj = problem_info["spj"] is not None
-                        rule_type = problem_info["rule_type"]
-                        test_case_score = problem_info["test_case_score"]
-
-                        # process test case
-                        _, test_case_id = self.process_zip(tmp_file, spj=spj, dir=f"{problem_dir}/testcase/")
-
-                        problem_obj = Problem.objects.create(
-                            _id=problem_info["display_id"],
-                            title=problem_info["title"],
-                            description=problem_info["description"]["value"],
-                            input_description=problem_info["input_description"]["value"],
-                            output_description=problem_info["output_description"]["value"],
-                            hint=problem_info["hint"]["value"],
-                            test_case_score=test_case_score if test_case_score else [],
-                            time_limit=problem_info["time_limit"],
-                            memory_limit=problem_info["memory_limit"],
-                            samples=problem_info["samples"],
-                            template=problem_info["template"],
-                            rule_type=problem_info["rule_type"],
-                            source=problem_info["source"],
-                            spj=spj,
-                            spj_code=problem_info["spj"]["code"] if spj else None,
-                            spj_language=problem_info["spj"]["language"] if spj else None,
-                            spj_version=rand_str(8) if spj else "",
-                            languages=SysOptions.language_names,
-                            created_by=request.user,
-                            visible=True,
-                            field=problem_info["field"],
-                            difficulty=get_difficulty(problem_info["difficulty"]),
-                            total_score=sum(
-                                item["score"] for item in test_case_score) if rule_type == ProblemRuleType.OI else 0,
-                            test_case_id=test_case_id)
-                        for tag_name in problem_info["tags"]:
-                            tag_obj, _ = ProblemTag.objects.get_or_create(name=tag_name)
-                            problem_obj.tags.add(tag_obj)
+                for problem_dir in sorted(problem_dirs, key=natural_sort_key):
+                    if self.import_problem(request, zip_file, tmp_file, problem_dir, name_list, display_ids):
                         count += 1
+                if self.errors:
+                    problem_count = len({error["dir"] for error in self.errors})
+                    raise APIError({"message": f"{problem_count}개 문제에서 {len(self.errors)}개 오류가 발생했습니다",
+                                    "errors": self.errors})
         return self.success({"import_count": count})
+
+    def find_dirs_without_problem_json(self, name_list, problem_dirs):
+        dirs = set()
+        for name in name_list:
+            parts = name.split("/")
+            if parts[0] == "__MACOSX":
+                continue
+            for index, part in enumerate(parts[:-1]):
+                if part in ("testcase", "images"):
+                    dirs.add("/".join(parts[:index]))
+                    break
+            else:
+                if len(parts) >= 2:
+                    dirs.add(parts[0])
+        return sorted((d for d in dirs if d and d not in problem_dirs
+                       and not any(p.startswith(d + "/") for p in problem_dirs)), key=natural_sort_key)
+
+    def import_problem(self, request, zip_file, tmp_file, problem_dir, name_list, display_ids):
+        try:
+            with zip_file.open(f"{problem_dir}/problem.json") as f:
+                text = f.read().decode("utf-8-sig")
+        except UnicodeDecodeError:
+            self.add_error(problem_dir, "", "problem.json", "UTF-8로 인코딩된 파일이 아닙니다")
+            return False
+        try:
+            raw_info = json.loads(text)
+        except json.JSONDecodeError as e:
+            reason = self.json_error_messages.get(e.msg, e.msg)
+            self.add_error(problem_dir, "", "problem.json", f"JSON 문법 오류: {reason}", line=e.lineno,
+                           column=e.colno, detail=self.code_snippet(text, e.lineno, e.colno))
+            return False
+
+        self.problem_text = text
+        title = raw_info.get("title") if isinstance(raw_info, dict) else None
+        title = title if isinstance(title, str) else ""
+        serializer = ImportProblemSerializer(data=raw_info)
+        with translation.override("ko"):
+            valid = serializer.is_valid()
+        if not valid:
+            for path, message in self.flatten_errors(serializer.errors):
+                self.add_field_error(problem_dir, title, path, str(message))
+            return False
+
+        problem_info = serializer.data
+        for item in problem_info["template"].keys():
+            if item not in SysOptions.language_names:
+                self.add_field_error(problem_dir, title, ("template", item), f"지원하지 않는 언어입니다 ({item})")
+
+        problem_info["display_id"] = problem_info["display_id"][:24]
+        for k, v in problem_info["template"].items():
+            problem_info["template"][k] = build_problem_template(v["prepend"], v["template"], v["append"])
+
+        test_cases = self.check_test_cases(problem_info, problem_dir, name_list)
+        self.check_test_case_score(problem_info, problem_dir, test_cases)
+        images = self.collect_images(problem_info, problem_dir, name_list)
+        self.check_display_id(problem_info, problem_dir, display_ids)
+        if self.errors:
+            return False
+
+        spj = problem_info["spj"] is not None
+        rule_type = problem_info["rule_type"]
+        test_case_score = problem_info["test_case_score"]
+
+        # process test case
+        _, test_case_id = self.process_zip(tmp_file, spj=spj, dir=f"{problem_dir}/testcase/")
+        self.created_files.append(os.path.join(settings.TEST_CASE_DIR, test_case_id))
+        self.save_images(zip_file, problem_info, images)
+
+        problem_obj = Problem.objects.create(
+            _id=problem_info["display_id"],
+            title=problem_info["title"],
+            description=problem_info["description"]["value"],
+            input_description=problem_info["input_description"]["value"],
+            output_description=problem_info["output_description"]["value"],
+            hint=problem_info["hint"]["value"],
+            test_case_score=test_case_score if test_case_score else [],
+            time_limit=problem_info["time_limit"],
+            memory_limit=problem_info["memory_limit"],
+            samples=problem_info["samples"],
+            template=problem_info["template"],
+            rule_type=problem_info["rule_type"],
+            source=problem_info["source"],
+            spj=spj,
+            spj_code=problem_info["spj"]["code"] if spj else None,
+            spj_language=problem_info["spj"]["language"] if spj else None,
+            spj_version=rand_str(8) if spj else "",
+            languages=SysOptions.language_names,
+            created_by=request.user,
+            visible=True,
+            field=problem_info["field"],
+            difficulty=get_difficulty(problem_info["difficulty"]),
+            total_score=sum(item["score"] for item in test_case_score) if rule_type == ProblemRuleType.OI else 0,
+            test_case_id=test_case_id)
+        for tag_name in problem_info["tags"]:
+            tag_obj, _ = ProblemTag.objects.get_or_create(name=tag_name)
+            problem_obj.tags.add(tag_obj)
+        return True
 
 
 class FPSProblemImport(CSRFExemptAPIView):

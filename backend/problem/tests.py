@@ -1,13 +1,16 @@
 import copy
 import hashlib
+import io
 import json
 import os
+import re
 import shutil
 from datetime import timedelta
 from zipfile import ZipFile
 
 import requests
 from django.conf import settings
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import DatabaseError
 from django.utils import timezone
 
@@ -180,6 +183,243 @@ class TestCaseUploadAPITest(APITestCase):
                 name = item["input_name"]
                 with open(os.path.join(test_case_dir, name), "r", encoding="utf-8") as f:
                     self.assertEqual(f.read(), name + "\n" + name + "\n" + "end")
+
+
+class ImportProblemAPITest(APITestCase):
+
+    def setUp(self):
+        self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
+        self.url = self.reverse("import_problem_api")
+        self.create_super_admin()
+
+    def tearDown(self):
+        for problem in Problem.objects.all():
+            for path in re.findall(rf"{settings.UPLOAD_PREFIX}/[\w.]+", problem.description + problem.hint):
+                os.remove(os.path.join(settings.UPLOAD_DIR, os.path.basename(path)))
+
+    def problem_json(self, display_id, description, hint=""):
+        return {
+            "display_id": display_id, "title": f"title-{display_id}",
+            "description": {"format": "html", "value": description},
+            "input_description": {"format": "html", "value": "input"},
+            "output_description": {"format": "html", "value": "output"},
+            "hint": {"format": "html", "value": hint},
+            "test_case_score": None, "time_limit": 1000, "memory_limit": 256,
+            "samples": [{"input": "1", "output": "1"}], "template": {}, "spj": None,
+            "rule_type": "ACM", "source": "", "field": 0, "difficulty": "Mid", "answers": [], "tags": ["tag"],
+        }
+
+    def import_zip(self, problems):
+        files = {}
+        for problem_dir, (info, images) in problems.items():
+            files[f"{problem_dir}/problem.json"] = json.dumps(info)
+            files[f"{problem_dir}/testcase/1.in"] = "1"
+            files[f"{problem_dir}/testcase/1.out"] = "1"
+            for name, content in images.items():
+                files[f"{problem_dir}/images/{name}"] = content
+        return self.import_files(files)
+
+    def import_files(self, files):
+        buffer = io.BytesIO()
+        with ZipFile(buffer, "w") as f:
+            for name, content in files.items():
+                f.writestr(name, content)
+        return self.upload(buffer.getvalue())
+
+    def upload(self, content):
+        file = SimpleUploadedFile("problems.zip", content, content_type="application/zip")
+        return self.client.post(self.url, data={"file": file}, format="multipart")
+
+    def import_errors(self, resp):
+        self.assertFailed(resp)
+        self.assertFalse(Problem.objects.exists())
+        return [(error["dir"], error["location"], error["field"], error["message"], error["line"])
+                for error in resp.data["data"]["errors"]]
+
+    def read_upload(self, path):
+        with open(os.path.join(settings.UPLOAD_DIR, os.path.basename(path)), "rb") as f:
+            return f.read()
+
+    def test_import_images_in_zip(self):
+        resp = self.import_zip({
+            "1": (self.problem_json("p1", '<img src="images/1.png">'), {"1.png": b"first"}),
+            "2": (self.problem_json("p2", '<img width="50" src="images/1.png">', "<img src='images/b.jpg'>"),
+                  {"1.png": b"second", "b.jpg": b"hint", "unused.png": b"unused"}),
+        })
+        self.assertSuccess(resp)
+        self.assertEqual(resp.data["data"]["import_count"], 2)
+
+        pattern = rf"{settings.UPLOAD_PREFIX}/\w+\.(?:png|jpg)"
+        first = Problem.objects.get(_id="p1")
+        second = Problem.objects.get(_id="p2")
+        self.assertNotIn("images/", first.description + second.description + second.hint)
+        self.assertIn('width="50"', second.description)
+        self.assertEqual(self.read_upload(re.search(pattern, first.description).group()), b"first")
+        self.assertEqual(self.read_upload(re.search(pattern, second.description).group()), b"second")
+        self.assertEqual(self.read_upload(re.search(pattern, second.hint).group()), b"hint")
+
+    def test_import_images_with_unusual_html(self):
+        resp = self.import_zip({
+            "1": (self.problem_json("p1", '<p>x</p>\n<img src=images/a.png>\n<img alt="a > b" src="images/b.png" />',
+                                    '<img src="images/a&amp;b.png" alt="c">'),
+                  {"a.png": b"a", "b.png": b"b", "a&b.png": b"amp"}),
+        })
+        self.assertSuccess(resp)
+
+        problem = Problem.objects.get(_id="p1")
+        pattern = rf"{settings.UPLOAD_PREFIX}/\w+\.png"
+        self.assertNotIn("images/", problem.description + problem.hint)
+        self.assertEqual([self.read_upload(path) for path in re.findall(pattern, problem.description)], [b"a", b"b"])
+        self.assertEqual(self.read_upload(re.search(pattern, problem.hint).group()), b"amp")
+        self.assertIn('alt="a &gt; b"', problem.description)
+
+    def test_image_errors(self):
+        resp = self.import_zip({
+            "1": (self.problem_json("p1", '<img src="images/2.png"><img src="images/a.svg">'), {"a.svg": b"x"}),
+        })
+        self.assertEqual(self.import_errors(resp), [
+            ("1", "images", "description.value", "images/2.png 파일이 없습니다", 1),
+            ("1", "images", "description.value", "images/a.svg는 지원하지 않는 형식입니다 (gif, jpg, jpeg, bmp, png)", 1),
+        ])
+        errors = resp.data["data"]["errors"]
+        self.assertEqual(errors[0]["title"], "title-p1")
+        self.assertEqual(errors[0]["detail"], "")
+
+    def test_zip_level_errors(self):
+        cases = [
+            (self.client.post(self.url, data={}, format="multipart"), "업로드할 zip 파일을 선택해주세요"),
+            (self.upload(b"not a zip"), "올바른 zip 파일이 아닙니다"),
+            (self.import_files({"readme.txt": "x"}), "zip에 problem.json이 없습니다"),
+            (self.import_files({"problem.json": "{}"}), "problem.json은 문제 폴더 안에 있어야 합니다 (예: 1/problem.json)"),
+        ]
+        for resp, message in cases:
+            self.assertEqual(self.import_errors(resp), [("", "zip", "", message, None)])
+            self.assertEqual(resp.data["data"]["message"], message)
+
+    def test_dirs_without_problem_json(self):
+        resp = self.import_files({
+            "1/problem.json": json.dumps(self.problem_json("p1", "")),
+            "1/testcase/1.in": "1", "1/testcase/1.out": "1",
+            "2/testcase/1.in": "1",
+            "3/readme.txt": "x",
+            "__MACOSX/1/._problem.json": "x",
+        })
+        self.assertEqual(self.import_errors(resp), [
+            ("2", "problem.json", "", "problem.json 파일이 없습니다", None),
+            ("3", "problem.json", "", "problem.json 파일이 없습니다", None),
+        ])
+        resp = self.import_files({"export/1/testcase/1.in": "1", "export/2/testcase/1.in": "1"})
+        self.assertEqual([error[0] for error in self.import_errors(resp)], ["export/1", "export/2"])
+
+    def test_collects_errors_from_all_problems(self):
+        invalid = self.problem_json("p2", "")
+        invalid["time_limit"] = 0
+        del invalid["samples"]
+        language = self.problem_json("p3", "")
+        language["template"] = {"Brainfuck": {"prepend": "", "template": "", "append": ""}}
+        resp = self.import_files({
+            "1/problem.json": "{\n,",
+            "2/problem.json": json.dumps(invalid, indent=2),
+            "3/problem.json": json.dumps(language),
+            "10/problem.json": json.dumps(self.problem_json("p10", "")),
+            "10/testcase/1.in": "1",
+            "10/testcase/1.out": "1",
+        })
+        self.assertEqual(self.import_errors(resp), [
+            ("1", "problem.json", "", "JSON 문법 오류: 키는 큰따옴표로 감싸야 합니다 (마지막 쉼표가 남아 있는지 확인해주세요)", 2),
+            ("2", "problem.json", "time_limit", "이 값이 1보다 크거나 같은지 확인하세요.", 21),
+            ("2", "problem.json", "samples", "이 필드는 필수 항목입니다.", None),
+            ("3", "problem.json", "template.Brainfuck", "지원하지 않는 언어입니다 (Brainfuck)", 1),
+            ("3", "testcase", "", "테스트케이스가 없습니다 (1.in, 1.out부터 필요)", None),
+        ])
+        errors = resp.data["data"]["errors"]
+        self.assertEqual(resp.data["data"]["message"], "3개 문제에서 5개 오류가 발생했습니다")
+        self.assertEqual(errors[1]["title"], "title-p2")
+        self.assertEqual(errors[0]["detail"], "  1 | {\n> 2 | ,\n    | ^")
+        self.assertEqual(errors[1]["detail"], "")
+        self.assertEqual(errors[0]["column"], 1)
+        self.assertEqual(errors[2]["detail"], "")
+
+    def spj_problem_json(self, display_id):
+        info = self.problem_json(display_id, "")
+        info["rule_type"] = "OI"
+        info["spj"] = {"code": "int main() { return 0; }", "language": "C"}
+        info["test_case_score"] = [{"score": 50, "input_name": "1.in", "output_name": "-"},
+                                   {"score": 50, "input_name": "2.in", "output_name": "-"}]
+        return info
+
+    def test_import_oi_spj_problem(self):
+        resp = self.import_files({
+            "1/problem.json": json.dumps(self.spj_problem_json("p1")),
+            "1/testcase/1.in": "1", "1/testcase/2.in": "2",
+        })
+        self.assertSuccess(resp)
+        problem = Problem.objects.get(_id="p1")
+        self.assertTrue(problem.spj)
+        self.assertEqual(problem.total_score, 100)
+
+    def test_spj_ignores_out_files(self):
+        resp = self.import_files({
+            "1/problem.json": json.dumps(self.spj_problem_json("p1")),
+            "1/testcase/1.in": "1", "1/testcase/2.in": "2", "1/testcase/5.out": "5",
+        })
+        self.assertSuccess(resp)
+
+    def test_large_test_case_number(self):
+        resp = self.import_files({
+            "1/problem.json": json.dumps(self.problem_json("p1", "")),
+            "1/testcase/1.in": "1", "1/testcase/1.out": "1", "1/testcase/1000000000.in": "x",
+        })
+        self.assertEqual(self.import_errors(resp), [
+            ("1", "testcase", "", "2.in, 2.out, 3.in, 3.out, 4.in, 4.out, 5.in, 5.out, 6.in, 6.out 외 1999999987개 파일이 없습니다",
+             None),
+        ])
+
+    def test_test_case_errors(self):
+        oi = self.problem_json("p2", "")
+        oi["rule_type"] = "OI"
+        scored = self.problem_json("p3", "")
+        scored["rule_type"] = "OI"
+        scored["test_case_score"] = [{"score": 10, "input_name": "1.in", "output_name": "2.out"}]
+        resp = self.import_files({
+            "1/problem.json": json.dumps(self.problem_json("p1", "")),
+            "1/testcase/1.in": "1", "1/testcase/1.out": "1", "1/testcase/2.in": "2",
+            "1/testcase/4.in": "4", "1/testcase/4.out": "4",
+            "2/problem.json": json.dumps(oi),
+            "2/testcase/1.in": "1", "2/testcase/1.out": "1",
+            "3/problem.json": json.dumps(scored),
+            "3/testcase/1.in": "1", "3/testcase/1.out": "1",
+        })
+        self.assertEqual(self.import_errors(resp), [
+            ("1", "testcase", "", "2.out, 3.in, 3.out 파일이 없습니다", None),
+            ("2", "problem.json", "test_case_score", "OI 문제는 테스트케이스별 점수가 필요합니다", 1),
+            ("3", "problem.json", "test_case_score[0].output_name", "testcase 폴더에 2.out 파일이 없습니다", 1),
+        ])
+
+    def test_duplicate_display_id(self):
+        self.assertSuccess(self.import_zip({"1": (self.problem_json("p1", ""), {})}))
+        resp = self.import_zip({
+            "1": (self.problem_json("p1", ""), {}),
+            "2": (self.problem_json("p2", ""), {}),
+            "3": (self.problem_json("p2", ""), {}),
+        })
+        self.assertFailed(resp)
+        self.assertEqual(Problem.objects.count(), 1)
+        errors = [(error["dir"], error["message"]) for error in resp.data["data"]["errors"]]
+        self.assertEqual(errors, [("1", "Problem ID 'p1'인 문제가 이미 있습니다"),
+                                  ("3", "2 폴더의 문제와 Problem ID 'p2'가 겹칩니다")])
+
+    def test_failure_rolls_back_all_problems_and_files(self):
+        uploads = set(os.listdir(settings.UPLOAD_DIR))
+        test_cases = set(os.listdir(settings.TEST_CASE_DIR))
+        resp = self.import_zip({
+            "1": (self.problem_json("p1", '<img src="images/1.png">'), {"1.png": b"x"}),
+            "2": (self.problem_json("p2", '<img src="images/1.png">'), {"1.png": b"x"}),
+            "3": (self.problem_json("p3", '<img src="images/missing.png">'), {}),
+        })
+        self.assertEqual(self.import_errors(resp), [("3", "images", "description.value", "images/missing.png 파일이 없습니다", 1)])
+        self.assertEqual(set(os.listdir(settings.UPLOAD_DIR)), uploads)
+        self.assertEqual(set(os.listdir(settings.TEST_CASE_DIR)), test_cases)
 
 
 class ProblemAdminAPITest(APITestCase):
