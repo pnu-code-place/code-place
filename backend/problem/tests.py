@@ -1,13 +1,16 @@
 import copy
 import hashlib
+import io
 import json
 import os
+import re
 import shutil
 from datetime import timedelta
 from zipfile import ZipFile
 
 import requests
 from django.conf import settings
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import DatabaseError
 from django.utils import timezone
 
@@ -180,6 +183,88 @@ class TestCaseUploadAPITest(APITestCase):
                 name = item["input_name"]
                 with open(os.path.join(test_case_dir, name), "r", encoding="utf-8") as f:
                     self.assertEqual(f.read(), name + "\n" + name + "\n" + "end")
+
+
+class ImportProblemAPITest(APITestCase):
+
+    def setUp(self):
+        self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
+        self.url = self.reverse("import_problem_api")
+        self.create_super_admin()
+
+    def tearDown(self):
+        for problem in Problem.objects.all():
+            for path in re.findall(rf"{settings.UPLOAD_PREFIX}/[\w.]+", problem.description + problem.hint):
+                os.remove(os.path.join(settings.UPLOAD_DIR, os.path.basename(path)))
+
+    def problem_json(self, display_id, description, hint=""):
+        return {
+            "display_id": display_id, "title": f"title-{display_id}",
+            "description": {"format": "html", "value": description},
+            "input_description": {"format": "html", "value": "input"},
+            "output_description": {"format": "html", "value": "output"},
+            "hint": {"format": "html", "value": hint},
+            "test_case_score": None, "time_limit": 1000, "memory_limit": 256,
+            "samples": [{"input": "1", "output": "1"}], "template": {}, "spj": None,
+            "rule_type": "ACM", "source": "", "field": 0, "difficulty": "Mid", "answers": [], "tags": ["tag"],
+        }
+
+    def import_zip(self, problems):
+        buffer = io.BytesIO()
+        with ZipFile(buffer, "w") as f:
+            for problem_dir, (info, images) in problems.items():
+                f.writestr(f"{problem_dir}/problem.json", json.dumps(info))
+                f.writestr(f"{problem_dir}/testcase/1.in", "1")
+                f.writestr(f"{problem_dir}/testcase/1.out", "1")
+                for name, content in images.items():
+                    f.writestr(f"{problem_dir}/images/{name}", content)
+        file = SimpleUploadedFile("problems.zip", buffer.getvalue(), content_type="application/zip")
+        return self.client.post(self.url, data={"file": file}, format="multipart")
+
+    def read_upload(self, path):
+        with open(os.path.join(settings.UPLOAD_DIR, os.path.basename(path)), "rb") as f:
+            return f.read()
+
+    def test_import_images_in_zip(self):
+        resp = self.import_zip({
+            "1": (self.problem_json("p1", '<img src="images/1.png">'), {"1.png": b"first"}),
+            "2": (self.problem_json("p2", '<img width="50" src="images/1.png">', "<img src='images/b.jpg'>"),
+                  {"1.png": b"second", "b.jpg": b"hint", "unused.png": b"unused"}),
+        })
+        self.assertSuccess(resp)
+        self.assertEqual(resp.data["data"]["import_count"], 2)
+
+        pattern = rf"{settings.UPLOAD_PREFIX}/\w+\.(?:png|jpg)"
+        first = Problem.objects.get(_id="p1")
+        second = Problem.objects.get(_id="p2")
+        self.assertNotIn("images/", first.description + second.description + second.hint)
+        self.assertIn('width="50"', second.description)
+        self.assertEqual(self.read_upload(re.search(pattern, first.description).group()), b"first")
+        self.assertEqual(self.read_upload(re.search(pattern, second.description).group()), b"second")
+        self.assertEqual(self.read_upload(re.search(pattern, second.hint).group()), b"hint")
+
+    def test_missing_image_is_rejected(self):
+        resp = self.import_zip({"1": (self.problem_json("p1", '<img src="images/2.png">'), {"1.png": b"x"})})
+        self.assertFailed(resp, "title-p1: images/2.png 파일이 zip에 없습니다")
+        self.assertFalse(Problem.objects.exists())
+
+    def test_unsupported_image_is_rejected(self):
+        resp = self.import_zip({"1": (self.problem_json("p1", '<img src="images/a.svg">'), {"a.svg": b"x"})})
+        self.assertFailed(resp, "title-p1: images/a.svg 는 지원하지 않는 이미지 형식입니다")
+        self.assertFalse(Problem.objects.exists())
+
+    def test_failure_rolls_back_all_problems_and_files(self):
+        uploads = set(os.listdir(settings.UPLOAD_DIR))
+        test_cases = set(os.listdir(settings.TEST_CASE_DIR))
+        resp = self.import_zip({
+            "1": (self.problem_json("p1", '<img src="images/1.png">'), {"1.png": b"x"}),
+            "2": (self.problem_json("p2", '<img src="images/1.png">'), {"1.png": b"x"}),
+            "3": (self.problem_json("p3", '<img src="images/missing.png">'), {}),
+        })
+        self.assertFailed(resp, "title-p3: images/missing.png 파일이 zip에 없습니다")
+        self.assertFalse(Problem.objects.exists())
+        self.assertEqual(set(os.listdir(settings.UPLOAD_DIR)), uploads)
+        self.assertEqual(set(os.listdir(settings.TEST_CASE_DIR)), test_cases)
 
 
 class ProblemAdminAPITest(APITestCase):

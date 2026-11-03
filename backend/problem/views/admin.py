@@ -1,6 +1,7 @@
 import hashlib
 import json
 import os
+import re
 import shutil
 import tempfile
 import zipfile
@@ -644,8 +645,47 @@ class ExportProblemAPI(APIView):
 
 class ImportProblemAPI(CSRFExemptAPIView, TestCaseZipProcessor):
     request_parsers = ()
+    image_src_pattern = re.compile(r"""(<img\b[^>]*?\bsrc\s*=\s*)(["'])(images/[^"']+)\2""", re.IGNORECASE)
+    image_fields = ("description", "input_description", "output_description", "hint")
+    image_suffixes = (".gif", ".jpg", ".jpeg", ".bmp", ".png")
+
+    def collect_images(self, problem_info, problem_dir, name_list):
+        images = {}
+        for field in self.image_fields:
+            for _, _, src in self.image_src_pattern.findall(problem_info[field]["value"]):
+                if f"{problem_dir}/{src}" not in name_list:
+                    raise APIError(f"{problem_info['title']}: {src} 파일이 zip에 없습니다")
+                if os.path.splitext(src)[-1].lower() not in self.image_suffixes:
+                    raise APIError(f"{problem_info['title']}: {src} 는 지원하지 않는 이미지 형식입니다")
+                images[src] = f"{problem_dir}/{src}"
+        return images
+
+    def save_images(self, zip_file, problem_info, images):
+        urls = {}
+        for src, path in images.items():
+            name = rand_str(10) + os.path.splitext(src)[-1].lower()
+            target_path = os.path.join(settings.UPLOAD_DIR, name)
+            self.created_files.append(target_path)
+            with zip_file.open(path) as source, open(target_path, "wb") as target:
+                shutil.copyfileobj(source, target)
+            urls[src] = f"{settings.UPLOAD_PREFIX}/{name}"
+        for field in self.image_fields:
+            problem_info[field]["value"] = self.image_src_pattern.sub(
+                lambda m: f"{m.group(1)}{m.group(2)}{urls[m.group(3)]}{m.group(2)}", problem_info[field]["value"])
 
     def post(self, request):
+        self.created_files = []
+        try:
+            return self.import_problems(request)
+        except Exception:
+            for path in self.created_files:
+                if os.path.isdir(path):
+                    shutil.rmtree(path, ignore_errors=True)
+                elif os.path.exists(path):
+                    os.remove(path)
+            raise
+
+    def import_problems(self, request):
         form = UploadProblemForm(request.POST, request.FILES)
         if form.is_valid():
             file = form.cleaned_data["file"]
@@ -671,23 +711,25 @@ class ImportProblemAPI(CSRFExemptAPIView, TestCaseZipProcessor):
                 for problem_dir in problem_dirs:
                     json_path = f"{problem_dir}/problem.json"
                     if json_path not in name_list:
-                        return self.error(f"problem.json not found in directory: {problem_dir}")
+                        raise APIError(f"problem.json not found in directory: {problem_dir}")
 
                     with zip_file.open(json_path) as f:
                         problem_info = json.load(f)
                         serializer = ImportProblemSerializer(data=problem_info)
                         if not serializer.is_valid():
-                            return self.error(f"Invalid problem format, error is {serializer.errors}")
+                            raise APIError(f"Invalid problem format, error is {serializer.errors}")
                         else:
                             problem_info = serializer.data
                             for item in problem_info["template"].keys():
                                 if item not in SysOptions.language_names:
-                                    return self.error(f"Unsupported language {item}")
+                                    raise APIError(f"Unsupported language {item}")
 
                         problem_info["display_id"] = problem_info["display_id"][:24]
                         for k, v in problem_info["template"].items():
                             problem_info["template"][k] = build_problem_template(v["prepend"], v["template"],
                                                                                  v["append"])
+
+                        images = self.collect_images(problem_info, problem_dir, name_list)
 
                         spj = problem_info["spj"] is not None
                         rule_type = problem_info["rule_type"]
@@ -695,6 +737,8 @@ class ImportProblemAPI(CSRFExemptAPIView, TestCaseZipProcessor):
 
                         # process test case
                         _, test_case_id = self.process_zip(tmp_file, spj=spj, dir=f"{problem_dir}/testcase/")
+                        self.created_files.append(os.path.join(settings.TEST_CASE_DIR, test_case_id))
+                        self.save_images(zip_file, problem_info, images)
 
                         problem_obj = Problem.objects.create(
                             _id=problem_info["display_id"],
