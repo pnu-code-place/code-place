@@ -238,7 +238,7 @@ export default {
 }
 
 .code-editor-wrapper .CodeMirror-lines {
-  padding-right: 32px !important;
+  padding-right: 12px !important;
 }
 
 .code-editor-wrapper .CodeMirror pre.CodeMirror-line,
