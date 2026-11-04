@@ -54,7 +54,6 @@ export const m = {
   Code_Editor_External_Paste_Blocked:
     "해당 문제에서는 외부 소스로부터의 붙여넣기가 허용되지 않습니다.",
   // AIAssistantDrawer.vue
-  AI_Assistant_Default_Username: "사용자",
   AI_Assistant_Empty_Welcome: "코플이가 기다리고 있어요!",
   AI_Assistant_Empty_Bubble_1: "문제랑 지금 쓰는 코드, 같이 보고 있어요 👀",
   AI_Assistant_Empty_Bubble_2: "막히면 바로 물어봐요!",

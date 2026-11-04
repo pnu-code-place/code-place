@@ -45,7 +45,6 @@ export const m = {
   Code_Editor_Submission_Result: "提交結果",
   Code_Editor_External_Paste_Blocked: "本題不允許貼上外部內容。",
   // AIAssistantDrawer.vue
-  AI_Assistant_Default_Username: "使用者",
   AI_Assistant_Empty_Welcome: "코플이在等你！",
   AI_Assistant_Empty_Bubble_1: "題目和你正在寫的程式碼，我都在看 👀",
   AI_Assistant_Empty_Bubble_2: "卡住了就直接問吧！",
