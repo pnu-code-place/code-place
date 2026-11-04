@@ -1,6 +1,9 @@
 import MarkdownIt from "markdown-it"
+import markdownItCjkFriendly from "markdown-it-cjk-friendly"
+import markdownItTexmath from "markdown-it-texmath"
+import katex from "katex"
 import DOMPurify from "dompurify"
-// 언어 등록은 @/plugins/highlight 에서 이미 되어 있음 (같은 core 인스턴스 공유)
+
 const hljs = require("highlight.js/lib/core")
 
 const LANG_ALIAS = {
@@ -15,6 +18,14 @@ const md = new MarkdownIt({
   linkify: false,
   breaks: true, // 줄바꿈 한 번을 <br> 로 표시
 })
+  // 한글 조사가 붙어도 굵게·기울임 인식
+  .use(markdownItCjkFriendly)
+  // $...$ 수식 KaTeX 렌더링
+  .use(markdownItTexmath, {
+    engine: katex,
+    delimiters: "dollars",
+    katexOptions: { throwOnError: false },
+  })
 
 function highlightCode(code, rawLang) {
   const lang = LANG_ALIAS[(rawLang || "").toLowerCase()] || rawLang
