@@ -270,6 +270,7 @@
           :problemID="problemID"
           :contestID="contestID"
           :code="code"
+          :language="language"
           @close="closeAIAssistant"
         />
       </pane>
