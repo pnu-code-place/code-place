@@ -2,7 +2,7 @@
   <section
     class="ai-assistant-drawer"
     :class="{ 'dark-theme': isDarkMode }"
-    :aria-label="$t('m.AI_Assistant')"
+    :aria-label="$t('m.AI_Assistant_Name')"
   >
     <!-- 패널 탭 헤더 -->
     <header class="drawer-header">
@@ -10,30 +10,10 @@
         <span class="header-tab-icon">
           <img src="@/assets/images/AIAssistant.svg" alt="" />
         </span>
-        <span class="header-title">{{ $t("m.AI_Assistant") }}</span>
+        <span class="header-title">{{ $t("m.AI_Assistant_Name") }}</span>
       </div>
 
       <div class="header-actions">
-        <!-- 로컬 전용 가짜 응답 모듈이 있을 때만 표시 -->
-        <button
-          v-if="mockAvailable"
-          type="button"
-          class="mock-toggle"
-          :class="{ on: mockEnabled }"
-          @click="toggleMock"
-        >
-          Mock {{ mockEnabled ? "ON" : "OFF" }}
-        </button>
-        <button
-          type="button"
-          class="header-icon-btn"
-          :title="$t('m.AI_Assistant_New_Conversation')"
-          :aria-label="$t('m.AI_Assistant_New_Conversation')"
-          :disabled="isLoading"
-          @click="resetConversation"
-        >
-          <i class="fas fa-redo-alt"></i>
-        </button>
         <button
           type="button"
           class="header-icon-btn"
@@ -49,45 +29,15 @@
     <!-- 대화 영역 -->
     <div ref="chatBody" class="drawer-body" @scroll="onBodyScroll">
       <div v-if="messages.length === 0 && !isLoading" class="empty-state">
+        <div class="empty-bubble" aria-live="polite">
+          <transition name="bubble-swap" mode="out-in">
+            <span :key="bubbleIndex">{{ bubbleLines[bubbleIndex] }}</span>
+          </transition>
+        </div>
         <div class="empty-avatar">
           <img src="@/assets/images/AIAssistant.svg" alt="" />
         </div>
-        <p class="empty-title">{{ $t("m.AI_Assistant_Ask_Title") }}</p>
-        <!-- 대회: 기존 단계별 힌트 방식 유지 -->
-        <template v-if="isContestMode">
-          <p class="empty-desc">{{ $t("m.AI_Assistant_Contest_Desc") }}</p>
-          <ul class="empty-guide">
-            <li>
-              <i class="fas fa-lightbulb"></i
-              >{{ $t("m.AI_Assistant_Contest_Guide_Approach") }}
-            </li>
-            <li>
-              <i class="fas fa-bug"></i
-              >{{ $t("m.AI_Assistant_Contest_Guide_Error") }}
-            </li>
-            <li>
-              <i class="fas fa-stream"></i
-              >{{ $t("m.AI_Assistant_Contest_Guide_Algorithm") }}
-            </li>
-          </ul>
-        </template>
-        <template v-else>
-          <p class="empty-desc">{{ $t("m.AI_Assistant_General_Desc") }}</p>
-          <ul class="empty-guide">
-            <li>
-              <i class="fas fa-lightbulb"></i
-              >{{ $t("m.AI_Assistant_General_Guide_Start") }}
-            </li>
-            <li>
-              <i class="fas fa-search"></i
-              >{{ $t("m.AI_Assistant_General_Guide_Direction") }}
-            </li>
-            <li>
-              <i class="fas fa-book"></i
-              >{{ $t("m.AI_Assistant_General_Guide_Syntax") }}
-            </li>
-          </ul>
-        </template>
+        <p class="empty-title">{{ $t("m.AI_Assistant_Empty_Welcome") }}</p>
       </div>
 
       <div v-else class="messages-list">
@@ -111,7 +61,7 @@
               >
                 <img src="@/assets/images/AIAssistant.svg" alt="" />
               </span>
-              <span class="sender-name">{{ $t("m.AI_Assistant") }}</span>
+              <span class="sender-name">{{ $t("m.AI_Assistant_Name") }}</span>
               <span
                 v-if="msg.parsed && msg.parsed.level"
                 class="hint-level-badge"
@@ -131,24 +81,17 @@
             </div>
 
             <div v-else-if="msg.error" class="assistant-body error-content">
-              <i class="fas fa-exclamation-circle"></i>
-              <span>{{ msg.text }}</span>
+              {{ msg.text }}
             </div>
 
-            <!-- 정답 요구·문제와 무관한 질문 등에 대한 안내 -->
-            <div v-else-if="msg.notice" class="assistant-body notice-content">
-              <i class="fas fa-info-circle"></i>
-              <span>{{ msg.text }}</span>
-            </div>
-
-            <!-- 일반 문제: 자유 질문형 답변 (마크다운) -->
+            <!-- 일반 문제 마크다운 답변 -->
             <div
               v-else-if="msg.html !== undefined"
               class="assistant-body markdown-body"
               v-html="msg.html"
             ></div>
 
-            <!-- 대회: 기존 단계별 힌트 형식 -->
+            <!-- 대회 단계 힌트 -->
             <div v-else class="assistant-body">
               <template v-if="msg.parsed && msg.parsed.sections.length">
                 <div
@@ -185,7 +128,7 @@
       >
         <textarea
           ref="inputArea"
-          v-model="questionInput"
+          :value="questionInput"
           class="question-textarea"
           rows="1"
           :placeholder="
@@ -194,6 +137,7 @@
               : $t('m.AI_Assistant_Input_Placeholder')
           "
           :disabled="isLoading || hintsExhausted"
+          @input="questionInput = $event.target.value"
           @keydown="handleKeydown"
           @compositionstart="isComposing = true"
           @compositionend="isComposing = false"
@@ -239,7 +183,6 @@
         </div>
       </div>
       <p v-if="inputWarning" class="footer-hint warning">{{ inputWarning }}</p>
-      <p v-else class="footer-hint">{{ $t("m.AI_Assistant_Shortcut_Hint") }}</p>
     </footer>
   </section>
 </template>
@@ -248,23 +191,9 @@
 import api from "@oj/api"
 import { mapGetters } from "vuex"
 import { renderAIMarkdown } from "./aiAssistantMarkdown"
+import { aiHintErrorText } from "./aiAssistantErrors"
 
-// 로컬 전용 가짜 응답 모듈(aiAssistantMock.local.js). 저장소에 포함하지 않으며, 없으면 사용하지 않음
-const localMock = (() => {
-  if (process.env.NODE_ENV === "production") return null
-  const context = require.context(
-    "./",
-    false,
-    /^\.\/aiAssistantMock\.local\.js$/,
-  )
-  return context.keys().length ? context(context.keys()[0]) : null
-})()
-
-// 대회는 기존 5단계 힌트 정책 유지
 const CONTEST_HINT_LIMIT = 5
-// 일반 문제 질문 횟수. null 이면 제한 없음, 표시 안 함
-const GENERAL_QUESTION_LIMIT = null
-// 질문 최대 글자수
 const MAX_QUESTION_LENGTH = 500
 
 export default {
@@ -286,41 +215,42 @@ export default {
       type: String,
       default: "",
     },
+    language: {
+      type: String,
+      default: "",
+    },
   },
   data() {
     return {
       questionInput: "",
       isLoading: false,
       messages: [],
-      eventSource: null,
+      activeStream: null,
       problemHintsUsed: 0,
       isComposing: false,
-      // 사용자가 위로 스크롤해 읽는 중이면 스트리밍 중에도 강제로 내리지 않음
+      // 위로 스크롤해 읽는 중이면 자동 스크롤 중지
       stickToBottom: true,
-      mockAvailable: !!localMock,
-      mockEnabled: !!localMock && localMock.isAIMockEnabled(),
+      bubbleIndex: 0,
+      bubbleTimer: null,
     }
   },
   computed: {
     ...mapGetters(["user", "isAdminRole", "isDarkMode"]),
 
-    username() {
-      return (
-        (this.user && this.user.username) ||
-        this.$t("m.AI_Assistant_Default_Username")
-      )
-    },
-
-    userAvatar() {
-      return (this.user && this.user.avatar) || null
-    },
-
     isContestMode() {
       return !!this.contestID
     },
 
+    bubbleLines() {
+      const keys = this.isContestMode
+        ? ["Contest_Bubble_1", "Contest_Bubble_2", "Contest_Bubble_3"]
+        : ["Bubble_1", "Bubble_2", "Bubble_3"]
+      return keys.map((k) => this.$t(`m.AI_Assistant_Empty_${k}`))
+    },
+
+    // 일반 문제는 횟수 제한 없음
     questionLimit() {
-      return this.isContestMode ? CONTEST_HINT_LIMIT : GENERAL_QUESTION_LIMIT
+      return this.isContestMode ? CONTEST_HINT_LIMIT : null
     },
 
     maxQuestionLength() {
@@ -363,7 +293,7 @@ export default {
 
     renderMessages() {
       return this.messages.map((m) => {
-        if (m.role === "assistant" && !m.thinking && !m.error && !m.notice) {
+        if (m.role === "assistant" && !m.thinking && !m.error) {
           if (this.isContestMode) {
             return { ...m, parsed: this.parseHint(m.text) }
           }
@@ -378,11 +308,11 @@ export default {
       if (newVal) {
         this.onOpen()
       } else {
-        this.closeEventSource()
+        this.closeStream()
       }
     },
     problemID() {
-      this.closeEventSource()
+      this.closeStream()
       this.isLoading = false
       this.messages = []
       this.problemHintsUsed = 0
@@ -398,11 +328,32 @@ export default {
     if (this.visible) {
       this.onOpen()
     }
+    this.startBubble()
   },
   beforeDestroy() {
-    this.closeEventSource()
+    this.closeStream()
+    this.stopBubble()
   },
   methods: {
+    // 빈 화면 말풍선 문구 순환
+    startBubble() {
+      this.stopBubble()
+      const reduceMotion =
+        window.matchMedia &&
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      if (reduceMotion) return
+      this.bubbleTimer = setInterval(() => {
+        this.bubbleIndex = (this.bubbleIndex + 1) % this.bubbleLines.length
+      }, 3200)
+    },
+
+    stopBubble() {
+      if (this.bubbleTimer) {
+        clearInterval(this.bubbleTimer)
+        this.bubbleTimer = null
+      }
+    },
+
     onOpen() {
       this.fetchHintHistory()
       this.$nextTick(() => {
@@ -417,8 +368,8 @@ export default {
         const el = this.$refs.inputArea
         if (!el) return
 
-        const minHeight = 22
-        const maxHeight = 160
+        const minHeight = 48
+        const maxHeight = 200
 
         el.style.height = "auto"
         const scrollHeight = el.scrollHeight || 0
@@ -431,15 +382,15 @@ export default {
       this.$emit("close")
     },
 
-    toggleMock() {
-      this.mockEnabled = !this.mockEnabled
-      localMock.setAIMockEnabled(this.mockEnabled)
-    },
-
     focusInput() {
       if (this.$refs.inputArea) {
         this.$refs.inputArea.focus()
       }
+    },
+
+    // 입력창 재활성화 뒤 포커스
+    refocusInput() {
+      this.$nextTick(() => this.focusInput())
     },
 
     formatTime(date = new Date()) {
@@ -460,33 +411,27 @@ export default {
           )
           this.problemHintsUsed = logs.length
 
-          // 사용자가 새로 작성한 대화 내역이 없을 때만 히스토리로 초기 세팅
+          // 새 대화가 없을 때만 기록으로 채움
           const userMessages = this.messages.filter((m) => m.role === "user")
           if (userMessages.length === 0) {
             this.messages = logs.reduce((acc, log, idx) => {
               const timeStr = log.created_at
                 ? this.formatTime(new Date(log.created_at))
                 : ""
-              // 질문이 함께 저장된 기록이면 질문-답변 한 쌍으로 표시
-              if (log.question) {
+              if (log.student_question) {
                 acc.push({
                   id: `history_q_${idx}`,
                   role: "user",
-                  sender: this.username,
-                  text: log.question,
-                  isHistory: true,
+                  text: log.student_question,
                   timeStr,
                 })
               }
               acc.push({
                 id: `history_${idx}`,
                 role: "assistant",
-                sender: this.$t("m.AI_Assistant"),
                 text: log.hint_content,
                 error: false,
                 thinking: false,
-                notice: false,
-                isHistory: true,
                 timeStr,
               })
               return acc
@@ -499,17 +444,8 @@ export default {
         })
     },
 
-    resetConversation() {
-      if (this.isLoading) return
-      this.closeEventSource()
-      this.messages = []
-      this.questionInput = ""
-      this.adjustInputHeight()
-      this.fetchHintHistory()
-    },
-
     handleKeydown(e) {
-      // 한글 IME 조합 중 Enter는 글자 확정용이므로 전송하지 않음
+      // IME 조합 중 Enter 무시
       if (this.isComposing || e.isComposing || e.keyCode === 229) return
       if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault()
@@ -521,7 +457,7 @@ export default {
       const text = this.questionInput.trim()
       if (!this.canSend) return
 
-      this.closeEventSource()
+      this.closeStream()
       this.isLoading = true
       this.questionInput = ""
       this.adjustInputHeight()
@@ -529,8 +465,6 @@ export default {
       const userMessage = {
         id: `user_${Date.now()}`,
         role: "user",
-        sender: this.username,
-        avatar: this.userAvatar,
         text: text,
         timeStr: this.formatTime(),
       }
@@ -539,20 +473,16 @@ export default {
       const assistantMessage = {
         id: `ai_${Date.now()}`,
         role: "assistant",
-        sender: this.$t("m.AI_Assistant"),
         text: "",
         thinking: true,
         error: false,
-        notice: false,
         timeStr: this.formatTime(),
       }
       this.messages.push(assistantMessage)
       this.scrollToBottom(true)
 
       const assistantIndex = this.messages.length - 1
-      const useMock = this.mockEnabled
 
-      // 실제 SSE 와 가짜 응답 모드가 같은 처리기를 사용
       const handlers = {
         chunk: (payload) => {
           if (this.messages[assistantIndex]) {
@@ -565,88 +495,71 @@ export default {
           }
           this.scrollToBottom()
         },
-        // 정답 요구·무관한 질문 등에 대한 안내. 백엔드 미구현
-        notice: (payload) => {
-          if (this.messages[assistantIndex]) {
-            this.messages[assistantIndex].thinking = false
-            this.messages[assistantIndex].notice = true
-            this.messages[assistantIndex].text = payload.message || ""
-          }
-          this.scrollToBottom()
-        },
         "app-error": (payload) => {
           if (this.messages[assistantIndex]) {
             this.messages[assistantIndex].thinking = false
             this.messages[assistantIndex].error = true
-            this.messages[assistantIndex].text =
-              payload.message || this.$t("m.AI_Assistant_Fetch_Failed")
+            this.messages[assistantIndex].text = aiHintErrorText(this, payload)
           }
           this.isLoading = false
-          this.closeEventSource()
+          this.closeStream()
+          this.refocusInput()
           this.scrollToBottom()
         },
         done: () => {
           this.isLoading = false
-          this.closeEventSource()
-          if (!useMock) this.fetchHintHistory()
+          this.closeStream()
+          this.refocusInput()
+          this.fetchHintHistory()
+        },
+        // done 없이 연결이 끊긴 경우
+        failure: () => {
+          if (
+            this.messages[assistantIndex] &&
+            this.messages[assistantIndex].thinking
+          ) {
+            this.messages[assistantIndex].thinking = false
+            this.messages[assistantIndex].error = true
+            this.messages[assistantIndex].text = this.$t(
+              "m.AI_Assistant_Fetch_Failed",
+            )
+          }
+          this.isLoading = false
+          this.closeStream()
+          this.refocusInput()
+          this.scrollToBottom()
         },
       }
 
-      if (useMock) {
-        this.eventSource = localMock.createMockStream(text, handlers)
+      // 일반 문제 자유 질문
+      if (!this.contestID) {
+        this.activeStream = api.chatAIHint(
+          {
+            problemID: this.problemID,
+            question: text,
+            code: this.code,
+            language: this.language,
+          },
+          handlers,
+        )
         return
       }
 
-      const streamUrl = api.getProblemLLMHintUrl(
-        this.problemID,
-        this.code,
-        this.contestID,
-        text,
+      // 대회 5단계 힌트
+      this.activeStream = api.stageAIHint(
+        {
+          problemID: this.problemID,
+          code: this.code,
+          contestID: this.contestID,
+        },
+        handlers,
       )
-      const eventSource = new EventSource(streamUrl)
-      this.eventSource = eventSource
-
-      const parsePayload = (event) => {
-        try {
-          return JSON.parse(event.data)
-        } catch (error) {
-          return null
-        }
-      }
-
-      eventSource.addEventListener("chunk", (event) => {
-        const payload = parsePayload(event)
-        if (payload) handlers.chunk(payload)
-      })
-      eventSource.addEventListener("notice", (event) => {
-        handlers.notice(parsePayload(event) || {})
-      })
-      eventSource.addEventListener("app-error", (event) => {
-        handlers["app-error"](parsePayload(event) || {})
-      })
-      eventSource.addEventListener("done", handlers.done)
-
-      eventSource.onerror = () => {
-        if (
-          this.messages[assistantIndex] &&
-          this.messages[assistantIndex].thinking
-        ) {
-          this.messages[assistantIndex].thinking = false
-          this.messages[assistantIndex].error = true
-          this.messages[assistantIndex].text = this.$t(
-            "m.AI_Assistant_Fetch_Failed",
-          )
-        }
-        this.isLoading = false
-        this.closeEventSource()
-        this.scrollToBottom()
-      }
     },
 
-    closeEventSource() {
-      if (this.eventSource) {
-        this.eventSource.close()
-        this.eventSource = null
+    closeStream() {
+      if (this.activeStream) {
+        this.activeStream.close()
+        this.activeStream = null
       }
     },
 
@@ -737,29 +650,29 @@ export default {
 .header-tab {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
   min-width: 0;
 }
 
 .header-tab-icon {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   flex: 0 0 auto;
-  border-radius: 5px;
+  border-radius: 6px;
   background-color: var(--ai-assistant-avatar-bg);
   display: inline-flex;
   align-items: center;
   justify-content: center;
 
   img {
-    width: 13px;
-    height: 13px;
+    width: 14px;
+    height: 14px;
     filter: var(--ai-assistant-avatar-icon-filter);
   }
 }
 
 .header-title {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   white-space: nowrap;
   overflow: hidden;
@@ -770,25 +683,6 @@ export default {
   display: flex;
   align-items: center;
   gap: 2px;
-}
-
-.mock-toggle {
-  height: 22px;
-  margin-right: 4px;
-  padding: 0 8px;
-  border: 1px dashed var(--ai-assistant-close-text-color);
-  border-radius: 11px;
-  background: transparent;
-  color: var(--ai-assistant-muted-text-color);
-  font-size: 10.5px;
-  font-weight: 700;
-  cursor: pointer;
-
-  &.on {
-    border-style: solid;
-    border-color: var(--point-color, #5b64ed);
-    color: var(--point-color, #5b64ed);
-  }
 }
 
 .header-icon-btn {
@@ -847,69 +741,88 @@ export default {
   user-select: none;
 }
 
+.empty-bubble {
+  position: relative;
+  max-width: 240px;
+  margin-bottom: 14px;
+  padding: 9px 14px;
+  border-radius: 14px;
+  background-color: var(--ai-assistant-subtle-bg);
+  color: var(--ai-assistant-bubble-text-color);
+  font-size: 13px;
+  line-height: 1.5;
+  word-break: keep-all;
+
+  &::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: -6px;
+    width: 12px;
+    height: 12px;
+    background-color: var(--ai-assistant-subtle-bg);
+    border-radius: 2px;
+    transform: translateX(-50%) rotate(45deg);
+  }
+}
+
+.bubble-swap-enter-active,
+.bubble-swap-leave-active {
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease;
+}
+
+.bubble-swap-enter {
+  opacity: 0;
+  transform: translateY(4px);
+}
+
+.bubble-swap-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
 .empty-avatar {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
   background-color: var(--ai-assistant-avatar-bg);
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 14px;
+  animation: bob 3s ease-in-out infinite;
 
   img {
-    width: 26px;
-    height: 26px;
+    width: 34px;
+    height: 34px;
     filter: var(--ai-assistant-avatar-icon-filter);
   }
 }
 
 .empty-title {
-  margin: 0 0 6px;
+  margin: 0;
   font-size: 15px;
   font-weight: 700;
 }
 
-.empty-desc {
-  margin: 0;
-  max-width: 280px;
-  font-size: 13px;
-  line-height: 1.55;
-  color: var(--ai-assistant-muted-text-color);
-  word-break: keep-all;
-}
-
-.empty-guide {
-  list-style: none;
-  margin: 18px 0 0;
-  padding: 0;
-  width: 100%;
-  max-width: 260px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-
-  li {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 8px 12px;
-    border-radius: 8px;
-    border: 1px solid var(--border-color);
-    font-size: 12.5px;
-    color: var(--ai-assistant-subtle-text-color);
-    text-align: left;
+@keyframes bob {
+  0%,
+  100% {
+    transform: translateY(0);
   }
-
-  i {
-    width: 14px;
-    font-size: 12px;
-    color: var(--ai-assistant-tab-active-color);
-    text-align: center;
+  50% {
+    transform: translateY(-4px);
   }
 }
 
-/* 메시지 */
+@media (prefers-reduced-motion: reduce) {
+  .empty-avatar {
+    animation: none;
+  }
+}
+
 .messages-list {
   display: flex;
   flex-direction: column;
@@ -954,17 +867,17 @@ export default {
 }
 
 .assistant-avatar {
-  width: 22px;
-  height: 22px;
-  border-radius: 6px;
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
   background-color: var(--ai-assistant-avatar-bg);
   display: inline-flex;
   align-items: center;
   justify-content: center;
 
   img {
-    width: 14px;
-    height: 14px;
+    width: 17px;
+    height: 17px;
     filter: var(--ai-assistant-avatar-icon-filter);
   }
 
@@ -974,6 +887,7 @@ export default {
 }
 
 .sender-name {
+  font-size: 14px;
   font-weight: 700;
 }
 
@@ -1055,37 +969,13 @@ export default {
 }
 
 .error-content {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  padding: 8px 12px;
-  border-radius: 8px;
-  background-color: rgba(192, 57, 43, 0.08);
-  color: var(--ai-assistant-error-text-color);
-
-  i {
-    margin-top: 4px;
-  }
-}
-
-.notice-content {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  padding: 8px 12px;
-  border-radius: 8px;
-  background-color: var(--ai-assistant-subtle-bg);
   color: var(--ai-assistant-subtle-text-color);
-
-  i {
-    margin-top: 4px;
-    color: var(--ai-assistant-tab-active-color);
-  }
 }
+
 
 /* 자유 질문형 답변 (마크다운) */
 .markdown-body {
-  // 전역 마크다운 스타일(styles/markdown.less)의 글자 크기·점선 테두리를 덮어씀
+  // 전역 마크다운 스타일 덮어씀
   /deep/ p,
   /deep/ ul,
   /deep/ ol {
@@ -1174,6 +1064,13 @@ export default {
     overflow-x: auto;
   }
 
+  // 긴 수식 가로 스크롤
+  /deep/ .katex-display {
+    margin: 8px 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
   /deep/ table {
     border-collapse: collapse;
     font-size: 12.5px;
@@ -1243,7 +1140,7 @@ export default {
   }
 }
 
-/* 다크 모드: 전역 코드 강조 테마(밝은 테마) 색을 덮어씀 */
+/* 다크 모드 코드 강조 색 */
 .dark-theme .markdown-body {
   /deep/ .hljs {
     color: #d4d4d4;
@@ -1306,7 +1203,7 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  padding: 10px 10px 8px 12px;
+  padding: 12px 12px 10px 14px;
   border: 1px solid var(--border-color);
   border-radius: 12px;
   background-color: var(--ps-content-color);
@@ -1329,8 +1226,8 @@ export default {
 .question-textarea {
   display: block;
   width: 100%;
-  min-height: 22px;
-  max-height: 160px;
+  min-height: 48px;
+  max-height: 200px;
   padding: 0;
   border: none;
   outline: none;
@@ -1339,8 +1236,8 @@ export default {
   background: transparent;
   color: inherit;
   font-family: inherit;
-  font-size: 13.5px;
-  line-height: 22px;
+  font-size: 14px;
+  line-height: 24px;
 
   &::placeholder {
     color: var(--ai-assistant-muted-text-color);
