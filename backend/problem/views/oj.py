@@ -1,6 +1,7 @@
 import logging
 import random
 import json
+import time
 
 from django.db import transaction
 from django.db.models import Case, Count, ExpressionWrapper, F, FloatField, IntegerField, Q, Value, When
@@ -204,8 +205,9 @@ class ProblemAPI(APIView):
         return self.success(data)
 
 
-# 답변 중 표시 만료 시간
+# 답변 중 표시 만료 시간, 스트리밍 중 주기적으로 연장
 AI_HINT_BUSY_TTL_SEC = 60
+AI_HINT_BUSY_TOUCH_SEC = 20
 # 질문 속도 제한, 토큰 10개, 20초당 1개 충전
 AI_HINT_BUCKET = {"capacity": 10, "fill_rate": 1 / 20, "default_capacity": 10}
 
@@ -251,6 +253,12 @@ class ProblemLLMHintAPI(APIView):
             scope=scope,
             extra={"wait": wait_sec},
         )
+
+    def _touch_busy(self, key):
+        try:
+            cache.touch(key, AI_HINT_BUSY_TTL_SEC)
+        except Exception:
+            logger.warning("Failed to extend AI hint busy flag %s", key, exc_info=True)
 
     def _release_busy(self, key):
         if not key:
@@ -326,9 +334,9 @@ class ProblemLLMHintAPI(APIView):
                 scope=scope,
             )
 
-        return self._guarded(request, scope, lambda busy_key: self._stage_hint(request, scope, busy_key))
+        return self._stage_hint(request, scope)
 
-    def _stage_hint(self, request, scope, busy_key):
+    def _stage_hint(self, request, scope):
         problem_id = request.GET.get("problem_id")
         contest_id = request.GET.get("contest_id")
         if not problem_id:
@@ -397,8 +405,7 @@ class ProblemLLMHintAPI(APIView):
             return stage_hint.stream_problem_hint(problem, previous_hints=previous_hints, user_code=user_code)
 
         return self._streaming_response(
-            self._stream_events(make_stream, hint_log, problem_id, scope, AIHintMessage.STAGE_HINT_FAILED, busy_key),
-            streaming=True,
+            self._stream_events(make_stream, hint_log, problem_id, scope, AIHintMessage.STAGE_HINT_FAILED),
         )
 
     def post(self, request):
@@ -442,70 +449,77 @@ class ProblemLLMHintAPI(APIView):
         if language and language not in problem.languages:
             language = None
 
-        # 자유 질문은 횟수 제한 없음
-        hint_log, _, error_response = self._reserve_hint_log(
+        hint_log, history, error_response = self._reserve_hint_log(
             request, problem, scope, mode=AIHintMode.CHAT, question=question, code=user_code, language=language,
-            enforce_limit=False,
         )
         if error_response:
             return error_response
 
         def make_stream():
-            return chat_hint.stream_general_answer(problem, question, user_code=user_code, language=language)
+            return chat_hint.stream_general_answer(
+                problem, question, user_code=user_code, language=language, history=history,
+            )
 
         return self._streaming_response(
             self._stream_events(make_stream, hint_log, problem_id, scope, AIHintMessage.CHAT_ANSWER_FAILED, busy_key),
             streaming=True,
         )
 
-    def _reserve_hint_log(self, request, problem, scope, mode, question=None, code=None, language=None,
-                          enforce_limit=True):
-        """남은 횟수 확인 후 빈 기록을 먼저 저장해 1회 차감, 기록·이전 힌트 목록·오류 응답 반환"""
-        hint_log = None
-        previous_hints = []
-
-        if enforce_limit and not (request.user.is_super_admin() or request.user.is_admin()):
-            # 트랜잭션을 묶어 체크와 생성이 최대한 원자적으로 이루어지도록 처리
-            with transaction.atomic():
-                User = get_user_model()
-                User.objects.select_for_update().get(pk=request.user.pk)
-
-                # 이전 힌트 로그들 조회 및 시간순 정렬
-                previous_logs = ProblemAIHintLog.objects.filter(user=request.user, problem=problem).order_by("created_at")
-                problem_hint_count = previous_logs.count()
-
-                if problem_hint_count >= HINT_LIMIT_PER_PROBLEM:
-                    return None, [], self._error_response(
-                        AIHintMessage.LIMIT_EXCEEDED,
-                        err="problem-limit-exceeded",
-                        metric_status="problem_limit_exceeded",
-                        scope=scope,
-                    )
-
-                # 이전 힌트 문자열 추출
-                previous_hints = [log.hint_content for log in previous_logs if log.hint_content.strip()]
-
-                # 제한 통과 시, 스트리밍 시작 전에 빈 내용으로 로그를 선제 생성하여 횟수 차감 처리
-                hint_log = ProblemAIHintLog.objects.create(
-                    user=request.user, problem=problem, hint_content="", mode=mode,
-                    student_question=question, student_code=code, student_language=language,
-                )
-        else:
-            # 어드민인 경우에도 이전 힌트 컨텍스트는 유지하도록 조회
-            previous_logs = ProblemAIHintLog.objects.filter(user=request.user, problem=problem).order_by("created_at")
-            previous_hints = [log.hint_content for log in previous_logs if log.hint_content.strip()]
-            hint_log = ProblemAIHintLog.objects.create(
+    def _reserve_hint_log(self, request, problem, scope, mode, question=None, code=None, language=None):
+        """빈 기록을 먼저 저장해 1회 차감, 기록·이전 대화·오류 응답 반환"""
+        def create_log():
+            return ProblemAIHintLog.objects.create(
                 user=request.user, problem=problem, hint_content="", mode=mode,
                 student_question=question, student_code=code, student_language=language,
             )
+
+        # 자유 질문은 횟수 제한 없음, 최근 질문과 답변만 이어 붙임
+        if mode == AIHintMode.CHAT:
+            recent = (
+                ProblemAIHintLog.objects
+                .filter(user=request.user, problem=problem, mode=AIHintMode.CHAT, student_question__isnull=False)
+                .exclude(hint_content="")
+                .order_by("-created_at")
+                .values_list("student_question", "hint_content")[:chat_hint.MAX_HISTORY_TURNS]
+            )
+            return create_log(), list(reversed(recent)), None
+
+        previous_logs = ProblemAIHintLog.objects.filter(
+            user=request.user, problem=problem, mode=AIHintMode.STAGE,
+        ).order_by("created_at")
+
+        if request.user.is_super_admin() or request.user.is_admin():
+            previous_hints = [log.hint_content for log in previous_logs if log.hint_content.strip()]
+            return create_log(), previous_hints, None
+
+        # 횟수 확인과 기록 생성을 한 트랜잭션에서 처리
+        with transaction.atomic():
+            User = get_user_model()
+            User.objects.select_for_update().get(pk=request.user.pk)
+
+            if previous_logs.count() >= HINT_LIMIT_PER_PROBLEM:
+                return None, [], self._error_response(
+                    AIHintMessage.LIMIT_EXCEEDED,
+                    err="problem-limit-exceeded",
+                    metric_status="problem_limit_exceeded",
+                    scope=scope,
+                )
+
+            previous_hints = [log.hint_content for log in previous_logs if log.hint_content.strip()]
+            hint_log = create_log()
 
         return hint_log, previous_hints, None
 
     def _stream_events(self, make_stream, hint_log, problem_id, scope, error_message, busy_key=None):
         # 호출 준비 중 오류도 SSE 오류 이벤트로 보내기 위해 여기서 호출 시작
         full_text_chunks = []
+        last_touch = time.monotonic()
         try:
-            yield from self._stream_events_body(make_stream, hint_log, problem_id, scope, error_message, full_text_chunks)
+            for event in self._stream_events_body(make_stream, hint_log, problem_id, scope, error_message, full_text_chunks):
+                if busy_key and time.monotonic() - last_touch >= AI_HINT_BUSY_TOUCH_SEC:
+                    self._touch_busy(busy_key)
+                    last_touch = time.monotonic()
+                yield event
         finally:
             self._release_busy(busy_key)
 
@@ -553,16 +567,41 @@ class AIHintHistoryAPI(APIView):
         if not problem_id:
             return self.error("problem_id는 필수입니다.")
 
-        # 1. 문제 조회 및 접근 가능 여부(공개 여부, 대회 여부) 검증
+        contest_id = request.GET.get("contest_id")
+        if contest_id:
+            error = self._check_contest_access(request, contest_id)
+            if error:
+                return self.error(error)
+            problem_filter = {"contest_id": contest_id}
+        else:
+            problem_filter = {"contest_id__isnull": True}
+
         try:
-            problem = Problem.objects.get(_id=problem_id, contest_id__isnull=True, visible=True)
+            problem = Problem.objects.get(_id=problem_id, visible=True, **problem_filter)
         except Problem.DoesNotExist:
             return self.error("문제를 찾을 수 없습니다.")
 
-        # 2. JOIN 없이 Foreign Key를 직접 활용하여 로그 조회
         logs = ProblemAIHintLog.objects.filter(user=request.user, problem=problem).order_by("created_at")
 
         return self.success({"logs": AIHintLogSerializer(logs, many=True).data})
+
+    @staticmethod
+    def _check_contest_access(request, contest_id):
+        """단계 힌트 API와 같은 대회 접근 조건, 막히면 안내 문구 반환"""
+        try:
+            contest = Contest.objects.get(id=contest_id, visible=True)
+        except Contest.DoesNotExist:
+            return AIHintMessage.CONTEST_NOT_FOUND
+
+        if request.user.is_contest_admin(contest):
+            return None
+        if contest.contest_type == ContestType.PASSWORD_PROTECTED_CONTEST and not check_contest_password(
+            request.session.get(CONTEST_PASSWORD_SESSION_KEY, {}).get(contest.id), contest.password,
+        ):
+            return AIHintMessage.CONTEST_PASSWORD_INVALID
+        if contest.status == ContestStatus.CONTEST_NOT_START:
+            return AIHintMessage.CONTEST_NOT_STARTED
+        return None
 
 
 class ContestProblemAPI(APIView):

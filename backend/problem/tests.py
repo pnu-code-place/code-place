@@ -1,5 +1,6 @@
 import copy
 import hashlib
+import itertools
 import json
 import os
 import shutil
@@ -31,7 +32,7 @@ from .ai_assistant.chat_hint import GENERAL_MAX_TOKENS, MAX_QUESTION_LENGTH
 from .ai_assistant.stage_hint import stream_problem_hint
 
 from .views.admin import TestCaseAPI
-from .views.oj import AI_HINT_BUCKET
+from .views.oj import AI_HINT_BUCKET, ProblemLLMHintAPI
 from utils.throttling import TokenBucket
 from .utils import parse_problem_template
 from account.models import User
@@ -987,6 +988,49 @@ class ProblemLLMHintAPITest(ProblemCreateTestBase):
             HINT_LIMIT_PER_PROBLEM + 1,
         )
 
+    @mock.patch("problem.ai_assistant.client.requests.post")
+    def test_post_question_includes_recent_three_turns(self, mocked_post):
+        for i in range(4):
+            ProblemAIHintLog.objects.create(
+                user=self.user, problem=self.problem, hint_content=f"답변 {i}",
+                mode=AIHintMode.CHAT, student_question=f"질문 {i}", student_code="secret code",
+            )
+        ProblemAIHintLog.objects.create(user=self.user, problem=self.problem, hint_content="[1단계] 단계 힌트")
+        mocked_post.return_value = self._mock_streaming_response([
+            'data: {"choices":[{"delta":{"content":"답변"}}]}',
+            "data: [DONE]",
+        ])
+
+        self._streaming_body(self._post_question(code=""))
+
+        msgs = mocked_post.call_args.kwargs["json"]["messages"]
+        assistant_turns = [m["content"] for m in msgs if m["role"] == "assistant"]
+        self.assertEqual(assistant_turns, ["답변 1", "답변 2", "답변 3"])
+        joined = "".join(m["content"] for m in msgs)
+        self.assertNotIn("질문 0", joined)
+        self.assertNotIn("secret code", joined)
+        self.assertNotIn("단계 힌트", joined)
+        self.assertIn("반복문 범위가 맞나요?", msgs[-1]["content"])
+
+    @mock.patch("problem.ai_assistant.client.requests.post")
+    def test_stage_hint_limit_ignores_chat_logs(self, mocked_post):
+        for i in range(HINT_LIMIT_PER_PROBLEM):
+            ProblemAIHintLog.objects.create(
+                user=self.user, problem=self.problem, hint_content=f"자유 답변 {i}",
+                mode=AIHintMode.CHAT, student_question="질문",
+            )
+        mocked_post.return_value = self._mock_streaming_response([
+            'data: {"choices":[{"delta":{"content":"[1단계] 힌트"}}]}',
+            "data: [DONE]",
+        ])
+
+        body = self._streaming_body(self.client.get(f"{self.url}?problem_id={self.problem._id}"))
+
+        self.assertNotIn("limit-exceeded", body)
+        self.assertIn('event: done', body)
+        msgs = mocked_post.call_args.kwargs["json"]["messages"]
+        self.assertFalse(any("자유 답변" in m["content"] for m in msgs))
+
     @mock.patch("problem.ai_assistant.client.requests.post", side_effect=requests.Timeout)
     def test_post_question_handles_timeout(self, mocked_post):
         body = self._streaming_body(self._post_question())
@@ -1014,13 +1058,35 @@ class ProblemLLMHintAPITest(ProblemCreateTestBase):
         self.assertEqual(cache.get(self.busy_key), 1)    # 거절해도 기존 표시는 그대로
 
     @mock.patch("problem.ai_assistant.client.requests.post")
-    def test_stage_hint_rejected_while_busy(self, mocked_post):
+    def test_stage_hint_ignores_busy_flag(self, mocked_post):
         cache.add(self.busy_key, 1, timeout=60)
+        mocked_post.return_value = self._mock_streaming_response([
+            'data: {"choices":[{"delta":{"content":"힌트"}}]}',
+            "data: [DONE]",
+        ])
 
         body = self._streaming_body(self.client.get(f"{self.url}?problem_id={self.problem._id}"))
 
-        self.assertIn("ai-hint-busy", body)
-        mocked_post.assert_not_called()
+        self.assertNotIn("ai-hint-busy", body)
+        self.assertIn('event: done', body)
+        mocked_post.assert_called_once()
+
+    @mock.patch("problem.views.oj.time.monotonic")
+    @mock.patch("problem.ai_assistant.client.requests.post")
+    def test_busy_flag_extended_during_long_answer(self, mocked_post, mocked_monotonic):
+        mocked_monotonic.side_effect = itertools.count(0, 25)
+        mocked_post.return_value = self._mock_streaming_response([
+            'data: {"choices":[{"delta":{"content":"답변 "}}]}',
+            'data: {"choices":[{"delta":{"content":"계속"}}]}',
+            "data: [DONE]",
+        ])
+
+        with mock.patch.object(ProblemLLMHintAPI, "_touch_busy") as mocked_touch:
+            body = self._streaming_body(self._post_question())
+
+        self.assertIn('event: done', body)
+        self.assertGreaterEqual(mocked_touch.call_count, 1)
+        self.assertEqual(mocked_touch.call_args.args[0], self.busy_key)
 
     @mock.patch("problem.ai_assistant.client.requests.post")
     def test_busy_flag_set_during_answer_and_cleared_after(self, mocked_post):
@@ -1248,6 +1314,70 @@ class AIHintHistoryAPITest(ProblemCreateTestBase):
 
         self.assertIsNotNone(resp.data.get("error"))
         self.assertIn("문제를 찾을 수 없습니다.", resp.data.get("data", ""))
+
+    def _make_contest(self, problem_id, **contest_kwargs):
+        defaults = {
+            "title": "contest test",
+            "description": "desc",
+            "start_time": timezone.localtime(timezone.now()) - timedelta(hours=1),
+            "end_time": timezone.localtime(timezone.now()) + timedelta(days=1),
+            "rule_type": ContestRuleType.ACM,
+            "password": "",
+            "allowed_ip_ranges": [],
+            "visible": True,
+            "real_time_rank": True,
+            "allow_paste": True,
+            "ai_assistant_enabled": True,
+        }
+        defaults.update(contest_kwargs)
+        contest = Contest.objects.create(created_by=self.admin, **defaults)
+        problem = self.create_problem_with_custom_field(self.admin, _id=problem_id)
+        problem.contest = contest
+        problem.save(update_fields=["contest"])
+        return contest, problem
+
+    def test_get_history_with_contest_id_returns_stage_logs(self):
+        self.client.force_login(self.user)
+        contest, problem = self._make_contest("C-401")
+        ProblemAIHintLog.objects.create(user=self.user, problem=problem, hint_content="[1단계] 힌트")
+        ProblemAIHintLog.objects.create(user=self.user, problem=problem, hint_content="[2단계] 힌트")
+
+        resp = self.client.get(f"{self.url}?problem_id={problem._id}&contest_id={contest.id}")
+
+        self.assertIsNone(resp.data.get("error"))
+        logs = resp.data["data"]["logs"]
+        self.assertEqual(len(logs), 2)
+        self.assertEqual(logs[0]["mode"], AIHintMode.STAGE)
+        self.assertEqual(logs[1]["hint_content"], "[2단계] 힌트")
+
+    def test_get_history_contest_requires_password_session(self):
+        self.client.force_login(self.user)
+        contest, problem = self._make_contest("C-402", password="secret")
+
+        resp = self.client.get(f"{self.url}?problem_id={problem._id}&contest_id={contest.id}")
+
+        self.assertIsNotNone(resp.data.get("error"))
+        self.assertIn("비밀번호", resp.data.get("data", ""))
+
+    def test_get_history_contest_not_started(self):
+        self.client.force_login(self.user)
+        contest, problem = self._make_contest(
+            "C-403", start_time=timezone.localtime(timezone.now()) + timedelta(hours=1),
+        )
+
+        resp = self.client.get(f"{self.url}?problem_id={problem._id}&contest_id={contest.id}")
+
+        self.assertIsNotNone(resp.data.get("error"))
+        self.assertIn("시작하지 않은", resp.data.get("data", ""))
+
+    def test_get_history_contest_invisible(self):
+        self.client.force_login(self.user)
+        contest, problem = self._make_contest("C-404", visible=False)
+
+        resp = self.client.get(f"{self.url}?problem_id={problem._id}&contest_id={contest.id}")
+
+        self.assertIsNotNone(resp.data.get("error"))
+        self.assertIn("대회를 찾을 수 없습니다.", resp.data.get("data", ""))
 
     def test_get_history_with_invalid_problem_id(self):
         """존재하지 않는 문제 ID를 넣었을 때 처리"""

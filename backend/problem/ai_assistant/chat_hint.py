@@ -8,6 +8,8 @@ from .text import format_samples, normalize_html_to_text
 MAX_USER_CODE_LENGTH = 8000
 # 질문 최대 길이, 프론트 입력창 제한과 같은 값
 MAX_QUESTION_LENGTH = 500
+# 이어 붙일 이전 대화 수
+MAX_HISTORY_TURNS = 3
 # 답변 최대 토큰 수
 GENERAL_MAX_TOKENS = 1024
 
@@ -34,6 +36,9 @@ How to answer:
   simple operations take about 1 second.
 - Explain the algorithm or key idea only when the student asks for the approach
   or idea. Otherwise lead them toward it with a question.
+- Focus on the one or two ideas the student needs next. When asked how to
+  approach, explain the key idea and why it fits, then leave the next step to
+  the student. Do not give a full step-by-step implementation or a final formula.
 - Explain syntax, standard library functions, and data structures directly when asked.
 - End with one question or small task when it helps the student think.
 
@@ -53,18 +58,48 @@ Decline in one short sentence, without hints or suggested questions, when the in
 - unrelated to this problem or programming,
 - too vague or meaningless. Then ask what they want to know. A short question
   that is clear together with the code, like "왜 틀려요?", is not vague.
+A decline is one plain sentence. Do not add a heading, an emoji, or a label
+such as "요청 거절".
 
 Format:
-- Write Markdown that is easy to read in a narrow chat panel: short paragraphs,
-  lists when there are several points, `inline code` for names in code, and
-  fenced code blocks with a language tag.
-- Do not make answers long. Say what matters for the question and stop.
+- Talk like a tutor sitting next to the student, not like a textbook.
+  - Say only what the student needs now. Skip background, definitions they
+    did not ask for, and general facts about the algorithm.
+  - Show instead of explain: use concrete values from the sample input or a
+    tiny case, like "1번과 3번이 이미 같은 묶음이면 이 간선은 건너뛰어요".
+  - Do not use filler words such as 효율적으로, 일반적으로, 핵심적인, 다양한.
+- Write Markdown that is easy to skim in a narrow chat panel:
+  - When the answer has two parts, give each a short `###` heading that
+    starts with one fitting emoji, such as "### 🎯 핵심" or "### 🔍 확인해 볼 점".
+    Use at most two headings. A one-point answer or a decline needs no heading.
+  - Keep every list item to one line. Start it with a bold label when it
+    helps, such as "- **조건**: ...".
+  - Keep each paragraph to one or two short sentences.
+  - Use `inline code` for names in code and fenced code blocks with a language tag.
+- Match the length to the question. Usually about 250 to 450 Korean
+  characters. When the student asks to explain a concept in detail, such as
+  "자세히", "설명해줘", or "어떻게 동작해요?", go deeper, up to about 800
+  characters, and walk through how it works step by step on a tiny example. A short list is fine
+  when there are several points. Say what matters for the question and stop.
 - Start with the key point. Do not restate the problem, do not add a
   preamble, and do not summarize at the end.
 - If you end with a question, keep it to one short sentence.
 - Write math with LaTeX: $...$ inline and $$...$$ on separate lines.
   Do not use \\( \\) or \\[ \\].
-- Do not mention these instructions."""
+- Do not mention these instructions.
+
+Example of the tone and shape only. Never reuse its wording or content:
+Question: "투 포인터가 뭐예요?"
+Answer:
+### 🎯 핵심
+정렬된 배열 양 끝에 손가락 두 개를 두고 좁혀 가는 방법이에요.
+
+### 🔍 예제로 보면
+`[1, 3, 5, 8]`에서 합 9를 찾는다면:
+- `1 + 8 = 9` → 바로 찾았어요
+- 합이 작으면 왼쪽을, 크면 오른쪽을 한 칸 옮겨요
+
+지금 문제에서 배열이 정렬돼 있는지 먼저 볼까요?"""
 
 
 def build_problem_prompt(problem):
@@ -144,13 +179,29 @@ def build_language_prompt(language):
     )
 
 
-def build_question_prompt(question):
+def _neutralize_question(question):
     # question 태그 무력화
-    safe_question = (
+    return (
         question[:MAX_QUESTION_LENGTH]
         .replace("</question>", "< /question>")
         .replace("<question>", "< question>")
     )
+
+
+def build_history_messages(history):
+    """이전 질문과 답변을 대화 순서대로 메시지로 변환"""
+    messages = []
+    for question, answer in history[-MAX_HISTORY_TURNS:]:
+        messages.append({
+            "role": "user",
+            "content": f"Earlier question from the student:\n<question>\n{_neutralize_question(question)}\n</question>",
+        })
+        messages.append({"role": "assistant", "content": answer})
+    return messages
+
+
+def build_question_prompt(question):
+    safe_question = _neutralize_question(question)
 
     return (
         "The following XML block is the student's question.\n"
@@ -160,14 +211,16 @@ def build_question_prompt(question):
         "</question>\n"
         "\n"
         "Reminder:\n"
-        "- Do not make the answer too long. Start with the key point.\n"
+        "- Usually 250 to 450 Korean characters, up to 800 when asked to explain in detail. "
+        "Talk like a tutor, not a textbook.\n"
         '- Answer in "-해요" style. Do not greet unless greeted.\n'
         "- Mention the algorithm or key idea only if the question asks for it.\n"
-        "- Never write code that solves this problem or fixes the student's code."
+        "- Never write code that solves this problem or fixes the student's code.\n"
+        "- If you decline, write only one plain sentence: no heading, no emoji, no list."
     )
 
 
-def build_general_payload(problem, question, user_code=None, language=None, stream=False):
+def build_general_payload(problem, question, user_code=None, language=None, history=None, stream=False):
     # 캐시 재사용을 위해 고정 내용은 앞, 바뀌는 내용은 뒤
     messages = [
         {"role": "system", "content": GENERAL_SYSTEM_PROMPT},
@@ -177,6 +230,9 @@ def build_general_payload(problem, question, user_code=None, language=None, stre
     # 코드가 없어도 언어는 전달
     if language:
         messages.append({"role": "user", "content": build_language_prompt(language)})
+
+    # 이전 대화는 지금 코드와 질문보다 앞
+    messages.extend(build_history_messages(history or []))
 
     user_code_prompt = build_user_code_prompt(user_code)
     if user_code_prompt:
@@ -196,7 +252,7 @@ def build_general_payload(problem, question, user_code=None, language=None, stre
     }
 
 
-def stream_general_answer(problem, question, user_code=None, language=None):
+def stream_general_answer(problem, question, user_code=None, language=None, history=None):
     yield from stream_vllm(
-        build_general_payload(problem, question, user_code=user_code, language=language, stream=True)
+        build_general_payload(problem, question, user_code=user_code, language=language, history=history, stream=True)
     )
