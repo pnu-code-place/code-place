@@ -84,36 +84,12 @@
               {{ msg.text }}
             </div>
 
-            <!-- 일반 문제 마크다운 답변 -->
             <div
-              v-else-if="msg.html !== undefined"
+              v-else
               class="assistant-body markdown-body"
+              :class="{ 'stage-hint': msg.parsed }"
               v-html="msg.html"
             ></div>
-
-            <!-- 대회 단계 힌트 -->
-            <div v-else class="assistant-body">
-              <template v-if="msg.parsed && msg.parsed.sections.length">
-                <div
-                  v-for="(sec, si) in msg.parsed.sections"
-                  :key="si"
-                  class="hint-section"
-                  :class="sectionClass(sec.label)"
-                >
-                  <div class="hint-section-title">{{ sec.label }}</div>
-                  <div
-                    v-if="sec.text"
-                    class="hint-section-text"
-                    v-text="sec.text"
-                  ></div>
-                </div>
-              </template>
-              <div
-                v-else
-                class="hint-plain-text"
-                v-text="msg.parsed ? msg.parsed.body : msg.text"
-              ></div>
-            </div>
           </template>
         </div>
       </div>
@@ -121,68 +97,90 @@
 
     <!-- 입력 영역 -->
     <footer class="drawer-footer">
-      <div
-        class="input-box"
-        :class="{ disabled: isLoading || hintsExhausted }"
-        @click="focusInput"
-      >
-        <textarea
-          ref="inputArea"
-          :value="questionInput"
-          class="question-textarea"
-          rows="1"
-          :placeholder="
-            hintsExhausted
-              ? $t('m.AI_Assistant_Input_Exhausted')
-              : $t('m.AI_Assistant_Input_Placeholder')
-          "
-          :disabled="isLoading || hintsExhausted"
-          @input="questionInput = $event.target.value"
-          @keydown="handleKeydown"
-          @compositionstart="isComposing = true"
-          @compositionend="isComposing = false"
-        ></textarea>
-
-        <div class="input-controls">
-          <span v-if="isAdminRole && questionLimit" class="usage-text">
-            {{ $t("m.AI_Assistant_Admin_Unlimited") }}
-          </span>
-          <span
-            v-else-if="questionLimit"
-            class="usage-text"
-            :class="{ exhausted: hintsExhausted }"
-          >
+      <!-- 대회 단계 힌트 -->
+      <div v-if="isContestMode" class="stage-box">
+        <span v-if="isAdminRole" class="stage-count">
+          {{ $t("m.AI_Assistant_Admin_Unlimited") }}
+        </span>
+        <span v-else class="stage-count" :class="{ exhausted: hintsExhausted }">
+          {{
+            $t("m.AI_Assistant_Remaining", {
+              remaining: problemHintsRemaining,
+              limit: questionLimit,
+            })
+          }}
+        </span>
+        <button
+          type="button"
+          class="hint-btn"
+          :disabled="!canSend"
+          @click="handleSend"
+        >
+          <i v-if="isLoading" class="fas fa-spinner fa-spin"></i>
+          <i v-else class="fas fa-lightbulb"></i>
+          <span>
             {{
-              $t("m.AI_Assistant_Remaining", {
-                remaining: problemHintsRemaining,
-                limit: questionLimit,
-              })
+              isLoading
+                ? $t("m.AI_Assistant_Thinking")
+                : hintsExhausted
+                  ? $t("m.AI_Assistant_Exhausted")
+                  : $t("m.AI_Assistant_Get_Hint")
             }}
           </span>
-
-          <span
-            class="length-counter"
-            :class="{ over: inputTooLong }"
-            aria-live="polite"
-          >
-            {{ inputLength }}/{{ maxQuestionLength }}
-          </span>
-
-          <button
-            type="button"
-            class="send-btn"
-            :class="{ active: canSend }"
-            :disabled="!canSend"
-            :title="$t('m.AI_Assistant_Send_Title')"
-            :aria-label="$t('m.AI_Assistant_Send_Label')"
-            @click.stop="handleSend"
-          >
-            <i v-if="isLoading" class="fas fa-spinner fa-spin"></i>
-            <i v-else class="fas fa-arrow-up"></i>
-          </button>
-        </div>
+        </button>
       </div>
-      <p v-if="inputWarning" class="footer-hint warning">{{ inputWarning }}</p>
+
+      <!-- 일반 문제 자유 질문 -->
+      <template v-else>
+        <div
+          class="input-box"
+          :class="{ disabled: isLoading || hintsExhausted }"
+          @click="focusInput"
+        >
+          <textarea
+            ref="inputArea"
+            :value="questionInput"
+            class="question-textarea"
+            rows="1"
+            :placeholder="
+              hintsExhausted
+                ? $t('m.AI_Assistant_Input_Exhausted')
+                : $t('m.AI_Assistant_Input_Placeholder')
+            "
+            :disabled="isLoading || hintsExhausted"
+            @input="questionInput = $event.target.value"
+            @keydown="handleKeydown"
+            @compositionstart="isComposing = true"
+            @compositionend="isComposing = false"
+          ></textarea>
+
+          <div class="input-controls">
+            <span
+              class="length-counter"
+              :class="{ over: inputTooLong }"
+              aria-live="polite"
+            >
+              {{ inputLength }}/{{ maxQuestionLength }}
+            </span>
+
+            <button
+              type="button"
+              class="send-btn"
+              :class="{ active: canSend }"
+              :disabled="!canSend"
+              :title="$t('m.AI_Assistant_Send_Title')"
+              :aria-label="$t('m.AI_Assistant_Send_Label')"
+              @click.stop="handleSend"
+            >
+              <i v-if="isLoading" class="fas fa-spinner fa-spin"></i>
+              <i v-else class="fas fa-arrow-up"></i>
+            </button>
+          </div>
+        </div>
+        <p v-if="inputWarning" class="footer-hint warning">
+          {{ inputWarning }}
+        </p>
+      </template>
     </footer>
   </section>
 </template>
@@ -283,19 +281,21 @@ export default {
     },
 
     canSend() {
-      return (
-        !this.hintsExhausted &&
-        this.inputLength > 0 &&
-        !this.inputTooLong &&
-        !this.isLoading
-      )
+      if (this.hintsExhausted || this.isLoading) return false
+      if (this.isContestMode) return true
+      return this.inputLength > 0 && !this.inputTooLong
     },
 
     renderMessages() {
       return this.messages.map((m) => {
         if (m.role === "assistant" && !m.thinking && !m.error) {
           if (this.isContestMode) {
-            return { ...m, parsed: this.parseHint(m.text) }
+            const parsed = this.parseHint(m.text)
+            return {
+              ...m,
+              parsed,
+              html: renderAIMarkdown(this.hintToMarkdown(parsed)),
+            }
           }
           return { ...m, html: renderAIMarkdown(m.text) }
         }
@@ -400,10 +400,10 @@ export default {
     },
 
     fetchHintHistory() {
-      if (!this.problemID || this.contestID) return
+      if (!this.problemID) return
 
       api
-        .getAIHintHistory(this.problemID)
+        .getAIHintHistory(this.problemID, this.contestID)
         .then((res) => {
           const data = res.data.data
           const logs = (data.logs || []).filter(
@@ -411,9 +411,11 @@ export default {
           )
           this.problemHintsUsed = logs.length
 
-          // 새 대화가 없을 때만 기록으로 채움
-          const userMessages = this.messages.filter((m) => m.role === "user")
-          if (userMessages.length === 0) {
+          // 이번에 주고받은 대화가 없을 때만 기록으로 채움
+          const hasLiveMessages = this.messages.some(
+            (m) => !m.id.startsWith("history"),
+          )
+          if (!hasLiveMessages) {
             this.messages = logs.reduce((acc, log, idx) => {
               const timeStr = log.created_at
                 ? this.formatTime(new Date(log.created_at))
@@ -454,21 +456,23 @@ export default {
     },
 
     handleSend() {
-      const text = this.questionInput.trim()
       if (!this.canSend) return
+      const text = this.questionInput.trim()
 
       this.closeStream()
       this.isLoading = true
-      this.questionInput = ""
-      this.adjustInputHeight()
 
-      const userMessage = {
-        id: `user_${Date.now()}`,
-        role: "user",
-        text: text,
-        timeStr: this.formatTime(),
+      // 대회는 질문 없이 다음 단계 힌트만 요청
+      if (!this.isContestMode) {
+        this.questionInput = ""
+        this.adjustInputHeight()
+        this.messages.push({
+          id: `user_${Date.now()}`,
+          role: "user",
+          text: text,
+          timeStr: this.formatTime(),
+        })
       }
-      this.messages.push(userMessage)
 
       const assistantMessage = {
         id: `ai_${Date.now()}`,
@@ -501,6 +505,9 @@ export default {
             this.messages[assistantIndex].error = true
             this.messages[assistantIndex].text = aiHintErrorText(this, payload)
           }
+          if (payload.error === "problem-limit-exceeded") {
+            this.problemHintsUsed = this.questionLimit || this.problemHintsUsed
+          }
           this.isLoading = false
           this.closeStream()
           this.refocusInput()
@@ -532,7 +539,7 @@ export default {
       }
 
       // 일반 문제 자유 질문
-      if (!this.contestID) {
+      if (!this.isContestMode) {
         this.activeStream = api.chatAIHint(
           {
             problemID: this.problemID,
@@ -611,10 +618,16 @@ export default {
       return result
     },
 
-    sectionClass(label) {
-      if (label.indexOf("진단") !== -1) return "sec-diagnosis"
-      if (label.indexOf("점검") !== -1) return "sec-check"
-      return "sec-hint"
+    // 단계 힌트 구역을 번호 이모지 제목과 본문으로 변환
+    hintToMarkdown(parsed) {
+      if (!parsed.sections.length) return parsed.body
+      const keycaps = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣"]
+      return parsed.sections
+        .map((sec, i) => {
+          const title = `### ${keycaps[i] || `${i + 1}.`} ${sec.label}`
+          return sec.text ? `${title}\n\n${sec.text}` : title
+        })
+        .join("\n\n")
     },
   },
 }
@@ -838,6 +851,13 @@ export default {
     align-items: flex-end;
   }
 
+  // 대회는 답변만 이어지므로 답변 사이를 선으로 구분
+  &.assistant-turn + &.assistant-turn {
+    margin-top: 8px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border-color);
+  }
+
   &.assistant-turn {
     align-items: stretch;
   }
@@ -913,34 +933,6 @@ export default {
   overflow-wrap: anywhere;
 }
 
-.hint-plain-text,
-.hint-section-text {
-  white-space: pre-wrap;
-}
-
-.hint-section {
-  padding: 2px 0 2px 12px;
-  border-left: 3px solid var(--ai-assistant-tab-active-color);
-
-  & + & {
-    margin-top: 12px;
-  }
-
-  &.sec-diagnosis {
-    border-left-color: #e67e22;
-  }
-  &.sec-check {
-    border-left-color: #27ae60;
-  }
-}
-
-.hint-section-title {
-  margin-bottom: 2px;
-  font-size: 12.5px;
-  font-weight: 700;
-  color: var(--ai-assistant-muted-text-color);
-}
-
 .thinking-content {
   display: flex;
   align-items: center;
@@ -972,7 +964,6 @@ export default {
   color: var(--ai-assistant-subtle-text-color);
 }
 
-
 /* 자유 질문형 답변 (마크다운) */
 .markdown-body {
   // 전역 마크다운 스타일 덮어씀
@@ -996,9 +987,13 @@ export default {
   }
 
   /deep/ h4 {
-    margin: 12px 0 4px;
-    font-size: 13.5px;
+    margin: 14px 0 4px;
+    font-size: 14px;
     font-weight: 700;
+
+    &:first-child {
+      margin-top: 0;
+    }
   }
 
   /deep/ ul,
@@ -1064,6 +1059,22 @@ export default {
     overflow-x: auto;
   }
 
+  // 대회 단계 힌트, 구역 간격
+  &.stage-hint {
+    /deep/ h4 {
+      margin: 20px 0 6px;
+      font-size: 15px;
+
+      &:first-child {
+        margin-top: 2px;
+      }
+    }
+
+    /deep/ p {
+      line-height: 1.75;
+    }
+  }
+
   // 긴 수식 가로 스크롤
   /deep/ .katex-display {
     margin: 8px 0;
@@ -1110,11 +1121,14 @@ export default {
     }
   }
 
+  // 언어 이름은 코드 위 머리줄에 표시
   /deep/ .code-lang {
-    position: absolute;
-    top: 4px;
-    right: 8px;
+    display: block;
+    padding: 4px 12px;
+    border-bottom: 1px solid var(--border-color);
     font-size: 10.5px;
+    line-height: 1.6;
+    text-align: right;
     color: var(--ai-assistant-muted-text-color);
     user-select: none;
   }
@@ -1125,12 +1139,18 @@ export default {
     border: none;
     border-radius: 0;
     overflow-x: auto;
+
+    // 스크롤할 때 뜨는 가로 스크롤바가 마지막 줄을 가리지 않게 아래 여백
+    padding-bottom: 16px;
     background: transparent;
     white-space: pre;
     word-break: normal;
     overflow-wrap: normal;
 
+    // 코드 강조 기본 스타일의 안쪽 스크롤 끄기, 바깥 pre 만 스크롤
     code {
+      display: inline;
+      overflow: visible;
       padding: 0;
       border-radius: 0;
       background: transparent;
@@ -1140,33 +1160,98 @@ export default {
   }
 }
 
-/* 다크 모드 코드 강조 색 */
+/* 코드 강조 색, VS Code 기본 테마 색 */
+.markdown-body {
+  /deep/ .hljs {
+    color: #1f1f1f;
+  }
+  /deep/ .hljs-keyword,
+  /deep/ .hljs-literal,
+  /deep/ .hljs-selector-tag {
+    color: #0000ff;
+  }
+  /deep/ .hljs-meta,
+  /deep/ .hljs-meta .hljs-keyword {
+    color: #af00db;
+  }
+  /deep/ .hljs-built_in,
+  /deep/ .hljs-title,
+  /deep/ .hljs-title.function_,
+  /deep/ .hljs-function .hljs-title {
+    color: #795e26;
+  }
+  /deep/ .hljs-type,
+  /deep/ .hljs-class .hljs-title,
+  /deep/ .hljs-title.class_ {
+    color: #267f99;
+  }
+  /deep/ .hljs-params,
+  /deep/ .hljs-variable,
+  /deep/ .hljs-attr,
+  /deep/ .hljs-property {
+    color: #001080;
+  }
+  /deep/ .hljs-string,
+  /deep/ .hljs-meta .hljs-string {
+    color: #a31515;
+  }
+  /deep/ .hljs-number {
+    color: #098658;
+  }
+  /deep/ .hljs-comment {
+    color: #008000;
+    font-style: normal;
+  }
+  /deep/ .hljs-operator,
+  /deep/ .hljs-punctuation {
+    color: #1f1f1f;
+  }
+}
+
 .dark-theme .markdown-body {
   /deep/ .hljs {
     color: #d4d4d4;
   }
   /deep/ .hljs-keyword,
-  /deep/ .hljs-built_in,
-  /deep/ .hljs-meta {
+  /deep/ .hljs-literal,
+  /deep/ .hljs-selector-tag {
+    color: #569cd6;
+  }
+  /deep/ .hljs-meta,
+  /deep/ .hljs-meta .hljs-keyword {
     color: #c586c0;
   }
-  /deep/ .hljs-string {
+  /deep/ .hljs-built_in,
+  /deep/ .hljs-title,
+  /deep/ .hljs-title.function_,
+  /deep/ .hljs-function .hljs-title {
+    color: #dcdcaa;
+  }
+  /deep/ .hljs-type,
+  /deep/ .hljs-class .hljs-title,
+  /deep/ .hljs-title.class_ {
+    color: #4ec9b0;
+  }
+  /deep/ .hljs-params,
+  /deep/ .hljs-variable,
+  /deep/ .hljs-attr,
+  /deep/ .hljs-property {
+    color: #9cdcfe;
+  }
+  /deep/ .hljs-string,
+  /deep/ .hljs-meta .hljs-string {
     color: #ce9178;
   }
-  /deep/ .hljs-number,
-  /deep/ .hljs-literal {
+  /deep/ .hljs-number {
     color: #b5cea8;
   }
   /deep/ .hljs-comment {
     color: #6a9955;
+    font-style: normal;
   }
-  /deep/ .hljs-title,
-  /deep/ .hljs-function {
-    color: #dcdcaa;
-  }
-  /deep/ .hljs-type,
-  /deep/ .hljs-class {
-    color: #4ec9b0;
+  /deep/ .hljs-operator,
+  /deep/ .hljs-punctuation {
+    color: #d4d4d4;
   }
 }
 
@@ -1197,6 +1282,63 @@ export default {
 .drawer-footer {
   flex: 0 0 auto;
   padding: 0 12px 10px;
+}
+
+/* 대회 단계 힌트 */
+.stage-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 2px 0;
+}
+
+.stage-count {
+  flex: 0 0 auto;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background-color: var(--ai-assistant-subtle-bg);
+  color: var(--ai-assistant-subtle-text-color);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  user-select: none;
+
+  &.exhausted {
+    color: var(--ai-assistant-error-text-color);
+  }
+}
+
+.hint-btn {
+  flex: 1 1 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 16px;
+  border: none;
+  border-radius: 10px;
+  background-color: var(--submission-primary-btn-bg);
+  color: var(--submission-primary-btn-text-color);
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.15s;
+
+  i {
+    font-size: 12px;
+  }
+
+  &:hover:not(:disabled) {
+    background-color: var(--submission-primary-btn-hover-bg);
+  }
+
+  &:disabled {
+    background-color: var(--ai-assistant-subtle-bg);
+    color: var(--ai-assistant-muted-text-color);
+    cursor: not-allowed;
+  }
 }
 
 .input-box {
@@ -1262,17 +1404,6 @@ export default {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-}
-
-.usage-text {
-  font-size: 11.5px;
-  color: var(--ai-assistant-muted-text-color);
-  white-space: nowrap;
-  user-select: none;
-
-  &.exhausted {
-    color: var(--ai-assistant-error-text-color);
-  }
 }
 
 .length-counter {

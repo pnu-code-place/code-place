@@ -313,12 +313,10 @@ export default {
 
     return { close: () => controller.abort() }
   },
-  getAIHintHistory(problemID) {
-    return ajax("problem/ai_hint_history", "get", {
-      params: {
-        problem_id: problemID,
-      },
-    })
+  getAIHintHistory(problemID, contestID) {
+    const params = { problem_id: problemID }
+    if (contestID) params.contest_id = contestID
+    return ajax("problem/ai_hint_history", "get", { params })
   },
   getContestList(offset, limit, searchParams) {
     let params = {

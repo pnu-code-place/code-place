@@ -6,11 +6,20 @@ import DOMPurify from "dompurify"
 
 const hljs = require("highlight.js/lib/core")
 
+// 채점 언어 중 공통 플러그인에 없는 언어 등록
+hljs.registerLanguage("go", require("highlight.js/lib/languages/go"))
+hljs.registerLanguage(
+  "javascript",
+  require("highlight.js/lib/languages/javascript"),
+)
+
 const LANG_ALIAS = {
   "c++": "cpp",
   c: "cpp",
   py: "python",
   python3: "python",
+  golang: "go",
+  js: "javascript",
 }
 
 const md = new MarkdownIt({

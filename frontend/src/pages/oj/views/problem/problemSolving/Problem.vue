@@ -120,19 +120,7 @@
           'problem-pane-collapsed': problemPaneCollapsed,
         }"
       >
-        <button
-          v-if="problemPaneCollapsed"
-          type="button"
-          class="collapsed-problem-bar"
-          :title="$t('m.Problem_Pane_Expand')"
-          :aria-label="$t('m.Problem_Pane_Expand')"
-          @click="toggleProblemPane"
-        >
-          <i class="fas fa-chevron-right"></i>
-          <span class="collapsed-problem-label">{{ leftPaneTabLabel }}</span>
-        </button>
         <div
-          v-show="!problemPaneCollapsed"
           class="left-pain-wrapper"
           :class="{ 'has-contest-navigator': isContestProblem }"
         >
@@ -144,7 +132,19 @@
             :loading="contestProblemsLoading"
             @navigate="goContestProblem"
           />
-          <div class="problem-content-wrapper">
+          <!-- 접힌 문제 패널, 대회 문제 목록은 그대로 둠 -->
+          <button
+            v-if="problemPaneCollapsed"
+            type="button"
+            class="collapsed-problem-bar"
+            :title="$t('m.Problem_Pane_Expand')"
+            :aria-label="$t('m.Problem_Pane_Expand')"
+            @click="toggleProblemPane"
+          >
+            <i class="fas fa-chevron-right"></i>
+            <span class="collapsed-problem-label">{{ leftPaneTabLabel }}</span>
+          </button>
+          <div v-show="!problemPaneCollapsed" class="problem-content-wrapper">
             <div class="tab-headers">
               <div
                 class="tab-header"
@@ -309,6 +309,8 @@ const MIN_PANE_SIZE = 15
 const MIN_EDITOR_WIDTH_WITH_AI = 520
 // 문제 패널을 접었을 때 남는 세로 막대 너비(px)
 const COLLAPSED_PROBLEM_PANE_WIDTH = 44
+// 대회 문제 목록 너비와 간격
+const CONTEST_NAVIGATOR_WIDTH = 70
 
 export default {
   name: "ProblemPage",
@@ -635,7 +637,8 @@ export default {
       return (px / this.getSplitpanesWidth()) * 100
     },
     getCollapsedLeftSize() {
-      return this.pxToPaneSize(COLLAPSED_PROBLEM_PANE_WIDTH)
+      const navWidth = this.isContestProblem ? CONTEST_NAVIGATOR_WIDTH : 0
+      return this.pxToPaneSize(COLLAPSED_PROBLEM_PANE_WIDTH + navWidth)
     },
     // AI 조교가 열린 상태의 [문제, 코드, AI] 비율.
     // 코드 패널이 MIN_EDITOR_WIDTH_WITH_AI 보다 좁아지지 않도록
@@ -1661,9 +1664,15 @@ export default {
   height: 100%;
 }
 
-.left-pain-wrapper.has-contest-navigator .problem-content-wrapper {
+.left-pain-wrapper.has-contest-navigator .problem-content-wrapper,
+.left-pain-wrapper.has-contest-navigator .collapsed-problem-bar {
   padding-top: 10px;
   padding-bottom: 10px;
+}
+
+.left-pain-wrapper.has-contest-navigator .collapsed-problem-bar {
+  height: calc(100% - 20px);
+  margin: 10px 0;
 }
 
 .editor-pane-wrapper {
