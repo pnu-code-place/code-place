@@ -246,22 +246,77 @@ export default {
       silentError: true,
     })
   },
-  getProblemLLMHintUrl(problemID, userCode, contestID) {
+  // 대회 5단계 힌트
+  stageAIHint({ problemID, code, contestID }, handlers) {
     let url = `/api/problem/llm_hint?problem_id=${encodeURIComponent(problemID)}`
     if (contestID) url += `&contest_id=${encodeURIComponent(contestID)}`
-    if (userCode) {
+    if (code) {
       // encodeURIComponent 후 최악 3배 팽창: 4000자 × 3 = ~12KB → nginx 기본 한도(8KB) 이내
-      const truncated = userCode.slice(0, 4000)
+      const truncated = code.slice(0, 4000)
       url += `&user_code=${encodeURIComponent(truncated)}`
     }
-    return url
-  },
-  getAIHintHistory(problemID) {
-    return ajax("problem/ai_hint_history", "get", {
-      params: {
-        problem_id: problemID,
-      },
+
+    const eventSource = new EventSource(url)
+    ;["chunk", "app-error", "done"].forEach((name) => {
+      eventSource.addEventListener(name, (event) => {
+        let payload
+        try {
+          payload = JSON.parse(event.data)
+        } catch (error) {
+          if (name === "chunk") return
+          payload = {}
+        }
+        if (handlers[name]) handlers[name](payload)
+      })
     })
+    eventSource.onerror = () => {
+      if (handlers.failure) handlers.failure()
+    }
+
+    return { close: () => eventSource.close() }
+  },
+  // 일반 문제 자유 질문
+  chatAIHint({ problemID, question, code, language }, handlers) {
+    const controller = new AbortController()
+    let finished = false
+    const dispatch = (event, data) => {
+      if (event === "done" || event === "app-error") finished = true
+      if (handlers[event]) handlers[event](data)
+    }
+
+    fetch("/api/problem/llm_hint", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": getCookie("csrftoken"),
+      },
+      body: JSON.stringify({
+        problem_id: problemID,
+        question,
+        code,
+        language,
+      }),
+      signal: controller.signal,
+    })
+      .then((res) => {
+        if (!res.ok || !res.body) throw new Error(`HTTP ${res.status}`)
+        return readSSEStream(res.body, dispatch)
+      })
+      .then(() => {
+        if (!finished && handlers.failure) handlers.failure()
+      })
+      .catch((err) => {
+        if (err.name === "AbortError") return
+        if (handlers.failure) handlers.failure(err)
+      })
+
+    return { close: () => controller.abort() }
+  },
+  getAIHintHistory(problemID, contestID) {
+    const params = { problem_id: problemID }
+    if (contestID) params.contest_id = contestID
+    return ajax("problem/ai_hint_history", "get", { params })
   },
   getContestList(offset, limit, searchParams) {
     let params = {
@@ -517,6 +572,44 @@ export default {
  * @param options // {params: {}, data: {}} // params for get, data for post
  * @returns {Promise}
  */
+function getCookie(name) {
+  const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`))
+  return match ? decodeURIComponent(match[1]) : ""
+}
+
+// SSE 응답 파싱
+async function readSSEStream(body, dispatch) {
+  const reader = body.getReader()
+  const decoder = new TextDecoder()
+  let buffer = ""
+
+  for (;;) {
+    const { value, done } = await reader.read()
+    if (done) break
+    // 잘린 멀티바이트 문자 이어 붙이기
+    buffer += decoder.decode(value, { stream: true })
+    const blocks = buffer.split("\n\n")
+    buffer = blocks.pop()
+
+    blocks.forEach((block) => {
+      let event = "message"
+      let data = ""
+      block.split("\n").forEach((line) => {
+        if (line.startsWith("event:")) event = line.slice(6).trim()
+        else if (line.startsWith("data:")) data += line.slice(5).trim()
+      })
+      if (!data) return
+      let payload
+      try {
+        payload = JSON.parse(data)
+      } catch (error) {
+        return
+      }
+      dispatch(event, payload)
+    })
+  }
+}
+
 function ajax(url, method, options) {
   if (options !== undefined) {
     var { params = {}, data = {}, silentError = false } = options

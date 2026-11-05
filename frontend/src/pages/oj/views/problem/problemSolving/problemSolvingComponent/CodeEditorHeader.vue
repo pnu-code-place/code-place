@@ -1,8 +1,8 @@
 <template>
-  <div class="container-header">
-    <div class="header-title">
+  <div ref="header" class="container-header" :class="`compact-${compactLevel}`">
+    <div class="header-title" :title="$t('m.Code_Editor_Title')">
       <i class="fas fa-code" />
-      <span>코드 작성</span>
+      <span>{{ $t("m.Code_Editor_Title") }}</span>
     </div>
     <div class="header-actions">
       <div class="language-select" v-click-outside="closeLanguageMenu">
@@ -11,7 +11,7 @@
           class="language-trigger"
           :id="`code-language-${problem._id}`"
           :aria-expanded="String(languageMenuOpen)"
-          aria-label="언어 선택"
+          :aria-label="$t('m.Code_Editor_Language_Select')"
           @click="languageMenuOpen = !languageMenuOpen"
         >
           <span>{{ language }}</span>
@@ -33,12 +33,17 @@
           </div>
         </transition>
       </div>
-      <AIAssistantBtn @open-ai="$emit('open-ai')" />
+      <AIAssistantBtn
+        :active="aiVisible"
+        :compact="compactLevel >= 2"
+        @open-ai="$emit('open-ai')"
+      />
       <SubmissionBtn
         :isSubmitting="isSubmitting"
         @create-submission="$emit('create-submission')"
       />
       <SubmissionStatus
+        :compact="compactLevel >= 2"
         :statusVisible="statusVisible"
         :contestID="contestID"
         :result="result"
@@ -54,6 +59,10 @@ import SubmissionStatus from "./SubmissionStatus.vue"
 import SubmissionBtn from "./SubmissionBtn.vue"
 import AIAssistantBtn from "./AIAssistantBtn.vue"
 
+// 헤더 너비(px)에 따라 단계적으로 줄임
+// 1: "코드 작성" 글자 숨김, 2: AI 조교·제출결과 아이콘만, 3: 제목 아이콘까지 숨김
+const COMPACT_BREAKPOINTS = [540, 430, 340]
+
 export default defineComponent({
   props: {
     problem: Object,
@@ -66,6 +75,10 @@ export default defineComponent({
     result: Object,
     submissionId: String,
     isSubmitting: Boolean,
+    aiVisible: {
+      type: Boolean,
+      default: false,
+    },
   },
   components: {
     SubmissionBtn,
@@ -75,6 +88,30 @@ export default defineComponent({
   data() {
     return {
       languageMenuOpen: false,
+      headerWidth: 0,
+    }
+  },
+  computed: {
+    compactLevel() {
+      if (!this.headerWidth) return 0
+      return COMPACT_BREAKPOINTS.filter((bp) => this.headerWidth < bp).length
+    },
+  },
+  mounted() {
+    const el = this.$refs.header
+    if (!el) return
+    this.headerWidth = el.clientWidth
+    if (window.ResizeObserver) {
+      this._headerResizeObserver = new ResizeObserver((entries) => {
+        this.headerWidth = entries[0].contentRect.width
+      })
+      this._headerResizeObserver.observe(el)
+    }
+  },
+  beforeDestroy() {
+    if (this._headerResizeObserver) {
+      this._headerResizeObserver.disconnect()
+      this._headerResizeObserver = null
     }
   },
   directives: {
@@ -145,6 +182,36 @@ export default defineComponent({
     margin-left: 10px;
     font-size: medium;
     font-weight: bold;
+    white-space: nowrap;
+  }
+
+  &.compact-1,
+  &.compact-2,
+  &.compact-3 {
+    padding-left: 14px;
+
+    .header-title span {
+      display: none;
+    }
+  }
+
+  &.compact-3 {
+    padding-left: 8px;
+    padding-right: 8px;
+
+    .header-title {
+      display: none;
+    }
+
+    .header-actions {
+      gap: 6px;
+      margin-left: auto;
+    }
+
+    .language-trigger {
+      min-width: 0;
+      padding: 0 8px;
+    }
   }
 }
 
@@ -153,6 +220,12 @@ export default defineComponent({
   justify-content: space-between;
   align-items: center;
   gap: 10px;
+  min-width: 0;
+
+  > * {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
 }
 
 .language-select {
