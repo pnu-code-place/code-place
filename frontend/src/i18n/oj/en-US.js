@@ -11,7 +11,7 @@ export const m = {
   // Problem.vue
   AI_Assistant: "AI 조교",
   AI_Assistant_Name: "코플이",
-  AI_Assistant_Get_Hint: "AI조교 힌트받기",
+  AI_Assistant_Get_Hint: "코플이 힌트받기",
   AI_Assistant_Thinking: "생각 중...",
   AI_Assistant_Exhausted: "횟수 초과",
   AI_Assistant_Close: "AI 조교 닫기",

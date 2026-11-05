@@ -4,7 +4,7 @@ export const m = {
   // Problem.vue
   AI_Assistant: "AI助教",
   AI_Assistant_Name: "코플이",
-  AI_Assistant_Get_Hint: "獲取AI助教提示",
+  AI_Assistant_Get_Hint: "코플이 提示",
   AI_Assistant_Thinking: "思考中...",
   AI_Assistant_Exhausted: "次數已用盡",
   AI_Assistant_Close: "關閉AI助教",
