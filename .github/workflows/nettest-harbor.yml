@@ -1,0 +1,101 @@
+name: nettest-harbor
+
+# Network diagnosis only. Measures the path GitHub runners use to reach Harbor (internet -> campus public IP).
+# Runs only on the nettest-harbor branch. Pushes small test images to code-place-dev/nettest and deletes them at the end.
+on:
+  push:
+    branches: [nettest-harbor]
+  workflow_dispatch:
+
+jobs:
+  external-path:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      HOST: ${{ secrets.HARBOR_REGISTRY }}
+      ROUNDS: 40        # one probe every 30 s -> 20 min
+      PUSH_EVERY: 4     # one upload every 4 rounds (~2 min) -> 10 uploads
+      SIZE_MB: 50
+    steps:
+      - name: Runner info
+        run: |
+          echo "runner public IP: $(curl -s https://api.ipify.org)"
+          echo "harbor resolves to: $(getent hosts "$HOST" | awk '{print $1}')"
+
+      - name: Control - same runner uploads 50MB to Cloudflare (3 times)
+        run: |
+          head -c $((SIZE_MB*1024*1024)) /dev/urandom > /tmp/blob
+          for i in 1 2 3; do
+            curl -s -o /dev/null --max-time 120 -X POST --data-binary @/tmp/blob \
+              -w "control $i: %{time_total}s, %{speed_upload} B/s\n" https://speed.cloudflare.com/__up
+          done | tee control.txt
+
+      - name: Route check - TCP 443 to Harbor (60 probes per hop)
+        run: |
+          sudo apt-get -qq update && sudo apt-get -qq install -y mtr-tiny > /dev/null
+          sudo mtr -rwbz -c 60 -T -P 443 "$HOST" | tee mtr.txt
+
+      - name: Login to Harbor
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.HARBOR_REGISTRY }}
+          username: ${{ secrets.HARBOR_USERNAME }}
+          password: ${{ secrets.HARBOR_PASSWORD }}
+
+      - name: Probe every 30 s and upload 50MB every 2 min (20 min)
+        run: |
+          mkdir -p ctx && printf 'FROM scratch\nCOPY blob /blob\n' > ctx/Dockerfile
+          echo "time_utc,kind,result,seconds,detail" > results.csv
+          for r in $(seq 1 "$ROUNDS"); do
+            start=$(date +%s)
+            out=$(curl -s -o /dev/null --max-time 10 -w "%{http_code} %{time_connect} %{time_appconnect} %{time_total}" "https://$HOST/v2/" || true)
+            read -r code tc ta tt <<< "$out"
+            res=fail; { [ "$code" = 401 ] || [ "$code" = 200 ]; } && res=ok
+            echo "$(date -u +%H:%M:%S),connect,$res,$tt,code=$code tcp=$tc tls=$ta" >> results.csv
+            if [ $((r % PUSH_EVERY)) -eq 1 ]; then
+              head -c $((SIZE_MB*1024*1024)) /dev/urandom > ctx/blob
+              tag="$HOST/code-place-dev/nettest:r$r"
+              docker build -q -t "$tag" ctx > /dev/null
+              s=$(date +%s.%N)
+              log=$(timeout 150 docker push "$tag" 2>&1); rc=$?
+              e=$(date +%s.%N)
+              retries=$(grep -c "Retrying" <<< "$log" || true)
+              err=$(grep -oE "499[^,]*|timeout[^,]*|reset[^,]*|EOF" <<< "$log" | head -1 | tr ',' ' ')
+              res=ok; [ $rc -ne 0 ] && res=fail; [ "$retries" -gt 0 ] && [ $rc -eq 0 ] && res=ok_after_retry
+              echo "$(date -u +%H:%M:%S),upload_${SIZE_MB}MB,$res,$(awk "BEGIN{printf \"%.1f\", $e-$s}"),retries=$retries $err" >> results.csv
+              docker rmi "$tag" > /dev/null 2>&1 || true
+            fi
+            wait=$((30 - ($(date +%s) - start))); [ $wait -gt 0 ] && sleep $wait
+          done
+          cat results.csv
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "## Harbor external path test"
+            echo '```'; cat control.txt 2>/dev/null; echo '```'
+            awk -F, 'NR>1 && $2=="connect"{n++; if($3=="ok") ok++} END{printf "connect probes: %d, ok %d, fail %d\n", n, ok, n-ok}' results.csv
+            awk -F, 'NR>1 && $2 ~ /^upload/{n++; c[$3]++; s+=$4} END{printf "uploads: %d, ok %d, ok_after_retry %d, fail %d, avg %.1fs\n", n, c["ok"], c["ok_after_retry"], c["fail"], (n? s/n:0)}' results.csv
+            echo '```'; cat results.csv; echo '```'
+            echo '```'; cat mtr.txt 2>/dev/null; echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Keep raw results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nettest-results
+          path: |
+            results.csv
+            control.txt
+            mtr.txt
+
+      - name: Delete test images from Harbor
+        if: always()
+        env:
+          U: ${{ secrets.HARBOR_USERNAME }}
+          P: ${{ secrets.HARBOR_PASSWORD }}
+        run: |
+          curl -s -o /dev/null -w "delete nettest repo: %{http_code}\n" -u "$U:$P" -X DELETE \
+            "https://$HOST/api/v2.0/projects/code-place-dev/repositories/nettest" || true
