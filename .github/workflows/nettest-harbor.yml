@@ -1,7 +1,7 @@
 name: nettest-harbor
 
 # Network diagnosis only. Measures the path GitHub runners use to reach Harbor (internet -> campus public IP).
-# Runs only on the nettest-harbor branch. Pushes small test images to code-place-dev/nettest and deletes them at the end.
+# Runs only on the nettest-harbor branch. Uploads 20MB test blobs to code-place-dev/nettest and deletes the repo at the end.
 on:
   push:
     branches: [nettest-harbor]
@@ -13,57 +13,64 @@ jobs:
     timeout-minutes: 45
     env:
       HOST: ${{ secrets.HARBOR_REGISTRY }}
-      ROUNDS: 40        # one probe every 30 s -> 20 min
-      PUSH_EVERY: 4     # one upload every 4 rounds (~2 min) -> 10 uploads
-      SIZE_MB: 50
+      U: ${{ secrets.HARBOR_USERNAME }}
+      P: ${{ secrets.HARBOR_PASSWORD }}
+      ROUNDS: 40        # one connect probe every 30 s -> 20 min
+      UPLOAD_EVERY: 4   # one 20MB upload + download every 4 rounds (~2 min) -> 10 times
+      SIZE_MB: 20
     steps:
       - name: Runner info
         run: |
           echo "runner public IP: $(curl -s https://api.ipify.org)"
           echo "harbor resolves to: $(getent hosts "$HOST" | awk '{print $1}')"
 
-      - name: Control - same runner uploads 50MB to Cloudflare (3 times)
+      - name: Control - same runner, same 20MB, upload to Cloudflare (3 times)
         run: |
           head -c $((SIZE_MB*1024*1024)) /dev/urandom > /tmp/blob
           for i in 1 2 3; do
             curl -s -o /dev/null --max-time 120 -X POST --data-binary @/tmp/blob \
-              -w "control $i: %{time_total}s, %{speed_upload} B/s\n" https://speed.cloudflare.com/__up
+              -w "control upload $i: %{time_total}s, %{speed_upload} B/s\n" https://speed.cloudflare.com/__up
           done | tee control.txt
 
-      - name: Route check - TCP 443 to Harbor (60 probes per hop)
+      - name: Route check - TCP 443 to Harbor
+        continue-on-error: true
         run: |
-          sudo apt-get -qq update && sudo apt-get -qq install -y mtr-tiny > /dev/null
-          sudo mtr -rwbz -c 60 -T -P 443 "$HOST" | tee mtr.txt
+          sudo apt-get -qq update > /dev/null && sudo apt-get -qq install -y mtr-tiny traceroute > /dev/null
+          { sudo mtr -rwnz -c 30 -T -P 443 "$HOST" 2>&1; echo; sudo traceroute -n -T -p 443 -q 2 -w 2 "$HOST" 2>&1; } | tee mtr.txt
 
-      - name: Login to Harbor
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ secrets.HARBOR_REGISTRY }}
-          username: ${{ secrets.HARBOR_USERNAME }}
-          password: ${{ secrets.HARBOR_PASSWORD }}
-
-      - name: Probe every 30 s and upload 50MB every 2 min (20 min)
+      - name: Probe every 30 s, upload and download 20MB every 2 min (20 min)
+        shell: bash {0}   # no -e: one failed measurement must not stop the loop
         run: |
-          mkdir -p ctx && printf 'FROM scratch\nCOPY blob /blob\n' > ctx/Dockerfile
-          echo "time_utc,kind,result,seconds,detail" > results.csv
+          echo "time_utc,kind,result,seconds,bytes,bytes_per_s,detail" > results.csv
+          scope="repository:code-place-dev/nettest:pull,push"
           for r in $(seq 1 "$ROUNDS"); do
             start=$(date +%s)
-            out=$(curl -s -o /dev/null --max-time 10 -w "%{http_code} %{time_connect} %{time_appconnect} %{time_total}" "https://$HOST/v2/" || true)
+            out=$(curl -s -o /dev/null --max-time 10 -w "%{http_code} %{time_connect} %{time_appconnect} %{time_total}" "https://$HOST/v2/")
             read -r code tc ta tt <<< "$out"
             res=fail; { [ "$code" = 401 ] || [ "$code" = 200 ]; } && res=ok
-            echo "$(date -u +%H:%M:%S),connect,$res,$tt,code=$code tcp=$tc tls=$ta" >> results.csv
-            if [ $((r % PUSH_EVERY)) -eq 1 ]; then
-              head -c $((SIZE_MB*1024*1024)) /dev/urandom > ctx/blob
-              tag="$HOST/code-place-dev/nettest:r$r"
-              docker build -q -t "$tag" ctx > /dev/null
-              s=$(date +%s.%N)
-              log=$(timeout 150 docker push "$tag" 2>&1); rc=$?
-              e=$(date +%s.%N)
-              retries=$(grep -c "Retrying" <<< "$log" || true)
-              err=$(grep -oE "499[^,]*|timeout[^,]*|reset[^,]*|EOF" <<< "$log" | head -1 | tr ',' ' ')
-              res=ok; [ $rc -ne 0 ] && res=fail; [ "$retries" -gt 0 ] && [ $rc -eq 0 ] && res=ok_after_retry
-              echo "$(date -u +%H:%M:%S),upload_${SIZE_MB}MB,$res,$(awk "BEGIN{printf \"%.1f\", $e-$s}"),retries=$retries $err" >> results.csv
-              docker rmi "$tag" > /dev/null 2>&1 || true
+            echo "$(date -u +%H:%M:%S),connect,$res,$tt,,,code=$code tcp=$tc tls=$ta" >> results.csv
+
+            if [ $((r % UPLOAD_EVERY)) -eq 1 ]; then
+              head -c $((SIZE_MB*1024*1024)) /dev/urandom > blob
+              dig=$(sha256sum blob | cut -d' ' -f1)
+              tok=$(curl -s --max-time 20 -u "$U:$P" "https://$HOST/service/token?service=harbor-registry&scope=$scope" | jq -r .token)
+              loc=$(curl -s --max-time 20 -D - -o /dev/null -X POST -H "Authorization: Bearer $tok" \
+                    "https://$HOST/v2/code-place-dev/nettest/blobs/uploads/" | awk -F': ' 'tolower($1)=="location"{print $2}' | tr -d '\r')
+              [[ "$loc" != http* ]] && loc="https://$HOST$loc"
+              sep='?'; [[ "$loc" == *\?* ]] && sep='&'
+              up=$(curl -s -o /dev/null --max-time 150 -X PUT -H "Authorization: Bearer $tok" -H "Content-Type: application/octet-stream" \
+                   --data-binary @blob "${loc}${sep}digest=sha256:$dig" -w "%{http_code} %{time_total} %{size_upload} %{speed_upload}")
+              ucurl=$?
+              read -r uc ut us usp <<< "$up"
+              res=fail; [ "$uc" = 201 ] && res=ok
+              echo "$(date -u +%H:%M:%S),upload_${SIZE_MB}MB,$res,$ut,$us,$usp,http=$uc curl_exit=$ucurl" >> results.csv
+
+              dn=$(curl -s -o /dev/null --max-time 150 -L -H "Authorization: Bearer $tok" \
+                   "https://$HOST/v2/code-place-dev/nettest/blobs/sha256:$dig" -w "%{http_code} %{time_total} %{size_download} %{speed_download}")
+              dcurl=$?
+              read -r dc dt ds dsp <<< "$dn"
+              res=fail; [ "$dc" = 200 ] && res=ok
+              echo "$(date -u +%H:%M:%S),download_${SIZE_MB}MB,$res,$dt,$ds,$dsp,http=$dc curl_exit=$dcurl" >> results.csv
             fi
             wait=$((30 - ($(date +%s) - start))); [ $wait -gt 0 ] && sleep $wait
           done
@@ -75,8 +82,9 @@ jobs:
           {
             echo "## Harbor external path test"
             echo '```'; cat control.txt 2>/dev/null; echo '```'
-            awk -F, 'NR>1 && $2=="connect"{n++; if($3=="ok") ok++} END{printf "connect probes: %d, ok %d, fail %d\n", n, ok, n-ok}' results.csv
-            awk -F, 'NR>1 && $2 ~ /^upload/{n++; c[$3]++; s+=$4} END{printf "uploads: %d, ok %d, ok_after_retry %d, fail %d, avg %.1fs\n", n, c["ok"], c["ok_after_retry"], c["fail"], (n? s/n:0)}' results.csv
+            awk -F, 'NR>1 && $2=="connect"{n++; if($3=="ok") ok++} END{printf "connect probes: %d, ok %d, fail %d\n\n", n, ok, n-ok}' results.csv
+            awk -F, 'NR>1 && $2 ~ /^upload/{n++; if($3=="ok") ok++; s+=$6} END{printf "uploads: %d, ok %d, fail %d, avg speed %.0f KB/s\n\n", n, ok, n-ok, (n? s/n/1024:0)}' results.csv
+            awk -F, 'NR>1 && $2 ~ /^download/{n++; if($3=="ok") ok++; s+=$6} END{printf "downloads: %d, ok %d, fail %d, avg speed %.0f KB/s\n\n", n, ok, n-ok, (n? s/n/1024:0)}' results.csv
             echo '```'; cat results.csv; echo '```'
             echo '```'; cat mtr.txt 2>/dev/null; echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
@@ -91,11 +99,8 @@ jobs:
             control.txt
             mtr.txt
 
-      - name: Delete test images from Harbor
+      - name: Delete test repo from Harbor
         if: always()
-        env:
-          U: ${{ secrets.HARBOR_USERNAME }}
-          P: ${{ secrets.HARBOR_PASSWORD }}
         run: |
           curl -s -o /dev/null -w "delete nettest repo: %{http_code}\n" -u "$U:$P" -X DELETE \
             "https://$HOST/api/v2.0/projects/code-place-dev/repositories/nettest" || true
