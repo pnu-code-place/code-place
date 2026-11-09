@@ -48,6 +48,10 @@ jobs:
           username: ${{ secrets.HARBOR_USERNAME }}
           password: ${{ secrets.HARBOR_PASSWORD }}
 
+      # Harbor push 장애 문의용: 학교 쪽에서 출발지 IP로 확인하므로 러너 공인 IP를 남긴다
+      - name: Show runner public IP
+        run: curl -s --max-time 10 https://api.ipify.org || true; echo
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v2
         with:
@@ -76,6 +80,10 @@ jobs:
           registry: ${{ secrets.HARBOR_REGISTRY }}
           username: ${{ secrets.HARBOR_USERNAME }}
           password: ${{ secrets.HARBOR_PASSWORD }}
+
+      # Harbor push 장애 문의용: 학교 쪽에서 출발지 IP로 확인하므로 러너 공인 IP를 남긴다
+      - name: Show runner public IP
+        run: curl -s --max-time 10 https://api.ipify.org || true; echo
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v7
@@ -111,6 +119,10 @@ jobs:
           registry: ${{ secrets.HARBOR_REGISTRY }}
           username: ${{ secrets.HARBOR_USERNAME }}
           password: ${{ secrets.HARBOR_PASSWORD }}
+
+      # Harbor push 장애 문의용: 학교 쪽에서 출발지 IP로 확인하므로 러너 공인 IP를 남긴다
+      - name: Show runner public IP
+        run: curl -s --max-time 10 https://api.ipify.org || true; echo
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v2
