@@ -10,7 +10,7 @@ MAX_USER_CODE_LENGTH = 8000
 MAX_QUESTION_LENGTH = 500
 # 이어 붙일 이전 대화 수
 MAX_HISTORY_TURNS = 3
-# 답변 최대 토큰 수
+# 답변 최대 토큰 수.
 GENERAL_MAX_TOKENS = 1024
 
 GENERAL_SYSTEM_PROMPT = """You are 코플이, the AI tutor of Code-Place (코드플레이스), a programming judge site.
