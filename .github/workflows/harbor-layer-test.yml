@@ -1,0 +1,58 @@
+name: harbor-layer-test
+
+# 정보화본부 장비 점검용 임시 워크플로 (2026-11-10).
+# 우리 코드 없이 Docker Hub 공식 nginx:stable-alpine 과, 같은 크기(20MB) 무작위 데이터를
+# 각각 다른 러너에서 동시에 Harbor로 docker push 해서 특정 내용에서만 끊기는지 본다.
+# 저장소 이름에 run id, attempt를 넣어 Re-run 해도 이전에 올라간 layer를 재사용하지 않는다.
+# docker push 로그에 layer마다 Pushed / Layer already exists / Retrying 이 찍힌다.
+on:
+  push:
+    branches: [harbor-layer-test]
+
+jobs:
+  push:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        kind: [nginx, random]
+    env:
+      REPO: ${{ secrets.HARBOR_REGISTRY }}/code-place-dev/layer-test-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.kind }}
+    steps:
+      - name: Runner IP and time (KST)
+        run: |
+          echo "runner public IP: $(curl -s --max-time 10 https://api.ipify.org)"
+          echo "start (KST): $(TZ=Asia/Seoul date '+%F %T')"
+
+      - name: Prepare image
+        run: |
+          if [ "${{ matrix.kind }}" = nginx ]; then
+            docker pull -q nginx:stable-alpine
+            docker tag nginx:stable-alpine "$REPO:t"
+          else
+            mkdir r && head -c 20000000 /dev/urandom > r/blob
+            printf 'FROM scratch\nCOPY blob /\n' > r/Dockerfile
+            docker build -q -t "$REPO:t" r
+          fi
+
+      - name: Login to Harbor
+        uses: docker/login-action@v4
+        with:
+          registry: ${{ secrets.HARBOR_REGISTRY }}
+          username: ${{ secrets.HARBOR_USERNAME }}
+          password: ${{ secrets.HARBOR_PASSWORD }}
+
+      - name: Push
+        run: |
+          echo "push start (KST): $(TZ=Asia/Seoul date '+%T')"
+          s=$(date +%s)
+          rc=0; timeout 300 docker push "$REPO:t" || rc=$?
+          echo "push end (KST): $(TZ=Asia/Seoul date '+%T'), $(( $(date +%s) - s ))s, exit $rc"
+          exit $rc
+
+      - name: Delete test repo
+        if: always()
+        run: |
+          curl -s -o /dev/null -w "delete layer-test-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.kind }}: %{http_code}\n" --max-time 30 \
+            -u "${{ secrets.HARBOR_USERNAME }}:${{ secrets.HARBOR_PASSWORD }}" -X DELETE \
+            "https://${{ secrets.HARBOR_REGISTRY }}/api/v2.0/projects/code-place-dev/repositories/layer-test-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.kind }}" || true
