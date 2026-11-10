@@ -385,4 +385,9 @@ CELERY_BEAT_SCHEDULE = {
         'task': 'judge.tasks.cleanup_dead_judge_servers',
         'schedule': celery.schedules.crontab(minute=0, hour=0),    # Every day at midnight
     },
+    'dispatch_pending_submission': {
+        'task': 'judge.tasks.dispatch_pending_submission',
+        'schedule': 1.0,
+        'options': {'expires': 1.0},
+    },
 }

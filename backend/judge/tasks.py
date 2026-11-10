@@ -11,7 +11,9 @@ from utils.shortcuts import CELERY_TASK_ARGS
 from utils.observability_tracing import get_tracer
 from utils.observability_metrics import record_judge_task_outcome
 from submission.models import Submission
-from judge.dispatcher import JudgeDispatcher
+from judge.dispatcher import JudgeDispatcher, process_pending_task
+from utils.cache import cache
+from utils.constants import CacheKey
 
 logger = logging.getLogger(__name__)
 tracer = get_tracer(__name__)
@@ -64,3 +66,14 @@ def cleanup_dead_judge_servers():
     if deleted_count:
         logger.info("Cleaned up %d dead judge servers", deleted_count)
     return deleted_count
+
+@celery.shared_task(**CELERY_TASK_ARGS())
+def dispatch_pending_submission():
+    batch_size = min(cache.llen(CacheKey.waiting_queue), 20)
+
+    dispatch = 0
+    for _ in range(batch_size):
+        if not process_pending_task():
+            break
+        dispatch += 1
+    return dispatch

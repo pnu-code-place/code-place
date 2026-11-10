@@ -29,15 +29,43 @@ tracer = get_tracer(__name__)
 
 # 继续处理在队列中的问题
 def process_pending_task():
-    if cache.llen(CacheKey.waiting_queue):
-        # 防止循环引入
-        from judge.tasks import judge_task
-        tmp_data = cache.rpop(CacheKey.waiting_queue)
-        print("process_pending_task tmp: ", tmp_data)
-        if tmp_data:
-            data = json.loads(tmp_data.decode("utf-8"))
-            judge_task.apply_async(kwargs=data)
+    from judge.tasks import judge_task
 
+    queue = CacheKey.waiting_queue
+    invalid_queue = f"{queue}:invalid"
+
+    tmp_data = cache.rpop(CacheKey.waiting_queue)
+
+    if tmp_data is None:
+        return False
+    try:
+        data = json.loads(tmp_data.decode("utf-8"))
+        if (
+            not isinstance(data, dict)
+            or set(data) != {"submission_id", "problem_id"}
+            or data["submission_id"] is None
+            or data["problem_id"] is None
+        ):
+            raise ValueError("Invalid waiting submission payload")
+
+    except (ValueError, UnicodeDecodeError, TypeError):
+        logger.exception("Invalid entry in the waiting submission queue")
+
+        try:
+            cache.lpush(invalid_queue, tmp_data)
+        except Exception:
+            cache.rpush(CacheKey.waiting_queue, tmp_data)
+            raise
+        raise
+
+    try:
+        judge_task.apply_async(kwargs=data)
+    except Exception:
+        logger.exception("Failed to publish a waiting submission")
+        cache.rpush(queue, tmp_data)
+        raise
+
+    return True
 
 class ChooseJudgeServer:
 
