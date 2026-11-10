@@ -65,7 +65,7 @@
           <!-- 첫 진입 온보딩 -->
           <div v-if="messages.length === 0 && !isLoading" class="ai-empty">
             <div class="ai-empty-avatar">
-              <img src="@/assets/images/AIAssistant.svg" alt="AI" />
+              <img src="@/assets/images/coplee.svg" alt="AI" />
             </div>
             <p class="ai-empty-title">{{ $t("m.AI_Assistant_Empty_Title") }}</p>
             <p class="ai-empty-sub">
@@ -76,7 +76,7 @@
           <!-- 메시지 -->
           <div v-for="(msg, i) in renderMessages" :key="i" class="chat-row">
             <div class="avatar" :class="{ thinking: msg.thinking }">
-              <img src="@/assets/images/AIAssistant.svg" alt="AI" />
+              <img src="@/assets/images/coplee_mini.svg" alt="AI" />
             </div>
 
             <div v-if="msg.thinking" class="bubble thinking-bubble">
@@ -525,7 +525,6 @@ export default {
   width: 38px;
   height: 38px;
   flex-shrink: 0;
-  background-color: var(--ai-assistant-avatar-bg);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -536,7 +535,6 @@ export default {
 .avatar img {
   width: 100%;
   height: 100%;
-  filter: var(--ai-assistant-avatar-icon-filter);
 }
 
 .bubble {
@@ -606,7 +604,6 @@ export default {
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background-color: var(--ai-assistant-avatar-bg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -617,7 +614,6 @@ export default {
 .ai-empty-avatar img {
   width: 100%;
   height: 100%;
-  filter: var(--ai-assistant-avatar-icon-filter);
 }
 
 .ai-empty-title {

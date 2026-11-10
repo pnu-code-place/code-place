@@ -4,6 +4,7 @@ export const m = {
   // Problem.vue
   AI_Assistant: "AI助教",
   AI_Assistant_Name: "코플이",
+  AI_Assistant_Btn_Tooltip: "卡住時幫你的 AI 助教",
   AI_Assistant_Get_Hint: "코플이 提示",
   AI_Assistant_Thinking: "思考中...",
   AI_Assistant_Exhausted: "次數已用盡",
@@ -47,11 +48,11 @@ export const m = {
   // AIAssistantDrawer.vue
   AI_Assistant_Empty_Welcome: "코플이在等你！",
   AI_Assistant_Empty_Bubble_1: "題目和你正在寫的程式碼，我都在看 👀",
-  AI_Assistant_Empty_Bubble_2: "卡住了就直接問吧！",
-  AI_Assistant_Empty_Bubble_3: "我不給答案，但會幫你自己解出來",
+  AI_Assistant_Empty_Bubble_2: "卡住了就直接問吧！ 🙋",
+  AI_Assistant_Empty_Bubble_3: "我不給答案，但會幫你自己解出來 💪",
   AI_Assistant_Empty_Contest_Bubble_1: "題目和你正在寫的程式碼，我都在看 👀",
-  AI_Assistant_Empty_Contest_Bubble_2: "提示會分階段一個一個給",
-  AI_Assistant_Empty_Contest_Bubble_3: "我不給答案，但會幫你自己解出來",
+  AI_Assistant_Empty_Contest_Bubble_2: "提示會分階段一個一個給 🧩",
+  AI_Assistant_Empty_Contest_Bubble_3: "我不給答案，但會幫你自己解出來 💪",
   AI_Assistant_Hint_Level: "第{level}階段提示",
   AI_Assistant_Input_Placeholder: "向코플이提問",
   AI_Assistant_Input_Exhausted: "本題的提問次數已用完。",
