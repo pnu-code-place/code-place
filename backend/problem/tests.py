@@ -916,10 +916,10 @@ class ProblemLLMHintAPITest(ProblemCreateTestBase):
         self._streaming_body(self._post_question(code=""))
 
         msgs = mocked_post.call_args.kwargs["json"]["messages"]
-        self.assertEqual(len(msgs), 4)
+        self.assertEqual(len(msgs), 5)
         self.assertIn("<language>C++</language>", msgs[2]["content"])
-        self.assertNotIn("<user_code>", "".join(m["content"] for m in msgs[1:]))
-        self.assertIn("<question>", msgs[3]["content"])
+        self.assertIn("editor is empty", msgs[3]["content"])
+        self.assertIn("<question>", msgs[4]["content"])
 
     @mock.patch("problem.ai_assistant.client.requests.post")
     def test_post_question_drops_unknown_language(self, mocked_post):

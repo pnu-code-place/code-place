@@ -3,17 +3,24 @@
     type="button"
     class="aiAssistantBtnWrapper"
     :class="{ active, compact }"
-    :title="compact ? $t('m.AI_Assistant_Name') : null"
     :aria-label="$t('m.AI_Assistant_Name')"
     @click="onClick"
+    @mouseenter="showTooltip"
+    @mouseleave="tooltipVisible = false"
+    @focus="showTooltip"
+    @blur="tooltipVisible = false"
     v-if="!$route.params.contestID || (contest && contest.ai_assistant_enabled)"
   >
-    <svg class="icon" viewBox="0 0 24 24">
-      <path
-        d="m20 24h-16c-.553 0-1-.447-1-1 0-3.309 2.691-6 6-6h6c3.309 0 6 2.691 6 6 0 .553-.447 1-1 1zm-10.013-14.6h1.067l-.519-2.494zm10.513-3.4h-.551c-.252-2.244-2.139-4-4.449-4h-2.5v-1c0-.552-.447-1-1-1s-1 .448-1 1v1h-2.5c-2.31 0-4.197 1.756-4.449 4h-.551c-.827 0-1.5.673-1.5 1.5v2c0 .827.673 1.5 1.5 1.5h.551c.252 2.244 2.139 4 4.449 4h7c2.31 0 4.197-1.756 4.449-4h.551c.827 0 1.5-.673 1.5-1.5v-2c0-.827-.673-1.5-1.5-1.5zm-8.227 6c-.385.017-.73-.246-.808-.625l-.078-.375h-1.751l-.084.383c-.079.36-.398.617-.767.617-.499 0-.872-.46-.768-.948l.993-4.668c.146-.755.76-1.383 1.523-1.383h.002c.782.004 1.368.603 1.534 1.423l.973 4.63c.102.488-.27.946-.768.946zm3.727-.8c0 .442-.358.8-.8.8s-.8-.358-.8-.8v-5.399c0-.442.358-.8.8-.8s.8.358.8.8z"
-      />
-    </svg>
+    <img class="icon" src="@/assets/images/coplee_mini.svg" alt="" />
     <span v-if="!compact">{{ $t("m.AI_Assistant_Name") }}</span>
+    <span
+      class="btn-tooltip"
+      :class="{ visible: tooltipVisible && !active }"
+      :style="tooltipStyle"
+      role="tooltip"
+    >
+      {{ $t("m.AI_Assistant_Btn_Tooltip") }}
+    </span>
   </button>
 </template>
 
@@ -33,6 +40,12 @@ export default defineComponent({
       default: false,
     },
   },
+  data() {
+    return {
+      tooltipVisible: false,
+      tooltipStyle: {},
+    }
+  },
   computed: {
     contest() {
       return this.$store.state.contest.contest
@@ -40,7 +53,18 @@ export default defineComponent({
   },
   methods: {
     onClick() {
+      this.tooltipVisible = false
       this.$emit("open-ai")
+    },
+
+    // 편집기 영역에 잘리지 않게 화면 기준 위치로 표시
+    showTooltip() {
+      const rect = this.$el.getBoundingClientRect()
+      this.tooltipStyle = {
+        top: `${rect.top - 8}px`,
+        left: `${rect.left + rect.width / 2}px`,
+      }
+      this.tooltipVisible = true
     },
   },
 })
@@ -48,13 +72,14 @@ export default defineComponent({
 
 <style scoped lang="less">
 .aiAssistantBtnWrapper {
+  position: relative;
   font-weight: 700;
   font-size: 14px;
   display: flex;
   align-items: center;
   justify-content: space-evenly;
   border-radius: 10px;
-  padding: 6px 12px;
+  padding: 4px 12px;
   cursor: pointer;
   transition: width 0.3s;
   border: none;
@@ -66,7 +91,7 @@ export default defineComponent({
   }
 
   &.compact {
-    padding: 6px 8px;
+    padding: 4px 8px;
 
     .icon {
       margin-right: 0;
@@ -80,15 +105,44 @@ export default defineComponent({
   color: var(--ai-assistant-btn-hover-text-color);
 }
 
-.aiAssistantBtnWrapper:hover .icon,
-.aiAssistantBtnWrapper.active .icon {
-  fill: var(--ai-assistant-btn-hover-icon-color);
+.icon {
+  width: 24px;
+  height: 24px;
+  margin-right: 4px;
 }
 
-.icon {
-  width: 18px;
-  height: 18px;
-  margin-right: 6px;
-  fill: var(--ai-assistant-btn-icon-color);
+// 버튼 위 가운데 설명
+.btn-tooltip {
+  position: fixed;
+  z-index: 1000;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background-color: var(--ai-assistant-tooltip-bg);
+  color: var(--ai-assistant-tooltip-text-color);
+  filter: drop-shadow(0 2px 6px var(--ai-assistant-tooltip-shadow));
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, calc(-100% + 2px));
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: var(--ai-assistant-tooltip-bg);
+  }
+}
+
+.btn-tooltip.visible {
+  opacity: 1;
+  transform: translate(-50%, -100%);
 }
 </style>

@@ -36,8 +36,13 @@
       <!-- 우측 visual -->
       <div class="visual">
         <!-- 아이콘 뱃지 -->
-        <div class="icon-badge" :style="{ background: slides[current].iconBg }">
-          {{ slides[current].emoji }}
+        <div
+          class="icon-badge"
+          :class="{ 'image-badge': slides[current].icon }"
+          :style="{ background: slides[current].iconBg }"
+        >
+          <img v-if="slides[current].icon" :src="slides[current].icon" alt="" />
+          <template v-else>{{ slides[current].emoji }}</template>
         </div>
 
         <!-- AI 슬라이드 mockup -->
@@ -75,7 +80,7 @@
                 </div>
               </div>
               <div class="hint-bubble">
-                <div class="hint-icon">🤖</div>
+                <img class="hint-icon" src="@/assets/images/coplee_mini.svg" alt="" />
                 <div class="hint-text">
                   <div class="hint-title">AI 조교 힌트</div>
                   <div class="hint-body-text">
@@ -127,8 +132,7 @@ export default {
           label: "AI 학습 도우미",
           title: "AI 조교가 막히는 순간을 딱 맞게 도와드려요",
           desc: "문제를 푸는 도중 막힐 때, AI 조교가 정답을 알려주지 않으면서 방향을 잡아주는 힌트를 실시간으로 제공합니다. 스스로 푸는 힘을 기르며 학습하세요.",
-          emoji: "🤖",
-          iconBg: "linear-gradient(145deg,#7B6FF0,#5849C9)",
+          icon: require("@/assets/images/coplee_mini.svg"),
           link: "https://code.pusan.ac.kr/notice/52",
         },
         {
@@ -332,6 +336,15 @@ export default {
   z-index: 2;
 }
 
+.image-badge {
+  box-shadow: none;
+
+  img {
+    width: 100%;
+    height: 100%;
+  }
+}
+
 .mockup-wrap {
   transform: scale(0.82);
   transform-origin: center;
@@ -409,13 +422,6 @@ export default {
   width: 26px;
   height: 26px;
   flex-shrink: 0;
-  border-radius: 8px;
-  background: linear-gradient(145deg, #7b6ff0, #5849c9);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
 }
 
 .hint-text {

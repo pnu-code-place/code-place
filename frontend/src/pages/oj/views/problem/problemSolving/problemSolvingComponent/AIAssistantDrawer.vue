@@ -7,9 +7,6 @@
     <!-- 패널 탭 헤더 -->
     <header class="drawer-header">
       <div class="header-tab">
-        <span class="header-tab-icon">
-          <img src="@/assets/images/AIAssistant.svg" alt="" />
-        </span>
         <span class="header-title">{{ $t("m.AI_Assistant_Name") }}</span>
       </div>
 
@@ -35,7 +32,7 @@
           </transition>
         </div>
         <div class="empty-avatar">
-          <img src="@/assets/images/AIAssistant.svg" alt="" />
+          <img src="@/assets/images/coplee.svg" alt="" />
         </div>
         <p class="empty-title">{{ $t("m.AI_Assistant_Empty_Welcome") }}</p>
       </div>
@@ -47,11 +44,10 @@
           class="message-row"
           :class="msg.role === 'user' ? 'user-turn' : 'assistant-turn'"
         >
-          <div
-            v-if="msg.role === 'user'"
-            class="user-bubble"
-            v-text="msg.text"
-          ></div>
+          <template v-if="msg.role === 'user'">
+            <div class="user-bubble" v-text="msg.text"></div>
+            <span v-if="msg.timeStr" class="timestamp">{{ msg.timeStr }}</span>
+          </template>
 
           <template v-else>
             <div class="assistant-meta">
@@ -59,9 +55,8 @@
                 class="assistant-avatar"
                 :class="{ thinking: msg.thinking }"
               >
-                <img src="@/assets/images/AIAssistant.svg" alt="" />
+                <img src="@/assets/images/coplee_mini.svg" :alt="$t('m.AI_Assistant_Name')" />
               </span>
-              <span class="sender-name">{{ $t("m.AI_Assistant_Name") }}</span>
               <span
                 v-if="msg.parsed && msg.parsed.level"
                 class="hint-level-badge"
@@ -70,9 +65,6 @@
                   $t("m.AI_Assistant_Hint_Level", { level: msg.parsed.level })
                 }}
               </span>
-              <span v-if="msg.timeStr" class="timestamp">{{
-                msg.timeStr
-              }}</span>
             </div>
 
             <div v-if="msg.thinking" class="assistant-body thinking-content">
@@ -663,25 +655,8 @@ export default {
 .header-tab {
   display: flex;
   align-items: center;
-  gap: 7px;
+  gap: 6px;
   min-width: 0;
-}
-
-.header-tab-icon {
-  width: 22px;
-  height: 22px;
-  flex: 0 0 auto;
-  border-radius: 6px;
-  background-color: var(--ai-assistant-avatar-bg);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  img {
-    width: 14px;
-    height: 14px;
-    filter: var(--ai-assistant-avatar-icon-filter);
-  }
 }
 
 .header-title {
@@ -756,15 +731,17 @@ export default {
 
 .empty-bubble {
   position: relative;
-  max-width: 240px;
-  margin-bottom: 14px;
-  padding: 9px 14px;
-  border-radius: 14px;
+  // 한 줄 고정, 너비는 문구에 맞춤
+  max-width: 100%;
+  margin-bottom: 10px;
+  padding: 7px 14px;
+  white-space: nowrap;
+  border-radius: 16px;
   background-color: var(--ai-assistant-subtle-bg);
   color: var(--ai-assistant-bubble-text-color);
   font-size: 13px;
   line-height: 1.5;
-  word-break: keep-all;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.08));
 
   &::after {
     content: "";
@@ -797,20 +774,14 @@ export default {
 }
 
 .empty-avatar {
-  width: 56px;
-  height: 56px;
-  border-radius: 16px;
-  background-color: var(--ai-assistant-avatar-bg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 96px;
+  height: 96px;
   margin-bottom: 14px;
   animation: bob 3s ease-in-out infinite;
 
   img {
-    width: 34px;
-    height: 34px;
-    filter: var(--ai-assistant-avatar-icon-filter);
+    width: 100%;
+    height: 100%;
   }
 }
 
@@ -889,26 +860,16 @@ export default {
 .assistant-avatar {
   width: 26px;
   height: 26px;
-  border-radius: 7px;
-  background-color: var(--ai-assistant-avatar-bg);
   display: inline-flex;
-  align-items: center;
-  justify-content: center;
 
   img {
-    width: 17px;
-    height: 17px;
-    filter: var(--ai-assistant-avatar-icon-filter);
+    width: 100%;
+    height: 100%;
   }
 
   &.thinking {
     animation: pulse 1.4s infinite ease-in-out;
   }
-}
-
-.sender-name {
-  font-size: 14px;
-  font-weight: 700;
 }
 
 .hint-level-badge {
@@ -921,7 +882,8 @@ export default {
 }
 
 .timestamp {
-  margin-left: auto;
+  display: block;
+  margin-top: 4px;
   font-size: 11px;
   color: var(--ai-assistant-muted-text-color);
 }
@@ -981,19 +943,34 @@ export default {
     & + ul,
     & + ol,
     & + .code-block,
-    & + h4 {
+    & + h1,
+    & + h2,
+    & + h3 {
       margin-top: 8px;
     }
   }
 
-  /deep/ h4 {
+  /deep/ h1,
+  /deep/ h2,
+  /deep/ h3 {
     margin: 14px 0 4px;
-    font-size: 14px;
     font-weight: 700;
 
     &:first-child {
       margin-top: 0;
     }
+  }
+
+  /deep/ h1 {
+    font-size: 18px;
+  }
+
+  /deep/ h2 {
+    font-size: 16px;
+  }
+
+  /deep/ h3 {
+    font-size: 14px;
   }
 
   /deep/ ul,
@@ -1061,7 +1038,7 @@ export default {
 
   // 대회 단계 힌트, 구역 간격
   &.stage-hint {
-    /deep/ h4 {
+    /deep/ h3 {
       margin: 20px 0 6px;
       font-size: 15px;
 

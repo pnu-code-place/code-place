@@ -60,13 +60,19 @@ md.renderer.rules.fence = (tokens, idx) => {
   return `<div class="code-block">${langLabel}<pre><code class="hljs">${highlightCode(code, lang)}</code></pre></div>`
 }
 
-// 제목은 모두 h4 로 표시
+// 제목은 h1~h3 까지만, 더 작은 단계는 h3
 const renderHeading = (tokens, idx, options, env, self) => {
-  tokens[idx].tag = "h4"
+  if (Number(tokens[idx].tag.slice(1)) > 3) tokens[idx].tag = "h3"
   return self.renderToken(tokens, idx, options)
 }
 md.renderer.rules.heading_open = renderHeading
 md.renderer.rules.heading_close = renderHeading
+
+// 표 칸 줄바꿈용 <br> 만 줄바꿈으로 표시, 코드 속 <br> 은 글자 그대로
+md.renderer.rules.text = (tokens, idx) =>
+  md.utils
+    .escapeHtml(tokens[idx].content)
+    .replace(/&lt;br\s*\/?&gt;/gi, "<br>")
 
 // 이미지는 불러오지 않고 대체 글자만 표시
 md.renderer.rules.image = (tokens, idx) =>
