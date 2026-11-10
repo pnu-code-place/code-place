@@ -1,85 +1,101 @@
 name: harbor-bypass-test
 
 # 정보화본부 보안장비 바이패스 전후 비교용 임시 워크플로 (2026-11-10).
-# 실제 CI와 같은 방식(docker buildx push)으로 백엔드 이미지와 비슷한 크기(56+16+4MB, 3개 레이어)의
-# 테스트 이미지를 code-place-dev/bypass-test에 올리고, 끝나면 저장소를 지운다. 배포 매니페스트는 건드리지 않는다.
-# 다시 돌릴 때는 Actions 화면에서 이 실행을 열고 "Re-run all jobs".
+# ci2develop.yml의 백엔드, 프론트 빌드와 Harbor push를 그대로 따라 하되,
+# 이미지는 테스트 저장소(code-place-dev/bypass-test-*)에 올리고 끝나면 지운다.
+# 배포 매니페스트는 건드리지 않는다. 다시 돌릴 때는 Actions 화면에서 "Re-run all jobs".
 on:
   push:
     branches: [harbor-bypass-test]
 
 jobs:
-  push-test:
-    strategy:
-      fail-fast: false
-      matrix:
-        runner: [1, 2]          # 러너 2대를 동시에 (출발지 IP 2개)
+  backend:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
-    env:
-      HOST: ${{ secrets.HARBOR_REGISTRY }}
-      U: ${{ secrets.HARBOR_USERNAME }}
-      P: ${{ secrets.HARBOR_PASSWORD }}
-      ROUNDS: 5
     steps:
-      - name: Runner IP and start time (KST)
+      # 학교 쪽에서 출발지 IP로 로그를 찾으므로 로그인 전에 남긴다
+      - name: Runner IP and time (KST)
         run: |
-          echo "runner public IP: $(curl -s --max-time 10 https://api.ipify.org)" | tee ip.txt
+          echo "runner public IP: $(curl -s --max-time 10 https://api.ipify.org)"
           echo "start (KST): $(TZ=Asia/Seoul date '+%F %T')"
 
+      - name: Checkout code
+        uses: actions/checkout@v2
+
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v1
 
-      - name: Push test image 5 times (same as CI, new random layers every round)
-        shell: bash {0}   # no -e: a failed round must not stop the loop
-        run: |
-          echo "KST 시작,회차,로그인,업로드,걸린 초,오류,직후 새 접속" > results.csv
-          for r in $(seq 1 "$ROUNDS"); do
-            d=$(mktemp -d)
-            head -c 56M /dev/urandom > "$d/a"; head -c 16M /dev/urandom > "$d/b"; head -c 4M /dev/urandom > "$d/c"
-            printf 'FROM scratch\nCOPY a /a\nCOPY b /b\nCOPY c /c\n' > "$d/Dockerfile"
-            start=$(TZ=Asia/Seoul date +%T); t0=$(date +%s); : > push.log
-            login=ok
-            echo "$P" | timeout 60 docker login "$HOST" -u "$U" --password-stdin > login.log 2>&1 || login=fail
-            res=skip
-            if [ "$login" = ok ]; then
-              timeout 300 docker buildx build --push --provenance=false \
-                -t "$HOST/code-place-dev/bypass-test:r${{ matrix.runner }}-$r" "$d" > push.log 2>&1 && res=ok || res=fail
-            fi
-            dur=$(( $(date +%s) - t0 ))
-            err=$(grep -ohE 'status code [0-9]+|dial tcp [0-9.:]+: i/o timeout|Client.Timeout|use of closed network connection|connection reset by peer' login.log push.log | head -1)
-            [ "$res" = fail ] && [ -z "$err" ] && err="timeout 300s (멈춤)"
-            after=$(curl -s -o /dev/null --max-time 10 -w '%{http_code}' "https://$HOST/v2/"); [ "$after" = 000 ] && after="안 열림" || after="정상($after)"
-            echo "$start,$r,$login,$res,$dur,$err,$after" | tee -a results.csv
-            rm -rf "$d"; sleep 20
-          done
-
-      - name: Summary
-        if: always()
-        run: |
-          {
-            echo "## 러너 ${{ matrix.runner }}: $(cat ip.txt)"
-            echo "목적지 harbor.code-place-dev.kr (164.125.249.23:443)"
-            echo
-            awk -F, 'NR==1{print "| "$1" | "$2" | "$3" | "$4" | "$5" | "$6" | "$7" |"; print "|---|---|---|---|---|---|---|"; next}
-                     {print "| "$1" | "$2" | "$3" | "$4" | "$5" | "$6" | "$7" |"}' results.csv
-          } >> "$GITHUB_STEP_SUMMARY"
-
-      - uses: actions/upload-artifact@v4
-        if: always()
+      - name: Login to Harbor
+        uses: docker/login-action@v1
         with:
-          name: bypass-test-runner-${{ matrix.runner }}
-          path: |
-            results.csv
-            ip.txt
+          registry: ${{ secrets.HARBOR_REGISTRY }}
+          username: ${{ secrets.HARBOR_USERNAME }}
+          password: ${{ secrets.HARBOR_PASSWORD }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v2
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          tags: ${{ secrets.HARBOR_REGISTRY }}/code-place-dev/bypass-test-backend:${{ github.sha }}-${{ github.run_attempt }}
+          provenance: false
+          build-args: |
+            APP_VERSION=${{ github.sha }}-dev
+
+      - name: End time (KST)
+        if: always()
+        run: |
+          echo "end (KST): $(TZ=Asia/Seoul date '+%F %T')"
+
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Runner IP and time (KST)
+        run: |
+          echo "runner public IP: $(curl -s --max-time 10 https://api.ipify.org)"
+          echo "start (KST): $(TZ=Asia/Seoul date '+%F %T')"
+
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Login to Harbor
+        uses: docker/login-action@v4
+        with:
+          registry: ${{ secrets.HARBOR_REGISTRY }}
+          username: ${{ secrets.HARBOR_USERNAME }}
+          password: ${{ secrets.HARBOR_PASSWORD }}
+
+      # 실제 CI와 같고, 테스트 빌드가 Sentry에 릴리스를 만들지 않도록 Sentry만 끈다
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v7
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: true
+          tags: ${{ secrets.HARBOR_REGISTRY }}/code-place-dev/bypass-test-frontend:${{ github.sha }}-${{ github.run_attempt }}
+          provenance: false
+          build-args: |
+            SERVER_NAME=${{ secrets.DEV_SERVER_NAME }}
+            APP_VERSION=${{ github.sha }}-dev
+            USE_SENTRY=0
+
+      - name: End time (KST)
+        if: always()
+        run: |
+          echo "end (KST): $(TZ=Asia/Seoul date '+%F %T')"
 
   cleanup:
-    needs: push-test
+    needs: [backend, frontend]
     if: always()
     runs-on: ubuntu-latest
     steps:
-      - name: Delete test repo from Harbor
+      - name: Delete test repos from Harbor
         run: |
-          curl -s -o /dev/null -w "delete code-place-dev/bypass-test: %{http_code}\n" --max-time 30 \
-            -u "${{ secrets.HARBOR_USERNAME }}:${{ secrets.HARBOR_PASSWORD }}" -X DELETE \
-            "https://${{ secrets.HARBOR_REGISTRY }}/api/v2.0/projects/code-place-dev/repositories/bypass-test" || true
+          for r in bypass-test-backend bypass-test-frontend bypass-test; do
+            curl -s -o /dev/null -w "delete code-place-dev/$r: %{http_code}\n" --max-time 30 \
+              -u "${{ secrets.HARBOR_USERNAME }}:${{ secrets.HARBOR_PASSWORD }}" -X DELETE \
+              "https://${{ secrets.HARBOR_REGISTRY }}/api/v2.0/projects/code-place-dev/repositories/$r" || true
+          done
