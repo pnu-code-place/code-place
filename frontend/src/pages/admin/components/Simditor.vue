@@ -61,6 +61,14 @@ export default {
       toolbar: this.toolbar,
       pasteImage: true,
       markdown: false,
+      codeLanguages: [
+        { name: "C", value: "c" },
+        { name: "C++", value: "cpp" },
+        { name: "Golang", value: "go" },
+        { name: "Java", value: "java" },
+        { name: "JavaScript", value: "javascript" },
+        { name: "Python3", value: "python" },
+      ],
       upload: {
         url: "/api/admin/upload_image/",
         params: null,

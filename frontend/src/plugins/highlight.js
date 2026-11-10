@@ -1,12 +1,33 @@
 const hljs = require("highlight.js/lib/core")
+const c = require("highlight.js/lib/languages/c")
 const cpp = require("highlight.js/lib/languages/cpp")
-const python = require("highlight.js/lib/languages/python")
+const go = require("highlight.js/lib/languages/go")
 const java = require("highlight.js/lib/languages/java")
+const javascript = require("highlight.js/lib/languages/javascript")
+const python = require("highlight.js/lib/languages/python")
 import "highlight.js/styles/atom-one-light.css"
 
+hljs.registerLanguage("c", c)
 hljs.registerLanguage("cpp", cpp)
+hljs.registerLanguage("go", go)
 hljs.registerLanguage("java", java)
+hljs.registerLanguage("javascript", javascript)
 hljs.registerLanguage("python", python)
+
+const languagePattern = /\blang(?:uage)?-(\S+)/
+
+function highlightCodeBlocks(el) {
+  Array.from(el.querySelectorAll("pre > code")).forEach((target) => {
+    const match = target.className.match(languagePattern)
+    if (match && hljs.getLanguage(match[1])) {
+      target.innerHTML = hljs.highlight(target.textContent, {
+        language: match[1],
+        ignoreIllegals: true,
+      }).value
+      target.classList.add("hljs")
+    }
+  })
+}
 
 export default {
   install(Vue, options) {
@@ -32,6 +53,10 @@ export default {
           hljs.highlightBlock(target)
         })
       },
+    })
+    Vue.directive("highlight-code", {
+      inserted: highlightCodeBlocks,
+      componentUpdated: highlightCodeBlocks,
     })
   },
 }
