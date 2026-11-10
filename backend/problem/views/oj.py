@@ -136,9 +136,10 @@ class ProblemAPI(APIView):
             if not request.user.is_authenticated:
                 return self.error("Please login first", err="permission-denied", status=401)
             try:
-                problem = Problem.objects.select_related("created_by") \
-                    .get(_id=problem_id, contest_id__isnull=True, visible=True)
+                problem = Problem.practice_problems_for(request.user).select_related("created_by") \
+                    .get(_id=problem_id)
                 problem_data = ProblemSerializer(problem).data
+                problem_data["visible"] = problem.visible
                 self._add_problem_status(request, problem_data)
                 problem_data["allow_paste"] = True    # 기본 문제는 복사 붙여넣기 허용
                 return self.success(problem_data)
@@ -301,7 +302,7 @@ class ProblemLLMHintAPI(APIView):
                 return self._error_response("문제를 찾을 수 없습니다.", metric_status="problem_not_found", scope=scope)
         else:
             try:
-                problem = Problem.objects.get(_id=problem_id, contest_id__isnull=True, visible=True)
+                problem = Problem.practice_problems_for(request.user).get(_id=problem_id)
             except Problem.DoesNotExist:
                 return self._error_response("문제를 찾을 수 없습니다.", metric_status="problem_not_found", scope=scope)
 
@@ -387,7 +388,7 @@ class AIHintHistoryAPI(APIView):
 
         # 1. 문제 조회 및 접근 가능 여부(공개 여부, 대회 여부) 검증
         try:
-            problem = Problem.objects.get(_id=problem_id, contest_id__isnull=True, visible=True)
+            problem = Problem.practice_problems_for(request.user).get(_id=problem_id)
         except Problem.DoesNotExist:
             return self.error("문제를 찾을 수 없습니다.")
 

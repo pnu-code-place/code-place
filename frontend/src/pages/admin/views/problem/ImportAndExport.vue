@@ -98,6 +98,19 @@
         :error="importError"
         @close="importError = null"
       />
+      <el-alert
+        v-if="importResult && importResult.ref === 'QDU'"
+        class="import-result"
+        type="success"
+        show-icon
+        :title="`${importResult.count}개 문제를 비활성화 상태로 등록했습니다`"
+        @close="importResult = null"
+      >
+        검수한 뒤 문제 목록에서 활성화해주세요.
+        <el-button type="text" size="mini" @click="goReview"
+          >검수하러 가기</el-button
+        >
+      </el-alert>
     </panel>
 
     <panel :title="$t('m.ImportAndExport_Import_FPS')">
@@ -134,6 +147,19 @@
         :error="importError"
         @close="importError = null"
       />
+      <el-alert
+        v-if="importResult && importResult.ref === 'FPS'"
+        class="import-result"
+        type="success"
+        show-icon
+        :title="`${importResult.count}개 문제를 비활성화 상태로 등록했습니다`"
+        @close="importResult = null"
+      >
+        검수한 뒤 문제 목록에서 활성화해주세요.
+        <el-button type="text" size="mini" @click="goReview"
+          >검수하러 가기</el-button
+        >
+      </el-alert>
     </panel>
   </div>
 </template>
@@ -160,6 +186,7 @@ export default {
       problems: [],
       selected_problems: [],
       importError: null,
+      importResult: null,
     }
   },
   mounted() {
@@ -206,16 +233,29 @@ export default {
     },
     uploadSucceeded(ref, response) {
       this.importError = null
+      this.importResult = null
       if (response.error) {
         this.showImportError(ref, response.data)
       } else {
-        this.$success(
-          "Successfully imported " + response.data.import_count + " problems",
-        )
+        this.$success(`${response.data.import_count}개 문제를 가져왔습니다`)
+        this.importResult = {
+          ref,
+          count: response.data.import_count,
+          reviewCount: response.data.review_count || 0,
+        }
         this.getProblems()
       }
     },
+    goReview() {
+      const { count, reviewCount } = this.importResult
+      const source = reviewCount === count ? "boj" : ""
+      this.$router.push({
+        name: "problem-list",
+        query: { source, visible: "false" },
+      })
+    },
     uploadFailed(ref, err) {
+      this.importResult = null
       let data
       try {
         data = JSON.parse(err.message).data
@@ -247,4 +287,8 @@ export default {
 }
 </script>
 
-<style scoped lang="less"></style>
+<style scoped lang="less">
+.import-result {
+  margin-top: 12px;
+}
+</style>

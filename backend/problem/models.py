@@ -1,6 +1,6 @@
 from django.db import models
 from utils.models import JSONField
-from account.models import User, UserProfile
+from account.models import ProblemPermission, User, UserProfile
 from contest.models import Contest
 from utils.models import RichTextField
 from utils.constants import Choices
@@ -122,6 +122,16 @@ class Problem(models.Model):
         db_table = "problem"
         unique_together = (("_id", "contest"),)
         ordering = ("create_time",)
+
+    @classmethod
+    def practice_problems_for(cls, user):
+        problems = cls.objects.filter(contest_id__isnull=True)
+        if user.is_authenticated and user.is_admin_role():
+            if user.is_super_admin() or user.can_mgmt_all_problem():
+                return problems
+            if user.problem_permission == ProblemPermission.OWN:
+                return problems.filter(models.Q(visible=True) | models.Q(created_by=user))
+        return problems.filter(visible=True)
 
     def add_submission_number(self):
         self.submission_number = models.F("submission_number") + 1

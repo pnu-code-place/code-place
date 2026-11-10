@@ -14,7 +14,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import DatabaseError
 from django.utils import timezone
 
-from utils.constants import Difficulty
+from utils.constants import BOJ_SOURCE, Difficulty
 from utils.api.tests import APITestCase
 from unittest import mock
 
@@ -239,6 +239,14 @@ class ImportProblemAPITest(APITestCase):
     def read_upload(self, path):
         with open(os.path.join(settings.UPLOAD_DIR, os.path.basename(path)), "rb") as f:
             return f.read()
+
+    def test_imported_problems_are_hidden(self):
+        boj = self.problem_json("p2", "description")
+        boj["source"] = BOJ_SOURCE
+        resp = self.import_zip({"1": (self.problem_json("p1", "description"), {}), "2": (boj, {})})
+        self.assertSuccess(resp)
+        self.assertEqual(resp.data["data"], {"import_count": 2, "review_count": 1})
+        self.assertFalse(Problem.objects.filter(visible=True).exists())
 
     def test_import_images_in_zip(self):
         resp = self.import_zip({
@@ -469,6 +477,80 @@ class ProblemAdminAPITest(APITestCase):
         resp = self.client.put(self.url, data=data)
         self.assertSuccess(resp)
 
+    def create_visible_and_hidden_problems(self):
+        visible_id = self.test_create_problem().data["data"]["id"]
+        data = copy.deepcopy(self.data)
+        data["_id"] = "hidden"
+        data["visible"] = False
+        hidden_id = self.client.post(self.url, data=data).data["data"]["id"]
+        return visible_id, hidden_id
+
+    def test_filter_by_source_and_visible(self):
+        visible_id, hidden_id = self.create_visible_and_hidden_problems()
+        data = copy.deepcopy(self.data)
+        data["_id"] = "boj"
+        data["visible"] = False
+        data["source"] = BOJ_SOURCE
+        boj_id = self.client.post(self.url, data=data).data["data"]["id"]
+        Problem.objects.filter(id=visible_id).update(source=BOJ_SOURCE)
+        cases = (
+            ("", "", [boj_id, hidden_id, visible_id]),
+            ("", "true", [visible_id]),
+            ("", "false", [boj_id, hidden_id]),
+            ("boj", "", [boj_id, visible_id]),
+            ("boj", "true", [visible_id]),
+            ("boj", "false", [boj_id]),
+        )
+        for source, visible, expected in cases:
+            resp = self.client.get(f"{self.url}?source={source}&visible={visible}")
+            self.assertSuccess(resp)
+            self.assertEqual([item["id"] for item in resp.data["data"]["results"]], expected)
+
+    def test_change_visibility_in_bulk(self):
+        ids = self.create_visible_and_hidden_problems()
+        resp = self.client.put(self.reverse("problem_visibility_admin_api"), data={"ids": ids, "visible": True})
+        self.assertSuccess(resp)
+        self.assertEqual(resp.data["data"]["updated"], 2)
+        self.assertEqual(Problem.objects.filter(id__in=ids, visible=True).count(), 2)
+
+    def test_hide_all_boj_problems(self):
+        visible_id, hidden_id = self.create_visible_and_hidden_problems()
+        data = copy.deepcopy(self.data)
+        data["_id"] = "boj"
+        data["source"] = BOJ_SOURCE
+        boj_id = self.client.post(self.url, data=data).data["data"]["id"]
+        url = self.reverse("boj_problem_hide_admin_api")
+
+        resp = self.client.get(url)
+        self.assertSuccess(resp)
+        self.assertEqual(resp.data["data"]["count"], 1)
+
+        resp = self.client.post(url, data={})
+        self.assertSuccess(resp)
+        self.assertEqual(resp.data["data"]["updated"], 1)
+        self.assertFalse(Problem.objects.get(id=boj_id).visible)
+        self.assertTrue(Problem.objects.get(id=visible_id).visible)
+        self.assertEqual(self.client.get(url).data["data"]["count"], 0)
+
+    def test_hide_boj_problems_only_own_problems(self):
+        data = copy.deepcopy(self.data)
+        data["source"] = BOJ_SOURCE
+        boj_id = self.client.post(self.url, data=data).data["data"]["id"]
+        self.create_admin()
+        url = self.reverse("boj_problem_hide_admin_api")
+        self.assertEqual(self.client.get(url).data["data"]["count"], 0)
+        self.assertEqual(self.client.post(url, data={}).data["data"]["updated"], 0)
+        self.assertTrue(Problem.objects.get(id=boj_id).visible)
+
+    def test_change_visibility_only_own_problems(self):
+        ids = self.create_visible_and_hidden_problems()
+        self.create_admin()
+        resp = self.client.put(self.reverse("problem_visibility_admin_api"), data={"ids": ids, "visible": False})
+        self.assertSuccess(resp)
+        self.assertEqual(resp.data["data"]["updated"], 0)
+        self.assertFalse(Problem.objects.get(id=ids[1]).visible)
+        self.assertTrue(Problem.objects.get(id=ids[0]).visible)
+
 
 class ProblemAPITest(ProblemCreateTestBase):
 
@@ -482,6 +564,19 @@ class ProblemAPITest(ProblemCreateTestBase):
     def test_get_problem_list(self):
         resp = self.client.get(f"{self.url}?limit=10")
         self.assertSuccess(resp)
+
+    def test_hidden_problem_only_for_problem_managers(self):
+        hidden = self.create_problem_with_custom_field(self.problem.created_by, _id="H-1", visible=False)
+        url = f"{self.url}?problem_id={hidden._id}"
+        self.assertFailed(self.client.get(url), "Problem does not exist")
+
+        self.client.force_login(self.problem.created_by)
+        resp = self.client.get(url)
+        self.assertSuccess(resp)
+        self.assertFalse(resp.data["data"]["visible"])
+
+        self.create_admin(email="other@admin.com", username="other")
+        self.assertFailed(self.client.get(url), "Problem does not exist")
 
     def test_get_problem_list_default_sort_by_create_time_desc(self):
         """정렬 옵션이 없을 때 기본적으로 최신 등록순으로 정렬되는지 검증"""
