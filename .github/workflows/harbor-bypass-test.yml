@@ -4,6 +4,7 @@ name: harbor-bypass-test
 # ci2develop.yml의 백엔드, 프론트 빌드와 Harbor push를 그대로 따라 하되,
 # 이미지는 테스트 저장소(code-place-dev/bypass-test-*)에 올리고 끝나면 지운다.
 # 배포 매니페스트는 건드리지 않는다. 다시 돌릴 때는 Actions 화면에서 "Re-run all jobs".
+# 한 번 돌리면 백엔드, 프론트를 3라운드 연달아 push한다 (라운드마다 실제 CI처럼 둘이 동시에).
 on:
   push:
     branches: [harbor-bypass-test]
@@ -11,6 +12,11 @@ on:
 jobs:
   backend:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        round: [1, 2, 3]
     steps:
       # 학교 쪽에서 출발지 IP로 로그를 찾으므로 로그인 전에 남긴다
       - name: Runner IP and time (KST)
@@ -37,7 +43,7 @@ jobs:
           context: ./backend
           file: ./backend/Dockerfile
           push: true
-          tags: ${{ secrets.HARBOR_REGISTRY }}/code-place-dev/bypass-test-backend:${{ github.sha }}-${{ github.run_attempt }}
+          tags: ${{ secrets.HARBOR_REGISTRY }}/code-place-dev/bypass-test-backend:${{ github.sha }}-${{ github.run_attempt }}-${{ matrix.round }}
           provenance: false
           build-args: |
             APP_VERSION=${{ github.sha }}-dev
@@ -49,6 +55,11 @@ jobs:
 
   frontend:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        round: [1, 2, 3]
     steps:
       - name: Runner IP and time (KST)
         run: |
@@ -75,7 +86,7 @@ jobs:
           context: ./frontend
           file: ./frontend/Dockerfile
           push: true
-          tags: ${{ secrets.HARBOR_REGISTRY }}/code-place-dev/bypass-test-frontend:${{ github.sha }}-${{ github.run_attempt }}
+          tags: ${{ secrets.HARBOR_REGISTRY }}/code-place-dev/bypass-test-frontend:${{ github.sha }}-${{ github.run_attempt }}-${{ matrix.round }}
           provenance: false
           build-args: |
             SERVER_NAME=${{ secrets.DEV_SERVER_NAME }}
