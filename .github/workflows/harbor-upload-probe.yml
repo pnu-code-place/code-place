@@ -1,0 +1,57 @@
+name: Harbor upload path probe (temporary)
+
+# Harbor push 속도 저하 조사용 임시 워크플로.
+# 이미지를 올리지 않는다: 업로드 세션을 열고 80MB를 보낸 뒤 세션을 취소한다.
+# 조사가 끝나면 이 파일과 브랜치를 삭제한다.
+on:
+  push:
+    branches: [ci/harbor-upload-probe]
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Show runner public IP
+        run: curl -s --max-time 10 https://api.ipify.org || true; echo
+
+      - name: Make 80MB random file
+        run: head -c $((80*1024*1024)) /dev/urandom > /tmp/random.bin
+
+      - name: Upload probe
+        env:
+          HOST: ${{ secrets.HARBOR_REGISTRY }}
+          HUSER: ${{ secrets.HARBOR_USERNAME }}
+          HPASS: ${{ secrets.HARBOR_PASSWORD }}
+          REPO: code-place-dev/path-test
+        run: |
+          set -u
+          token() {
+            curl -s --max-time 20 -u "$HUSER:$HPASS" \
+              "https://$HOST/service/token?service=harbor-registry&scope=repository:$REPO:push,pull" \
+              | python3 -c 'import sys,json; print(json.load(sys.stdin).get("token",""))'
+          }
+          # 업로드 세션 1개: 열기 → 80MB PATCH → 취소. 결과 한 줄 출력.
+          one_upload() {
+            local tag="$1" t loc url
+            t=$(token); [ -n "$t" ] || { echo "[$tag] 토큰 발급 실패"; return; }
+            loc=$(curl -s --max-time 20 -D - -o /dev/null -X POST -H "Authorization: Bearer $t" \
+                  "https://$HOST/v2/$REPO/blobs/uploads/" | awk 'tolower($1)=="location:"{print $2}' | tr -d '\r')
+            [ -n "$loc" ] || { echo "[$tag] 세션 시작 실패"; return; }
+            case "$loc" in http*) url="$loc";; *) url="https://$HOST$loc";; esac
+            curl -s --max-time 180 -X PATCH -H "Authorization: Bearer $t" -H "Content-Type: application/octet-stream" \
+                 --data-binary @/tmp/random.bin -o /dev/null \
+                 -w "[$tag] HTTP %{http_code} | sent %{size_upload} B | %{time_total}s | %{speed_upload} B/s\n" "$url" \
+              || echo "[$tag] curl exit=$? (28=180초 초과)"
+            curl -s --max-time 20 -o /dev/null -w "[$tag] cancel HTTP %{http_code}\n" -X DELETE -H "Authorization: Bearer $t" "$url"
+          }
+
+          echo "===== A. 연결 1개, 80MB ====="
+          one_upload single
+
+          echo; echo "60초 대기 (차단 상태 해제 여유)"; sleep 60
+
+          echo "===== B. 연결 3개 동시, 각 80MB (push와 같은 모양) ====="
+          one_upload par1 & one_upload par2 & one_upload par3 &
+          wait
+          echo "===== 끝. Harbor에 남는 것 없음 ====="
