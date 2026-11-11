@@ -44,56 +44,60 @@ class TestCaseZipProcessor(object):
             zip_file = zipfile.ZipFile(uploaded_zip_file, "r")
         except zipfile.BadZipFile:
             raise APIError("Bad zip file")
-        name_list = zip_file.namelist()
-        test_case_list = self.filter_name_list(name_list, spj=spj, dir=dir)
-        if not test_case_list:
-            raise APIError("Empty file")
+        with zip_file:
+            name_list = zip_file.namelist()
+            test_case_list = self.filter_name_list(name_list, spj=spj, dir=dir)
+            if not test_case_list:
+                raise APIError("Empty file")
 
-        test_case_id = rand_str()
-        test_case_dir = os.path.join(settings.TEST_CASE_DIR, test_case_id)
-        os.mkdir(test_case_dir)
-        os.chmod(test_case_dir, 0o710)
+            test_case_id = rand_str()
+            test_case_dir = os.path.join(settings.TEST_CASE_DIR, test_case_id)
+            os.mkdir(test_case_dir)
+            try:
+                os.chmod(test_case_dir, 0o710)
+                size_cache = {}
+                md5_cache = {}
 
-        size_cache = {}
-        md5_cache = {}
+                for item in test_case_list:
+                    with open(os.path.join(test_case_dir, item), "wb") as f:
+                        content = zip_file.read(f"{dir}{item}").replace(b"\r\n", b"\n")
+                        size_cache[item] = len(content)
+                        if item.endswith(".out"):
+                            md5_cache[item] = hashlib.md5(content.rstrip()).hexdigest()
+                        f.write(content)
+                test_case_info = {"spj": spj, "test_cases": {}}
 
-        for item in test_case_list:
-            with open(os.path.join(test_case_dir, item), "wb") as f:
-                content = zip_file.read(f"{dir}{item}").replace(b"\r\n", b"\n")
-                size_cache[item] = len(content)
-                if item.endswith(".out"):
-                    md5_cache[item] = hashlib.md5(content.rstrip()).hexdigest()
-                f.write(content)
-        test_case_info = {"spj": spj, "test_cases": {}}
+                info = []
 
-        info = []
+                if spj:
+                    for index, item in enumerate(test_case_list):
+                        data = {"input_name": item, "input_size": size_cache[item]}
+                        info.append(data)
+                        test_case_info["test_cases"][str(index + 1)] = data
+                else:
+                    # ["1.in", "1.out", "2.in", "2.out"] => [("1.in", "1.out"), ("2.in", "2.out")]
+                    test_case_list = zip(*[test_case_list[i::2] for i in range(2)])
+                    for index, item in enumerate(test_case_list):
+                        data = {
+                            "stripped_output_md5": md5_cache[item[1]],
+                            "input_size": size_cache[item[0]],
+                            "output_size": size_cache[item[1]],
+                            "input_name": item[0],
+                            "output_name": item[1]
+                        }
+                        info.append(data)
+                        test_case_info["test_cases"][str(index + 1)] = data
 
-        if spj:
-            for index, item in enumerate(test_case_list):
-                data = {"input_name": item, "input_size": size_cache[item]}
-                info.append(data)
-                test_case_info["test_cases"][str(index + 1)] = data
-        else:
-            # ["1.in", "1.out", "2.in", "2.out"] => [("1.in", "1.out"), ("2.in", "2.out")]
-            test_case_list = zip(*[test_case_list[i::2] for i in range(2)])
-            for index, item in enumerate(test_case_list):
-                data = {
-                    "stripped_output_md5": md5_cache[item[1]],
-                    "input_size": size_cache[item[0]],
-                    "output_size": size_cache[item[1]],
-                    "input_name": item[0],
-                    "output_name": item[1]
-                }
-                info.append(data)
-                test_case_info["test_cases"][str(index + 1)] = data
+                with open(os.path.join(test_case_dir, "info"), "w", encoding="utf-8") as f:
+                    f.write(json.dumps(test_case_info, indent=4))
 
-        with open(os.path.join(test_case_dir, "info"), "w", encoding="utf-8") as f:
-            f.write(json.dumps(test_case_info, indent=4))
+                for item in os.listdir(test_case_dir):
+                    os.chmod(os.path.join(test_case_dir, item), 0o640)
 
-        for item in os.listdir(test_case_dir):
-            os.chmod(os.path.join(test_case_dir, item), 0o640)
-
-        return info, test_case_id
+                return info, test_case_id
+            except Exception:
+                shutil.rmtree(test_case_dir, ignore_errors=True)
+                raise
 
     def filter_name_list(self, name_list, spj, dir=""):
         ret = []

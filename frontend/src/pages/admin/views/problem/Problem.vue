@@ -1,9 +1,13 @@
 <template>
-  <div class="problem view">
+  <div
+    class="problem view"
+    v-loading="saving"
+    element-loading-text="저장 중입니다"
+  >
     <Panel
       :title="mode === 'edit' ? $t('m.Edit_Problem') : $t('m.Create_Problem')"
     >
-      <div class="detailCard">
+      <div class="detailCard" :inert="saving">
         <div class="header-input-container">
           <div class="header-question-id">
             <!-- 문제 번호 글자 -->
@@ -644,6 +648,7 @@ export default {
   data() {
     return {
       loadingCompile: false,
+      saving: false,
       mode: "",
       contest: {},
       problem: {
@@ -951,6 +956,7 @@ export default {
       )
     },
     async submit() {
+      if (this.saving) return
       if (!this.problem.title) {
         this.$error("Title is required")
         return
@@ -1034,33 +1040,39 @@ export default {
       if (funcName === "editContestProblem") {
         this.problem.contest_id = this.contest.id
       }
+      this.saving = true
       try {
-        this.problem.description =
-          await this.$refs.descEditor.uploadPendingImages()
-        this.problem.input_description =
-          await this.$refs.inputDescEditor.uploadPendingImages()
-        this.problem.output_description =
-          await this.$refs.outputDescEditor.uploadPendingImages()
-        this.problem.hint = await this.$refs.hintEditor.uploadPendingImages()
-      } catch (e) {
-        this.$error("Image upload failed: " + e.message)
-        return
+        await this.$nextTick()
+        try {
+          this.problem.description =
+            await this.$refs.descEditor.uploadPendingImages()
+          this.problem.input_description =
+            await this.$refs.inputDescEditor.uploadPendingImages()
+          this.problem.output_description =
+            await this.$refs.outputDescEditor.uploadPendingImages()
+          this.problem.hint = await this.$refs.hintEditor.uploadPendingImages()
+        } catch (e) {
+          this.$error("Image upload failed: " + e.message)
+          return
+        }
+        await api[funcName](this.problem)
+          .then((res) => {
+            if (
+              this.routeName === "create-contest-problem" ||
+              this.routeName === "edit-contest-problem"
+            ) {
+              this.$router.push({
+                name: "contest-problem-list",
+                params: { contestId: this.$route.params.contestId },
+              })
+            } else {
+              this.$router.push({ name: "problem-list" })
+            }
+          })
+          .catch(() => {})
+      } finally {
+        this.saving = false
       }
-      api[funcName](this.problem)
-        .then((res) => {
-          if (
-            this.routeName === "create-contest-problem" ||
-            this.routeName === "edit-contest-problem"
-          ) {
-            this.$router.push({
-              name: "contest-problem-list",
-              params: { contestId: this.$route.params.contestId },
-            })
-          } else {
-            this.$router.push({ name: "problem-list" })
-          }
-        })
-        .catch(() => {})
     },
     resetProblem() {
       this.problem = JSON.parse(JSON.stringify(this.reProblem))

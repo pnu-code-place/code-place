@@ -5,6 +5,7 @@ import json
 import os
 import re
 import shutil
+import struct
 from datetime import timedelta
 from zipfile import ZipFile
 
@@ -183,6 +184,14 @@ class TestCaseUploadAPITest(APITestCase):
                 name = item["input_name"]
                 with open(os.path.join(test_case_dir, name), "r", encoding="utf-8") as f:
                     self.assertEqual(f.read(), name + "\n" + name + "\n" + "end")
+
+    def test_process_zip_cleans_files_when_info_write_fails(self):
+        test_cases = set(os.listdir(settings.TEST_CASE_DIR))
+        zip_path = self.make_test_case_zip()
+        with mock.patch("problem.views.admin.json.dumps", side_effect=OSError("Disk full")):
+            with self.assertRaises(OSError):
+                self.api.process_zip(zip_path, spj=False)
+        self.assertEqual(set(os.listdir(settings.TEST_CASE_DIR)), test_cases)
 
 
 class ImportProblemAPITest(APITestCase):
@@ -426,6 +435,28 @@ class ImportProblemAPITest(APITestCase):
             "3": (self.problem_json("p3", '<img src="images/missing.png">'), {}),
         })
         self.assertEqual(self.import_errors(resp), [("3", "images", "description.value", "images/missing.png 파일이 없습니다", 1)])
+        self.assertEqual(set(os.listdir(settings.UPLOAD_DIR)), uploads)
+        self.assertEqual(set(os.listdir(settings.TEST_CASE_DIR)), test_cases)
+
+    def test_corrupt_test_case_rolls_back_all_problems_and_files(self):
+        uploads = set(os.listdir(settings.UPLOAD_DIR))
+        test_cases = set(os.listdir(settings.TEST_CASE_DIR))
+        buffer = io.BytesIO()
+        with ZipFile(buffer, "w") as zip_file:
+            for problem_dir in ("1", "2"):
+                info = self.problem_json(f"p{problem_dir}", '<img src="images/1.png">')
+                zip_file.writestr(f"{problem_dir}/problem.json", json.dumps(info))
+                zip_file.writestr(f"{problem_dir}/testcase/1.in", "input")
+                zip_file.writestr(f"{problem_dir}/testcase/1.out", "output")
+                zip_file.writestr(f"{problem_dir}/images/1.png", b"image")
+            offset = zip_file.getinfo("2/testcase/1.out").header_offset
+
+        # Corrupt the file payload while keeping the directory and CRC intact.
+        content = bytearray(buffer.getvalue())
+        name_length, extra_length = struct.unpack_from("<HH", content, offset + 26)
+        content[offset + 30 + name_length + extra_length] ^= 1
+        self.assertFailed(self.upload(bytes(content)))
+        self.assertFalse(Problem.objects.exists())
         self.assertEqual(set(os.listdir(settings.UPLOAD_DIR)), uploads)
         self.assertEqual(set(os.listdir(settings.TEST_CASE_DIR)), test_cases)
 
