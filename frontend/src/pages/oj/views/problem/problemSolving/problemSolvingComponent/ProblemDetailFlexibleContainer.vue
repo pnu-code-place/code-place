@@ -1,5 +1,5 @@
 <template>
-  <div class="problemDetailFlexibleContainer">
+  <div class="problemDetailFlexibleContainer" ref="scrollBox">
     <section class="detailCard">
       <header
         class="detailTitle"
@@ -367,12 +367,21 @@ export default defineComponent({
     }
   },
   methods: {
+    // 바깥 화면은 두고 문제 영역만 스크롤
+    scrollToSection(target) {
+      const box = this.$refs.scrollBox
+      const top =
+        target.getBoundingClientRect().top -
+        box.getBoundingClientRect().top +
+        box.scrollTop
+      box.scrollTo({ top, behavior: "smooth" })
+    },
     scrollField() {
-      this.$refs.field.scrollIntoView({ behavior: "smooth" })
+      this.scrollToSection(this.$refs.field)
       this.dropdown.openFieldDropdown = true
     },
     scrollCategory() {
-      this.$refs.category.scrollIntoView({ behavior: "smooth" })
+      this.scrollToSection(this.$refs.category)
       this.dropdown.openCategoryDropdown = true
     },
     toggleDropdown(type) {

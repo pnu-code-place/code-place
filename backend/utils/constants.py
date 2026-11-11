@@ -6,6 +6,10 @@ class Choices:
         return [d[item] for item in d.keys() if not item.startswith("__")]
 
 
+# 채점 언어 이름, judge/languages.py 의 name 목록과 같아야 함
+LANGUAGE_NAMES = ["C", "C++", "Java", "Python3", "Golang", "JavaScript"]
+
+
 class ContestType:
     PUBLIC_CONTEST = "Public"
     PASSWORD_PROTECTED_CONTEST = "Password Protected"
@@ -110,11 +114,11 @@ class Tier:
 
 
 # 문제 하나당 받을 수 있는 AI 조교 힌트 횟수. (사용자, 문제) 단위로 평생 누적된다.
-# 요청 제한(problem/views/oj.py), 프롬프트 종료 조건(problem/llm_hint.py),
+# 요청 제한(problem/views/oj.py), 프롬프트 종료 조건(problem/ai_assistant/stage_hint.py),
 # 집계(problem/views/ai_hint_stats.py)가 이 값을 참조한다.
 #
 # 다만 이 값만 바꾸면 기능이 어긋난다. 아래 두 곳은 아직 5가 글로 박혀 있다.
-#   - llm_hint.SYSTEM_PROMPT: "exactly 5 levels" 와 [1단계]~[5단계] 목록
+#   - ai_assistant/stage_hint.SYSTEM_PROMPT: "exactly 5 levels" 와 [1단계]~[5단계] 목록
 #   - frontend BottomDrag.vue: 학생에게 보이는 "n/5 회" 표시
 # 숫자를 바꾸려면 위 두 곳도 함께 손봐야 한다.
 HINT_LIMIT_PER_PROBLEM = 5

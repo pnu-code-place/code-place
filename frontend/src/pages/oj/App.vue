@@ -185,11 +185,12 @@ h1.main-title {
   --submission-primary-btn-hover-bg: #2b84f0;
   --submission-primary-btn-hover-text-color: #ffffff;
   --ai-assistant-btn-bg: #f0f1ff;
-  --ai-assistant-btn-text-color: #000478;
-  --ai-assistant-btn-hover-bg: #000478;
-  --ai-assistant-btn-hover-text-color: #f0f1ff;
-  --ai-assistant-btn-icon-color: #000478;
-  --ai-assistant-btn-hover-icon-color: #f0f1ff;
+  --ai-assistant-btn-text-color: #3a34b5;
+  --ai-assistant-btn-hover-bg: #dde0ff;
+  --ai-assistant-btn-hover-text-color: #3a34b5;
+  --ai-assistant-tooltip-bg: #ffffff;
+  --ai-assistant-tooltip-text-color: #000000;
+  --ai-assistant-tooltip-shadow: rgba(58, 52, 181, 0.2);
   --ai-assistant-panel-bg: #f8f9ff;
   --ai-assistant-header-bg: #ffffff;
   --ai-assistant-border-color: #e0e0e0;
@@ -200,9 +201,6 @@ h1.main-title {
   --ai-assistant-subtle-text-color: #555555;
   --ai-assistant-subtle-bg: #eef0ff;
   --ai-assistant-subtle-hover-bg: #dde0ff;
-  --ai-assistant-avatar-bg: #dde0ff;
-  --ai-assistant-avatar-icon-filter: invert(18%) sepia(79%) saturate(3438%)
-    hue-rotate(234deg) brightness(68%) contrast(117%);
   --ai-assistant-bubble-bg: #eef0ff;
   --ai-assistant-bubble-text-color: #222222;
   --ai-assistant-thinking-bg: #f0f0f0;
@@ -262,8 +260,9 @@ h1.main-title {
   --ai-assistant-btn-text-color: #ffffff;
   --ai-assistant-btn-hover-bg: #465477;
   --ai-assistant-btn-hover-text-color: #ffffff;
-  --ai-assistant-btn-icon-color: #ffffff;
-  --ai-assistant-btn-hover-icon-color: #ffffff;
+  --ai-assistant-tooltip-bg: #465477;
+  --ai-assistant-tooltip-text-color: #ffffff;
+  --ai-assistant-tooltip-shadow: rgba(0, 0, 0, 0.35);
   --ai-assistant-panel-bg: #1f2430;
   --ai-assistant-header-bg: #1b212c;
   --ai-assistant-border-color: rgba(140, 140, 140, 0.29);
@@ -274,9 +273,6 @@ h1.main-title {
   --ai-assistant-subtle-text-color: #d0d8e2;
   --ai-assistant-subtle-bg: #343f5a;
   --ai-assistant-subtle-hover-bg: #465477;
-  --ai-assistant-avatar-bg: #364361;
-  --ai-assistant-avatar-icon-filter: brightness(0) saturate(100%) invert(99%)
-    sepia(19%) saturate(331%) hue-rotate(176deg) brightness(116%) contrast(87%);
   --ai-assistant-bubble-bg: #343f5a;
   --ai-assistant-bubble-text-color: #ffffff;
   --ai-assistant-thinking-bg: #2a3142;

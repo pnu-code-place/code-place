@@ -3,7 +3,12 @@ from utils.models import JSONField
 from account.models import ProblemPermission, User
 from contest.models import Contest
 from utils.models import RichTextField
-from utils.constants import Choices
+from utils.constants import Choices, LANGUAGE_NAMES
+
+
+class AIHintMode(Choices):
+    STAGE = "stage"
+    CHAT = "chat"
 
 
 class ProblemAIHintLog(models.Model):
@@ -11,9 +16,26 @@ class ProblemAIHintLog(models.Model):
     problem = models.ForeignKey("Problem", on_delete=models.CASCADE)
     hint_content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
+    # stage: 대회 5단계 힌트 
+    # chat: 일반 문제 자유 질문
+    mode = models.TextField(default=AIHintMode.STAGE)
+    student_question = models.TextField(null=True)
+    student_code = models.TextField(null=True)
+    student_language = models.TextField(null=True)
 
     class Meta:
         db_table = "problem_ai_hint_log"
+
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(mode__in=AIHintMode.choices()),
+                name="problem_ai_hint_log_mode_valid",
+            ),
+            models.CheckConstraint(
+                condition=models.Q(student_language__isnull=True) | models.Q(student_language__in=LANGUAGE_NAMES),
+                name="problem_ai_hint_log_language_valid",
+            ),
+        ]
 
         indexes = [
             models.Index(fields=['user', 'created_at']),
