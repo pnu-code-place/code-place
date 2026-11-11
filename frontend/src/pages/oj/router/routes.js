@@ -125,7 +125,7 @@ export default [
   {
     name: "submission-details",
     path: "/status/:id/",
-    meta: { title: "Submission Details" },
+    meta: { requiresAuth: true, title: "Submission Details" },
     component: SubmissionDetails,
   },
   {
@@ -221,7 +221,7 @@ export default [
     name: "user-home",
     redirect: { name: "user-dashboard" },
     component: UserHome,
-    meta: { title: "User Home" },
+    meta: { requiresAuth: true, title: "User Home" },
     children: [
       {
         name: "user-dashboard",

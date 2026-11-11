@@ -119,6 +119,7 @@
             class="page"
             layout="prev, pager, next"
             @current-change="currentChange"
+            :current-page="currentPage"
             :page-size="pageSize"
             :total="total"
           >
@@ -143,7 +144,10 @@
           </el-input>
         </el-form-item>
         <el-form-item :label="$t('m.Announcement_Content')" required>
-          <Simditor v-model="announcement.content"></Simditor>
+          <Simditor
+            ref="contentEditor"
+            v-model="announcement.content"
+          ></Simditor>
         </el-form-item>
         <div class="toggle-container">
           <div class="visible-box">
@@ -210,19 +214,19 @@ export default {
       },
       announcementDialogTitle: this.$t("m.Edit_Announcement"),
       loading: true,
-      currentPage: 0,
+      currentPage: 1,
     }
   },
   mounted() {
     this.init()
   },
   methods: {
-    init() {
+    init(page = 1) {
       this.contestID = this.$route.params.contestId
       if (this.contestID) {
         this.getContestAnnouncementList()
       } else {
-        this.getAnnouncementList(1)
+        this.getAnnouncementList(page)
       }
     },
     // 切换页码回调
@@ -231,6 +235,7 @@ export default {
       this.getAnnouncementList(page)
     },
     getAnnouncementList(page) {
+      this.currentPage = page
       this.loading = true
       api.getAnnouncementList((page - 1) * this.pageSize, this.pageSize).then(
         (res) => {
@@ -271,9 +276,24 @@ export default {
     },
     // 提交编辑
     // 默认传入MouseEvent
-    submitAnnouncement(data = undefined) {
+    async submitAnnouncement(data = undefined) {
       let funcName
       if (!data.title) {
+        if (!this.announcement.title) {
+          this.$error("Title is required")
+          return
+        }
+        if (!this.announcement.content) {
+          this.$error("Content is required")
+          return
+        }
+        try {
+          this.announcement.content =
+            await this.$refs.contentEditor.uploadPendingImages()
+        } catch (e) {
+          this.$error("Image upload failed: " + e.message)
+          return
+        }
         data = {
           id: this.currentAnnouncementId,
           title: this.announcement.title,
@@ -298,7 +318,7 @@ export default {
       api[funcName](data)
         .then((res) => {
           this.showEditAnnouncementDialog = false
-          this.init()
+          this.init(this.mode === "edit" ? this.currentPage : 1)
         })
         .catch()
     },

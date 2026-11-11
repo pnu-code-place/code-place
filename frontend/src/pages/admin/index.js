@@ -12,6 +12,7 @@ import router from "./router"
 import { GOOGLE_ANALYTICS_ID } from "@/utils/constants"
 import VueAnalytics from "vue-analytics"
 import katex from "@/plugins/katex"
+import highlight from "@/plugins/highlight"
 
 import iView from "iview"
 import "iview/dist/styles/iview.css"
@@ -41,6 +42,7 @@ Vue.use(VueAnalytics, {
 })
 Vue.use(iView)
 Vue.use(katex)
+Vue.use(highlight)
 Vue.component(IconBtn.name, IconBtn)
 Vue.component(legacyPanelTag, Panel)
 Vue.component(legacySaveTag, Save)

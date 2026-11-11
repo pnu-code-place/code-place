@@ -9,6 +9,9 @@ import "tar-simditor-markdown"
 import "tar-simditor-markdown/styles/simditor-markdown.css"
 import "./simditor-file-upload"
 
+const IMAGE_SUFFIXES = ["gif", "jpg", "jpeg", "bmp", "png"]
+const MAX_IMAGE_SIZE = 200 * 1024 * 1024
+
 export default {
   name: "AdminSimditor",
   props: {
@@ -48,6 +51,9 @@ export default {
     return {
       editor: null,
       currentValue: this.value,
+      pendingImages: {},
+      uploadedPaths: {},
+      uploadingPromise: null,
     }
   },
   mounted() {
@@ -58,6 +64,14 @@ export default {
       toolbar: this.toolbar,
       pasteImage: true,
       markdown: false,
+      codeLanguages: [
+        { name: "C", value: "c" },
+        { name: "C++", value: "cpp" },
+        { name: "Golang", value: "go" },
+        { name: "Java", value: "java" },
+        { name: "JavaScript", value: "javascript" },
+        { name: "Python3", value: "python" },
+      ],
       upload: {
         url: "/api/admin/upload_image/",
         params: null,
@@ -69,6 +83,42 @@ export default {
         // span: ['color']
       },
     })
+    const uploader = this.editor.uploader
+    uploader._xhrUpload = (file) => {
+      const suffix = (file.name || "").split(".").pop().toLowerCase()
+      const error = !IMAGE_SUFFIXES.includes(suffix)
+        ? "지원하지 않는 이미지 형식입니다 (gif, jpg, jpeg, bmp, png)"
+        : file.size >= MAX_IMAGE_SIZE
+          ? "이미지 용량은 200MB 미만이어야 합니다"
+          : null
+      if (error) {
+        setTimeout(() => {
+          uploader.trigger("uploaderror", [
+            file,
+            { statusText: "error", responseText: "" },
+          ])
+          if (file.img) {
+            const mask = file.img.data("mask")
+            if (mask) mask.remove()
+            file.img.removeClass("uploading loading").remove()
+            this.editor.trigger("valuechanged")
+          }
+          uploader.trigger("uploadcomplete", [file, ""])
+          this.$error(`${file.name || "이미지"}: ${error}`)
+        })
+        return
+      }
+      const blobUrl = URL.createObjectURL(file.obj)
+      this.pendingImages[blobUrl] = file.obj
+      setTimeout(() => {
+        uploader.trigger("uploadprogress", [file, file.size, file.size])
+        uploader.trigger("uploadsuccess", [
+          file,
+          { success: true, file_path: blobUrl },
+        ])
+        uploader.trigger("uploadcomplete", [file, ""])
+      })
+    }
     this.editor.on("valuechanged", (e, src) => {
       this.currentValue = this.editor.getValue()
     })
@@ -92,7 +142,95 @@ export default {
       }
     },
   },
+  methods: {
+    async uploadImage(file) {
+      try {
+        const form = new FormData()
+        form.append("image", file)
+        let res
+        try {
+          res = await fetch("/api/admin/upload_image/", {
+            method: "POST",
+            body: form,
+            credentials: "same-origin",
+          })
+        } catch (e) {
+          throw new Error("서버에 연결하지 못했습니다", { cause: e })
+        }
+        if (!res.ok) {
+          throw new Error(
+            res.status === 413
+              ? "이미지 용량이 너무 큽니다"
+              : `이미지 업로드 서버 오류 (${res.status})`,
+          )
+        }
+        let data
+        try {
+          data = await res.json()
+        } catch (e) {
+          throw new Error("서버에서 올바르지 않은 응답을 받았습니다", {
+            cause: e,
+          })
+        }
+        if (!data || !data.success || !data.file_path) {
+          throw new Error(
+            (data && data.msg) || "이미지를 업로드하지 못했습니다",
+          )
+        }
+        return data.file_path
+      } catch (e) {
+        throw new Error(`${file.name || "이미지"}: ${e.message}`, { cause: e })
+      }
+    },
+    uploadPendingImages() {
+      if (!this.uploadingPromise) {
+        this.uploadingPromise = this.uploadImagesInBody().finally(() => {
+          this.uploadingPromise = null
+        })
+      }
+      return this.uploadingPromise
+    },
+    async uploadImagesInBody() {
+      const done = new Set()
+      let blobUrls
+      while (
+        (blobUrls = Object.keys(this.pendingImages).filter(
+          (url) => !done.has(url) && this.editor.getValue().includes(url),
+        )).length
+      ) {
+        for (const blobUrl of blobUrls) {
+          if (!this.uploadedPaths[blobUrl]) {
+            this.uploadedPaths[blobUrl] = await this.uploadImage(
+              this.pendingImages[blobUrl],
+            )
+          }
+          this.editor.body
+            .find("img")
+            .filter((_, img) => img.getAttribute("src") === blobUrl)
+            .attr("src", this.uploadedPaths[blobUrl])
+          done.add(blobUrl)
+          this.currentValue = this.editor.getValue()
+        }
+      }
+      return this.editor.getValue()
+    },
+    revokeAll() {
+      Object.keys(this.pendingImages).forEach(URL.revokeObjectURL)
+      this.pendingImages = {}
+      this.uploadedPaths = {}
+    },
+  },
+  beforeDestroy() {
+    this.revokeAll()
+  },
 }
 </script>
 
 <style lang="less" scoped></style>
+
+<style lang="less">
+.simditor .simditor-body img {
+  max-width: calc(100% - 10px);
+  height: auto;
+}
+</style>
