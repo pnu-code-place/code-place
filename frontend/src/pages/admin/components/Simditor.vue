@@ -9,6 +9,9 @@ import "tar-simditor-markdown"
 import "tar-simditor-markdown/styles/simditor-markdown.css"
 import "./simditor-file-upload"
 
+const IMAGE_SUFFIXES = ["gif", "jpg", "jpeg", "bmp", "png"]
+const MAX_IMAGE_SIZE = 200 * 1024 * 1024
+
 export default {
   name: "AdminSimditor",
   props: {
@@ -82,6 +85,29 @@ export default {
     })
     const uploader = this.editor.uploader
     uploader._xhrUpload = (file) => {
+      const suffix = (file.name || "").split(".").pop().toLowerCase()
+      const error = !IMAGE_SUFFIXES.includes(suffix)
+        ? "지원하지 않는 이미지 형식입니다 (gif, jpg, jpeg, bmp, png)"
+        : file.size >= MAX_IMAGE_SIZE
+          ? "이미지 용량은 200MB 미만이어야 합니다"
+          : null
+      if (error) {
+        setTimeout(() => {
+          uploader.trigger("uploaderror", [
+            file,
+            { statusText: "error", responseText: "" },
+          ])
+          if (file.img) {
+            const mask = file.img.data("mask")
+            if (mask) mask.remove()
+            file.img.removeClass("uploading loading").remove()
+            this.editor.trigger("valuechanged")
+          }
+          uploader.trigger("uploadcomplete", [file, ""])
+          this.$error(`${file.name || "이미지"}: ${error}`)
+        })
+        return
+      }
       const blobUrl = URL.createObjectURL(file.obj)
       this.pendingImages[blobUrl] = file.obj
       setTimeout(() => {
@@ -117,6 +143,45 @@ export default {
     },
   },
   methods: {
+    async uploadImage(file) {
+      try {
+        const form = new FormData()
+        form.append("image", file)
+        let res
+        try {
+          res = await fetch("/api/admin/upload_image/", {
+            method: "POST",
+            body: form,
+            credentials: "same-origin",
+          })
+        } catch (e) {
+          throw new Error("서버에 연결하지 못했습니다", { cause: e })
+        }
+        if (!res.ok) {
+          throw new Error(
+            res.status === 413
+              ? "이미지 용량이 너무 큽니다"
+              : `이미지 업로드 서버 오류 (${res.status})`,
+          )
+        }
+        let data
+        try {
+          data = await res.json()
+        } catch (e) {
+          throw new Error("서버에서 올바르지 않은 응답을 받았습니다", {
+            cause: e,
+          })
+        }
+        if (!data || !data.success || !data.file_path) {
+          throw new Error(
+            (data && data.msg) || "이미지를 업로드하지 못했습니다",
+          )
+        }
+        return data.file_path
+      } catch (e) {
+        throw new Error(`${file.name || "이미지"}: ${e.message}`, { cause: e })
+      }
+    },
     uploadPendingImages() {
       if (!this.uploadingPromise) {
         this.uploadingPromise = this.uploadImagesInBody().finally(() => {
@@ -135,16 +200,9 @@ export default {
       ) {
         for (const blobUrl of blobUrls) {
           if (!this.uploadedPaths[blobUrl]) {
-            const form = new FormData()
-            form.append("image", this.pendingImages[blobUrl])
-            const res = await fetch("/api/admin/upload_image/", {
-              method: "POST",
-              body: form,
-              credentials: "same-origin",
-            })
-            const data = await res.json()
-            if (!data.success) throw new Error(data.msg)
-            this.uploadedPaths[blobUrl] = data.file_path
+            this.uploadedPaths[blobUrl] = await this.uploadImage(
+              this.pendingImages[blobUrl],
+            )
           }
           this.editor.body
             .find("img")

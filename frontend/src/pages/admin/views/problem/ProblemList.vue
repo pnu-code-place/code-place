@@ -190,6 +190,16 @@
       </div>
     </Panel>
     <el-dialog
+      title="문제 미리보기"
+      width="80%"
+      :visible.sync="previewDialogVisible"
+    >
+      <problem-preview
+        v-if="previewProblemData"
+        :problem="previewProblemData"
+      ></problem-preview>
+    </el-dialog>
+    <el-dialog
       :title="$t('m.ProblemList_Update_Title')"
       width="20%"
       :visible.sync="InlineEditDialogVisible"
@@ -241,6 +251,7 @@ import api from "../../api.js"
 import utils from "@/utils/utils"
 import AddProblemComponent from "./AddPublicProblem.vue"
 import ImportFromContest from "./ImportFromContest.vue"
+import ProblemPreview from "./ProblemPreview.vue"
 
 // A list of routers which need problems list
 const PROBLEM_LIST_ROUTES = ["problem-list", "contest-problem-list"]
@@ -250,6 +261,7 @@ export default {
   components: {
     AddProblemComponent,
     ImportFromContest,
+    ProblemPreview,
   },
   data() {
     return {
@@ -261,6 +273,8 @@ export default {
       visibleFilter: this.$route.query.visible || "",
       selectedProblems: [],
       loading: false,
+      previewDialogVisible: false,
+      previewProblemData: null,
       currentPage: 1,
       routeName: "",
       contestId: "",
@@ -392,10 +406,30 @@ export default {
       this.InlineEditDialogVisible = true
     },
     changeFilter(key, value) {
-      if (value === "all") {
-        this[key] = ""
+      this[key] = value === "all" ? "" : value
+      const query = { ...this.$route.query }
+      for (const [name, filter] of [
+        ["source", this.sourceFilter],
+        ["visible", this.visibleFilter],
+      ]) {
+        if (filter) {
+          query[name] = filter
+        } else {
+          delete query[name]
+        }
       }
-      this.currentChange(1)
+      if (
+        query.source === this.$route.query.source &&
+        query.visible === this.$route.query.visible
+      ) {
+        this.currentChange(1)
+        return
+      }
+      this.$router.replace({ query }).catch((error) => {
+        if (error.name !== "NavigationDuplicated") {
+          this.$error("필터를 적용하지 못했습니다")
+        }
+      })
     },
     hideBOJProblems() {
       api.getActiveBOJProblemCount().then((res) => {
@@ -427,7 +461,8 @@ export default {
       })
     },
     previewProblem(row) {
-      window.open(`/problem/${encodeURIComponent(row._id)}`, "_blank")
+      this.previewProblemData = row
+      this.previewDialogVisible = true
     },
     changeVisibility(visible) {
       const ids = this.selectedProblems.map((problem) => problem.id)
@@ -451,12 +486,15 @@ export default {
       // Update only when the router requires a problem list
       if (PROBLEM_LIST_ROUTES.includes(this.routeName)) {
         const { source, visible } = newVal.query
-        if (source === undefined && visible === undefined) {
-          this.getProblemList(this.currentPage)
-        } else {
-          this.sourceFilter = source || ""
-          this.visibleFilter = visible || ""
+        this.sourceFilter = source || ""
+        this.visibleFilter = visible || ""
+        if (
+          source !== oldVal.query.source ||
+          visible !== oldVal.query.visible
+        ) {
           this.currentChange(1)
+        } else {
+          this.getProblemList(this.currentPage)
         }
       }
     },

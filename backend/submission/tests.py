@@ -85,17 +85,18 @@ class SubmissionAPITest(SubmissionCreateTestBase):
         outcome_total.labels.assert_called_once_with(status="success", scope="practice")
         labels.inc.assert_called_once()
 
-    def test_create_submission_hidden_problem_only_for_problem_managers(self):
+    def test_hidden_problem_preview_cannot_create_submissions(self):
         self.problem.visible = False
         self.problem.save(update_fields=["visible"])
         data = copy.deepcopy(DEFAULT_SUBMISSION_DATA)
         data["problem_id"] = self.problem.id
 
-        self.assertFailed(self.client.post(self.url, data=data), "Problem not exist")
-
-        self.client.force_login(self.admin)
-        with mock.patch("judge.tasks.judge_task.apply_async"):
-            self.assertSuccess(self.client.post(self.url, data=data))
+        with mock.patch("judge.tasks.judge_task.apply_async") as judge_task:
+            for user in (self.user, self.admin):
+                self.client.force_login(user)
+                self.assertFailed(self.client.post(self.url, data=data), "Problem not exist")
+            judge_task.assert_not_called()
+        self.assertFalse(Submission.objects.filter(problem=self.problem).exists())
 
     def test_create_submission_nonexistent_problem(self):
         data = copy.deepcopy(DEFAULT_SUBMISSION_DATA)

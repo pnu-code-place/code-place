@@ -6,6 +6,7 @@ import os
 import re
 import shutil
 import struct
+import tempfile
 from datetime import timedelta
 from zipfile import ZipFile
 
@@ -289,6 +290,44 @@ class ImportProblemAPITest(APITestCase):
         self.assertEqual([self.read_upload(path) for path in re.findall(pattern, problem.description)], [b"a", b"b"])
         self.assertEqual(self.read_upload(re.search(pattern, problem.hint).group()), b"amp")
         self.assertIn('alt="a &gt; b"', problem.description)
+
+    def test_import_normalizes_relative_image_paths(self):
+        resp = self.import_zip({
+            "1": (self.problem_json("p1", '<img src="./images/a%20b.png?v=1">'
+                                    '<img src="images/../images/a%20b.png">'
+                                    '<img src="https://example.com/a.png">'), {"a b.png": b"image"}),
+        })
+        self.assertSuccess(resp)
+        description = Problem.objects.get(_id="p1").description
+        self.assertNotIn("images/", description)
+        paths = re.findall(rf"{settings.UPLOAD_PREFIX}/\w+\.png", description)
+        self.assertEqual(len(paths), 2)
+        self.assertEqual(self.read_upload(paths[0]), b"image")
+        self.assertIn("https://example.com/a.png", description)
+
+    def test_import_rejects_unsupported_relative_image_paths(self):
+        resp = self.import_zip({
+            "1": (self.problem_json("p1", '<img src="../images/a.png">'), {}),
+        })
+        errors = self.import_errors(resp)
+        self.assertEqual(errors[0][1:3], ("images", "description.value"))
+        self.assertIn("지원하지 않는 상대경로", errors[0][3])
+
+    def test_import_always_removes_temporary_zip(self):
+        create_temp_file = tempfile.NamedTemporaryFile
+        paths = []
+
+        def track_temp_file(*args, **kwargs):
+            file = create_temp_file(*args, **kwargs)
+            paths.append(file.name)
+            return file
+
+        with mock.patch("problem.views.admin.tempfile.NamedTemporaryFile", side_effect=track_temp_file):
+            self.assertSuccess(self.import_zip({"1": (self.problem_json("p1", "description"), {})}))
+            self.assertFailed(self.import_files({"1/problem.json": "{"}))
+            self.assertFailed(self.upload(b"not a zip"))
+        self.assertEqual(len(paths), 3)
+        self.assertTrue(all(not os.path.exists(path) for path in paths))
 
     def test_image_errors(self):
         resp = self.import_zip({
@@ -596,17 +635,20 @@ class ProblemAPITest(ProblemCreateTestBase):
         resp = self.client.get(f"{self.url}?limit=10")
         self.assertSuccess(resp)
 
-    def test_hidden_problem_only_for_problem_managers(self):
+    def test_hidden_problem_preview_is_only_available_to_its_managers(self):
         hidden = self.create_problem_with_custom_field(self.problem.created_by, _id="H-1", visible=False)
         url = f"{self.url}?problem_id={hidden._id}"
         self.assertFailed(self.client.get(url), "Problem does not exist")
 
         self.client.force_login(self.problem.created_by)
-        resp = self.client.get(url)
+        self.assertFailed(self.client.get(url), "Problem does not exist")
+        preview_url = f"{self.reverse('problem_admin_api')}?id={hidden.id}"
+        resp = self.client.get(preview_url)
         self.assertSuccess(resp)
         self.assertFalse(resp.data["data"]["visible"])
 
         self.create_admin(email="other@admin.com", username="other")
+        self.assertFailed(self.client.get(preview_url), "Problem does not exist")
         self.assertFailed(self.client.get(url), "Problem does not exist")
 
     def test_get_problem_list_default_sort_by_create_time_desc(self):
@@ -1005,11 +1047,13 @@ class ProblemLLMHintAPITest(ProblemCreateTestBase):
         self.assertIn("문제 번호가 필요합니다.", body)
 
     def test_stream_llm_hint_with_hidden_problem(self):
-        resp = self.client.get(f"{self.url}?problem_id={self.hidden_problem._id}")
-        body = self._streaming_body(resp)
-
-        self.assertIn('event: app-error', body)
-        self.assertIn("문제를 찾을 수 없습니다.", body)
+        for user in (self.user, self.admin):
+            self.client.force_login(user)
+            resp = self.client.get(f"{self.url}?problem_id={self.hidden_problem._id}")
+            body = self._streaming_body(resp)
+            self.assertIn("event: app-error", body)
+            self.assertIn("문제를 찾을 수 없습니다.", body)
+        self.assertFalse(ProblemAIHintLog.objects.filter(problem=self.hidden_problem).exists())
 
     def test_stream_llm_hint_with_contest_problem(self):
         contest = Contest.objects.create(created_by=self.admin, **DEFAULT_CONTEST_DATA)
@@ -1307,13 +1351,11 @@ class AIHintHistoryAPITest(ProblemCreateTestBase):
 
     def test_get_history_with_hidden_problem(self):
         """비공개 문제의 힌트 히스토리는 조회할 수 없어야 함"""
-        self.client.force_login(self.user)
-
-        # setUp에서 미리 만들어둔 hidden_problem 사용
-        resp = self.client.get(f"{self.url}?problem_id={self.hidden_problem._id}")
-
-        self.assertIsNotNone(resp.data.get("error"))
-        self.assertIn("문제를 찾을 수 없습니다.", resp.data.get("data", ""))
+        for user in (self.user, self.admin):
+            self.client.force_login(user)
+            resp = self.client.get(f"{self.url}?problem_id={self.hidden_problem._id}")
+            self.assertIsNotNone(resp.data.get("error"))
+            self.assertIn("문제를 찾을 수 없습니다.", resp.data.get("data", ""))
 
     def test_get_history_with_contest_problem(self):
         """대회용 문제의 힌트 히스토리는 일반 API로 조회할 수 없어야 함"""

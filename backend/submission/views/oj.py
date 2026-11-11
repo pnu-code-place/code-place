@@ -84,7 +84,7 @@ class SubmissionAPI(APIView):
             if data.get("contest_id"):
                 problem = Problem.objects.get(id=data["problem_id"], contest_id=data["contest_id"], visible=True)
             else:
-                problem = Problem.practice_problems_for(request.user).get(id=data["problem_id"])
+                problem = Problem.objects.get(id=data["problem_id"], contest_id__isnull=True, visible=True)
         except Problem.DoesNotExist:
             self._record_create_outcome("problem_not_found", scope)
             return self.error("Problem not exist")

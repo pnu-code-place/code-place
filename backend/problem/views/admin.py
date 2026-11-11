@@ -2,6 +2,7 @@ import hashlib
 import html
 import json
 import os
+import posixpath
 import re
 import shutil
 import tempfile
@@ -9,6 +10,7 @@ import zipfile
 from html.parser import HTMLParser
 from itertools import islice
 from json.decoder import scanstring
+from urllib.parse import unquote, urlsplit
 from wsgiref.util import FileWrapper
 
 from django.conf import settings
@@ -712,7 +714,7 @@ class ImportProblemAPI(CSRFExemptAPIView, TestCaseZipProcessor):
         tags = []
         for (lineno, offset), text, attrs in parser.tags:
             src = dict(attrs).get("src") or ""
-            if src.startswith("images/"):
+            if src and not src.startswith("/") and not re.match(r"^[a-zA-Z][a-zA-Z0-9+.-]*:", src):
                 start = line_starts[lineno - 1] + offset
                 tags.append((start, start + len(text), text, attrs, src))
         return tags
@@ -820,16 +822,21 @@ class ImportProblemAPI(CSRFExemptAPIView, TestCaseZipProcessor):
         images = {}
         for field in self.image_fields:
             for *_, src in self.find_image_tags(problem_info[field]["value"]):
-                if f"{problem_dir}/{src}" not in name_list:
+                path = posixpath.normpath(unquote(urlsplit(src).path))
+                if not path.startswith("images/"):
+                    self.add_field_error(problem_dir, problem_info["title"], (field, "value"),
+                                         f"{src}는 지원하지 않는 상대경로입니다 (images/ 폴더를 사용해주세요)",
+                                         location="images", target=src)
+                elif f"{problem_dir}/{path}" not in name_list:
                     self.add_field_error(problem_dir, problem_info["title"], (field, "value"),
                                          f"{src} 파일이 없습니다", location="images", target=src)
-                elif os.path.splitext(src)[-1].lower() not in self.image_suffixes:
+                elif os.path.splitext(path)[-1].lower() not in self.image_suffixes:
                     suffixes = ", ".join(suffix[1:] for suffix in self.image_suffixes)
                     self.add_field_error(problem_dir, problem_info["title"], (field, "value"),
                                          f"{src}는 지원하지 않는 형식입니다 ({suffixes})", location="images",
                                          target=src)
                 else:
-                    images[src] = f"{problem_dir}/{src}"
+                    images[src] = f"{problem_dir}/{path}"
         return images
 
     def check_test_cases(self, problem_info, problem_dir, name_list):
@@ -890,7 +897,7 @@ class ImportProblemAPI(CSRFExemptAPIView, TestCaseZipProcessor):
     def save_images(self, zip_file, problem_info, images):
         urls = {}
         for src, path in images.items():
-            name = rand_str(10) + os.path.splitext(src)[-1].lower()
+            name = rand_str(10) + os.path.splitext(path)[-1].lower()
             target_path = os.path.join(settings.UPLOAD_DIR, name)
             self.created_files.append(target_path)
             with zip_file.open(path) as source, open(target_path, "wb") as target:
@@ -923,13 +930,16 @@ class ImportProblemAPI(CSRFExemptAPIView, TestCaseZipProcessor):
         form = UploadProblemForm(request.POST, request.FILES)
         if form.is_valid():
             file = form.cleaned_data["file"]
-            tmp_file = f"/tmp/{rand_str()}.zip"
-            with open(tmp_file, "wb") as f:
-                for chunk in file:
-                    f.write(chunk)
         else:
             self.fail("업로드할 zip 파일을 선택해주세요")
 
+        with tempfile.NamedTemporaryFile(suffix=".zip") as tmp_file:
+            for chunk in file.chunks():
+                tmp_file.write(chunk)
+            tmp_file.flush()
+            return self.import_archive(request, tmp_file.name)
+
+    def import_archive(self, request, tmp_file):
         try:
             zip_file = zipfile.ZipFile(tmp_file, "r")
         except zipfile.BadZipFile:
