@@ -15,17 +15,29 @@ hljs.registerLanguage("javascript", javascript)
 hljs.registerLanguage("python", python)
 
 const languagePattern = /\blang(?:uage)?-(\S+)/
+const highlightedBlocks = new WeakMap()
 
 function highlightCodeBlocks(el) {
   Array.from(el.querySelectorAll("pre > code")).forEach((target) => {
     const match = target.className.match(languagePattern)
-    if (match && hljs.getLanguage(match[1])) {
-      target.innerHTML = hljs.highlight(target.textContent, {
-        language: match[1],
-        ignoreIllegals: true,
-      }).value
-      target.classList.add("hljs")
+    const previous = highlightedBlocks.get(target)
+    const code = target.textContent
+    if (!match || !hljs.getLanguage(match[1])) {
+      if (previous) {
+        target.textContent = code
+        target.classList.remove("hljs")
+        highlightedBlocks.delete(target)
+      }
+      return
     }
+    const language = match[1]
+    const html =
+      previous && previous.language === language && previous.code === code
+        ? previous.html
+        : hljs.highlight(code, { language, ignoreIllegals: true }).value
+    if (target.innerHTML !== html) target.innerHTML = html
+    if (!target.classList.contains("hljs")) target.classList.add("hljs")
+    highlightedBlocks.set(target, { language, code, html: target.innerHTML })
   })
 }
 

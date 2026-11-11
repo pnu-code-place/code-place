@@ -549,8 +549,8 @@ class ImportContestProblemAPI(APIView):
 
 class ProblemVisibilityAPI(APIView):
 
-    @validate_serializer(ProblemVisibilitySerializer)
     @problem_permission_required
+    @validate_serializer(ProblemVisibilitySerializer)
     def put(self, request):
         problems = Problem.objects.filter(id__in=request.data["ids"], contest_id__isnull=True)
         if not request.user.can_mgmt_all_problem():
@@ -578,8 +578,8 @@ class BOJProblemHideAPI(APIView):
 
 class MakeContestProblemPublicAPIView(APIView):
 
-    @validate_serializer(ContestProblemMakePublicSerializer)
     @problem_permission_required
+    @validate_serializer(ContestProblemMakePublicSerializer)
     def post(self, request):
         data = request.data
         display_id = data.get("display_id")

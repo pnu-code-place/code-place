@@ -33,7 +33,7 @@ from .llm_hint import (CLUSTER_VLLM_CHAT_COMPLETIONS_URL, LOCAL_VLLM_CHAT_COMPLE
 
 from .views.admin import TestCaseAPI
 from .utils import parse_problem_template
-from account.models import User
+from account.models import ProblemPermission, User
 
 DEFAULT_PROBLEM_DATA = {
     "_id": "A-110",
@@ -582,6 +582,26 @@ class ProblemAdminAPITest(APITestCase):
         self.assertSuccess(resp)
         self.assertEqual(resp.data["data"]["updated"], 2)
         self.assertEqual(Problem.objects.filter(id__in=ids, visible=True).count(), 2)
+
+    def test_problem_management_permission_is_checked_before_validation(self):
+        admin = self.create_admin()
+        admin.problem_permission = ProblemPermission.NONE
+        admin.save(update_fields=["problem_permission"])
+        endpoints = (
+            (self.client.put, self.reverse("problem_visibility_admin_api")),
+            (self.client.post, self.reverse("make_public_api")),
+        )
+        for method, url in endpoints:
+            resp = method(url, data={})
+            self.assertEqual(resp.status_code, 403)
+            self.assertEqual(resp.data["error"], "permission-denied")
+
+        admin.problem_permission = ProblemPermission.OWN
+        admin.save(update_fields=["problem_permission"])
+        for method, url in endpoints:
+            resp = method(url, data={})
+            self.assertEqual(resp.status_code, 400)
+            self.assertTrue(resp.data["error"].startswith("invalid-"))
 
     def test_hide_all_boj_problems(self):
         visible_id, hidden_id = self.create_visible_and_hidden_problems()
