@@ -190,6 +190,11 @@ class ContestProblemMakePublicSerializer(serializers.Serializer):
     display_id = serializers.CharField(max_length=32)
 
 
+class ProblemVisibilitySerializer(serializers.Serializer):
+    ids = serializers.ListField(child=serializers.IntegerField(), allow_empty=False)
+    visible = serializers.BooleanField()
+
+
 class ExportProblemSerializer(serializers.ModelSerializer):
     display_id = serializers.SerializerMethodField()
     description = serializers.SerializerMethodField()

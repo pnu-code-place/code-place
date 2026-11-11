@@ -25,7 +25,7 @@ from judge.dispatcher import SPJCompiler
 from options.options import SysOptions
 from submission.models import Submission, JudgeStatus
 from utils.api import APIView, CSRFExemptAPIView, validate_serializer, APIError
-from utils.constants import Difficulty
+from utils.constants import BOJ_SOURCE, Difficulty
 from utils.shortcuts import rand_str, natural_sort_key, get_difficulty
 from utils.tasks import delete_files
 from ..models import Problem, ProblemRuleType, ProblemTag
@@ -33,7 +33,7 @@ from ..serializers import (CreateContestProblemSerializer, CompileSPJSerializer,
                            EditProblemSerializer, EditContestProblemSerializer, ProblemAdminSerializer,
                            TestCaseUploadForm, ContestProblemMakePublicSerializer, AddContestProblemSerializer,
                            ExportProblemSerializer, ExportProblemRequestSerialzier, UploadProblemForm,
-                           ImportProblemSerializer, FPSProblemSerializer)
+                           ImportProblemSerializer, FPSProblemSerializer, ProblemVisibilitySerializer)
 from ..utils import TEMPLATE_BASE, build_problem_template
 
 
@@ -287,6 +287,11 @@ class ProblemAPI(ProblemBase):
         keyword = request.GET.get("keyword", "").strip()
         if keyword:
             problems = problems.filter(Q(title__icontains=keyword) | Q(_id__icontains=keyword))
+        if request.GET.get("source") == "boj":
+            problems = problems.filter(source=BOJ_SOURCE)
+        visible = request.GET.get("visible")
+        if visible in ("true", "false"):
+            problems = problems.filter(visible=visible == "true")
         if not user.can_mgmt_all_problem():
             problems = problems.filter(created_by=user)
         return self.success(self.paginate_data(request, problems, ProblemAdminSerializer))
@@ -534,6 +539,35 @@ class ImportContestProblemAPI(APIView):
                 problem.tags.set(tags)
 
         return self.success()
+
+
+class ProblemVisibilityAPI(APIView):
+
+    @validate_serializer(ProblemVisibilitySerializer)
+    @problem_permission_required
+    def put(self, request):
+        problems = Problem.objects.filter(id__in=request.data["ids"], contest_id__isnull=True)
+        if not request.user.can_mgmt_all_problem():
+            problems = problems.filter(created_by=request.user)
+        updated = problems.update(visible=request.data["visible"])
+        return self.success({"updated": updated})
+
+
+class BOJProblemHideAPI(APIView):
+
+    def active_boj_problems(self, user):
+        problems = Problem.objects.filter(contest_id__isnull=True, visible=True, source=BOJ_SOURCE)
+        if not user.can_mgmt_all_problem():
+            problems = problems.filter(created_by=user)
+        return problems
+
+    @problem_permission_required
+    def get(self, request):
+        return self.success({"count": self.active_boj_problems(request.user).count()})
+
+    @problem_permission_required
+    def post(self, request):
+        return self.success({"updated": self.active_boj_problems(request.user).update(visible=False)})
 
 
 class MakeContestProblemPublicAPIView(APIView):
@@ -897,7 +931,7 @@ class ImportProblemAPI(CSRFExemptAPIView, TestCaseZipProcessor):
         except zipfile.BadZipFile:
             self.fail("올바른 zip 파일이 아닙니다")
 
-        count = 0
+        problems = []
         self.errors = []
         display_ids = {}
         with zip_file:
@@ -919,13 +953,15 @@ class ImportProblemAPI(CSRFExemptAPIView, TestCaseZipProcessor):
 
             with transaction.atomic():
                 for problem_dir in sorted(problem_dirs, key=natural_sort_key):
-                    if self.import_problem(request, zip_file, tmp_file, problem_dir, name_list, display_ids):
-                        count += 1
+                    problem = self.import_problem(request, zip_file, tmp_file, problem_dir, name_list, display_ids)
+                    if problem:
+                        problems.append(problem)
                 if self.errors:
                     problem_count = len({error["dir"] for error in self.errors})
                     raise APIError({"message": f"{problem_count}개 문제에서 {len(self.errors)}개 오류가 발생했습니다",
                                     "errors": self.errors})
-        return self.success({"import_count": count})
+        return self.success({"import_count": len(problems),
+                             "review_count": sum(problem.source == BOJ_SOURCE for problem in problems)})
 
     def find_dirs_without_problem_json(self, name_list, problem_dirs):
         dirs = set()
@@ -1014,7 +1050,7 @@ class ImportProblemAPI(CSRFExemptAPIView, TestCaseZipProcessor):
             spj_version=rand_str(8) if spj else "",
             languages=SysOptions.language_names,
             created_by=request.user,
-            visible=True,
+            visible=False,
             field=problem_info["field"],
             difficulty=get_difficulty(problem_info["difficulty"]),
             total_score=sum(item["score"] for item in test_case_score) if rule_type == ProblemRuleType.OI else 0,
@@ -1022,7 +1058,7 @@ class ImportProblemAPI(CSRFExemptAPIView, TestCaseZipProcessor):
         for tag_name in problem_info["tags"]:
             tag_obj, _ = ProblemTag.objects.get_or_create(name=tag_name)
             problem_obj.tags.add(tag_obj)
-        return True
+        return problem_obj
 
 
 class FPSProblemImport(CSRFExemptAPIView):

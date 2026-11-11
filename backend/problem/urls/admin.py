@@ -2,7 +2,8 @@ from django.urls import re_path
 
 from ..views.admin import (ContestProblemAPI, ProblemAPI, TestCaseAPI, MakeContestProblemPublicAPIView, CompileSPJAPI,
                            AddContestProblemAPI, ExportProblemAPI, ImportProblemAPI, FPSProblemImport,
-                           ProblemIdDuplicateCheckAPI, ImportContestProblemAPI)
+                           ProblemIdDuplicateCheckAPI, ImportContestProblemAPI, ProblemVisibilityAPI,
+                           BOJProblemHideAPI)
 from ..views.ai_hint_stats import AIHintStatsAPI
 
 urlpatterns = [
@@ -10,6 +11,8 @@ urlpatterns = [
     re_path(r"^test_case/?$", TestCaseAPI.as_view(), name="test_case_api"),
     re_path(r"^compile_spj/?$", CompileSPJAPI.as_view(), name="compile_spj"),
     re_path(r"^problem/?$", ProblemAPI.as_view(), name="problem_admin_api"),
+    re_path(r"^problem/visibility/?$", ProblemVisibilityAPI.as_view(), name="problem_visibility_admin_api"),
+    re_path(r"^problem/boj/hide/?$", BOJProblemHideAPI.as_view(), name="boj_problem_hide_admin_api"),
     re_path(r"^problem/check_duplicate_id?$",
         ProblemIdDuplicateCheckAPI.as_view(),
         name="problem_admin_duplicate_check_api"),
