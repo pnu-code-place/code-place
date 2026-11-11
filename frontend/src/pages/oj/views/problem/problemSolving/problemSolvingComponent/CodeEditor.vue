@@ -89,6 +89,7 @@ export default {
         lineNumbers: true,
         line: true,
         styleActiveLine: true,
+        lineWrapping: true,
         // 인덴트 사이즈
         indentUnit: 4,
         // 여러 라인을 동시에 탭할때 인덴트 함
@@ -110,7 +111,11 @@ export default {
     }
   },
   methods: {
-    onCmReady() {},
+    onCmReady(cm) {
+      if (cm) {
+        cm.setOption("lineWrapping", true)
+      }
+    },
     onCmCodeChange(newCode) {
       this.$emit("update:value", newCode)
       this.emitCursorPos()
@@ -154,9 +159,7 @@ export default {
             cm.replaceSelection(clipText)
           } else {
             // 외부 텍스트라면 경고 메시지 표시
-            alert(
-              "해당 문제에서는 외부 소스로부터의 붙여넣기가 허용되지 않습니다.",
-            )
+            alert(this.$t("m.Code_Editor_External_Paste_Blocked"))
           }
         })
       })
@@ -178,6 +181,7 @@ export default {
   mounted() {
     let customTheme = this.isDarkMode ? "ayu-mirage" : "github-light"
     this.codemirror.setOption("theme", customTheme)
+    this.codemirror.setOption("lineWrapping", true)
 
     this.code = this.value
     this.codemirror.on("cursorActivity", this.emitCursorPos)
@@ -227,6 +231,25 @@ export default {
   font-size: var(--code-editor-font-size, 14px);
   border-radius: 7px;
   border: 1px solid var(--border-color);
+}
+
+.code-editor-wrapper .CodeMirror-scroll {
+  overflow-x: hidden !important;
+}
+
+.code-editor-wrapper .CodeMirror-lines {
+  padding-right: 12px !important;
+}
+
+.code-editor-wrapper .CodeMirror pre.CodeMirror-line,
+.code-editor-wrapper .CodeMirror pre.CodeMirror-line-like,
+.code-editor-wrapper .CodeMirror-wrap pre.CodeMirror-line,
+.code-editor-wrapper .CodeMirror-wrap pre.CodeMirror-line-like {
+  padding-right: 32px !important;
+  word-break: break-all !important;
+  word-wrap: break-word !important;
+  overflow-wrap: anywhere !important;
+  white-space: pre-wrap !important;
 }
 
 .code-editor-wrapper {

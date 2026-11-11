@@ -327,6 +327,15 @@ class ProfileProblemAPITest(APITestCase):
 
         self.assertFailed(response, "User does not exist")
 
+    def test_guest_cannot_access_other_user_problem_submissions(self):
+        self.create_submission(JudgeStatus.ACCEPTED, timezone.now())
+        self.client.logout()
+
+        response = self.client.get(self.url, {"username": self.user.username})
+
+        self.assertEqual(response.status_code, 401)
+        self.assertFailed(response, "Please login first")
+
     def test_invalid_problem_status_filter_returns_api_error(self):
         response = self.client.get(self.url, {"username": self.user.username, "status": "unknown"})
 

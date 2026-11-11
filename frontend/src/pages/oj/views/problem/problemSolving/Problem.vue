@@ -13,14 +13,14 @@
           <div class="settings-row">
             <div class="settings-label">
               <i class="fas fa-search settings-label-icon"></i>
-              <span>문제 확대</span>
+              <span>{{ $t("m.Problem_Zoom") }}</span>
             </div>
             <div class="settings-controls">
               <button
                 type="button"
                 class="settings-step-button"
                 :disabled="problemZoomPercent <= minProblemZoom"
-                aria-label="문제 확대 축소"
+                :aria-label="$t('m.Problem_Zoom_Out')"
                 @click="setProblemZoom(problemZoomPercent - problemZoomStep)"
               >
                 <Icon type="minus-round" />
@@ -32,7 +32,7 @@
                 type="button"
                 class="settings-step-button"
                 :disabled="problemZoomPercent >= maxProblemZoom"
-                aria-label="문제 확대 확대"
+                :aria-label="$t('m.Problem_Zoom_In')"
                 @click="setProblemZoom(problemZoomPercent + problemZoomStep)"
               >
                 <Icon type="plus-round" />
@@ -44,14 +44,14 @@
               <span class="settings-label-icon settings-label-icon--text">
                 Aa
               </span>
-              <span>코드 크기</span>
+              <span>{{ $t("m.Code_Font_Size") }}</span>
             </div>
             <div class="settings-controls">
               <button
                 type="button"
                 class="settings-step-button"
                 :disabled="codeFontSize <= minCodeFontSize"
-                aria-label="코드 글자 축소"
+                :aria-label="$t('m.Code_Font_Size_Down')"
                 @click="setCodeFontSize(codeFontSize - codeFontSizeStep)"
               >
                 <Icon type="minus-round" />
@@ -63,7 +63,7 @@
                 type="button"
                 class="settings-step-button"
                 :disabled="codeFontSize >= maxCodeFontSize"
-                aria-label="코드 글자 확대"
+                :aria-label="$t('m.Code_Font_Size_Up')"
                 @click="setCodeFontSize(codeFontSize + codeFontSizeStep)"
               >
                 <Icon type="plus-round" />
@@ -88,22 +88,37 @@
             class="problem-error-button secondary"
             @click="goBackFromError"
           >
-            이전 페이지
+            {{ $t("m.Problem_Error_Back") }}
           </button>
           <button
             type="button"
             class="problem-error-button primary"
             @click="goProblemListFromError"
           >
-            문제 목록
+            {{ $t("m.Problem_Error_Problem_List") }}
           </button>
         </div>
       </div>
     </section>
-    <splitpanes v-else vertical style="height: calc(100vh - 50px)">
+    <splitpanes
+      v-else
+      ref="splitpanes"
+      vertical
+      :push-other-panes="false"
+      :dbl-click-splitter="false"
+      :class="{ 'problem-collapsed': problemPaneCollapsed }"
+      style="height: calc(100vh - 50px)"
+      @ready="onSplitpanesReady"
+      @resize="onPanesResize"
+      @resized="onPanesResized"
+    >
       <pane
-        :size="50"
-        :class="{ 'problem-pane-with-navigator': isContestProblem }"
+        :size="paneSizes[0]"
+        :min-size="problemPaneCollapsed ? 0 : 15"
+        :class="{
+          'problem-pane-with-navigator': isContestProblem,
+          'problem-pane-collapsed': problemPaneCollapsed,
+        }"
       >
         <div
           class="left-pain-wrapper"
@@ -117,21 +132,33 @@
             :loading="contestProblemsLoading"
             @navigate="goContestProblem"
           />
-          <div class="problem-content-wrapper">
+          <!-- 접힌 문제 패널, 대회 문제 목록은 그대로 둠 -->
+          <button
+            v-if="problemPaneCollapsed"
+            type="button"
+            class="collapsed-problem-bar"
+            :title="$t('m.Problem_Pane_Expand')"
+            :aria-label="$t('m.Problem_Pane_Expand')"
+            @click="toggleProblemPane"
+          >
+            <i class="fas fa-chevron-right"></i>
+            <span class="collapsed-problem-label">{{ leftPaneTabLabel }}</span>
+          </button>
+          <div v-show="!problemPaneCollapsed" class="problem-content-wrapper">
             <div class="tab-headers">
               <div
                 class="tab-header"
                 :class="{ active: leftPainActiveTab === 'problem' }"
                 @click="leftPainActiveTab = 'problem'"
               >
-                문제 설명
+                {{ $t("m.Problem_Tab_Description") }}
               </div>
               <div
                 class="tab-header"
                 :class="{ active: leftPainActiveTab === 'submission' }"
                 @click="leftPainActiveTab = 'submission'"
               >
-                제출 현황
+                {{ $t("m.Problem_Tab_Submission") }}
               </div>
               <div
                 v-if="!isContestProblem"
@@ -140,18 +167,27 @@
                 @click="leftPainActiveTab = 'community'"
               >
                 <i class="fi fi-rr-map-marker-question"></i>
-                질문하기
+                {{ $t("m.Problem_Tab_Community") }}
               </div>
+              <button
+                type="button"
+                class="pane-collapse-btn"
+                :title="$t('m.Problem_Pane_Collapse')"
+                :aria-label="$t('m.Problem_Pane_Collapse')"
+                @click="toggleProblemPane"
+              >
+                <i class="fas fa-chevron-left"></i>
+              </button>
             </div>
             <div v-if="showAskNudge" class="ask-nudge">
               <span class="ask-nudge-text">
-                이 문제에서 막혔나요? 다른 사람에게 질문해보세요.
+                {{ $t("m.Problem_Ask_Nudge") }}
               </span>
               <div class="ask-nudge-actions">
-                <button class="ask-nudge-go" @click="goAsk">질문하기 →</button>
+                <button class="ask-nudge-go" @click="goAsk">{{ $t("m.Problem_Ask_Nudge_Go") }}</button>
                 <button
                   class="ask-nudge-close"
-                  aria-label="닫기"
+                  :aria-label="$t('m.Problem_Ask_Nudge_Close')"
                   @click="showAskNudge = false"
                 >
                   ✕
@@ -193,12 +229,13 @@
           </div>
         </div>
       </pane>
-      <pane min-size="30" :size="50">
+      <pane min-size="15" :size="paneSizes[1]">
         <div class="editor-pane-wrapper">
           <CodeEditorHeader
             @create-submission="submitCode"
             @change-language="changeLanguage"
-            @open-ai="$refs.bottomDrag.show()"
+            @open-ai="toggleAIAssistant"
+            :aiVisible="aiAssistantVisible"
             :problem="problem"
             :language.sync="language"
             :statusVisible="statusVisible"
@@ -219,14 +256,23 @@
             />
             <StickyLnCol :cursorPos="cursorPos" />
           </div>
-          <BottomDrag
-            ref="bottomDrag"
-            :result="result"
-            :problemID="problemID"
-            :contestID="contestID"
-            :code="code"
-          />
         </div>
+      </pane>
+      <pane
+        v-if="aiAssistantVisible"
+        min-size="15"
+        :size="paneSizes[2]"
+        class="ai-assistant-pane"
+      >
+        <AIAssistantDrawer
+          ref="aiAssistantDrawer"
+          :visible="aiAssistantVisible"
+          :problemID="problemID"
+          :contestID="contestID"
+          :code="code"
+          :language="language"
+          @close="closeAIAssistant"
+        />
       </pane>
     </splitpanes>
   </div>
@@ -252,8 +298,19 @@ import StickyLnCol from "./problemSolvingComponent/StickyLnCol.vue"
 import CodeEditor from "./problemSolvingComponent/CodeEditor.vue"
 import SubmissionList from "./problemSolvingComponent/SubmissionList.vue"
 import ProblemCommunity from "./problemSolvingComponent/ProblemCommunity.vue"
-import BottomDrag from "./problemSolvingComponent/BottomDrag.vue"
+import AIAssistantDrawer from "./problemSolvingComponent/AIAssistantDrawer.vue"
 import ContestProblemNavigator from "./problemSolvingComponent/ContestProblemNavigator.vue"
+
+// 패널 기본 비율(%): 문제 36 / 코드 36 / AI 28
+const DEFAULT_LEFT_PANE_SIZE = 36
+const DEFAULT_AI_PANE_SIZE = 28
+const MIN_PANE_SIZE = 15
+// AI 조교가 열려 있을 때 코드 패널 최소 너비(px)
+const MIN_EDITOR_WIDTH_WITH_AI = 520
+// 문제 패널을 접었을 때 남는 세로 막대 너비(px)
+const COLLAPSED_PROBLEM_PANE_WIDTH = 44
+// 대회 문제 목록 너비와 간격
+const CONTEST_NAVIGATOR_WIDTH = 70
 
 export default {
   name: "ProblemPage",
@@ -267,7 +324,7 @@ export default {
     ContestProblemNavigator,
     Splitpanes,
     Pane,
-    BottomDrag,
+    AIAssistantDrawer,
   },
   mixins: [FormMixin],
   data() {
@@ -284,6 +341,11 @@ export default {
       captchaSrc: "",
       contestID: "",
       problemID: "",
+      aiAssistantVisible: false,
+      paneSizes: [DEFAULT_LEFT_PANE_SIZE, 100 - DEFAULT_LEFT_PANE_SIZE],
+      lastLeftPaneSize: DEFAULT_LEFT_PANE_SIZE,
+      lastAiPaneSize: DEFAULT_AI_PANE_SIZE,
+      problemPaneCollapsed: false,
       submitting: false,
       code: "",
       language: "C++",
@@ -371,9 +433,13 @@ export default {
     this.registerBeforeUnload()
     window.addEventListener("open-problem-settings", this.openSettingsModal)
     window.addEventListener("resize", this.closeSettingsPopover)
+    window.addEventListener("resize", this.handlePaneWindowResize)
     window.addEventListener("keydown", this.handleSettingsKeydown)
     document.addEventListener("click", this.handleSettingsOutsideClick)
     this.isInitialized = true
+    this.$nextTick(() => {
+      this.initSplitpanesCustomLogic()
+    })
   },
   activated() {
     this.registerBeforeUnload()
@@ -384,6 +450,7 @@ export default {
   destroyed() {
     window.removeEventListener("open-problem-settings", this.openSettingsModal)
     window.removeEventListener("resize", this.closeSettingsPopover)
+    window.removeEventListener("resize", this.handlePaneWindowResize)
     window.removeEventListener("keydown", this.handleSettingsKeydown)
     document.removeEventListener("click", this.handleSettingsOutsideClick)
     this.removeBeforeUnload()
@@ -435,12 +502,246 @@ export default {
       this.leftPainActiveTab = "problem"
       this.showAskNudge = false
       this.modalCheck = false
+      this.aiAssistantVisible = false
+      this.paneSizes = this.computePaneSizes()
       this.problemError = {
         visible: false,
         title: "",
         description: "",
       }
       this.problem = this.getEmptyProblem()
+    },
+    onSplitpanesReady() {
+      this.initSplitpanesCustomLogic()
+    },
+    initSplitpanesCustomLogic() {
+      const sp = this.$refs.splitpanes
+      if (!sp) return
+      if (sp._adjacentResizingInstalled) return
+      sp._adjacentResizingInstalled = true
+
+      const vm = this
+
+      // 잡은 경계선에만 is-active 클래스 부여
+      const markActiveSplitter = (event) => {
+        const splitter = event.target.closest(".splitpanes__splitter")
+        if (!splitter || splitter.parentNode !== sp.$el) return
+        splitter.classList.add("is-active")
+        const release = () => {
+          splitter.classList.remove("is-active")
+          document.removeEventListener("mouseup", release)
+          document.removeEventListener("touchend", release)
+        }
+        document.addEventListener("mouseup", release)
+        document.addEventListener("touchend", release)
+      }
+      sp.$el.addEventListener("mousedown", markActiveSplitter)
+      sp.$el.addEventListener("touchstart", markActiveSplitter, { passive: true })
+
+      sp.calculatePanesSize = function(drag) {
+        const splitterIndex = this.touch.activeSplitter
+        if (splitterIndex === null || splitterIndex === undefined) return
+        const paneBefore = this.panes[splitterIndex]
+        const paneAfter = this.panes[splitterIndex + 1]
+        if (!paneBefore || !paneAfter) return
+
+        let prevPanesSize = 0
+        for (let i = 0; i < splitterIndex; i++) {
+          prevPanesSize += this.panes[i].size
+        }
+
+        let nextPanesSize = 0
+        for (let i = splitterIndex + 2; i < this.panes.length; i++) {
+          nextPanesSize += this.panes[i].size
+        }
+
+        const sharedSpace = 100 - prevPanesSize - nextPanesSize
+        if (sharedSpace <= 0) return
+
+        const containerSize = this.container[this.horizontal ? "clientHeight" : "clientWidth"]
+        let dragPos = drag[this.horizontal ? "y" : "x"]
+        if (this.rtl && !this.horizontal) dragPos = containerSize - dragPos
+        const dragPercentage = (dragPos * 100) / containerSize
+
+        let newBeforeSize = dragPercentage - prevPanesSize
+
+        const minBefore = paneBefore.min !== undefined && paneBefore.min !== null ? paneBefore.min : 15
+        const maxBefore = paneBefore.max !== undefined && paneBefore.max !== null ? paneBefore.max : 85
+        const minAfter = paneAfter.min !== undefined && paneAfter.min !== null ? paneAfter.min : 15
+        const maxAfter = paneAfter.max !== undefined && paneAfter.max !== null ? paneAfter.max : 85
+
+        const minAllowedBefore = Math.max(minBefore, sharedSpace - maxAfter)
+        const maxAllowedBefore = Math.min(maxBefore, sharedSpace - minAfter)
+
+        if (minAllowedBefore <= maxAllowedBefore) {
+          newBeforeSize = Math.max(minAllowedBefore, Math.min(maxAllowedBefore, newBeforeSize))
+        }
+
+        const newAfterSize = sharedSpace - newBeforeSize
+
+        paneBefore.size = newBeforeSize
+        paneAfter.size = newAfterSize
+
+        this.updatePaneComponents()
+      }
+
+      sp.resetPaneSizes = function(changedPanes = {}) {
+        const sizes = vm.computePaneSizes()
+        if (this.panes.length === sizes.length) {
+          sizes.forEach((size, i) => (this.panes[i].size = size))
+          vm.paneSizes = sizes
+          if (!vm.problemPaneCollapsed) vm.lastLeftPaneSize = sizes[0]
+          if (sizes.length === 3) vm.lastAiPaneSize = sizes[2]
+        } else {
+          const equal = 100 / this.panes.length
+          this.panes.forEach((p) => (p.size = equal))
+        }
+
+        this.updatePaneComponents()
+        if (this.ready) {
+          this.$emit(
+            "resized",
+            this.panes.map((p) => ({ min: p.min, max: p.max, size: p.size }))
+          )
+        }
+      }
+    },
+    refreshEditor() {
+      this.$nextTick(() => {
+        if (this.$refs.myCm) {
+          if (this.$refs.myCm.codemirror && typeof this.$refs.myCm.codemirror.refresh === "function") {
+            this.$refs.myCm.codemirror.refresh()
+          } else if (
+            this.$refs.myCm.$refs &&
+            this.$refs.myCm.$refs.myCm &&
+            this.$refs.myCm.$refs.myCm.codemirror &&
+            typeof this.$refs.myCm.$refs.myCm.codemirror.refresh === "function"
+          ) {
+            this.$refs.myCm.$refs.myCm.codemirror.refresh()
+          }
+        }
+      })
+    },
+    toggleAIAssistant() {
+      if (this.aiAssistantVisible) {
+        this.closeAIAssistant()
+      } else {
+        this.openAIAssistant()
+      }
+    },
+    getSplitpanesWidth() {
+      const sp = this.$refs.splitpanes
+      return (sp && sp.$el && sp.$el.clientWidth) || window.innerWidth
+    },
+    pxToPaneSize(px) {
+      return (px / this.getSplitpanesWidth()) * 100
+    },
+    getCollapsedLeftSize() {
+      const navWidth = this.isContestProblem ? CONTEST_NAVIGATOR_WIDTH : 0
+      return this.pxToPaneSize(COLLAPSED_PROBLEM_PANE_WIDTH + navWidth)
+    },
+    // AI 조교가 열린 상태의 [문제, 코드, AI] 비율.
+    // 코드 패널이 MIN_EDITOR_WIDTH_WITH_AI 보다 좁아지지 않도록
+    // AI 패널을 먼저 줄이고, 그래도 모자라면 문제 패널을 줄인다.
+    getAiPaneLayout(leftSize, aiSize) {
+      const collapsed = this.problemPaneCollapsed
+      const minLeft = collapsed ? this.getCollapsedLeftSize() : MIN_PANE_SIZE
+      const minEditor = Math.min(
+        this.pxToPaneSize(MIN_EDITOR_WIDTH_WITH_AI),
+        100 - MIN_PANE_SIZE * 2,
+      )
+      let left = collapsed ? minLeft : leftSize || DEFAULT_LEFT_PANE_SIZE
+      let ai = aiSize || DEFAULT_AI_PANE_SIZE
+
+      const maxAi = 100 - minLeft - minEditor
+      ai = Math.max(MIN_PANE_SIZE, Math.min(ai, maxAi))
+      if (100 - left - ai < minEditor) {
+        left = Math.max(minLeft, 100 - ai - minEditor)
+      }
+      return [left, 100 - left - ai, ai]
+    },
+    computePaneSizes() {
+      if (this.aiAssistantVisible) {
+        return this.getAiPaneLayout(this.lastLeftPaneSize, this.lastAiPaneSize)
+      }
+      if (this.problemPaneCollapsed) {
+        const left = this.getCollapsedLeftSize()
+        return [left, 100 - left]
+      }
+      const left = Math.max(
+        MIN_PANE_SIZE,
+        Math.min(100 - MIN_PANE_SIZE, this.lastLeftPaneSize || DEFAULT_LEFT_PANE_SIZE),
+      )
+      return [left, 100 - left]
+    },
+    // 현재 비율 저장. 접힌 문제 패널 크기는 저장하지 않음
+    syncLastPaneSizes() {
+      const sp = this.$refs.splitpanes
+      if (!sp || !sp.panes || sp.panes.length < 2) return
+      if (!this.problemPaneCollapsed) this.lastLeftPaneSize = sp.panes[0].size
+      if (sp.panes.length === 3) this.lastAiPaneSize = sp.panes[2].size
+    },
+    applyPaneSizes() {
+      const sizes = this.computePaneSizes()
+      this.paneSizes = sizes
+      const sp = this.$refs.splitpanes
+      if (sp && sp.panes && sp.panes.length === sizes.length) {
+        sizes.forEach((size, i) => (sp.panes[i].size = size))
+        sp.updatePaneComponents()
+      }
+    },
+    openAIAssistant() {
+      this.syncLastPaneSizes()
+      this.aiAssistantVisible = true
+      this.paneSizes = this.computePaneSizes()
+
+      this.$nextTick(() => {
+        this.initSplitpanesCustomLogic()
+        this.applyPaneSizes()
+        this.refreshEditor()
+      })
+    },
+    closeAIAssistant() {
+      this.syncLastPaneSizes()
+      this.aiAssistantVisible = false
+      this.paneSizes = this.computePaneSizes()
+
+      this.$nextTick(() => {
+        this.initSplitpanesCustomLogic()
+        this.applyPaneSizes()
+        this.refreshEditor()
+      })
+    },
+    toggleProblemPane() {
+      this.syncLastPaneSizes()
+      this.problemPaneCollapsed = !this.problemPaneCollapsed
+      // min-size 변경이 splitpanes 에 반영된 뒤 비율 적용
+      this.$nextTick(() => {
+        this.applyPaneSizes()
+        this.refreshEditor()
+      })
+    },
+    // 창 크기가 바뀌면 px 기준 값(접힌 막대 너비, 코드 최소 너비)을 다시 맞춤
+    handlePaneWindowResize() {
+      if (!this.problemPaneCollapsed && !this.aiAssistantVisible) return
+      this.syncLastPaneSizes()
+      this.applyPaneSizes()
+    },
+    onPanesResize(panes) {
+      if (!panes || !panes.length) return
+      if (!this.problemPaneCollapsed) this.lastLeftPaneSize = panes[0].size
+      if (this.aiAssistantVisible && panes.length === 3) {
+        this.lastAiPaneSize = panes[2].size
+      }
+    },
+    onPanesResized(panes) {
+      if (!panes || !panes.length) return
+      this.paneSizes = panes.map((p) => p.size)
+      if (!this.problemPaneCollapsed) this.lastLeftPaneSize = panes[0].size
+      if (this.aiAssistantVisible && panes.length === 3) {
+        this.lastAiPaneSize = panes[2].size
+      }
+      this.refreshEditor()
     },
     getApiErrorMessage(error) {
       const data =
@@ -452,9 +753,9 @@ export default {
     getProblemLoadErrorMessage(error) {
       const message = String(this.getApiErrorMessage(error)).trim()
       if (message.startsWith("Please login")) {
-        return "로그인이 필요합니다."
+        return this.$t("m.Problem_Login_Required")
       }
-      return message || "문제를 불러오지 못했습니다."
+      return message || this.$t("m.Problem_Load_Failed")
     },
     isProblemNotFoundError(error) {
       const message = String(this.getApiErrorMessage(error)).trim()
@@ -469,8 +770,8 @@ export default {
     showProblemNotFoundError() {
       this.problemError = {
         visible: true,
-        title: "문제를 찾을 수 없습니다",
-        description: "입력하신 문제 번호가 올바르지 않거나 문제가 삭제되었습니다.",
+        title: this.$t("m.Problem_Not_Found_Title"),
+        description: this.$t("m.Problem_Not_Found_Desc"),
       }
       this.problem = this.getEmptyProblem()
       this.leftPainActiveTab = "problem"
@@ -478,7 +779,7 @@ export default {
       this.submitting = false
       this.clearSubmissionRefresh()
       this.removeBeforeUnload()
-      this.changeDomTitle({ title: "문제를 찾을 수 없습니다" })
+      this.changeDomTitle({ title: this.$t("m.Problem_Not_Found_Title") })
     },
     clearSubmissionRefresh() {
       if (this.refreshStatus) {
@@ -784,8 +1085,12 @@ export default {
           outputDescription: this.problem.output_description,
           inputSample: (this.problem.samples || []).map((s) => s.input),
           outputSample: (this.problem.samples || []).map((s) => s.output),
-          timeLimit: `시간 제한: ${this.problem.time_limit} ms`,
-          memoryLimit: `메모리 제한: ${this.problem.memory_limit} MB`,
+          timeLimit: this.$t("m.Problem_Time_Limit_Value", {
+            limit: this.problem.time_limit,
+          }),
+          memoryLimit: this.$t("m.Problem_Memory_Limit_Value", {
+            limit: this.problem.memory_limit,
+          }),
           hint: this.problem.hint || "",
           code: submissionResult.code || this.code,
           memoryCost: formattedMemory,
@@ -916,6 +1221,14 @@ export default {
     ...mapState({
       contestProblems: (state) => state.contest.contestProblems,
     }),
+    leftPaneTabLabel() {
+      const labelKeys = {
+        problem: "m.Problem_Tab_Description",
+        submission: "m.Problem_Tab_Submission",
+        community: "m.Problem_Tab_Community",
+      }
+      return this.$t(labelKeys[this.leftPainActiveTab] || labelKeys.problem)
+    },
     FIELD_MAP() {
       return FIELD_MAP
     },
@@ -1113,6 +1426,7 @@ export default {
 }
 
 .problem-solving-root {
+  position: relative;
   display: flex;
   min-height: calc(100vh - 50px);
   overflow: hidden;
@@ -1238,30 +1552,86 @@ export default {
 }
 
 .splitpanes__pane {
-  padding: 10px 10px;
-  border-radius: 20px;
+  padding: 6px 3px;
+  // splitpanes 기본 너비 transition 제거
+  transition: none !important;
   background-color: var(--ps-background-color);
   color: var(--text-color);
+
+  &:first-child {
+    padding-left: 8px;
+  }
+
+  &:last-child {
+    padding-right: 8px;
+  }
 }
 
 .splitpanes__pane.problem-pane-with-navigator {
   padding-left: 0;
   padding-top: 0;
   padding-bottom: 0;
-  border-radius: 0;
 }
 
 .splitpanes--vertical > .splitpanes__splitter {
   min-width: 4px !important;
-  margin-top: 350px;
-  margin-bottom: 350px;
-  align-items: center;
-  background: rgba(200, 200, 200, 0.67);
-  border-radius: 10px;
+  width: 4px !important;
+  // 음수 margin 으로 경계선이 패널 너비를 차지하지 않게 함
+  margin: 0 -2px;
+  z-index: 1;
+  position: relative;
+  background: transparent;
+  cursor: col-resize;
+  flex-shrink: 0;
+
+  // 평소엔 짧은 핸들, hover·드래그 중엔 전체 높이 강조선
+  &::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 2px;
+    height: 24px;
+    background: rgba(160, 160, 160, 0.6);
+    border-radius: 2px;
+    transition: background-color 0.15s, height 0.15s;
+  }
+
+  // 클릭 영역 확장
+  &::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: -4px;
+    right: -4px;
+  }
+
+  &:hover::before,
+  &.is-active::before {
+    height: calc(100% - 12px);
+    background: var(--point-color, #5b64ed);
+  }
 }
 
-.splitpanes--vertical > .splitpanes__splitter:hover {
-  background: rgba(143, 143, 143, 0.67);
+// 드래그 중에는 잡고 있는 경계선만 강조
+.splitpanes--vertical.splitpanes--dragging
+  > .splitpanes__splitter:not(.is-active):hover::before {
+  height: 24px;
+  background: rgba(160, 160, 160, 0.6);
+}
+
+.splitpanes--dragging {
+  cursor: col-resize;
+  user-select: none;
+}
+
+.ai-assistant-pane {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .submitBtn {
@@ -1294,9 +1664,15 @@ export default {
   height: 100%;
 }
 
-.left-pain-wrapper.has-contest-navigator .problem-content-wrapper {
+.left-pain-wrapper.has-contest-navigator .problem-content-wrapper,
+.left-pain-wrapper.has-contest-navigator .collapsed-problem-bar {
   padding-top: 10px;
   padding-bottom: 10px;
+}
+
+.left-pain-wrapper.has-contest-navigator .collapsed-problem-bar {
+  height: calc(100% - 20px);
+  margin: 10px 0;
 }
 
 .editor-pane-wrapper {
@@ -1305,6 +1681,11 @@ export default {
   display: flex;
   flex-direction: column;
   min-height: 0;
+}
+
+.splitpanes--dragging iframe,
+.splitpanes--dragging .code-editor-area {
+  pointer-events: none;
 }
 
 .editor-pane-wrapper > .container-header {
@@ -1320,6 +1701,79 @@ export default {
 
 .tab-headers {
   display: flex;
+}
+
+.pane-collapse-btn {
+  margin-left: auto;
+  align-self: center;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ai-assistant-close-text-color);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+
+  &:hover {
+    background-color: var(--ai-assistant-close-hover-bg);
+    color: var(--ai-assistant-close-hover-text-color);
+  }
+}
+
+// 접힌 문제 패널 세로 막대
+.splitpanes__pane.problem-pane-collapsed {
+  padding-right: 0;
+}
+
+.collapsed-problem-bar {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border: 1px solid var(--border-color);
+  border-radius: 7px;
+  background-color: var(--ps-content-color);
+  color: var(--text-color);
+  cursor: pointer;
+  transition: background-color 0.15s;
+
+  i {
+    font-size: 13px;
+    color: var(--ai-assistant-close-text-color);
+  }
+
+  &:hover {
+    background-color: var(--bg-color);
+
+    i {
+      color: var(--ai-assistant-close-hover-text-color);
+    }
+  }
+}
+
+.collapsed-problem-label {
+  writing-mode: vertical-rl;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  white-space: nowrap;
+}
+
+// 접힌 상태에서는 문제-코드 사이 경계선을 끌 수 없게
+.splitpanes.problem-collapsed
+  > .splitpanes__pane:first-child
+  + .splitpanes__splitter {
+  pointer-events: none;
+
+  &::before {
+    display: none;
+  }
 }
 
 .tab-header {
