@@ -85,6 +85,19 @@ class SubmissionAPITest(SubmissionCreateTestBase):
         outcome_total.labels.assert_called_once_with(status="success", scope="practice")
         labels.inc.assert_called_once()
 
+    def test_hidden_problem_preview_cannot_create_submissions(self):
+        self.problem.visible = False
+        self.problem.save(update_fields=["visible"])
+        data = copy.deepcopy(DEFAULT_SUBMISSION_DATA)
+        data["problem_id"] = self.problem.id
+
+        with mock.patch("judge.tasks.judge_task.apply_async") as judge_task:
+            for user in (self.user, self.admin):
+                self.client.force_login(user)
+                self.assertFailed(self.client.post(self.url, data=data), "Problem not exist")
+            judge_task.assert_not_called()
+        self.assertFalse(Submission.objects.filter(problem=self.problem).exists())
+
     def test_create_submission_nonexistent_problem(self):
         data = copy.deepcopy(DEFAULT_SUBMISSION_DATA)
         data["problem_id"] = 99999
@@ -238,6 +251,22 @@ class SubmissionListAPITest(SubmissionCreateTestBase):
     def test_no_limit_param(self):
         resp = self.client.get(self.url)
         self.assertFailed(resp, "Limit is needed")
+
+    def test_hide_others_submissions_of_hidden_problems(self):
+        hidden = ProblemCreateTestBase.create_problem_with_custom_field(self.admin, _id="hidden", visible=False)
+        admin_submission = self.create_submission(self.admin, hidden)
+        own_submission = self.create_submission(self.user, hidden)
+        visible_submission = self.create_submission(self.admin, self.problem)
+
+        resp = self.client.get(f"{self.url}?limit=10")
+        self.assertSuccess(resp)
+        ids = {item["id"] for item in resp.data["data"]["results"]}
+        self.assertEqual(ids, {own_submission.id, visible_submission.id})
+
+        self.client.force_login(self.admin)
+        resp = self.client.get(f"{self.url}?limit=10")
+        ids = {item["id"] for item in resp.data["data"]["results"]}
+        self.assertIn(admin_submission.id, ids)
 
     def test_get_submissions_general(self):
         # 유저 제출 생성 (일반 문제)

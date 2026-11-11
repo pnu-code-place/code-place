@@ -122,3 +122,5 @@ class Tier:
 #   - frontend BottomDrag.vue: 학생에게 보이는 "n/5 회" 표시
 # 숫자를 바꾸려면 위 두 곳도 함께 손봐야 한다.
 HINT_LIMIT_PER_PROBLEM = 5
+
+BOJ_SOURCE = "Baekjoon Online Judge"

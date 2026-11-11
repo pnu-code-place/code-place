@@ -169,6 +169,12 @@ h1.main-title {
   --ps-content-pre-border-color: #e7e7e7;
   --ps-content-code-background-color: #f3f4f4;
   --ps-content-code-text-color: #1a1f29;
+  --ps-code-keyword-color: #a626a4;
+  --ps-code-string-color: #50a14f;
+  --ps-code-number-color: #986801;
+  --ps-code-comment-color: #a0a1a7;
+  --ps-code-function-color: #4078f2;
+  --ps-code-type-color: #c18401;
   /* Code Submission */
   --submit-btn-color: rgba(238, 247, 251, 0.84);
   --submit-btn-hover-color: rgba(221, 240, 250, 0.84);
@@ -235,6 +241,12 @@ h1.main-title {
   --ps-content-pre-border-color: rgba(140, 140, 140, 0.29);
   --ps-content-code-background-color: #1b212c;
   --ps-content-code-text-color: #ffffff;
+  --ps-code-keyword-color: #c678dd;
+  --ps-code-string-color: #98c379;
+  --ps-code-number-color: #d19a66;
+  --ps-code-comment-color: #7f848e;
+  --ps-code-function-color: #61afef;
+  --ps-code-type-color: #e5c07b;
   /* Code Submission */
   --submit-btn-color: #343f5a;
   --submit-btn-hover-color: #364361;

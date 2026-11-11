@@ -312,6 +312,17 @@ export default {
       params,
     })
   },
+  getActiveBOJProblemCount() {
+    return ajax("admin/problem/boj/hide", "get")
+  },
+  hideBOJProblems() {
+    return ajax("admin/problem/boj/hide", "post")
+  },
+  changeProblemVisibility(data) {
+    return ajax("admin/problem/visibility", "put", {
+      data,
+    })
+  },
   getContestProblemList(params) {
     params = utils.filterEmptyValue(params)
     return ajax("admin/contest/problem", "get", {

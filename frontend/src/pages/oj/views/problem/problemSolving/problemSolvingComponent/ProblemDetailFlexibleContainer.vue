@@ -108,6 +108,7 @@
           class="content"
           v-html="problem.description"
           v-katex
+          v-highlight-code
           :id="`problem-description-${problem._id}`"
         ></div>
         <p class="title">
@@ -120,6 +121,7 @@
           class="content"
           v-html="problem.input_description"
           v-katex
+          v-highlight-code
           :id="`problem-input-desc-${problem._id}`"
         ></div>
 
@@ -133,6 +135,7 @@
           class="content"
           v-html="problem.output_description"
           v-katex
+          v-highlight-code
           :id="`problem-output-desc-${problem._id}`"
         ></div>
 
@@ -211,6 +214,7 @@
               class="hintContent"
               v-html="problem.hint"
               v-katex
+              v-highlight-code
               :id="`problem-hint-${problem._id}`"
             ></div>
           </section>
@@ -568,7 +572,6 @@ export default defineComponent({
 
     /deep/ img {
       display: inline-block;
-      width: auto;
       max-width: ~"min(100%, 640px)";
       height: auto;
       vertical-align: middle;
@@ -625,6 +628,41 @@ export default defineComponent({
     /deep/ .hljs {
       background: var(--ps-content-pre-background-color) !important;
       color: var(--ps-content-code-text-color) !important;
+    }
+
+    /deep/ pre > code span {
+      color: inherit !important;
+    }
+
+    /deep/ .hljs-keyword,
+    /deep/ .hljs-literal,
+    /deep/ .hljs-meta {
+      color: var(--ps-code-keyword-color) !important;
+    }
+
+    /deep/ .hljs-string,
+    /deep/ .hljs-meta-string {
+      color: var(--ps-code-string-color) !important;
+    }
+
+    /deep/ .hljs-number {
+      color: var(--ps-code-number-color) !important;
+    }
+
+    /deep/ .hljs-comment {
+      color: var(--ps-code-comment-color) !important;
+      font-style: italic;
+    }
+
+    /deep/ .hljs-title,
+    /deep/ .hljs-function .hljs-title {
+      color: var(--ps-code-function-color) !important;
+    }
+
+    /deep/ .hljs-type,
+    /deep/ .hljs-built_in,
+    /deep/ .hljs-class .hljs-title {
+      color: var(--ps-code-type-color) !important;
     }
   }
 }
