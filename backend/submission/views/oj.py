@@ -81,10 +81,7 @@ class SubmissionAPI(APIView):
             return self.error(error)
 
         try:
-            if data.get("contest_id"):
-                problem = Problem.objects.get(id=data["problem_id"], contest_id=data["contest_id"], visible=True)
-            else:
-                problem = Problem.objects.get(id=data["problem_id"], contest_id__isnull=True, visible=True)
+            problem = Problem.objects.get(id=data["problem_id"], contest_id=data.get("contest_id"), visible=True)
         except Problem.DoesNotExist:
             self._record_create_outcome("problem_not_found", scope)
             return self.error("Problem not exist")
@@ -206,12 +203,10 @@ class SubmissionListAPI(APIView):
         else:
             # 기존 로직: 일반 문제 제출
             submissions = Submission.objects.filter(contest_id__isnull=True).select_related("problem__created_by")
-            submissions = submissions.filter(
-                Q(problem__in=Problem.practice_problems_for(request.user)) | Q(user_id=request.user.id))
 
             if problem_id:
                 try:
-                    problem = Problem.practice_problems_for(request.user).get(_id=problem_id)
+                    problem = Problem.objects.get(_id=problem_id, contest_id__isnull=True, visible=True)
                 except Problem.DoesNotExist:
                     return self.error("Problem doesn't exist")
                 submissions = submissions.filter(problem=problem)

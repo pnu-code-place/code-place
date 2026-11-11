@@ -56,14 +56,14 @@ from utils.api import APIView
 
 from utils.constants import HINT_LIMIT_PER_PROBLEM
 
-from ..ai_assistant.stage_hint import STAGE_LABEL_PATTERN
+from ..llm_hint import STAGE_LABEL_PATTERN
 
 # 이 간격을 넘겨 다시 요청하면 새 대화로 센다.
 # 2026-09 운영 데이터(연속 요청 208건) 기준으로 정했다. 87.9%가 15분 이내에 몰려 있고
 # 15~30분 구간은 0건이라 그 사이가 자연스러운 경계다. 15분과 30분은 결과가 같다.
 SESSION_GAP_MINUTES = 30
 
-# 응답 머리말 규칙은 프롬프트가 소유한다(`ai_assistant/stage_hint.STAGE_LABEL_PATTERN`).
+# 응답 머리말 규칙은 프롬프트가 소유한다(`llm_hint.STAGE_LABEL_PATTERN`).
 # 프롬프트를 고치면 이 지표가 조용히 0% 로 떨어지므로 정의를 한 곳에 둔다.
 
 # `submission.create_time` 에 인덱스가 없고, `problem_ai_hint_log` 의 인덱스는 전부
