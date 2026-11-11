@@ -1,6 +1,6 @@
 from django.db import models
 from utils.models import JSONField
-from account.models import ProblemPermission, User, UserProfile
+from account.models import ProblemPermission, User
 from contest.models import Contest
 from utils.models import RichTextField
 from utils.constants import Choices
