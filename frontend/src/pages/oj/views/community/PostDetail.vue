@@ -70,10 +70,7 @@
             </div>
           </div>
           <div class="post-meta-right">
-            <div
-              v-if="(isAuthor || isSuperAdmin) && !isEditing"
-              class="post-edit-actions"
-            >
+            <div v-if="isAuthor && !isEditing" class="post-edit-actions">
               <button
                 v-if="post.post_type === 'QUESTION'"
                 class="question-status-toggle-btn"
@@ -97,14 +94,12 @@
                     : $t("m.Community_Question_Close")
                 }}
               </button>
-              <template v-if="isAuthor">
-                <button class="post-edit-btn" @click="enterEditMode">
-                  {{ $t("m.Community_Post_Edit") }}
-                </button>
-                <button class="post-delete-btn" @click="deletePost(post.id)">
-                  {{ $t("m.Community_Post_Delete") }}
-                </button>
-              </template>
+              <button class="post-edit-btn" @click="enterEditMode">
+                {{ $t("m.Community_Post_Edit") }}
+              </button>
+              <button class="post-delete-btn" @click="deletePost(post.id)">
+                {{ $t("m.Community_Post_Delete") }}
+              </button>
             </div>
             <div v-if="isEditing" class="post-edit-actions">
               <Select

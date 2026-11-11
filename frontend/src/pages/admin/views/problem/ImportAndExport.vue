@@ -75,8 +75,8 @@
         :limit="3"
         :on-change="onFile1Change"
         :auto-upload="false"
-        :on-success="(response) => uploadSucceeded('QDU', response)"
-        :on-error="(err) => uploadFailed('QDU', err)"
+        :on-success="uploadSucceeded"
+        :on-error="uploadFailed"
       >
         <el-button
           size="small"
@@ -93,24 +93,6 @@
           >{{ $t("m.Button_Upload") }}</el-button
         >
       </el-upload>
-      <import-error-report
-        v-if="importError && importError.ref === 'QDU'"
-        :error="importError"
-        @close="importError = null"
-      />
-      <el-alert
-        v-if="importResult && importResult.ref === 'QDU'"
-        class="import-result"
-        type="success"
-        show-icon
-        :title="`${importResult.count}개 문제를 비활성화 상태로 등록했습니다`"
-        @close="importResult = null"
-      >
-        검수한 뒤 문제 목록에서 활성화해주세요.
-        <el-button type="text" size="mini" @click="goReview"
-          >검수하러 가기</el-button
-        >
-      </el-alert>
     </panel>
 
     <panel :title="$t('m.ImportAndExport_Import_FPS')">
@@ -124,8 +106,8 @@
         :limit="3"
         :on-change="onFile2Change"
         :auto-upload="false"
-        :on-success="(response) => uploadSucceeded('FPS', response)"
-        :on-error="(err) => uploadFailed('FPS', err)"
+        :on-success="uploadSucceeded"
+        :on-error="uploadFailed"
       >
         <el-button
           size="small"
@@ -142,37 +124,15 @@
           >{{ $t("m.Button_Upload") }}</el-button
         >
       </el-upload>
-      <import-error-report
-        v-if="importError && importError.ref === 'FPS'"
-        :error="importError"
-        @close="importError = null"
-      />
-      <el-alert
-        v-if="importResult && importResult.ref === 'FPS'"
-        class="import-result"
-        type="success"
-        show-icon
-        :title="`${importResult.count}개 문제를 비활성화 상태로 등록했습니다`"
-        @close="importResult = null"
-      >
-        검수한 뒤 문제 목록에서 활성화해주세요.
-        <el-button type="text" size="mini" @click="goReview"
-          >검수하러 가기</el-button
-        >
-      </el-alert>
     </panel>
   </div>
 </template>
 <script>
 import api from "@admin/api"
 import utils from "@/utils/utils"
-import ImportErrorReport from "../../components/ImportErrorReport.vue"
 
 export default {
   name: "import_and_export",
-  components: {
-    ImportErrorReport,
-  },
   data() {
     return {
       fileList1: [],
@@ -185,8 +145,6 @@ export default {
       keyword: "",
       problems: [],
       selected_problems: [],
-      importError: null,
-      importResult: null,
     }
   },
   mounted() {
@@ -218,12 +176,7 @@ export default {
       utils.downloadFile(url)
     },
     submitUpload(ref) {
-      const upload = this.$refs[ref]
-      if (!upload.uploadFiles.some((file) => file.status === "ready")) {
-        this.$error("업로드할 파일을 선택해주세요")
-        return
-      }
-      upload.submit()
+      this.$refs[ref].submit()
     },
     onFile1Change(file, fileList) {
       this.fileList1 = fileList.slice(-1)
@@ -231,52 +184,18 @@ export default {
     onFile2Change(file, fileList) {
       this.fileList2 = fileList.slice(-1)
     },
-    uploadSucceeded(ref, response) {
-      this.importError = null
-      this.importResult = null
+    uploadSucceeded(response) {
       if (response.error) {
-        this.showImportError(ref, response.data)
+        this.$error(response.data)
       } else {
-        this.$success(`${response.data.import_count}개 문제를 가져왔습니다`)
-        this.importResult = {
-          ref,
-          count: response.data.import_count,
-          reviewCount: response.data.review_count || 0,
-        }
+        this.$success(
+          "Successfully imported " + response.data.import_count + " problems",
+        )
         this.getProblems()
       }
     },
-    goReview() {
-      const { count, reviewCount } = this.importResult
-      const source = reviewCount === count ? "boj" : ""
-      this.$router.push({
-        name: "problem-list",
-        query: { source, visible: "false" },
-      })
-    },
-    uploadFailed(ref, err) {
-      this.importResult = null
-      let data
-      try {
-        data = JSON.parse(err.message).data
-      } catch (e) {
-        data = null
-      }
-      if (data) {
-        this.showImportError(ref, data)
-      } else if (err.status === 413) {
-        this.showImportError(ref, "파일 용량이 너무 큽니다")
-      } else {
-        this.showImportError(ref, `서버 오류가 발생했습니다 (${err.status})`)
-      }
-    },
-    showImportError(ref, data) {
+    uploadFailed() {
       this.$error("Upload failed")
-      if (!data.errors) {
-        const error = { dir: "", title: "", location: "", message: data }
-        data = { message: data, errors: [error] }
-      }
-      this.importError = { ref, ...data }
     },
   },
   watch: {
@@ -287,8 +206,4 @@ export default {
 }
 </script>
 
-<style scoped lang="less">
-.import-result {
-  margin-top: 12px;
-}
-</style>
+<style scoped lang="less"></style>

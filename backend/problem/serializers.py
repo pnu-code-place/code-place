@@ -20,7 +20,7 @@ class AIHintLogSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProblemAIHintLog
-        fields = ["id", "mode", "student_question", "hint_content", "created_at"]
+        fields = ["id", "hint_content", "created_at"]
 
 
 class TestCaseUploadForm(forms.Form):
@@ -188,11 +188,6 @@ class ProblemSafeSerializer(BaseProblemSerializer):
 class ContestProblemMakePublicSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     display_id = serializers.CharField(max_length=32)
-
-
-class ProblemVisibilitySerializer(serializers.Serializer):
-    ids = serializers.ListField(child=serializers.IntegerField(), allow_empty=False)
-    visible = serializers.BooleanField()
 
 
 class ExportProblemSerializer(serializers.ModelSerializer):

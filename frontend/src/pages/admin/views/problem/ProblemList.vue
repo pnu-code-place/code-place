@@ -8,39 +8,12 @@
       "
     >
       <div slot="header">
-        <el-row type="flex">
-          <template v-if="!contestId">
-            <el-col class="filter-col">
-              <el-select
-                v-model="sourceFilter"
-                placeholder="출처"
-                @change="(value) => changeFilter('sourceFilter', value)"
-              >
-                <el-option label="전체" value="all"></el-option>
-                <el-option label="백준" value="boj"></el-option>
-              </el-select>
-            </el-col>
-            <el-col class="filter-col">
-              <el-select
-                v-model="visibleFilter"
-                placeholder="상태"
-                @change="(value) => changeFilter('visibleFilter', value)"
-              >
-                <el-option label="전체" value="all"></el-option>
-                <el-option label="활성화" value="true"></el-option>
-                <el-option label="비활성화" value="false"></el-option>
-              </el-select>
-            </el-col>
-          </template>
-          <el-col>
-            <el-input
-              v-model="keyword"
-              prefix-icon="el-icon-search"
-              placeholder="Keywords"
-            >
-            </el-input>
-          </el-col>
-        </el-row>
+        <el-input
+          v-model="keyword"
+          prefix-icon="el-icon-search"
+          placeholder="Keywords"
+        >
+        </el-input>
       </div>
       <el-table
         v-loading="loading"
@@ -48,11 +21,8 @@
         ref="table"
         :data="problemList"
         @row-dblclick="handleDblclick"
-        @selection-change="(rows) => (selectedProblems = rows)"
         style="width: 100%"
       >
-        <el-table-column v-if="!contestId" type="selection" width="55">
-        </el-table-column>
         <el-table-column width="100" prop="id" :label="$t('m.ProblemList_ID')">
         </el-table-column>
         <el-table-column prop="title" :label="$t('m.ProblemList_Title')">
@@ -102,12 +72,6 @@
         >
           <div slot-scope="scope">
             <icon-btn
-              v-if="!contestId"
-              name="미리보기"
-              icon="eye"
-              @click.native="previewProblem(scope.row)"
-            ></icon-btn>
-            <icon-btn
               :name="$t('m.Icon_Edit')"
               icon="edit"
               @click.native="goEdit(scope.row.id)"
@@ -139,29 +103,6 @@
           icon="el-icon-plus"
           >{{ $t("m.Button_Create") }}
         </el-button>
-        <template v-if="selectedProblems.length">
-          <el-button
-            type="primary"
-            size="small"
-            icon="el-icon-fa-eye"
-            @click="changeVisibility(true)"
-            >선택 활성화 ({{ selectedProblems.length }})
-          </el-button>
-          <el-button
-            size="small"
-            icon="el-icon-fa-eye-slash"
-            @click="changeVisibility(false)"
-            >선택 비활성화 ({{ selectedProblems.length }})
-          </el-button>
-        </template>
-        <el-button
-          v-if="!contestId && sourceFilter === 'boj'"
-          type="danger"
-          size="small"
-          icon="el-icon-fa-eye-slash"
-          @click="hideBOJProblems"
-          >백준 문제 전체 비활성화
-        </el-button>
         <el-button
           v-if="contestId"
           type="primary"
@@ -182,23 +123,12 @@
           class="page"
           layout="prev, pager, next"
           @current-change="currentChange"
-          :current-page="currentPage"
           :page-size="pageSize"
           :total="total"
         >
         </el-pagination>
       </div>
     </Panel>
-    <el-dialog
-      title="문제 미리보기"
-      width="80%"
-      :visible.sync="previewDialogVisible"
-    >
-      <problem-preview
-        v-if="previewProblemData"
-        :problem="previewProblemData"
-      ></problem-preview>
-    </el-dialog>
     <el-dialog
       :title="$t('m.ProblemList_Update_Title')"
       width="20%"
@@ -251,7 +181,6 @@ import api from "../../api.js"
 import utils from "@/utils/utils"
 import AddProblemComponent from "./AddPublicProblem.vue"
 import ImportFromContest from "./ImportFromContest.vue"
-import ProblemPreview from "./ProblemPreview.vue"
 
 // A list of routers which need problems list
 const PROBLEM_LIST_ROUTES = ["problem-list", "contest-problem-list"]
@@ -261,7 +190,6 @@ export default {
   components: {
     AddProblemComponent,
     ImportFromContest,
-    ProblemPreview,
   },
   data() {
     return {
@@ -269,12 +197,7 @@ export default {
       total: 0,
       problemList: [],
       keyword: "",
-      sourceFilter: this.$route.query.source || "",
-      visibleFilter: this.$route.query.visible || "",
-      selectedProblems: [],
       loading: false,
-      previewDialogVisible: false,
-      previewProblemData: null,
       currentPage: 1,
       routeName: "",
       contestId: "",
@@ -333,8 +256,6 @@ export default {
         offset: (page - 1) * this.pageSize,
         keyword: this.keyword,
         contest_id: this.contestId,
-        source: this.contestId ? "" : this.sourceFilter,
-        visible: this.contestId ? "" : this.visibleFilter,
       }
       api[funcName](params).then(
         (res) => {
@@ -405,71 +326,6 @@ export default {
       this.currentRow = row
       this.InlineEditDialogVisible = true
     },
-    changeFilter(key, value) {
-      this[key] = value === "all" ? "" : value
-      const query = { ...this.$route.query }
-      for (const [name, filter] of [
-        ["source", this.sourceFilter],
-        ["visible", this.visibleFilter],
-      ]) {
-        if (filter) {
-          query[name] = filter
-        } else {
-          delete query[name]
-        }
-      }
-      if (
-        query.source === this.$route.query.source &&
-        query.visible === this.$route.query.visible
-      ) {
-        this.currentChange(1)
-        return
-      }
-      this.$router.replace({ query }).catch((error) => {
-        if (error.name !== "NavigationDuplicated") {
-          this.$error("필터를 적용하지 못했습니다")
-        }
-      })
-    },
-    hideBOJProblems() {
-      api.getActiveBOJProblemCount().then((res) => {
-        const count = res.data.data.count
-        if (!count) {
-          this.$warning("활성화된 백준 문제가 없습니다")
-          return
-        }
-        this.$prompt(
-          `활성화된 백준 문제 ${count}개를 모두 비활성화합니다. 사용자는 더 이상 이 문제들을 볼 수 없습니다. 계속하려면 아래에 "백준 비활성화"를 정확히 입력해 주세요.`,
-          "백준 문제 전체 비활성화",
-          {
-            type: "warning",
-            confirmButtonText: "비활성화",
-            cancelButtonText: "취소",
-            confirmButtonClass: "el-button--danger",
-            inputPlaceholder: "백준 비활성화",
-            inputValidator: (value) => value === "백준 비활성화",
-            inputErrorMessage: '"백준 비활성화"를 정확히 입력해 주세요.',
-          },
-        ).then(
-          () => {
-            api.hideBOJProblems().then(() => {
-              this.getProblemList(this.currentPage)
-            })
-          },
-          () => {},
-        )
-      })
-    },
-    previewProblem(row) {
-      this.previewProblemData = row
-      this.previewDialogVisible = true
-    },
-    changeVisibility(visible) {
-      const ids = this.selectedProblems.map((problem) => problem.id)
-      api.changeProblemVisibility({ ids, visible }).then(() => {
-        this.getProblemList(this.currentPage)
-      })
-    },
     downloadTestCase(problemID) {
       let url = "/admin/test_case?problem_id=" + problemID
       utils.downloadFile(url)
@@ -485,29 +341,14 @@ export default {
 
       // Update only when the router requires a problem list
       if (PROBLEM_LIST_ROUTES.includes(this.routeName)) {
-        const { source, visible } = newVal.query
-        this.sourceFilter = source || ""
-        this.visibleFilter = visible || ""
-        if (
-          source !== oldVal.query.source ||
-          visible !== oldVal.query.visible
-        ) {
-          this.currentChange(1)
-        } else {
-          this.getProblemList(this.currentPage)
-        }
+        this.getProblemList(this.currentPage)
       }
     },
     keyword() {
-      this.currentChange(1)
+      this.currentChange()
     },
   },
 }
 </script>
 
-<style scoped lang="less">
-.filter-col {
-  flex: 0 0 120px;
-  margin-right: 15px;
-}
-</style>
+<style scoped lang="less"></style>

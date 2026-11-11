@@ -1,13 +1,9 @@
 <template>
-  <div
-    class="problem view"
-    v-loading="saving"
-    element-loading-text="저장 중입니다"
-  >
+  <div class="problem view">
     <Panel
       :title="mode === 'edit' ? $t('m.Edit_Problem') : $t('m.Create_Problem')"
     >
-      <div class="detailCard" :inert="saving">
+      <div class="detailCard">
         <div class="header-input-container">
           <div class="header-question-id">
             <!-- 문제 번호 글자 -->
@@ -114,7 +110,7 @@
               ><span class="required-asterisk">*</span
               >{{ $t("m.Description") }}</label
             >
-            <Simditor ref="descEditor" v-model="problem.description"></Simditor>
+            <Simditor v-model="problem.description"></Simditor>
           </div>
           <!-- Input Description -->
           <div class="form-group">
@@ -122,10 +118,7 @@
               ><span class="required-asterisk">*</span
               >{{ $t("m.Input_Description") }}</label
             >
-            <Simditor
-              ref="inputDescEditor"
-              v-model="problem.input_description"
-            ></Simditor>
+            <Simditor v-model="problem.input_description"></Simditor>
           </div>
           <!-- Output Description -->
           <div class="form-group">
@@ -133,10 +126,7 @@
               ><span class="required-asterisk">*</span
               >{{ $t("m.Output_Description") }}</label
             >
-            <Simditor
-              ref="outputDescEditor"
-              v-model="problem.output_description"
-            ></Simditor>
+            <Simditor v-model="problem.output_description"></Simditor>
           </div>
         </div>
 
@@ -227,7 +217,7 @@
           <label class="custom-label">
             {{ $t("m.Hint") }}
           </label>
-          <Simditor ref="hintEditor" v-model="problem.hint"></Simditor>
+          <Simditor v-model="problem.hint"></Simditor>
         </div>
 
         <!-- 종류 / 테케 / 입출력모드 / 배점 설정 -->
@@ -648,7 +638,6 @@ export default {
   data() {
     return {
       loadingCompile: false,
-      saving: false,
       mode: "",
       contest: {},
       problem: {
@@ -955,20 +944,7 @@ export default {
         },
       )
     },
-    async submit() {
-      if (this.saving) return
-      if (!this.problem.title) {
-        this.$error("Title is required")
-        return
-      }
-      if (
-        !this.problem.description ||
-        !this.problem.input_description ||
-        !this.problem.output_description
-      ) {
-        this.$error("Description, input and output description are required")
-        return
-      }
+    submit() {
       if (this.problem.field == null) {
         this.$error("Field is required")
         return
@@ -1040,39 +1016,21 @@ export default {
       if (funcName === "editContestProblem") {
         this.problem.contest_id = this.contest.id
       }
-      this.saving = true
-      try {
-        await this.$nextTick()
-        try {
-          this.problem.description =
-            await this.$refs.descEditor.uploadPendingImages()
-          this.problem.input_description =
-            await this.$refs.inputDescEditor.uploadPendingImages()
-          this.problem.output_description =
-            await this.$refs.outputDescEditor.uploadPendingImages()
-          this.problem.hint = await this.$refs.hintEditor.uploadPendingImages()
-        } catch (e) {
-          this.$error("Image upload failed: " + e.message)
-          return
-        }
-        await api[funcName](this.problem)
-          .then((res) => {
-            if (
-              this.routeName === "create-contest-problem" ||
-              this.routeName === "edit-contest-problem"
-            ) {
-              this.$router.push({
-                name: "contest-problem-list",
-                params: { contestId: this.$route.params.contestId },
-              })
-            } else {
-              this.$router.push({ name: "problem-list" })
-            }
-          })
-          .catch(() => {})
-      } finally {
-        this.saving = false
-      }
+      api[funcName](this.problem)
+        .then((res) => {
+          if (
+            this.routeName === "create-contest-problem" ||
+            this.routeName === "edit-contest-problem"
+          ) {
+            this.$router.push({
+              name: "contest-problem-list",
+              params: { contestId: this.$route.params.contestId },
+            })
+          } else {
+            this.$router.push({ name: "problem-list" })
+          }
+        })
+        .catch(() => {})
     },
     resetProblem() {
       this.problem = JSON.parse(JSON.stringify(this.reProblem))
@@ -2165,10 +2123,7 @@ export default {
 /deep/ .simditor {
   border-radius: 8px;
   border: 1px solid #dcdfe6;
-
-  .simditor-wrapper {
-    border-radius: 8px;
-  }
+  overflow: hidden;
 
   .simditor-toolbar {
     border-radius: 8px 8px 0 0;

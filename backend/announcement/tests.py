@@ -179,9 +179,9 @@ class AnnouncementAdminTest(APITestCase):
         self.assertSuccess(resp)
         self.assertEqual(resp.data["data"]["is_pinned"], True)
 
-    def test_admin_list_orders_by_creation_time_regardless_of_pin(self):
+    def test_get_notice_list_in_order(self):
         """
-        관리자 목록은 고정 여부를 변경해도 작성일 최신순을 유지한다.
+        공지사항 리스트 조회 시, 고정 공지사항 우선 로드 여부 test
         """
         self.client.post(self.url, data={"title": "고정1", "content": "test", "visible": True, "is_pinned": True})
         self.client.post(self.url, data={"title": "고정아님1", "content": "test", "visible": True, "is_pinned": False})
@@ -193,17 +193,14 @@ class AnnouncementAdminTest(APITestCase):
         results = resp.data["data"]["results"]
         self.assertEqual(len(results), 4)
 
-        expected_titles = ["고정아님2", "고정2", "고정아님1", "고정1"]
-        self.assertEqual([item["title"] for item in results], expected_titles)
+        self.assertTrue(results[0]["is_pinned"])
+        self.assertTrue(results[1]["is_pinned"])
+        self.assertFalse(results[2]["is_pinned"])
+        self.assertFalse(results[3]["is_pinned"])
 
-        announcement = results[2]
-        announcement["is_pinned"] = True
-        resp = self.client.put(self.url, data=announcement)
-        self.assertSuccess(resp)
-
-        resp = self.client.get(self.url)
-        self.assertSuccess(resp)
-        self.assertEqual([item["title"] for item in resp.data["data"]["results"]], expected_titles)
+        pinned_titles = {results[0]["title"], results[1]["title"]}
+        self.assertIn("고정1", pinned_titles)
+        self.assertIn("고정2", pinned_titles)
 
 
 class AnnouncementAPITest(APITestCase):

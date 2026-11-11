@@ -251,7 +251,6 @@ class AvatarUploadAPI(APIView):
 
 class ProfileProblemAPIView(APIView):
 
-    @login_required
     def get(self, request):
         """Get submissions of a user.
 
