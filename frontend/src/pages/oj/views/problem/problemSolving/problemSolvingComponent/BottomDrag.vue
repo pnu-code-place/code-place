@@ -65,7 +65,7 @@
           <!-- 첫 진입 온보딩 -->
           <div v-if="messages.length === 0 && !isLoading" class="ai-empty">
             <div class="ai-empty-avatar">
-              <img src="@/assets/images/AIAssistant.svg" alt="AI" />
+              <img src="@/assets/images/coplee.svg" alt="AI" />
             </div>
             <p class="ai-empty-title">{{ $t("m.AI_Assistant_Empty_Title") }}</p>
             <p class="ai-empty-sub">
@@ -76,7 +76,7 @@
           <!-- 메시지 -->
           <div v-for="(msg, i) in renderMessages" :key="i" class="chat-row">
             <div class="avatar" :class="{ thinking: msg.thinking }">
-              <img src="@/assets/images/AIAssistant.svg" alt="AI" />
+              <img src="@/assets/images/coplee_mini.svg" alt="AI" />
             </div>
 
             <div v-if="msg.thinking" class="bubble thinking-bubble">
@@ -114,6 +114,7 @@
 
 <script>
 import api from "@oj/api"
+import { aiHintErrorText } from "./aiAssistantErrors"
 import { mapGetters } from "vuex" // 스토어에서 관리자 여부를 가져오기 위해 추가
 
 export default {
@@ -208,71 +209,61 @@ export default {
       this.scrollToBottom()
       const thinkingIndex = this.messages.length - 1
 
-      const eventSource = new EventSource(
-        api.getProblemLLMHintUrl(this.problemID, this.code, this.contestID),
+      this.eventSource = api.stageAIHint(
+        {
+          problemID: this.problemID,
+          code: this.code,
+          contestID: this.contestID,
+        },
+        {
+          chunk: (payload) => {
+            if (
+              this.messages[thinkingIndex] &&
+              this.messages[thinkingIndex].thinking
+            ) {
+              this.messages.splice(thinkingIndex, 1, {
+                text: payload.text || "",
+                error: false,
+              })
+            } else if (this.messages[thinkingIndex]) {
+              this.messages[thinkingIndex].text += payload.text || ""
+            }
+            this.scrollToBottom()
+          },
+
+          "app-error": (payload) => {
+            this.messages.splice(thinkingIndex, 1, {
+              text: aiHintErrorText(this, payload),
+              error: true,
+            })
+            this.scrollToBottom()
+            this.isLoading = false
+            this.closeEventSource()
+          },
+
+          done: () => {
+            this.isLoading = false
+            this.closeEventSource()
+            // 횟수와 내역 갱신
+            this.fetchHintHistory()
+          },
+
+          failure: () => {
+            if (
+              this.messages[thinkingIndex] &&
+              this.messages[thinkingIndex].thinking
+            ) {
+              this.messages.splice(thinkingIndex, 1, {
+                text: this.$t("m.AI_Assistant_Fetch_Failed"),
+                error: true,
+              })
+              this.scrollToBottom()
+            }
+            this.isLoading = false
+            this.closeEventSource()
+          },
+        },
       )
-      this.eventSource = eventSource
-
-      eventSource.addEventListener("chunk", (event) => {
-        let payload
-        try {
-          payload = JSON.parse(event.data)
-        } catch (error) {
-          return
-        }
-
-        if (
-          this.messages[thinkingIndex] &&
-          this.messages[thinkingIndex].thinking
-        ) {
-          this.messages.splice(thinkingIndex, 1, {
-            text: payload.text || "",
-            error: false,
-          })
-        } else if (this.messages[thinkingIndex]) {
-          this.messages[thinkingIndex].text += payload.text || ""
-        }
-        this.scrollToBottom()
-      })
-
-      eventSource.addEventListener("app-error", (event) => {
-        let payload
-        try {
-          payload = JSON.parse(event.data)
-        } catch (error) {
-          payload = { message: this.$t("m.AI_Assistant_Fetch_Failed") }
-        }
-
-        this.messages.splice(thinkingIndex, 1, {
-          text: payload.message || this.$t("m.AI_Assistant_Fetch_Failed"),
-          error: true,
-        })
-        this.scrollToBottom()
-        this.isLoading = false
-        this.closeEventSource()
-      })
-
-      eventSource.addEventListener("done", () => {
-        this.isLoading = false
-        this.closeEventSource()
-        // 답변 생성이 끝났으므로 DB에 반영된 최신 횟수 및 내역을 다시 받아옵니다.
-        this.fetchHintHistory()
-      })
-
-      eventSource.onerror = () => {
-        if (
-          this.messages[thinkingIndex] &&
-          this.messages[thinkingIndex].thinking
-        ) {
-          this.messages.splice(thinkingIndex, 1, {
-            text: this.$t("m.AI_Assistant_Fetch_Failed"),
-            error: true,
-          })
-          this.scrollToBottom()
-        }
-        this.isLoading = false
-        this.closeEventSource()
-      }
     },
 
     scrollToBottom() {
@@ -534,7 +525,6 @@ export default {
   width: 38px;
   height: 38px;
   flex-shrink: 0;
-  background-color: var(--ai-assistant-avatar-bg);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -545,7 +535,6 @@ export default {
 .avatar img {
   width: 100%;
   height: 100%;
-  filter: var(--ai-assistant-avatar-icon-filter);
 }
 
 .bubble {
@@ -615,7 +604,6 @@ export default {
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background-color: var(--ai-assistant-avatar-bg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -626,7 +614,6 @@ export default {
 .ai-empty-avatar img {
   width: 100%;
   height: 100%;
-  filter: var(--ai-assistant-avatar-icon-filter);
 }
 
 .ai-empty-title {
