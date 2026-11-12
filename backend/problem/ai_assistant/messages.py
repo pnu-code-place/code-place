@@ -12,7 +12,6 @@ class AIHintMessage:
     CONTEST_PASSWORD_INVALID = "비밀번호가 올바르지 않거나 만료되었습니다."
     CONTEST_NOT_STARTED = "아직 시작하지 않은 대회입니다."
     CONTEST_AI_DISABLED = "이 대회에서는 AI 조교를 사용할 수 없습니다."
-    STAGE_CONTEST_ONLY = "단계별 힌트는 대회 문제에서만 사용할 수 있습니다."
     QUESTION_REQUIRED = "질문을 입력해 주세요."
     QUESTION_TOO_LONG = f"질문은 최대 {MAX_QUESTION_LENGTH}자까지 보낼 수 있습니다."
     BUSY = "아직 답변 중이에요! 끝나면 다시 물어봐 주세요 🙂"
