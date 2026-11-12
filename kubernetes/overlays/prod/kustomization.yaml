@@ -29,7 +29,7 @@ patches:
 images:
   - name: backend
     newName: harbor.code-place-dev.kr/code-place-prod/backend
-    newTag: 5620d695d957cb0d58fa366f263e4264c8be8139-prod
+    newTag: a81195e6d29b9da9ee2425618978fc2e0a650f57-prod
   - name: frontend
     newName: harbor.code-place-dev.kr/code-place-prod/frontend
     newTag: 5620d695d957cb0d58fa366f263e4264c8be8139-prod
