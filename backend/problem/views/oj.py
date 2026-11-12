@@ -347,53 +347,51 @@ class ProblemLLMHintAPI(APIView):
         raw_user_code = request.GET.get("user_code") or ""
         user_code = raw_user_code[:stage_hint.MAX_USER_CODE_LENGTH] if raw_user_code else None
       
-        if contest_id:
-            try:
-                contest = Contest.objects.select_related("created_by").get(id=contest_id, visible=True)
-            except Contest.DoesNotExist:
-                return self._error_response(
-                    AIHintMessage.CONTEST_NOT_FOUND,
-                    err="permission-denied",
-                    metric_status="permission_denied",
-                    scope=scope,
-                )
+        # 단계 힌트는 대회 문제만, 자유 질문은 일반 문제만 가능
+        if not contest_id:
+            return self._error_response(AIHintMessage.STAGE_CONTEST_ONLY, metric_status="bad_request", scope=scope)
 
-            if not request.user.is_contest_admin(contest):
-                if contest.contest_type == ContestType.PASSWORD_PROTECTED_CONTEST:
-                    if not check_contest_password(
-                        request.session.get(CONTEST_PASSWORD_SESSION_KEY, {}).get(contest.id),
-                        contest.password,
-                    ):
-                        return self._error_response(
-                            AIHintMessage.CONTEST_PASSWORD_INVALID,
-                            err="permission-denied",
-                            metric_status="permission_denied",
-                            scope=scope,
-                        )
+        try:
+            contest = Contest.objects.select_related("created_by").get(id=contest_id, visible=True)
+        except Contest.DoesNotExist:
+            return self._error_response(
+                AIHintMessage.CONTEST_NOT_FOUND,
+                err="permission-denied",
+                metric_status="permission_denied",
+                scope=scope,
+            )
 
-                if contest.status == ContestStatus.CONTEST_NOT_START:
+        if not request.user.is_contest_admin(contest):
+            if contest.contest_type == ContestType.PASSWORD_PROTECTED_CONTEST:
+                if not check_contest_password(
+                    request.session.get(CONTEST_PASSWORD_SESSION_KEY, {}).get(contest.id),
+                    contest.password,
+                ):
                     return self._error_response(
-                        AIHintMessage.CONTEST_NOT_STARTED,
+                        AIHintMessage.CONTEST_PASSWORD_INVALID,
                         err="permission-denied",
                         metric_status="permission_denied",
                         scope=scope,
                     )
 
-            if not contest.ai_assistant_enabled:
+            if contest.status == ContestStatus.CONTEST_NOT_START:
                 return self._error_response(
-                    AIHintMessage.CONTEST_AI_DISABLED,
-                    metric_status="disabled",
+                    AIHintMessage.CONTEST_NOT_STARTED,
+                    err="permission-denied",
+                    metric_status="permission_denied",
                     scope=scope,
                 )
-            try:
-                problem = Problem.objects.get(_id=problem_id, contest_id=contest_id, visible=True)
-            except Problem.DoesNotExist:
-                return self._error_response(AIHintMessage.PROBLEM_NOT_FOUND, metric_status="problem_not_found", scope=scope)
-        else:
-            try:
-                problem = Problem.objects.get(_id=problem_id, contest_id__isnull=True, visible=True)
-            except Problem.DoesNotExist:
-                return self._error_response(AIHintMessage.PROBLEM_NOT_FOUND, metric_status="problem_not_found", scope=scope)
+
+        if not contest.ai_assistant_enabled:
+            return self._error_response(
+                AIHintMessage.CONTEST_AI_DISABLED,
+                metric_status="disabled",
+                scope=scope,
+            )
+        try:
+            problem = Problem.objects.get(_id=problem_id, contest_id=contest_id, visible=True)
+        except Problem.DoesNotExist:
+            return self._error_response(AIHintMessage.PROBLEM_NOT_FOUND, metric_status="problem_not_found", scope=scope)
 
         hint_log, previous_hints, error_response = self._reserve_hint_log(
             request, problem, scope, mode=AIHintMode.STAGE, code=user_code
