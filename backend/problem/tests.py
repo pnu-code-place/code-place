@@ -1673,8 +1673,14 @@ class AIHintHistoryAPITest(ProblemCreateTestBase):
         self.client.force_login(self.user)
 
         # 더미 데이터 생성
-        ProblemAIHintLog.objects.create(user=self.user, problem=self.problem, hint_content="과거의 힌트 1")
-        ProblemAIHintLog.objects.create(user=self.user, problem=self.problem, hint_content="과거의 힌트 2")
+        ProblemAIHintLog.objects.create(
+            user=self.user, problem=self.problem, hint_content="과거의 힌트 1",
+            mode=AIHintMode.CHAT, student_question="질문 1",
+        )
+        ProblemAIHintLog.objects.create(
+            user=self.user, problem=self.problem, hint_content="과거의 힌트 2",
+            mode=AIHintMode.CHAT, student_question="질문 2",
+        )
 
         resp = self.client.get(f"{self.url}?problem_id={self.problem._id}")
         self.assertEqual(resp.status_code, 200)
@@ -1688,8 +1694,20 @@ class AIHintHistoryAPITest(ProblemCreateTestBase):
         # 값 검증
         self.assertEqual(len(payload["logs"]), 2)
         self.assertEqual(payload["logs"][0]["hint_content"], "과거의 힌트 1")
-        self.assertEqual(payload["logs"][0]["mode"], AIHintMode.STAGE)
-        self.assertIsNone(payload["logs"][0]["student_question"])
+        self.assertEqual(payload["logs"][0]["mode"], AIHintMode.CHAT)
+        self.assertEqual(payload["logs"][0]["student_question"], "질문 1")
+
+    def test_get_history_excludes_stage_logs_for_practice_problem(self):
+        """일반 문제 기록에는 예전 단계 힌트가 섞이지 않아야 함"""
+        self.client.force_login(self.user)
+        ProblemAIHintLog.objects.create(user=self.user, problem=self.problem, hint_content="[1단계] 예전 힌트")
+        ProblemAIHintLog.objects.create(
+            user=self.user, problem=self.problem, hint_content="답변", mode=AIHintMode.CHAT, student_question="질문",
+        )
+
+        logs = self.client.get(f"{self.url}?problem_id={self.problem._id}").data["data"]["logs"]
+
+        self.assertEqual([log["hint_content"] for log in logs], ["답변"])
 
     def test_get_history_includes_chat_question(self):
         self.client.force_login(self.user)

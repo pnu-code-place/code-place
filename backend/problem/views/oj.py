@@ -573,15 +573,18 @@ class AIHintHistoryAPI(APIView):
             if error:
                 return self.error(error)
             problem_filter = {"contest_id": contest_id}
+            # 대회는 단계 힌트, 일반 문제는 자유 질문 기록만
+            mode = AIHintMode.STAGE
         else:
             problem_filter = {"contest_id__isnull": True}
+            mode = AIHintMode.CHAT
 
         try:
             problem = Problem.objects.get(_id=problem_id, visible=True, **problem_filter)
         except Problem.DoesNotExist:
             return self.error("문제를 찾을 수 없습니다.")
 
-        logs = ProblemAIHintLog.objects.filter(user=request.user, problem=problem).order_by("created_at")
+        logs = ProblemAIHintLog.objects.filter(user=request.user, problem=problem, mode=mode).order_by("created_at")
 
         return self.success({"logs": AIHintLogSerializer(logs, many=True).data})
 
