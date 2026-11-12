@@ -870,6 +870,9 @@ class ProblemLLMHintAPITest(ProblemCreateTestBase):
         self.bucket_key = f"ai_hint:bucket:{self.user.id}"
         cache.delete(self.busy_key)
         cache.delete(self.bucket_key)
+        # 단계 힌트는 대회 문제에서만 받음
+        self.contest, self.stage_problem = self._make_contest("C-100")
+        self.stage_query = f"{self.url}?problem_id={self.stage_problem._id}&contest_id={self.contest.id}"
 
     @staticmethod
     def _streaming_body(response):
@@ -892,7 +895,7 @@ class ProblemLLMHintAPITest(ProblemCreateTestBase):
             "data: [DONE]",
         ])
 
-        resp = self.client.get(f"{self.url}?problem_id={self.problem._id}")
+        resp = self.client.get(self.stage_query)
         body = self._streaming_body(resp)
 
         self.assertEqual(resp["Content-Type"], "text/event-stream")
@@ -900,8 +903,8 @@ class ProblemLLMHintAPITest(ProblemCreateTestBase):
         self.assertIn(json.dumps({"text": "힌트 "}, ensure_ascii=False), body)
         self.assertIn(json.dumps({"text": "스트림"}, ensure_ascii=False), body)
         self.assertIn('event: done', body)
-        self.assertEqual(ProblemAIHintLog.objects.filter(user=self.user, problem=self.problem).count(), 1)
-        saved_log = ProblemAIHintLog.objects.filter(user=self.user, problem=self.problem).first()
+        self.assertEqual(ProblemAIHintLog.objects.filter(user=self.user, problem=self.stage_problem).count(), 1)
+        saved_log = ProblemAIHintLog.objects.filter(user=self.user, problem=self.stage_problem).first()
         self.assertEqual(saved_log.hint_content, "힌트 스트림")
         self.assertEqual(saved_log.mode, AIHintMode.STAGE)
         self.assertIsNone(saved_log.student_question)
@@ -920,7 +923,7 @@ class ProblemLLMHintAPITest(ProblemCreateTestBase):
         self.assertIn("There are exactly 5 levels.", msgs[0]["content"])
 
         # messages[1]: 문제 데이터 (HTML 태그 미포함, problem._id 포함)
-        self.assertIn(self.problem._id, msgs[1]["content"])
+        self.assertIn(self.stage_problem._id, msgs[1]["content"])
         self.assertNotIn("<p>", msgs[1]["content"])
 
         # messages[2]: 트리거 — 첫 요청이므로 1단계를 명시해야 함
@@ -944,10 +947,10 @@ class ProblemLLMHintAPITest(ProblemCreateTestBase):
         labels = mock.Mock()
         outcome_total.labels.return_value = labels
 
-        resp = self.client.get(f"{self.url}?problem_id={self.problem._id}")
+        resp = self.client.get(self.stage_query)
         self._streaming_body(resp)
 
-        outcome_total.labels.assert_called_once_with(status="success", scope="practice")
+        outcome_total.labels.assert_called_once_with(status="success", scope="contest")
         labels.inc.assert_called_once()
 
     @mock.patch("problem.ai_assistant.client.AI_HINT_DURATION_SECONDS")
@@ -991,14 +994,14 @@ class ProblemLLMHintAPITest(ProblemCreateTestBase):
     @mock.patch("problem.ai_assistant.client.requests.post")
     def test_stream_llm_hint_records_problem_limit_outcome(self, mocked_post, outcome_total):
         for i in range(5):
-            ProblemAIHintLog.objects.create(user=self.user, problem=self.problem, hint_content=f"더미 {i}")
+            ProblemAIHintLog.objects.create(user=self.user, problem=self.stage_problem, hint_content=f"더미 {i}")
         labels = mock.Mock()
         outcome_total.labels.return_value = labels
 
-        resp = self.client.get(f"{self.url}?problem_id={self.problem._id}")
+        resp = self.client.get(self.stage_query)
         self._streaming_body(resp)
 
-        outcome_total.labels.assert_called_once_with(status="problem_limit_exceeded", scope="practice")
+        outcome_total.labels.assert_called_once_with(status="problem_limit_exceeded", scope="contest")
         labels.inc.assert_called_once()
         mocked_post.assert_not_called()
 
@@ -1007,9 +1010,9 @@ class ProblemLLMHintAPITest(ProblemCreateTestBase):
         """한 문제당 5회 제한에 걸리는지 테스트"""
         # 해당 문제에 대해 이미 5개의 힌트 로그가 존재하도록 세팅
         for i in range(5):
-            ProblemAIHintLog.objects.create(user=self.user, problem=self.problem, hint_content=f"더미 {i}")
+            ProblemAIHintLog.objects.create(user=self.user, problem=self.stage_problem, hint_content=f"더미 {i}")
 
-        resp = self.client.get(f"{self.url}?problem_id={self.problem._id}")
+        resp = self.client.get(self.stage_query)
         body = self._streaming_body(resp)
 
         self.assertIn('event: app-error', body)
@@ -1027,11 +1030,11 @@ class ProblemLLMHintAPITest(ProblemCreateTestBase):
 
         # Admin 계정으로 5회 꽉 채움
         for i in range(5):
-            ProblemAIHintLog.objects.create(user=self.admin, problem=self.problem, hint_content=f"더미 {i}")
+            ProblemAIHintLog.objects.create(user=self.admin, problem=self.stage_problem, hint_content=f"더미 {i}")
 
         # 일반 유저를 로그아웃시키고 Admin으로 로그인
         self.client.force_login(self.admin)
-        resp = self.client.get(f"{self.url}?problem_id={self.problem._id}")
+        resp = self.client.get(self.stage_query)
         body = self._streaming_body(resp)
 
         # 제한에 걸리지 않고 정상 응답이 와야 함
@@ -1048,14 +1051,14 @@ class ProblemLLMHintAPITest(ProblemCreateTestBase):
             "data: [DONE]",
         ])
 
-        resp = self.client.get(f"{self.url}?problem_id={self.problem._id}")
+        resp = self.client.get(self.stage_query)
         body = self._streaming_body(resp)
 
         # 1. 정상적으로 done 이벤트가 와야 함
         self.assertIn('event: done', body)
 
         # 2. 가장 중요: 빈 텍스트였기 때문에 DB에 로그가 남아있으면 안 됨 (횟수 차감 방어 성공)
-        self.assertEqual(ProblemAIHintLog.objects.filter(user=self.user, problem=self.problem).count(), 0)
+        self.assertEqual(ProblemAIHintLog.objects.filter(user=self.user, problem=self.stage_problem).count(), 0)
 
     def test_stream_llm_hint_requires_login(self):
         self.client.logout()
@@ -1067,7 +1070,7 @@ class ProblemLLMHintAPITest(ProblemCreateTestBase):
         self.assertIn("로그인이 필요합니다.", body)
 
     def test_stream_llm_hint_with_missing_problem(self):
-        resp = self.client.get(f"{self.url}?problem_id=NOT-EXIST")
+        resp = self.client.get(f"{self.url}?problem_id=NOT-EXIST&contest_id={self.contest.id}")
         body = self._streaming_body(resp)
 
         self.assertIn('event: app-error', body)
@@ -1080,14 +1083,16 @@ class ProblemLLMHintAPITest(ProblemCreateTestBase):
         self.assertIn('event: app-error', body)
         self.assertIn("문제 번호가 필요합니다.", body)
 
-    def test_stream_llm_hint_with_hidden_problem(self):
-        for user in (self.user, self.admin):
-            self.client.force_login(user)
-            resp = self.client.get(f"{self.url}?problem_id={self.hidden_problem._id}")
-            body = self._streaming_body(resp)
-            self.assertIn("event: app-error", body)
-            self.assertIn("문제를 찾을 수 없습니다.", body)
-        self.assertFalse(ProblemAIHintLog.objects.filter(problem=self.hidden_problem).exists())
+    @mock.patch("problem.ai_assistant.client.requests.post")
+    def test_stage_hint_rejects_practice_problem(self, mocked_post):
+        """일반 문제는 단계 힌트 없이 자유 질문만 사용"""
+        resp = self.client.get(f"{self.url}?problem_id={self.problem._id}")
+        body = self._streaming_body(resp)
+
+        self.assertIn("event: app-error", body)
+        self.assertIn("대회 문제에서만", body)
+        mocked_post.assert_not_called()
+        self.assertFalse(ProblemAIHintLog.objects.filter(problem=self.problem).exists())
 
     def test_stream_llm_hint_with_contest_problem(self):
         contest = Contest.objects.create(created_by=self.admin, **DEFAULT_CONTEST_DATA)
@@ -1099,7 +1104,7 @@ class ProblemLLMHintAPITest(ProblemCreateTestBase):
         body = self._streaming_body(resp)
 
         self.assertIn('event: app-error', body)
-        self.assertIn("문제를 찾을 수 없습니다.", body)
+        self.assertIn("대회 문제에서만", body)
 
     # ------------------------------------------------------------------
     # contest_id path tests
@@ -1258,7 +1263,7 @@ class ProblemLLMHintAPITest(ProblemCreateTestBase):
 
     @mock.patch("problem.ai_assistant.client.requests.post", side_effect=requests.Timeout)
     def test_stream_llm_hint_handles_timeout(self, mocked_post):
-        resp = self.client.get(f"{self.url}?problem_id={self.problem._id}")
+        resp = self.client.get(self.stage_query)
         body = self._streaming_body(resp)
 
         mocked_post.assert_called_once()
@@ -1267,7 +1272,7 @@ class ProblemLLMHintAPITest(ProblemCreateTestBase):
 
     @mock.patch("problem.ai_assistant.stage_hint.stream_problem_hint", side_effect=TypeError("boom"))
     def test_stream_llm_hint_handles_unexpected_error(self, mocked_stream):
-        resp = self.client.get(f"{self.url}?problem_id={self.problem._id}")
+        resp = self.client.get(self.stage_query)
         body = self._streaming_body(resp)
 
         mocked_stream.assert_called_once()
@@ -1446,7 +1451,7 @@ class ProblemLLMHintAPITest(ProblemCreateTestBase):
     def test_stage_hint_limit_ignores_chat_logs(self, mocked_post):
         for i in range(HINT_LIMIT_PER_PROBLEM):
             ProblemAIHintLog.objects.create(
-                user=self.user, problem=self.problem, hint_content=f"자유 답변 {i}",
+                user=self.user, problem=self.stage_problem, hint_content=f"자유 답변 {i}",
                 mode=AIHintMode.CHAT, student_question="질문",
             )
         mocked_post.return_value = self._mock_streaming_response([
@@ -1454,7 +1459,7 @@ class ProblemLLMHintAPITest(ProblemCreateTestBase):
             "data: [DONE]",
         ])
 
-        body = self._streaming_body(self.client.get(f"{self.url}?problem_id={self.problem._id}"))
+        body = self._streaming_body(self.client.get(self.stage_query))
 
         self.assertNotIn("limit-exceeded", body)
         self.assertIn('event: done', body)
@@ -1495,7 +1500,7 @@ class ProblemLLMHintAPITest(ProblemCreateTestBase):
             "data: [DONE]",
         ])
 
-        body = self._streaming_body(self.client.get(f"{self.url}?problem_id={self.problem._id}"))
+        body = self._streaming_body(self.client.get(self.stage_query))
 
         self.assertNotIn("ai-hint-busy", body)
         self.assertIn('event: done', body)
@@ -1673,8 +1678,14 @@ class AIHintHistoryAPITest(ProblemCreateTestBase):
         self.client.force_login(self.user)
 
         # 더미 데이터 생성
-        ProblemAIHintLog.objects.create(user=self.user, problem=self.problem, hint_content="과거의 힌트 1")
-        ProblemAIHintLog.objects.create(user=self.user, problem=self.problem, hint_content="과거의 힌트 2")
+        ProblemAIHintLog.objects.create(
+            user=self.user, problem=self.problem, hint_content="과거의 힌트 1",
+            mode=AIHintMode.CHAT, student_question="질문 1",
+        )
+        ProblemAIHintLog.objects.create(
+            user=self.user, problem=self.problem, hint_content="과거의 힌트 2",
+            mode=AIHintMode.CHAT, student_question="질문 2",
+        )
 
         resp = self.client.get(f"{self.url}?problem_id={self.problem._id}")
         self.assertEqual(resp.status_code, 200)
@@ -1688,8 +1699,20 @@ class AIHintHistoryAPITest(ProblemCreateTestBase):
         # 값 검증
         self.assertEqual(len(payload["logs"]), 2)
         self.assertEqual(payload["logs"][0]["hint_content"], "과거의 힌트 1")
-        self.assertEqual(payload["logs"][0]["mode"], AIHintMode.STAGE)
-        self.assertIsNone(payload["logs"][0]["student_question"])
+        self.assertEqual(payload["logs"][0]["mode"], AIHintMode.CHAT)
+        self.assertEqual(payload["logs"][0]["student_question"], "질문 1")
+
+    def test_get_history_excludes_stage_logs_for_practice_problem(self):
+        """일반 문제 기록에는 예전 단계 힌트가 섞이지 않아야 함"""
+        self.client.force_login(self.user)
+        ProblemAIHintLog.objects.create(user=self.user, problem=self.problem, hint_content="[1단계] 예전 힌트")
+        ProblemAIHintLog.objects.create(
+            user=self.user, problem=self.problem, hint_content="답변", mode=AIHintMode.CHAT, student_question="질문",
+        )
+
+        logs = self.client.get(f"{self.url}?problem_id={self.problem._id}").data["data"]["logs"]
+
+        self.assertEqual([log["hint_content"] for log in logs], ["답변"])
 
     def test_get_history_includes_chat_question(self):
         self.client.force_login(self.user)
