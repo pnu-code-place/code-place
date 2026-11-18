@@ -15,6 +15,7 @@
       <div v-if="showTags" class="problem-extra">
         <FieldCategoryBox
           :boxType="true"
+          :field="recommend_problem.field"
           :value="FIELD_MAP[recommend_problem.field].value"
           :boxColor="FIELD_MAP[recommend_problem.field].boxColor"
         />
@@ -100,26 +101,10 @@ export default defineComponent({
   .problem-extra {
     display: flex;
     flex-wrap: wrap;
-    gap: 4px;
+    gap: 4px 5px;
+    align-items: center;
     justify-content: left;
     overflow: hidden;
-
-    ::v-deep .fieldCategoryBox {
-      min-width: 0;
-    }
-
-    ::v-deep .box {
-      max-width: 140px;
-      margin-top: 0;
-      margin-right: 0;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    ::v-deep .box span {
-      white-space: nowrap;
-    }
   }
 }
 

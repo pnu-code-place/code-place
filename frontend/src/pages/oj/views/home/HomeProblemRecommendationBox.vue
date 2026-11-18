@@ -20,18 +20,21 @@
               'url(' + FIELD_MAP[problem.field].backgroundImage + ')',
           }"
         >
-          <span>{{ problem.title }}</span>
-          <FieldCategoryBox
-            :boxType="true"
-            :value="FIELD_MAP[problem.field].value"
-            :boxColor="FIELD_MAP[problem.field].boxColor"
-          />
-          <FieldCategoryBox
-            v-if="problem.tags && problem.tags[0]"
-            :boxType="false"
-            :value="'#' + problem.tags[0]"
-            :boxColor="'#ffffff'"
-          />
+          <span class="bonus-problem-title">{{ problem.title }}</span>
+          <div class="bonus-problem-tags">
+            <FieldCategoryBox
+              :boxType="true"
+              :field="problem.field"
+              :value="FIELD_MAP[problem.field].value"
+              :boxColor="FIELD_MAP[problem.field].boxColor"
+            />
+            <FieldCategoryBox
+              v-if="problem.tags && problem.tags[0]"
+              :boxType="false"
+              :value="'#' + problem.tags[0]"
+              :boxColor="'#ffffff'"
+            />
+          </div>
         </div>
       </template>
     </div>
@@ -122,7 +125,7 @@ export default {
     align-items: center;
     padding: 20px 0;
 
-    span {
+    .bonus-problem-title {
       font-size: medium;
       font-weight: bold;
       display: block;
@@ -143,6 +146,14 @@ export default {
 
     .bonusProblem:hover {
       transform: scale(1.11);
+    }
+
+    .bonus-problem-tags {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 4px 5px;
+      margin-top: 6px;
     }
   }
 }
