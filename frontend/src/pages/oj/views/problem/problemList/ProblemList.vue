@@ -13,6 +13,7 @@
           :loading="loadings.table"
           :skeletonCount="query.limit"
           :showTags="!isTagHidden"
+          :showSolvedStatus="isAuthenticated"
           :sort="query.sort"
           @sort-change="sortProblems"
           @select-tag="filterByTag"
