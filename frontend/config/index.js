@@ -4,12 +4,13 @@
 
 const path = require("path")
 const sentry = require("./sentry")
+const target = process.env.TARGET || "http://localhost:8000"
 const commonProxy = {
   onProxyReq: (proxyReq, req, res) => {
-    proxyReq.setHeader("Referer", process.env.TARGET)
-    proxyReq.setHeader("Origin", process.env.TARGET)
+    proxyReq.setHeader("Referer", target)
+    proxyReq.setHeader("Origin", target)
   },
-  target: process.env.TARGET,
+  target,
   changeOrigin: true,
 }
 
