@@ -56,9 +56,7 @@
               >
                 <Icon type="minus-round" />
               </button>
-              <span class="settings-control-value">
-                {{ codeFontSize }}px
-              </span>
+              <span class="settings-control-value"> {{ codeFontSize }}px </span>
               <button
                 type="button"
                 class="settings-step-button"
@@ -236,6 +234,7 @@
             @change-language="changeLanguage"
             @open-ai="toggleAIAssistant"
             :aiVisible="aiAssistantVisible"
+            @create-run="runCode"
             :problem="problem"
             :language.sync="language"
             :statusVisible="statusVisible"
@@ -243,6 +242,7 @@
             :result="result"
             :submissionId="submissionId"
             :isSubmitting="submitting"
+            :isRunning="runStatus === 'running'"
           />
           <div class="code-editor-area">
             <CodeEditor
@@ -256,6 +256,13 @@
             />
             <StickyLnCol :cursorPos="cursorPos" />
           </div>
+          <BottomDrag
+            ref="bottomDrag"
+            result-only
+            :problemID="problemID"
+            :runStatus="runStatus"
+            :runResult="runResult"
+          />
         </div>
       </pane>
       <pane
@@ -299,6 +306,7 @@ import CodeEditor from "./problemSolvingComponent/CodeEditor.vue"
 import SubmissionList from "./problemSolvingComponent/SubmissionList.vue"
 import ProblemCommunity from "./problemSolvingComponent/ProblemCommunity.vue"
 import AIAssistantDrawer from "./problemSolvingComponent/AIAssistantDrawer.vue"
+import BottomDrag from "./problemSolvingComponent/BottomDrag.vue"
 import ContestProblemNavigator from "./problemSolvingComponent/ContestProblemNavigator.vue"
 
 // 패널 기본 비율(%): 문제 36 / 코드 36 / AI 28
@@ -325,6 +333,7 @@ export default {
     Splitpanes,
     Pane,
     AIAssistantDrawer,
+    BottomDrag,
   },
   mixins: [FormMixin],
   data() {
@@ -347,6 +356,8 @@ export default {
       lastAiPaneSize: DEFAULT_AI_PANE_SIZE,
       problemPaneCollapsed: false,
       submitting: false,
+      runStatus: "idle",
+      runResult: {},
       code: "",
       language: "C++",
       codePerLanguage: {},
@@ -453,6 +464,7 @@ export default {
     window.removeEventListener("resize", this.handlePaneWindowResize)
     window.removeEventListener("keydown", this.handleSettingsKeydown)
     document.removeEventListener("click", this.handleSettingsOutsideClick)
+    clearTimeout(this.runTimer)
     this.removeBeforeUnload()
   },
   methods: {
@@ -484,6 +496,9 @@ export default {
     },
     resetProblemState() {
       this.clearSubmissionRefresh()
+      clearTimeout(this.runTimer)
+      this.runStatus = "idle"
+      this.runResult = {}
       this.statusVisible = false
       this.captchaRequired = false
       this.graphVisible = false
@@ -950,7 +965,9 @@ export default {
         this.closeSettingsPopover()
         return
       }
-      this.updateSettingsPopoverPosition(event.detail && event.detail.anchorRect)
+      this.updateSettingsPopoverPosition(
+        event.detail && event.detail.anchorRect,
+      )
       this.settingsPopoverOpen = true
     },
     closeSettingsPopover() {
@@ -1126,7 +1143,8 @@ export default {
               this.leftPainActiveTab = "submission"
               this.lastSubmissionId = id
               // 통과(Accepted=0)하지 못한 결과면 질문 유도 넛지 표시 (대회에서는 질문 기능 자체가 없으므로 제외)
-              this.showAskNudge = !this.isContestProblem && this.result.result !== 0
+              this.showAskNudge =
+                !this.isContestProblem && this.result.result !== 0
 
               if (this.result.result === 0 && !this.isContestProblem) {
                 this.notifyCodePlaceHub(this.result)
@@ -1148,6 +1166,55 @@ export default {
         )
       }
       this.refreshStatus = setTimeout(checkStatus, 2000)
+    },
+    runCode(mockType = "mixed") {
+      if (this.code.trim() === "") {
+        this.$error(this.$i18n.t("m.Code_can_not_be_empty"))
+        return
+      }
+      this.$refs.bottomDrag.show("result")
+      this.runStatus = "running"
+      this.runResult = {}
+      // TODO: 실행 API 연동 전까지 3초 후 완료 처리
+      clearTimeout(this.runTimer)
+      this.runTimer = setTimeout(() => {
+        // 디자인 확인용 목업: 실행 버튼 옆에서 고른 결과를 보여준다 (mixed면 예제마다 다르게)
+        const types = [
+          "wrong_answer",
+          "accepted",
+          "runtime_error",
+          "time_limit",
+        ]
+        const timeLimit = this.problem.time_limit
+        const memoryLimit = this.problem.memory_limit
+        this.runResult = {
+          timeLimit,
+          memoryLimit,
+          cases: (this.problem.samples || []).map((sample, index) => {
+            const type =
+              mockType === "mixed" ? types[index % types.length] : mockType
+            return {
+              type,
+              input: sample.input,
+              expected: sample.output,
+              output:
+                type === "accepted"
+                  ? sample.output
+                  : type === "wrong_answer"
+                    ? "15"
+                    : "",
+              error:
+                type === "runtime_error"
+                  ? "IndexError: list index out of range"
+                  : "",
+              time: type === "time_limit" ? timeLimit + 48 : 52,
+              memory:
+                type === "memory_limit" ? memoryLimit * 1024 + 18432 : 16384,
+            }
+          }),
+        }
+        this.runStatus = "done"
+      }, 3000)
     },
     submitCode() {
       if (this.code.trim() === "") {
@@ -1288,7 +1355,12 @@ export default {
   },
   watch: {
     $route(to, from) {
-      if (!this.problemError.visible && from && from.params && from.params.problemID) {
+      if (
+        !this.problemError.visible &&
+        from &&
+        from.params &&
+        from.params.problemID
+      ) {
         this.saveCurrentCode(from.params.problemID, from.params.contestID)
       }
       this.init({
@@ -1573,7 +1645,7 @@ export default {
   padding-bottom: 0;
 }
 
-.splitpanes--vertical > .splitpanes__splitter {
+.problem-solving-root .splitpanes.splitpanes--vertical > .splitpanes__splitter {
   min-width: 4px !important;
   width: 4px !important;
   // 음수 margin 으로 경계선이 패널 너비를 차지하지 않게 함
@@ -1581,6 +1653,7 @@ export default {
   z-index: 1;
   position: relative;
   background: transparent;
+  border: 0;
   cursor: col-resize;
   flex-shrink: 0;
 
@@ -1591,6 +1664,7 @@ export default {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+    margin: 0;
     width: 2px;
     height: 24px;
     background: rgba(160, 160, 160, 0.6);
@@ -1606,6 +1680,11 @@ export default {
     bottom: 0;
     left: -4px;
     right: -4px;
+    width: auto;
+    height: auto;
+    margin: 0;
+    transform: none;
+    background: transparent;
   }
 
   &:hover::before,
@@ -1616,7 +1695,7 @@ export default {
 }
 
 // 드래그 중에는 잡고 있는 경계선만 강조
-.splitpanes--vertical.splitpanes--dragging
+.problem-solving-root .splitpanes.splitpanes--vertical.splitpanes--dragging
   > .splitpanes__splitter:not(.is-active):hover::before {
   height: 24px;
   background: rgba(160, 160, 160, 0.6);
