@@ -9,6 +9,9 @@ from contest.models import ContestRuleType
 from judge.dispatcher import DispatcherBase, JudgeDispatcher
 from judge.tasks import judge_task, cleanup_dead_judge_servers
 
+from judge.tasks import dispatch_pending_submission
+from judge.dispatcher import process_pending_task
+from utils.constants import CacheKey
 
 class JudgeTaskObservabilityTest(SimpleTestCase):
 
@@ -186,3 +189,90 @@ class JudgeServerRoutingTest(TestCase):
         mock_post.assert_called_once()
         _, kwargs = mock_post.call_args
         self.assertEqual(kwargs.get("timeout"), (5, 300))
+
+class PendingSubmissionTest(SimpleTestCase):
+
+    @mock.patch("judge.tasks.process_pending_task")
+    @mock.patch("judge.tasks.cache")
+    def test_empty_queue(self, cache, process):
+        cache.llen.return_value = 0
+
+        result = dispatch_pending_submission.run()
+
+        self.assertEqual(result, 0)
+        process.assert_not_called()
+
+    @mock.patch("judge.tasks.process_pending_task")
+    @mock.patch("judge.tasks.cache")
+    def test_dispatch_three(self, cache, process):
+        cache.llen.return_value = 3
+        process.return_value = True
+
+        result = dispatch_pending_submission.run()
+
+        self.assertEqual(result, 3)
+        self.assertEqual(process.call_count, 3)
+
+    @mock.patch("judge.tasks.process_pending_task")
+    @mock.patch("judge.tasks.cache")
+    def test_batch_limit(self, cache, process):
+        cache.llen.return_value = 100
+        process.return_value = True
+
+        self.assertEqual(dispatch_pending_submission.run(), 20)
+        self.assertEqual(process.call_count, 20)
+
+    @mock.patch("judge.tasks.process_pending_task")
+    @mock.patch("judge.tasks.cache")
+    def test_stop_when_queue_becomes_empty(self, cache, process):
+        cache.llen.return_value = 3
+        process.side_effect = [True, False]
+
+        self.assertEqual(dispatch_pending_submission.run(), 1)
+        self.assertEqual(process.call_count, 2)
+
+    @mock.patch("judge.tasks.judge_task.apply_async")
+    @mock.patch("judge.dispatcher.cache")
+    def test_publish_success(self, cache, publish):
+        cache.rpop.return_value = (
+            b'{"submission_id": "test-1", "problem_id": 2}'
+        )
+
+        self.assertTrue(process_pending_task())
+
+        publish.assert_called_once_with(
+            kwargs={"submission_id": "test-1", "problem_id": 2}
+        )
+        cache.rpush.assert_not_called()
+
+    @mock.patch("judge.tasks.judge_task.apply_async")
+    @mock.patch("judge.dispatcher.cache")
+    def test_restore_on_publish_failure(self, cache, publish):
+        entry = b'{"submission_id": "test-1", "problem_id": 2}'
+        cache.rpop.return_value = entry
+        publish.side_effect = ConnectionError("Redis unavailable")
+
+        with self.assertRaises(ConnectionError):
+            process_pending_task()
+
+        cache.rpush.assert_called_once_with(
+            CacheKey.waiting_queue, entry
+        )
+
+    @mock.patch("judge.tasks.judge_task.apply_async")
+    @mock.patch("judge.dispatcher.cache")
+    def test_invalid_entry_does_not_block_next_entry(self, cache, publish):
+        cache.rpop.side_effect = [
+            b"broken-json",
+            b'{"submission_id": "test-1", "problem_id": 2}',
+        ]
+
+        with self.assertRaises(ValueError):
+            process_pending_task()
+
+        cache.lpush.assert_called_once_with(
+            f"{CacheKey.waiting_queue}:invalid", b"broken-json"
+        )
+
+        self.assertTrue(process_pending_task())
+        publish.assert_called_once()
