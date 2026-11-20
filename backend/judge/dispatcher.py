@@ -9,7 +9,6 @@ from utils.shortcuts import get_env
 import requests
 from django.db import transaction, IntegrityError
 from django.db.models import F
-from django.http import HttpResponseNotFound
 
 from account.models import User, UserScore, UserSolved
 from conf.models import JudgeServer
@@ -488,7 +487,10 @@ class JudgeDispatcher(DispatcherBase):
                 user_solved = UserSolved.objects.select_for_update().get(user_id=self.submission.user_id)
                 problem = Problem.objects.get(id=self.problem.id)
             except (UserScore.DoesNotExist, Problem.DoesNotExist, UserSolved.DoesNotExist):
-                return HttpResponseNotFound("user_score | problem | user_solved doesn't exist")
+                logger.warning(
+                    "Skip user score update: user_score | problem | user_solved doesn't exist (user_id=%s, problem_id=%s)",
+                    self.submission.user_id, self.problem.id)
+                return
             """ update UserScore Model """
 
             # update user score
