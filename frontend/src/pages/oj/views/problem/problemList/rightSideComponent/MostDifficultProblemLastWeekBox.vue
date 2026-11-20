@@ -74,7 +74,7 @@
             <span>{{ $t("m.Th_Problem_AC_Rate") }}</span>
             <span>{{
               problem.submission_number == 0
-                ? "없음"
+                ? $t("m.Most_Hard_Problem_No_Submission")
                 : Math.floor(
                     (problem.accepted_number / problem.submission_number) * 100,
                   ) + "%"
@@ -92,7 +92,11 @@
             "
           >
             <span>{{ $t("m.Th_Problem_Num_Success") }}</span>
-            <span>{{ problem.accepted_number }}명</span>
+            <span>{{
+              $t("m.Most_Hard_Problem_Accepted_Count", {
+                count: problem.accepted_number,
+              })
+            }}</span>
           </div>
         </div>
         <br />
@@ -124,7 +128,9 @@
             justify-content: center;
           "
         >
-          {{ $t("m.There_Is_No_Data") }}
+          {{
+            loadFailed ? $t("m.Problem_Load_Failed") : $t("m.There_Is_No_Data")
+          }}
         </div>
       </template>
     </div>
@@ -150,6 +156,7 @@ export default {
     return {
       problem: null,
       loading: true,
+      loadFailed: false,
     }
   },
   mounted() {
@@ -165,12 +172,14 @@ export default {
     },
     init() {
       this.loading = true
+      this.loadFailed = false
       api.getMostDifficultProblem().then(
         (res) => {
           this.problem = res.data.data
           this.loading = false
         },
         () => {
+          this.loadFailed = true
           this.loading = false
         },
       )

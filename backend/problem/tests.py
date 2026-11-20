@@ -18,7 +18,7 @@ from django.core.cache import cache
 from django.db import DatabaseError, IntegrityError, transaction
 from django.utils import timezone
 
-from utils.constants import BOJ_SOURCE, Difficulty
+from utils.constants import BOJ_SOURCE, Difficulty, ProblemField
 from utils.api.tests import APITestCase
 from unittest import mock
 
@@ -40,7 +40,7 @@ from .views.admin import TestCaseAPI
 from .views.oj import AI_HINT_BUCKET, ProblemLLMHintAPI
 from utils.throttling import TokenBucket
 from .utils import parse_problem_template
-from account.models import ProblemPermission, User
+from account.models import ProblemPermission, User, UserScore
 
 DEFAULT_PROBLEM_DATA = {
     "_id": "A-110",
@@ -2609,3 +2609,48 @@ class AIHintStatsAPITest(APITestCase):
     def test_invalid_date_is_rejected(self):
         resp = self.client.get(self.url + "?start=2026-13-99")
         self.assertFailed(resp)
+
+
+class EmptyDataResponseTest(APITestCase):
+    """데이터가 없을 때 오류가 아닌 성공 응답(빈 리스트 또는 null)을 돌려주는지 확인합니다."""
+
+    def setUp(self):
+        self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
+        self.user = self.create_user(email="empty@test.com", username="empty", password="test1234!")
+
+    def test_bonus_problem_returns_empty_list_when_no_bonus_problem(self):
+        resp = self.client.get(self.reverse("bonus_problem_api"))
+        self.assertSuccess(resp)
+        self.assertEqual(resp.data["data"], [])
+
+    def test_most_difficult_problem_returns_null_when_not_selected(self):
+        resp = self.client.get(self.reverse("most_difficult_problem_api"))
+        self.assertSuccess(resp)
+        self.assertIsNone(resp.data["data"])
+
+    def test_pickone_returns_null_when_no_problem(self):
+        resp = self.client.get(self.reverse("pick_one_api"))
+        self.assertSuccess(resp)
+        self.assertIsNone(resp.data["data"])
+
+        resp = self.client.get(self.reverse("pick_one_api"), {"summary": 1})
+        self.assertSuccess(resp)
+        self.assertIsNone(resp.data["data"])
+
+    def test_recommend_problem_returns_empty_list_when_no_candidate(self):
+        resp = self.client.get(self.reverse("recommend_problem_api"))
+        self.assertSuccess(resp)
+        self.assertEqual(resp.data["data"]["recommend_problems"], [])
+        self.assertEqual(len(resp.data["data"]["field_score"]), len(ProblemField.fields))
+
+    def test_recommend_problem_returns_null_when_user_score_missing(self):
+        UserScore.objects.filter(user=self.user).delete()
+        resp = self.client.get(self.reverse("recommend_problem_api"))
+        self.assertSuccess(resp)
+        self.assertIsNone(resp.data["data"])
+
+    def test_recommend_problem_requires_login(self):
+        self.client.logout()
+        resp = self.client.get(self.reverse("recommend_problem_api"))
+        self.assertEqual(resp.status_code, 401)
+        self.assertFailed(resp, "Please login first")

@@ -5,7 +5,7 @@ import time
 
 from django.db import transaction
 from django.db.models import Case, Count, ExpressionWrapper, F, FloatField, IntegerField, Q, Value, When
-from django.http import HttpResponseBadRequest, HttpResponseNotFound, StreamingHttpResponse
+from django.http import StreamingHttpResponse
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
 
@@ -47,7 +47,7 @@ class PickOneAPI(APIView):
         problems = Problem.objects.filter(contest_id__isnull=True, visible=True)
         count = problems.count()
         if count == 0:
-            return self.error("No problem to pick")
+            return self.success(None)
         problem = problems[random.randint(0, count - 1)]
         if request.GET.get("summary"):
             return self.success(MostDifficultProblemSerializer(problem).data)
@@ -86,8 +86,6 @@ class BonusProblemAPI(APIView):
 
     def get(self, request):
         bonus_problems = Problem.objects.filter(contest_id__isnull=True, visible=True, is_bonus=True)
-        if not bonus_problems:
-            return HttpResponseNotFound("No bonus problem")
         return self.success(RecommendBonusProblemSerializer(bonus_problems, many=True).data)
 
 
@@ -684,14 +682,12 @@ class RecommendProblemAPI(APIView):
         가장 약한 분야부터 시작하여, 3문제가 추천됩니다.
 
         OK(200):
-            - 다섯 분야의 사용자 점수와 추천된 세 문제가 반환됩니다.
+            - 다섯 분야의 사용자 점수와 추천된 문제 목록이 반환됩니다.
+            - 추천할 문제가 없으면 recommend_problems는 빈 리스트입니다.
+            - 사용자의 UserScore 또는 UserProfile이 아직 없으면 data는 null입니다.
 
-        BadRequest(400):
-            - 사용자가 푼 문제가 10개 미만인 경우, 추천을 받기에 데이터가 충분하지 않습니다.
-            - 추천할 문제가 0개인 경우입니다. CSEP의 총 문제 개수가 충분하지 않을 때 발생할 수 있습니다.
-
-        NotFound(404):
-            - 요청한 사용자의 UserScore 또는 UserProfile이 존재하지 않습니다.
+        Unauthorized(401):
+            - 로그인하지 않은 사용자의 요청입니다.
         """
         # user_score = self.get_user_score(request.user)
         # user_solved_problems = self.get_user_solved_problems(request.user)
@@ -710,9 +706,11 @@ class RecommendProblemAPI(APIView):
         # else:
         #     return HttpResponseBadRequest("No Recommendation because of insufficient problems.")
         if not request.user.is_authenticated:
-            return self.success("Not authenticated")
+            return self.error("Please login first", err="permission-denied", status=401)
         user_score = self.get_user_score(request.user)
         user_solved_problem = self.get_user_solved_problems(request.user)
+        if user_score is None or user_solved_problem is None:
+            return self.success(None)
         field_scores = self.get_field_scores(user_score)
 
         # 추천 난이도 임시 제외
@@ -724,29 +722,23 @@ class RecommendProblemAPI(APIView):
             visible=True, contest__isnull=True).exclude(_id__in=user_solved_problem)
         recommend_problems = random.sample(list(candidate_problems), min(3, len(candidate_problems)))
 
-        if recommend_problems:
-            return self.success({
-                'field_score': field_scores,
-                'recommend_problems': RecommendBonusProblemSerializer(recommend_problems, many=True).data
-            })
-        else:
-            return HttpResponseBadRequest("No recommendation because of insufficient problems.")
+        return self.success({
+            'field_score': field_scores,
+            'recommend_problems': RecommendBonusProblemSerializer(recommend_problems, many=True).data
+        })
 
     @staticmethod
     def get_user_score(user):
-        """사용자의 UserScore ORM Model을 반환합니다."""
-        try:
-            return UserScore.objects.get(user=user)
-        except UserScore.DoesNotExist:
-            return HttpResponseNotFound("UserScore does not exist.")
+        """사용자의 UserScore ORM Model을 반환합니다. 없으면 None을 반환합니다."""
+        return UserScore.objects.filter(user=user).first()
 
     @staticmethod
     def get_user_solved_problems(user):
-        """사용자가 이미 푼 문제들의 id를 List로 반환합니다."""
-        try:
-            solved_problems = UserProfile.objects.get(user=user).acm_problems_status.get("problems", {})
-        except UserProfile.DoesNotExist:
-            return HttpResponseNotFound("UserProfile does not exist.")
+        """사용자가 이미 푼 문제들의 id를 List로 반환합니다. UserProfile이 없으면 None을 반환합니다."""
+        user_profile = UserProfile.objects.filter(user=user).first()
+        if user_profile is None:
+            return None
+        solved_problems = user_profile.acm_problems_status.get("problems", {})
         return [v['_id'] for k, v in solved_problems.items() if v['status'] == JudgeStatus.ACCEPTED]
 
     @staticmethod
@@ -804,8 +796,8 @@ class MostDifficultProblemAPI(APIView):
 
     def get(self, request):
         most_difficult_problem = Problem.objects.filter(is_most_difficult=True, visible=True).first()
-        if not most_difficult_problem:
-            return HttpResponseNotFound("There is No most difficult problem in last week")
+        if most_difficult_problem is None:
+            return self.success(None)
         serializer = MostDifficultProblemSerializer(most_difficult_problem)
         return self.success(serializer.data)
 
