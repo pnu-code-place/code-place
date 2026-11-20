@@ -176,6 +176,10 @@ export default {
     },
     pickOne() {
       api.pickone().then((res) => {
+        if (!res.data.data) {
+          this.$info(this.$t("m.No_Problem_To_Pick"))
+          return
+        }
         this.$router.push({
           name: "problem-details",
           params: { problemID: res.data.data },

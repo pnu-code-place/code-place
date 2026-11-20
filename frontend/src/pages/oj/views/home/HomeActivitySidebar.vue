@@ -3,9 +3,11 @@
     <div class="sidebar-card">
       <div class="sidebar-header">
         <div class="header-left">
-          <span class="sidebar-title">랜덤 문제 추천</span>
+          <span class="sidebar-title">{{ $t("m.Home_Random_Problem") }}</span>
         </div>
-        <span class="sidebar-more" @click="goRandom">새로고침 ↺</span>
+        <span class="sidebar-more" @click="goRandom"
+          >{{ $t("m.Home_Random_Problem_Refresh") }} ↺</span
+        >
       </div>
 
       <div v-if="loading" class="skeleton-wrap">
@@ -36,26 +38,37 @@
           <div class="stats-row">
             <div class="stat">
               <span class="stat-val">{{ problem.accepted_number }}</span>
-              <span class="stat-label">정답</span>
+              <span class="stat-label">{{
+                $t("m.Home_Random_Problem_Accepted")
+              }}</span>
             </div>
             <div class="stat-divider" />
             <div class="stat">
               <span class="stat-val">{{ problem.submission_number }}</span>
-              <span class="stat-label">제출</span>
+              <span class="stat-label">{{
+                $t("m.Home_Random_Problem_Submission")
+              }}</span>
             </div>
             <div class="stat-divider" />
             <div class="stat">
               <span class="stat-val">{{ successRate }}%</span>
-              <span class="stat-label">정답률</span>
+              <span class="stat-label">{{
+                $t("m.Home_Random_Problem_AC_Rate")
+              }}</span>
             </div>
           </div>
         </div>
         <button class="solve-btn" @click="enterProblem(problem._id)">
-          풀러가기 <span class="arrow">→</span>
+          {{ $t("m.Home_Go_Solve") }} <span class="arrow">→</span>
         </button>
       </template>
 
-      <div v-else class="empty-text">문제를 불러올 수 없어요.</div>
+      <div v-else-if="loadFailed" class="empty-text">
+        {{ $t("m.Home_Random_Problem_Load_Failed") }}
+      </div>
+      <div v-else class="empty-text">
+        {{ $t("m.Home_Random_Problem_Empty") }}
+      </div>
     </div>
   </div>
 </template>
@@ -86,6 +99,7 @@ export default {
     return {
       problem: null,
       loading: true,
+      loadFailed: false,
     }
   },
   mounted() {
@@ -95,6 +109,7 @@ export default {
     ...mapActions(["changeModalStatus"]),
     loadTodayProblem() {
       this.loading = true
+      this.loadFailed = false
       api
         .pickOneSummary()
         .then((res) => {
@@ -102,6 +117,7 @@ export default {
           this.loading = false
         })
         .catch(() => {
+          this.loadFailed = true
           this.loading = false
         })
     },

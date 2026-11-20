@@ -2,7 +2,6 @@ import os
 import datetime
 
 from django.db.models import Q, Count, F, Min
-from django.http import HttpResponseNotFound
 from django.utils.decorators import method_decorator
 from django.utils import timezone
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -127,28 +126,27 @@ class UserProfileDashBoardAPI(APIView):
 
     @login_required
     def get(self, request):
-        try:
-            username = request.GET.get("username")
-            user_profile = UserProfile.objects.filter(user__username=username).first()
-            user_id = user_profile.user_id
-            user_score = UserScore.objects.filter(user_id=user_id).annotate(
-                total_rank=Count('total_score', filter=Q(total_score__gt=F('total_score'))) + 1,
-                datastructure_rank=Count(
-                    'datastructure_score', filter=Q(datastructure_score__gt=F('datastructure_score'))) + 1,
-                implementation_rank=Count(
-                    'implementation_score', filter=Q(implementation_score__gt=F('implementation_score'))) + 1,
-                math_rank=Count('math_score', filter=Q(math_score__gt=F('math_score'))) + 1,
-                search_rank=Count('search_score', filter=Q(search_score__gt=F('search_score'))) + 1,
-                sorting_rank=Count('sorting_score', filter=Q(sorting_score__gt=F('sorting_score'))) + 1,
-                algorithm_rank=Count('algorithm_score', filter=Q(algorithm_score__gt=F('algorithm_score'))) +
-                1).first()
-            user_solved = UserSolved.objects.filter(user_id=user_id).first()
-        except User.DoesNotExist or UserProfile.DoesNotExist:
-            return HttpResponseNotFound('user does not exist')
-        except Department.DoesNotExist or College.DoesNotExist:
-            return HttpResponseNotFound('department or college does not exist')
-        except UserScore.DoesNotExist:
-            return HttpResponseNotFound('user_score does not exist')
+        username = request.GET.get("username")
+        if not username:
+            return self.error("username is required")
+        user_profile = UserProfile.objects.filter(user__username=username).first()
+        if user_profile is None:
+            return self.error("user does not exist", status=404)
+        user_id = user_profile.user_id
+        user_score = UserScore.objects.filter(user_id=user_id).annotate(
+            total_rank=Count('total_score', filter=Q(total_score__gt=F('total_score'))) + 1,
+            datastructure_rank=Count(
+                'datastructure_score', filter=Q(datastructure_score__gt=F('datastructure_score'))) + 1,
+            implementation_rank=Count(
+                'implementation_score', filter=Q(implementation_score__gt=F('implementation_score'))) + 1,
+            math_rank=Count('math_score', filter=Q(math_score__gt=F('math_score'))) + 1,
+            search_rank=Count('search_score', filter=Q(search_score__gt=F('search_score'))) + 1,
+            sorting_rank=Count('sorting_score', filter=Q(sorting_score__gt=F('sorting_score'))) + 1,
+            algorithm_rank=Count('algorithm_score', filter=Q(algorithm_score__gt=F('algorithm_score'))) +
+            1).first()
+        user_solved = UserSolved.objects.filter(user_id=user_id).first()
+        if user_score is None or user_solved is None:
+            return self.error("user score does not exist", status=404)
 
         total_user_count = UserScore.objects.filter(user__is_disabled=False).count()
         """ Build oj_status """

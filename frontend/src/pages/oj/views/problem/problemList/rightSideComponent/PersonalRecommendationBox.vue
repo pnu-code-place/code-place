@@ -34,7 +34,7 @@
       }}</span>
     </div>
     <template v-else>
-      <template v-if="!recommendation">
+      <template v-if="!hasRecommendation">
         <InSufficientData :type="false" />
       </template>
       <template v-else>
@@ -44,8 +44,8 @@
           </div>
           <div style="justify-content: center; padding: 10px">
             <span style="font-weight: 500"
-              ><span style="font-weight: bold">{{ user.username }}</span> 님을
-              위해 선별된 문제들이에요!</span
+              ><span style="font-weight: bold">{{ user.username }}</span>
+              {{ $t("m.PersonalRecommendation_For_User") }}</span
             >
           </div>
         </template>
@@ -53,7 +53,7 @@
           <InSufficientData :type="true" />
         </template>
       </template>
-      <template v-if="recommendation && recommendation.recommend_problems">
+      <template v-if="hasRecommendation">
         <RecommendProblem
           v-for="recommend_problem in recommendation.recommend_problems"
           :key="recommend_problem._id"
@@ -115,6 +115,13 @@ export default {
     },
     shouldShowSkeleton() {
       return !this.profileResolved || this.loading
+    },
+    hasRecommendation() {
+      return Boolean(
+        this.recommendation &&
+        this.recommendation.recommend_problems &&
+        this.recommendation.recommend_problems.length > 0,
+      )
     },
     getGraphColor() {
       return Object.values(this.FIELD_MAP).map((field) => field.boxColor)

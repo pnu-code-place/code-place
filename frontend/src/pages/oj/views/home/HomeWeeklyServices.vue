@@ -2,9 +2,9 @@
   <div class="weekly-wrap">
     <div class="outer-card">
       <div class="section-header">
-        <span class="section-title">이번주의 보너스 문제</span>
+        <span class="section-title">{{ $t("m.Home_Bonus_Problem") }}</span>
         <span class="double-badge">
-          해결하면 점수를 2배로 받을 수 있어요
+          {{ $t("m.Home_Bonus_Problem_Info") }}
         </span>
       </div>
 
@@ -17,7 +17,9 @@
         >
           <div class="card-top">
             <div class="card-meta">
-              <span class="badge b-bonus">점수 2배</span>
+              <span class="badge b-bonus">{{
+                $t("m.Home_Bonus_Problem_Badge")
+              }}</span>
               <span class="badge b-cat">{{
                 (FIELD_MAP[problem.field] || {}).value
               }}</span>
@@ -39,11 +41,16 @@
               >#{{ tag }}</span
             >
           </div>
-          <div class="go-link">풀러가기 <span class="arrow">→</span></div>
+          <div class="go-link">
+            {{ $t("m.Home_Go_Solve") }} <span class="arrow">→</span>
+          </div>
         </div>
 
-        <div v-if="problems.length === 0" class="empty-state">
-          이번 주 보너스 문제가 없습니다.
+        <div v-if="loadFailed" class="empty-state">
+          {{ $t("m.Home_Bonus_Problem_Load_Failed") }}
+        </div>
+        <div v-else-if="problems.length === 0" class="empty-state">
+          {{ $t("m.Home_Bonus_Problem_Empty") }}
         </div>
       </div>
     </div>
@@ -67,6 +74,7 @@ export default {
   data() {
     return {
       problems: [],
+      loadFailed: false,
     }
   },
   mounted() {
@@ -75,7 +83,9 @@ export default {
       .then((res) => {
         this.problems = (res.data.data || []).slice(0, 3)
       })
-      .catch(() => {})
+      .catch(() => {
+        this.loadFailed = true
+      })
   },
   methods: {
     enterProblem(problemId) {

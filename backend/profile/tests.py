@@ -354,3 +354,30 @@ class ProfileProblemAPITest(APITestCase):
         data = response.data["data"]
         self.assertEqual(len(data), 1)
         self.assertEqual(data[0]["status"], JudgeStatus.WRONG_ANSWER)
+
+
+class UserProfileDashboardAPITest(APITestCase):
+
+    def setUp(self):
+        self.create_school_fixtures(college_id=1, college_name="Test", department_id=1, department_name="Test")
+        self.user = self.create_user(email="dash@test.com", username="dash", password="test1234!")
+        self.url = self.reverse("user_profile_dashboard_api")
+
+    def test_returns_dashboard_for_existing_user(self):
+        response = self.client.get(self.url, {"username": "dash"})
+
+        self.assertSuccess(response)
+        self.assertIn("ojStatus", response.data["data"])
+        self.assertIn("fieldInfo", response.data["data"])
+        self.assertIn("difficultyInfo", response.data["data"])
+
+    def test_missing_username_returns_api_error(self):
+        response = self.client.get(self.url)
+
+        self.assertFailed(response, "username is required")
+
+    def test_unknown_username_returns_404_api_error(self):
+        response = self.client.get(self.url, {"username": "missing"})
+
+        self.assertEqual(response.status_code, 404)
+        self.assertFailed(response, "user does not exist")

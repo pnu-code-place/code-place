@@ -363,6 +363,7 @@ export const m = {
   Search_Problem: "문제 제목 / 번호 검색",
   Hide_Tags: "태그 숨김",
   Show_Tags: "태그 표시",
+  No_Problem_To_Pick: "풀 수 있는 문제가 없습니다.",
   // ProblemListTable.vue
   noProblemList: "찾으시는 문제가 존재하지 않습니다.",
   Th_Problem_Id: "문제번호",
@@ -381,10 +382,29 @@ export const m = {
   PersonalRecommendation_No_Auth: "로그인 후 사용 가능합니다.",
   AiSolution: "영역을 더 풀어보세요!",
   Try_Personal_Recommendation_Problem: "풀어보기",
+  PersonalRecommendation_For_User: "님을 위해 선별된 문제들이에요!",
   //MostDifficultProblemLastWeekBox.vue
   Most_Hard_Problem_In_Last_Week: "저번 주에 가장 어려웠어요!",
   Try_Most_Hard_Problem_In_Last_Week: "도전하기",
   There_Is_No_Data: "표시할 데이터가 충분하지 않습니다.",
+  Most_Hard_Problem_No_Submission: "없음",
+  Most_Hard_Problem_Accepted_Count: "{count}명",
+  //HomeActivitySidebar.vue, HomeWeeklyServices.vue
+  Home_Go_Solve: "풀러가기",
+  //HomeActivitySidebar.vue
+  Home_Random_Problem: "랜덤 문제 추천",
+  Home_Random_Problem_Refresh: "새로고침",
+  Home_Random_Problem_Accepted: "정답",
+  Home_Random_Problem_Submission: "제출",
+  Home_Random_Problem_AC_Rate: "정답률",
+  Home_Random_Problem_Load_Failed: "문제를 불러올 수 없어요.",
+  Home_Random_Problem_Empty: "추천할 문제가 없어요.",
+  //HomeWeeklyServices.vue
+  Home_Bonus_Problem: "이번주의 보너스 문제",
+  Home_Bonus_Problem_Info: "해결하면 점수를 2배로 받을 수 있어요",
+  Home_Bonus_Problem_Badge: "점수 2배",
+  Home_Bonus_Problem_Load_Failed: "보너스 문제를 불러오지 못했습니다.",
+  Home_Bonus_Problem_Empty: "이번 주 보너스 문제가 없습니다.",
   //HomeProblemRecommendationBox.vue
   HomeProblemRecommendation: "이주의 보너스 문제",
   HomeProblemRecommendation_Info:
