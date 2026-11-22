@@ -2275,7 +2275,7 @@ class UpdateBonusProblemTest(APITestCase):
 class AIHintStatsAPITest(APITestCase):
     """집계 쿼리가 실제 Postgres 에서 도는지, 지표가 정의대로 나오는지 확인한다.
 
-    윈도우 함수와 FILTER, percentile_disc 등 Postgres 전용 문법을 쓰므로
+    FILTER, json_agg 등 Postgres 전용 문법을 쓰므로
     이 테스트가 없으면 배포 후에야 오류를 알게 된다.
     """
 
@@ -2286,9 +2286,12 @@ class AIHintStatsAPITest(APITestCase):
         self.problem = ProblemCreateTestBase.add_problem(DEFAULT_PROBLEM_DATA, self.admin)
         self.user = self.create_user("hint@test.com", "hintuser", "hint1234!", login=False)
 
-    def _log(self, minutes_ago, content="[1단계] 힌트", problem=None, user=None):
+    def _log(self, minutes_ago, content="답변", problem=None, user=None,
+             mode=AIHintMode.CHAT, question="질문", code=None):
         log = ProblemAIHintLog.objects.create(
-            user=user or self.user, problem=problem or self.problem, hint_content=content)
+            user=user or self.user, problem=problem or self.problem, hint_content=content,
+            mode=mode, student_question=question if mode == AIHintMode.CHAT else None,
+            student_code=code, student_language="Python3" if code else None)
         # auto_now_add 라서 생성 후에 시각을 덮어써야 한다.
         ProblemAIHintLog.objects.filter(id=log.id).update(
             created_at=timezone.now() - timedelta(minutes=minutes_ago))
@@ -2303,6 +2306,16 @@ class AIHintStatsAPITest(APITestCase):
             create_time=timezone.now() - timedelta(minutes=minutes_ago))
         return sub
 
+    def _contest_problem(self, _id="C-1"):
+        contest = Contest.objects.create(created_by=self.admin, **DEFAULT_CONTEST_DATA)
+        problem = ProblemCreateTestBase.create_problem_with_custom_field(self.admin, _id=_id, contest=contest)
+        return contest, problem
+
+    def _get(self, query=""):
+        resp = self.client.get(self.url + query)
+        self.assertSuccess(resp)
+        return resp.data["data"]
+
     def test_requires_super_admin(self):
         self.client.logout()
         self.create_user("normal@test.com", "normaluser", "normal1234!")
@@ -2313,7 +2326,7 @@ class AIHintStatsAPITest(APITestCase):
         """슈퍼관리자만 볼 수 있어야 한다.
 
         일반 관리자도 관리자 SPA 에 들어오므로 URL 로 직접 접근할 수 있다.
-        데코레이터가 admin_role_required 로 바뀌면 학생별 힌트 기록이 노출된다.
+        데코레이터가 admin_role_required 로 바뀌면 학생 질문이 노출된다.
         """
         self.client.logout()
         self.create_admin()
@@ -2321,269 +2334,144 @@ class AIHintStatsAPITest(APITestCase):
         self.assertFailed(resp)
 
     def test_empty_range_returns_zeros(self):
-        resp = self.client.get(self.url)
-        self.assertSuccess(resp)
-        data = resp.data["data"]
-        self.assertEqual(data["summary"]["turns"], 0)
-        self.assertEqual(data["depth"]["distribution"], [])
-        self.assertEqual(len(data["hourly"]), 24)
+        data = self._get()
+        self.assertEqual(data["practice"]["turns"], 0)
+        self.assertEqual(data["contest"]["turns"], 0)
+        self.assertEqual(data["top_problems"], [])
+        self.assertEqual(data["contests"], [])
+        self.assertEqual(data["recent_questions"], [])
 
-    def test_session_split_by_gap(self):
-        # 10분 간격 두 건은 한 대화, 하루 전 한 건은 별도 대화로 묶여야 한다.
-        self._log(minutes_ago=20)
-        self._log(minutes_ago=10)
-        self._log(minutes_ago=60 * 24)
-
-        resp = self.client.get(self.url)
-        self.assertSuccess(resp)
-        data = resp.data["data"]
-
-        self.assertEqual(data["summary"]["turns"], 3)
-        self.assertEqual(data["summary"]["sessions"], 2)
-        self.assertEqual(data["summary"]["users"], 1)
-        self.assertEqual(data["depth"]["avg_turns"], 1.5)
-        self.assertEqual(data["depth"]["single_turn_rate"], 50.0)
-
-    def test_label_rate_counts_prompt_format_compliance(self):
-        """응답이 [N단계] 머리말을 지켰는지 센다.
-
-        빈 응답은 `_persist_hint_log` 가 행째로 지우므로 이 테이블로는 실패율을
-        낼 수 없다. 실패 신호는 Prometheus 쪽에 있다.
-        """
-        self._log(minutes_ago=30, content="[1단계] 정상 응답")
-        self._log(minutes_ago=20, content="머리말 없는 응답")
-
-        resp = self.client.get(self.url)
-        self.assertSuccess(resp)
-        quality = resp.data["data"]["quality"]
-
-        self.assertEqual(quality["label_rate"], 50.0)
-        self.assertNotIn("failure_rate", quality)
-
-    def test_top_problems(self):
+    def test_practice_and_contest_are_split_by_problem(self):
+        """일반 문제 질문과 대회 힌트가 서로 섞이면 안 된다."""
+        contest, contest_problem = self._contest_problem()
         self._log(minutes_ago=30)
-        self._submit(minutes_ago=10)
-
-        resp = self.client.get(self.url)
-        self.assertSuccess(resp)
-        data = resp.data["data"]
-
-        self.assertEqual(data["top_problems"][0]["display_id"], self.problem._id)
-        self.assertEqual(data["top_problems"][0]["turns"], 1)
-
-    def test_limit_reached_counts_per_problem_not_per_session(self):
-        # 5회를 여러 날에 걸쳐 나눠 써도 한도는 채운 것이다.
-        for days in range(5):
-            self._log(minutes_ago=60 * 24 * days)
-
-        resp = self.client.get(self.url)
-        self.assertSuccess(resp)
-        data = resp.data["data"]
-        depth = data["depth"]
-
-        # 세션은 5개로 쪼개지지만 (사용자, 문제) 기준으로는 한도 도달이다.
-        self.assertEqual(data["summary"]["sessions"], 5)
-        self.assertEqual(depth["single_turn_rate"], 100.0)
-        self.assertEqual(depth["limit_reached_rate"], 100.0)
-
-    def test_adoption_rate_never_exceeds_100(self):
-        # 힌트만 받고 제출하지 않은 경우가 있어도 채택률이 100%를 넘으면 안 된다.
-        self._log(minutes_ago=30)
-
-        resp = self.client.get(self.url)
-        self.assertSuccess(resp)
-        summary = resp.data["data"]["summary"]
-
-        self.assertEqual(summary["hinted_pairs"], 1)
-        self.assertEqual(summary["engaged_pairs"], 1)
-        self.assertEqual(summary["adoption_rate"], 100.0)
-
-    def test_contest_activity_is_excluded_from_every_metric(self):
-        """대회 문제는 힌트 쪽과 제출 쪽 모두에서 빠져야 한다.
-
-        한쪽만 거르면 힌트는 세는데 정답은 빠지는 짝이 생겨
-        채택률은 부풀고 정답 도달률은 깎인다.
-        """
-        contest = Contest.objects.create(created_by=self.admin, **DEFAULT_CONTEST_DATA)
-        contest_problem = ProblemCreateTestBase.create_problem_with_custom_field(
-            self.admin, _id="C-1", contest=contest)
-
-        self._log(minutes_ago=30, problem=contest_problem)
+        self._log(minutes_ago=20, problem=contest_problem, mode=AIHintMode.STAGE)
         self._submit(minutes_ago=10, problem=contest_problem, contest=contest)
 
-        resp = self.client.get(self.url)
-        self.assertSuccess(resp)
-        data = resp.data["data"]
+        data = self._get()
 
-        self.assertEqual(data["summary"]["turns"], 0)
-        self.assertEqual(data["summary"]["engaged_pairs"], 0)
-        self.assertEqual(data["top_problems"], [])
+        self.assertEqual(data["practice"]["turns"], 1)
+        self.assertEqual(data["practice"]["chat_turns"], 1)
+        self.assertEqual(data["contest"]["turns"], 1)
+        self.assertEqual(data["contest"]["contests"], 1)
+        # 대회 쪽은 채택률과 일반 문제 순위에 들어가지 않는다.
+        self.assertEqual(data["practice"]["engaged_pairs"], 1)
+        self.assertEqual([p["display_id"] for p in data["top_problems"]], [self.problem._id])
+        self.assertEqual(data["contests"][0]["contest_id"], contest.id)
 
-    def test_admin_activity_is_excluded(self):
-        """관리자는 횟수 제한을 받지 않아 분포를 왜곡하므로 집계에서 빠져야 한다."""
-        self._log(minutes_ago=30, user=self.admin)
-        self._submit(minutes_ago=10, user=self.admin)
+    def test_legacy_stage_hint_on_practice_is_not_a_contest_hint(self):
+        """자유 질문 도입 전 일반 문제의 옛 단계 힌트는 mode 가 stage 로 남아 있다.
 
-        resp = self.client.get(self.url)
-        self.assertSuccess(resp)
-        data = resp.data["data"]
+        mode 로 나누면 대회 힌트가 부풀어 오른다.
+        """
+        self._log(minutes_ago=30, mode=AIHintMode.STAGE)
 
-        self.assertEqual(data["summary"]["turns"], 0)
-        self.assertEqual(data["summary"]["engaged_pairs"], 0)
+        data = self._get()
 
-    def test_orphan_empty_log_is_not_counted(self):
-        """워커가 죽어 남은 빈 로그가 없던 턴으로 잡히면 안 된다."""
-        self._log(minutes_ago=30, content="[1단계] 정상 응답")
-        self._log(minutes_ago=20, content="")
+        self.assertEqual(data["practice"]["turns"], 1)
+        self.assertEqual(data["practice"]["chat_turns"], 0)
+        self.assertEqual(data["contest"]["turns"], 0)
+        self.assertEqual(data["recent_questions"], [])
 
-        resp = self.client.get(self.url)
-        self.assertSuccess(resp)
-        data = resp.data["data"]
+    def test_top_problems(self):
+        other = ProblemCreateTestBase.create_problem_with_custom_field(self.admin, _id="A-9")
+        self._log(minutes_ago=30, problem=other)
+        self._log(minutes_ago=20)
+        self._log(minutes_ago=10)
 
-        self.assertEqual(data["summary"]["turns"], 1)
-        self.assertEqual(data["quality"]["label_rate"], 100.0)
-        self.assertNotIn("turns", data["quality"])
-        self.assertGreater(data["quality"]["length"]["p50"], 0)
+        data = self._get()
 
-    def test_limit_reached_counts_lifetime_turns_not_range_turns(self):
-        """한도는 평생 누적이므로 조회 구간 밖의 힌트도 세야 한다."""
+        self.assertEqual([p["display_id"] for p in data["top_problems"]], [self.problem._id, "A-9"])
+        self.assertEqual(data["top_problems"][0]["turns"], 2)
+        self.assertEqual(data["top_problems"][0]["users"], 1)
+
+    def test_contest_limit_reached_counts_lifetime_turns(self):
+        """대회 힌트 한도는 평생 누적이므로 조회 구간 밖의 힌트도 세야 한다."""
+        _, contest_problem = self._contest_problem()
         for days in range(4):
-            self._log(minutes_ago=60 * 24 * (200 + days))   # 구간 밖(약 200일 전)
+            self._log(minutes_ago=60 * 24 * (200 + days), problem=contest_problem, mode=AIHintMode.STAGE)
         # 자정 직후에 돌아도 오늘 안에 들어오도록 정오에 고정한다.
         noon = timezone.localtime().replace(hour=12, minute=0, second=0, microsecond=0)
-        log = self._log(minutes_ago=0)
+        log = self._log(minutes_ago=0, problem=contest_problem, mode=AIHintMode.STAGE)
         ProblemAIHintLog.objects.filter(id=log.id).update(created_at=noon)
 
-        today = timezone.localtime().date()
-        resp = self.client.get(self.url + f"?start={today.isoformat()}&end={today.isoformat()}")
-        self.assertSuccess(resp)
-        data = resp.data["data"]
-        depth = data["depth"]
+        today = timezone.localtime().date().isoformat()
+        data = self._get(f"?start={today}&end={today}")
 
-        # 오늘 구간에서 보이는 턴은 1개지만, 이 짝의 평생 누적은 5개라 한도 도달이다.
-        self.assertEqual(data["summary"]["sessions"], 1)
-        self.assertEqual(depth["limit_reached_rate"], 100.0)
+        self.assertEqual(data["contest"]["turns"], 1)
+        self.assertEqual(data["contests"][0]["limit_reached_rate"], 100.0)
+
+    def test_recent_questions_hide_username_and_code(self):
+        """최근 질문은 아이디를 가리고, 학생 코드와 답변은 보내지 않는다."""
+        self._log(minutes_ago=20, question="첫 질문")
+        self._log(minutes_ago=10, question="두 번째 질문", code="print(1)")
+
+        resp = self.client.get(self.url)
+        self.assertSuccess(resp)
+        recent = resp.data["data"]["recent_questions"]
+
+        self.assertEqual([r["question"] for r in recent], ["두 번째 질문", "첫 질문"])
+        self.assertEqual(recent[0]["user"], "hi******")
+        self.assertTrue(recent[0]["has_code"])
+        self.assertEqual(recent[0]["language"], "Python3")
+        body = resp.content.decode()
+        self.assertNotIn("hintuser", body)
+        self.assertNotIn("print(1)", body)
+        self.assertNotIn("답변", body)
+
+    def test_mask_username(self):
+        from problem.views.ai_hint_stats import mask_username
+
+        self.assertEqual(mask_username("202312345"), "20*******")
+        self.assertEqual(mask_username("ab"), "a*")
+        self.assertEqual(mask_username("a"), "a")
+
+    def test_adoption_rate_never_exceeds_100(self):
+        # 질문만 하고 제출하지 않은 경우가 있어도 채택률이 100%를 넘으면 안 된다.
+        self._log(minutes_ago=30)
+
+        practice = self._get()["practice"]
+
+        self.assertEqual(practice["hinted_pairs"], 1)
+        self.assertEqual(practice["engaged_pairs"], 1)
+        self.assertEqual(practice["adoption_rate"], 100.0)
 
     def test_adoption_counts_submitters_without_hints(self):
-        """힌트를 쓰지 않고 제출만 한 짝도 분모에 들어가야 한다.
+        """AI 조교를 쓰지 않고 제출만 한 짝도 분모에 들어가야 한다.
 
         분모에서 빠지면 채택률이 늘 100% 로 나온다.
         """
         other = ProblemCreateTestBase.create_problem_with_custom_field(self.admin, _id="A-9")
         self._log(minutes_ago=30)
         self._submit(minutes_ago=20)
-        self._submit(minutes_ago=10, problem=other)   # 힌트 없이 제출만
+        self._submit(minutes_ago=10, problem=other)   # AI 조교 없이 제출만
 
-        resp = self.client.get(self.url)
-        self.assertSuccess(resp)
-        summary = resp.data["data"]["summary"]
+        practice = self._get()["practice"]
 
-        self.assertEqual(summary["hinted_pairs"], 1)
-        self.assertEqual(summary["engaged_pairs"], 2)
-        self.assertEqual(summary["adoption_rate"], 50.0)
+        self.assertEqual(practice["hinted_pairs"], 1)
+        self.assertEqual(practice["engaged_pairs"], 2)
+        self.assertEqual(practice["adoption_rate"], 50.0)
 
-    def test_buckets_use_local_timezone(self):
-        """월·시간 버킷이 UTC 가 아니라 현지 시각 기준이어야 한다.
+    def test_admin_activity_is_excluded(self):
+        """관리자는 횟수 제한을 받지 않아 분포를 왜곡하므로 집계에서 빠져야 한다."""
+        self._log(minutes_ago=30, user=self.admin)
+        self._submit(minutes_ago=10, user=self.admin)
 
-        AT TIME ZONE 이 빠지면 한 달이 밀리고 시간대가 9시간 어긋난다.
-        """
-        # 현지 기준 어느 달 1일 00:30. UTC 로는 전달 말일 15:30 이다.
-        local = timezone.localtime().replace(day=1, hour=0, minute=30, second=0, microsecond=0)
-        log = self._log(minutes_ago=0)
-        ProblemAIHintLog.objects.filter(id=log.id).update(created_at=local)
+        data = self._get()
 
-        day = local.date()
-        resp = self.client.get(self.url + f"?start={day.isoformat()}&end={day.isoformat()}")
-        self.assertSuccess(resp)
-        data = resp.data["data"]
+        self.assertEqual(data["practice"]["turns"], 0)
+        self.assertEqual(data["practice"]["engaged_pairs"], 0)
+        self.assertEqual(data["recent_questions"], [])
 
-        self.assertEqual(data["monthly"][0]["month"], local.strftime("%Y-%m"))
-        self.assertEqual(data["hourly"][0]["hour"], 0)
-        self.assertEqual(data["hourly"][0]["turns"], 1)
-
-    def test_monthly_fills_empty_months(self):
-        """데이터가 없는 달도 0으로 채워야 선 그래프가 공백을 건너뛰지 않는다."""
+    def test_orphan_empty_log_is_not_counted(self):
+        """워커가 죽어 남은 빈 로그가 없던 사용으로 잡히면 안 된다."""
         self._log(minutes_ago=30)
+        self._log(minutes_ago=20, content="")
 
-        today = timezone.localtime().date()
-        start = (today - timedelta(days=70)).isoformat()
-        resp = self.client.get(self.url + f"?start={start}&end={today.isoformat()}")
-        self.assertSuccess(resp)
-        monthly = resp.data["data"]["monthly"]
+        data = self._get()
 
-        self.assertGreaterEqual(len(monthly), 3)
-        months = [m["month"] for m in monthly]
-        self.assertEqual(months, sorted(months))
-        self.assertEqual(sum(m["turns"] for m in monthly), 1)
-
-    def test_session_straddling_range_start_is_not_split(self):
-        """구간 경계를 걸친 대화가 둘로 쪼개지면 세션 수가 부풀어 오른다.
-
-        구간 앞쪽으로 gap 만큼 더 읽어 LAG 문맥을 주고,
-        세션은 구간 안에서 **시작한** 것만 세는 구조를 고정한다.
-        """
-        # 구간 시작(오늘 0시) 직전 10분과 직후 5분. lookback 창(30분) 안이라
-        # LAG 가 앞 턴을 보고 두 로그를 한 대화로 묶는다.
-        midnight = timezone.localtime().replace(hour=0, minute=0, second=0, microsecond=0)
-
-        first = self._log(minutes_ago=0)
-        second = self._log(minutes_ago=0)
-        ProblemAIHintLog.objects.filter(id=first.id).update(
-            created_at=midnight - timedelta(minutes=10))
-        ProblemAIHintLog.objects.filter(id=second.id).update(
-            created_at=midnight + timedelta(minutes=5))
-
-        today = timezone.localtime().date()
-        resp = self.client.get(self.url + f"?start={today.isoformat()}&end={today.isoformat()}")
-        self.assertSuccess(resp)
-        data = resp.data["data"]
-
-        # 턴과 세션의 기준이 다르다.
-        # 두 번째 로그는 오늘 구간 안에서 일어났으므로 턴으로는 센다.
-        self.assertEqual(data["summary"]["turns"], 1)
-        # 그러나 대화는 어제 시작했으므로 오늘의 대화로는 세지 않는다.
-        # lookback 을 빼면 새 대화로 보여 1이 된다.
-        self.assertEqual(data["summary"]["sessions"], 0)
-        self.assertEqual(data["depth"]["distribution"], [])
-        self.assertEqual(data["depth"]["avg_turns"], 0.0)
-
-    def test_session_continuing_past_range_end_is_not_truncated(self):
-        """구간 끝에서 시작해 밖으로 이어진 대화도 깊이가 온전해야 한다.
-
-        뒤쪽 lookahead 가 짧으면 5턴 대화가 2턴으로 보이고
-        평균 턴 수가 낮게, 1턴 종료율이 높게 나온다.
-        """
-        today = timezone.localtime().date()
-        end_boundary = timezone.localtime().replace(
-            hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1)
-
-        # 오늘 23:50 부터 25분 간격으로 5턴. 뒤 4턴은 내일로 넘어간다.
-        for i in range(5):
-            log = self._log(minutes_ago=0)
-            ProblemAIHintLog.objects.filter(id=log.id).update(
-                created_at=end_boundary - timedelta(minutes=10) + timedelta(minutes=25 * i))
-
-        resp = self.client.get(self.url + f"?start={today.isoformat()}&end={today.isoformat()}")
-        self.assertSuccess(resp)
-        depth = resp.data["data"]["depth"]
-
-        self.assertEqual(depth["distribution"], [{"turns": 5, "sessions": 1}])
-        self.assertEqual(depth["avg_turns"], 5.0)
-        self.assertEqual(depth["single_turn_rate"], 0.0)
-
-    def test_monthly_sessions_sum_to_summary(self):
-        """월별 대화 수의 합은 요약 카드의 대화 수와 같아야 한다."""
-        self._log(minutes_ago=30)
-        self._log(minutes_ago=60 * 24 * 40)
-
-        today = timezone.localtime().date()
-        start = (today - timedelta(days=70)).isoformat()
-        resp = self.client.get(self.url + f"?start={start}&end={today.isoformat()}")
-        self.assertSuccess(resp)
-        data = resp.data["data"]
-
-        self.assertEqual(sum(m["sessions"] for m in data["monthly"]),
-                         data["summary"]["sessions"])
+        self.assertEqual(data["practice"]["turns"], 1)
+        self.assertEqual(len(data["recent_questions"]), 1)
 
     def test_range_width_boundary(self):
         """상한 자체는 통과하고 하루 더 넘기면 거절해야 한다.
