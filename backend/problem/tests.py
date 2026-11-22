@@ -2412,7 +2412,6 @@ class AIHintStatsAPITest(APITestCase):
 
         self.assertEqual([r["question"] for r in recent], ["두 번째 질문", "첫 질문"])
         self.assertEqual(recent[0]["user"], "hi******")
-        self.assertTrue(recent[0]["has_code"])
         self.assertEqual(recent[0]["language"], "Python3")
         body = resp.content.decode()
         self.assertNotIn("hintuser", body)

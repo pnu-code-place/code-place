@@ -79,8 +79,8 @@
             <span class="question">{{ scope.row.question }}</span>
           </template>
         </el-table-column>
-        <el-table-column :label="$t('m.AI_Hint_Code')" width="100">
-          <template slot-scope="scope">{{ scope.row.has_code ? scope.row.language : "-" }}</template>
+        <el-table-column :label="$t('m.AI_Hint_Language')" width="100">
+          <template slot-scope="scope">{{ scope.row.language || "-" }}</template>
         </el-table-column>
       </el-table>
     </Panel>

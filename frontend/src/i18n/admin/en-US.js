@@ -444,6 +444,6 @@ export const m = {
   AI_Hint_Problem: "문제",
   AI_Hint_User: "학생",
   AI_Hint_Question: "질문",
-  AI_Hint_Code: "코드 첨부",
+  AI_Hint_Language: "사용 언어",
   AI_Hint_Empty: "기간 안에 기록이 없어요.",
 }

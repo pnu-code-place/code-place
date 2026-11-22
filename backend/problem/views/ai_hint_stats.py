@@ -62,7 +62,6 @@ _LOGS = """
         l.mode,
         l.student_question,
         l.student_language,
-        l.student_code IS NOT NULL AS has_code,
         u.username,
         p._id      AS display_id,
         p.title,
@@ -179,7 +178,6 @@ recent AS (
         username,
         student_question AS question,
         student_language AS language,
-        has_code,
         created_at AS sort_key
     FROM practice
     WHERE mode = %(chat)s AND student_question IS NOT NULL
@@ -305,7 +303,6 @@ class AIHintStatsAPI(APIView):
                     "user": mask_username(r["username"]),
                     "question": r["question"],
                     "language": r["language"],
-                    "has_code": r["has_code"],
                 }
                 for r in agg.get("recent") or []
             ],
