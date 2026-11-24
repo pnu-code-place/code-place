@@ -421,6 +421,12 @@ export default {
       data,
     })
   },
+  runSamples(data) {
+    return ajax("sample_run", "post", {
+      data,
+      silentError: true,
+    })
+  },
   getSubmissionList(offset, limit, params) {
     params.limit = limit
     params.offset = offset

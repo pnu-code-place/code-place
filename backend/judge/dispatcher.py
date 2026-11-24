@@ -86,8 +86,8 @@ class DispatcherBase(object):
             return f"{scheme}://{server.ip}:{port}/{endpoint.lstrip('/')}"
         return urljoin(server.service_url, endpoint)
 
-    def _request(self, url, data=None):
-        kwargs = {"headers": {"X-Judge-Server-Token": self.token}, "timeout": (5, 300)}
+    def _request(self, url, data=None, timeout=300):
+        kwargs = {"headers": {"X-Judge-Server-Token": self.token}, "timeout": (5, timeout)}
         if data:
             kwargs["json"] = data
         try:

@@ -27,6 +27,8 @@ class Contest(models.Model):
     allowed_ip_ranges = JSONField(default=list)
     #AI assistant
     ai_assistant_enabled = models.BooleanField(default=False)
+    # 예제 실행
+    sample_run_enabled = models.BooleanField(default=False)
 
     @property
     def status(self):

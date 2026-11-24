@@ -8,7 +8,8 @@ from account.decorators import login_required, check_contest_permission
 from utils.testcase_cache import TestCaseCacheManager
 from contest.models import Contest, ContestStatus, ContestRuleType
 from judge.tasks import judge_task
-from options.options import SysOptions
+from judge.sample_runner import SampleRunError, SampleRunner
+from options.options import OptionDefaultValue, SysOptions
 from problem.models import Problem, ProblemRuleType
 from utils.api import APIView, validate_serializer
 from utils.cache import cache
@@ -16,17 +17,19 @@ from utils.captcha import Captcha
 from utils.observability_metrics import SUBMISSION_CREATE_OUTCOME_TOTAL
 from utils.throttling import TokenBucket
 from ..models import JudgeStatus, Submission
-from ..serializers import (CreateSubmissionSerializer, SubmissionModelSerializer, ShareSubmissionSerializer)
+from ..serializers import (CreateSubmissionSerializer, SampleRunSerializer, SubmissionModelSerializer, ShareSubmissionSerializer)
 from ..serializers import SubmissionSafeModelSerializer, SubmissionListSerializer
 
 logger = logging.getLogger(__name__)
 
 
-class SubmissionAPI(APIView):
+class SubmissionAccessMixin:
+    throttle_namespace = ""
+    throttle_option = "user"
 
-    @staticmethod
-    def _record_create_outcome(status, scope):
-        SUBMISSION_CREATE_OUTCOME_TOTAL.labels(status=status, scope=scope).inc()
+    def throttle_config(self):
+        config = SysOptions.throttling.get(self.throttle_option)
+        return config or OptionDefaultValue.throttling[self.throttle_option]
 
     def throttling(self, request):
         # 使用 open_api 的请求暂不做限制
@@ -34,7 +37,8 @@ class SubmissionAPI(APIView):
         if auth_method == "api_key":
             return
 
-        user_bucket = TokenBucket(key=str(request.user.id), redis_conn=cache, **SysOptions.throttling["user"])
+        user_bucket = TokenBucket(key=f"{self.throttle_namespace}{request.user.id}", redis_conn=cache,
+                                  **self.throttle_config())
         can_consume, wait = user_bucket.consume()
         if not can_consume:
             return "Please wait %d seconds" % (int(wait))
@@ -55,6 +59,13 @@ class SubmissionAPI(APIView):
             if contest.allowed_ip_ranges:
                 if not any(user_ip in ipaddress.ip_network(cidr, strict=False) for cidr in contest.allowed_ip_ranges):
                     return self.error("Your IP is not allowed in this contest")
+
+
+class SubmissionAPI(SubmissionAccessMixin, APIView):
+
+    @staticmethod
+    def _record_create_outcome(status, scope):
+        SUBMISSION_CREATE_OUTCOME_TOTAL.labels(status=status, scope=scope).inc()
 
     @validate_serializer(CreateSubmissionSerializer)
     @login_required
@@ -169,6 +180,45 @@ class SubmissionAPI(APIView):
         submission.shared = request.data["shared"]
         submission.save(update_fields=["shared"])
         return self.success()
+
+
+class SampleRunAPI(SubmissionAccessMixin, APIView):
+    throttle_namespace = "sample-run:"
+    throttle_option = "sample_run"
+    LOCK_TIMEOUT = 90
+
+    @login_required
+    @validate_serializer(SampleRunSerializer)
+    def post(self, request):
+        data = request.data
+        if data.get("contest_id"):
+            error = self.check_contest_permission(request)
+            if error:
+                return error
+            if not self.contest.sample_run_enabled:
+                return self.error("이 대회에서는 예제 실행을 사용할 수 없습니다.")
+        try:
+            problem = Problem.objects.get(
+                id=data["problem_id"], contest_id=data.get("contest_id"), visible=True,
+            )
+        except Problem.DoesNotExist:
+            return self.error("Problem not exist")
+        if data["language"] not in problem.languages:
+            return self.error("이 문제에서 사용할 수 없는 실행 언어입니다.")
+        error = self.throttling(request)
+        if error:
+            return self.error(error, status=429)
+
+        lock_key = f"sample-run-active:{request.user.id}"
+        if not cache.add(lock_key, True, timeout=self.LOCK_TIMEOUT):
+            return self.error("이미 예제를 실행하고 있습니다. 완료 후 다시 시도해주세요.", status=429)
+        try:
+            result = SampleRunner(problem, data["language"], data["code"]).run()
+        except SampleRunError as error:
+            return self.error(str(error), status=503)
+        finally:
+            cache.delete(lock_key)
+        return self.success(result)
 
 
 class SubmissionListAPI(APIView):

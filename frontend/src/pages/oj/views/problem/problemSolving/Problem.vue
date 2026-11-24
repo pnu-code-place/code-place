@@ -464,7 +464,7 @@ export default {
     window.removeEventListener("resize", this.handlePaneWindowResize)
     window.removeEventListener("keydown", this.handleSettingsKeydown)
     document.removeEventListener("click", this.handleSettingsOutsideClick)
-    clearTimeout(this.runTimer)
+    this.resetSampleRun()
     this.removeBeforeUnload()
   },
   methods: {
@@ -496,9 +496,7 @@ export default {
     },
     resetProblemState() {
       this.clearSubmissionRefresh()
-      clearTimeout(this.runTimer)
-      this.runStatus = "idle"
-      this.runResult = {}
+      this.resetSampleRun()
       this.statusVisible = false
       this.captchaRequired = false
       this.graphVisible = false
@@ -1167,7 +1165,13 @@ export default {
       }
       this.refreshStatus = setTimeout(checkStatus, 2000)
     },
-    runCode(mockType = "mixed") {
+    resetSampleRun() {
+      this._runRequestId = (this._runRequestId || 0) + 1
+      this.runStatus = "idle"
+      this.runResult = {}
+    },
+    async runCode() {
+      if (this.runStatus === "running") return
       if (this.code.trim() === "") {
         this.$error(this.$i18n.t("m.Code_can_not_be_empty"))
         return
@@ -1175,46 +1179,31 @@ export default {
       this.$refs.bottomDrag.show("result")
       this.runStatus = "running"
       this.runResult = {}
-      // TODO: 실행 API 연동 전까지 3초 후 완료 처리
-      clearTimeout(this.runTimer)
-      this.runTimer = setTimeout(() => {
-        // 디자인 확인용 목업: 실행 버튼 옆에서 고른 결과를 보여준다 (mixed면 예제마다 다르게)
-        const types = [
-          "wrong_answer",
-          "accepted",
-          "runtime_error",
-          "time_limit",
-        ]
-        const timeLimit = this.problem.time_limit
-        const memoryLimit = this.problem.memory_limit
-        this.runResult = {
-          timeLimit,
-          memoryLimit,
-          cases: (this.problem.samples || []).map((sample, index) => {
-            const type =
-              mockType === "mixed" ? types[index % types.length] : mockType
-            return {
-              type,
-              input: sample.input,
-              expected: sample.output,
-              output:
-                type === "accepted"
-                  ? sample.output
-                  : type === "wrong_answer"
-                    ? "15"
-                    : "",
-              error:
-                type === "runtime_error"
-                  ? "IndexError: list index out of range"
-                  : "",
-              time: type === "time_limit" ? timeLimit + 48 : 52,
-              memory:
-                type === "memory_limit" ? memoryLimit * 1024 + 18432 : 16384,
-            }
-          }),
-        }
+      const requestId = (this._runRequestId || 0) + 1
+      this._runRequestId = requestId
+      const data = {
+        problem_id: this.problem.id,
+        language: this.language,
+        code: this.code,
+      }
+      if (this.contestID) data.contest_id = this.contestID
+      try {
+        const response = await api.runSamples(data)
+        if (requestId !== this._runRequestId) return
+        this.runResult = response.data.data
         this.runStatus = "done"
-      }, 3000)
+      } catch (error) {
+        if (requestId !== this._runRequestId) return
+        const response = error.response || error
+        const message = response.data && response.data.data
+        this.runResult = {
+          message:
+            typeof message === "string"
+              ? message
+              : "예제 실행 결과를 가져오지 못했습니다. 다시 실행해주세요.",
+        }
+        this.runStatus = "error"
+      }
     },
     submitCode() {
       if (this.code.trim() === "") {
@@ -1346,6 +1335,7 @@ export default {
   },
   beforeRouteLeave(to, from, next) {
     this.clearSubmissionRefresh()
+    this.resetSampleRun()
     this.removeBeforeUnload()
     this.$store.commit(types.CHANGE_CONTEST_ITEM_VISIBLE, { menu: true })
     if (!this.problemError.visible) {

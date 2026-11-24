@@ -279,6 +279,7 @@ export const m = {
   CIDR_Network: "CIDR 네트워크",
   Allow_Paste: "붙여넣기 허용",
   AIAssistant_allow: "AI힌트 기능 허용",
+  Sample_Run_allow: "예제 실행 기능 허용",
 
   // ContestList.vue
   Contest_List_Page_Title: "대회 목록",

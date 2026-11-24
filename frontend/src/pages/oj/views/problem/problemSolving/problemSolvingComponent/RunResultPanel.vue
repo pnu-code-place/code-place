@@ -12,14 +12,31 @@
       </span>
     </div>
 
+    <div
+      v-else-if="status === 'error'"
+      class="result-message error"
+      role="alert"
+    >
+      {{ result.message }}
+    </div>
+
     <div v-else-if="status === 'done'" class="result-done">
-      <div v-if="cases.length === 0" class="result-message">
+      <div v-if="result.compileError" class="case-detail">
+        <div class="case-title error">컴파일 에러</div>
+        <div class="case-section">
+          <div class="case-label">컴파일 메시지</div>
+          <RunResultCodeBlock label="컴파일 메시지" :text="result.compileError">
+            <pre class="case-code error">{{ result.compileError }}</pre>
+          </RunResultCodeBlock>
+        </div>
+      </div>
+      <div v-else-if="cases.length === 0" class="result-message">
         실행할 예제가 없습니다.
       </div>
 
       <template v-else>
-        <!-- 런타임 에러/시간·메모리 초과는 예제 탭 없이 결과만 표시 -->
-        <div v-if="!abortedCase" class="case-tabs">
+        <!-- 모든 예제 결과를 탭으로 보여주고, 처음 실패한 예제를 자동 선택 -->
+        <div class="case-tabs">
           <button
             v-for="(testCase, index) in cases"
             :key="index"
@@ -37,74 +54,109 @@
             {{ titleOf(selectedCase) }}
           </div>
 
-          <!-- 런타임 에러: 에러 메시지만 -->
-          <div
-            v-if="selectedCase.type === 'runtime_error'"
-            class="case-section"
-          >
-            <div class="case-label">에러 메시지</div>
-            <pre class="case-code error">{{
-              selectedCase.error || "에러 정보가 없습니다."
-            }}</pre>
-          </div>
-
           <!-- 시간/메모리 초과: 제약 사항 + 상세 정보만 -->
-          <template v-else-if="isLimitExceeded(selectedCase)">
+          <template v-if="isLimitExceeded(selectedCase)">
             <div class="case-section">
               <div class="case-label">제약 사항</div>
-              <div class="case-code case-stats">
-                <span class="stat-label">수행 시간</span>
-                <span>{{ formatTime(timeLimit) }}</span>
-                <span class="stat-label">메모리</span>
-                <span>{{ formatLimitMemory(memoryLimit) }}</span>
-              </div>
+              <RunResultCodeBlock label="제약 사항" :text="limitCopyText">
+                <div class="case-code case-stats">
+                  <span class="stat-label">수행 시간</span>
+                  <span>{{ formatTime(timeLimit) }}</span>
+                  <span class="stat-label">메모리</span>
+                  <span>{{ formatLimitMemory(memoryLimit) }}</span>
+                </div>
+              </RunResultCodeBlock>
             </div>
 
             <div class="case-section">
               <div class="case-label">상세 정보</div>
-              <div class="case-code case-stats">
-                <span class="stat-label">수행 시간</span>
-                <span
-                  :class="{
-                    exceeded: selectedCase.type === 'time_limit',
-                  }"
-                  >{{ formatTime(selectedCase.time) }}</span
-                >
-                <span class="stat-label">메모리</span>
-                <span
-                  :class="{
-                    exceeded: selectedCase.type === 'memory_limit',
-                  }"
-                  >{{ formatMemory(selectedCase.memory) }}</span
-                >
-              </div>
+              <RunResultCodeBlock label="상세 정보" :text="usageCopyText">
+                <div class="case-code case-stats">
+                  <span class="stat-label">수행 시간</span>
+                  <span
+                    :class="{
+                      exceeded: selectedCase.type === 'time_limit',
+                    }"
+                    >{{ formatTime(selectedCase.time) }}</span
+                  >
+                  <span class="stat-label">메모리</span>
+                  <span
+                    :class="{
+                      exceeded: selectedCase.type === 'memory_limit',
+                    }"
+                    >{{ formatMemory(selectedCase.memory) }}</span
+                  >
+                </div>
+              </RunResultCodeBlock>
             </div>
           </template>
+
+          <div
+            v-else-if="selectedCase.type === 'output_limit'"
+            class="result-message"
+          >
+            출력량이 너무 많아 실행이 중단되었습니다.
+          </div>
+
+          <div
+            v-else-if="
+              ['runtime_error', 'system_error'].includes(selectedCase.type)
+            "
+            class="case-section"
+          >
+            <div class="case-label">에러 메시지</div>
+            <RunResultCodeBlock
+              label="에러 메시지"
+              :text="selectedCase.error || '에러 정보가 없습니다.'"
+            >
+              <pre class="case-code error">{{
+                selectedCase.error || "에러 정보가 없습니다."
+              }}</pre>
+            </RunResultCodeBlock>
+          </div>
 
           <template v-else>
             <div class="case-section">
               <div class="case-label">입력</div>
-              <pre class="case-code">{{ selectedCase.input || " " }}</pre>
+              <RunResultCodeBlock label="입력" :text="selectedCase.input || ''">
+                <pre class="case-code">{{ selectedCase.input || " " }}</pre>
+              </RunResultCodeBlock>
             </div>
 
             <div class="case-section">
-              <div class="case-label">나의 출력</div>
-              <pre class="case-code">{{ selectedCase.output || " " }}</pre>
+              <div class="case-label">
+                나의 출력{{
+                  selectedCase.outputTruncated ? " (일부만 표시)" : ""
+                }}
+              </div>
+              <RunResultCodeBlock
+                label="나의 출력"
+                :text="selectedCase.output || ''"
+              >
+                <pre class="case-code">{{ selectedCase.output || " " }}</pre>
+              </RunResultCodeBlock>
             </div>
 
             <div class="case-section">
               <div class="case-label">정답</div>
-              <pre class="case-code">{{ selectedCase.expected || " " }}</pre>
+              <RunResultCodeBlock
+                label="정답"
+                :text="selectedCase.expected || ''"
+              >
+                <pre class="case-code">{{ selectedCase.expected || " " }}</pre>
+              </RunResultCodeBlock>
             </div>
 
             <div v-if="hasStat(selectedCase)" class="case-section">
               <div class="case-label">상세 정보</div>
-              <div class="case-code case-stats">
-                <span class="stat-label">수행 시간</span>
-                <span>{{ formatTime(selectedCase.time) }}</span>
-                <span class="stat-label">메모리</span>
-                <span>{{ formatMemory(selectedCase.memory) }}</span>
-              </div>
+              <RunResultCodeBlock label="상세 정보" :text="usageCopyText">
+                <div class="case-code case-stats">
+                  <span class="stat-label">수행 시간</span>
+                  <span>{{ formatTime(selectedCase.time) }}</span>
+                  <span class="stat-label">메모리</span>
+                  <span>{{ formatMemory(selectedCase.memory) }}</span>
+                </div>
+              </RunResultCodeBlock>
             </div>
           </template>
         </div>
@@ -115,21 +167,26 @@
 
 <script>
 import { defineComponent } from "vue"
+import RunResultCodeBlock from "./RunResultCodeBlock.vue"
 
 const RESULT_TITLES = {
   accepted: "맞았습니다!",
   wrong_answer: "틀렸습니다",
   time_limit: "시간 초과",
   memory_limit: "메모리 초과",
+  output_limit: "출력 초과",
   runtime_error: "런타임 에러",
+  system_error: "실행 오류",
 }
 
 export default defineComponent({
+  components: { RunResultCodeBlock },
   props: {
     status: {
       type: String,
       default: "idle",
-      validator: (value) => ["idle", "running", "done"].includes(value),
+      validator: (value) =>
+        ["idle", "running", "done", "error"].includes(value),
     },
     result: {
       type: Object,
@@ -145,14 +202,8 @@ export default defineComponent({
     cases() {
       return this.result.cases || []
     },
-    // 실행이 중단된 예제 (런타임 에러, 시간/메모리 초과)
-    abortedCase() {
-      return this.cases.find(
-        (c) => c.type === "runtime_error" || this.isLimitExceeded(c),
-      )
-    },
     selectedCase() {
-      return this.abortedCase || this.cases[this.selectedIndex]
+      return this.cases[this.selectedIndex]
     },
     // 문제의 제한값 (시간: ms, 메모리: MB)
     timeLimit() {
@@ -160,6 +211,19 @@ export default defineComponent({
     },
     memoryLimit() {
       return this.result.memoryLimit
+    },
+    limitCopyText() {
+      return this.statsText(
+        this.formatTime(this.timeLimit),
+        this.formatLimitMemory(this.memoryLimit),
+      )
+    },
+    usageCopyText() {
+      const testCase = this.selectedCase || {}
+      return this.statsText(
+        this.formatTime(testCase.time),
+        this.formatMemory(testCase.memory),
+      )
     },
   },
   watch: {
@@ -171,7 +235,7 @@ export default defineComponent({
   methods: {
     caseTone(testCase) {
       if (testCase.type === "accepted") return "success"
-      if (testCase.type === "time_limit" || testCase.type === "memory_limit") {
+      if (this.isLimitExceeded(testCase) || testCase.type === "output_limit") {
         return "warning"
       }
       return "error"
@@ -187,6 +251,9 @@ export default defineComponent({
     },
     formatTime(time) {
       return time != null ? `${time}ms` : "-"
+    },
+    statsText(time, memory) {
+      return `수행 시간: ${time}\n메모리: ${memory}`
     },
     formatLimitMemory(memoryMB) {
       return memoryMB != null ? `${memoryMB}MB` : "-"
@@ -212,6 +279,10 @@ export default defineComponent({
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.result-message.error {
+  color: var(--run-result-error-color);
 }
 
 .loading-dots span:nth-child(2) {
@@ -338,7 +409,7 @@ export default defineComponent({
 /* 코드 박스 */
 .case-code {
   margin: 0;
-  padding: 12px 14px;
+  padding: 12px 48px 12px 14px;
   border: 1px solid var(--ps-content-pre-border-color);
   border-radius: 6px;
   max-height: none;
@@ -355,7 +426,10 @@ export default defineComponent({
   overflow-wrap: anywhere;
 }
 
+/* 에러 메시지는 길이를 자르지 않고 영역 높이만 제한해 스크롤 */
 .case-code.error {
+  max-height: 320px;
+  overflow: auto;
   color: var(--run-result-error-color);
   white-space: pre-wrap;
   word-break: break-word;

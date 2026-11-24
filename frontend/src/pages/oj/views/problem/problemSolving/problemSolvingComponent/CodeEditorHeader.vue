@@ -38,7 +38,7 @@
         :compact="compactLevel >= 2"
         @open-ai="$emit('open-ai')"
       />
-      <RunBtn :isRunning="isRunning" @create-run="$emit('create-run', $event)" />
+      <RunBtn :isRunning="isRunning" @create-run="$emit('create-run')" />
       <SubmissionBtn
         :isSubmitting="isSubmitting"
         @create-submission="$emit('create-submission')"

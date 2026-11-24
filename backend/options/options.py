@@ -125,6 +125,11 @@ class OptionDefaultValue:
             "capacity": 20,
             "fill_rate": 0.03,
             "default_capacity": 10
+        },
+        "sample_run": {
+            "capacity": 10,
+            "fill_rate": 0.1,
+            "default_capacity": 10
         }
     }
     languages = languages
