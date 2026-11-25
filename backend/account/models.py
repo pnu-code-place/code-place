@@ -194,6 +194,7 @@ class UserSolved(models.Model):
     datastructure_solved = models.BigIntegerField(default=0)
     search_solved = models.BigIntegerField(default=0)
     sorting_solved = models.BigIntegerField(default=0)
+    algorithm_solved = models.BigIntegerField(default=0)
 
     VeryLow_solved = models.BigIntegerField(default=0)
     Low_solved = models.BigIntegerField(default=0)
@@ -208,4 +209,4 @@ class UserSolved(models.Model):
 
     @property
     def total_solved(self):
-        return self.math_solved + self.implementation_solved + self.datastructure_solved + self.search_solved + self.sorting_solved
+        return self.math_solved + self.implementation_solved + self.datastructure_solved + self.search_solved + self.sorting_solved + self.algorithm_solved
