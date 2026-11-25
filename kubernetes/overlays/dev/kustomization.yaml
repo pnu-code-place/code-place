@@ -27,10 +27,10 @@ patches:
 images:
   - name: backend
     newName: harbor.code-place-dev.kr/code-place-dev/backend
-    newTag: c9a3c5b64c793cf6281b8341631e2fb485eb99f2-dev
+    newTag: fe49c52d0240bb8555be88ccb33ffeefa467d9e6-dev
   - name: frontend
     newName: harbor.code-place-dev.kr/code-place-dev/frontend
-    newTag: 37fddeda7418ad521fd1e5b3045f376a5ec1c479-dev
+    newTag: fe49c52d0240bb8555be88ccb33ffeefa467d9e6-dev
   - name: judge-server
     newName: harbor.code-place-dev.kr/code-place-dev/judge-server
     newTag: 1.0.3
