@@ -22,8 +22,12 @@
           </div>
           <div v-if="showTags" class="skeleton-tag-row">
             <span class="skeleton-block skeleton-chip"></span>
-            <span class="skeleton-block skeleton-chip skeleton-chip-short"></span>
-            <span class="skeleton-block skeleton-chip skeleton-chip-short"></span>
+            <span
+              class="skeleton-block skeleton-chip skeleton-chip-short"
+            ></span>
+            <span
+              class="skeleton-block skeleton-chip skeleton-chip-short"
+            ></span>
           </div>
         </div>
       </div>
@@ -341,12 +345,12 @@ export default {
 .skeleton-tag-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: 4px 5px;
 }
 
 .skeleton-chip {
   width: 72px;
-  height: 24px;
+  height: 20px;
   border-radius: 999px;
 }
 

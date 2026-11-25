@@ -1,4 +1,6 @@
 export const m = {
+  // ProblemListTable.vue
+  Problem_Solved: "已解決",
   // 404.vue
   Go_Home: "回到首頁",
   // Problem.vue

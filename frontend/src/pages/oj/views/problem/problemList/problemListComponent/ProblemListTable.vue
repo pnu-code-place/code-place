@@ -59,8 +59,12 @@
           <span class="skeleton-block skeleton-title"></span>
           <div v-if="showTags" class="skeleton-meta-row">
             <span class="skeleton-block skeleton-chip"></span>
-            <span class="skeleton-block skeleton-chip skeleton-chip-short"></span>
-            <span class="skeleton-block skeleton-chip skeleton-chip-short"></span>
+            <span
+              class="skeleton-block skeleton-chip skeleton-chip-short"
+            ></span>
+            <span
+              class="skeleton-block skeleton-chip skeleton-chip-short"
+            ></span>
           </div>
         </td>
         <td class="td-third">
@@ -77,7 +81,39 @@
     <template v-else-if="this.problemList.length !== 0">
       <tbody>
         <tr v-for="problem in this.problemList" :key="problem._id">
-          <td class="td-first">{{ problem._id }}</td>
+          <td class="td-first">
+            <div
+              class="problem-id-wrapper"
+              :class="{
+                'is-solved': showSolvedStatus && problem.my_status === 0,
+              }"
+            >
+              <span>{{ problem._id }}</span>
+              <span
+                v-if="showSolvedStatus && problem.my_status === 0"
+                class="problem-solved"
+                role="img"
+                :aria-label="$t('m.Problem_Solved')"
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  aria-hidden="true"
+                  focusable="false"
+                >
+                  <path
+                    d="m3 8 3.2 3.2 6.8-7"
+                    stroke="currentColor"
+                    stroke-width="2.2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </span>
+            </div>
+          </td>
           <td
             class="td-second"
             @click="enterProblemDetail(problem._id, problem.title)"
@@ -92,8 +128,8 @@
             <div v-if="showTags" class="problem-meta-row">
               <FieldCategoryBox
                 :boxType="true"
+                :field="problem.field"
                 :value="FIELD_MAP[problem.field].value"
-                :boxColor="FIELD_MAP[problem.field].boxColor"
               />
               <button
                 v-for="category in getProblemTags(problem)"
@@ -102,11 +138,7 @@
                 class="tag-filter-button"
                 @click.stop="selectTag(category)"
               >
-                <FieldCategoryBox
-                  :boxType="false"
-                  :value="'#' + category"
-                  :boxColor="'#ffffff'"
-                />
+                <FieldCategoryBox :value="'#' + category" />
               </button>
             </div>
           </td>
@@ -153,6 +185,10 @@ export default {
     showTags: {
       type: Boolean,
       default: true,
+    },
+    showSolvedStatus: {
+      type: Boolean,
+      default: false,
     },
     sort: {
       type: String,
@@ -337,6 +373,29 @@ tbody {
       white-space: nowrap;
     }
 
+    .problem-id-wrapper {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+
+      &.is-solved {
+        color: #23824e;
+      }
+    }
+
+    .problem-solved {
+      position: absolute;
+      top: 50%;
+      left: 100%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      margin-left: 5px;
+      transform: translateY(-50%);
+    }
+
     td:nth-child(2) {
       text-align: left;
       padding-left: 70px;
@@ -385,21 +444,28 @@ tbody {
     .problem-meta-row {
       display: flex;
       flex-wrap: wrap;
-      gap: 4px 3px;
+      gap: 4px 5px;
       align-items: center;
     }
 
-    .problem-meta-row /deep/ .box {
-      margin: 0;
-    }
-
     .tag-filter-button {
-      border: 0;
-      padding: 0;
+      appearance: none;
+      display: inline-flex;
+      align-items: center;
+      max-width: 100%;
+      min-width: 0;
       margin: 0;
+      padding: 0;
+      border: 0;
+      border-radius: 999px;
       background: transparent;
-      cursor: pointer;
       font: inherit;
+      cursor: pointer;
+
+      &:focus-visible {
+        outline: 2px solid #4a86c0;
+        outline-offset: 2px;
+      }
     }
   }
 }
@@ -445,13 +511,14 @@ td:nth-child(2) {
 
 .skeleton-meta-row {
   display: flex;
-  gap: 5px;
-  margin-top: 11px;
+  flex-wrap: wrap;
+  gap: 4px 5px;
+  margin-top: 8px;
 }
 
 .skeleton-chip {
   width: 78px;
-  height: 24px;
+  height: 20px;
   border-radius: 999px;
 }
 

@@ -1,5 +1,7 @@
 /* eslint-disable */
 export const m = {
+  // ProblemListTable.vue
+  Problem_Solved: "푼 문제",
   // 404.vue
   Go_Home: "메인으로",
   No_Response: "서버가 응답하지 않습니다.",
