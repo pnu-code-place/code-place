@@ -10,7 +10,7 @@ axios.defaults.xsrfHeaderName = "X-CSRFToken"
 axios.defaults.xsrfCookieName = "csrftoken"
 configureAxiosRequestId(axios)
 
-function translateApiMessage(message) {
+export function translateApiMessage(message) {
   if (typeof message !== "string") {
     return message
   }
@@ -419,6 +419,12 @@ export default {
   submitCode(data) {
     return ajax("submission", "post", {
       data,
+    })
+  },
+  runSamples(data) {
+    return ajax("sample_run", "post", {
+      data,
+      silentError: true,
     })
   },
   getSubmissionList(offset, limit, params) {

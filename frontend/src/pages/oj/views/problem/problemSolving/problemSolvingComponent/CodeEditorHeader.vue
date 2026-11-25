@@ -38,6 +38,7 @@
         :compact="compactLevel >= 2"
         @open-ai="$emit('open-ai')"
       />
+      <RunBtn :isRunning="isRunning" @create-run="$emit('create-run')" />
       <SubmissionBtn
         :isSubmitting="isSubmitting"
         @create-submission="$emit('create-submission')"
@@ -58,6 +59,7 @@ import { defineComponent } from "vue"
 import SubmissionStatus from "./SubmissionStatus.vue"
 import SubmissionBtn from "./SubmissionBtn.vue"
 import AIAssistantBtn from "./AIAssistantBtn.vue"
+import RunBtn from "./RunBtn.vue"
 
 // 헤더 너비(px)에 따라 단계적으로 줄임
 // 1: "코드 작성" 글자 숨김, 2: AI 조교·제출결과 아이콘만, 3: 제목 아이콘까지 숨김
@@ -79,11 +81,13 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
+    isRunning: Boolean,
   },
   components: {
     SubmissionBtn,
     SubmissionStatus,
     AIAssistantBtn,
+    RunBtn,
   },
   data() {
     return {

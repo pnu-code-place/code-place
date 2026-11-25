@@ -171,6 +171,30 @@
                 ></span>
               </label>
             </div>
+
+            <div class="toggle-item">
+              <span id="allow_sample_run_label" class="toggle-label">
+                {{ $t("m.Sample_Run_allow") }}
+                <el-tooltip
+                  content="대회 진행 중 예제 실행 기능을 허용합니다."
+                  placement="top"
+                >
+                  <i class="el-icon-question help-icon"></i>
+                </el-tooltip>
+              </span>
+
+              <label class="spj-toggle">
+                <input
+                  type="checkbox"
+                  v-model="contest.sample_run_enabled"
+                  aria-labelledby="allow_sample_run_label"
+                />
+                <span
+                  class="spj-toggle-track"
+                  :class="{ 'is-on': contest.sample_run_enabled }"
+                ></span>
+              </label>
+            </div>
           </div>
         </div>
 
@@ -242,6 +266,7 @@ export default {
         visible: true,
         allow_paste: true,
         ai_assistant_enabled: false,
+        sample_run_enabled: false,
         allowed_ip_ranges: [{ value: "" }],
       },
     }

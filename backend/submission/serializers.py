@@ -11,6 +11,18 @@ class CreateSubmissionSerializer(serializers.Serializer):
     captcha = serializers.CharField(required=False)
 
 
+class SampleRunSerializer(serializers.Serializer):
+    problem_id = serializers.IntegerField(min_value=1)
+    language = LanguageNameChoiceField()
+    code = serializers.CharField(max_length=1024 * 1024, trim_whitespace=False)
+    contest_id = serializers.IntegerField(required=False, min_value=1)
+
+    def validate_code(self, value):
+        if not value.strip():
+            raise serializers.ValidationError("실행할 코드를 입력해주세요.")
+        return value
+
+
 class ShareSubmissionSerializer(serializers.Serializer):
     id = serializers.CharField()
     shared = serializers.BooleanField()

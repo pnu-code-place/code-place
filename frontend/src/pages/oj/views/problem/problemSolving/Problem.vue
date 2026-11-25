@@ -236,6 +236,7 @@
             @change-language="changeLanguage"
             @open-ai="toggleAIAssistant"
             :aiVisible="aiAssistantVisible"
+            @create-run="runCode"
             :problem="problem"
             :language.sync="language"
             :statusVisible="statusVisible"
@@ -243,6 +244,7 @@
             :result="result"
             :submissionId="submissionId"
             :isSubmitting="submitting"
+            :isRunning="runStatus === 'running'"
           />
           <div class="code-editor-area">
             <CodeEditor
@@ -256,6 +258,13 @@
             />
             <StickyLnCol :cursorPos="cursorPos" />
           </div>
+          <BottomDrag
+            ref="bottomDrag"
+            result-only
+            :problemID="problemID"
+            :runStatus="runStatus"
+            :runResult="runResult"
+          />
         </div>
       </pane>
       <pane
@@ -288,7 +297,7 @@ import {
   CONTEST_STATUS,
   buildProblemCodeKey,
 } from "@/utils/constants"
-import api from "@oj/api"
+import api, { translateApiMessage } from "@oj/api"
 import { Pane, Splitpanes } from "splitpanes"
 import "splitpanes/dist/splitpanes.css"
 import { DIFFICULTY_MAP, FIELD_MAP } from "../../../../../utils/constants"
@@ -299,6 +308,7 @@ import CodeEditor from "./problemSolvingComponent/CodeEditor.vue"
 import SubmissionList from "./problemSolvingComponent/SubmissionList.vue"
 import ProblemCommunity from "./problemSolvingComponent/ProblemCommunity.vue"
 import AIAssistantDrawer from "./problemSolvingComponent/AIAssistantDrawer.vue"
+import BottomDrag from "./problemSolvingComponent/BottomDrag.vue"
 import ContestProblemNavigator from "./problemSolvingComponent/ContestProblemNavigator.vue"
 
 // 패널 기본 비율(%): 문제 36 / 코드 36 / AI 28
@@ -325,6 +335,7 @@ export default {
     Splitpanes,
     Pane,
     AIAssistantDrawer,
+    BottomDrag,
   },
   mixins: [FormMixin],
   data() {
@@ -347,6 +358,8 @@ export default {
       lastAiPaneSize: DEFAULT_AI_PANE_SIZE,
       problemPaneCollapsed: false,
       submitting: false,
+      runStatus: "idle",
+      runResult: {},
       code: "",
       language: "C++",
       codePerLanguage: {},
@@ -453,6 +466,7 @@ export default {
     window.removeEventListener("resize", this.handlePaneWindowResize)
     window.removeEventListener("keydown", this.handleSettingsKeydown)
     document.removeEventListener("click", this.handleSettingsOutsideClick)
+    this.resetSampleRun()
     this.removeBeforeUnload()
   },
   methods: {
@@ -484,6 +498,7 @@ export default {
     },
     resetProblemState() {
       this.clearSubmissionRefresh()
+      this.resetSampleRun()
       this.statusVisible = false
       this.captchaRequired = false
       this.graphVisible = false
@@ -1149,6 +1164,46 @@ export default {
       }
       this.refreshStatus = setTimeout(checkStatus, 2000)
     },
+    resetSampleRun() {
+      this._runRequestId = (this._runRequestId || 0) + 1
+      this.runStatus = "idle"
+      this.runResult = {}
+    },
+    async runCode() {
+      if (this.runStatus === "running") return
+      if (this.code.trim() === "") {
+        this.$error(this.$i18n.t("m.Code_can_not_be_empty"))
+        return
+      }
+      this.$refs.bottomDrag.show("result")
+      this.runStatus = "running"
+      this.runResult = {}
+      const requestId = (this._runRequestId || 0) + 1
+      this._runRequestId = requestId
+      const data = {
+        problem_id: this.problem.id,
+        language: this.language,
+        code: this.code,
+      }
+      if (this.contestID) data.contest_id = this.contestID
+      try {
+        const response = await api.runSamples(data)
+        if (requestId !== this._runRequestId) return
+        this.runResult = response.data.data
+        this.runStatus = "done"
+      } catch (error) {
+        if (requestId !== this._runRequestId) return
+        const response = error.response || error
+        const message = response.data && response.data.data
+        this.runResult = {
+          message:
+            typeof message === "string"
+              ? translateApiMessage(message)
+              : "예제 실행 결과를 가져오지 못했습니다. 다시 실행해주세요.",
+        }
+        this.runStatus = "error"
+      }
+    },
     submitCode() {
       if (this.code.trim() === "") {
         this.$error(this.$i18n.t("m.Code_can_not_be_empty"))
@@ -1279,6 +1334,7 @@ export default {
   },
   beforeRouteLeave(to, from, next) {
     this.clearSubmissionRefresh()
+    this.resetSampleRun()
     this.removeBeforeUnload()
     this.$store.commit(types.CHANGE_CONTEST_ITEM_VISIBLE, { menu: true })
     if (!this.problemError.visible) {
@@ -1573,7 +1629,7 @@ export default {
   padding-bottom: 0;
 }
 
-.splitpanes--vertical > .splitpanes__splitter {
+.problem-solving-root .splitpanes.splitpanes--vertical > .splitpanes__splitter {
   min-width: 4px !important;
   width: 4px !important;
   // 음수 margin 으로 경계선이 패널 너비를 차지하지 않게 함
@@ -1581,6 +1637,7 @@ export default {
   z-index: 1;
   position: relative;
   background: transparent;
+  border: 0;
   cursor: col-resize;
   flex-shrink: 0;
 
@@ -1591,6 +1648,7 @@ export default {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+    margin: 0;
     width: 2px;
     height: 24px;
     background: rgba(160, 160, 160, 0.6);
@@ -1606,6 +1664,11 @@ export default {
     bottom: 0;
     left: -4px;
     right: -4px;
+    width: auto;
+    height: auto;
+    margin: 0;
+    transform: none;
+    background: transparent;
   }
 
   &:hover::before,
@@ -1616,7 +1679,7 @@ export default {
 }
 
 // 드래그 중에는 잡고 있는 경계선만 강조
-.splitpanes--vertical.splitpanes--dragging
+.problem-solving-root .splitpanes.splitpanes--vertical.splitpanes--dragging
   > .splitpanes__splitter:not(.is-active):hover::before {
   height: 24px;
   background: rgba(160, 160, 160, 0.6);

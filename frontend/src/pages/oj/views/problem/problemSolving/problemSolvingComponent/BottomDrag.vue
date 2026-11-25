@@ -1,9 +1,25 @@
 <template>
-  <div v-show="visible" class="editor-container">
-    <div class="divider" @mousedown="startDrag"></div>
+  <div
+    v-show="visible"
+    class="editor-container"
+    :class="{ 'result-only': resultOnly }"
+  >
+    <div class="panel-resize-handle" @mousedown="startDrag"></div>
 
     <div class="editor-bottom">
-      <div class="tab-header">
+      <header v-if="resultOnly" class="run-panel-header">
+        <span class="run-panel-title">실행 결과</span>
+        <button
+          type="button"
+          class="run-panel-close"
+          title="실행 결과 닫기"
+          aria-label="실행 결과 닫기"
+          @click="visible = false"
+        >
+          <i class="fas fa-times" aria-hidden="true"></i>
+        </button>
+      </header>
+      <div v-else class="bottom-panel-tabs">
         <div class="tab-left">
           <span :class="{ active: tab === 'result' }" @click="tab = 'result'"
             >실행 결과</span
@@ -48,7 +64,7 @@
       </div>
 
       <div ref="terminalBody" class="terminal-body">
-        <div v-if="tab === 'ai'" class="ai-chat">
+        <div v-if="!resultOnly && tab === 'ai'" class="ai-chat">
           <!-- 단계 진행 스테퍼 -->
           <div v-if="!isAdminRole" class="hint-stepper">
             <div class="step-track">
@@ -106,7 +122,7 @@
           </div>
         </div>
 
-        <div v-else class="result-message">실행 결과가 여기에 표시됩니다.</div>
+        <RunResultPanel v-else :status="runStatus" :result="runResult" />
       </div>
     </div>
   </div>
@@ -116,15 +132,31 @@
 import api from "@oj/api"
 import { aiHintErrorText } from "./aiAssistantErrors"
 import { mapGetters } from "vuex" // 스토어에서 관리자 여부를 가져오기 위해 추가
+import RunResultPanel from "./RunResultPanel.vue"
 
 export default {
+  components: {
+    RunResultPanel,
+  },
   props: {
+    resultOnly: {
+      type: Boolean,
+      default: false,
+    },
     result: Object,
     problemID: String,
     contestID: [Number, String],
     code: {
       type: String,
       default: "",
+    },
+    runStatus: {
+      type: String,
+      default: "idle",
+    },
+    runResult: {
+      type: Object,
+      default: () => ({}),
     },
   },
 
@@ -193,11 +225,11 @@ export default {
         })
     },
 
-    show() {
+    show(tab = "ai") {
       this.visible = true
-      this.tab = "ai"
+      this.tab = this.resultOnly ? "result" : tab
       // 패널이 열릴 때마다 최신 내역 및 카운트 불러오기
-      this.fetchHintHistory()
+      if (this.tab === "ai") this.fetchHintHistory()
     },
 
     requestHint() {
@@ -324,7 +356,8 @@ export default {
     onMouseMove(e) {
       if (!this.isDragging) return
       const parentRect = this.$el.parentElement.getBoundingClientRect()
-      const editorArea = this.$el.parentElement.querySelector(".code-editor-area")
+      const editorArea =
+        this.$el.parentElement.querySelector(".code-editor-area")
       const editorAreaTop = editorArea
         ? editorArea.getBoundingClientRect().top
         : parentRect.top
@@ -349,7 +382,7 @@ export default {
     window.addEventListener("mousemove", this.onMouseMove)
     window.addEventListener("mouseup", this.onMouseUp)
     // 페이지 마운트 시에도 내역 불러오기
-    if (this.visible) {
+    if (this.visible && !this.resultOnly) {
       this.fetchHintHistory()
     }
   },
@@ -363,6 +396,10 @@ export default {
   watch: {
     // 문제 ID가 바뀔 때 상태 초기화 및 새로운 문제 히스토리 조회
     problemID() {
+      if (this.resultOnly) {
+        this.visible = false
+        return
+      }
       this.closeEventSource()
       this.isLoading = false
       this.messages = []
@@ -386,7 +423,7 @@ export default {
   z-index: 10;
 }
 
-.divider {
+.panel-resize-handle {
   height: 6px;
   cursor: row-resize;
   background-color: transparent;
@@ -394,7 +431,7 @@ export default {
   flex-shrink: 0;
 }
 
-.divider::after {
+.panel-resize-handle::after {
   content: "";
   position: absolute;
   left: 50%;
@@ -414,7 +451,7 @@ export default {
   overflow: hidden;
 }
 
-.tab-header {
+.bottom-panel-tabs {
   display: flex;
   align-items: center;
   gap: 4px;
@@ -507,6 +544,69 @@ export default {
   padding: 16px;
   overflow-y: auto;
   flex: 1;
+}
+
+.result-only .panel-resize-handle::after {
+  background-color: var(--border-color);
+}
+
+.result-only .editor-bottom {
+  min-height: 0;
+  border: 1px solid var(--border-color);
+  border-radius: 7px;
+  background-color: var(--ps-content-color);
+  color: var(--ps-content-text-color);
+}
+
+.run-panel-header {
+  flex: 0 0 auto;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 6px 0 12px;
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--ps-content-color);
+  user-select: none;
+}
+
+.run-panel-title {
+  color: var(--ps-content-title-color);
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.run-panel-close {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ps-content-text-color);
+  font-size: 13px;
+  cursor: pointer;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
+}
+
+.run-panel-close:hover {
+  background-color: var(--ps-content-pre-background-color);
+  color: var(--ps-content-title-color);
+}
+
+.run-panel-close:focus-visible {
+  outline: 2px solid var(--submission-primary-btn-bg);
+  outline-offset: 2px;
+}
+
+.result-only .terminal-body {
+  min-height: 0;
 }
 
 .ai-chat {
@@ -695,10 +795,5 @@ export default {
   font-size: 14px;
   line-height: 1.6;
   white-space: pre-wrap;
-}
-
-.result-message {
-  color: var(--ai-assistant-muted-text-color);
-  font-size: 14px;
 }
 </style>

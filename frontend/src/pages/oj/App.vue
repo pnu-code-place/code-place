@@ -209,6 +209,9 @@ h1.main-title {
   --ai-assistant-close-hover-bg: #eeeeee;
   --ai-assistant-close-hover-text-color: #555555;
   --ai-assistant-error-text-color: #c0392b;
+  --run-result-success-color: #21804f;
+  --run-result-warning-color: #9a6700;
+  --run-result-error-color: #c83d4f;
 
   /* Contest Page */
   --container-border-color: #dedede;
@@ -281,6 +284,9 @@ h1.main-title {
   --ai-assistant-close-hover-bg: #343f5a;
   --ai-assistant-close-hover-text-color: #ffffff;
   --ai-assistant-error-text-color: #ff9e9e;
+  --run-result-success-color: #72cba1;
+  --run-result-warning-color: #e9b45a;
+  --run-result-error-color: #f18d94;
 
   --bg-color: #1f2430;
   --text-color: #ffffff;
