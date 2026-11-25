@@ -142,6 +142,13 @@ class JudgeServerHeartbeatTest(APITestCase):
         resp = self.client.post(self.url, data=data, **self.headers)
         self.assertSuccess(resp)
         self.assertEqual(JudgeServer.objects.get(hostname=self.data["hostname"]).judger_version, data["judger_version"])
+    @mock.patch(
+         "conf.views.process_pending_task",
+        side_effect=RuntimeError("Queue processing must not run"),
+    )
+    def test_heartbeat_without_queue_processing(self, process):
+        self.test_update_heartbeat()
+        process.assert_not_called()
 
 
 class JudgeServerAPITest(APITestCase):
