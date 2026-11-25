@@ -26,6 +26,7 @@ logger = logging.getLogger(__name__)
 class SubmissionAccessMixin:
     throttle_namespace = ""
     throttle_option = "user"
+    throttle_message = "Please wait %d seconds"
 
     def throttle_config(self):
         config = SysOptions.throttling.get(self.throttle_option)
@@ -41,7 +42,7 @@ class SubmissionAccessMixin:
                                   **self.throttle_config())
         can_consume, wait = user_bucket.consume()
         if not can_consume:
-            return "Please wait %d seconds" % (int(wait))
+            return self.throttle_message % (int(wait))
 
         # ip_bucket = TokenBucket(key=request.session["ip"],
         #                         redis_conn=cache, **SysOptions.throttling["ip"])
@@ -185,6 +186,7 @@ class SubmissionAPI(SubmissionAccessMixin, APIView):
 class SampleRunAPI(SubmissionAccessMixin, APIView):
     throttle_namespace = "sample-run:"
     throttle_option = "sample_run"
+    throttle_message = "%d초 후에 다시 실행해주세요."
     LOCK_TIMEOUT = 90
 
     @login_required
@@ -205,14 +207,13 @@ class SampleRunAPI(SubmissionAccessMixin, APIView):
             return self.error("Problem not exist")
         if data["language"] not in problem.languages:
             return self.error("이 문제에서 사용할 수 없는 실행 언어입니다.")
-        error = self.throttling(request)
-        if error:
-            return self.error(error, status=429)
-
         lock_key = f"sample-run-active:{request.user.id}"
         if not cache.add(lock_key, True, timeout=self.LOCK_TIMEOUT):
             return self.error("이미 예제를 실행하고 있습니다. 완료 후 다시 시도해주세요.", status=429)
         try:
+            error = self.throttling(request)
+            if error:
+                return self.error(error, status=429)
             result = SampleRunner(problem, data["language"], data["code"]).run()
         except SampleRunError as error:
             return self.error(str(error), status=503)

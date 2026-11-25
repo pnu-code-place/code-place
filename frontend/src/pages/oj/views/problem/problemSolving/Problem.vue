@@ -56,7 +56,9 @@
               >
                 <Icon type="minus-round" />
               </button>
-              <span class="settings-control-value"> {{ codeFontSize }}px </span>
+              <span class="settings-control-value">
+                {{ codeFontSize }}px
+              </span>
               <button
                 type="button"
                 class="settings-step-button"
@@ -295,7 +297,7 @@ import {
   CONTEST_STATUS,
   buildProblemCodeKey,
 } from "@/utils/constants"
-import api from "@oj/api"
+import api, { translateApiMessage } from "@oj/api"
 import { Pane, Splitpanes } from "splitpanes"
 import "splitpanes/dist/splitpanes.css"
 import { DIFFICULTY_MAP, FIELD_MAP } from "../../../../../utils/constants"
@@ -963,9 +965,7 @@ export default {
         this.closeSettingsPopover()
         return
       }
-      this.updateSettingsPopoverPosition(
-        event.detail && event.detail.anchorRect,
-      )
+      this.updateSettingsPopoverPosition(event.detail && event.detail.anchorRect)
       this.settingsPopoverOpen = true
     },
     closeSettingsPopover() {
@@ -1141,8 +1141,7 @@ export default {
               this.leftPainActiveTab = "submission"
               this.lastSubmissionId = id
               // 통과(Accepted=0)하지 못한 결과면 질문 유도 넛지 표시 (대회에서는 질문 기능 자체가 없으므로 제외)
-              this.showAskNudge =
-                !this.isContestProblem && this.result.result !== 0
+              this.showAskNudge = !this.isContestProblem && this.result.result !== 0
 
               if (this.result.result === 0 && !this.isContestProblem) {
                 this.notifyCodePlaceHub(this.result)
@@ -1199,7 +1198,7 @@ export default {
         this.runResult = {
           message:
             typeof message === "string"
-              ? message
+              ? translateApiMessage(message)
               : "예제 실행 결과를 가져오지 못했습니다. 다시 실행해주세요.",
         }
         this.runStatus = "error"
@@ -1345,12 +1344,7 @@ export default {
   },
   watch: {
     $route(to, from) {
-      if (
-        !this.problemError.visible &&
-        from &&
-        from.params &&
-        from.params.problemID
-      ) {
+      if (!this.problemError.visible && from && from.params && from.params.problemID) {
         this.saveCurrentCode(from.params.problemID, from.params.contestID)
       }
       this.init({

@@ -44,6 +44,9 @@ class ChooseJudgeServer:
     def __init__(self):
         self.server = None
 
+    def has_capacity(self, server):
+        return server.task_number <= server.cpu_core * 2
+
     def __enter__(self) -> [JudgeServer, None]:
         with tracer.start_as_current_span("judge_server.select") as span:
             with transaction.atomic():
@@ -51,7 +54,7 @@ class ChooseJudgeServer:
                 servers = [s for s in servers if s.status == "normal"]
                 span.set_attribute("codeplace.judge_server.candidates", len(servers))
                 for server in servers:
-                    if server.task_number <= server.cpu_core * 2:
+                    if self.has_capacity(server):
                         server.task_number = F("task_number") + 1
                         server.save(update_fields=["task_number"])
                         self.server = server

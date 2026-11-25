@@ -1,8 +1,9 @@
 """Run public problem samples without creating submissions or reading private test cases."""
 from copy import deepcopy
+import re
 import signal
 
-from judge.dispatcher import ChooseJudgeServer, DispatcherBase
+from judge.dispatcher import ChooseJudgeServer, DispatcherBase, process_pending_task
 from options.options import SysOptions
 from problem.utils import parse_problem_template
 from submission.models import JudgeStatus
@@ -12,8 +13,13 @@ class SampleRunError(Exception):
     pass
 
 
+class SampleRunJudgeServer(ChooseJudgeServer):
+    def has_capacity(self, server):
+        return server.task_number < server.cpu_core
+
+
 class SampleRunner(DispatcherBase):
-    OUTPUT_LIMIT = 64 * 1024
+    DISPLAY_CHAR_LIMIT = 65536
     REQUEST_TIMEOUT = 60
     JUDGE_MIN_OUTPUT_LIMIT = 16 * 1024 * 1024
     RESULT_TYPES = {
@@ -44,12 +50,72 @@ class SampleRunner(DispatcherBase):
             return "output_limit"
         return case_type
 
+    # 채점 서버는 stdout과 stderr를 하나의 output으로 돌려준다.
+    # 언어별 에러 시작 표시를 찾아 그 부분만 보여주고, 못 찾으면 출력 대신 종료 원인을 안내한다.
+    ERROR_START_PATTERNS = {
+        "C": re.compile(r"^.*Assertion `.*' failed\.?$", re.MULTILINE),
+        "C++": re.compile(r"^(terminate called .*|.*Assertion `.*' failed\.?)$", re.MULTILINE),
+        "Java": re.compile(r"^Exception in thread .*$", re.MULTILINE),
+        "Golang": re.compile(r"^(panic: |fatal error: ).*$", re.MULTILINE),
+        "JavaScript": re.compile(r"^[A-Za-z_$][\w$]*(Error|Exception)\b.*\n {4}at ", re.MULTILINE),
+    }
+    SIGNAL_MESSAGES = {
+        signal.SIGSEGV: "잘못된 메모리 접근 (SIGSEGV). 배열 범위를 벗어났거나 잘못된 포인터를 사용했는지 확인해주세요.",
+        signal.SIGBUS: "잘못된 메모리 접근 (SIGBUS). 잘못된 포인터를 사용했는지 확인해주세요.",
+        signal.SIGFPE: "산술 오류 (SIGFPE). 0으로 나누었는지 확인해주세요.",
+        signal.SIGABRT: "프로그램이 강제 종료되었습니다 (SIGABRT). assert 실패나 처리되지 않은 예외가 있는지 확인해주세요.",
+        signal.SIGKILL: "프로그램이 강제 종료되었습니다 (SIGKILL).",
+    }
+
+    @staticmethod
+    def _python_traceback(output):
+        start = output.rfind("Traceback (most recent call last):")
+        if start < 0:
+            return ""
+        # stdout은 버퍼링되어 traceback 뒤에 붙을 수 있으므로, 들여쓴 줄 다음의 예외 줄까지만 자른다.
+        lines = output[start:].splitlines()
+        block = [lines[0]]
+        for line in lines[1:]:
+            block.append(line)
+            if line and not line[0].isspace():
+                break
+        return "\n".join(block)
+
+    @staticmethod
+    def _java_stack_trace(output, start):
+        # 스택 트레이스(\tat ..., Caused by: ...)가 끝나는 곳까지만 자르고 뒤에 붙은 stdout은 제외한다.
+        lines = output[start:].splitlines()
+        block = [lines[0]]
+        for line in lines[1:]:
+            if not (line[:1].isspace() or line.startswith("Caused by: ")):
+                break
+            block.append(line)
+        return "\n".join(block)
+
+    def _exit_reason(self, row):
+        signal_number = row.get("signal") or 0
+        if signal_number in self.SIGNAL_MESSAGES:
+            return self.SIGNAL_MESSAGES[signal_number]
+        if signal_number:
+            return f"프로그램이 시그널 {signal_number}번으로 비정상 종료되었습니다."
+        exit_code = row.get("exit_code")
+        if exit_code:
+            return f"프로그램이 0이 아닌 종료 코드({exit_code})로 끝났습니다. 정상 종료 시 0을 반환하는지 확인해주세요."
+        return "프로그램이 비정상 종료되었습니다."
+
     def _runtime_error_message(self, row, output):
-        fallback = f"프로그램이 비정상 종료되었습니다. (종료 코드: {row.get('exit_code')}, 시그널: {row.get('signal')})"
         if self.language == "Python3":
-            traceback = output.rfind("Traceback (most recent call last):")
-            return output[traceback:] if traceback >= 0 else fallback
-        return output or fallback
+            diagnostic = self._python_traceback(output)
+        else:
+            pattern = self.ERROR_START_PATTERNS.get(self.language)
+            match = pattern.search(output) if pattern else None
+            if not match:
+                diagnostic = ""
+            elif self.language == "Java":
+                diagnostic = self._java_stack_trace(output, match.start())
+            else:
+                diagnostic = output[match.start():].strip()
+        return diagnostic or self._exit_reason(row)
 
     def run(self):
         samples = deepcopy(self.problem.samples)
@@ -90,17 +156,19 @@ class SampleRunner(DispatcherBase):
                 "spj_src": self.problem.spj_code,
             })
 
-        with ChooseJudgeServer() as server:
+        with SampleRunJudgeServer() as server:
             if server is None:
                 raise SampleRunError("사용 가능한 실행 서버가 없습니다. 잠시 후 다시 시도해주세요.")
             response = self._request(
                 self._get_target_url(server, "/judge"), data=data, timeout=self.REQUEST_TIMEOUT,
             )
+        # 슬롯이 비었으니, 실행이 슬롯을 차지하는 동안 대기열에 쌓인 제출을 이어서 채점한다.
+        process_pending_task()
 
         if not isinstance(response, dict):
             raise SampleRunError("실행 서버의 응답을 받지 못했습니다. 다시 시도해주세요.")
         if response.get("err") == "CompileError":
-            result["compileError"] = str(response.get("data") or "컴파일 오류가 발생했습니다.")[:self.OUTPUT_LIMIT]
+            result["compileError"] = str(response.get("data") or "컴파일 오류가 발생했습니다.")[:self.DISPLAY_CHAR_LIMIT]
             return result
         if response.get("err") or not isinstance(response.get("data"), list):
             raise SampleRunError("예제 실행 중 서버 오류가 발생했습니다. 다시 시도해주세요.")
@@ -127,9 +195,9 @@ class SampleRunner(DispatcherBase):
                 "type": case_type,
                 "input": sample["input"],
                 "expected": sample["output"],
-                "output": "" if case_type == "output_limit" else output[:self.OUTPUT_LIMIT],
-                "outputTruncated": case_type == "output_limit" or len(output) > self.OUTPUT_LIMIT,
-                "error": error[:self.OUTPUT_LIMIT],
+                "output": "" if case_type == "output_limit" else output[:self.DISPLAY_CHAR_LIMIT],
+                "outputTruncated": case_type == "output_limit" or len(output) > self.DISPLAY_CHAR_LIMIT,
+                "error": error[:self.DISPLAY_CHAR_LIMIT],
                 "time": row.get("cpu_time"),
                 # JudgeServer returns bytes; the result panel displays KB/MB.
                 "memory": round(row["memory"] / 1024, 2) if row.get("memory") is not None else None,

@@ -24,10 +24,7 @@
           <span :class="{ active: tab === 'result' }" @click="tab = 'result'"
             >실행 결과</span
           >
-          <span
-            v-if="!resultOnly"
-            :class="{ active: tab === 'ai' }"
-            @click="tab = 'ai'"
+          <span :class="{ active: tab === 'ai' }" @click="tab = 'ai'"
             >{{ $t("m.AI_Assistant") }}</span
           >
         </div>
@@ -58,9 +55,7 @@
           <button
             type="button"
             class="close-btn"
-            :aria-label="
-              resultOnly ? '실행 결과 닫기' : $t('m.AI_Assistant_Close')
-            "
+            :aria-label="$t('m.AI_Assistant_Close')"
             @click="visible = false"
           >
             ✕

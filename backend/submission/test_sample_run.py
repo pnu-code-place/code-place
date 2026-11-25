@@ -92,10 +92,19 @@ class SampleRunAPITest(APITestCase):
         self.runner.assert_not_called()
         self.assertTrue(cache.get(self.lock_key))
 
-    def test_throttled_run_is_rejected(self):
+    def test_throttled_run_is_rejected_with_korean_message_and_releases_lock(self):
         with mock.patch("submission.views.oj.TokenBucket.consume", return_value=(False, 5)):
-            self.assertEqual(self.client.post(self.url, self.data).status_code, 429)
+            response = self.client.post(self.url, self.data)
+        self.assertEqual(response.status_code, 429)
+        self.assertEqual(response.data["data"], "5초 후에 다시 실행해주세요.")
         self.runner.assert_not_called()
+        self.assertIsNone(cache.get(self.lock_key))
+
+    def test_concurrent_run_does_not_consume_throttle_token(self):
+        cache.add(self.lock_key, True, timeout=90)
+        with mock.patch("submission.views.oj.TokenBucket.consume", return_value=(True, 0)) as consume:
+            self.assertEqual(self.client.post(self.url, self.data).status_code, 429)
+        consume.assert_not_called()
 
     def test_server_failure_releases_lock_and_allows_retry(self):
         self.runner.return_value.run.side_effect = SampleRunError("서버 응답 없음")
@@ -188,12 +197,14 @@ class SampleRunnerTest(SimpleTestCase):
         patchers = [
             mock.patch("judge.sample_runner.SysOptions", self.options),
             mock.patch("judge.sample_runner.DispatcherBase.__init__", return_value=None),
-            mock.patch("judge.sample_runner.ChooseJudgeServer"),
+            mock.patch("judge.sample_runner.process_pending_task"),
+            mock.patch("judge.sample_runner.SampleRunJudgeServer"),
         ]
+        started = []
         for patcher in patchers:
-            started = patcher.start()
+            started.append(patcher.start())
             self.addCleanup(patcher.stop)
-        self.server = started
+        self.process_pending_task, self.server = started[-2:]
         self.server.return_value.__enter__.return_value = SimpleNamespace(ip=None, service_url="http://judge:8080")
         self.runner = SampleRunner(self.problem, "C++", "int main() {}")
         self.response = {"err": None, "data": [
@@ -217,6 +228,21 @@ class SampleRunnerTest(SimpleTestCase):
         self.assertEqual(result["cases"][0]["time"], 2)
         self.assertEqual(result["cases"][0]["memory"], 1024)
         self.assertEqual(result["cases"][1]["expected"], "5\n")
+
+    def test_pending_submissions_resume_after_run_releases_slot(self):
+        self.run_with_response(self.response)
+        self.process_pending_task.assert_called_once()
+
+    def test_pending_submissions_resume_even_when_judge_fails(self):
+        with self.assertRaises(SampleRunError):
+            self.run_with_response(None)
+        self.process_pending_task.assert_called_once()
+
+    def test_no_slot_does_not_touch_pending_queue(self):
+        self.server.return_value.__enter__.return_value = None
+        with self.assertRaises(SampleRunError):
+            self.runner.run()
+        self.process_pending_task.assert_not_called()
 
     def test_judge_request_uses_short_timeout(self):
         _, request = self.run_with_response(self.response)
@@ -274,9 +300,9 @@ class SampleRunnerTest(SimpleTestCase):
                 self.assertEqual(result["cases"][0]["memory"], 150 * 1024)
 
     def test_large_output_is_bounded_and_flagged(self):
-        self.response["data"][0]["output"] = "x" * (self.runner.OUTPUT_LIMIT + 1)
+        self.response["data"][0]["output"] = "x" * (self.runner.DISPLAY_CHAR_LIMIT + 1)
         result, _ = self.run_with_response(self.response)
-        self.assertEqual(len(result["cases"][1]["output"]), self.runner.OUTPUT_LIMIT)
+        self.assertEqual(len(result["cases"][1]["output"]), self.runner.DISPLAY_CHAR_LIMIT)
         self.assertTrue(result["cases"][1]["outputTruncated"])
 
     def test_infinite_print_output_limit_is_not_reported_as_runtime_error(self):
@@ -311,3 +337,61 @@ class SampleRunnerTest(SimpleTestCase):
         response["data"][1]["output"] += traceback
         result, _ = self.run_with_response(response)
         self.assertEqual(result["cases"][0]["error"], traceback)
+
+
+class SampleRunJudgeServerTest(SimpleTestCase):
+    def test_sample_run_uses_at_most_half_of_judge_slots(self):
+        from judge.dispatcher import ChooseJudgeServer
+        from judge.sample_runner import SampleRunJudgeServer
+        for task_number, sample_ok, submission_ok in ((0, True, True), (3, True, True), (4, False, True),
+                                                      (8, False, True), (9, False, False)):
+            server = SimpleNamespace(task_number=task_number, cpu_core=4)
+            with self.subTest(task_number=task_number):
+                self.assertEqual(SampleRunJudgeServer().has_capacity(server), sample_ok)
+                self.assertEqual(ChooseJudgeServer().has_capacity(server), submission_ok)
+
+
+class RuntimeErrorMessageTest(SimpleTestCase):
+    STDOUT = "1\n2\n3\n"
+
+    def message(self, language, output, signal=0, exit_code=1):
+        with mock.patch("judge.sample_runner.DispatcherBase.__init__", return_value=None):
+            runner = SampleRunner(SimpleNamespace(), language, "")
+        return runner._runtime_error_message({"signal": signal, "exit_code": exit_code}, output)
+
+    def test_python_traceback_excludes_buffered_stdout_after_it(self):
+        traceback = ('Traceback (most recent call last):\n  File "/judger/run/solution.py", line 3, in <module>\n'
+                     "    print(1 // 0)\n          ~~^~~\nZeroDivisionError: integer division or modulo by zero")
+        self.assertEqual(self.message("Python3", traceback + "\n" + self.STDOUT), traceback)
+        self.assertEqual(self.message("Python3", self.STDOUT + traceback), traceback)
+
+    def test_java_stack_trace_excludes_stdout(self):
+        trace = ('Exception in thread "main" java.lang.ArrayIndexOutOfBoundsException: Index 5 out of bounds\n'
+                 "\tat Main.main(Main.java:5)\nCaused by: java.lang.RuntimeException: inner\n\t... 1 more")
+        self.assertEqual(self.message("Java", self.STDOUT + trace + "\nbuffered"), trace)
+
+    def test_go_panic_cpp_terminate_and_assertions(self):
+        go = "panic: runtime error: index out of range [5] with length 3\n\ngoroutine 1 [running]:\nmain.main()"
+        cpp = "terminate called after throwing an instance of 'std::out_of_range'\n  what():  vector::_M_range_check"
+        c_assert = "main: main.c:5: main: Assertion `n > 0' failed."
+        cases = (("Golang", go), ("C++", cpp), ("C", c_assert), ("C++", c_assert))
+        for language, diagnostic in cases:
+            with self.subTest(language=language):
+                self.assertEqual(self.message(language, self.STDOUT + diagnostic, signal=6), diagnostic)
+
+    def test_javascript_uncaught_error(self):
+        trace = "TypeError: Cannot read properties of undefined (reading 'x')\n    at Object.<anonymous> (/s.js:3:9)"
+        output = self.STDOUT + "/s.js:3\n  a.x\n    ^\n\n" + trace + "\n\nNode.js v20.11.0"
+        self.assertTrue(self.message("JavaScript", output).startswith(trace))
+        self.assertNotIn("1\n2", self.message("JavaScript", output))
+
+    def test_unknown_crash_shows_exit_reason_instead_of_stdout(self):
+        import signal
+        for language in ("C", "C++", "Java", "Python3", "Golang", "JavaScript"):
+            with self.subTest(language=language):
+                message = self.message(language, self.STDOUT, signal=signal.SIGSEGV)
+                self.assertIn("SIGSEGV", message)
+                self.assertNotIn("1\n2", message)
+        self.assertIn("SIGFPE", self.message("C++", self.STDOUT, signal=signal.SIGFPE))
+        self.assertIn("종료 코드(3)", self.message("C", self.STDOUT, signal=0, exit_code=3))
+        self.assertIn("시그널 31번", self.message("C", "", signal=31))
