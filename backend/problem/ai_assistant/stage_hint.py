@@ -12,9 +12,6 @@ from .text import format_samples, normalize_html_to_text
 # 학생 코드 최대 길이
 MAX_USER_CODE_LENGTH = 8000
 
-# 힌트 머리말 형식, 통계 집계에서도 사용
-STAGE_LABEL_PATTERN = r"^\s*\[[0-9]+단계\]"
-
 SYSTEM_PROMPT = """You are an AI tutor that helps users solve programming problems.
 
 Core rules:

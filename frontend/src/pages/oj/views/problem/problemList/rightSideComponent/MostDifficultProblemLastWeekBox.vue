@@ -11,8 +11,12 @@
         <div class="hard-problem-skeleton" aria-hidden="true">
           <div v-if="showTags" class="skeleton-tag-row">
             <span class="skeleton-block skeleton-chip"></span>
-            <span class="skeleton-block skeleton-chip skeleton-chip-short"></span>
-            <span class="skeleton-block skeleton-chip skeleton-chip-short"></span>
+            <span
+              class="skeleton-block skeleton-chip skeleton-chip-short"
+            ></span>
+            <span
+              class="skeleton-block skeleton-chip skeleton-chip-short"
+            ></span>
           </div>
           <div class="skeleton-title-row">
             <span class="skeleton-block skeleton-title"></span>
@@ -38,6 +42,7 @@
         <div v-if="showTags" class="hardProblemFieldCategory">
           <FieldCategoryBox
             :boxType="true"
+            :field="problem.field"
             :value="FIELD_MAP[problem.field].value"
             :boxColor="FIELD_MAP[problem.field].boxColor"
           />
@@ -228,26 +233,9 @@ export default {
     .hardProblemFieldCategory {
       display: flex;
       flex-wrap: wrap;
-      gap: 4px;
+      gap: 4px 5px;
       align-items: center;
       justify-content: left;
-
-      /deep/ .fieldCategoryBox {
-        min-width: 0;
-      }
-
-      /deep/ .box {
-        max-width: 140px;
-        margin-top: 0;
-        margin-right: 0;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-
-      /deep/ .box span {
-        white-space: nowrap;
-      }
     }
   }
 }
@@ -308,12 +296,12 @@ export default {
 .skeleton-tag-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: 4px 5px;
 }
 
 .skeleton-chip {
   width: 72px;
-  height: 24px;
+  height: 20px;
   border-radius: 999px;
 }
 
