@@ -9,6 +9,7 @@ from conf.models import JudgeServer
 from contest.models import ContestRuleType
 from judge.dispatcher import DispatcherBase, JudgeDispatcher
 from judge.tasks import judge_task, cleanup_dead_judge_servers
+from utils.constants import ProblemField, ProblemScore
 
 
 class JudgeTaskObservabilityTest(SimpleTestCase):
@@ -104,25 +105,27 @@ class UpdateUserScoreTest(SimpleTestCase):
     @mock.patch("judge.dispatcher.Problem")
     @mock.patch("judge.dispatcher.UserSolved")
     @mock.patch("judge.dispatcher.UserScore")
-    def test_algorithm_field_problem_updates_solved_count(self, user_score_model, user_solved_model, problem_model,
-                                                          transaction, score_save, solved_save):
-        """알고리즘 영역 문제를 맞혔을 때 영역별 푼 문제 수가 오류 없이 오르는지 검증"""
-        user_score = UserScore(user_id=1)
-        user_solved = UserSolved(user_id=1)
-        user_score_model.objects.select_for_update.return_value.get.return_value = user_score
-        user_solved_model.objects.select_for_update.return_value.get.return_value = user_solved
-        problem_model.objects.get.return_value = mock.Mock(
-            id=10, field=5, difficulty="Low", is_bonus=False, curr_week_info={"solver": [1]})
+    def test_every_field_problem_updates_solved_count(self, user_score_model, user_solved_model, problem_model,
+                                                      transaction, score_save, solved_save):
+        """모든 영역의 문제를 맞혔을 때 영역별 푼 문제 수와 점수가 오류 없이 오르는지 검증"""
+        for field, field_name in ProblemField.intToStr.items():
+            with self.subTest(field=field_name):
+                user_score = UserScore(user_id=1)
+                user_solved = UserSolved(user_id=1)
+                user_score_model.objects.select_for_update.return_value.get.return_value = user_score
+                user_solved_model.objects.select_for_update.return_value.get.return_value = user_solved
+                problem_model.objects.get.return_value = mock.Mock(
+                    id=10, field=field, difficulty="Low", is_bonus=False, curr_week_info={"solver": [1]})
 
-        dispatcher = JudgeDispatcher.__new__(JudgeDispatcher)
-        dispatcher.submission = mock.Mock(user_id=1)
-        dispatcher.problem = mock.Mock(id=10)
-        dispatcher.update_user_score()
+                dispatcher = JudgeDispatcher.__new__(JudgeDispatcher)
+                dispatcher.submission = mock.Mock(user_id=1)
+                dispatcher.problem = mock.Mock(id=10)
+                dispatcher.update_user_score()
 
-        self.assertEqual(user_solved.algorithm_solved, 1)
-        self.assertEqual(user_solved.Low_solved, 1)
-        self.assertEqual(user_solved.total_solved, 1)
-        self.assertEqual(user_score.algorithm_score, 20)
+                self.assertEqual(getattr(user_solved, f"{field_name}_solved"), 1)
+                self.assertEqual(user_solved.Low_solved, 1)
+                self.assertEqual(user_solved.total_solved, 1)
+                self.assertEqual(getattr(user_score, f"{field_name}_score"), ProblemScore.score["Low"])
 
 
 class JudgeServerRoutingTest(TestCase):
